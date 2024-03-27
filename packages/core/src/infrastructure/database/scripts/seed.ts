@@ -1,9 +1,6 @@
 import { sql } from 'kysely';
 import readline from 'readline';
 
-import { EducationLevel, Email, Major } from '@colorstack/types';
-import { id } from '@colorstack/utils';
-
 import { ENV } from '@/shared/env';
 import { createDatabaseConnection } from '../shared/create-database-connection';
 import { migrate } from '../shared/migrate';
@@ -114,14 +111,14 @@ async function seed() {
           acceptedAt: new Date(),
           currentLocation: 'New York, NY',
           currentLocationCoordinates: sql`point(-73.935242, 40.73061)`,
-          educationLevel: EducationLevel.UNDERGRADUATE,
+          educationLevel: 'undergraduate',
           email,
           firstName: 'First',
           gender: '',
           graduationYear: new Date().getFullYear().toString(),
           id: memberId,
           lastName: 'Last',
-          major: Major.COMPUTER_SCIENCE,
+          major: 'computer_science',
           otherDemographics: [],
           race: [],
           schoolId: schoolId1,
@@ -138,18 +135,10 @@ async function seed() {
 }
 
 async function setEmailFromCommandLine() {
-  const answer = await question(
+  email = await question(
     'In order to log into the Member Profile and Admin Dashboard, you will need both a member record and an admin record. Please provide an email so we can create those for you.\n' +
       'Email: '
   );
-
-  const result = Email.safeParse(answer);
-
-  if (!result.success) {
-    throw new Error('The email you provided was invalid.');
-  }
-
-  email = result.data;
 }
 
 async function question(prompt: string) {
@@ -164,6 +153,13 @@ async function question(prompt: string) {
       cli.close();
     });
   });
+}
+
+let idCounter = 0;
+
+function id() {
+  idCounter++;
+  return idCounter.toString();
 }
 
 main();
