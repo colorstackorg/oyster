@@ -1,0 +1,12 @@
+{
+  "name": "@colorstack/types",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "scripts": {
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "zod": "^3.20.2"
+  }
+}

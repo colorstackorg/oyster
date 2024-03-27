@@ -1,0 +1,22 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "yarn db:migrate && yarn build --filter=member-profile",
+    "nixpacksConfigPath": "/apps/member-profile/railway.json",
+    "watchPatterns": [
+      "/apps/member-profile/**/*",
+      "/packages/core/**/*",
+      "/packages/core-ui/**/*",
+      "/packages/feature-ui/**/*"
+    ]
+  },
+  "deploy": {
+    "numReplicas": 2,
+    "startCommand": "yarn start --filter=member-profile",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 120,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}

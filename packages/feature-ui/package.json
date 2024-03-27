@@ -1,0 +1,26 @@
+{
+  "name": "@colorstack/feature-ui",
+  "version": "0.0.0",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@colorstack/core-ui": "*",
+    "@colorstack/tsconfig": "*",
+    "@colorstack/types": "*",
+    "@colorstack/utils": "*",
+    "@remix-run/react": "^2.8.1",
+    "@tailwindcss/container-queries": "^0.1.1",
+    "@types/react": "^18.0.26",
+    "prettier-plugin-tailwindcss": "^0.5.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-feather": "^2.0.10",
+    "react-textarea-autosize": "^8.5.3",
+    "zod": "^3.20.2"
+  }
+}

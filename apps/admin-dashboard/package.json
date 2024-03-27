@@ -1,0 +1,49 @@
+{
+  "name": "@colorstack/admin-dashboard",
+  "version": "0.0.0",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "remix vite:build",
+    "dev": "remix vite:dev",
+    "lint": "tsc --noEmit",
+    "start": "remix-serve ./build/server/index.js"
+  },
+  "dependencies": {
+    "@colorstack/core": "*",
+    "@colorstack/core-ui": "*",
+    "@colorstack/feature-ui": "*",
+    "@colorstack/types": "*",
+    "@colorstack/utils": "*",
+    "@remix-run/node": "^2.8.1",
+    "@remix-run/react": "^2.8.1",
+    "@remix-run/serve": "^2.8.1",
+    "@sentry/remix": "^7.37.1",
+    "@tailwindcss/container-queries": "^0.1.1",
+    "csvtojson": "^2.0.10",
+    "dayjs": "^1.11.5",
+    "isbot": "^3.6.5",
+    "jsonwebtoken": "^9.0.2",
+    "nanoid": "^3.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-feather": "^2.0.10",
+    "react-textarea-autosize": "^8.5.3",
+    "ts-pattern": "4.3.0",
+    "zod": "^3.20.2"
+  },
+  "devDependencies": {
+    "@colorstack/tsconfig": "*",
+    "@remix-run/dev": "^2.8.1",
+    "@types/jsonwebtoken": "^9.0.2",
+    "@types/node": "^18.7.18",
+    "@types/react": "^18.0.26",
+    "@types/react-dom": "^18.0.9",
+    "prettier-plugin-tailwindcss": "^0.4.1",
+    "tailwindcss": "^3.3.3",
+    "vite": "^5.1.6",
+    "vite-tsconfig-paths": "^4.3.2"
+  }
+}

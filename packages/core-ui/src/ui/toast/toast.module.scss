@@ -1,0 +1,51 @@
+@keyframes animation {
+  from {
+    transform: translateX(-150%);
+  }
+
+  to {
+    transform: translateX(-0%);
+  }
+}
+
+.toast {
+  align-items: center;
+  animation: animation;
+  animation-duration: 500ms;
+  animation-fill-mode: forwards;
+  background-color: var(--color-slate);
+  bottom: 1rem;
+  border-radius: 0.5rem;
+  box-sizing: border-box;
+  color: var(--color-white);
+  display: flex;
+  gap: 0.5rem;
+  left: 1rem;
+  max-width: calc(100vw - 2rem);
+  padding: 0.5rem;
+  position: fixed;
+  text-align: center;
+  width: max-content;
+}
+
+@keyframes shader-animation {
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0%;
+  }
+}
+
+.toastIconShader {
+  animation: shader-animation;
+  animation-duration: 7000ms;
+  animation-timing-function: ease-in-out;
+  background-color: transparentize(#000000, 0.85);
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}

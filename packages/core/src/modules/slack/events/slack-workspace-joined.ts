@@ -1,0 +1,32 @@
+import { GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { db } from '@/infrastructure/database';
+import { findMemberByEmail } from '@/modules/member/queries/find-member-by-email';
+import { NotFoundError } from '@/shared/errors';
+
+export async function onSlackWorkspaceJoined({
+  email,
+  slackId,
+}: GetBullJobData<'slack.joined'>) {
+  const member = await findMemberByEmail(email)
+    .select(['id'])
+    .executeTakeFirst();
+
+  if (!member) {
+    throw new NotFoundError(
+      'Could not find member who joined Slack.'
+    ).withContext({
+      email,
+      slackId,
+    });
+  }
+
+  await db
+    .updateTable('students')
+    .set({
+      joinedSlackAt: new Date(),
+      slackId,
+    })
+    .where('id', '=', member.id)
+    .where('slackId', 'is', null)
+    .execute();
+}

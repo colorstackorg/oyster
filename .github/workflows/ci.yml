@@ -1,0 +1,75 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  build:
+    name: Lint, Build and Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_DB: colorstack
+          POSTGRES_PASSWORD: password
+          POSTGRES_USER: username
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 10s --health-timeout
+          5s --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://username:password@localhost:5432/colorstack
+      REDIS_URL: redis://localhost:6379
+
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Cache Turborepo setup
+        uses: actions/cache@v4
+        with:
+          # When running turbo commands, we use `.turbo` as the cache directory.
+          # See the root `package.json` for reference.
+          path: .turbo
+
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+
+          # This is how GitHub Actions restores the cache. Because we only
+          # the prefix of the key (and not the `github.sha`), this will allow
+          # us to hit the cache on any CI runs on commit on any branch.
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run database migrations and generate types
+        run: yarn db:migrate
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build all packages and applications
+        run: yarn build
+
+      - name: Run tests
+        run: yarn test

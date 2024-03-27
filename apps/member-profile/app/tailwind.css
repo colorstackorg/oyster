@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+a,
+button,
+input,
+select {
+  line-height: normal;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline-color: var(--color-primary);
+  outline-offset: 1px;
+  outline-style: solid;
+  outline-width: 1px;
+}

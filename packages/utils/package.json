@@ -1,0 +1,14 @@
+{
+  "name": "@colorstack/utils",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "scripts": {
+    "lint": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "nanoid": "^3.0.0",
+    "vitest": "^1.3.1"
+  }
+}

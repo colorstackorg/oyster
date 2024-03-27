@@ -1,0 +1,256 @@
+import {
+  ActionFunctionArgs,
+  json,
+  LoaderFunctionArgs,
+  redirect,
+  unstable_composeUploadHandlers as composeUploadHandlers,
+  unstable_createFileUploadHandler as createFileUploadHandler,
+  unstable_createMemoryUploadHandler as createMemoryUploadHandler,
+  unstable_parseMultipartFormData as parseMultipartFormData,
+} from '@remix-run/node';
+import {
+  Form as RemixForm,
+  Link,
+  useActionData,
+  useLoaderData,
+  useNavigate,
+  useNavigation,
+} from '@remix-run/react';
+import { z } from 'zod';
+
+import {
+  Button,
+  Form,
+  getActionErrors,
+  Modal,
+  Select,
+  Text,
+  TextProps,
+  validateForm,
+} from '@colorstack/core-ui';
+import { Email, Program, ProgramParticipant } from '@colorstack/types';
+import { id } from '@colorstack/utils';
+
+import { Route } from '../shared/constants';
+import { db, parseCsv } from '../shared/core.server';
+import { findStudentByEmail } from '../shared/queries/student';
+import {
+  commitSession,
+  ensureUserAuthenticated,
+  getSession,
+  toast,
+} from '../shared/session.server';
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  await ensureUserAuthenticated(request);
+
+  const programs = await listPrograms();
+
+  return json({
+    programs,
+  });
+}
+
+async function listPrograms() {
+  const rows = await db.selectFrom('programs').select(['id', 'name']).execute();
+
+  return rows;
+}
+
+const ImportProgramParticipantsInput = z.object({
+  file: z.custom<File>(),
+  program: Program.shape.id,
+});
+
+type ImportProgramParticipantsInput = z.infer<
+  typeof ImportProgramParticipantsInput
+>;
+
+export async function action({ request }: ActionFunctionArgs) {
+  const session = await ensureUserAuthenticated(request);
+
+  const uploadHandler = composeUploadHandlers(
+    createFileUploadHandler(),
+    createMemoryUploadHandler()
+  );
+
+  const form = await parseMultipartFormData(request, uploadHandler);
+
+  const { data, errors } = validateForm(
+    ImportProgramParticipantsInput,
+    Object.fromEntries(form)
+  );
+
+  if (!data) {
+    return json({
+      error: 'Something went wrong, please try again.',
+      errors,
+    });
+  }
+
+  let count = 0;
+
+  try {
+    const result = await importProgramParticipants(data);
+    count = result.count;
+  } catch (e) {
+    return json({
+      error: (e as Error).message,
+      errors,
+    });
+  }
+
+  await getSession(request);
+
+  toast(session, {
+    message: `Imported ${count} program participants.`,
+    type: 'success',
+  });
+
+  return redirect(Route.STUDENTS, {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  });
+}
+
+const ProgramParticipantRecord = z.object({
+  Email: Email,
+});
+
+async function importProgramParticipants(
+  input: ImportProgramParticipantsInput
+) {
+  const csvString = await input.file.text();
+
+  const records = await parseCsv(csvString);
+
+  if (!records.length) {
+    throw new Error(
+      'There must be at least one row in order to import program participants.'
+    );
+  }
+
+  const programParticipants = await Promise.all(
+    records.map(async (record, i) => {
+      const result = ProgramParticipantRecord.safeParse(record);
+
+      if (!result.success) {
+        throw new Error(
+          `There was an error parsing row #${i} (${record.Email}).`
+        );
+      }
+
+      const { Email: email } = result.data;
+
+      const row = await findStudentByEmail(email)
+        .select(['studentEmails.studentId'])
+        .executeTakeFirst();
+
+      return ProgramParticipant.pick({
+        email: true,
+        id: true,
+        programId: true,
+        studentId: true,
+      }).parse({
+        email,
+        id: id(),
+        programId: input.program,
+        studentId: row?.studentId,
+      });
+    })
+  );
+
+  await db
+    .insertInto('programParticipants')
+    .values(programParticipants)
+    .onConflict((oc) => oc.doNothing())
+    .execute();
+
+  return {
+    count: programParticipants.length,
+  };
+}
+
+export default function ImportProgramsPage() {
+  const navigate = useNavigate();
+
+  function onClose() {
+    navigate(Route.STUDENTS);
+  }
+
+  return (
+    <Modal onClose={onClose}>
+      <Modal.Header>
+        <Modal.Title>Import Program Participants</Modal.Title>
+        <Modal.CloseButton />
+      </Modal.Header>
+
+      <ImportProgramsForm />
+    </Modal>
+  );
+}
+
+const { file, program } = ImportProgramParticipantsInput.keyof().enum;
+
+function ImportProgramsForm() {
+  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { programs } = useLoaderData<typeof loader>();
+
+  const submitting = useNavigation().state === 'submitting';
+
+  return (
+    <RemixForm className="form" method="post" encType="multipart/form-data">
+      <Form.Field
+        description={<ProgramFieldDescription />}
+        error={errors.program}
+        label="Program"
+        labelFor={program}
+        required
+      >
+        <Select id={program} name={program} required>
+          {programs.map((program) => {
+            return (
+              <option key={program.id} value={program.id}>
+                {program.name}
+              </option>
+            );
+          })}
+        </Select>
+      </Form.Field>
+
+      <Form.Field
+        description="Please upload a .csv file."
+        error={errors.file}
+        label="File"
+        labelFor={file}
+        required
+      >
+        <input accept=".csv" id={file} name={file} required type="file" />
+      </Form.Field>
+
+      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+
+      <Button.Group>
+        <Button loading={submitting} type="submit">
+          Import
+        </Button>
+      </Button.Group>
+    </RemixForm>
+  );
+}
+
+function ProgramFieldDescription(props: Pick<TextProps, 'className'>) {
+  const to = `${Route.PROGRAMS_CREATE}?redirect=${Route.STUDENTS_IMPORT_PROGRAMS}`;
+
+  return (
+    <Text {...props}>
+      Which program would you like to import participants for? If you can't find
+      the program you are looking for, you can create one{' '}
+      <Link className="link" to={to}>
+        here
+      </Link>
+      .
+    </Text>
+  );
+}

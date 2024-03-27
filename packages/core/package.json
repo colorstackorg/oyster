@@ -1,0 +1,63 @@
+{
+  "name": "@colorstack/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./api": {
+      "import": "./dist/api.js",
+      "require": "./dist/api.cjs",
+      "types": "./dist/api.d.ts"
+    },
+    "./admin-dashboard.server": "./src/admin-dashboard.server.ts",
+    "./admin-dashboard.ui": "./src/admin-dashboard.ui.ts",
+    "./member-profile.server": "./src/member-profile.server.ts",
+    "./member-profile.ui": "./src/member-profile.ui.ts"
+  },
+  "scripts": {
+    "build": "tsup",
+    "db:migrate": "tsx ./src/infrastructure/database/scripts/migrate.ts && yarn db:types",
+    "db:migrate:down": "tsx ./src/infrastructure/database/scripts/migrate.ts --down && yarn db:types",
+    "db:seed": "tsx ./src/infrastructure/database/scripts/seed.ts && yarn db:types",
+    "db:types": "kysely-codegen --dialect=postgres --camel-case",
+    "lint": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@colorstack/email-templates": "*",
+    "@colorstack/types": "*",
+    "@colorstack/utils": "*",
+    "@mailchimp/mailchimp_marketing": "^3.0.78",
+    "@react-email/render": "^0.0.6",
+    "@slack/web-api": "^6.7.2",
+    "airtable": "^0.11.6",
+    "bullmq": "^4.12.2",
+    "dayjs": "^1.11.5",
+    "dedent": "^0.7.0",
+    "googleapis": "^126.0.1",
+    "ioredis": "^5.3.2",
+    "jsonwebtoken": "^9.0.2",
+    "kysely": "^0.26.3",
+    "nanoid": "^3.0.0",
+    "pg": "^8.8.0",
+    "postmark": "^3.0.15",
+    "statsig-node": "^5.3.0"
+  },
+  "devDependencies": {
+    "@colorstack/core-ui": "*",
+    "@colorstack/tsconfig": "*",
+    "@remix-run/react": "^2.8.1",
+    "@types/dedent": "^0.7.2",
+    "@types/jsonwebtoken": "^9.0.2",
+    "@types/mailchimp__mailchimp_marketing": "^3.0.8",
+    "@types/pg": "^8.11.2",
+    "commander": "^12.0.0",
+    "kysely-codegen": "^0.10.1",
+    "nanoid": "^3.0.0",
+    "react": "^18.2.0",
+    "tsup": "^6.1.3",
+    "vite": "^5.0.0",
+    "vite-tsconfig-paths": "^4.3.1",
+    "vitest": "^1.3.1"
+  }
+}

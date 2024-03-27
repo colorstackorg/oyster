@@ -1,0 +1,7 @@
+{
+  "extends": "@colorstack/tsconfig/base.json",
+  "include": ["src", "emails"],
+  "compilerOptions": {
+    "jsx": "react-jsx"
+  }
+}

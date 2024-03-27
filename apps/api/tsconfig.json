@@ -1,0 +1,10 @@
+{
+  "extends": "@colorstack/tsconfig/base.json",
+  "exclude": ["node_modules", "dist"],
+  "include": ["src"],
+  "compilerOptions": {
+    "baseUrl": "./",
+    "module": "ESNext",
+    "moduleResolution": "Bundler"
+  }
+}

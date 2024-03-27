@@ -1,0 +1,5 @@
+{
+  "extends": "@colorstack/tsconfig/react-library.json",
+  "include": ["src", "./types.d.ts"],
+  "exclude": ["dist", "node_modules"]
+}
