@@ -141,7 +141,7 @@ Now that we have some tables, we're ready to add some seed data in our database,
 which will enable you to log into the Admin Dashboard and Member Profile. Run:
 
 ```sh
-yarn workspace @colorstack/core db:seed
+yarn db:seed
 ```
 
 Follow the prompt to add your email, and you will now be able to log into both
