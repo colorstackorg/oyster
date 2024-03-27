@@ -78,13 +78,13 @@ Please ensure that you have the following software on your machine:
 
 ### Environment Variables
 
-Set up your environment variable files by duplicating `.env.example` to `.env`
-in a few places:
+Set up your environment variable files by doing the following:
 
-- `/apps/admin-dashboard/.env.example`
-- `/apps/api/.env.example`
-- `/apps/member-profile/.env.example`
-- `/packages/core/.env.example`
+- Duplicate `/apps/admin-dashboard/.env.example` to
+  `/apps/admin-dashboard/.env`.
+- Duplicate `/apps/api/.env.example` to `/apps/api/.env`.
+- Duplicate `/apps/member-profile/.env.example` to `/apps/member-profile/.env`.
+- Duplicate `/apps/core/.env.example` to `/apps/core/.env`.
 
 You'll notice that a lot of environment variables are empty. Most of these empty
 variables are tied to the 3rd party integrations we have with platforms such as
