@@ -1,5 +1,6 @@
 import { sql } from 'kysely';
 import readline from 'readline';
+import { z } from 'zod';
 
 import { ENV } from '@/shared/env';
 import { createDatabaseConnection } from '../shared/create-database-connection';
@@ -135,10 +136,26 @@ async function seed() {
 }
 
 async function setEmailFromCommandLine() {
-  email = await question(
+  const answer = await question(
     'In order to log into the Member Profile and Admin Dashboard, you will need both a member record and an admin record. Please provide an email so we can create those for you.\n' +
       'Email: '
   );
+
+  const result = z
+    .string()
+    .trim()
+    .min(1)
+    .email()
+    .transform((value) => {
+      return value.toLowerCase();
+    })
+    .safeParse(answer);
+
+  if (!result.success) {
+    throw new Error('The email you provided was invalid.');
+  }
+
+  email = result.data;
 }
 
 async function question(prompt: string) {
