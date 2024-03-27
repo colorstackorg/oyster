@@ -1,0 +1,36 @@
+# Dependencies
+
+node_modules
+
+# Environment Variables
+
+.env
+
+# Turborepo
+
+.turbo
+
+# React Email
+
+.react-email
+
+# Remix Run
+
+.cache
+
+# Build
+
+build
+dist
+tsconfig.tsbuildinfo
+
+
+# Debugging
+
+yarn-debug.log*
+yarn-error.log*
+
+
+# Miscelleanous
+
+.DS_Store

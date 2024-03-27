@@ -1,0 +1,29 @@
+{
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "config/*",
+      "packages/*"
+    ]
+  },
+  "scripts": {
+    "build": "turbo run build --cache-dir=.turbo",
+    "db:migrate": "yarn workspace @colorstack/core db:migrate",
+    "dev": "turbo run dev --cache-dir=.turbo",
+    "dev:apps": "yarn dev --filter='./apps/*'",
+    "lint": "turbo run lint --cache-dir=.turbo",
+    "test": "turbo run test --cache-dir=.turbo",
+    "start": "turbo run start --cache-dir=.turbo"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "turbo": "latest",
+    "typescript": "^5.4.2"
+  },
+  "engines": {
+    "npm": ">=7.0.0",
+    "node": "^20.0.0"
+  },
+  "packageManager": "yarn@1.22.10"
+}

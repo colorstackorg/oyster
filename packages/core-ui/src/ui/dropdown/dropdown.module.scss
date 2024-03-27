@@ -1,0 +1,18 @@
+.dropdownItem :is(a, button):only-child {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  padding: 0.75rem 0.5rem;
+  width: 100%;
+}
+
+.dropdownItem :is(a, button):only-child:hover,
+.dropdownItem :is(a, button):only-child:focus-within {
+  background-color: var(--color-gray-100);
+}
+
+.dropdownItem :is(a, button):only-child > svg {
+  height: 1.125rem;
+  width: 1.125rem;
+}

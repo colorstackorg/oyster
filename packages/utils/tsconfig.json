@@ -1,0 +1,4 @@
+{
+  "extends": "@colorstack/tsconfig/base.json",
+  "include": ["src"]
+}

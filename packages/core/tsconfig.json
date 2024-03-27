@@ -1,0 +1,13 @@
+{
+  "extends": "@colorstack/tsconfig/base.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "baseUrl": "./",
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "types": ["vitest/globals"]
+  }
+}

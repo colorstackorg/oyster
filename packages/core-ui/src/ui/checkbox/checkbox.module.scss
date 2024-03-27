@@ -1,0 +1,14 @@
+.checkboxInput:checked ~ .checkboxBackground {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.checkboxInput:checked:disabled:not(:read-only) ~ .checkboxBackground {
+  background-color: var(--color-gray-500);
+  border-color: var(--color-gray-500);
+}
+
+.checkboxInput:hover ~ .checkboxBackground,
+.checkboxInput:focus ~ .checkboxBackground {
+  border-color: var(--color-primary);
+}
