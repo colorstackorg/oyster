@@ -155,11 +155,11 @@ async function question(prompt: string) {
   });
 }
 
-let idCounter = 0;
+let counter = 0;
 
 function id() {
-  idCounter++;
-  return idCounter.toString();
+  counter++;
+  return counter.toString();
 }
 
 main();
