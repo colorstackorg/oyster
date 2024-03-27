@@ -80,11 +80,10 @@ Please ensure that you have the following software on your machine:
 
 Set up your environment variable files by doing the following:
 
-- Duplicate `/apps/admin-dashboard/.env.example` to
-  `/apps/admin-dashboard/.env`.
-- Duplicate `/apps/api/.env.example` to `/apps/api/.env`.
-- Duplicate `/apps/member-profile/.env.example` to `/apps/member-profile/.env`.
-- Duplicate `/apps/core/.env.example` to `/apps/core/.env`.
+- In `/apps/admin-dashboard`, duplicate the `.env.example` to `.env`.
+- In `/apps/api`, duplicate the `.env.example` to `.env`.
+- In `/apps/member-profile`, duplicate the `.env.example` to `.env`.
+- In `/packages/core`, duplicate the `.env.example` to `.env`.
 
 You'll notice that a lot of environment variables are empty. Most of these empty
 variables are tied to the 3rd party integrations we have with platforms such as
@@ -110,7 +109,7 @@ You'll then need to create 2 Postgres databases locally named `colorstack` and
 
 ```postgresql
 CREATE DATABASE colorstack;
-CREATE DATABASE colorstack-test;
+CREATE DATABASE "colorstack-test";
 ```
 
 You should now be able to connect to each database like this:
