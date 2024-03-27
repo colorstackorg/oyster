@@ -63,7 +63,7 @@ Please ensure that you have the following software on your machine:
 2. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
    the repository to your local machine.
    ```
-   git clone https://github.com/<YOUR_USERNAME>/colorstack.git
+   git clone https://github.com/<YOUR_USERNAME>/oyster.git
    ```
 3. Create a new branch.
    ```
