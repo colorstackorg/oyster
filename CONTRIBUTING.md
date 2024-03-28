@@ -81,7 +81,7 @@ Please ensure that you have the following software on your machine:
 In order to keep your forked repository up to date with the upstream repository,
 please read the following guides.
 
-- [Configure a Remote Repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/configuring-a-remote-repository-for-a-fork)
+- [Configuring a Remote Repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/configuring-a-remote-repository-for-a-fork)
 - [Syncing a Fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork)
 
 ### Environment Variables
