@@ -1,6 +1,6 @@
 import mailchimp, { Mailchimp } from '@mailchimp/mailchimp_marketing';
 
-import { EmailCampaign, EmailList } from '@colorstack/types';
+import { EmailCampaign, EmailList } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';

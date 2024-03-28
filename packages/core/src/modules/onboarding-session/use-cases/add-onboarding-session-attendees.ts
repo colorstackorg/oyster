@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 
-import { id } from '@colorstack/utils';
+import { id } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';

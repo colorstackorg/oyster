@@ -3,7 +3,7 @@ import { PropsWithChildren } from 'react';
 import { Calendar } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { Text } from '@colorstack/core-ui';
+import { Text } from '@oyster/core-ui';
 
 // Components
 

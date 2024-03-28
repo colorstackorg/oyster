@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Application, Email, Student } from '@colorstack/types';
+import { Application, Email, Student } from '@oyster/types';
 
 const BaseEmail = z.object({
   to: Email,

@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 
-import { Event } from '@colorstack/types';
-import { id } from '@colorstack/utils';
+import { Event } from '@oyster/types';
+import { id } from '@oyster/utils';
 
 import { db } from '@/infrastructure/database';
 

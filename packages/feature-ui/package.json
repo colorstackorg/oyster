@@ -1,5 +1,5 @@
 {
-  "name": "@colorstack/feature-ui",
+  "name": "@oyster/feature-ui",
   "version": "0.0.0",
   "private": true,
   "sideEffects": false,
@@ -9,10 +9,10 @@
     "lint": "tsc --noEmit"
   },
   "devDependencies": {
-    "@colorstack/core-ui": "*",
-    "@colorstack/tsconfig": "*",
-    "@colorstack/types": "*",
-    "@colorstack/utils": "*",
+    "@oyster/core-ui": "*",
+    "@oyster/tsconfig": "*",
+    "@oyster/types": "*",
+    "@oyster/utils": "*",
     "@remix-run/react": "^2.8.1",
     "@tailwindcss/container-queries": "^0.1.1",
     "@types/react": "^18.0.26",

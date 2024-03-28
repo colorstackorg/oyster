@@ -24,8 +24,8 @@ import {
   Text,
   TextProps,
   validateForm,
-} from '@colorstack/core-ui';
-import { Student } from '@colorstack/types';
+} from '@oyster/core-ui';
+import { Student } from '@oyster/types';
 
 import { CurrentLocationField } from '../shared/components/profile.general';
 import { Route } from '../shared/constants';

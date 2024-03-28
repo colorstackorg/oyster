@@ -18,7 +18,7 @@ import {
   getActionErrors,
   Modal,
   validateForm,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 
 import {
   OnboardingSessionAttendeesField,

@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 
-import { iife } from '@colorstack/utils';
+import { iife } from '@oyster/utils';
 
 import { GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';

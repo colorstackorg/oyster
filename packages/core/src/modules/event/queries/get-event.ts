@@ -1,7 +1,7 @@
 import type { SelectExpression } from 'kysely';
 import type { DB } from 'kysely-codegen/dist/db';
 
-import { EventType } from '@colorstack/types';
+import { EventType } from '@oyster/types';
 
 import { db } from '@/infrastructure/database';
 
@@ -12,7 +12,7 @@ type GetEventOptions = {
 };
 
 export async function getEvent<
-  Selection extends SelectExpression<DB, 'events'>
+  Selection extends SelectExpression<DB, 'events'>,
 >(id: string, selections: Selection[], options: GetEventOptions = {}) {
   const result = await db
     .selectFrom('events')

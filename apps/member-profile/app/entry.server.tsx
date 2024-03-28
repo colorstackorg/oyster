@@ -6,7 +6,7 @@ import isbot from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
 import { PassThrough } from 'stream';
 
-import { getCookie } from '@colorstack/utils';
+import { getCookie } from '@oyster/utils';
 
 import { initializeFeatureFlagServer } from './shared/core.server';
 

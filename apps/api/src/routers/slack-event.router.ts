@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import express from 'express';
 import { match } from 'ts-pattern';
 
-import { job } from '@colorstack/core/api';
+import { job } from '@oyster/core/api';
 
 import { ENV } from '../shared/env';
 import { RawBodyRequest } from '../shared/types';

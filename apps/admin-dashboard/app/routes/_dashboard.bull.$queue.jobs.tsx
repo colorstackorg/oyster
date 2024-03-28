@@ -19,9 +19,9 @@ import {
   Table,
   TableColumnProps,
   Text,
-} from '@colorstack/core-ui';
-import { ExtractValue } from '@colorstack/types';
-import { toTitleCase } from '@colorstack/utils';
+} from '@oyster/core-ui';
+import { ExtractValue } from '@oyster/types';
+import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '../shared/constants';
 import { getTimezone } from '../shared/cookies.server';

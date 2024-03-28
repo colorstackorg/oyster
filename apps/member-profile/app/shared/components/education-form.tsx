@@ -5,9 +5,9 @@ import React, {
   useState,
 } from 'react';
 
-import { DatePicker, Form, Input, Select } from '@colorstack/core-ui';
-import { Major } from '@colorstack/types';
-import { toTitleCase } from '@colorstack/utils';
+import { DatePicker, Form, Input, Select } from '@oyster/core-ui';
+import { Major } from '@oyster/types';
+import { toTitleCase } from '@oyster/utils';
 
 import {
   DegreeType,

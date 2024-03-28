@@ -18,7 +18,7 @@ import {
   Modal,
   Text,
   validateForm,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 
 import { Route } from '../shared/constants';
 import { claimSwagPack, db, reportError } from '../shared/core.server';

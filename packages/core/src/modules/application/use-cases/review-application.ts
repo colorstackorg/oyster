@@ -1,5 +1,5 @@
-import type { Application } from '@colorstack/types';
-import { ApplicationStatus } from '@colorstack/types';
+import type { Application } from '@oyster/types';
+import { ApplicationStatus } from '@oyster/types';
 
 import { GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';

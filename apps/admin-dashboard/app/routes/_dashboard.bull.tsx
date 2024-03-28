@@ -2,8 +2,8 @@ import { json, LoaderFunctionArgs } from '@remix-run/node';
 import { NavLink, Outlet } from '@remix-run/react';
 import { generatePath } from 'react-router';
 
-import { Dashboard } from '@colorstack/feature-ui';
-import { toTitleCase } from '@colorstack/utils';
+import { Dashboard } from '@oyster/feature-ui';
+import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '../shared/constants';
 import { BullQueue } from '../shared/core.ui';

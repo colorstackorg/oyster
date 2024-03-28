@@ -20,8 +20,8 @@ import {
   Modal,
   Select,
   validateForm,
-} from '@colorstack/core-ui';
-import { Student } from '@colorstack/types';
+} from '@oyster/core-ui';
+import { Student } from '@oyster/types';
 
 import { Route } from '../shared/constants';
 import { db, job } from '../shared/core.server';

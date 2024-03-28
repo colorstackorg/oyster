@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { z } from 'zod';
 
-import { Environment } from '@colorstack/core/api';
+import { Environment } from '@oyster/core/api';
 
 // Loads the .env file into `process.env`.
 config();

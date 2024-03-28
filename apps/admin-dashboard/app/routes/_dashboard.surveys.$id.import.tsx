@@ -1,12 +1,12 @@
 import {
   ActionFunctionArgs,
-  json,
-  LoaderFunctionArgs,
-  redirect,
   unstable_composeUploadHandlers as composeUploadHandlers,
   unstable_createFileUploadHandler as createFileUploadHandler,
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
+  json,
+  LoaderFunctionArgs,
   unstable_parseMultipartFormData as parseMultipartFormData,
+  redirect,
 } from '@remix-run/node';
 import {
   Form as RemixForm,
@@ -23,7 +23,7 @@ import {
   getActionErrors,
   Modal,
   validateForm,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 
 import { Route } from '../shared/constants';
 import { db, importSurveyResponses } from '../shared/core.server';

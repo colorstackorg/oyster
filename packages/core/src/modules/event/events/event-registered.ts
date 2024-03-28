@@ -1,5 +1,5 @@
-import type { Gender } from '@colorstack/types';
-import { FORMATTED_GENDER } from '@colorstack/types';
+import type { Gender } from '@oyster/types';
+import { FORMATTED_GENDER } from '@oyster/types';
 
 import { GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';

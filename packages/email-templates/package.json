@@ -1,5 +1,5 @@
 {
-  "name": "@colorstack/email-templates",
+  "name": "@oyster/email-templates",
   "version": "0.0.0",
   "private": true,
   "sideEffects": false,
@@ -23,6 +23,6 @@
     "react-email": "^1.7.10"
   },
   "devDependencies": {
-    "@colorstack/types": "*"
+    "@oyster/types": "*"
   }
 }

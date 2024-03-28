@@ -1,7 +1,7 @@
 import { Redis } from 'ioredis';
 import { z } from 'zod';
 
-import { ExtractValue } from '@colorstack/types';
+import { ExtractValue } from '@oyster/types';
 
 import { ENV } from '@/shared/env';
 

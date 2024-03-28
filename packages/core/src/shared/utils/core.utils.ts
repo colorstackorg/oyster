@@ -1,4 +1,4 @@
-import { sleep } from '@colorstack/utils';
+import { sleep } from '@oyster/utils';
 
 type RetryUntilFinishedOptions = {
   maxRetries: number;

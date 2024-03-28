@@ -1,7 +1,7 @@
 import { Link, useLocation } from '@remix-run/react';
 import { ChevronLeft, ChevronRight } from 'react-feather';
 
-import { iife } from '@colorstack/utils';
+import { iife } from '@oyster/utils';
 
 import { cx } from '../utils/cx';
 import { Text } from './text';

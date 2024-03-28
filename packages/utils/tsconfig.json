@@ -1,4 +1,4 @@
 {
-  "extends": "@colorstack/tsconfig/base.json",
+  "extends": "@oyster/tsconfig/base.json",
   "include": ["src"]
 }

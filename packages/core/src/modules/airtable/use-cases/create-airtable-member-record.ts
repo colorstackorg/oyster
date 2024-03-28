@@ -5,7 +5,7 @@ import {
   FORMATTED_GENDER,
   FORMATTED_RACE,
   Student,
-} from '@colorstack/types';
+} from '@oyster/types';
 
 import { GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { db } from '@/infrastructure/database';

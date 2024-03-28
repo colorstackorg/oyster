@@ -21,8 +21,8 @@ import {
   getActionErrors,
   Modal,
   validateForm,
-} from '@colorstack/core-ui';
-import { Major } from '@colorstack/types';
+} from '@oyster/core-ui';
+import { Major } from '@oyster/types';
 
 import { EducationForm } from '../shared/components/education-form';
 import { Route } from '../shared/constants';

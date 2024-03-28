@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ExtractValue, Timezone } from '@colorstack/types';
+import { ExtractValue, Timezone } from '@oyster/types';
 
 // Schemas
 

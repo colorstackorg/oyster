@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react';
 
-import { cx, Text } from '@colorstack/core-ui';
+import { cx, Text } from '@oyster/core-ui';
 
 type CardProps = PropsWithChildren<{
   className?: string;

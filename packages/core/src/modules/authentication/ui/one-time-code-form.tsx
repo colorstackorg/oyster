@@ -1,4 +1,4 @@
-import { FieldProps, Form, Input } from '@colorstack/core-ui';
+import { FieldProps, Form, Input } from '@oyster/core-ui';
 
 export const OneTimeCodeForm = () => {};
 

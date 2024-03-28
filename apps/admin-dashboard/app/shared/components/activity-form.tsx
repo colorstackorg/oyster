@@ -1,6 +1,6 @@
-import { Form, Input, Select, Textarea } from '@colorstack/core-ui';
-import { ActivityPeriod, ActivityType } from '@colorstack/types';
-import { toTitleCase } from '@colorstack/utils';
+import { Form, Input, Select, Textarea } from '@oyster/core-ui';
+import { ActivityPeriod, ActivityType } from '@oyster/types';
+import { toTitleCase } from '@oyster/utils';
 
 type FieldProps<T> = {
   defaultValue?: T;

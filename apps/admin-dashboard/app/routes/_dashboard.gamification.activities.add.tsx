@@ -17,9 +17,9 @@ import {
   getActionErrors,
   Modal,
   validateForm,
-} from '@colorstack/core-ui';
-import { Activity } from '@colorstack/types';
-import { id } from '@colorstack/utils';
+} from '@oyster/core-ui';
+import { Activity } from '@oyster/types';
+import { id } from '@oyster/utils';
 
 import { ActivityForm } from '../shared/components/activity-form';
 import { Route } from '../shared/constants';

@@ -1,7 +1,7 @@
 import { Transaction } from 'kysely';
 import { DB } from 'kysely-codegen/dist/db';
 
-import { id } from '@colorstack/utils';
+import { id } from '@oyster/utils';
 
 import { db } from '@/infrastructure/database';
 import { getCrunchbaseOrganization } from '../queries/get-crunchbase-organization';

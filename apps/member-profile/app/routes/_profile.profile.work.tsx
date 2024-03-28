@@ -7,7 +7,7 @@ import {
 } from '@remix-run/react';
 import { Briefcase, Plus } from 'react-feather';
 
-import { Button } from '@colorstack/core-ui';
+import { Button } from '@oyster/core-ui';
 
 import {
   EmptyState,

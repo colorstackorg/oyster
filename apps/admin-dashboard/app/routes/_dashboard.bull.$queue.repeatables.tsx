@@ -5,10 +5,10 @@ import {
   SerializeFrom,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
   generatePath,
   Link,
   Outlet,
+  Form as RemixForm,
   useLoaderData,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
@@ -21,7 +21,7 @@ import {
   getIconButtonCn,
   Table,
   TableColumnProps,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 
 import { Route } from '../shared/constants';
 import { getTimezone } from '../shared/cookies.server';

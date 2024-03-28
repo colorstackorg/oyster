@@ -8,7 +8,7 @@ import {
   Major,
   NullishString,
   Student,
-} from '@colorstack/types';
+} from '@oyster/types';
 
 // Enums
 

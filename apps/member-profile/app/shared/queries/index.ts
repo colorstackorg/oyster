@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { sql, Transaction, UpdateObject } from 'kysely';
 
-import { toTitleCase } from '@colorstack/utils';
+import { toTitleCase } from '@oyster/utils';
 
 import { db, DB } from '../core.server';
 import { Country, DegreeType, FORMATTED_DEGREEE_TYPE } from '../core.ui';

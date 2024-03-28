@@ -1,5 +1,5 @@
 {
-  "extends": "@colorstack/tsconfig/remix.json",
+  "extends": "@oyster/tsconfig/remix.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {

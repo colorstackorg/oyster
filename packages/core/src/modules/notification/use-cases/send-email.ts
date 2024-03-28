@@ -11,7 +11,7 @@ import {
   StudentActivatedEmail,
   StudentAttendedOnboardingEmail,
   StudentRemovedEmail,
-} from '@colorstack/email-templates';
+} from '@oyster/email-templates';
 
 import { ENV, IS_PRODUCTION, IS_TEST } from '@/shared/env';
 import { Environment } from '@/shared/types';

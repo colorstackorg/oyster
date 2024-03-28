@@ -9,7 +9,7 @@ import {
   MultiComboboxItem,
   MultiComboboxSearch,
   MultiComboboxValues,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 import type { SearchMembersResult } from '../../routes/members.search';
 
 type FieldProps = {

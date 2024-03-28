@@ -1,1 +1,1 @@
-export * from '@colorstack/core/member-profile.ui';
+export * from '@oyster/core/member-profile.ui';
