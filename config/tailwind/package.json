@@ -2,6 +2,13 @@
   "name": "@oyster/tailwind",
   "version": "0.0.0",
   "private": true,
+  "main": "tailwind.config.js",
   "license": "MIT",
-  "main": "tailwind.config.js"
+  "dependencies": {
+    "@tailwindcss/container-queries": "^0.1.1"
+  },
+  "devDependencies": {
+    "prettier-plugin-tailwindcss": "^0.5.4",
+    "tailwindcss": "^3.4.3"
+  }
 }
