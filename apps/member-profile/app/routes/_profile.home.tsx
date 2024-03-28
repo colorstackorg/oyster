@@ -14,8 +14,15 @@ import {
 } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { Button, cx, Divider, getButtonCn, Link, Text } from '@oyster/core-ui';
-import { ProfilePicture } from '@oyster/feature-ui';
+import {
+  Button,
+  cx,
+  Divider,
+  getButtonCn,
+  Link,
+  ProfilePicture,
+  Text,
+} from '@oyster/core-ui';
 import {
   ActivationRequirement,
   StudentActiveStatus,

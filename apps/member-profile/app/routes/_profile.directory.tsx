@@ -14,15 +14,16 @@ import { z } from 'zod';
 
 import {
   Button,
+  Dashboard,
   Dropdown,
   IconButton,
   Pagination,
   Pill,
+  ProfilePicture,
   Select,
   Text,
   useSearchParams,
 } from '@oyster/core-ui';
-import { Dashboard, ProfilePicture } from '@oyster/feature-ui';
 import { ExtractValue, Student } from '@oyster/types';
 import { toTitleCase } from '@oyster/utils';
 

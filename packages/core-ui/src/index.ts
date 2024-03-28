@@ -13,6 +13,7 @@ export * from './ui/checkbox/checkbox';
 export { Combobox, ComboboxInput, ComboboxItem } from './ui/combobox';
 export type { ComboboxProps } from './ui/combobox';
 export { ComboboxPopover } from './ui/combobox-popover';
+export { Dashboard } from './ui/dashboard';
 export * from './ui/date-picker';
 export * from './ui/divider';
 export * from './ui/dropdown/dropdown';
@@ -20,6 +21,7 @@ export * from './ui/form';
 export * from './ui/icon-button';
 export * from './ui/input';
 export * from './ui/link';
+export { Login } from './ui/login';
 export * from './ui/modal/modal';
 export {
   MultiCombobox,
@@ -31,6 +33,8 @@ export {
 export type { MultiComboboxProps } from './ui/multi-combobox';
 export * from './ui/pagination';
 export * from './ui/pill';
+export { ProfilePicture } from './ui/profile-picture';
+export { Public } from './ui/public';
 export * from './ui/radio/radio';
 export * from './ui/search-bar';
 export * from './ui/select/select';

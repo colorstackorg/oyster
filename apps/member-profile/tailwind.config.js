@@ -1,10 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    './app/**/*.{ts,tsx}',
-    '../../packages/core-ui/src/**/*.tsx',
-    '../../packages/feature-ui/src/**/*.tsx',
-  ],
+  content: ['./app/**/*.{ts,tsx}', '../../packages/core-ui/src/**/*.tsx'],
   theme: {
     extend: {
       colors: {

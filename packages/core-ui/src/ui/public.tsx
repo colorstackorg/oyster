@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react';
 
-import { cx } from '@oyster/core-ui';
+import { cx } from '../utils/cx';
 
 export const Public = () => {};
 

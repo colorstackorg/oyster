@@ -1,6 +1,7 @@
 import { match } from 'ts-pattern';
 
-import { cx, Text } from '@oyster/core-ui';
+import { cx } from '../utils/cx';
+import { Text } from './text';
 
 type ProfilePictureProps = {
   initials?: string;

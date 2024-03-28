@@ -16,6 +16,7 @@ import {
 import { generatePath } from 'react-router';
 
 import {
+  Dashboard,
   Dropdown,
   IconButton,
   Pagination,
@@ -23,7 +24,6 @@ import {
   TableColumnProps,
   useSearchParams,
 } from '@oyster/core-ui';
-import { Dashboard } from '@oyster/feature-ui';
 
 import { Route } from '../shared/constants';
 import { getTimezone } from '../shared/cookies.server';

@@ -1,7 +1,8 @@
 import { PropsWithChildren } from 'react';
 import { Mail } from 'react-feather';
 
-import { cx, Text } from '@oyster/core-ui';
+import { cx } from '../utils/cx';
+import { Text } from './text';
 
 export const Login = () => {};
 

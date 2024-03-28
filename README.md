@@ -60,7 +60,6 @@ packages
 |--- core
 |--- core-ui
 |--- email-templates
-|--- feature-ui
 |--- types
 |--- utils
 ```
@@ -77,7 +76,6 @@ our applications.
 - `core-ui`: Reusable UI components built in React.
 - `email-templates`: React-based email templates built with
   [Resend](https://resend.com).
-- `feature-ui`: Now deprecated, but previously contained more complex UI code.
 - `types`: Miscellaneous types shared across applications.
 - `utils`: Reusable utility functions, such as `sleep`.
 

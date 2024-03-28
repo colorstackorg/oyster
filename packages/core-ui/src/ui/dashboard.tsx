@@ -8,15 +8,12 @@ import React, {
 import { LogOut, Menu, X } from 'react-feather';
 import { z } from 'zod';
 
-import {
-  cx,
-  IconButton,
-  SearchBar,
-  SearchBarProps,
-  Text,
-  useDelayedValue,
-  useSearchParams,
-} from '@oyster/core-ui';
+import { useDelayedValue } from '../hooks/use-delayed-value';
+import { useSearchParams } from '../hooks/use-search-params';
+import { cx } from '../utils/cx';
+import { IconButton } from './icon-button';
+import { SearchBar, SearchBarProps } from './search-bar';
+import { Text } from './text';
 
 type DashboardContextValue = {
   open: boolean;

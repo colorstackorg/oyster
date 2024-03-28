@@ -14,6 +14,7 @@ import { z } from 'zod';
 
 import {
   Color,
+  Dashboard,
   Dropdown,
   Pagination,
   Pill,
@@ -24,7 +25,6 @@ import {
   TableColumnProps,
   useSearchParams,
 } from '@oyster/core-ui';
-import { Dashboard } from '@oyster/feature-ui';
 import { Application, ApplicationStatus } from '@oyster/types';
 import { toTitleCase } from '@oyster/utils';
 

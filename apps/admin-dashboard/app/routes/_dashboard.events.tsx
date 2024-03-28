@@ -6,6 +6,7 @@ import { Menu, Plus, Upload } from 'react-feather';
 import { generatePath } from 'react-router';
 
 import {
+  Dashboard,
   Dropdown,
   IconButton,
   Pagination,
@@ -14,7 +15,6 @@ import {
   TableColumnProps,
   useSearchParams,
 } from '@oyster/core-ui';
-import { Dashboard } from '@oyster/feature-ui';
 import { Event } from '@oyster/types';
 import { toTitleCase } from '@oyster/utils';
 

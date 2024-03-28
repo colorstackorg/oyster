@@ -19,11 +19,11 @@ import {
   getButtonCn,
   Link,
   Pill,
+  ProfilePicture,
   Select,
   Text,
   useSearchParams,
 } from '@oyster/core-ui';
-import { ProfilePicture } from '@oyster/feature-ui';
 import { CompletedActivity, Student } from '@oyster/types';
 
 import { Card } from '../shared/components/card';

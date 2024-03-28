@@ -4,8 +4,13 @@ import dayjs from 'dayjs';
 import React, { PropsWithChildren } from 'react';
 import { BookOpen, Calendar, Globe, Home, Link, MapPin } from 'react-feather';
 
-import { cx, getButtonCn, Text, TextProps } from '@oyster/core-ui';
-import { ProfilePicture } from '@oyster/feature-ui';
+import {
+  cx,
+  getButtonCn,
+  ProfilePicture,
+  Text,
+  TextProps,
+} from '@oyster/core-ui';
 
 import { Card } from '../shared/components/card';
 import { EducationExperienceItem } from '../shared/components/education-experience';

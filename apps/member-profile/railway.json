@@ -7,8 +7,7 @@
     "watchPatterns": [
       "/apps/member-profile/**/*",
       "/packages/core/**/*",
-      "/packages/core-ui/**/*",
-      "/packages/feature-ui/**/*"
+      "/packages/core-ui/**/*"
     ]
   },
   "deploy": {

@@ -2,8 +2,7 @@ import { json, LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
 import { z } from 'zod';
 
-import { Text } from '@oyster/core-ui';
-import { Login, Public } from '@oyster/feature-ui';
+import { Login, Public, Text } from '@oyster/core-ui';
 
 import { Route } from '../shared/constants';
 

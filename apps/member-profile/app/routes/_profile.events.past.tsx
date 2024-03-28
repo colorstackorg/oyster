@@ -2,7 +2,7 @@ import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
 import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
 
-import { ProfilePicture } from '@oyster/feature-ui';
+import { ProfilePicture } from '@oyster/core-ui';
 import { EventType } from '@oyster/types';
 
 import {
