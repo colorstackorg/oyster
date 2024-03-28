@@ -12,6 +12,7 @@ import { generatePath } from 'react-router';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { ExtractValue } from '@oyster/types';
 import {
   cx,
   getIconButtonCn,
@@ -19,8 +20,7 @@ import {
   Table,
   TableColumnProps,
   Text,
-} from '@oyster/core-ui';
-import { ExtractValue } from '@oyster/types';
+} from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '../shared/constants';

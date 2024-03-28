@@ -18,6 +18,7 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
+import { Email, Program, ProgramParticipant } from '@oyster/types';
 import {
   Button,
   Form,
@@ -27,8 +28,7 @@ import {
   Text,
   TextProps,
   validateForm,
-} from '@oyster/core-ui';
-import { Email, Program, ProgramParticipant } from '@oyster/types';
+} from '@oyster/ui';
 import { id } from '@oyster/utils';
 
 import { Route } from '../shared/constants';

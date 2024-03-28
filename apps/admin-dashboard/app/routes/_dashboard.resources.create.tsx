@@ -12,6 +12,7 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
+import { Resource, ResourceStatus } from '@oyster/types';
 import {
   Button,
   Form,
@@ -19,8 +20,7 @@ import {
   Input,
   Modal,
   validateForm,
-} from '@oyster/core-ui';
-import { Resource, ResourceStatus } from '@oyster/types';
+} from '@oyster/ui';
 import { id } from '@oyster/utils';
 
 import { Route } from '../shared/constants';

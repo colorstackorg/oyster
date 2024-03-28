@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { FieldProps, Form, Input, Text } from '@oyster/core-ui';
+import { FieldProps, Form, Input, Text } from '@oyster/ui';
 
 import { CityCombobox, CityComboboxProps } from './city-combobox';
 

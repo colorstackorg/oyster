@@ -4,8 +4,8 @@ import { sql } from 'kysely';
 import { Check, CheckCircle, ExternalLink } from 'react-feather';
 import { generatePath } from 'react-router';
 
-import { Button, getButtonCn, ProfilePicture, Text } from '@oyster/core-ui';
 import { EventType } from '@oyster/types';
+import { Button, getButtonCn, ProfilePicture, Text } from '@oyster/ui';
 
 import {
   EventDate,

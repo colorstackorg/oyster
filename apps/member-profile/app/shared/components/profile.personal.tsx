@@ -1,11 +1,5 @@
-import {
-  Checkbox,
-  DatePicker,
-  FieldProps,
-  Form,
-  Select,
-} from '@oyster/core-ui';
 import { FORMATTED_GENDER, Gender } from '@oyster/types';
+import { Checkbox, DatePicker, FieldProps, Form, Select } from '@oyster/ui';
 
 import { Country } from '../core.ui';
 import { CityCombobox, CityComboboxProps } from './city-combobox';

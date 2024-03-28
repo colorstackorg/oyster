@@ -12,6 +12,7 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
+import { Program } from '@oyster/types';
 import {
   Button,
   DatePicker,
@@ -20,8 +21,7 @@ import {
   Input,
   Modal,
   validateForm,
-} from '@oyster/core-ui';
-import { Program } from '@oyster/types';
+} from '@oyster/ui';
 import { id } from '@oyster/utils';
 
 import { Route } from '../shared/constants';

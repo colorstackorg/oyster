@@ -1,6 +1,6 @@
 import { Outlet } from '@remix-run/react';
 
-import { Public, Text } from '@oyster/core-ui';
+import { Public, Text } from '@oyster/ui';
 
 export default function ApplicationLayout() {
   return (

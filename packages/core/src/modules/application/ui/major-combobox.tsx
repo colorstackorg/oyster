@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { Major } from '@oyster/types';
 import {
   Combobox,
   ComboboxInput,
@@ -8,8 +9,7 @@ import {
   ComboboxProps,
   FieldProps,
   InputProps,
-} from '@oyster/core-ui';
-import { Major } from '@oyster/types';
+} from '@oyster/ui';
 import { toEscapedString, toTitleCase } from '@oyster/utils';
 
 const TOP_MAJORS: Major[] = [

@@ -10,7 +10,7 @@ import { ArrowUp, Copy, RefreshCw, Trash } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { IconButton, Modal, Text } from '@oyster/core-ui';
+import { IconButton, Modal, Text } from '@oyster/ui';
 
 import { getTimezone } from '../shared/cookies.server';
 import { QueueFromName } from '../shared/core.server';

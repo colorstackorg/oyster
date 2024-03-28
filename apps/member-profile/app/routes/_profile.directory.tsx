@@ -12,6 +12,7 @@ import { Filter, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { ExtractValue, Student } from '@oyster/types';
 import {
   Button,
   Dashboard,
@@ -23,8 +24,7 @@ import {
   Select,
   Text,
   useSearchParams,
-} from '@oyster/core-ui';
-import { ExtractValue, Student } from '@oyster/types';
+} from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import { CityCombobox } from '../shared/components/city-combobox';

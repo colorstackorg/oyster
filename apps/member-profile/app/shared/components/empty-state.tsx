@@ -1,6 +1,6 @@
 import React, { PropsWithChildren } from 'react';
 
-import { Text } from '@oyster/core-ui';
+import { Text } from '@oyster/ui';
 
 export const EmptyState = ({ icon }: { icon: React.ReactElement }) => {
   icon = React.cloneElement(icon, {

@@ -12,13 +12,7 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
-import {
-  Button,
-  Form,
-  getActionErrors,
-  Modal,
-  validateForm,
-} from '@oyster/core-ui';
+import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
 import { OnboardingSessionAttendeesField } from '../shared/components/onboarding-session-form';
 import { Route } from '../shared/constants';

@@ -11,7 +11,7 @@ import {
   Video,
 } from 'react-feather';
 
-import { Dashboard } from '@oyster/core-ui';
+import { Dashboard } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { countPendingApplications } from '../shared/core.server';

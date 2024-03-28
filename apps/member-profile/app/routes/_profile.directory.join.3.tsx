@@ -12,13 +12,8 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
-import {
-  Button,
-  getActionErrors,
-  InputField,
-  validateForm,
-} from '@oyster/core-ui';
 import { nullableField, Student } from '@oyster/types';
+import { Button, getActionErrors, InputField, validateForm } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { db } from '../shared/core.server';

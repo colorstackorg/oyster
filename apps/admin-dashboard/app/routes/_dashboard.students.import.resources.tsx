@@ -19,6 +19,7 @@ import {
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
+import { Email, Resource, ResourceUser } from '@oyster/types';
 import {
   Button,
   Form,
@@ -28,8 +29,7 @@ import {
   Text,
   TextProps,
   validateForm,
-} from '@oyster/core-ui';
-import { Email, Resource, ResourceUser } from '@oyster/types';
+} from '@oyster/ui';
 import { id } from '@oyster/utils';
 
 import { Route } from '../shared/constants';

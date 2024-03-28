@@ -13,6 +13,7 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
+import { Student } from '@oyster/types';
 import {
   Button,
   Form,
@@ -20,8 +21,7 @@ import {
   Input,
   Modal,
   validateForm,
-} from '@oyster/core-ui';
-import { Student } from '@oyster/types';
+} from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { db, updateMemberEmail } from '../shared/core.server';

@@ -11,6 +11,7 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
+import { Application as ApplicationType } from '@oyster/types';
 import {
   Button,
   Checkbox,
@@ -20,8 +21,7 @@ import {
   Text,
   TextProps,
   validateForm,
-} from '@oyster/core-ui';
-import { Application as ApplicationType } from '@oyster/types';
+} from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { apply } from '../shared/core.server';

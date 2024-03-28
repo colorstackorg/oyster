@@ -1,6 +1,6 @@
 import { json } from '@remix-run/node';
 
-import { Link, Text } from '@oyster/core-ui';
+import { Link, Text } from '@oyster/ui';
 
 export async function loader() {
   return json({});

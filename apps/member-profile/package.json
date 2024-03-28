@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "@oyster/core": "*",
-    "@oyster/core-ui": "*",
     "@oyster/types": "*",
+    "@oyster/ui": "*",
     "@oyster/utils": "*",
     "@remix-run/node": "^2.8.1",
     "@remix-run/react": "^2.8.1",

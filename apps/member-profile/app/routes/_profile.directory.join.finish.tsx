@@ -2,7 +2,7 @@ import { json, LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, Link, useLoaderData } from '@remix-run/react';
 import { ArrowRight, Eye } from 'react-feather';
 
-import { Button, getButtonCn, Text } from '@oyster/core-ui';
+import { Button, getButtonCn, Text } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { ensureUserAuthenticated, user } from '../shared/session.server';

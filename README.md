@@ -58,9 +58,9 @@ apps
 |--- member-profile
 packages
 |--- core
-|--- core-ui
 |--- email-templates
 |--- types
+|--- ui
 |--- utils
 ```
 
@@ -73,10 +73,10 @@ our applications.
 - `core`: Nearly all of our business logic, including our database layer and
   more. Will eventually colocate feature-based UI next to its related business
   logic.
-- `core-ui`: Reusable UI components built in React.
 - `email-templates`: React-based email templates built with
   [Resend](https://resend.com).
 - `types`: Miscellaneous types shared across applications.
+- `ui`: Reusable UI components built in React.
 - `utils`: Reusable utility functions, such as `sleep`.
 
 ### CI Pipeline (GitHub Actions)

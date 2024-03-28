@@ -8,14 +8,14 @@ import {
 import { sql } from 'kysely';
 import { z } from 'zod';
 
+import { ISO8601Date, nullableField, Student } from '@oyster/types';
 import {
   Button,
   Divider,
   getActionErrors,
   InputField,
   validateForm,
-} from '@oyster/core-ui';
-import { ISO8601Date, nullableField, Student } from '@oyster/types';
+} from '@oyster/ui';
 
 import {
   ProfileHeader,

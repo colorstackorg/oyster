@@ -18,7 +18,7 @@ import {
   Table,
   TableColumnProps,
   useSearchParams,
-} from '@oyster/core-ui';
+} from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { getTimezone } from '../shared/cookies.server';

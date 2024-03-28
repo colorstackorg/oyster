@@ -2,7 +2,7 @@ import { json, LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData, useNavigate } from '@remix-run/react';
 import { Edit, Plus } from 'react-feather';
 
-import { Button, cx, Text } from '@oyster/core-ui';
+import { Button, cx, Text } from '@oyster/ui';
 
 import {
   ProfileDescription,

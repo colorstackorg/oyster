@@ -13,6 +13,7 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
+import { CompletedActivity } from '@oyster/types';
 import {
   Button,
   Form,
@@ -21,8 +22,7 @@ import {
   Modal,
   Textarea,
   validateForm,
-} from '@oyster/core-ui';
-import { CompletedActivity } from '@oyster/types';
+} from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { db, job } from '../shared/core.server';
