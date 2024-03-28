@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Email, Entity, ExtractValue, Student } from '@colorstack/types';
+import { Email, Entity, ExtractValue, Student } from '@oyster/types';
 
 // Schemas
 

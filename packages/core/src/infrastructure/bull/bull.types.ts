@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { EmailTemplate } from '@colorstack/email-templates';
+import { EmailTemplate } from '@oyster/email-templates';
 import {
   ActivationRequirement,
   ActivityType,
@@ -12,7 +12,7 @@ import {
   ProfileView,
   Student,
   StudentEmail,
-} from '@colorstack/types';
+} from '@oyster/types';
 
 import { OneTimeCode } from '@/modules/authentication/authentication.types';
 import { Education } from '@/modules/education/education.types';

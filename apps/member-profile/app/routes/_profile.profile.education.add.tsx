@@ -19,7 +19,7 @@ import {
   getActionErrors,
   Modal,
   validateForm,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 
 import { EducationForm } from '../shared/components/education-form';
 import { Route } from '../shared/constants';

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Student } from '@colorstack/types';
+import { Student } from '@oyster/types';
 
 export const LeaderboardPosition = Student.pick({
   firstName: true,

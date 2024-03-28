@@ -1,8 +1,8 @@
 import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
 import {
-  Form as RemixForm,
   Link,
   Outlet,
+  Form as RemixForm,
   useLoaderData,
   useLocation,
   useSubmit,
@@ -23,10 +23,10 @@ import {
   Table,
   TableColumnProps,
   useSearchParams,
-} from '@colorstack/core-ui';
-import { Dashboard } from '@colorstack/feature-ui';
-import { Application, ApplicationStatus } from '@colorstack/types';
-import { toTitleCase } from '@colorstack/utils';
+} from '@oyster/core-ui';
+import { Dashboard } from '@oyster/feature-ui';
+import { Application, ApplicationStatus } from '@oyster/types';
+import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '../shared/constants';
 import { getTimezone } from '../shared/cookies.server';

@@ -22,9 +22,9 @@ import {
   Select,
   Text,
   useSearchParams,
-} from '@colorstack/core-ui';
-import { ProfilePicture } from '@colorstack/feature-ui';
-import { CompletedActivity, Student } from '@colorstack/types';
+} from '@oyster/core-ui';
+import { ProfilePicture } from '@oyster/feature-ui';
+import { CompletedActivity, Student } from '@oyster/types';
 
 import { Card } from '../shared/components/card';
 import {

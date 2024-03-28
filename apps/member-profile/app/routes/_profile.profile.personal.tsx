@@ -14,8 +14,8 @@ import {
   getActionErrors,
   InputField,
   validateForm,
-} from '@colorstack/core-ui';
-import { ISO8601Date, nullableField, Student } from '@colorstack/types';
+} from '@oyster/core-ui';
+import { ISO8601Date, nullableField, Student } from '@oyster/types';
 
 import {
   ProfileHeader,

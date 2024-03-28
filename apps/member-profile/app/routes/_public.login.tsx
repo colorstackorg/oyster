@@ -2,8 +2,8 @@ import { json, LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
 import { z } from 'zod';
 
-import { Text } from '@colorstack/core-ui';
-import { Login, Public } from '@colorstack/feature-ui';
+import { Text } from '@oyster/core-ui';
+import { Login, Public } from '@oyster/feature-ui';
 
 import { Route } from '../shared/constants';
 

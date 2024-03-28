@@ -1,7 +1,7 @@
 import { Edit } from 'react-feather';
 
-import { IconButton, Text } from '@colorstack/core-ui';
-import { toTitleCase } from '@colorstack/utils';
+import { IconButton, Text } from '@oyster/core-ui';
+import { toTitleCase } from '@oyster/utils';
 
 type WorkExperienceItemProps = {
   experience: {

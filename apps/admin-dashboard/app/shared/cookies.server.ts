@@ -1,7 +1,7 @@
 import { createCookie } from '@remix-run/node';
 
-import { Timezone } from '@colorstack/types';
-import { getCookie } from '@colorstack/utils';
+import { Timezone } from '@oyster/types';
+import { getCookie } from '@oyster/utils';
 
 export const oneTimeCodeIdCookie = createCookie('one_time_code_id', {
   maxAge: 60 * 5,

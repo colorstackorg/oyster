@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Entity, Student } from '@colorstack/types';
+import { Entity, Student } from '@oyster/types';
 
 const SlackChannelType = {
   DIRECT_MESSAGE: 'direct_message',

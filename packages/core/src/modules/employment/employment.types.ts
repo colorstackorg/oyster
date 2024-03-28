@@ -6,7 +6,7 @@ import {
   ISO8601Date,
   NullishString,
   Student,
-} from '@colorstack/types';
+} from '@oyster/types';
 
 // Enums
 

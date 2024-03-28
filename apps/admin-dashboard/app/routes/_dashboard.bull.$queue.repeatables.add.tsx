@@ -5,8 +5,8 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
   generatePath,
+  Form as RemixForm,
   useActionData,
   useNavigate,
   useNavigation,
@@ -20,7 +20,7 @@ import {
   Input,
   Modal,
   validateForm,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 
 import { Route } from '../shared/constants';
 import { QueueFromName } from '../shared/core.server';

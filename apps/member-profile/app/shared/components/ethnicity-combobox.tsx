@@ -13,7 +13,7 @@ import {
   MultiComboboxProps,
   MultiComboboxSearch,
   MultiComboboxValues,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 
 import type { SearchCountriesResult } from '../../routes/countries.search';
 

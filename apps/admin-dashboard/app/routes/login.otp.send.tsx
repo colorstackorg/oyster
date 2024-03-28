@@ -5,12 +5,7 @@ import {
   useNavigation,
 } from '@remix-run/react';
 
-import {
-  Button,
-  Form,
-  getActionErrors,
-  validateForm,
-} from '@colorstack/core-ui';
+import { Button, Form, getActionErrors, validateForm } from '@oyster/core-ui';
 
 import { Route } from '../shared/constants';
 import { oneTimeCodeIdCookie } from '../shared/cookies.server';

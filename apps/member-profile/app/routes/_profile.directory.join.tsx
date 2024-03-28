@@ -4,7 +4,7 @@ import { PropsWithChildren } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { Button, cx, getButtonCn, Modal, Text } from '@colorstack/core-ui';
+import { Button, cx, getButtonCn, Modal, Text } from '@oyster/core-ui';
 
 import { Route } from '../shared/constants';
 import { ensureUserAuthenticated } from '../shared/session.server';
@@ -122,9 +122,9 @@ export function JoinDirectoryBackButton({
   to,
 }: PropsWithChildren<{
   to:
-    | typeof Route['/directory/join/1']
-    | typeof Route['/directory/join/2']
-    | typeof Route['/directory/join/3'];
+    | (typeof Route)['/directory/join/1']
+    | (typeof Route)['/directory/join/2']
+    | (typeof Route)['/directory/join/3'];
 }>) {
   return (
     <Link to={to} className={getButtonCn({ variant: 'secondary' })}>

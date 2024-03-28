@@ -10,9 +10,9 @@ import {
   Pill,
   Table,
   TableColumnProps,
-} from '@colorstack/core-ui';
-import { Dashboard } from '@colorstack/feature-ui';
-import { toTitleCase } from '@colorstack/utils';
+} from '@oyster/core-ui';
+import { Dashboard } from '@oyster/feature-ui';
+import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '../shared/constants';
 import { db } from '../shared/core.server';

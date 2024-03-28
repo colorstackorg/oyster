@@ -10,7 +10,7 @@ import {
   Text,
   Textarea,
   TextProps,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 import {
   Demographic,
   FORMATTED_DEMOGRAPHICS,
@@ -21,8 +21,8 @@ import {
   Major,
   OtherDemographic,
   Race,
-} from '@colorstack/types';
-import { iife, toTitleCase } from '@colorstack/utils';
+} from '@oyster/types';
+import { iife, toTitleCase } from '@oyster/utils';
 
 import {
   EducationLevel,

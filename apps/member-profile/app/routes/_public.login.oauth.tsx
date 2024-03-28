@@ -1,7 +1,7 @@
 import { LoaderFunctionArgs, redirect } from '@remix-run/node';
 import jwt from 'jsonwebtoken';
 
-import { toTitleCase } from '@colorstack/utils';
+import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '../shared/constants';
 import { ENV } from '../shared/constants.server';

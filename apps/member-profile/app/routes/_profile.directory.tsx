@@ -1,9 +1,9 @@
 import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
 import {
-  Form as RemixForm,
   generatePath,
   Link,
   Outlet,
+  Form as RemixForm,
   useLoaderData,
 } from '@remix-run/react';
 import { sql } from 'kysely';
@@ -21,10 +21,10 @@ import {
   Select,
   Text,
   useSearchParams,
-} from '@colorstack/core-ui';
-import { Dashboard, ProfilePicture } from '@colorstack/feature-ui';
-import { ExtractValue, Student } from '@colorstack/types';
-import { toTitleCase } from '@colorstack/utils';
+} from '@oyster/core-ui';
+import { Dashboard, ProfilePicture } from '@oyster/feature-ui';
+import { ExtractValue, Student } from '@oyster/types';
+import { toTitleCase } from '@oyster/utils';
 
 import { CityCombobox } from '../shared/components/city-combobox';
 import { CompanyCombobox } from '../shared/components/company-combobox';

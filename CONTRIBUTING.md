@@ -4,6 +4,15 @@ First off, thank you for taking the time to contribute! 🥳 ColorStack is nothi
 without its community, and that certainly extends to the software that we build.
 This is a big team effort!
 
+## First Things First
+
+The #1 reason that we decided to open source Oyster was so that ColorStack
+members can learn from and eventually contribute to a real-world production
+codebase. Everything we do is centered around our helping our members fulfuill
+their dreams of becoming software engineers. That being said, in order to make
+space for our community, we will be prioritizing all contributions from
+ColorStack members first, and then friends of ColorStack. ❤️
+
 ## Deciding What to Work On
 
 You can start by browsing through our list of
@@ -75,6 +84,14 @@ Please ensure that you have the following software on your machine:
    ```sh
    yarn
    ```
+
+### Syncing a Forked Repository
+
+In order to keep your forked repository up to date with the upstream repository,
+please read the following guides.
+
+- [Configuring a Remote Repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/configuring-a-remote-repository-for-a-fork)
+- [Syncing a Fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork)
 
 ### Environment Variables
 

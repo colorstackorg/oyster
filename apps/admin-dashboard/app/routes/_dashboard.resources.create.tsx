@@ -19,9 +19,9 @@ import {
   Input,
   Modal,
   validateForm,
-} from '@colorstack/core-ui';
-import { Resource, ResourceStatus } from '@colorstack/types';
-import { id } from '@colorstack/utils';
+} from '@oyster/core-ui';
+import { Resource, ResourceStatus } from '@oyster/types';
+import { id } from '@oyster/utils';
 
 import { Route } from '../shared/constants';
 import { db } from '../shared/core.server';

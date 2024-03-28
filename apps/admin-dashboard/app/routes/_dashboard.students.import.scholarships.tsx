@@ -1,12 +1,12 @@
 import {
   ActionFunctionArgs,
-  json,
-  LoaderFunctionArgs,
-  redirect,
   unstable_composeUploadHandlers as composeUploadHandlers,
   unstable_createFileUploadHandler as createFileUploadHandler,
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
+  json,
+  LoaderFunctionArgs,
   unstable_parseMultipartFormData as parseMultipartFormData,
+  redirect,
 } from '@remix-run/node';
 import {
   Form as RemixForm,
@@ -23,13 +23,9 @@ import {
   getActionErrors,
   Modal,
   validateForm,
-} from '@colorstack/core-ui';
-import {
-  Email,
-  ScholarshipRecipient,
-  ScholarshipType,
-} from '@colorstack/types';
-import { id } from '@colorstack/utils';
+} from '@oyster/core-ui';
+import { Email, ScholarshipRecipient, ScholarshipType } from '@oyster/types';
+import { id } from '@oyster/utils';
 
 import { Route } from '../shared/constants';
 import { db, parseCsv } from '../shared/core.server';

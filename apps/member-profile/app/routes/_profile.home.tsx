@@ -1,5 +1,5 @@
 import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
-import { Link as RemixLink, Outlet, useLoaderData } from '@remix-run/react';
+import { Outlet, Link as RemixLink, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { PropsWithChildren, PropsWithoutRef } from 'react';
 import {
@@ -14,21 +14,14 @@ import {
 } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import {
-  Button,
-  cx,
-  Divider,
-  getButtonCn,
-  Link,
-  Text,
-} from '@colorstack/core-ui';
-import { ProfilePicture } from '@colorstack/feature-ui';
+import { Button, cx, Divider, getButtonCn, Link, Text } from '@oyster/core-ui';
+import { ProfilePicture } from '@oyster/feature-ui';
 import {
   ActivationRequirement,
   StudentActiveStatus,
   Timezone,
-} from '@colorstack/types';
-import { toTitleCase } from '@colorstack/utils';
+} from '@oyster/types';
+import { toTitleCase } from '@oyster/utils';
 
 import { Card } from '../shared/components/card';
 import { Route } from '../shared/constants';

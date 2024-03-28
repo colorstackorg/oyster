@@ -16,8 +16,8 @@ import {
   Table,
   TableColumnProps,
   useSearchParams,
-} from '@colorstack/core-ui';
-import { Dashboard } from '@colorstack/feature-ui';
+} from '@oyster/core-ui';
+import { Dashboard } from '@oyster/feature-ui';
 
 import { Route } from '../shared/constants';
 import { db } from '../shared/core.server';

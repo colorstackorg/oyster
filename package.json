@@ -9,8 +9,8 @@
   },
   "scripts": {
     "build": "turbo run build --cache-dir=.turbo",
-    "db:migrate": "yarn workspace @colorstack/core db:migrate",
-    "db:seed": "yarn workspace @colorstack/core db:seed",
+    "db:migrate": "yarn workspace @oyster/core db:migrate",
+    "db:seed": "yarn workspace @oyster/core db:seed",
     "dev": "turbo run dev --cache-dir=.turbo",
     "dev:apps": "yarn dev --filter='./apps/*'",
     "lint": "turbo run lint --cache-dir=.turbo",

@@ -9,7 +9,7 @@ import {
   ComboboxProps,
   InputProps,
   useDelayedValue,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 
 import type { CityDetailsResult } from '../../routes/cities.$id';
 import type { SearchCitiesResult } from '../../routes/cities.autocomplete';

@@ -20,8 +20,8 @@ import {
   Text,
   TextProps,
   validateForm,
-} from '@colorstack/core-ui';
-import { Application as ApplicationType } from '@colorstack/types';
+} from '@oyster/core-ui';
+import { Application as ApplicationType } from '@oyster/types';
 
 import { Route } from '../shared/constants';
 import { apply } from '../shared/core.server';

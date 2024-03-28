@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Email, Entity, Event, Student } from '@colorstack/types';
+import { Email, Entity, Event, Student } from '@oyster/types';
 
 // Domain
 

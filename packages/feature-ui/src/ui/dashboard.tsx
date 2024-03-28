@@ -1,4 +1,4 @@
-import { Form as RemixForm, Link, NavLink, useSubmit } from '@remix-run/react';
+import { Link, NavLink, Form as RemixForm, useSubmit } from '@remix-run/react';
 import React, {
   PropsWithChildren,
   useContext,
@@ -16,7 +16,7 @@ import {
   Text,
   useDelayedValue,
   useSearchParams,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 
 type DashboardContextValue = {
   open: boolean;

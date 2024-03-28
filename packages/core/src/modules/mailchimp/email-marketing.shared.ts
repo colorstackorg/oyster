@@ -1,6 +1,6 @@
 import mailchimp from '@mailchimp/mailchimp_marketing';
 
-import { sleep } from '@colorstack/utils';
+import { sleep } from '@oyster/utils';
 
 import { redis, RedisKey } from '@/infrastructure/redis';
 import { ENV } from '@/shared/env';

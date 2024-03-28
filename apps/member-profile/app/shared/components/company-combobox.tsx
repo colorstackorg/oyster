@@ -8,7 +8,7 @@ import {
   ComboboxPopover,
   FieldProps,
   useDelayedValue,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 
 import type { SearchCompaniesResult } from '../../routes/companies';
 import { Company } from '../core.ui';

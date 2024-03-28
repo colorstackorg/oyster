@@ -17,8 +17,8 @@ import {
   getActionErrors,
   InputField,
   validateForm,
-} from '@colorstack/core-ui';
-import { nullableField, Student } from '@colorstack/types';
+} from '@oyster/core-ui';
+import { nullableField, Student } from '@oyster/types';
 
 import { Route } from '../shared/constants';
 import { db } from '../shared/core.server';

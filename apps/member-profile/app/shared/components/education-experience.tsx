@@ -1,7 +1,7 @@
 import { generatePath, useNavigate } from '@remix-run/react';
 import { Edit } from 'react-feather';
 
-import { IconButton, Text } from '@colorstack/core-ui';
+import { IconButton, Text } from '@oyster/core-ui';
 
 import { Route } from '../constants';
 import { Experience } from './profile';

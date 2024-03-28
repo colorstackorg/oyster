@@ -18,7 +18,7 @@ import {
   Input,
   Modal,
   validateForm,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 
 import { Route } from '../shared/constants';
 import { createSchool } from '../shared/core.server';

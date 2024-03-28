@@ -4,8 +4,8 @@ import {
   FieldProps,
   Form,
   Select,
-} from '@colorstack/core-ui';
-import { FORMATTED_GENDER, Gender } from '@colorstack/types';
+} from '@oyster/core-ui';
+import { FORMATTED_GENDER, Gender } from '@oyster/types';
 
 import { Country } from '../core.ui';
 import { CityCombobox, CityComboboxProps } from './city-combobox';

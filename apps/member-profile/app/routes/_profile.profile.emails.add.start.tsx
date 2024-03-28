@@ -19,8 +19,8 @@ import {
   Input,
   Modal,
   validateForm,
-} from '@colorstack/core-ui';
-import { id } from '@colorstack/utils';
+} from '@oyster/core-ui';
+import { id } from '@oyster/utils';
 
 import { Route } from '../shared/constants';
 import { addEmailCookie } from '../shared/cookies.server';

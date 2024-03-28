@@ -1,7 +1,7 @@
 import { PropsWithChildren } from 'react';
 import { Mail } from 'react-feather';
 
-import { cx, Text } from '@colorstack/core-ui';
+import { cx, Text } from '@oyster/core-ui';
 
 export const Login = () => {};
 

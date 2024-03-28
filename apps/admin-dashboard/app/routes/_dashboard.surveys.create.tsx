@@ -22,7 +22,7 @@ import {
   Select,
   Textarea,
   validateForm,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 
 import { Route } from '../shared/constants';
 import { createSurvey, listEvents } from '../shared/core.server';

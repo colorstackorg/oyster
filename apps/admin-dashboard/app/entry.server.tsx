@@ -9,7 +9,7 @@ import isbot from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
 import { PassThrough } from 'stream';
 
-import { getCookie } from '@colorstack/utils';
+import { getCookie } from '@oyster/utils';
 
 // Importing this file ensures that our application has all of the environment
 // variables necessary to run. If any are missing, this file will throw an error

@@ -1,6 +1,6 @@
 import { match } from 'ts-pattern';
 
-import { cx, Text } from '@colorstack/core-ui';
+import { cx, Text } from '@oyster/core-ui';
 
 type ProfilePictureProps = {
   initials?: string;

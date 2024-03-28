@@ -1,4 +1,4 @@
-import { ExtractValue } from '@colorstack/types';
+import { ExtractValue } from '@oyster/types';
 
 export type Color =
   | 'amber-100'
