@@ -1,4 +1,4 @@
-<h1 align="center" href="https://github.com/colorstackorg/colorstack">
+<h1 align="center" href="https://github.com/colorstackorg/oyster">
     <img width="360" src="./apps/member-profile/public/images/colorstack-wordmark.png" />
 </h1>
 
