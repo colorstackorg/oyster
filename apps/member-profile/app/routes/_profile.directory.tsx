@@ -18,11 +18,12 @@ import {
   IconButton,
   Pagination,
   Pill,
+  ProfilePicture,
   Select,
   Text,
   useSearchParams,
 } from '@oyster/core-ui';
-import { Dashboard, ProfilePicture } from '@oyster/feature-ui';
+import { Dashboard } from '@oyster/feature-ui';
 import { ExtractValue, Student } from '@oyster/types';
 import { toTitleCase } from '@oyster/utils';
 

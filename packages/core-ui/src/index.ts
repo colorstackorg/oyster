@@ -31,6 +31,7 @@ export {
 export type { MultiComboboxProps } from './ui/multi-combobox';
 export * from './ui/pagination';
 export * from './ui/pill';
+export { ProfilePicture } from './ui/profile-picture';
 export * from './ui/radio/radio';
 export * from './ui/search-bar';
 export * from './ui/select/select';
