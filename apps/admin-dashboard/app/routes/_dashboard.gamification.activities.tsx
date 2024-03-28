@@ -5,13 +5,13 @@ import { Edit, Menu, Plus, Trash } from 'react-feather';
 import { generatePath } from 'react-router';
 
 import {
+  Dashboard,
   Dropdown,
   IconButton,
   Pill,
   Table,
   TableColumnProps,
 } from '@oyster/core-ui';
-import { Dashboard } from '@oyster/feature-ui';
 import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '../shared/constants';

@@ -14,6 +14,7 @@ import { z } from 'zod';
 
 import {
   Button,
+  Dashboard,
   Dropdown,
   IconButton,
   Pagination,
@@ -23,7 +24,6 @@ import {
   Text,
   useSearchParams,
 } from '@oyster/core-ui';
-import { Dashboard } from '@oyster/feature-ui';
 import { ExtractValue, Student } from '@oyster/types';
 import { toTitleCase } from '@oyster/utils';
 

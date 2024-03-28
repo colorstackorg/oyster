@@ -13,6 +13,7 @@ export * from './ui/checkbox/checkbox';
 export { Combobox, ComboboxInput, ComboboxItem } from './ui/combobox';
 export type { ComboboxProps } from './ui/combobox';
 export { ComboboxPopover } from './ui/combobox-popover';
+export { Dashboard } from './ui/dashboard';
 export * from './ui/date-picker';
 export * from './ui/divider';
 export * from './ui/dropdown/dropdown';

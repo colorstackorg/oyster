@@ -1,3 +1,2 @@
-export * from './ui/dashboard';
 export * from './ui/login';
 export * from './ui/public';
