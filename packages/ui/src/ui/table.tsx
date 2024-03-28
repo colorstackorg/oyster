@@ -3,7 +3,7 @@ import { MoreVertical } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import { cx } from '../utils/cx';
-import { Dropdown } from './dropdown/dropdown';
+import { Dropdown } from './dropdown';
 import { IconButton } from './icon-button';
 import { Text } from './text';
 

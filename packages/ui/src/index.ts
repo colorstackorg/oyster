@@ -16,7 +16,7 @@ export { ComboboxPopover } from './ui/combobox-popover';
 export { Dashboard } from './ui/dashboard';
 export * from './ui/date-picker';
 export * from './ui/divider';
-export * from './ui/dropdown/dropdown';
+export { Dropdown } from './ui/dropdown';
 export * from './ui/form';
 export * from './ui/icon-button';
 export * from './ui/input';
