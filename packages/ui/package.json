@@ -34,7 +34,7 @@
     "rollup-plugin-filesize": "^9.1.2",
     "rollup-plugin-postcss": "^4.0.2",
     "sass": "^1.71.1",
-    "tailwind-merge": "^1.14.0",
+    "tailwind-merge": "^2.2.2",
     "ts-pattern": "4.3.0",
     "zod": "^3.20.2"
   }
