@@ -3,8 +3,6 @@ import React from 'react';
 import { cx } from '../../utils/cx';
 import { getInputCn } from '../input';
 
-import styles from './select.module.scss';
-
 export type SelectProps = Pick<
   React.HTMLProps<HTMLSelectElement>,
   | 'children'
@@ -29,7 +27,7 @@ export function Select({
     <select
       className={cx(
         getInputCn(),
-        styles.select,
+        'appearance-none bg-no-repeat bg-[center_right_0.5rem] bg-[length:1rem]',
         'focus-visible:outline-none',
         'required:invalid:text-gray-400',
 

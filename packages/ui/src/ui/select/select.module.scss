@@ -1,13 +1,9 @@
-$arrow-svg-uri: 'data:image/svg+xml, <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>';
-
 .select {
-  -webkit-appearance: none;
-  appearance: none;
-  background-image: url($arrow-svg-uri);
-  background-position-x: calc(100% - 0.5rem);
-  background-position-y: 50%;
-  background-size: 1rem;
-  background-repeat: no-repeat;
-  font-family: inherit;
-  font-size: 100%;
+  // -webkit-appearance: none;
+  // appearance: none;
+  // background-image: url($arrow-svg-uri);
+  // background-position-x: calc(100% - 0.5rem);
+  // background-position-y: 50%;
+  // background-size: 1rem;
+  // background-repeat: no-repeat;
 }
