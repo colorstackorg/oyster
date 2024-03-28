@@ -1,8 +1,7 @@
 import { json, LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { Outlet } from '@remix-run/react';
 
-import { Login } from '@oyster/core-ui';
-import { Public } from '@oyster/feature-ui';
+import { Login, Public } from '@oyster/core-ui';
 
 import { Route } from '../shared/constants';
 import { getSession, SESSION } from '../shared/session.server';
