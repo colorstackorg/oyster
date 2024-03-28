@@ -26,8 +26,9 @@ Some things to keep in mind when making a pull request:
     - `docs`: A change only to in-code or markdown documentation.
     - `test`: A change that adds missing tests.
     - `chore`: A change that is likely none of the above.
-  - Be present tense (ie: "Fix", not "Fixed").
-  - Start with a verb (ie: "Fix ....", "Add ...", "Implement ...").
+  - Be in all lowercase.
+  - Be present tense (ie: "fix", not "fixed").
+  - Start with a verb (ie: "add ...", "implement ...", "update ...").
   - Have an emoji at the end of it (we like color around here). 🔥
 - Each PR should be attached to an issue, so be sure to add this to the PR
   description:
@@ -63,7 +64,7 @@ Please ensure that you have the following software on your machine:
 2. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
    the repository to your local machine.
    ```
-   git clone https://github.com/<YOUR_USERNAME>/colorstack.git
+   git clone https://github.com/<YOUR_USERNAME>/oyster.git
    ```
 3. Create a new branch.
    ```
@@ -77,13 +78,12 @@ Please ensure that you have the following software on your machine:
 
 ### Environment Variables
 
-Set up your environment variable files by duplicating `.env.example` to `.env`
-in a few places:
+Set up your environment variable files by doing the following:
 
-- `/apps/admin-dashboard/.env.example`
-- `/apps/api/.env.example`
-- `/apps/member-profile/.env.example`
-- `/packages/core/.env.example`
+- In `/apps/admin-dashboard`, duplicate the `.env.example` to `.env`.
+- In `/apps/api`, duplicate the `.env.example` to `.env`.
+- In `/apps/member-profile`, duplicate the `.env.example` to `.env`.
+- In `/packages/core`, duplicate the `.env.example` to `.env`.
 
 You'll notice that a lot of environment variables are empty. Most of these empty
 variables are tied to the 3rd party integrations we have with platforms such as
@@ -109,7 +109,7 @@ You'll then need to create 2 Postgres databases locally named `colorstack` and
 
 ```postgresql
 CREATE DATABASE colorstack;
-CREATE DATABASE colorstack-test;
+CREATE DATABASE "colorstack-test";
 ```
 
 You should now be able to connect to each database like this:
@@ -141,7 +141,7 @@ Now that we have some tables, we're ready to add some seed data in our database,
 which will enable you to log into the Admin Dashboard and Member Profile. Run:
 
 ```sh
-yarn workspace @colorstack/core db:seed
+yarn db:seed
 ```
 
 Follow the prompt to add your email, and you will now be able to log into both
