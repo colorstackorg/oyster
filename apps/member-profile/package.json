@@ -37,6 +37,7 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
+    "@oyster/tailwind": "*",
     "@oyster/tsconfig": "*",
     "@remix-run/dev": "^2.8.1",
     "@types/node": "^18.7.18",
