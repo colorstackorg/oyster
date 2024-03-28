@@ -1,9 +1,8 @@
 import React, { PropsWithChildren } from 'react';
 import { Check as CheckIcon } from 'react-feather';
 
-import { ACCENT_COLORS, Color, ColorVariable } from '../../utils/constants';
-import { cx } from '../../utils/cx';
-import styles from './checkbox.module.scss';
+import { ACCENT_COLORS, Color, ColorVariable } from '../utils/constants';
+import { cx } from '../utils/cx';
 
 type CheckboxProps = Pick<
   React.HTMLProps<HTMLInputElement>,
@@ -34,8 +33,8 @@ export const Checkbox = ({
     <div className="flex items-center">
       <input
         className={cx(
-          styles.checkboxInput,
-          'absolute inline-block h-4 w-4 cursor-pointer opacity-0'
+          'absolute inline-block h-4 w-4 cursor-pointer opacity-0',
+          'peer'
         )}
         id={id}
         readOnly={readOnly}
@@ -45,8 +44,11 @@ export const Checkbox = ({
 
       <div
         className={cx(
-          styles.checkboxBackground,
-          'flex h-4 w-4 items-center justify-center rounded-[0.25rem] border-2 border-gray-300'
+          'flex h-4 w-4 items-center justify-center rounded-[0.25rem] border-2 border-gray-300',
+          'peer-hover:border-primary',
+          'peer-focus:border-primary',
+          'peer-checked:bg-primary peer-checked:border-primary',
+          'peer-checked:disabled:bg-gray-500 peer-checked:disabled:border-gray-500'
         )}
       >
         <CheckIcon className="h-4 w-4 text-white" />

@@ -9,7 +9,7 @@ export * from './hooks/use-on-click-outside';
 export { useSearchParams } from './hooks/use-search-params';
 export { Address } from './ui/address';
 export * from './ui/button';
-export * from './ui/checkbox/checkbox';
+export * from './ui/checkbox';
 export { Combobox, ComboboxInput, ComboboxItem } from './ui/combobox';
 export type { ComboboxProps } from './ui/combobox';
 export { ComboboxPopover } from './ui/combobox-popover';
