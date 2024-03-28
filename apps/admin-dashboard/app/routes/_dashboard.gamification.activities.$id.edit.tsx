@@ -19,8 +19,8 @@ import {
   getActionErrors,
   Modal,
   validateForm,
-} from '@colorstack/core-ui';
-import { Activity, ActivityPeriod } from '@colorstack/types';
+} from '@oyster/core-ui';
+import { Activity, ActivityPeriod } from '@oyster/types';
 
 import { ActivityForm } from '../shared/components/activity-form';
 import { Route } from '../shared/constants';

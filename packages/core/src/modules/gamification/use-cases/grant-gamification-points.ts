@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
 import { match } from 'ts-pattern';
 
-import type { ActivityPeriod, CompletedActivity } from '@colorstack/types';
-import { id } from '@colorstack/utils';
+import type { ActivityPeriod, CompletedActivity } from '@oyster/types';
+import { id } from '@oyster/utils';
 
 import { GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';

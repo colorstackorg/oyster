@@ -8,7 +8,7 @@ import {
   ComboboxPopover,
   InputProps,
   useDelayedValue,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 
 import { School as _School } from '@/modules/education/education.types';
 

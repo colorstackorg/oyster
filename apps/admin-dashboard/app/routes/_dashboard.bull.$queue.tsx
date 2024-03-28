@@ -3,7 +3,7 @@ import { generatePath, NavLink, Outlet, useLoaderData } from '@remix-run/react';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { ExtractValue } from '@colorstack/types';
+import { ExtractValue } from '@oyster/types';
 
 import { Route } from '../shared/constants';
 import { BullQueue } from '../shared/core.ui';

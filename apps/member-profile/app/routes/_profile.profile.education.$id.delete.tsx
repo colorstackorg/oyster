@@ -10,7 +10,7 @@ import {
   useNavigate,
 } from '@remix-run/react';
 
-import { Button, Form, Modal } from '@colorstack/core-ui';
+import { Button, Form, Modal } from '@oyster/core-ui';
 
 import { Route } from '../shared/constants';
 import { db, deleteEducation } from '../shared/core.server';

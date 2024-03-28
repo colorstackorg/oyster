@@ -1,1 +1,1 @@
-export * from '@colorstack/core/admin-dashboard.server';
+export * from '@oyster/core/admin-dashboard.server';

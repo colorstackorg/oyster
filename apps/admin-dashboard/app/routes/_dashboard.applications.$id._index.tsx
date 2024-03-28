@@ -12,14 +12,14 @@ import {
 import dayjs from 'dayjs';
 import { PropsWithChildren, useState } from 'react';
 
-import { Button, Text } from '@colorstack/core-ui';
+import { Button, Text } from '@oyster/core-ui';
 import {
   Application as ApplicationType,
   Gender,
   Major,
   OtherDemographic,
   Race,
-} from '@colorstack/types';
+} from '@oyster/types';
 
 import { Route } from '../shared/constants';
 import {

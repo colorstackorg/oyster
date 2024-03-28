@@ -8,8 +8,8 @@ database. Kysely also supports classic "up"/"down" migrations.
 
 ## Where Our Migrations Live
 
-All of our database migrations live in our `@colorstack/core` package,
-specifically [here](../packages/core/src/infrastructure/database/migrations).
+All of our database migrations live in our `@oyster/core` package, specifically
+[here](../packages/core/src/infrastructure/database/migrations).
 
 ## How to Run Migrations
 
@@ -19,14 +19,14 @@ script, which effectively executes any migrations that haven't been executed
 yet. To run this script:
 
 ```
-yarn workspace @colorstack/core db:migrate
+yarn workspace @oyster/core db:migrate
 ```
 
 If your migration updated the database schema, you can automatically generate
 Typescript types for those changes by running:
 
 ```
-yarn workspace @colorstack/core db:types
+yarn workspace @oyster/core db:types
 ```
 
 Note: Kysely automatically knows which migrations have been executed or not

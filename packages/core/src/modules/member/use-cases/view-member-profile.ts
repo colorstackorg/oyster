@@ -1,4 +1,4 @@
-import { id } from '@colorstack/utils';
+import { id } from '@oyster/utils';
 
 import { GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { db } from '@/infrastructure/database';

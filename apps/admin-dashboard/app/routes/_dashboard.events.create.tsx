@@ -22,9 +22,9 @@ import {
   Select,
   Textarea,
   validateForm,
-} from '@colorstack/core-ui';
-import { Event, EventType } from '@colorstack/types';
-import { toTitleCase } from '@colorstack/utils';
+} from '@oyster/core-ui';
+import { Event, EventType } from '@oyster/types';
+import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '../shared/constants';
 import { createEvent } from '../shared/core.server';

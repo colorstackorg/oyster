@@ -1,6 +1,6 @@
 import { json, LoaderFunctionArgs } from '@remix-run/node';
 
-import { Modal } from '@colorstack/core-ui';
+import { Modal } from '@oyster/core-ui';
 
 import { ensureUserAuthenticated } from '../shared/session.server';
 

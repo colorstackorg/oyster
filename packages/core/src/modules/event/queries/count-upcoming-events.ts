@@ -1,4 +1,4 @@
-import { EventType } from '@colorstack/types';
+import { EventType } from '@oyster/types';
 
 import { db } from '@/infrastructure/database';
 

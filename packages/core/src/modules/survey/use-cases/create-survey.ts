@@ -1,4 +1,4 @@
-import { id } from '@colorstack/utils';
+import { id } from '@oyster/utils';
 
 import { db } from '@/infrastructure/database';
 import { CreateSurveyInput } from '../survey.types';

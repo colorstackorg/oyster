@@ -16,8 +16,8 @@ import {
   Smile,
 } from 'react-feather';
 
-import { cx, Divider, Text } from '@colorstack/core-ui';
-import { ProfilePicture } from '@colorstack/feature-ui';
+import { cx, Divider, Text } from '@oyster/core-ui';
+import { ProfilePicture } from '@oyster/feature-ui';
 
 import { Route } from '../shared/constants';
 import { getMember } from '../shared/queries';

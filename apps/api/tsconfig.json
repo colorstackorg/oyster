@@ -1,5 +1,5 @@
 {
-  "extends": "@colorstack/tsconfig/base.json",
+  "extends": "@oyster/tsconfig/base.json",
   "exclude": ["node_modules", "dist"],
   "include": ["src"],
   "compilerOptions": {

@@ -1,4 +1,4 @@
-import { id } from '@colorstack/utils';
+import { id } from '@oyster/utils';
 
 import { db } from '@/infrastructure/database';
 import { AddAdminInput } from '../admin.types';

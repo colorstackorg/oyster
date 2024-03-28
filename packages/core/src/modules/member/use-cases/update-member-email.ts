@@ -1,4 +1,4 @@
-import { Student } from '@colorstack/types';
+import { Student } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';

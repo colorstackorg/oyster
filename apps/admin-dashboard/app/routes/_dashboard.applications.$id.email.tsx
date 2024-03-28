@@ -19,8 +19,8 @@ import {
   Input,
   Modal,
   validateForm,
-} from '@colorstack/core-ui';
-import { Application } from '@colorstack/types';
+} from '@oyster/core-ui';
+import { Application } from '@oyster/types';
 
 import { Route } from '../shared/constants';
 import { getApplication, updateEmailApplication } from '../shared/core.server';

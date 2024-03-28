@@ -12,7 +12,7 @@ import {
 } from '@remix-run/react';
 import { Calendar, Check, ExternalLink } from 'react-feather';
 
-import { Button, getButtonCn, Modal, Text } from '@colorstack/core-ui';
+import { Button, getButtonCn, Modal, Text } from '@oyster/core-ui';
 
 import { formatEventDate } from '../shared/components/event';
 import { Route } from '../shared/constants';

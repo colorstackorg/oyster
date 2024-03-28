@@ -1,7 +1,7 @@
 import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
 
-import { iife } from '@colorstack/utils';
+import { iife } from '@oyster/utils';
 
 import { ENV } from '@/shared/env';
 import { BullQueue } from './bull.types';

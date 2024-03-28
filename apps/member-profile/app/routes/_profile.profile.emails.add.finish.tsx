@@ -20,8 +20,8 @@ import {
   Input,
   Modal,
   validateForm,
-} from '@colorstack/core-ui';
-import { StudentEmail } from '@colorstack/types';
+} from '@oyster/core-ui';
+import { StudentEmail } from '@oyster/types';
 
 import { Route } from '../shared/constants';
 import { addEmailCookie } from '../shared/cookies.server';

@@ -21,8 +21,8 @@ import {
   Modal,
   Textarea,
   validateForm,
-} from '@colorstack/core-ui';
-import { CompletedActivity } from '@colorstack/types';
+} from '@oyster/core-ui';
+import { CompletedActivity } from '@oyster/types';
 
 import { Route } from '../shared/constants';
 import { db, job } from '../shared/core.server';

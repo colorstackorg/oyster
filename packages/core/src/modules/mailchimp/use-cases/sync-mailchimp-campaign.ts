@@ -5,8 +5,8 @@ import {
   EmailCampaignClick,
   EmailCampaignLink,
   EmailCampaignOpen,
-} from '@colorstack/types';
-import { id } from '@colorstack/utils';
+} from '@oyster/types';
+import { id } from '@oyster/utils';
 
 import { GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
@@ -198,9 +198,8 @@ async function listCampaignActivity(
   // set in the first call to the API.
   let totalCount = 0;
 
-  const links: EmailCampaignLink[] = await listMailchimpCampaignLinks(
-    campaignId
-  );
+  const links: EmailCampaignLink[] =
+    await listMailchimpCampaignLinks(campaignId);
 
   while (true) {
     const { emails, total_items } =

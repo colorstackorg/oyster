@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import dedent from 'dedent';
 
-import { ActivationRequirement, Student } from '@colorstack/types';
+import { ActivationRequirement, Student } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
@@ -71,9 +71,8 @@ export async function onActivationStepCompleted(
   const previouslyCompletedRequirements =
     student.activationRequirementsCompleted;
 
-  const updatedCompletedRequirements = await updateCompletedRequirements(
-    studentId
-  );
+  const updatedCompletedRequirements =
+    await updateCompletedRequirements(studentId);
 
   const activated = ACTIVATION_REQUIREMENTS.every((requirement) => {
     return updatedCompletedRequirements.includes(requirement);

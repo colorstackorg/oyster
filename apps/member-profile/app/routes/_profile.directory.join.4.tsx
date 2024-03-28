@@ -20,8 +20,8 @@ import {
   Select,
   Textarea,
   validateForm,
-} from '@colorstack/core-ui';
-import { id } from '@colorstack/utils';
+} from '@oyster/core-ui';
+import { id } from '@oyster/utils';
 
 import {
   IcebreakersProvider,

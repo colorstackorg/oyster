@@ -1,7 +1,7 @@
 import { Outlet } from '@remix-run/react';
 
-import { Text } from '@colorstack/core-ui';
-import { Public } from '@colorstack/feature-ui';
+import { Text } from '@oyster/core-ui';
+import { Public } from '@oyster/feature-ui';
 
 export default function ApplicationLayout() {
   return (

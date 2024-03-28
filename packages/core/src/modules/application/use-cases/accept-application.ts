@@ -1,5 +1,5 @@
-import { ApplicationStatus, OtherDemographic } from '@colorstack/types';
-import { id } from '@colorstack/utils';
+import { ApplicationStatus, OtherDemographic } from '@oyster/types';
+import { id } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';

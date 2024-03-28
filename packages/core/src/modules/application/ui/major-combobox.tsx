@@ -8,9 +8,9 @@ import {
   ComboboxProps,
   FieldProps,
   InputProps,
-} from '@colorstack/core-ui';
-import { Major } from '@colorstack/types';
-import { toEscapedString, toTitleCase } from '@colorstack/utils';
+} from '@oyster/core-ui';
+import { Major } from '@oyster/types';
+import { toEscapedString, toTitleCase } from '@oyster/utils';
 
 const TOP_MAJORS: Major[] = [
   'computer_science',

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Address, SwagPackType } from '@colorstack/types';
+import { Address, SwagPackType } from '@oyster/types';
 
 import { redis, RedisKey } from '@/infrastructure/redis';
 import {

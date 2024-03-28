@@ -21,7 +21,7 @@ import {
   surveyWorker,
   swagPackWorker,
   workExperienceWorker,
-} from '@colorstack/core/api';
+} from '@oyster/core/api';
 
 import { healthRouter } from './routers/health.router';
 import { oauthRouter } from './routers/oauth.router';

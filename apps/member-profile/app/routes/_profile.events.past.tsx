@@ -2,8 +2,8 @@ import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
 import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
 
-import { ProfilePicture } from '@colorstack/feature-ui';
-import { EventType } from '@colorstack/types';
+import { ProfilePicture } from '@oyster/feature-ui';
+import { EventType } from '@oyster/types';
 
 import {
   EventDate,

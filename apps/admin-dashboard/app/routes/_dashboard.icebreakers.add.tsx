@@ -18,7 +18,7 @@ import {
   Input,
   Modal,
   validateForm,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 
 import { addIcebreakerPrompt } from '../shared/core.server';
 import { AddIcebreakerPromptInput } from '../shared/core.ui';

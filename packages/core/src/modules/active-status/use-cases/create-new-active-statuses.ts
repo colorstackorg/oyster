@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 
-import { StudentActiveStatus } from '@colorstack/types';
+import { StudentActiveStatus } from '@oyster/types';
 
 import { GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { db } from '@/infrastructure/database';

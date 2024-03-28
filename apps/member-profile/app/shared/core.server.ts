@@ -1,1 +1,1 @@
-export * from '@colorstack/core/member-profile.server';
+export * from '@oyster/core/member-profile.server';

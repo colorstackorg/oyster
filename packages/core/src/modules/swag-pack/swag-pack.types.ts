@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Address, Student } from '@colorstack/types';
+import { Address, Student } from '@oyster/types';
 
 export const ClaimSwagPackInput = z.object({
   addressCity: Address.shape.city,

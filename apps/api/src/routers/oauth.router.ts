@@ -2,7 +2,7 @@ import express from 'express';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { loginWithOAuth, OAuthCodeState } from '@colorstack/core/api';
+import { loginWithOAuth, OAuthCodeState } from '@oyster/core/api';
 
 export const oauthRouter = express.Router();
 

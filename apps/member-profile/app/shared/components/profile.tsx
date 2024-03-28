@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react';
 
-import { Divider, Text } from '@colorstack/core-ui';
+import { Divider, Text } from '@oyster/core-ui';
 
 // Profile
 

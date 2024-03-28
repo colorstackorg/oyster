@@ -19,8 +19,8 @@ import {
   Input,
   Select,
   useDelayedValue,
-} from '@colorstack/core-ui';
-import { order } from '@colorstack/utils';
+} from '@oyster/core-ui';
+import { order } from '@oyster/utils';
 
 import {
   BaseCompany,

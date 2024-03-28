@@ -1,4 +1,4 @@
-import { Application } from '@colorstack/types';
+import { Application } from '@oyster/types';
 
 import { db } from '@/infrastructure/database';
 

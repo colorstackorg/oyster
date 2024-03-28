@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { Email } from '@colorstack/types';
-import { id } from '@colorstack/utils';
+import { Email } from '@oyster/types';
+import { id } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';

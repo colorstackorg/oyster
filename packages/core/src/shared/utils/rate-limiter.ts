@@ -1,4 +1,4 @@
-import { sleep } from '@colorstack/utils';
+import { sleep } from '@oyster/utils';
 
 import { redis, RedisKey } from '@/infrastructure/redis';
 
@@ -19,7 +19,10 @@ export class RateLimiter {
   private rateLimit: RateLimitOptions['rateLimit'];
   private rateLimitWindow: RateLimitOptions['rateLimitWindow'];
 
-  constructor(protected key: RedisKey, options: RateLimitOptions) {
+  constructor(
+    protected key: RedisKey,
+    options: RateLimitOptions
+  ) {
     this.rateLimit = options.rateLimit;
     this.rateLimitWindow = options.rateLimitWindow;
   }

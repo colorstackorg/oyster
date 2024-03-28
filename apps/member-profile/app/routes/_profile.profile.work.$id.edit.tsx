@@ -22,7 +22,7 @@ import {
   getActionErrors,
   Modal,
   validateForm,
-} from '@colorstack/core-ui';
+} from '@oyster/core-ui';
 
 import { Route } from '../shared/constants';
 import { editWorkExperience, getWorkExperience } from '../shared/core.server';
