@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Menu, Plus, Upload } from 'react-feather';
 import { generatePath } from 'react-router';
 
+import { Event } from '@oyster/types';
 import {
   Dashboard,
   Dropdown,
@@ -14,8 +15,7 @@ import {
   Table,
   TableColumnProps,
   useSearchParams,
-} from '@oyster/core-ui';
-import { Event } from '@oyster/types';
+} from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '../shared/constants';

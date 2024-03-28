@@ -5,8 +5,8 @@ import React, {
   useState,
 } from 'react';
 
-import { DatePicker, Form, Input, Select } from '@oyster/core-ui';
 import { Major } from '@oyster/types';
+import { DatePicker, Form, Input, Select } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import {

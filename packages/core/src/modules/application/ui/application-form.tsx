@@ -1,17 +1,6 @@
 import React, { PropsWithChildren, useContext, useState } from 'react';
 
 import {
-  Checkbox,
-  FieldProps,
-  Form,
-  Input,
-  Link,
-  Radio,
-  Text,
-  Textarea,
-  TextProps,
-} from '@oyster/core-ui';
-import {
   Demographic,
   FORMATTED_DEMOGRAPHICS,
   FORMATTED_GENDER,
@@ -22,6 +11,17 @@ import {
   OtherDemographic,
   Race,
 } from '@oyster/types';
+import {
+  Checkbox,
+  FieldProps,
+  Form,
+  Input,
+  Link,
+  Radio,
+  Text,
+  Textarea,
+  TextProps,
+} from '@oyster/ui';
 import { iife, toTitleCase } from '@oyster/utils';
 
 import {

@@ -1,6 +1,6 @@
 import { createCookieSessionStorage, redirect, Session } from '@remix-run/node';
 
-import { ToastProps } from '@oyster/core-ui';
+import { ToastProps } from '@oyster/ui';
 
 import { Route } from './constants';
 import { ENV } from './constants.server';

@@ -21,7 +21,7 @@ import {
   Modal,
   Textarea,
   validateForm,
-} from '@oyster/core-ui';
+} from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { QueueFromName } from '../shared/core.server';

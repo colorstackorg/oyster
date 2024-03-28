@@ -15,6 +15,11 @@ import {
 import { match } from 'ts-pattern';
 
 import {
+  ActivationRequirement,
+  StudentActiveStatus,
+  Timezone,
+} from '@oyster/types';
+import {
   Button,
   cx,
   Divider,
@@ -22,12 +27,7 @@ import {
   Link,
   ProfilePicture,
   Text,
-} from '@oyster/core-ui';
-import {
-  ActivationRequirement,
-  StudentActiveStatus,
-  Timezone,
-} from '@oyster/types';
+} from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import { Card } from '../shared/components/card';

@@ -13,6 +13,7 @@ import { Award, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { CompletedActivity, Student } from '@oyster/types';
 import {
   Button,
   cx,
@@ -23,8 +24,7 @@ import {
   Select,
   Text,
   useSearchParams,
-} from '@oyster/core-ui';
-import { CompletedActivity, Student } from '@oyster/types';
+} from '@oyster/ui';
 
 import { Card } from '../shared/components/card';
 import {

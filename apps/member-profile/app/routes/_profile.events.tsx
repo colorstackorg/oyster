@@ -1,7 +1,7 @@
 import { json, LoaderFunctionArgs } from '@remix-run/node';
 import { NavLink, Outlet, useLoaderData } from '@remix-run/react';
 
-import { cx, Text } from '@oyster/core-ui';
+import { cx, Text } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { countPastEvents, countUpcomingEvents } from '../shared/core.server';

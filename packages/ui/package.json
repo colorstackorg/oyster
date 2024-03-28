@@ -1,5 +1,5 @@
 {
-  "name": "@oyster/core-ui",
+  "name": "@oyster/ui",
   "version": "0.0.0",
   "private": true,
   "sideEffects": false,

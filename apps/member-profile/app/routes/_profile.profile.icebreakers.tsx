@@ -15,7 +15,7 @@ import {
   Select,
   Textarea,
   validateForm,
-} from '@oyster/core-ui';
+} from '@oyster/ui';
 import { id } from '@oyster/utils';
 
 import {

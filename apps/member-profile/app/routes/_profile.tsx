@@ -2,7 +2,7 @@ import { json, LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet } from '@remix-run/react';
 import { Award, Calendar, Folder, Home, User } from 'react-feather';
 
-import { Dashboard } from '@oyster/core-ui';
+import { Dashboard } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { ensureUserAuthenticated } from '../shared/session.server';

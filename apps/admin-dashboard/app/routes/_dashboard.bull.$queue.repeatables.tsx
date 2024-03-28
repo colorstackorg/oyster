@@ -16,12 +16,7 @@ import { useState } from 'react';
 import { Plus, Trash } from 'react-feather';
 import { z } from 'zod';
 
-import {
-  Dropdown,
-  getIconButtonCn,
-  Table,
-  TableColumnProps,
-} from '@oyster/core-ui';
+import { Dropdown, getIconButtonCn, Table, TableColumnProps } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { getTimezone } from '../shared/cookies.server';

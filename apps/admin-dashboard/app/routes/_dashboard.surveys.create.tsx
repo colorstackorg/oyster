@@ -22,7 +22,7 @@ import {
   Select,
   Textarea,
   validateForm,
-} from '@oyster/core-ui';
+} from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { createSurvey, listEvents } from '../shared/core.server';

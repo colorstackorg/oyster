@@ -17,14 +17,8 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
-import {
-  Button,
-  Form,
-  getActionErrors,
-  Modal,
-  validateForm,
-} from '@oyster/core-ui';
 import { Email, EventAttendee } from '@oyster/types';
+import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
 import { Route } from '../shared/constants';

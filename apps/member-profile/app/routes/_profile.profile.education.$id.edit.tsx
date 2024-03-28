@@ -15,14 +15,8 @@ import dayjs from 'dayjs';
 import { generatePath } from 'react-router';
 import { z } from 'zod';
 
-import {
-  Button,
-  Form,
-  getActionErrors,
-  Modal,
-  validateForm,
-} from '@oyster/core-ui';
 import { Major } from '@oyster/types';
+import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
 import { EducationForm } from '../shared/components/education-form';
 import { Route } from '../shared/constants';

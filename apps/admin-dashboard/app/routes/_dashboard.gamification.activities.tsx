@@ -11,7 +11,7 @@ import {
   Pill,
   Table,
   TableColumnProps,
-} from '@oyster/core-ui';
+} from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '../shared/constants';

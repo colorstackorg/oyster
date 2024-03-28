@@ -10,7 +10,7 @@ import {
   useNavigate,
 } from '@remix-run/react';
 
-import { Button, Modal } from '@oyster/core-ui';
+import { Button, Modal } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { db, job } from '../shared/core.server';

@@ -12,6 +12,7 @@ import { Edit } from 'react-feather';
 import { generatePath } from 'react-router';
 import { z } from 'zod';
 
+import { Application, ApplicationStatus } from '@oyster/types';
 import {
   Color,
   Dashboard,
@@ -24,8 +25,7 @@ import {
   Table,
   TableColumnProps,
   useSearchParams,
-} from '@oyster/core-ui';
-import { Application, ApplicationStatus } from '@oyster/types';
+} from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '../shared/constants';

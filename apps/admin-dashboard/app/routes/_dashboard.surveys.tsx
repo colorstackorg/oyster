@@ -17,7 +17,7 @@ import {
   Table,
   TableColumnProps,
   useSearchParams,
-} from '@oyster/core-ui';
+} from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { db } from '../shared/core.server';

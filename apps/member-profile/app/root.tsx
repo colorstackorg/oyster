@@ -13,9 +13,9 @@ import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone.js';
 import utc from 'dayjs/plugin/utc.js';
 
-import { Toast } from '@oyster/core-ui';
+import { Toast } from '@oyster/ui';
 
-import coreUiStylesheet from '@oyster/core-ui/dist/index.css?url';
+import coreUiStylesheet from '@oyster/ui/dist/index.css?url';
 import tailwindStylesheet from './tailwind.css?url';
 
 import { ENV } from './shared/constants.server';

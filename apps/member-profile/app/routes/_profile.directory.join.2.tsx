@@ -13,13 +13,8 @@ import {
 import { sql } from 'kysely';
 import { z } from 'zod';
 
-import {
-  Button,
-  Divider,
-  getActionErrors,
-  validateForm,
-} from '@oyster/core-ui';
 import { nullableField, Student } from '@oyster/types';
+import { Button, Divider, getActionErrors, validateForm } from '@oyster/ui';
 
 import {
   EthnicityField,

@@ -11,14 +11,8 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
-import {
-  Button,
-  Form,
-  getActionErrors,
-  Modal,
-  validateForm,
-} from '@oyster/core-ui';
 import { Activity } from '@oyster/types';
+import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
 import { ActivityForm } from '../shared/components/activity-form';

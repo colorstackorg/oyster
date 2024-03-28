@@ -19,7 +19,7 @@ import {
   Input,
   Modal,
   validateForm,
-} from '@oyster/core-ui';
+} from '@oyster/ui';
 import { id } from '@oyster/utils';
 
 import { Route } from '../shared/constants';

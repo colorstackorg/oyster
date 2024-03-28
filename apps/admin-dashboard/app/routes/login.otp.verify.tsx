@@ -10,7 +10,7 @@ import {
   useNavigation,
 } from '@remix-run/react';
 
-import { Button, Form, getActionErrors, validateForm } from '@oyster/core-ui';
+import { Button, Form, getActionErrors, validateForm } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { oneTimeCodeIdCookie } from '../shared/cookies.server';
