@@ -7,9 +7,9 @@ This is a big team effort!
 ## Deciding What to Work On
 
 You can start by browsing through our list of
-[issues](https://github.com/colorstackorg/colorstack/issues) or creating your
-own issue that would improve our product. Once you've decided on an issue, leave
-a comment and wait to get approval from one of our codebase admins - this helps
+[issues](https://github.com/colorstackorg/oyster/issues) or creating your own
+issue that would improve our product. Once you've decided on an issue, leave a
+comment and wait to get approval from one of our codebase admins - this helps
 avoid multiple people working on this same issue.
 
 ## Making a Pull Request
