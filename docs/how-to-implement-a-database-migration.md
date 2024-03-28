@@ -19,14 +19,7 @@ script, which effectively executes any migrations that haven't been executed
 yet. To run this script:
 
 ```
-yarn workspace @oyster/core db:migrate
-```
-
-If your migration updated the database schema, you can automatically generate
-Typescript types for those changes by running:
-
-```
-yarn workspace @oyster/core db:types
+yarn db:migrate
 ```
 
 Note: Kysely automatically knows which migrations have been executed or not
