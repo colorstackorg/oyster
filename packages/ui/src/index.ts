@@ -22,7 +22,7 @@ export * from './ui/icon-button';
 export * from './ui/input';
 export * from './ui/link';
 export { Login } from './ui/login';
-export * from './ui/modal/modal';
+export { Modal } from './ui/modal';
 export {
   MultiCombobox,
   MultiComboboxDisplay,

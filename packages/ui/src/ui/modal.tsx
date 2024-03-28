@@ -2,10 +2,10 @@ import React, { PropsWithChildren, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'react-feather';
 
-import { useHydrated } from '../../hooks/use-hydrated';
-import { cx } from '../../utils/cx';
-import { IconButton } from '../icon-button';
-import { Text } from '../text';
+import { useHydrated } from '../hooks/use-hydrated';
+import { cx } from '../utils/cx';
+import { IconButton } from './icon-button';
+import { Text } from './text';
 
 const ModalContext = React.createContext({
   _initialized: false,
