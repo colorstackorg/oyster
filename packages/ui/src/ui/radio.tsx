@@ -1,9 +1,7 @@
 import React, { PropsWithChildren } from 'react';
 
-import styles from './radio.module.scss';
-
-import { ACCENT_COLORS, Color, ColorVariable } from '../../utils/constants';
-import { cx } from '../../utils/cx';
+import { ACCENT_COLORS, Color, ColorVariable } from '../utils/constants';
+import { cx } from '../utils/cx';
 
 type RadioProps = Pick<
   React.HTMLProps<HTMLInputElement>,
@@ -34,8 +32,8 @@ export const Radio = ({
     <div className="flex items-center">
       <input
         className={cx(
-          styles.radioInput,
-          'absolute inline-block h-4 w-4 cursor-pointer opacity-0'
+          'absolute inline-block h-4 w-4 cursor-pointer opacity-0',
+          'peer'
         )}
         id={id}
         onClick={(e) => e.stopPropagation()}
@@ -46,8 +44,10 @@ export const Radio = ({
 
       <div
         className={cx(
-          styles.radioBackground,
-          'flex h-4 w-4 items-center justify-center rounded-full border-2 border-gray-300 bg-inherit'
+          'flex h-4 w-4 items-center justify-center rounded-full border-2 border-gray-300 bg-inherit',
+          'peer-hover:border-primary peer-focus:border-primary',
+          'peer-checked:bg-white peer-checked:border-primary',
+          'peer-checked:*:bg-primary'
         )}
       >
         <span className="h-[60%] w-[60%] rounded-full" />

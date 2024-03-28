@@ -35,7 +35,7 @@ export * from './ui/pagination';
 export * from './ui/pill';
 export { ProfilePicture } from './ui/profile-picture';
 export { Public } from './ui/public';
-export * from './ui/radio/radio';
+export { Radio } from './ui/radio';
 export * from './ui/search-bar';
 export { Select } from './ui/select';
 export * from './ui/spinner';
