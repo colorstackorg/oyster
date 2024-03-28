@@ -37,7 +37,7 @@ export { ProfilePicture } from './ui/profile-picture';
 export { Public } from './ui/public';
 export * from './ui/radio/radio';
 export * from './ui/search-bar';
-export * from './ui/select/select';
+export { Select } from './ui/select';
 export * from './ui/spinner';
 export * from './ui/table';
 export * from './ui/text';
