@@ -1,8 +1,3 @@
-// The output CSS file will combine this reset CSS file with all of the CSS
-// modules that are used throughout the various components - this bundling is
-// done using the `postcss` plugin.
-import './index.css';
-
 export { Address } from './components/address';
 export * from './components/button';
 export { Checkbox } from './components/checkbox';
