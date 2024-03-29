@@ -131,4 +131,5 @@ export type DeleteWorkExperienceInput = z.infer<
 export type EditWorkExperienceInput = z.infer<typeof EditWorkExperienceInput>;
 export type EmploymentType = ExtractValue<typeof EmploymentType>;
 export type LocationType = ExtractValue<typeof LocationType>;
+export type UploadJobOfferInput = z.infer<typeof UploadJobOfferInput>;
 export type WorkExperience = z.infer<typeof WorkExperience>;
