@@ -13,6 +13,7 @@ import {
 import { sql } from 'kysely';
 import { z } from 'zod';
 
+import { Student } from '@oyster/types';
 import {
   Button,
   Checkbox,
@@ -24,8 +25,7 @@ import {
   Text,
   TextProps,
   validateForm,
-} from '@oyster/core-ui';
-import { Student } from '@oyster/types';
+} from '@oyster/ui';
 
 import { CurrentLocationField } from '../shared/components/profile.general';
 import { Route } from '../shared/constants';

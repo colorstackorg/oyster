@@ -1,6 +1,6 @@
 import { Edit } from 'react-feather';
 
-import { IconButton, Text } from '@oyster/core-ui';
+import { IconButton, Text } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 type WorkExperienceItemProps = {

@@ -4,8 +4,7 @@ import dayjs from 'dayjs';
 import React, { PropsWithChildren } from 'react';
 import { BookOpen, Calendar, Globe, Home, Link, MapPin } from 'react-feather';
 
-import { cx, getButtonCn, Text, TextProps } from '@oyster/core-ui';
-import { ProfilePicture } from '@oyster/feature-ui';
+import { cx, getButtonCn, ProfilePicture, Text, TextProps } from '@oyster/ui';
 
 import { Card } from '../shared/components/card';
 import { EducationExperienceItem } from '../shared/components/education-experience';
@@ -190,7 +189,7 @@ function MemberHeader() {
 
       {!!member.slackUrl && (
         <a
-          // TODO: Move this button style to `core-ui`.
+          // TODO: Move this button style to `ui`.
           className={cx(
             getButtonCn({ size: 'small', variant: 'secondary' }),
             'border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200'

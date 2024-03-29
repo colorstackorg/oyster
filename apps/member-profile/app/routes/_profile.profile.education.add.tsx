@@ -13,13 +13,7 @@ import {
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
-import {
-  Button,
-  Form,
-  getActionErrors,
-  Modal,
-  validateForm,
-} from '@oyster/core-ui';
+import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
 import { EducationForm } from '../shared/components/education-form';
 import { Route } from '../shared/constants';

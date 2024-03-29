@@ -10,9 +10,9 @@ import {
 } from '@remix-run/react';
 import { withSentry } from '@sentry/remix';
 
-import { Toast } from '@oyster/core-ui';
+import { Toast } from '@oyster/ui';
 
-import coreUiStylesheet from '@oyster/core-ui/dist/index.css?url';
+import coreUiStylesheet from '@oyster/ui/index.css?url';
 import tailwindStylesheet from './tailwind.css?url';
 
 import { ENV } from './shared/constants.server';

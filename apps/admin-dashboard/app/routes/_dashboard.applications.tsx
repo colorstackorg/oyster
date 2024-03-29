@@ -12,8 +12,10 @@ import { Edit } from 'react-feather';
 import { generatePath } from 'react-router';
 import { z } from 'zod';
 
+import { Application, ApplicationStatus } from '@oyster/types';
 import {
-  Color,
+  AccentColor,
+  Dashboard,
   Dropdown,
   Pagination,
   Pill,
@@ -23,9 +25,7 @@ import {
   Table,
   TableColumnProps,
   useSearchParams,
-} from '@oyster/core-ui';
-import { Dashboard } from '@oyster/feature-ui';
-import { Application, ApplicationStatus } from '@oyster/types';
+} from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '../shared/constants';
@@ -161,9 +161,9 @@ function ApplicationsTable() {
     {
       displayName: 'Status',
       render: (application) => {
-        const StatusColor: Record<ApplicationStatus, Color> = {
+        const StatusColor: Record<ApplicationStatus, AccentColor> = {
           accepted: 'lime-100',
-          pending: 'gold-100',
+          pending: 'amber-100',
           rejected: 'red-100',
         };
 

@@ -1,8 +1,7 @@
 import { json, LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 
-import { Form } from '@oyster/core-ui';
-import { Login } from '@oyster/feature-ui';
+import { Form, Login } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { ENV } from '../shared/constants.server';

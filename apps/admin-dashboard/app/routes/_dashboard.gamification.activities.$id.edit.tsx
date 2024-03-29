@@ -13,14 +13,8 @@ import {
 
 import { z } from 'zod';
 
-import {
-  Button,
-  Form,
-  getActionErrors,
-  Modal,
-  validateForm,
-} from '@oyster/core-ui';
 import { Activity, ActivityPeriod } from '@oyster/types';
+import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
 import { ActivityForm } from '../shared/components/activity-form';
 import { Route } from '../shared/constants';

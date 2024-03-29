@@ -1,5 +1,5 @@
-import { Form, Input, Select, Textarea } from '@oyster/core-ui';
 import { ActivityPeriod, ActivityType } from '@oyster/types';
+import { Form, Input, Select, Textarea } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 type FieldProps<T> = {

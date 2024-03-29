@@ -13,6 +13,19 @@ their dreams of becoming software engineers. That being said, in order to make
 space for our community, we will be prioritizing all contributions from
 ColorStack members first, and then friends of ColorStack. ❤️
 
+## Your First PR
+
+Getting your first PR in is always the hardest. We're going to reduce that
+barrier for you! After you finish your local development setup (instructions
+below), your first PR can simply be updating the
+[`CONTRIBUTORS.yml`](./CONTRIBUTORS.yml) file with your GitHub username!
+
+You can name that PR:
+
+```
+chore: my first contribution ❤️
+```
+
 ## Deciding What to Work On
 
 You can start by browsing through our list of

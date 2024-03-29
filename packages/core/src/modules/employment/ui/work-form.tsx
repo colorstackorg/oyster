@@ -19,7 +19,7 @@ import {
   Input,
   Select,
   useDelayedValue,
-} from '@oyster/core-ui';
+} from '@oyster/ui';
 import { order } from '@oyster/utils';
 
 import {

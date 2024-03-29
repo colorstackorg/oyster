@@ -2,7 +2,7 @@ import { json, LoaderFunctionArgs } from '@remix-run/node';
 import { NavLink, Outlet } from '@remix-run/react';
 import { generatePath } from 'react-router';
 
-import { Dashboard } from '@oyster/feature-ui';
+import { Dashboard } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '../shared/constants';

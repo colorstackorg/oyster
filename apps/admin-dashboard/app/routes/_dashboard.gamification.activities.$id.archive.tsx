@@ -11,7 +11,7 @@ import {
   useNavigation,
 } from '@remix-run/react';
 
-import { Button, Form, Modal } from '@oyster/core-ui';
+import { Button, Form, Modal } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { archiveActivity } from '../shared/core.server';

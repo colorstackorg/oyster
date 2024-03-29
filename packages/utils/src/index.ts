@@ -1,8 +1,8 @@
-export * from './get-cookie';
-export * from './id';
-export * from './iife';
-export * from './order';
-export * from './pick';
-export * from './sleep';
-export * from './to-escaped-string';
-export * from './to-title-case';
+export { getCookie } from './get-cookie';
+export { id } from './id';
+export { iife } from './iife';
+export { order } from './order';
+export { pick } from './pick';
+export { sleep } from './sleep';
+export { toEscapedString } from './to-escaped-string';
+export { toTitleCase } from './to-title-case';

@@ -12,6 +12,7 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
+import { Event, EventType } from '@oyster/types';
 import {
   Button,
   DatePicker,
@@ -22,8 +23,7 @@ import {
   Select,
   Textarea,
   validateForm,
-} from '@oyster/core-ui';
-import { Event, EventType } from '@oyster/types';
+} from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '../shared/constants';

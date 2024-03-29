@@ -12,18 +12,19 @@ import { Filter, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { ExtractValue, Student } from '@oyster/types';
 import {
   Button,
+  Dashboard,
   Dropdown,
   IconButton,
   Pagination,
   Pill,
+  ProfilePicture,
   Select,
   Text,
   useSearchParams,
-} from '@oyster/core-ui';
-import { Dashboard, ProfilePicture } from '@oyster/feature-ui';
-import { ExtractValue, Student } from '@oyster/types';
+} from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import { CityCombobox } from '../shared/components/city-combobox';

@@ -18,7 +18,7 @@ import {
   Input,
   Modal,
   validateForm,
-} from '@oyster/core-ui';
+} from '@oyster/ui';
 
 import { addIcebreakerPrompt } from '../shared/core.server';
 import { AddIcebreakerPromptInput } from '../shared/core.ui';

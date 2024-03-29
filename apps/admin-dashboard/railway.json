@@ -7,8 +7,7 @@
     "watchPatterns": [
       "/apps/admin-dashboard/**/*",
       "/packages/core/**/*",
-      "/packages/core-ui/**/*",
-      "/packages/feature-ui/**/*"
+      "/packages/ui/**/*"
     ]
   },
   "deploy": {

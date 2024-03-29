@@ -1,0 +1,29 @@
+{
+  "name": "@oyster/ui",
+  "version": "0.0.0",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./index.css": "./src/index.css"
+  },
+  "license": "MIT",
+  "scripts": {
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@oyster/tsconfig": "*",
+    "@oyster/types": "*",
+    "@oyster/utils": "*",
+    "@remix-run/react": "^2.8.1",
+    "@types/react": "^18.0.26",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-feather": "^2.0.10",
+    "react-textarea-autosize": "^8.5.3",
+    "tailwind-merge": "^2.2.2",
+    "ts-pattern": "4.3.0",
+    "zod": "^3.20.2"
+  }
+}

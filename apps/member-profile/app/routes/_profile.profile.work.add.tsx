@@ -20,7 +20,7 @@ import {
   getActionErrors,
   Modal,
   validateForm,
-} from '@oyster/core-ui';
+} from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { addWorkExperience } from '../shared/core.server';

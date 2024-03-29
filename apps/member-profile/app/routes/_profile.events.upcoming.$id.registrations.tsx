@@ -6,9 +6,8 @@ import {
   useNavigate,
 } from '@remix-run/react';
 
-import { Modal } from '@oyster/core-ui';
-import { ProfilePicture } from '@oyster/feature-ui';
 import { Student } from '@oyster/types';
+import { Modal, ProfilePicture } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { db } from '../shared/core.server';

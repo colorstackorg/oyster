@@ -11,14 +11,14 @@ import { Edit, Menu, Plus } from 'react-feather';
 import { generatePath } from 'react-router';
 
 import {
+  Dashboard,
   Dropdown,
   IconButton,
   Pagination,
   Table,
   TableColumnProps,
   useSearchParams,
-} from '@oyster/core-ui';
-import { Dashboard } from '@oyster/feature-ui';
+} from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { db } from '../shared/core.server';

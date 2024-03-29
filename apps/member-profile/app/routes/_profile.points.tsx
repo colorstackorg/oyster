@@ -13,18 +13,18 @@ import { Award, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { CompletedActivity, Student } from '@oyster/types';
 import {
   Button,
   cx,
   getButtonCn,
   Link,
   Pill,
+  ProfilePicture,
   Select,
   Text,
   useSearchParams,
-} from '@oyster/core-ui';
-import { ProfilePicture } from '@oyster/feature-ui';
-import { CompletedActivity, Student } from '@oyster/types';
+} from '@oyster/ui';
 
 import { Card } from '../shared/components/card';
 import {

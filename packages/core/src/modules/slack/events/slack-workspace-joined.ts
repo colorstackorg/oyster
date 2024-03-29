@@ -7,9 +7,7 @@ export async function onSlackWorkspaceJoined({
   email,
   slackId,
 }: GetBullJobData<'slack.joined'>) {
-  const member = await findMemberByEmail(email)
-    .select(['id'])
-    .executeTakeFirst();
+  const member = await findMemberByEmail(email);
 
   if (!member) {
     throw new NotFoundError(

@@ -12,7 +12,6 @@ import {
 import dayjs from 'dayjs';
 import { PropsWithChildren, useState } from 'react';
 
-import { Button, Text } from '@oyster/core-ui';
 import {
   Application as ApplicationType,
   Gender,
@@ -20,6 +19,7 @@ import {
   OtherDemographic,
   Race,
 } from '@oyster/types';
+import { Button, Text } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import {

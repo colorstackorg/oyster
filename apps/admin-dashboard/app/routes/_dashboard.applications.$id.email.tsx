@@ -12,6 +12,7 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
+import { Application } from '@oyster/types';
 import {
   Button,
   Form,
@@ -19,8 +20,7 @@ import {
   Input,
   Modal,
   validateForm,
-} from '@oyster/core-ui';
-import { Application } from '@oyster/types';
+} from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { getApplication, updateEmailApplication } from '../shared/core.server';

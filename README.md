@@ -2,7 +2,7 @@
     <img width="360" src="./apps/member-profile/public/images/colorstack-wordmark.png" />
 </h1>
 
-<p align="center">The open-source software that powers the ColorStack community experience. ✊🏿✊🏾✊🏽✊🏼</p>
+<p align="center"><b>Oyster</b>: The open-source software that powers the ColorStack community experience. ✊🏿✊🏾✊🏽✊🏼</p>
 
 <h4 align="center">
   <a href="https://colorstack.org">Website</a> | 
@@ -58,10 +58,9 @@ apps
 |--- member-profile
 packages
 |--- core
-|--- core-ui
 |--- email-templates
-|--- feature-ui
 |--- types
+|--- ui
 |--- utils
 ```
 
@@ -74,11 +73,10 @@ our applications.
 - `core`: Nearly all of our business logic, including our database layer and
   more. Will eventually colocate feature-based UI next to its related business
   logic.
-- `core-ui`: Reusable UI components built in React.
 - `email-templates`: React-based email templates built with
   [Resend](https://resend.com).
-- `feature-ui`: Now deprecated, but previously contained more complex UI code.
 - `types`: Miscellaneous types shared across applications.
+- `ui`: Reusable UI components built in React.
 - `utils`: Reusable utility functions, such as `sleep`.
 
 ### CI Pipeline (GitHub Actions)

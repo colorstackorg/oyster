@@ -43,9 +43,7 @@ export async function syncAirmeetEvent({
 
     await Promise.all(
       attendees.map(async (attendee) => {
-        const student = await findMemberByEmail(attendee.email)
-          .select(['students.id'])
-          .executeTakeFirst();
+        const student = await findMemberByEmail(attendee.email);
 
         await trx
           .insertInto('eventAttendees')

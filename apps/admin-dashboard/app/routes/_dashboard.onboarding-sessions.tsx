@@ -9,6 +9,7 @@ import { z } from 'zod';
 
 import {
   ACCENT_COLORS,
+  Dashboard,
   Dropdown,
   getButtonCn,
   Pagination,
@@ -17,8 +18,7 @@ import {
   Table,
   TableColumnProps,
   useSearchParams,
-} from '@oyster/core-ui';
-import { Dashboard } from '@oyster/feature-ui';
+} from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { getTimezone } from '../shared/cookies.server';
