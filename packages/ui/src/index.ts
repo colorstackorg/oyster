@@ -3,46 +3,46 @@
 // done using the `postcss` plugin.
 import './css/shared.css';
 
-export * from './hooks/use-delayed-value';
-export * from './hooks/use-hydrated';
-export * from './hooks/use-on-click-outside';
-export { useSearchParams } from './hooks/use-search-params';
-export { Address } from './ui/address';
-export * from './ui/button';
-export { Checkbox } from './ui/checkbox';
-export { Combobox, ComboboxInput, ComboboxItem } from './ui/combobox';
-export type { ComboboxProps } from './ui/combobox';
-export { ComboboxPopover } from './ui/combobox-popover';
-export { Dashboard } from './ui/dashboard';
-export * from './ui/date-picker';
-export * from './ui/divider';
-export { Dropdown } from './ui/dropdown';
-export * from './ui/form';
-export * from './ui/icon-button';
-export * from './ui/input';
-export * from './ui/link';
-export { Login } from './ui/login';
-export { Modal } from './ui/modal';
+export { Address } from './components/address';
+export * from './components/button';
+export { Checkbox } from './components/checkbox';
+export { Combobox, ComboboxInput, ComboboxItem } from './components/combobox';
+export type { ComboboxProps } from './components/combobox';
+export { ComboboxPopover } from './components/combobox-popover';
+export { Dashboard } from './components/dashboard';
+export * from './components/date-picker';
+export * from './components/divider';
+export { Dropdown } from './components/dropdown';
+export * from './components/form';
+export * from './components/icon-button';
+export * from './components/input';
+export * from './components/link';
+export { Login } from './components/login';
+export { Modal } from './components/modal';
 export {
   MultiCombobox,
   MultiComboboxDisplay,
   MultiComboboxItem,
   MultiComboboxSearch,
   MultiComboboxValues,
-} from './ui/multi-combobox';
-export type { MultiComboboxProps } from './ui/multi-combobox';
-export * from './ui/pagination';
-export * from './ui/pill';
-export { ProfilePicture } from './ui/profile-picture';
-export { Public } from './ui/public';
-export { Radio } from './ui/radio';
-export * from './ui/search-bar';
-export { Select } from './ui/select';
-export * from './ui/spinner';
-export * from './ui/table';
-export * from './ui/text';
-export * from './ui/textarea';
-export { Toast } from './ui/toast';
-export type { ToastProps } from './ui/toast';
+} from './components/multi-combobox';
+export type { MultiComboboxProps } from './components/multi-combobox';
+export * from './components/pagination';
+export * from './components/pill';
+export { ProfilePicture } from './components/profile-picture';
+export { Public } from './components/public';
+export { Radio } from './components/radio';
+export * from './components/search-bar';
+export { Select } from './components/select';
+export * from './components/spinner';
+export * from './components/table';
+export * from './components/text';
+export * from './components/textarea';
+export { Toast } from './components/toast';
+export type { ToastProps } from './components/toast';
+export * from './hooks/use-delayed-value';
+export * from './hooks/use-hydrated';
+export * from './hooks/use-on-click-outside';
+export { useSearchParams } from './hooks/use-search-params';
 export * from './utils/constants';
 export * from './utils/cx';
