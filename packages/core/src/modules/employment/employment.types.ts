@@ -28,6 +28,12 @@ export const FORMATTED_EMPLOYMENT_TYPE: Record<EmploymentType, string> = {
   part_time: 'Part-Time',
 };
 
+export const JobOfferStatus = {
+  ACCEPTED: 'accepted',
+  RECEIVED: 'received',
+  REJECTED: 'rejected',
+} as const;
+
 export const LocationType = {
   HYBRID: 'hybrid',
   IN_PERSON: 'in_person',
