@@ -1,12 +1,56 @@
-export * from './domain/application';
-export * from './domain/email-marketing';
-export * from './domain/event';
-export * from './domain/gamification';
+export { Application, ApplicationStatus } from './domain/application';
+export {
+  EmailCampaign,
+  EmailCampaignClick,
+  EmailCampaignLink,
+  EmailCampaignOpen,
+  EmailList,
+  EmailMarketingPlatform,
+} from './domain/email-marketing';
+export {
+  Event,
+  EventAttendee,
+  EventRegistration,
+  EventType,
+} from './domain/event';
+export {
+  Activity,
+  ActivityPeriod,
+  ActivityType,
+  CompletedActivity,
+} from './domain/gamification';
+export type { GetActivityType } from './domain/gamification';
 export { ProfileView } from './domain/profile-view';
-export * from './domain/program';
-export * from './domain/resource';
-export * from './domain/scholarship';
-export * from './domain/student';
-export * from './domain/types';
-export * from './shared/types';
-export * from './shared/zod';
+export { Program, ProgramParticipant } from './domain/program';
+export { Resource, ResourceStatus, ResourceUser } from './domain/resource';
+export { ScholarshipRecipient, ScholarshipType } from './domain/scholarship';
+export {
+  ActivationRequirement,
+  MemberEthnicity,
+  Student,
+  StudentActiveStatus,
+  StudentEmail,
+} from './domain/student';
+export {
+  Address,
+  Demographic,
+  EducationLevel,
+  Email,
+  Entity,
+  FORMATTED_DEMOGRAPHICS,
+  FORMATTED_GENDER,
+  FORMATTED_OTHER_DEMOGRAPHICS,
+  FORMATTED_RACE,
+  Gender,
+  Major,
+  OtherDemographic,
+  Race,
+  SwagPackType,
+} from './domain/types';
+export type { ExtractValue } from './shared/types';
+export {
+  ISO8601Date,
+  NullishString,
+  Timezone,
+  nullableField,
+} from './shared/zod';
