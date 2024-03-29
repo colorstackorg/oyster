@@ -1,10 +1,9 @@
 import { match } from 'ts-pattern';
 
-import { Color } from '../utils/constants';
 import { cx } from '../utils/cx';
 
 type SpinnerProps = {
-  color?: Extract<Color, 'error' | 'primary' | 'success'>;
+  color?: 'error' | 'primary' | 'success';
 };
 
 export function Spinner({ color = 'primary' }: SpinnerProps) {

@@ -14,7 +14,7 @@ import { z } from 'zod';
 
 import { Application, ApplicationStatus } from '@oyster/types';
 import {
-  Color,
+  AccentColor,
   Dashboard,
   Dropdown,
   Pagination,
@@ -161,9 +161,9 @@ function ApplicationsTable() {
     {
       displayName: 'Status',
       render: (application) => {
-        const StatusColor: Record<ApplicationStatus, Color> = {
+        const StatusColor: Record<ApplicationStatus, AccentColor> = {
           accepted: 'lime-100',
-          pending: 'gold-100',
+          pending: 'amber-100',
           rejected: 'red-100',
         };
 
