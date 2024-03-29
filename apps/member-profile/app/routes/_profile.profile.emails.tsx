@@ -71,20 +71,14 @@ function EmailAddressSection() {
             <li
               className={cx(
                 'flex items-center justify-between rounded-lg border border-solid p-2',
-
-                email.primary
-                  ? 'border-[var(--color-gold)] bg-[var(--color-gold-100)]'
-                  : 'border-gray-200'
+                email.primary ? 'border-gold bg-gold-100' : 'border-gray-200'
               )}
               key={email.email}
             >
               <Text>{email.email}</Text>
 
               {email.primary && (
-                <Text
-                  className="font-medium uppercase text-[var(--color-gold)]"
-                  variant="sm"
-                >
+                <Text className="text-gold font-medium uppercase" variant="sm">
                   Primary
                 </Text>
               )}

@@ -11,7 +11,7 @@ select {
 
 a:focus-visible,
 button:focus-visible {
-  outline-color: var(--color-primary);
+  outline-color: theme('colors.primary');
   outline-offset: 1px;
   outline-style: solid;
   outline-width: 1px;

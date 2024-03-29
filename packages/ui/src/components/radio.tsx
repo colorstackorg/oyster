@@ -52,7 +52,7 @@ export const Radio = ({
 
       <label
         className={cx(
-          'ml-2 cursor-pointer rounded-full bg-[var(--color)] px-2 text-sm',
+          'ml-2 cursor-pointer rounded-full px-2 text-sm',
 
           match(color)
             .with('amber-100', () => 'bg-amber-100')

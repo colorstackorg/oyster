@@ -60,12 +60,12 @@ export function Toast({ message, type }: ToastProps): JSX.Element | null {
     >
       <div
         className={cx(
-          'relative box-border flex items-center justify-center rounded bg-[var(--background-color)] p-1',
+          'relative box-border flex items-center justify-center rounded p-1',
 
           match(type)
-            .with('error', () => 'bg-red-600')
-            .with('success', () => 'bg-green-600')
-            .with('warning', () => 'bg-yellow-400')
+            .with('error', () => 'bg-error')
+            .with('success', () => 'bg-success')
+            .with('warning', () => 'bg-warning')
             .exhaustive()
         )}
       >

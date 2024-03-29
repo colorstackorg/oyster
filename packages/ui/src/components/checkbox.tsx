@@ -16,7 +16,7 @@ type CheckboxProps = Pick<
   | 'required'
   | 'value'
 > & {
-  color?: AccentColor;
+  color?: AccentColor | 'gold-100';
 };
 
 export const Checkbox = ({
@@ -60,6 +60,7 @@ export const Checkbox = ({
             .with('amber-100', () => 'bg-amber-100')
             .with('blue-100', () => 'bg-blue-100')
             .with('cyan-100', () => 'bg-cyan-100')
+            .with('gold-100', () => 'bg-gold-100')
             .with('green-100', () => 'bg-green-100')
             .with('lime-100', () => 'bg-lime-100')
             .with('orange-100', () => 'bg-orange-100')
