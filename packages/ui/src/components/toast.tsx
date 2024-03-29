@@ -53,7 +53,6 @@ export function Toast({ message, type }: ToastProps): JSX.Element | null {
   return createPortal(
     <aside
       className={cx(
-        // styles.toast,
         'fixed bottom-4 left-4 box-border flex w-max max-w-[calc(100vw-2rem)] items-center gap-2 rounded-lg bg-slate-900 p-2 text-center text-white',
         'animate-[toast-animation_500ms_forwards]'
       )}
