@@ -187,12 +187,6 @@ yarn build
 
 ### Running the Applications
 
-To run all of our _packages and applications_, you can run:
-
-```sh
-yarn dev
-```
-
 To run all of our _applications_, you can run:
 
 ```sh
@@ -205,6 +199,18 @@ this:
 ```sh
 yarn dev --filter=api
 ```
+
+### Logging Into Applications
+
+You can log into the Member Profile and Admin Dashboard by sending a one-time
+code to your email OR by using your Google login.
+
+- [Recommended] To log in by sending a one-time code to your email, you'll first
+  need to enable the **Postmark** integration. See instructions on how to do so
+  [here](./docs/how-to-enable-integrations.md#postmark).
+- To log in via Google, you'll first need to enable the **Google** integration.
+  See instructions on how to do so
+  [here](./docs/how-to-enable-integrations.md#google).
 
 ### Editor Setup
 
