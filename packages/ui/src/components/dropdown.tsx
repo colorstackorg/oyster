@@ -1,8 +1,7 @@
 import React, { PropsWithChildren, useContext, useRef } from 'react';
 
-import { useOnClickOutside } from '../../hooks/use-on-click-outside';
-import { cx } from '../../utils/cx';
-import styles from './dropdown.module.scss';
+import { useOnClickOutside } from '../hooks/use-on-click-outside';
+import { cx } from '../utils/cx';
 
 const DropdownContext = React.createContext({
   _initialized: false,
@@ -64,7 +63,7 @@ Dropdown.Item = function DropdownItem({ children }: PropsWithChildren) {
     <li
       className={cx(
         'border-b border-b-gray-200 last:border-b-0',
-        styles.dropdownItem
+        'dropdown-item'
       )}
     >
       {children}

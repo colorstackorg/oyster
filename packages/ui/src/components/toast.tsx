@@ -3,11 +3,10 @@ import { createPortal } from 'react-dom';
 import { AlertCircle, CheckCircle, X, XCircle } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { useHydrated } from '../../hooks/use-hydrated';
-import { cx } from '../../utils/cx';
-import { IconButton } from '../icon-button';
-import { Text } from '../text';
-import styles from './toast.module.scss';
+import { useHydrated } from '../hooks/use-hydrated';
+import { cx } from '../utils/cx';
+import { IconButton } from './icon-button';
+import { Text } from './text';
 
 export type ToastProps = {
   message: string;
@@ -52,7 +51,13 @@ export function Toast({ message, type }: ToastProps): JSX.Element | null {
   }
 
   return createPortal(
-    <aside className={styles.toast} role="alert">
+    <aside
+      className={cx(
+        'fixed bottom-4 left-4 box-border flex w-max max-w-[calc(100vw-2rem)] items-center gap-2 rounded-lg bg-slate-900 p-2 text-center text-white',
+        'animate-[toast-animation_500ms_forwards]'
+      )}
+      role="alert"
+    >
       <div
         className={cx(
           'relative box-border flex items-center justify-center rounded bg-[var(--background-color)] p-1',
@@ -65,7 +70,12 @@ export function Toast({ message, type }: ToastProps): JSX.Element | null {
         )}
       >
         {Icon[type]}
-        <span className={styles.toastIconShader} />
+        <span
+          className={cx(
+            'absolute left-0 top-0 h-full w-full bg-[#00000026]',
+            'animate-[toast-shader-animation_7s_ease-in-out]'
+          )}
+        />
       </div>
 
       <Text color="white" variant="sm">

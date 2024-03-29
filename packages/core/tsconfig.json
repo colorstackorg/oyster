@@ -2,9 +2,10 @@
   "extends": "@oyster/tsconfig/base.json",
   "include": ["src"],
   "compilerOptions": {
-    "baseUrl": "./",
+    "baseUrl": ".",
     "jsx": "react-jsx",
     "module": "ESNext",
+    "moduleResolution": "Bundler",
     "paths": {
       "@/*": ["./src/*"]
     },

@@ -15,6 +15,7 @@
       "source.organizeImports": "explicit"
     }
   },
+  "tailwindCSS.experimental.configFile": "./config/tailwind/tailwind.config.js",
   "tailwindCSS.experimental.classRegex": [
     ["cx\\(([^)]+)\\)", "'([^']*)'"],
     ["cx\\(([^)]+)\\)", "`([^`]*)`"]

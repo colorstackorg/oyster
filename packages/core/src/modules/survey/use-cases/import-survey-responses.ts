@@ -39,9 +39,7 @@ export async function importSurveyResponses(
         'Responded On': respondedOn,
       } = result.data;
 
-      const student = await findMemberByEmail(email)
-        .select(['students.id'])
-        .executeTakeFirst();
+      const student = await findMemberByEmail(email);
 
       return SurveyResponse.pick({
         email: true,

@@ -18,7 +18,6 @@ export { createEvent } from './modules/event/use-cases/create-event';
 export { archiveActivity } from './modules/gamification/use-cases/archive-activity';
 export { editActivity } from './modules/gamification/use-cases/edit-activity';
 export { addIcebreakerPrompt } from './modules/icebreaker/use-cases/add-icebreaker-prompt';
-export { findMemberByEmail } from './modules/member/queries/find-member-by-email';
 export { activateMember } from './modules/member/use-cases/activate-member';
 export { updateMemberEmail } from './modules/member/use-cases/update-member-email';
 export { addOnboardingSessionAttendees } from './modules/onboarding-session/use-cases/add-onboarding-session-attendees';

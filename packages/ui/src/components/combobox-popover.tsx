@@ -10,8 +10,8 @@ import React, {
 import { useHydrated } from '../hooks/use-hydrated';
 import { useOnClickOutside } from '../hooks/use-on-click-outside';
 import { cx } from '../utils/cx';
-import { useIsDropdownParent } from './dropdown/dropdown';
-import { useIsModalParent } from './modal/modal';
+import { useIsDropdownParent } from './dropdown';
+import { useIsModalParent } from './modal';
 
 const ComboboxPopoverContext = React.createContext({
   popoverOpen: false,

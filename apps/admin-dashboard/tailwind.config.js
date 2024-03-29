@@ -1,12 +1,7 @@
+import { tailwindConfig } from '@oyster/tailwind';
+
 /** @type {import('tailwindcss').Config} */
 export default {
+  ...tailwindConfig,
   content: ['./app/**/*.{ts,tsx}', '../../packages/ui/src/**/*.tsx'],
-  theme: {
-    extend: {
-      colors: {
-        primary: 'var(--color-primary)',
-      },
-    },
-  },
-  plugins: [require('@tailwindcss/container-queries')],
 };

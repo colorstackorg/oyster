@@ -20,7 +20,6 @@
     "@remix-run/react": "^2.8.1",
     "@remix-run/serve": "^2.8.1",
     "@sentry/remix": "^7.37.1",
-    "@tailwindcss/container-queries": "^0.1.1",
     "csvtojson": "^2.0.10",
     "dayjs": "^1.11.5",
     "isbot": "^3.6.5",
@@ -34,14 +33,13 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
+    "@oyster/tailwind": "*",
     "@oyster/tsconfig": "*",
     "@remix-run/dev": "^2.8.1",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/node": "^18.7.18",
     "@types/react": "^18.0.26",
     "@types/react-dom": "^18.0.9",
-    "prettier-plugin-tailwindcss": "^0.4.1",
-    "tailwindcss": "^3.3.3",
     "vite": "^5.1.6",
     "vite-tsconfig-paths": "^4.3.2"
   }
