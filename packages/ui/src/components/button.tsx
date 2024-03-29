@@ -4,7 +4,7 @@ import { match } from 'ts-pattern';
 import { cx } from '../utils/cx';
 import { Spinner } from './spinner';
 
-export type ButtonProps = Pick<
+type ButtonProps = Pick<
   React.HTMLProps<HTMLButtonElement>,
   'children' | 'disabled' | 'name' | 'onClick' | 'type' | 'value'
 > & {
