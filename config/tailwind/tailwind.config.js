@@ -23,6 +23,14 @@ export const tailwindConfig = {
           '0%': { opacity: 0 },
           '100%': { opacity: 0.75 },
         },
+        'toast-animation': {
+          '0%': { transform: 'translateX(-150%)' },
+          '100%': { transform: 'translateX(0%)' },
+        },
+        'toast-shader-animation': {
+          '0%': { width: '100%' },
+          '100%': { width: '0%' },
+        },
         'slide-from-left': {
           '0%': { left: '-100%' },
           '100%': { left: '0%' },

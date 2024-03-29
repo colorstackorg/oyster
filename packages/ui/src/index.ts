@@ -42,6 +42,7 @@ export * from './ui/spinner';
 export * from './ui/table';
 export * from './ui/text';
 export * from './ui/textarea';
-export * from './ui/toast/toast';
+export { Toast } from './ui/toast';
+export type { ToastProps } from './ui/toast';
 export * from './utils/constants';
 export * from './utils/cx';
