@@ -13,7 +13,7 @@ import {
   StudentRemovedEmail,
 } from '@oyster/email-templates';
 
-import { ENV, IS_PRODUCTION, IS_TEST } from '@/shared/env';
+import { ENV, IS_TEST } from '@/shared/env';
 import { Environment } from '@/shared/types';
 import { getPostmarkInstance } from '../shared/email.utils';
 
@@ -53,7 +53,7 @@ const Template: Record<EmailTemplate['name'], (...args: any) => JSX.Element> = {
 // Instances
 
 export async function sendEmail(input: EmailTemplate) {
-  if (!shouldSendEmail(input.to)) {
+  if (IS_TEST) {
     return;
   }
 
@@ -118,29 +118,4 @@ function getSubject(input: EmailTemplate): string {
     .exhaustive();
 
   return subjectWithEnvironment;
-}
-
-/**
- * Returns `true` if the email should be allowed to be sent.
- *
- * The email should be sent if one of the following is true:
- * - It is the `production` environment.
- * - The `to` address is whitelisted.
- *
- * @param to - Email address to send email to.
- */
-function shouldSendEmail(to: string): boolean {
-  if (IS_TEST) {
-    return false;
-  }
-
-  if (IS_PRODUCTION) {
-    return true;
-  }
-
-  if (to.endsWith('@colorstack.org')) {
-    return true;
-  }
-
-  return false;
 }
