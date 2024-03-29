@@ -2,7 +2,7 @@
     <img width="360" src="./apps/member-profile/public/images/colorstack-wordmark.png" />
 </h1>
 
-<p align="center">The open-source software that powers the ColorStack community experience. ✊🏿✊🏾✊🏽✊🏼</p>
+<p align="center"><b>Oyster</b>: The open-source software that powers the ColorStack community experience. ✊🏿✊🏾✊🏽✊🏼</p>
 
 <h4 align="center">
   <a href="https://colorstack.org">Website</a> | 
