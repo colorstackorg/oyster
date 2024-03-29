@@ -1,3 +1,5 @@
+import colors from 'tailwindcss/colors';
+
 /** @type {import('tailwindcss').Config} */
 export const tailwindConfig = {
   content: [
@@ -8,7 +10,12 @@ export const tailwindConfig = {
   theme: {
     extend: {
       colors: {
-        primary: 'var(--color-primary)',
+        error: colors.red[600],
+        gold: '#fdb532',
+        'gold-100': '#fff7ea',
+        primary: '#348e87',
+        success: colors.green[600],
+        warning: colors.yellow[400],
       },
       keyframes: {
         'modal-animation': {

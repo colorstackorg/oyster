@@ -50,5 +50,5 @@ export { useHydrated } from './hooks/use-hydrated';
 export { useOnClickOutside } from './hooks/use-on-click-outside';
 export { useSearchParams } from './hooks/use-search-params';
 export { ACCENT_COLORS } from './utils/constants';
-export type { Color } from './utils/constants';
+export type { AccentColor } from './utils/constants';
 export { cx } from './utils/cx';

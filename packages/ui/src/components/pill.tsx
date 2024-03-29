@@ -38,7 +38,7 @@ export const Pill = ({ children, color, onCloseHref }: PillProps) => {
 
 export function getPillCn({ color, onCloseHref }: Omit<PillProps, 'children'>) {
   return cx(
-    'w-max rounded-full bg-[var(--background-color)] px-2 text-sm',
+    'w-max rounded-full px-2 text-sm',
 
     onCloseHref && 'flex items-center gap-1',
 
@@ -46,7 +46,7 @@ export function getPillCn({ color, onCloseHref }: Omit<PillProps, 'children'>) {
       .with('amber-100', () => 'bg-amber-100')
       .with('blue-100', () => 'bg-blue-100')
       .with('cyan-100', () => 'bg-cyan-100')
-      .with('gold-100', () => 'bg-[var(--color-gold-100)]')
+      .with('gold-100', () => 'bg-gold-100')
       .with('gray-100', () => 'bg-gray-100')
       .with('green-100', () => 'bg-green-100')
       .with('lime-100', () => 'bg-lime-100')

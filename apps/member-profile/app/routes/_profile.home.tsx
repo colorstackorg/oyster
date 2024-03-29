@@ -257,7 +257,7 @@ export default function HomeLayout() {
 
       {(showOnboardingCard || showSwagCard) && (
         <>
-          <div className="@[1500px]:grid-cols-3 @[1000px]:grid-cols-2 grid grid-cols-1 items-start gap-4">
+          <div className="grid grid-cols-1 items-start gap-4 @[1000px]:grid-cols-2 @[1500px]:grid-cols-3">
             {showSwagCard && <ClaimSwagPackCard />}
             {showOnboardingCard && <OnboardingSessionCard />}
           </div>
@@ -266,12 +266,12 @@ export default function HomeLayout() {
         </>
       )}
 
-      <div className="@[1500px]:grid-cols-3 @[900px]:grid-cols-2 grid grid-cols-1 items-start gap-4">
+      <div className="grid grid-cols-1 items-start gap-4 @[900px]:grid-cols-2 @[1500px]:grid-cols-3">
         <Home.Column>
           <ActiveStatusCard />
 
-          <div className="@container gap-[inherit]">
-            <div className="@[420px]:grid-cols-2 grid grid-cols-1 gap-[inherit]">
+          <div className="gap-[inherit] @container">
+            <div className="grid grid-cols-1 gap-[inherit] @[420px]:grid-cols-2">
               <MemberNumberCard />
               <TotalCommunityMemberCard />
               <EventsAttendedCard />
@@ -284,7 +284,7 @@ export default function HomeLayout() {
           <LeaderboardCard className="@[1500px]:hidden" />
         </Home.Column>
 
-        <Home.Column className="@[1500px]:flex hidden">
+        <Home.Column className="hidden @[1500px]:flex">
           <LeaderboardCard />
         </Home.Column>
 
@@ -328,9 +328,7 @@ function ActiveStatusCard() {
             <span
               className={cx(
                 'inline-block h-2 w-2 rounded-full align-middle',
-                thisWeekActiveStatus === 'active'
-                  ? 'bg-[var(--color-success)]'
-                  : 'bg-[var(--color-error)]'
+                thisWeekActiveStatus === 'active' ? 'bg-success' : 'bg-error'
               )}
             />{' '}
             {toTitleCase(thisWeekActiveStatus)}
@@ -345,8 +343,8 @@ function ActiveStatusCard() {
           <div className="grid w-fit grid-cols-8 gap-2">
             {statuses.map((status) => {
               const className = match(status.status)
-                .with('active', () => 'bg-[var(--color-success)]')
-                .with('inactive', () => 'bg-[var(--color-error)]')
+                .with('active', () => 'bg-success')
+                .with('inactive', () => 'bg-error')
                 .with(undefined, () => 'bg-gray-200')
                 .exhaustive();
 
@@ -715,7 +713,7 @@ function SocialItem({
   return (
     <li>
       <a href={href} target="_blank">
-        <Icon color="var(--color-primary)" size={28} />
+        <Icon className="text-primary" size={28} />
       </a>
     </li>
   );
