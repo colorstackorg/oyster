@@ -625,6 +625,13 @@ function ImportantResourcesCard() {
         </ResourceItem>
 
         <ResourceItem
+          description="The codebase where our software, called Oyster, lives. Go read + contribute to the codebase!"
+          href="https://github.com/colorstackorg/oyster"
+        >
+          GitHub
+        </ResourceItem>
+
+        <ResourceItem
           description="A space for 1:1 coaching. Ask any career questions from resume help to negotiating your offer."
           href="https://calendly.com/catalystcreation/color-stack-decoded-1-1-coaching-sessions-"
         >
