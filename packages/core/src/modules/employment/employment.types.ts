@@ -114,6 +114,12 @@ export const EditWorkExperienceInput = AddWorkExperienceInput.extend({
   id: WorkExperience.shape.id,
 });
 
+export const UploadJobOfferInput = JobOffer.omit({
+  createdAt: true,
+  id: true,
+  updatedAt: true,
+});
+
 // Types
 
 export type AddWorkExperienceInput = z.infer<typeof AddWorkExperienceInput>;
