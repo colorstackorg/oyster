@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-export type OnClickOutsideRef<T> = React.MutableRefObject<T | null>;
+type OnClickOutsideRef<T> = React.MutableRefObject<T | null>;
 
 /**
  * Hook that detects whether or not there was a click on an element outside

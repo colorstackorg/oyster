@@ -3,7 +3,7 @@ import React from 'react';
 import { cx } from '../utils/cx';
 import { getInputCn } from './input';
 
-export type DatePickerProps = Pick<
+type DatePickerProps = Pick<
   React.HTMLProps<HTMLInputElement>,
   'defaultValue' | 'id' | 'name' | 'onBlur' | 'placeholder' | 'required'
 > & {
