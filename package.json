@@ -11,10 +11,10 @@
     "build": "turbo run build --cache-dir=.turbo",
     "db:migrate": "yarn workspace @oyster/core db:migrate",
     "db:seed": "yarn workspace @oyster/core db:seed",
+    "db:types": "yarn workspace @oyster/core db:types",
     "dev": "turbo run dev --cache-dir=.turbo",
     "dev:apps": "yarn dev --filter='./apps/*'",
     "lint": "turbo run lint --cache-dir=.turbo",
-    "postinstall": "yarn workspace @oyster/core db:types",
     "test": "turbo run test --cache-dir=.turbo",
     "start": "turbo run start --cache-dir=.turbo"
   },
