@@ -152,9 +152,7 @@ async function getActivityData(campaignId: string) {
   // we can find them.
 
   for (const click of result.clicks) {
-    const student = await findMemberByEmail(click.email)
-      .select(['id'])
-      .executeTakeFirst();
+    const student = await findMemberByEmail(click.email);
 
     if (student) {
       click.studentId = student.id;
@@ -162,9 +160,7 @@ async function getActivityData(campaignId: string) {
   }
 
   for (const open of result.opens) {
-    const student = await findMemberByEmail(open.email)
-      .select(['id'])
-      .executeTakeFirst();
+    const student = await findMemberByEmail(open.email);
 
     if (student) {
       open.studentId = student.id;

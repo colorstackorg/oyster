@@ -43,7 +43,7 @@ export async function loginWithOAuth(input: OAuthLoginInput) {
       .where('deletedAt', 'is', null)
       .executeTakeFirst();
   } else {
-    entity = await findMemberByEmail(email).select(['id']).executeTakeFirst();
+    entity = await findMemberByEmail(email);
   }
 
   if (!entity) {
