@@ -1,5 +1,13 @@
 import { slack } from '@/modules/slack/instances';
 import { ENV } from '@/shared/env';
+import { Member } from '@slack/web-api/dist/response/UsersListResponse';
+import { Profile } from '@slack/web-api/dist/response/UsersProfileGetResponse';
+import { RateLimiter } from '../../../shared/utils/rate-limiter';
+
+const deactivateRateLimiter = new RateLimiter('slack:connections:deactivate', {
+  rateLimit: 20,
+  rateLimitWindow: 60,
+});
 
 /**
  * @see https://api.slack.com/methods/users.lookupByEmail
@@ -34,4 +42,48 @@ export async function updateSlackEmail(id: string, email: string) {
     token: ENV.SLACK_ADMIN_TOKEN,
     user: id,
   });
+}
+/**
+ * @see https://api.slack.com/methods/users.list
+ */
+export async function getAllSlackUsers() {
+  let allUsers: Member[] = [];
+  let cursor; // Slack uses cursor-based pagination.
+
+  try {
+    // Continue calling the API until there's no more pages (cursor is empty).
+    do {
+      await deactivateRateLimiter.process();
+      const response = await slack.users.list({ cursor: cursor });
+      const users: Member[] | undefined = response.members;
+
+      if (!users) {
+        break;
+      }
+
+      allUsers.push(...users);
+
+      // Update cursor to the next cursor value, if any.
+      cursor = response.response_metadata?.next_cursor;
+    } while (cursor);
+
+    return allUsers;
+  } catch (e) {
+    console.error('Failed to fetch all Slack users:', e);
+    return null;
+  }
+}
+
+export async function getUserProfile(user: Member) {
+  let userId = user.id;
+  try {
+    // Continue calling the API until there's no more pages (cursor is empty).
+    const response = await slack.users.profile.get({ id: userId });
+    const userProfile: Profile | undefined = response.profile;
+
+    return userProfile;
+  } catch (e) {
+    console.error('Failed to fetch all User Profile for userId=${userId}:', e);
+    return null;
+  }
 }
