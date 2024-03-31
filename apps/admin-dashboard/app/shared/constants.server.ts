@@ -11,6 +11,7 @@ const BaseEnvironmentConfig = z.object({
   ENVIRONMENT: z.nativeEnum(Environment),
   GOOGLE_CLIENT_ID: EnvironmentVariable,
   JWT_SECRET: EnvironmentVariable,
+  POSTMARK_API_TOKEN: EnvironmentVariable,
   REDIS_URL: EnvironmentVariable,
   SENTRY_DSN: EnvironmentVariable,
   SESSION_SECRET: EnvironmentVariable,
