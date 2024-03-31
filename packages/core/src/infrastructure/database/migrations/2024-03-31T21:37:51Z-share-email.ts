@@ -1,29 +1,37 @@
 import { Kysely } from 'kysely';
 
 export async function up(db: Kysely<any>) {
-  await db.updateTable('students').set({ share_email: true }).execute();
+  await db.schema
+    .alterTable('students')
+    .addColumn('allow_email_share', 'boolean')
+    .execute();
+
+  await db.updateTable('students').set({ allow_email_share: true }).execute();
 
   await db.schema
     .alterTable('students')
-    .alterColumn('share_email', (column) => {
+    .alterColumn('allow_email_share', (column) => {
       return column.setDefault(true);
     })
     .execute();
 
   await db.schema
     .alterTable('students')
-    .alterColumn('share_email', (column) => {
+    .alterColumn('allow_email_share', (column) => {
       return column.setNotNull();
     })
     .execute();
 }
 
 export async function down(db: Kysely<any>) {
-  await db.schema.alterTable('students').dropColumn('share_email').execute();
+  await db.schema
+    .alterTable('students')
+    .dropColumn('allow_email_share')
+    .execute();
 
   await db.schema
     .alterTable('students')
-    .alterColumn('share_email', (column) => {
+    .alterColumn('allow_email_share', (column) => {
       return column.dropNotNull();
     })
 
@@ -31,7 +39,7 @@ export async function down(db: Kysely<any>) {
 
   await db.schema
     .alterTable('students')
-    .alterColumn('share_email', (column) => {
+    .alterColumn('allow_email_share', (column) => {
       return column.dropDefault();
     })
     .execute();
