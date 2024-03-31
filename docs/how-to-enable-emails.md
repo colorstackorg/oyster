@@ -48,7 +48,7 @@ by your administrators.
 ## Configuring a Gmail Account
 
 Since most of us likely have a Gmail account, this section will show you how to
-set that up to send emails. To protect our accounts, Gmail doesn't just let you
+set that up to send emails. To protect your account, Gmail doesn't just let you
 use your regular password to authenticate, so we'll need to generate what Google
 calls an **_app password_**.
 
