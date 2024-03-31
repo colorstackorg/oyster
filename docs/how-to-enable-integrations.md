@@ -104,6 +104,14 @@ To enable the **Postmark** integration:
    ```
    POSTMARK_API_TOKEN
    ```
+3. In `/member-profile/.env`, set the following variable:
+   ```
+   POSTMARK_API_TOKEN
+   ```
+4. In `/admin-dashboard/.env`, set the following variable:
+   ```
+   POSTMARK_API_TOKEN
+   ```
 
 ## Sentry
 
