@@ -7,7 +7,9 @@ export function getNodemailerTransporter() {
   const SMTP_USERNAME = process.env.SMTP_USERNAME;
 
   if (!SMTP_HOST || !SMTP_PASSWORD || !SMTP_USERNAME) {
-    throw new Error('SMTP variables are not set, sending emails is disabled.');
+    throw new Error(
+      'SMTP variables are not set, so sending emails is disabled. Please see the "How to Enable Emails" guide for more help.'
+    );
   }
 
   const transporter = nodemailer.createTransport({
