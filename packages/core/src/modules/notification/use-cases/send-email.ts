@@ -17,41 +17,6 @@ import { ENV, IS_TEST } from '@/shared/env';
 import { Environment } from '@/shared/types';
 import { getPostmarkInstance } from '../shared/email.utils';
 
-// Types
-
-type FromType = 'jehron' | 'notifications';
-
-// Constants
-
-const FromData: Record<FromType, string> = {
-  jehron: 'Jehron Petty <jehron@colorstack.org>',
-  notifications: 'ColorStack <notifications@colorstack.org>',
-};
-
-const From: Record<EmailTemplate['name'], FromType> = {
-  'application-accepted': 'jehron',
-  'application-created': 'notifications',
-  'application-rejected': 'notifications',
-  'primary-email-changed': 'notifications',
-  'one-time-code-sent': 'notifications',
-  'student-activated': 'notifications',
-  'student-attended-onboarding': 'notifications',
-  'student-removed': 'notifications',
-} as const;
-
-const Template: Record<EmailTemplate['name'], (...args: any) => JSX.Element> = {
-  'application-accepted': ApplicationAcceptedEmail,
-  'application-created': ApplicationCreatedEmail,
-  'application-rejected': ApplicationRejectedEmail,
-  'one-time-code-sent': OneTimeCodeSentEmail,
-  'primary-email-changed': PrimaryEmailChangedEmail,
-  'student-activated': StudentActivatedEmail,
-  'student-attended-onboarding': StudentAttendedOnboardingEmail,
-  'student-removed': StudentRemovedEmail,
-};
-
-// Instances
-
 export async function sendEmail(input: EmailTemplate) {
   if (IS_TEST) {
     return;
@@ -69,14 +34,51 @@ export async function sendEmail(input: EmailTemplate) {
 }
 
 function getFrom(input: EmailTemplate): string {
-  const fromType = From[input.name];
-  const from = FromData[fromType];
-  return from;
+  const FROM_JEHRON = 'Jehron Petty <jehron@colorstack.org>';
+  const FROM_NOTIFICATIONS = 'ColorStack <notifications@colorstack.org>';
+
+  return match(input.name)
+    .with('application-accepted', () => FROM_JEHRON)
+    .with('application-created', () => FROM_NOTIFICATIONS)
+    .with('application-rejected', () => FROM_NOTIFICATIONS)
+    .with('one-time-code-sent', () => FROM_NOTIFICATIONS)
+    .with('primary-email-changed', () => FROM_NOTIFICATIONS)
+    .with('student-activated', () => FROM_NOTIFICATIONS)
+    .with('student-attended-onboarding', () => FROM_NOTIFICATIONS)
+    .with('student-removed', () => FROM_NOTIFICATIONS)
+    .exhaustive();
 }
 
 function getHtml(input: EmailTemplate): string {
-  const template = Template[input.name];
-  const html = render(template(input.data));
+  const element = match(input)
+    .with({ name: 'application-accepted' }, ({ data }) => {
+      return ApplicationAcceptedEmail(data);
+    })
+    .with({ name: 'application-created' }, ({ data }) => {
+      return ApplicationCreatedEmail(data);
+    })
+    .with({ name: 'application-rejected' }, ({ data }) => {
+      return ApplicationRejectedEmail(data);
+    })
+    .with({ name: 'one-time-code-sent' }, ({ data }) => {
+      return OneTimeCodeSentEmail(data);
+    })
+    .with({ name: 'primary-email-changed' }, ({ data }) => {
+      return PrimaryEmailChangedEmail(data);
+    })
+    .with({ name: 'student-activated' }, ({ data }) => {
+      return StudentActivatedEmail(data);
+    })
+    .with({ name: 'student-attended-onboarding' }, ({ data }) => {
+      return StudentAttendedOnboardingEmail(data);
+    })
+    .with({ name: 'student-removed' }, ({ data }) => {
+      return StudentRemovedEmail(data);
+    })
+    .exhaustive();
+
+  const html = render(element);
+
   return html;
 }
 
