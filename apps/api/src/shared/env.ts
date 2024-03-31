@@ -72,6 +72,9 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     SWAG_UP_CLIENT_SECRET: true,
   }).extend({
     ENVIRONMENT: z.literal(Environment.DEVELOPMENT),
+    SMTP_HOST: EnvironmentVariable,
+    SMTP_PASSWORD: EnvironmentVariable,
+    SMTP_USERNAME: EnvironmentVariable,
   }),
   BaseEnvironmentConfig.extend({
     ENVIRONMENT: z.literal(Environment.PRODUCTION),
