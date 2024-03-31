@@ -11,11 +11,12 @@ export function getNodemailerTransporter() {
   }
 
   const transporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    secure: true,
     auth: {
       user: SMTP_USERNAME,
       pass: SMTP_PASSWORD,
     },
-    host: SMTP_HOST,
   });
 
   return transporter;
