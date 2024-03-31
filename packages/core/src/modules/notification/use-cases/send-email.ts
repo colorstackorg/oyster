@@ -79,7 +79,7 @@ async function sendEmailWithPostmark(input: EmailTemplate) {
     To: input.to,
   });
 
-  console.log(`Email (${input.name}) sent to: ${input.to} 📫`);
+  console.log(`[${input.name}]: Email sent to "${input.to}"! 📫`);
 }
 
 async function sendEmailWithNodemailer(input: EmailTemplate) {
@@ -93,7 +93,7 @@ async function sendEmailWithNodemailer(input: EmailTemplate) {
     to: input.to,
   });
 
-  console.log(`Email (${input.name}) sent to: ${input.to} 📫`);
+  console.log(`[${input.name}]: Email sent to "${input.to}"! 📫`);
 }
 
 function getHtml(input: EmailTemplate): string {
