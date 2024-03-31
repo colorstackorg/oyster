@@ -30,7 +30,7 @@ SMTP_USERNAME=you@gmail.com
 
 `SMTP_PASSWORD` is the password to your email account. _Note that for your
 security, many services like Gmail won't let you authenticate with just your
-plain password, and you have to general a special password to use for
+plain password, and you have to generate a special password to use for
 authentication._ Example:
 
 ```
