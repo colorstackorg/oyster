@@ -1,5 +1,5 @@
 import { db } from '@/infrastructure/database';
-import { id } from '@colorstack/utils';
+import { id } from '@oyster/utils';
 import { EmploymentType, LocationType } from '../employment.types';
 import { uploadJobOffer } from './upload-job-offer';
 
@@ -13,17 +13,24 @@ describe(uploadJobOffer.name, () => {
       .select('id')
       .limit(1)
       .executeTakeFirst();
-    // console.log(company)
-    realCompanyId = company.id;
+
+    if (company) {
+      realCompanyId = company.id;
+    } else {
+      console.log('No company found');
+    }
 
     const student = await db
       .selectFrom('students')
       .select('id')
       .limit(1)
       .executeTakeFirst();
-    // console.log(student)
-    realStudentId = student.id;
 
+    if (student) {
+      realStudentId = student.id;
+    } else {
+      console.log('No student found');
+    }
   });
   test('Successfully uploads a job offer', async () => {
     const testJobOfferInput = {
