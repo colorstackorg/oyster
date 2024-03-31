@@ -14,54 +14,53 @@ import {
 } from '@oyster/email-templates';
 
 import { ENV } from '@/shared/env';
-import { Environment } from '@/shared/types';
 import {
   getNodemailerTransporter,
   getPostmarkInstance,
 } from '../shared/email.utils';
 
+// Constants
+
+const FROM_JEHRON = 'Jehron Petty <jehron@colorstack.org>';
+const FROM_NOTIFICATIONS = 'ColorStack <notifications@colorstack.org>';
+
+// Functions
+
+/**
+ * Sends an email to the given recipient.
+ *
+ * Note: This function will behave differently based on the environment.
+ * - In `production`, this will send an email using Postmark.
+ * - In `development`, this will send an email using Nodemailer, which under
+ *   the hood will simply use the developer's own email account.
+ * - In `test`, this function will do nothing b/c we don't want to send emails.
+ *
+ * The reason we can't use a cloud service like Postmark in development is
+ * because you typically need to verify your domain before you can send emails
+ * with a service like Postmark. However, most contributors won't be able to do
+ * so because they don't own the domain of their personal/school email. So, we
+ * use Nodemailer in development, which allows developers to authenticate their
+ * own email account and send emails from there.
+ */
 export async function sendEmail(input: EmailTemplate) {
   return match(ENV.ENVIRONMENT)
     .with('development', () => {
-      return sendEmailInDevelopment(input);
+      return sendEmailWithNodemailer(input);
     })
     .with('production', () => {
-      return sendEmailInProduction(input);
+      return sendEmailWithPostmark(input);
     })
     .with('test', () => {
-      // We don't want to send emails in test environment...
+      // We don't want to send emails in the test environment...
+      // so we do nothing here!
     })
     .exhaustive();
 }
 
-async function sendEmailInProduction(input: EmailTemplate) {
+async function sendEmailWithPostmark(input: EmailTemplate) {
   const postmark = getPostmarkInstance();
 
-  await postmark.sendEmail({
-    From: getFrom(input),
-    HtmlBody: getHtml(input),
-    ReplyTo: getReplyTo(input),
-    Subject: getSubject(input),
-    To: input.to,
-  });
-}
-
-async function sendEmailInDevelopment(input: EmailTemplate) {
-  const transporter = getNodemailerTransporter();
-
-  await transporter.sendMail({
-    // from: getFrom(input),
-    html: getHtml(input),
-    subject: getSubject(input),
-    to: input.to,
-  });
-}
-
-function getFrom(input: EmailTemplate): string {
-  const FROM_JEHRON = 'Jehron Petty <jehron@colorstack.org>';
-  const FROM_NOTIFICATIONS = 'ColorStack <notifications@colorstack.org>';
-
-  return match(input.name)
+  const from = match(input.name)
     .with('application-accepted', () => FROM_JEHRON)
     .with('application-created', () => FROM_NOTIFICATIONS)
     .with('application-rejected', () => FROM_NOTIFICATIONS)
@@ -71,6 +70,26 @@ function getFrom(input: EmailTemplate): string {
     .with('student-attended-onboarding', () => FROM_NOTIFICATIONS)
     .with('student-removed', () => FROM_NOTIFICATIONS)
     .exhaustive();
+
+  await postmark.sendEmail({
+    From: from,
+    HtmlBody: getHtml(input),
+    ReplyTo: 'membership@colorstack.org',
+    Subject: getSubject(input),
+    To: input.to,
+  });
+}
+
+async function sendEmailWithNodemailer(input: EmailTemplate) {
+  const transporter = getNodemailerTransporter();
+
+  // Note: We don't need to specify the `from` field here because it'll
+  // automatically default to the `SMTP_USERNAME` variable that we set.
+  await transporter.sendMail({
+    html: getHtml(input),
+    subject: getSubject(input),
+    to: input.to,
+  });
 }
 
 function getHtml(input: EmailTemplate): string {
@@ -106,10 +125,6 @@ function getHtml(input: EmailTemplate): string {
   return html;
 }
 
-function getReplyTo(_: EmailTemplate): string {
-  return 'membership@colorstack.org';
-}
-
 function getSubject(input: EmailTemplate): string {
   const subject = match(input)
     .with({ name: 'application-accepted' }, () => {
@@ -138,7 +153,7 @@ function getSubject(input: EmailTemplate): string {
     })
     .exhaustive();
 
-  const subjectWithEnvironment = match<Environment>(ENV.ENVIRONMENT)
+  const subjectWithEnvironment = match(ENV.ENVIRONMENT)
     .with('development', () => `[Development] ${subject}`)
     .with('production', 'test', () => subject)
     .exhaustive();
