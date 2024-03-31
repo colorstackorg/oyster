@@ -19,6 +19,8 @@ export async function up(db: Kysely<any>) {
 }
 
 export async function down(db: Kysely<any>) {
+  await db.schema.alterTable('students').dropColumn('share_email').execute();
+
   await db.schema
     .alterTable('students')
     .alterColumn('share_email', (column) => {
