@@ -13,7 +13,6 @@ const BaseEnvironmentConfig = z.object({
   GOOGLE_MAPS_API_KEY: EnvironmentVariable,
   JWT_SECRET: EnvironmentVariable,
   MIXPANEL_TOKEN: EnvironmentVariable,
-  POSTMARK_API_TOKEN: EnvironmentVariable,
   REDIS_URL: EnvironmentVariable,
   SENTRY_DSN: EnvironmentVariable,
   SESSION_SECRET: EnvironmentVariable,
@@ -42,6 +41,7 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
   }),
   BaseEnvironmentConfig.extend({
     ENVIRONMENT: z.literal(Environment.PRODUCTION),
+    POSTMARK_API_TOKEN: EnvironmentVariable,
   }),
 ]);
 
