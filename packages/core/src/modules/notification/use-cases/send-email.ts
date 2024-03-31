@@ -13,15 +13,28 @@ import {
   StudentRemovedEmail,
 } from '@oyster/email-templates';
 
-import { ENV, IS_TEST } from '@/shared/env';
+import { ENV } from '@/shared/env';
 import { Environment } from '@/shared/types';
-import { getPostmarkInstance } from '../shared/email.utils';
+import {
+  getNodemailerTransporter,
+  getPostmarkInstance,
+} from '../shared/email.utils';
 
 export async function sendEmail(input: EmailTemplate) {
-  if (IS_TEST) {
-    return;
-  }
+  return match(ENV.ENVIRONMENT)
+    .with('development', () => {
+      return sendEmailInDevelopment(input);
+    })
+    .with('production', () => {
+      return sendEmailInProduction(input);
+    })
+    .with('test', () => {
+      // We don't want to send emails in test environment...
+    })
+    .exhaustive();
+}
 
+async function sendEmailInProduction(input: EmailTemplate) {
   const postmark = getPostmarkInstance();
 
   await postmark.sendEmail({
@@ -30,6 +43,17 @@ export async function sendEmail(input: EmailTemplate) {
     ReplyTo: getReplyTo(input),
     Subject: getSubject(input),
     To: input.to,
+  });
+}
+
+async function sendEmailInDevelopment(input: EmailTemplate) {
+  const transporter = getNodemailerTransporter();
+
+  await transporter.sendMail({
+    // from: getFrom(input),
+    html: getHtml(input),
+    subject: getSubject(input),
+    to: input.to,
   });
 }
 
