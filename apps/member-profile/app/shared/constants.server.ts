@@ -41,6 +41,7 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
   }),
   BaseEnvironmentConfig.extend({
     ENVIRONMENT: z.literal(Environment.PRODUCTION),
+    POSTMARK_API_TOKEN: EnvironmentVariable,
   }),
 ]);
 
