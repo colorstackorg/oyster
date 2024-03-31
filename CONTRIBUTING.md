@@ -206,8 +206,8 @@ You can log into the Member Profile and Admin Dashboard by sending a one-time
 code to your email OR by using your Google login.
 
 - [Recommended] To log in by sending a one-time code to your email, you'll first
-  need to enable the **Postmark** integration. See instructions on how to do so
-  [here](./docs/how-to-enable-integrations.md#postmark).
+  need to enable sending emails in development. See instructions on how to do so
+  [here](./docs/how-to-enable-emails.md).
 - To log in via Google, you'll first need to enable the **Google** integration.
   See instructions on how to do so
   [here](./docs/how-to-enable-integrations.md#google).
