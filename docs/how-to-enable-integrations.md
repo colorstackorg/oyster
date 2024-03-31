@@ -9,7 +9,6 @@ We have integrations with the following platforms:
 - Crunchbase (Company Database)
 - Google (Authentication)
 - Mailchimp (Email Marketing)
-- Postmark (Email)
 - Sentry (Error Monitoring)
 - Slack (Community Home, Authentication)
 - Statsig (Feature Flag)
@@ -91,26 +90,6 @@ To enable the **Mailchimp** integration:
    MAILCHIMP_API_KEY
    MAILCHIMP_AUDIENCE_ID
    MAILCHIMP_SERVER_PREFIX
-   ```
-
-## Postmark
-
-To enable the **Postmark** integration:
-
-1. See
-   [this](https://postmarkapp.com/support/article/1008-what-are-the-account-and-server-api-tokens)
-   Postmark documentation to generate an API key.
-2. In `/api/.env`, set the following variable:
-   ```
-   POSTMARK_API_TOKEN
-   ```
-3. In `/member-profile/.env`, set the following variable:
-   ```
-   POSTMARK_API_TOKEN
-   ```
-4. In `/admin-dashboard/.env`, set the following variable:
-   ```
-   POSTMARK_API_TOKEN
    ```
 
 ## Sentry
