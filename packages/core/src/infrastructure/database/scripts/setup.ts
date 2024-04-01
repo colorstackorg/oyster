@@ -14,19 +14,20 @@ const __dirname = path.dirname(__filename);
 // This is the full path to the `setup.sql` file.
 const pathToInitFile = path.join(__dirname, 'setup.sql');
 
-const dbUser = 'postgres';
-const dbName = 'postgres';
+exec(
+  `psql -U postgres -d postgres -f ${pathToInitFile}`,
+  (error, stdout, stderr) => {
+    if (stdout) {
+      console.log(stdout);
+    }
 
-const psqlCommand = `psql -U ${dbUser} -d ${dbName} -f ${pathToInitFile}`;
+    if (stderr) {
+      // Log but don't throw for notices/warnings.
+      console.warn(stderr);
+    }
 
-exec(psqlCommand, (error, stdout, stderr) => {
-  console.log(stdout); // Log standard output
-  if (stderr) {
-    console.warn(stderr); // Log but don't throw for notices/warnings
+    if (error) {
+      throw new Error(`psql exited with error: ${error}`);
+    }
   }
-  if (error) {
-    // Check for actual error
-    console.error(`exec error: ${error}`);
-    throw new Error(`psql exited with error: ${error}`);
-  }
-});
+);
