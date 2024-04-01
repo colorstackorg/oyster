@@ -4,11 +4,6 @@ import { Member } from '@slack/web-api/dist/response/UsersListResponse';
 import { Profile } from '@slack/web-api/dist/response/UsersProfileGetResponse';
 import { RateLimiter } from '../../../shared/utils/rate-limiter';
 
-const deactivateRateLimiter = new RateLimiter('slack:connections:deactivate', {
-  rateLimit: 20,
-  rateLimitWindow: 60,
-});
-
 /**
  * @see https://api.slack.com/methods/users.lookupByEmail
  */
@@ -43,6 +38,12 @@ export async function updateSlackEmail(id: string, email: string) {
     user: id,
   });
 }
+
+const getAllUsersRateLimiter = new RateLimiter('slack:connections:deactivate', {
+  rateLimit: 20,
+  rateLimitWindow: 60,
+});
+
 /**
  * @see https://api.slack.com/methods/users.list
  */
@@ -52,8 +53,8 @@ export async function getAllSlackUsers() {
 
   try {
     // Continue calling the API until there's no more pages (cursor is empty).
-    do {
-      await deactivateRateLimiter.process();
+    while (cursor) {
+      await getAllUsersRateLimiter.process();
       const response = await slack.users.list({ cursor: cursor });
       const users: Member[] | undefined = response.members;
 
@@ -65,7 +66,7 @@ export async function getAllSlackUsers() {
 
       // Update cursor to the next cursor value, if any.
       cursor = response.response_metadata?.next_cursor;
-    } while (cursor);
+    }
 
     return allUsers;
   } catch (e) {
@@ -74,7 +75,7 @@ export async function getAllSlackUsers() {
   }
 }
 
-export async function getUserProfile(user: Member) {
+export async function getSlackProfile(user: Member) {
   let userId = user.id;
   try {
     // Continue calling the API until there's no more pages (cursor is empty).
