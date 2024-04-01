@@ -11,6 +11,7 @@
     "build": "turbo run build --cache-dir=.turbo",
     "db:migrate": "yarn workspace @oyster/core db:migrate",
     "db:seed": "yarn workspace @oyster/core db:seed",
+    "db:setup": "yarn workspace @oyster/core db:setup",
     "db:types": "yarn workspace @oyster/core db:types",
     "dev": "turbo run dev --cache-dir=.turbo",
     "dev:apps": "yarn dev --filter='./apps/*'",
