@@ -6,6 +6,6 @@ DROP ROLE IF EXISTS colorstack;
 
 -- Creates new databases and users.
 
-CREATE ROLE colorstack WITH LOGIN PASSWORD 'colorstack';
+CREATE ROLE colorstack WITH SUPERUSER LOGIN PASSWORD 'colorstack';
 CREATE DATABASE colorstack OWNER colorstack;
 CREATE DATABASE colorstack_test OWNER colorstack
