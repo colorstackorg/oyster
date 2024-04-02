@@ -8,8 +8,8 @@
   "scripts": {
     "build": "remix vite:build",
     "dev": "remix vite:dev",
-    "lint": "tsc --noEmit",
-    "start": "remix-serve ./build/server/index.js"
+    "start": "remix-serve ./build/server/index.js",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@oyster/core": "*",

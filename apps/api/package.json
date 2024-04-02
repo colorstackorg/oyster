@@ -5,8 +5,9 @@
   "license": "MIT",
   "scripts": {
     "dev": "tsx watch ./src/main.ts",
-    "lint": "eslint 'src/**' && tsc --noEmit",
-    "start": "tsx ./src/main.ts"
+    "lint": "eslint 'src/**'",
+    "start": "tsx ./src/main.ts",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@oyster/core": "*",
