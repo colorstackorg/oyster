@@ -19,7 +19,7 @@ import {
   ProfileTitle,
 } from '../shared/components/profile';
 
-import { AllowEmailShareFieldComponent } from '../shared/components/profile.personal';
+import { AllowEmailShareField } from '../shared/components/profile.personal';
 
 import { Route } from '../shared/constants';
 import { db } from '../shared/core.server';
@@ -58,7 +58,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 const UpdateAllowEmailShare = z.object({
-  AllowEmailShareField: z.preprocess((value) => value === '1', z.boolean()),
+  AllowEmailShare: z.preprocess((value) => value === '1', z.boolean()),
 });
 
 type UpdateAllowEmailShare = z.infer<typeof UpdateAllowEmailShare>;
@@ -81,7 +81,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   await db.transaction().execute(async (trx) => {
-    await updateAllowEmailShare(trx, user(session), data.AllowEmailShareField);
+    await updateAllowEmailShare(trx, user(session), data.AllowEmailShare);
   });
 
   toast(session, {
@@ -102,7 +102,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 }
 
-const { AllowEmailShareField } = UpdateAllowEmailShare.keyof().enum;
+const { AllowEmailShare } = UpdateAllowEmailShare.keyof().enum;
 
 export default function EmailsPage() {
   return (
@@ -165,10 +165,10 @@ function EmailAddressSection() {
             );
           })}
         </ul>
-        <AllowEmailShareFieldComponent
+        <AllowEmailShareField
           defaultValue={student.allowEmailShare}
-          error={errors.AllowEmailShareField}
-          name={AllowEmailShareField}
+          error={errors.AllowEmailShare}
+          name={AllowEmailShare}
         />
         <Button.Group>
           <Button onClick={onAddEmail} size="small" variant="secondary">

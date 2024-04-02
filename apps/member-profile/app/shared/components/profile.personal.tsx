@@ -5,7 +5,7 @@ import { Country } from '../core.ui';
 import { CityCombobox, CityComboboxProps } from './city-combobox';
 import { EthnicityMultiCombobox } from './ethnicity-combobox';
 
-export function AllowEmailShareFieldComponent({
+export function AllowEmailShareField({
   defaultValue,
   error,
   name,
@@ -14,7 +14,7 @@ export function AllowEmailShareFieldComponent({
     <Form.Field error={error}>
       <Checkbox
         defaultChecked={defaultValue}
-        label="Share my primary email with Chapter Leaders 🌟 "
+        label="Share my email with Chapter Leaders! 🌟 "
         name={name}
         value="1"
       />

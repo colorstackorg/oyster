@@ -219,6 +219,4 @@ export async function updateAllowEmailShare(
     .set({ allowEmailShare: allowEmailShareBool })
     .where('id', '=', id)
     .execute();
-
-  console.log('testing execution of func updateAllowEmailShare');
 }
