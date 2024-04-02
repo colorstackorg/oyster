@@ -21,8 +21,8 @@
     "db:seed": "tsx ./src/infrastructure/database/scripts/seed.ts && yarn db:types",
     "db:setup": "tsx ./src/infrastructure/database/scripts/setup.ts",
     "db:types": "kysely-codegen --dialect=postgres --camel-case",
-    "lint": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@mailchimp/mailchimp_marketing": "^3.0.78",
