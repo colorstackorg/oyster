@@ -5,8 +5,8 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  build:
-    name: Lint, Build and Test
+  ci:
+    name: CI
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -67,6 +67,9 @@ jobs:
 
       - name: Lint
         run: yarn lint
+
+      - name: Check types
+        run: yarn type-check
 
       - name: Build all packages and applications
         run: yarn build
