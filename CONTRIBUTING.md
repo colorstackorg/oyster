@@ -128,24 +128,16 @@ You'll need to make sure that Postgres and Redis are running in the background.
 
 #### Postgres Setup
 
-Once Postgres is running, you can connect to it by running:
+To set up your Postgres databases, you can run:
 
-```sh
-psql
+```
+yarn db:setup
 ```
 
-You'll then need to create 2 Postgres databases locally named `colorstack` and
-`colorstack-test`. Within the `psql` terminal, run:
-
-```postgresql
-CREATE DATABASE colorstack;
-CREATE DATABASE "colorstack-test";
-```
-
-You should now be able to connect to each database like this:
+You should now be able to connect to your database like this:
 
 ```sh
-psql colorstack
+psql colorstack -U colorstack
 ```
 
 #### Executing Database Migrations
@@ -206,8 +198,8 @@ You can log into the Member Profile and Admin Dashboard by sending a one-time
 code to your email OR by using your Google login.
 
 - [Recommended] To log in by sending a one-time code to your email, you'll first
-  need to enable the **Postmark** integration. See instructions on how to do so
-  [here](./docs/how-to-enable-integrations.md#postmark).
+  need to enable sending emails in development. See instructions on how to do so
+  [here](./docs/how-to-enable-emails.md).
 - To log in via Google, you'll first need to enable the **Google** integration.
   See instructions on how to do so
   [here](./docs/how-to-enable-integrations.md#google).
