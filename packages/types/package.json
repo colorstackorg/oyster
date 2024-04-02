@@ -4,7 +4,7 @@
   "private": true,
   "main": "./src/index.ts",
   "scripts": {
-    "lint": "tsc --noEmit"
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
     "zod": "^3.20.2"

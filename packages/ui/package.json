@@ -10,7 +10,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "lint": "tsc --noEmit"
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
     "@oyster/tsconfig": "*",
