@@ -63,7 +63,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 const UpdateAllowEmailShare = z.object({
-  AllowEmailShare: z.preprocess((value) => value === '1', z.boolean()),
+  allowEmailShare: z.preprocess((value) => value === '1', z.boolean()),
 });
 
 type UpdateAllowEmailShare = z.infer<typeof UpdateAllowEmailShare>;
@@ -86,7 +86,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   await db.transaction().execute(async (trx) => {
-    await updateAllowEmailShare(trx, user(session), data.AllowEmailShare);
+    await updateAllowEmailShare(trx, user(session), data.allowEmailShare);
   });
 
   toast(session, {
@@ -107,7 +107,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 }
 
-const { AllowEmailShare } = UpdateAllowEmailShare.keyof().enum;
+const { allowEmailShare } = UpdateAllowEmailShare.keyof().enum;
 
 export default function EmailsPage() {
   return (
@@ -183,13 +183,13 @@ function EmailAddressSection() {
         </Button.Group>
         <Form.Field
           description="If you go to school where there is a ColorStack chapter, this will allow that chapter leader to reach out to you about local events and opportunities."
-          error={errors.AllowEmailShare}
+          error={errors.allowEmailShare}
           label="Would you like to share your email with chapter leaders?"
         >
           <Checkbox
             defaultChecked={student.allowEmailShare}
             label="Share my email with chapter leaders! 🌟 "
-            name={AllowEmailShare}
+            name={allowEmailShare}
             value="1"
           />
         </Form.Field>
