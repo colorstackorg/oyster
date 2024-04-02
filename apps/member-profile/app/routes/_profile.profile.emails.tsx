@@ -47,11 +47,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const id = user(session);
 
-  const emails = await listEmails(id);
-
-  const student = await getMember(id)
-    .select('allowEmailShare')
-    .executeTakeFirstOrThrow();
+  const [emails, student] = await Promise.all([
+    listEmails(id),
+    getMember(id).select('allowEmailShare').executeTakeFirstOrThrow(),
+  ]);
 
   track(request, 'Page Viewed', {
     Page: 'Profile - Email Addresses',
