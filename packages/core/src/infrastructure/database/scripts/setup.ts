@@ -15,7 +15,7 @@ const __dirname = path.dirname(__filename);
 const pathToInitFile = path.join(__dirname, 'setup.sql');
 
 exec(
-  `psql -U postgres -d postgres -f ${pathToInitFile}`,
+  `psql -U postgres -h localhost -d postgres -f ${pathToInitFile}`,
   (error, stdout, stderr) => {
     if (stdout) {
       console.log(stdout);
