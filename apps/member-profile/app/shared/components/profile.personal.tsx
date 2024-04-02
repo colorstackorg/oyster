@@ -5,6 +5,23 @@ import { Country } from '../core.ui';
 import { CityCombobox, CityComboboxProps } from './city-combobox';
 import { EthnicityMultiCombobox } from './ethnicity-combobox';
 
+export function AllowEmailShareFieldComponent({
+  defaultValue,
+  error,
+  name,
+}: FieldProps<boolean>) {
+  return (
+    <Form.Field error={error}>
+      <Checkbox
+        defaultChecked={defaultValue}
+        label="Share my primary email with Chapter Leaders 🌟 "
+        name={name}
+        value="1"
+      />
+    </Form.Field>
+  );
+}
+
 export function BirthdateNotificationField({
   defaultValue,
   error,

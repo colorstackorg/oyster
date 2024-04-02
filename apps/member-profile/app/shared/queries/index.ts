@@ -90,18 +90,16 @@ type GetMemberOptions = {
 };
 
 export function getMember(id: string, options: GetMemberOptions = {}) {
-  return db
-    .selectFrom('students')
-    .where('students.id', '=', id)
-    .$if(!!options.school, (qb) => {
-      return qb
-        .leftJoin('schools', 'students.schoolId', 'schools.id')
-        .select((eb) => {
-          return eb.fn
-            .coalesce('schools.name', 'students.otherSchool')
-            .as('school');
-        });
-    });
+  return db.selectFrom('students').where('students.id', '=', id);
+  // .$if(!!options.school, (qb) => {
+  //   return qb
+  //     .leftJoin('schools', 'students.schoolId', 'schools.id')
+  //     .select((eb) => {
+  //       return eb.fn
+  //         .coalesce('schools.name', 'students.otherSchool')
+  //         .as('school');
+  //     });
+  // });
 }
 
 export async function updateGeneralInformation(
@@ -207,4 +205,18 @@ export async function listEmails(id: string) {
     .execute();
 
   return rows;
+}
+
+export async function updateAllowEmailShare(
+  trx: Transaction<DB>,
+  id: string,
+  allowEmailShareBool: boolean
+) {
+  await trx
+    .updateTable('students')
+    .set({ allowEmailShare: allowEmailShareBool })
+    .where('id', '=', id)
+    .execute();
+
+  console.log('testing execution of func updateAllowEmailShare');
 }

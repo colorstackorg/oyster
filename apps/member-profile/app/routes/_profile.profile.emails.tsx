@@ -1,8 +1,16 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet, useLoaderData, useNavigate } from '@remix-run/react';
+import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
+import {
+  Outlet,
+  Form as RemixForm,
+  useActionData,
+  useLoaderData,
+  useNavigate,
+  useNavigation,
+} from '@remix-run/react';
 import { Edit, Plus } from 'react-feather';
+import { z } from 'zod';
 
-import { Button, cx, Text } from '@oyster/ui';
+import { Button, Text, cx, getActionErrors, validateForm } from '@oyster/ui';
 
 import {
   ProfileDescription,
@@ -10,10 +18,23 @@ import {
   ProfileSection,
   ProfileTitle,
 } from '../shared/components/profile';
+
+import { AllowEmailShareFieldComponent } from '../shared/components/profile.personal';
+
 import { Route } from '../shared/constants';
+import { db } from '../shared/core.server';
 import { track } from '../shared/mixpanel.server';
-import { listEmails } from '../shared/queries';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+import {
+  getMember,
+  listEmails,
+  updateAllowEmailShare,
+} from '../shared/queries';
+import {
+  commitSession,
+  ensureUserAuthenticated,
+  toast,
+  user,
+} from '../shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -22,14 +43,66 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const emails = await listEmails(id);
 
+  const student = await getMember(id)
+    .select('allowEmailShare')
+    .executeTakeFirstOrThrow();
+
   track(request, 'Page Viewed', {
     Page: 'Profile - Email Addresses',
   });
 
   return json({
     emails,
+    student,
   });
 }
+
+const UpdateAllowEmailShare = z.object({
+  AllowEmailShareField: z.preprocess((value) => value === '1', z.boolean()),
+});
+
+type UpdateAllowEmailShare = z.infer<typeof UpdateAllowEmailShare>;
+
+export async function action({ request }: ActionFunctionArgs) {
+  const session = await ensureUserAuthenticated(request);
+
+  const form = await request.formData();
+
+  const { data, errors } = validateForm(
+    UpdateAllowEmailShare,
+    Object.fromEntries(form)
+  );
+
+  if (!data) {
+    return json({
+      error: '',
+      errors,
+    });
+  }
+
+  await db.transaction().execute(async (trx) => {
+    await updateAllowEmailShare(trx, user(session), data.AllowEmailShareField);
+  });
+
+  toast(session, {
+    message: 'Updated!',
+    type: 'success',
+  });
+
+  return json(
+    {
+      error: '',
+      errors,
+    },
+    {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    }
+  );
+}
+
+const { AllowEmailShareField } = UpdateAllowEmailShare.keyof().enum;
 
 export default function EmailsPage() {
   return (
@@ -41,7 +114,10 @@ export default function EmailsPage() {
 }
 
 function EmailAddressSection() {
-  const { emails } = useLoaderData<typeof loader>();
+  const { emails, student } = useLoaderData<typeof loader>();
+  const { errors } = getActionErrors(useActionData<typeof action>());
+
+  const submitting = useNavigation().state === 'submitting';
 
   const navigate = useNavigate();
 
@@ -64,40 +140,53 @@ function EmailAddressSection() {
         school, personal, work), please add them here. Your primary email is the
         email where you will receive all ColorStack communications.
       </ProfileDescription>
+      <RemixForm className="form" method="post">
+        <ul className="flex flex-col gap-2">
+          {emails.map((email) => {
+            return (
+              <li
+                className={cx(
+                  'flex items-center justify-between rounded-lg border border-solid p-2',
+                  email.primary ? 'border-gold bg-gold-100' : 'border-gray-200'
+                )}
+                key={email.email}
+              >
+                <Text>{email.email}</Text>
 
-      <ul className="flex flex-col gap-2">
-        {emails.map((email) => {
-          return (
-            <li
-              className={cx(
-                'flex items-center justify-between rounded-lg border border-solid p-2',
-                email.primary ? 'border-gold bg-gold-100' : 'border-gray-200'
-              )}
-              key={email.email}
-            >
-              <Text>{email.email}</Text>
-
-              {email.primary && (
-                <Text className="text-gold font-medium uppercase" variant="sm">
-                  Primary
-                </Text>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-
-      <Button.Group>
-        <Button onClick={onAddEmail} size="small" variant="secondary">
-          <Plus /> Add Email
-        </Button>
-
-        {emails.length > 1 && (
-          <Button color="primary" onClick={onChangePrimaryEmail} size="small">
-            <Edit /> Change Primary
+                {email.primary && (
+                  <Text
+                    className="font-medium uppercase text-gold"
+                    variant="sm"
+                  >
+                    Primary
+                  </Text>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+        <AllowEmailShareFieldComponent
+          defaultValue={student.allowEmailShare}
+          error={errors.AllowEmailShareField}
+          name={AllowEmailShareField}
+        />
+        <Button.Group>
+          <Button onClick={onAddEmail} size="small" variant="secondary">
+            <Plus /> Add Email
           </Button>
-        )}
-      </Button.Group>
+
+          {emails.length > 1 && (
+            <Button color="primary" onClick={onChangePrimaryEmail} size="small">
+              <Edit /> Change Primary
+            </Button>
+          )}
+        </Button.Group>
+        <Button.Group>
+          <Button loading={submitting} type="submit">
+            Save
+          </Button>
+        </Button.Group>
+      </RemixForm>
     </ProfileSection>
   );
 }
