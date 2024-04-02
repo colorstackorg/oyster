@@ -3,19 +3,22 @@
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": ["build/**", "dist/**"]
     },
     "dev": {
       "cache": false,
       "dependsOn": ["^build"],
       "persistent": true
     },
-    "start": {
-      "cache": false
-    },
     "lint": {
       "dependsOn": ["^build"]
     },
-    "test": {}
+    "start": {
+      "cache": false
+    },
+    "test": {},
+    "type-check": {
+      "dependsOn": ["^build"]
+    }
   }
 }
