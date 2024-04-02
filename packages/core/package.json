@@ -19,6 +19,7 @@
     "db:migrate": "tsx ./src/infrastructure/database/scripts/migrate.ts && yarn db:types",
     "db:migrate:down": "tsx ./src/infrastructure/database/scripts/migrate.ts --down && yarn db:types",
     "db:seed": "tsx ./src/infrastructure/database/scripts/seed.ts && yarn db:types",
+    "db:setup": "tsx ./src/infrastructure/database/scripts/setup.ts",
     "db:types": "kysely-codegen --dialect=postgres --camel-case",
     "lint": "tsc --noEmit",
     "test": "vitest run"

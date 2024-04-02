@@ -15,8 +15,8 @@ jobs:
         image: postgres
         env:
           POSTGRES_DB: colorstack
-          POSTGRES_PASSWORD: password
-          POSTGRES_USER: username
+          POSTGRES_PASSWORD: colorstack
+          POSTGRES_USER: colorstack
         ports:
           - 5432:5432
         options: >-
@@ -31,7 +31,7 @@ jobs:
           5s --health-retries 5
 
     env:
-      DATABASE_URL: postgres://username:password@localhost:5432/colorstack
+      DATABASE_URL: postgres://colorstack:colorstack@localhost:5432/colorstack
       REDIS_URL: redis://localhost:6379
 
     steps:
