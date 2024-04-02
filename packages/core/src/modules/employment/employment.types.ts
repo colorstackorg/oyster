@@ -67,13 +67,14 @@ export const JobOffer = Entity.omit({ deletedAt: true }).extend({
   employmentType: z.nativeEnum(EmploymentType),
   hourlyPay: z.number().optional(),
   location: z.string().optional(),
-  locationCoordinates: z.string().optional(),
+  locationLatitude: z.number().optional(),
+  locationLongitude: z.number().optional(),
   locationType: z.nativeEnum(LocationType),
   otherCompany: NullishString.optional(),
   startDate: ISO8601Date,
   status: z.string(),
   stockPerYear: z.number().optional(),
-  studentId: Student.shape.id.nullish(),
+  studentId: Student.shape.id,
 });
 
 export const WorkExperience = Entity.extend({
