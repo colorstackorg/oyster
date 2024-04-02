@@ -145,42 +145,39 @@ function EmailAddressSection() {
         school, personal, work), please add them here. Your primary email is the
         email where you will receive all ColorStack communications.
       </ProfileDescription>
-      <RemixForm className="form" method="post">
-        <ul className="flex flex-col gap-2">
-          {emails.map((email) => {
-            return (
-              <li
-                className={cx(
-                  'flex items-center justify-between rounded-lg border border-solid p-2',
-                  email.primary ? 'border-gold bg-gold-100' : 'border-gray-200'
-                )}
-                key={email.email}
-              >
-                <Text>{email.email}</Text>
+      <ul className="flex flex-col gap-2">
+        {emails.map((email) => {
+          return (
+            <li
+              className={cx(
+                'flex items-center justify-between rounded-lg border border-solid p-2',
+                email.primary ? 'border-gold bg-gold-100' : 'border-gray-200'
+              )}
+              key={email.email}
+            >
+              <Text>{email.email}</Text>
 
-                {email.primary && (
-                  <Text
-                    className="font-medium uppercase text-gold"
-                    variant="sm"
-                  >
-                    Primary
-                  </Text>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-        <Button.Group>
-          <Button onClick={onAddEmail} size="small" variant="secondary">
-            <Plus /> Add Email
+              {email.primary && (
+                <Text className="font-medium uppercase text-gold" variant="sm">
+                  Primary
+                </Text>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      <Button.Group>
+        <Button onClick={onAddEmail} size="small" variant="secondary">
+          <Plus /> Add Email
+        </Button>
+
+        {emails.length > 1 && (
+          <Button color="primary" onClick={onChangePrimaryEmail} size="small">
+            <Edit /> Change Primary
           </Button>
-
-          {emails.length > 1 && (
-            <Button color="primary" onClick={onChangePrimaryEmail} size="small">
-              <Edit /> Change Primary
-            </Button>
-          )}
-        </Button.Group>
+        )}
+      </Button.Group>
+      <RemixForm className="form" method="post">
         <Form.Field
           description="If you go to school where there is a ColorStack chapter, this will allow that chapter leader to reach out to you about local events and opportunities."
           error={errors.allowEmailShare}
