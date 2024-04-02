@@ -10,7 +10,15 @@ import {
 import { Edit, Plus } from 'react-feather';
 import { z } from 'zod';
 
-import { Button, Text, cx, getActionErrors, validateForm } from '@oyster/ui';
+import {
+  Button,
+  Checkbox,
+  Form,
+  Text,
+  cx,
+  getActionErrors,
+  validateForm,
+} from '@oyster/ui';
 
 import {
   ProfileDescription,
@@ -18,8 +26,6 @@ import {
   ProfileSection,
   ProfileTitle,
 } from '../shared/components/profile';
-
-import { AllowEmailShareField } from '../shared/components/profile.personal';
 
 import { Route } from '../shared/constants';
 import { db } from '../shared/core.server';
@@ -165,11 +171,6 @@ function EmailAddressSection() {
             );
           })}
         </ul>
-        <AllowEmailShareField
-          defaultValue={student.allowEmailShare}
-          error={errors.AllowEmailShare}
-          name={AllowEmailShare}
-        />
         <Button.Group>
           <Button onClick={onAddEmail} size="small" variant="secondary">
             <Plus /> Add Email
@@ -181,6 +182,18 @@ function EmailAddressSection() {
             </Button>
           )}
         </Button.Group>
+        <Form.Field
+          description="If you go to school where there is a ColorStack chapter, this will allow that chapter leader to reach out to you about local events and opportunities."
+          error={errors.AllowEmailShare}
+          label="Would you like to share your email with chapter leaders?"
+        >
+          <Checkbox
+            defaultChecked={student.allowEmailShare}
+            label="Share my email with chapter leaders! 🌟 "
+            name={AllowEmailShare}
+            value="1"
+          />
+        </Form.Field>
         <Button.Group>
           <Button loading={submitting} type="submit">
             Save
