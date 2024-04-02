@@ -26,7 +26,7 @@ export async function uploadJobOffer({
 
   await db.transaction().execute(async (trx) => {
     await trx
-      .insertInto('job_offers')
+      .insertInto('jobOffers')
       .values({
         id: id(),
         baseSalary,

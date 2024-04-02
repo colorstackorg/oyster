@@ -73,7 +73,7 @@ export const JobOffer = Entity.omit({ deletedAt: true }).extend({
   startDate: ISO8601Date,
   status: z.string(),
   stockPerYear: z.number().optional(),
-  studentId: Student.shape.id.nullish(),
+  studentId: Student.shape.id,
 });
 
 export const WorkExperience = Entity.extend({
