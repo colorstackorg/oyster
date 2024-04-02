@@ -102,6 +102,7 @@ export function getMember(id: string, options: GetMemberOptions = {}) {
             .as('school');
         });
     });
+}
 
 export async function updateGeneralInformation(
   trx: Transaction<DB>,
