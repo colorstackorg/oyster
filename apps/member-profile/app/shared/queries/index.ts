@@ -90,17 +90,18 @@ type GetMemberOptions = {
 };
 
 export function getMember(id: string, options: GetMemberOptions = {}) {
-  return db.selectFrom('students').where('students.id', '=', id);
-  // .$if(!!options.school, (qb) => {
-  //   return qb
-  //     .leftJoin('schools', 'students.schoolId', 'schools.id')
-  //     .select((eb) => {
-  //       return eb.fn
-  //         .coalesce('schools.name', 'students.otherSchool')
-  //         .as('school');
-  //     });
-  // });
-}
+  return db
+    .selectFrom('students')
+    .where('students.id', '=', id)
+    .$if(!!options.school, (qb) => {
+      return qb
+        .leftJoin('schools', 'students.schoolId', 'schools.id')
+        .select((eb) => {
+          return eb.fn
+            .coalesce('schools.name', 'students.otherSchool')
+            .as('school');
+        });
+    });
 
 export async function updateGeneralInformation(
   trx: Transaction<DB>,
