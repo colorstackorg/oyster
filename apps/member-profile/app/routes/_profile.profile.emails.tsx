@@ -175,7 +175,7 @@ function EmailAddressSection() {
       </Button.Group>
       <RemixForm className="form" method="post">
         <Form.Field
-          description="If you go to school where there is a ColorStack chapter, this will allow that chapter leader to reach out to you about local events and opportunities."
+          description="If your local schools have ColorStack chapters, this will allow chapter leaders to reach out about local events and opportunities."
           error={errors.allowEmailShare}
           label="Would you like to share your email with chapter leaders?"
         >
