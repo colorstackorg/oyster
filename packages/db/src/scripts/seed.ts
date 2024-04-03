@@ -5,8 +5,8 @@ import { z } from 'zod';
 
 import { db } from '../shared/db';
 import { ENVIRONMENT } from '../shared/env';
-import { migrate } from '../shared/migrate';
-import { truncate } from '../shared/truncate';
+import { migrate } from '../use-cases/migrate';
+import { truncate } from '../use-cases/truncate';
 
 if (ENVIRONMENT !== 'development') {
   throw new Error('Cannot seed database in non-development environment.');

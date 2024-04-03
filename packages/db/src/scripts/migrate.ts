@@ -1,6 +1,6 @@
 import { program } from 'commander';
 
-import { migrate } from '../shared/migrate';
+import { migrate } from '../use-cases/migrate';
 
 const DOWN_FLAG = '--down';
 
