@@ -66,7 +66,10 @@ function App() {
 
       <body>
         <Outlet />
-        {toast && <Toast message={toast.message} type={toast.type} />}
+
+        {toast && (
+          <Toast key={toast.id} message={toast.message} type={toast.type} />
+        )}
 
         <script
           // https://remix.run/docs/en/v1/guides/envvars#browser-environment-variables
