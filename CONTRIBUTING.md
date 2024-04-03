@@ -49,10 +49,13 @@ Some things to keep in mind when making a pull request:
     - `test`: A change that adds missing tests.
     - `chore`: A change that is likely none of the above.
   - Be in all lowercase.
-  - Be present tense (ie: "fix", not "fixed").
   - Start with a verb (ie: "add ...", "implement ...", "update ...").
   - Have an emoji at the end of it (we like color around here). 🔥
-- Each PR should be attached to an issue, so be sure to add this to the PR
+- Please check the
+  ["allow edits from maintainers option"](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork)
+  when creating your PR. This allows us to more easily collaborate with you on
+  your work.
+- Most PRs should be attached to an issue, so be sure to add this to the PR
   description:
   ```
   Closes #<ISSUE_NUMBER>.
