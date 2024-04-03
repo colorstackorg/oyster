@@ -1,3 +1,5 @@
+import './before-script';
+
 import { sql } from 'kysely';
 import readline from 'readline';
 import { z } from 'zod';
@@ -5,8 +7,6 @@ import { z } from 'zod';
 import { ENVIRONMENT } from '@/shared/env';
 import { createDatabaseConnection } from '../shared/create-database-connection';
 import { migrate } from '../shared/migrate';
-
-import './load-env';
 
 if (ENVIRONMENT !== 'development') {
   throw new Error('Cannot seed database in non-development environment.');

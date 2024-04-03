@@ -1,13 +1,8 @@
-import { config } from 'dotenv';
-
 import { Environment } from './types';
 
 export const ENVIRONMENT = process.env.ENVIRONMENT as Environment;
 export const IS_PRODUCTION = ENVIRONMENT === 'production';
 export const IS_TEST = ENVIRONMENT === 'test';
-
-// Loads the .env file into `process.env`.
-config();
 
 export const ENV = {
   AIRMEET_ACCESS_KEY: process.env.AIRMEET_ACCESS_KEY as string,

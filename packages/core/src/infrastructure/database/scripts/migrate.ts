@@ -1,8 +1,8 @@
+import './before-script';
+
 import { program } from 'commander';
 
 import { migrate } from '../shared/migrate';
-
-import './load-env';
 
 const DOWN_FLAG = '--down';
 
