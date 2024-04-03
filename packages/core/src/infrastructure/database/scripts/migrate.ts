@@ -13,4 +13,4 @@ program.parse();
 // Read the value of the "--down" flag.
 const { down } = program.opts();
 
-migrate(!!down);
+migrate({ down: !!down });

@@ -1,5 +1,8 @@
 import { db } from '@/infrastructure/database';
-import { TEST_COMPANY_1, TEST_COMPANY_4 } from '@/shared/utils/test.utils';
+import {
+  TEST_COMPANY_1,
+  TEST_COMPANY_4,
+} from '@/infrastructure/database/test/constants';
 import * as module from '../queries/get-crunchbase-organization';
 import { saveCompanyIfNecessary } from './save-company-if-necessary';
 

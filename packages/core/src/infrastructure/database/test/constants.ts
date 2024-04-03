@@ -1,4 +1,4 @@
-import { Insertable, Transaction } from 'kysely';
+import { Insertable } from 'kysely';
 import { DB } from 'kysely-codegen/dist/db';
 
 // Constants
@@ -30,12 +30,3 @@ export const TEST_COMPANY_4: Insertable<DB['companies']> = {
   name: 'Stripe',
   stockSymbol: '...',
 };
-
-// Helpers
-
-export async function seedTestDatabase(trx: Transaction<DB>) {
-  await trx
-    .insertInto('companies')
-    .values([TEST_COMPANY_1, TEST_COMPANY_2, TEST_COMPANY_3])
-    .execute();
-}
