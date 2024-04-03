@@ -1,6 +1,4 @@
-export type { DB } from '@oyster/db';
 export { job } from './infrastructure/bull/use-cases/job';
-export { db } from './infrastructure/database';
 export { getActiveStreak } from './modules/active-status/queries/get-active-streak';
 export { getActiveStreakLeaderboard } from './modules/active-status/queries/get-active-streak-leaderboard';
 export { getActiveStreakLeaderboardPosition } from './modules/active-status/queries/get-active-streak-leaderboard-position';
