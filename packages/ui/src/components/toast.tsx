@@ -27,8 +27,6 @@ export function Toast({ message, type }: ToastProps): JSX.Element | null {
   const hydrated = useHydrated();
 
   useEffect(() => {
-    // NOTE: If this value changes, be sure to update it in the CSS file
-    // for the icon shader as well.
     const timeout = setTimeout(() => {
       setShow(false);
     }, 7000);

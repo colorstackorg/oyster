@@ -4,8 +4,8 @@
   "private": true,
   "main": "./src/index.ts",
   "scripts": {
-    "lint": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
     "nanoid": "^3.0.0",
