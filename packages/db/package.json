@@ -9,9 +9,9 @@
     "./test/constants": "./src/test/constants.ts"
   },
   "scripts": {
-    "migrate": "tsx ./src/scripts/migrate.ts && yarn db:types",
-    "migrate:down": "tsx ./src/scripts/migrate.ts --down && yarn db:types",
-    "seed": "tsx ./src/scripts/seed.ts && yarn db:types",
+    "migrate": "tsx ./src/scripts/migrate.ts && yarn types",
+    "migrate:down": "tsx ./src/scripts/migrate.ts --down && yarn types",
+    "seed": "tsx ./src/scripts/seed.ts && yarn types",
     "setup": "tsx ./src/scripts/setup.ts",
     "type-check": "tsc --noEmit",
     "types": "kysely-codegen --dialect=postgres --camel-case"
