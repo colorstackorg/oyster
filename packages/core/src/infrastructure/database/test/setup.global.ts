@@ -6,7 +6,5 @@ export async function setup() {
 }
 
 export async function teardown() {
-  await db.schema.dropSchema('public').cascade().execute();
-  await db.schema.createSchema('public').execute();
   await db.destroy();
 }
