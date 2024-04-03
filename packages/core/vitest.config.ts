@@ -8,7 +8,8 @@ import { defineConfig } from 'vitest/config';
 // the `DATABASE_URL` environment variable, so we'll use that instead of having
 // to create a separate database (and thus connection) for testing.
 const DATABASE_URL =
-  process.env.DATABASE_URL || 'postgresql://localhost:5432/colorstack_test';
+  process.env.DATABASE_URL ||
+  'postgresql://colorstack:colorstack@localhost:5432/colorstack_test';
 
 export default defineConfig({
   plugins: [tsconfigPaths()],
