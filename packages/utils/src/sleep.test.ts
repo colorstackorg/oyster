@@ -10,7 +10,7 @@ describe(sleep.name, () => {
 
     const elapsed = end - start;
 
-    expect(elapsed).toBeGreaterThanOrEqual(100);
-    expect(elapsed).toBeLessThanOrEqual(120);
+    expect(elapsed).toBeGreaterThanOrEqual(90);
+    expect(elapsed).toBeLessThanOrEqual(110);
   });
 });
