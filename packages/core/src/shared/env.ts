@@ -40,7 +40,6 @@ export const ENV = {
 // package and thus in this file after the dotenv has loaded the config.
 // Everything else above should be colocated with its respective module.
 
-export const DATABASE_URL = process.env.DATABASE_URL as string;
 export const ENVIRONMENT = process.env.ENVIRONMENT as Environment;
 export const IS_PRODUCTION = ENVIRONMENT === 'production';
 export const IS_TEST = ENVIRONMENT === 'test';
