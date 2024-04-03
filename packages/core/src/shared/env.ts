@@ -36,6 +36,5 @@ export const ENV = {
   SWAG_UP_CLIENT_SECRET: process.env.SWAG_UP_CLIENT_SECRET as string,
 };
 
-export const DATABASE_URL = process.env.DATABASE_URL as string;
 export const IS_PRODUCTION = ENV.ENVIRONMENT === 'production';
 export const IS_TEST = ENV.ENVIRONMENT === 'test';
