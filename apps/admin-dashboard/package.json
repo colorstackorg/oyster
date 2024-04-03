@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@oyster/core": "*",
+    "@oyster/db": "*",
     "@oyster/types": "*",
     "@oyster/ui": "*",
     "@oyster/utils": "*",
