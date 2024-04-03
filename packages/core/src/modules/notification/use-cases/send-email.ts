@@ -13,7 +13,7 @@ import {
   StudentRemovedEmail,
 } from '@oyster/email-templates';
 
-import { ENV } from '@/shared/env';
+import { ENVIRONMENT } from '@/shared/env';
 import {
   getNodemailerTransporter,
   getPostmarkInstance,
@@ -43,7 +43,7 @@ const FROM_NOTIFICATIONS = 'ColorStack <notifications@colorstack.org>';
  * own email account and send emails from there.
  */
 export async function sendEmail(input: EmailTemplate) {
-  return match(ENV.ENVIRONMENT)
+  return match(ENVIRONMENT)
     .with('development', () => {
       return sendEmailWithNodemailer(input);
     })
@@ -157,7 +157,7 @@ function getSubject(input: EmailTemplate): string {
     })
     .exhaustive();
 
-  const subjectWithEnvironment = match(ENV.ENVIRONMENT)
+  const subjectWithEnvironment = match(ENVIRONMENT)
     .with('development', () => `[Development] ${subject}`)
     .with('production', 'test', () => subject)
     .exhaustive();

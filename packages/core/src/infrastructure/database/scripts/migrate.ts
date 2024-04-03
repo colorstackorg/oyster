@@ -2,6 +2,8 @@ import { program } from 'commander';
 
 import { migrate } from '../shared/migrate';
 
+import './load-env';
+
 const DOWN_FLAG = '--down';
 
 // Allow the program to use the "--down" flag.
