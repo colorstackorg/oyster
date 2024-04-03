@@ -1,5 +1,5 @@
-import { db } from '@/infrastructure/database';
-import { migrate } from '../shared/migrate';
+import { db } from '../shared/db';
+import { migrate } from '../use-cases/migrate';
 
 export async function setup() {
   await migrate({ db });

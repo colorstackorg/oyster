@@ -2,9 +2,9 @@ import { exec } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { ENVIRONMENT } from '@/shared/env';
+import { IS_PRODUCTION } from '../shared/env';
 
-if (ENVIRONMENT !== 'development') {
+if (IS_PRODUCTION) {
   throw new Error('Cannot setup database in non-development environment.');
 }
 

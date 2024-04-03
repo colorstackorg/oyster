@@ -16,16 +16,12 @@
   },
   "scripts": {
     "build": "tsup",
-    "db:migrate": "tsx ./src/infrastructure/database/scripts/migrate.ts && yarn db:types",
-    "db:migrate:down": "tsx ./src/infrastructure/database/scripts/migrate.ts --down && yarn db:types",
-    "db:seed": "tsx ./src/infrastructure/database/scripts/seed.ts && yarn db:types",
-    "db:setup": "tsx ./src/infrastructure/database/scripts/setup.ts",
-    "db:types": "kysely-codegen --dialect=postgres --camel-case",
     "test": "vitest run",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@mailchimp/mailchimp_marketing": "^3.0.78",
+    "@oyster/db": "*",
     "@oyster/email-templates": "*",
     "@oyster/types": "*",
     "@oyster/utils": "*",
@@ -41,7 +37,6 @@
     "kysely": "^0.26.3",
     "nanoid": "^3.0.0",
     "nodemailer": "^6.9.13",
-    "pg": "^8.8.0",
     "postmark": "^3.0.15",
     "statsig-node": "^5.3.0"
   },
@@ -53,9 +48,6 @@
     "@types/jsonwebtoken": "^9.0.2",
     "@types/mailchimp__mailchimp_marketing": "^3.0.8",
     "@types/nodemailer": "^6.4.14",
-    "@types/pg": "^8.11.2",
-    "commander": "^12.0.0",
-    "kysely-codegen": "^0.10.1",
     "nanoid": "^3.0.0",
     "react": "^18.2.0",
     "tsup": "^6.1.3",

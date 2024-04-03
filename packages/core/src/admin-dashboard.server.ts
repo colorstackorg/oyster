@@ -1,6 +1,5 @@
 export { QueueFromName } from './infrastructure/bull/bull';
 export { job } from './infrastructure/bull/use-cases/job';
-export { db } from './infrastructure/database';
 export { addAdmin } from './modules/admin/use-cases/add-admin';
 export { countPendingApplications } from './modules/application/queries/count-pending-applications';
 export { getApplication } from './modules/application/queries/get-application';

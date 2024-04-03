@@ -1,0 +1,10 @@
+{
+  "extends": "@oyster/tsconfig/base.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["vitest/globals"]
+  }
+}
