@@ -19,6 +19,10 @@ export const Route = {
   HOME: '/home',
   POINTS: '/points',
 
+  // Census
+
+  '/census': '/census',
+
   // Directory
 
   '/directory': '/directory',
