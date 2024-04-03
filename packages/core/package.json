@@ -16,16 +16,12 @@
   },
   "scripts": {
     "build": "tsup",
-    "db:migrate": "tsx ./src/infrastructure/database/scripts/migrate.ts && yarn db:types",
-    "db:migrate:down": "tsx ./src/infrastructure/database/scripts/migrate.ts --down && yarn db:types",
-    "db:seed": "tsx ./src/infrastructure/database/scripts/seed.ts && yarn db:types",
-    "db:setup": "tsx ./src/infrastructure/database/scripts/setup.ts",
-    "db:types": "kysely-codegen --dialect=postgres --camel-case",
     "test": "vitest run",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@mailchimp/mailchimp_marketing": "^3.0.78",
+    "@oyster/db": "*",
     "@oyster/email-templates": "*",
     "@oyster/types": "*",
     "@oyster/utils": "*",
