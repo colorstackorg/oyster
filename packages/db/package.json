@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./test/*": "./src/test/*",
+    "./test/constants": "./src/test/constants.ts"
   },
   "scripts": {
     "migrate": "tsx ./src/scripts/migrate.ts && yarn db:types",
