@@ -3,7 +3,7 @@ import { DB } from 'kysely-codegen/dist/db';
 import readline from 'readline';
 import { z } from 'zod';
 
-import { db } from '..';
+import { db } from '../shared/db';
 import { ENVIRONMENT } from '../shared/env';
 import { migrate } from '../shared/migrate';
 import { truncate } from '../shared/truncate';

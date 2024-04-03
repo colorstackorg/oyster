@@ -1,10 +1,11 @@
 import type { SelectExpression } from 'kysely';
-import type { DB } from 'kysely-codegen/dist/db';
+
+import { DB } from '@oyster/db';
 
 import { db } from '@/infrastructure/database';
 
 export async function getIcebreakerPrompts<
-  Selection extends SelectExpression<DB, 'icebreakerPrompts'>
+  Selection extends SelectExpression<DB, 'icebreakerPrompts'>,
 >(selections: Selection[]) {
   const prompts = await db
     .selectFrom('icebreakerPrompts')

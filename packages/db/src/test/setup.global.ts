@@ -1,4 +1,4 @@
-import { db } from '..';
+import { db } from '../shared/db';
 import { migrate } from '../shared/migrate';
 
 export async function setup() {

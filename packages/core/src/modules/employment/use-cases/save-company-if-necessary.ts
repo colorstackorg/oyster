@@ -1,6 +1,6 @@
 import { Transaction } from 'kysely';
-import { DB } from 'kysely-codegen/dist/db';
 
+import { DB } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { db } from '@/infrastructure/database';

@@ -1,4 +1,4 @@
-export type { DB } from 'kysely-codegen/dist/db';
+export type { DB } from '@oyster/db';
 export { job } from './infrastructure/bull/use-cases/job';
 export { db } from './infrastructure/database';
 export { getActiveStreak } from './modules/active-status/queries/get-active-streak';

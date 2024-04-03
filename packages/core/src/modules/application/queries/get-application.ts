@@ -1,5 +1,6 @@
 import type { SelectExpression } from 'kysely';
-import type { DB } from 'kysely-codegen/dist/db';
+
+import type { DB } from '@oyster/db';
 
 import { db } from '@/infrastructure/database';
 
@@ -8,7 +9,7 @@ type GetApplicationOptions = {
 };
 
 export async function getApplication<
-  Selection extends SelectExpression<DB, 'applications'>
+  Selection extends SelectExpression<DB, 'applications'>,
 >(id: string, selections: Selection[], options: GetApplicationOptions = {}) {
   const result = await db
     .selectFrom('applications')

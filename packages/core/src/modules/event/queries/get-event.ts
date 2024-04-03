@@ -1,6 +1,6 @@
 import type { SelectExpression } from 'kysely';
-import type { DB } from 'kysely-codegen/dist/db';
 
+import { DB } from '@oyster/db';
 import { EventType } from '@oyster/types';
 
 import { db } from '@/infrastructure/database';

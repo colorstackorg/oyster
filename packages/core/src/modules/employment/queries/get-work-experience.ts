@@ -1,5 +1,6 @@
 import { SelectExpression } from 'kysely';
-import { DB } from 'kysely-codegen/dist/db';
+
+import { DB } from '@oyster/db';
 
 import { db } from '@/infrastructure/database';
 import { WorkExperience } from '../employment.types';
@@ -11,7 +12,7 @@ type GetWorkExperienceOptions = {
 };
 
 export async function getWorkExperience<
-  Selection extends SelectExpression<DB, 'workExperiences'>
+  Selection extends SelectExpression<DB, 'workExperiences'>,
 >(
   { id, studentId }: GetWorkExperienceQuery,
   selections: Selection[],

@@ -1,3 +1,2 @@
-import { createDatabaseConnection } from './shared/create-database-connection';
-
-export const db = createDatabaseConnection();
+export type { DB } from 'kysely-codegen/dist/db';
+export { db } from './shared/db';

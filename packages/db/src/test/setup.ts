@@ -1,7 +1,7 @@
 import { Transaction } from 'kysely';
 import { DB } from 'kysely-codegen/dist/db';
 
-import { db } from '..';
+import { db } from '../shared/db';
 import { truncate } from '../shared/truncate';
 import { TEST_COMPANY_1, TEST_COMPANY_2, TEST_COMPANY_3 } from './constants';
 
