@@ -5,8 +5,12 @@ import { sleep } from './sleep';
 describe(sleep.name, () => {
   test('Should sleep for the specified number of milliseconds.', async () => {
     const start = Date.now();
-    await sleep(1000);
+    await sleep(100);
     const end = Date.now();
-    expect(end - start).toBeGreaterThanOrEqual(1000);
+
+    const elapsed = end - start;
+
+    expect(elapsed).toBeGreaterThanOrEqual(100);
+    expect(elapsed).toBeLessThanOrEqual(120);
   });
 });
