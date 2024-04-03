@@ -36,6 +36,10 @@ export const ENV = {
   SWAG_UP_CLIENT_SECRET: process.env.SWAG_UP_CLIENT_SECRET as string,
 };
 
+// TODO: Below are the only variables that we need to process in the core,
+// package and thus in this file after the dotenv has loaded the config.
+// Everything else above should be colocated with its respective module.
+
 export const DATABASE_URL = process.env.DATABASE_URL as string;
 export const ENVIRONMENT = process.env.ENVIRONMENT as Environment;
 export const IS_PRODUCTION = ENVIRONMENT === 'production';
