@@ -1,5 +1,3 @@
-import './before-script';
-
 import { sql } from 'kysely';
 import readline from 'readline';
 import { z } from 'zod';

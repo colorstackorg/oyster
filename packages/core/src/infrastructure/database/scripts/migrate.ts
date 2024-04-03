@@ -1,5 +1,3 @@
-import './before-script';
-
 import { program } from 'commander';
 
 import { migrate } from '../shared/migrate';

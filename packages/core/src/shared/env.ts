@@ -1,8 +1,9 @@
+import { config } from 'dotenv';
+
 import { Environment } from './types';
 
-export const ENVIRONMENT = process.env.ENVIRONMENT as Environment;
-export const IS_PRODUCTION = ENVIRONMENT === 'production';
-export const IS_TEST = ENVIRONMENT === 'test';
+// Loads the .env file into `process.env`.
+config();
 
 export const ENV = {
   AIRMEET_ACCESS_KEY: process.env.AIRMEET_ACCESS_KEY as string,
@@ -33,3 +34,8 @@ export const ENV = {
   SWAG_UP_CLIENT_ID: process.env.SWAG_UP_CLIENT_ID as string,
   SWAG_UP_CLIENT_SECRET: process.env.SWAG_UP_CLIENT_SECRET as string,
 };
+
+export const DATABASE_URL = process.env.DATABASE_URL as string;
+export const ENVIRONMENT = process.env.ENVIRONMENT as Environment;
+export const IS_PRODUCTION = ENVIRONMENT === 'production';
+export const IS_TEST = ENVIRONMENT === 'test';
