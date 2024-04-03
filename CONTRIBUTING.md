@@ -117,6 +117,7 @@ Set up your environment variable files by doing the following:
 - In `/apps/api`, duplicate the `.env.example` to `.env`.
 - In `/apps/member-profile`, duplicate the `.env.example` to `.env`.
 - In `/packages/core`, duplicate the `.env.example` to `.env`.
+- In `/packages/core`, duplicate the `.env.test.example` to `.env.test`.
 
 You'll notice that a lot of environment variables are empty. Most of these empty
 variables are tied to the 3rd party integrations we have with platforms such as
