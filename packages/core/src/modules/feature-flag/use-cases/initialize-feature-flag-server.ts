@@ -1,6 +1,6 @@
 import Statsig from 'statsig-node';
 
-import { ENV } from '@/shared/env';
+import { ENVIRONMENT } from '@/shared/env';
 import { getStatsigKey } from '../feature-flag.shared';
 
 /**
@@ -20,7 +20,7 @@ export async function initializeFeatureFlagServer() {
 
   await Statsig.initialize(key, {
     environment: {
-      tier: ENV.ENVIRONMENT,
+      tier: ENVIRONMENT,
     },
   });
 }

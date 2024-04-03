@@ -1,25 +1,46 @@
+import { config } from 'dotenv';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
-// When we run `vitest`, this is the first file that's loaded and thus `dotenv`
-// hasn't processed any environment variables, so `process.env.DATABASE_URL` is
-// empty. When we run this locally, that's expected, so we'll use the
-// "colorstack_test" database. However, in our CI pipeline, we already inject
-// the `DATABASE_URL` environment variable, so we'll use that instead of having
-// to create a separate database (and thus connection) for testing.
-const DATABASE_URL =
-  process.env.DATABASE_URL || 'postgresql://localhost:5432/colorstack_test';
+const env = config({ path: './.env.test' }).parsed;
+
+// If there is no ".env.test" file found, then we'll throw error, except in the
+// CI environment because in CI we manually set the environment variables
+// instead of using .env files.
+if (!env && !process.env.CI) {
+  throw new Error(
+    'Please create an ".env.test" file and copy the contents from ".env.test.example" over to it.'
+  );
+}
 
 export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
-    clearMocks: true,
-    env: {
-      DATABASE_URL,
-      ENVIRONMENT: 'test',
-    },
-    environment: './src/infrastructure/database/vitest-environment-kysely.ts',
+    env,
     globals: true,
+    poolOptions: {
+      threads: {
+        // This is important because we are using a database for integration
+        // tests, and we reset the database (data) before each test. If
+        // ran in parallel, the tests would interfere with each other.
+        // See: https://vitest.dev/config/#pooloptions-threads-singlethread
+        singleThread: true,
+      },
+    },
+
+    // Setup
+
+    // The global setup file is only run once before ALL test suites.
+    // See: https://vitest.dev/config/#globalsetup
+    globalSetup: ['./src/infrastructure/database/test/setup.global.ts'],
+
+    // The setup files are run before EACH test suite.
+    // See: https://vitest.dev/config/#setupfiles
+    setupFiles: ['./src/infrastructure/database/test/setup.ts'],
+
+    // Mocking
+
+    clearMocks: true,
     mockReset: true,
     restoreMocks: true,
   },

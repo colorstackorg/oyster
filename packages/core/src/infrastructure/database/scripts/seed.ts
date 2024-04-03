@@ -2,11 +2,11 @@ import { sql } from 'kysely';
 import readline from 'readline';
 import { z } from 'zod';
 
-import { ENV } from '@/shared/env';
+import { ENVIRONMENT } from '@/shared/env';
 import { createDatabaseConnection } from '../shared/create-database-connection';
 import { migrate } from '../shared/migrate';
 
-if (ENV.ENVIRONMENT !== 'development') {
+if (ENVIRONMENT !== 'development') {
   throw new Error('Cannot seed database in non-development environment.');
 }
 
@@ -22,7 +22,7 @@ async function main() {
     await clean();
     console.log('(2/4) Dropped and recreated the public schema. ✅');
 
-    await migrate();
+    await migrate({ db });
     console.log('(3/4) Ran migrations and initialized tables. ✅');
 
     await seed();
