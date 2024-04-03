@@ -16,8 +16,8 @@
     "dev": "turbo run dev --cache-dir=.turbo",
     "dev:apps": "yarn dev --filter='./apps/*'",
     "lint": "turbo run lint --cache-dir=.turbo",
-    "test": "turbo run test --cache-dir=.turbo",
     "start": "turbo run start --cache-dir=.turbo",
+    "test": "turbo run test --cache-dir=.turbo",
     "type-check": "turbo run type-check --cache-dir=.turbo"
   },
   "devDependencies": {
