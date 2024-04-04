@@ -1,15 +1,39 @@
 import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
-import { Form as RemixForm, useSubmit } from '@remix-run/react';
+import {
+  Link,
+  Form as RemixForm,
+  useLoaderData,
+  useSubmit,
+} from '@remix-run/react';
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
-import { Form, Input, Radio, Text, validateForm } from '@oyster/ui';
+import { Form, Input, Radio, Select, Text, validateForm } from '@oyster/ui';
+import { iife } from '@oyster/utils';
 
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { Route } from '../shared/constants';
+import { listEmails } from '../shared/core.server';
+import { ensureUserAuthenticated, user } from '../shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
-  return json({});
+  const session = await ensureUserAuthenticated(request);
+
+  const memberId = user(session);
+
+  const [emails] = await Promise.all([listEmails(memberId)]);
+
+  const primaryEmail = iife(() => {
+    const result = emails.find((email) => {
+      return email.primary;
+    });
+
+    return result ? result.email! : undefined;
+  });
+
+  return json({
+    emails,
+    primaryEmail,
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -36,21 +60,21 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function CensusPage() {
   return (
-    <>
-      <div className="mx-auto flex w-full max-w-[600px] flex-col gap-8">
-        <Text variant="2xl">ColorStack Census '24</Text>
-        <Text className="-mt-4" color="gray-500">
-          Thank you for taking the time to complete the ColorStack Annual
-          Census! This feedback is extremely valuable to us as we continue to
-          grow and improve our community.
-        </Text>
-        <CensusForm />
-      </div>
-    </>
+    <div className="mx-auto flex w-full max-w-[600px] flex-col gap-8">
+      <Text variant="2xl">ColorStack Census '24</Text>
+      <Text className="-mt-4" color="gray-500">
+        Thank you for taking the time to complete the ColorStack Annual Census!
+        This feedback is extremely valuable to us as we continue to grow and
+        improve our community.
+      </Text>
+      <CensusForm />
+    </div>
   );
 }
 
 function CensusForm() {
+  const { emails, primaryEmail } = useLoaderData<typeof loader>();
+
   const submit = useSubmit();
 
   return (
@@ -59,8 +83,35 @@ function CensusForm() {
       method="post"
       onBlur={(e) => submit(e.currentTarget)}
     >
-      <Form.Field error="" label="Email" required>
-        <Input name="email" required />
+      <Form.Field
+        description={iife(() => {
+          return (
+            <Text>
+              If your preferred email is not listed here, please add it{' '}
+              <Link
+                className="link"
+                target="_blank"
+                to={Route['/profile/emails/add/start']}
+              >
+                here
+              </Link>{' '}
+              first.
+            </Text>
+          );
+        })}
+        error=""
+        label="Email"
+        required
+      >
+        <Select defaultValue={primaryEmail} id="email" name="email" required>
+          {emails.map((email) => {
+            return (
+              <option key={email.email} value={email.email!}>
+                {email.email}
+              </option>
+            );
+          })}
+        </Select>
       </Form.Field>
 
       <Form.Field error="" label="School" required>
