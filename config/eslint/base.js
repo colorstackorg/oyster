@@ -5,6 +5,14 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
   ],
+  ignorePatterns: [
+    '.eslintrc.cjs',
+    '.eslintrc.js',
+    '.turbo/',
+    'dist/',
+    'node_modules/',
+  ],
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
+  root: true,
 };
