@@ -13,8 +13,6 @@ import { cx } from '../utils/cx';
 import { useIsDropdownParent } from './dropdown';
 import { useIsModalParent } from './modal';
 
-function a() {}
-
 const ComboboxPopoverContext = React.createContext({
   popoverOpen: false,
   ref: createRef<HTMLDivElement | null>(),
