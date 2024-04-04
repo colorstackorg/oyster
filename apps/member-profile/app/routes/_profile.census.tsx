@@ -49,7 +49,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const session = await ensureUserAuthenticated(request);
+  await ensureUserAuthenticated(request);
 
   const form = await request.formData();
 
@@ -62,7 +62,7 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  await db.transaction().execute(async (trx) => {});
+  await db.transaction().execute(async (_) => {});
 
   return json({
     error: '',
