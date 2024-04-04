@@ -81,9 +81,11 @@ export const Checkbox = ({
 Checkbox.Group = function CheckboxGroup({ children }: PropsWithChildren) {
   const childrenWithProps = React.Children.map(children, (child, i: number) => {
     if (React.isValidElement(child)) {
-      return React.cloneElement(child, {
+      const props: Partial<CheckboxProps> = {
         color: ACCENT_COLORS[i % ACCENT_COLORS.length],
-      } as any);
+      };
+
+      return React.cloneElement(child, props);
     }
 
     return null;

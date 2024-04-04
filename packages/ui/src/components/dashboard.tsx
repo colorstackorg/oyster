@@ -22,7 +22,7 @@ type DashboardContextValue = {
 
 const DashboardContext = React.createContext<DashboardContextValue>({
   open: false,
-  setOpen: (open: boolean) => {},
+  setOpen: (_: boolean) => {},
 });
 
 export const Dashboard = ({ children }: PropsWithChildren) => {
