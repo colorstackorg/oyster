@@ -3,7 +3,7 @@ import { ZodError } from 'zod';
 import { extractZodErrorMessage } from '@/shared/utils/zod.utils';
 
 export type ErrorContext<
-  T extends Record<string, unknown> = Record<string, unknown>
+  T extends Record<string, unknown> = Record<string, unknown>,
 > = T;
 
 export type ErrorLevel = 'error' | 'warning';

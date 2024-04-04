@@ -19,8 +19,8 @@ import {
   Link,
   Radio,
   Text,
-  Textarea,
   TextProps,
+  Textarea,
 } from '@oyster/ui';
 import { iife, toTitleCase } from '@oyster/utils';
 
@@ -35,8 +35,8 @@ const ApplicationContext = React.createContext({
   isOtherMajor: false,
   isOtherSchool: false,
   readOnly: false,
-  setIsOtherMajor: (value: boolean) => {},
-  setIsOtherSchool: (value: boolean) => {},
+  setIsOtherMajor: (_: boolean) => {},
+  setIsOtherSchool: (_: boolean) => {},
 });
 
 export const Application = ({

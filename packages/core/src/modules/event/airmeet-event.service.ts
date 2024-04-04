@@ -67,7 +67,7 @@ const ListAirmeetAttendeesResponse = z.object({
 type Attendee = Pick<EventAttendee, 'createdAt' | 'email' | 'name'>;
 
 export async function listAirmeetAttendees(id: string): Promise<Attendee[]> {
-  let result: Attendee[] = [];
+  const result: Attendee[] = [];
 
   // When setting this to a number | undefined, and initializing to undefined,
   // Typescript will say that `response` is any if we reset cursor...can't

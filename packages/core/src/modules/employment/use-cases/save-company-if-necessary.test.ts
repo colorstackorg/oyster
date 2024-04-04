@@ -33,7 +33,7 @@ describe(saveCompanyIfNecessary.name, () => {
         stockSymbol: company4.stockSymbol!,
       });
 
-    const result = await db.transaction().execute(async (trx) => {
+    await db.transaction().execute(async (trx) => {
       return saveCompanyIfNecessary(trx, company4.crunchbaseId);
     });
 
@@ -41,16 +41,14 @@ describe(saveCompanyIfNecessary.name, () => {
   });
 
   test('If the company does not exist in our database, it should create it from the Crunchbase API result.', async () => {
-    const mock = vi
-      .spyOn(module, 'getCrunchbaseOrganization')
-      .mockResolvedValue({
-        crunchbaseId: company4.crunchbaseId,
-        description: company4.description!,
-        domain: company4.domain!,
-        imageUrl: company4.imageUrl!,
-        name: company4.name,
-        stockSymbol: company4.stockSymbol!,
-      });
+    vi.spyOn(module, 'getCrunchbaseOrganization').mockResolvedValue({
+      crunchbaseId: company4.crunchbaseId,
+      description: company4.description!,
+      domain: company4.domain!,
+      imageUrl: company4.imageUrl!,
+      name: company4.name,
+      stockSymbol: company4.stockSymbol!,
+    });
 
     const result = await db.transaction().execute(async (trx) => {
       return saveCompanyIfNecessary(trx, company4.crunchbaseId);
