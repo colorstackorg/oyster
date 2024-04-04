@@ -121,7 +121,7 @@ enable these integrations in development, please see the
 [How to Enable Integrations](./docs/how-to-enable-integrations.md)
 documentation.
 
-### Install Dependencies
+### Project Dependencies
 
 To install all project dependencies, run:
 
