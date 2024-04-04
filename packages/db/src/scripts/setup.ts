@@ -14,7 +14,11 @@ const commands = [
   'CREATE DATABASE colorstack OWNER colorstack',
   'CREATE DATABASE colorstack_test OWNER colorstack',
 ]
-  .map((command) => `-c "${command}"`)
+  .map((command) => {
+    // The -c flag allows us to run commands sequentially.
+    // https://www.postgresql.org/docs/devel/app-psql.html#APP-PSQL-OPTION-COMMAND
+    return `-c "${command}"`;
+  })
   .join(' ');
 
 exec(
