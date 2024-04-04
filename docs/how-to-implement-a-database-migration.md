@@ -49,7 +49,7 @@ For example, a valid migration name is:
 ## Common Errors
 
 ```
-An error occurred with the Kysely migrator. Error: corrupted migrations: previously executed migration <SOME_MIGRATION_NAME> is missing.
+Error: corrupted migrations: previously executed migration <SOME_MIGRATION_NAME> is missing.
 ```
 
 The easiest way to fix this is to re-setup your database by running:
