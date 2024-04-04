@@ -23,13 +23,13 @@ export default function BullPage() {
         <Dashboard.Title>🐂 Bull</Dashboard.Title>
       </header>
 
-      <div className="@4xl:grid-cols-[200px,1fr] grid grid-cols-1 gap-6">
-        <ul className="@4xl:sticky @4xl:top-0 @4xl:border-r @4xl:border-r-gray-200 flex h-fit flex-col gap-4 p-2">
+      <div className="grid grid-cols-1 gap-6 @4xl:grid-cols-[200px,1fr]">
+        <ul className="flex h-fit flex-col gap-4 p-2 @4xl:sticky @4xl:top-0 @4xl:border-r @4xl:border-r-gray-200">
           {QUEUES.map((queue) => {
             return (
               <li key={queue}>
                 <NavLink
-                  className="link [&.active]:text-primary text-black"
+                  className="link text-black [&.active]:text-primary"
                   to={generatePath(Route.BULL_QUEUE, { queue })}
                 >
                   {toTitleCase(queue)}
@@ -39,7 +39,7 @@ export default function BullPage() {
           })}
         </ul>
 
-        <div className="@container flex flex-col gap-[inherit] overflow-scroll">
+        <div className="flex flex-col gap-[inherit] overflow-scroll @container">
           <Outlet />
         </div>
       </div>

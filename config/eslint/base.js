@@ -6,9 +6,11 @@ module.exports = {
     'plugin:prettier/recommended',
   ],
   ignorePatterns: [
+    '.cache/',
     '.eslintrc.*',
     '.react-email/',
     '.turbo/',
+    'build/',
     'dist/',
     'node_modules/',
   ],

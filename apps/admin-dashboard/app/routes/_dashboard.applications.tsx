@@ -124,7 +124,7 @@ function FilterApplicationsForm() {
 type ApplicationInView = SerializeFrom<typeof loader>['applications'][number];
 
 function ApplicationsTable() {
-  const { applications, totalCount } = useLoaderData<typeof loader>();
+  const { applications } = useLoaderData<typeof loader>();
 
   const { search } = useLocation();
 
