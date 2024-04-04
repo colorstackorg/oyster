@@ -1,6 +1,6 @@
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
   extends: ['../../config/eslint/base.js'],
-  ignorePatterns: ['/*', '!/src/**/*.{ts,tsx}'],
+  ignorePatterns: ['/*', '!/src'],
   root: true,
 };
