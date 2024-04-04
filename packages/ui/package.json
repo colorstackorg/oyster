@@ -10,17 +10,15 @@
   },
   "license": "MIT",
   "scripts": {
-    "lint": "eslint ./src",
-    "lint:fix": "eslint ./src --fix",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
+    "@oyster/eslint": "*",
     "@oyster/tsconfig": "*",
     "@oyster/types": "*",
     "@oyster/utils": "*",
     "@remix-run/react": "^2.8.1",
     "@types/react": "^18.0.26",
-    "eslint-config-oyster": "*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-feather": "^2.0.10",
