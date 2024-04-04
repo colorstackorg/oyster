@@ -1,6 +1,4 @@
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
   extends: ['@oyster/eslint-config/base'],
-  ignorePatterns: ['/*', '!/src'],
-  root: true,
 };
