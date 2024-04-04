@@ -95,11 +95,6 @@ Please ensure that you have the following software on your machine:
    ```
    git checkout -b YOUR_BRANCH_NAME
    ```
-4. Install all project dependencies.
-
-   ```sh
-   yarn
-   ```
 
 ### Syncing a Forked Repository
 
@@ -125,6 +120,14 @@ Postmark for sending emails and Google for authentication. If you would like to
 enable these integrations in development, please see the
 [How to Enable Integrations](./docs/how-to-enable-integrations.md)
 documentation.
+
+### Install Dependencies
+
+To install all project dependencies, run:
+
+```sh
+yarn
+```
 
 ### Database Setup
 
