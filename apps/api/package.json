@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "tsx watch ./src/main.ts",
-    "lint": "eslint 'src/**'",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "start": "tsx ./src/main.ts",
     "type-check": "tsc --noEmit"
   },
