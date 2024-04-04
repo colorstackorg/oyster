@@ -7,7 +7,6 @@ import {
   company1,
   company2,
   company3,
-  company4,
   student1,
   student1Emails,
 } from './constants';
@@ -45,6 +44,6 @@ async function seed(trx: Transaction<DB>) {
 
   await trx
     .insertInto('companies')
-    .values([company1, company2, company3, company4])
+    .values([company1, company2, company3])
     .execute();
 }
