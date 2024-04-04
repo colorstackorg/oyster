@@ -1,6 +1,6 @@
 {
   "extends": "@oyster/tsconfig/base.json",
-  "include": ["src", "./types.d.ts"],
+  "include": ["src"],
   "compilerOptions": {
     "jsx": "react-jsx",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
