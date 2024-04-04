@@ -1,5 +1,3 @@
-import { describe, expect, test } from 'vitest';
-
 import { pick } from './pick';
 
 describe(pick.name, () => {
