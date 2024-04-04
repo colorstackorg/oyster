@@ -13,6 +13,7 @@
     "lint:fix": "eslint . --fix",
     "migrate": "tsx ./src/scripts/migrate.ts && yarn types",
     "migrate:down": "tsx ./src/scripts/migrate.ts --down && yarn types",
+    "postinstall": "yarn run types",
     "seed": "tsx ./src/scripts/seed.ts && yarn types",
     "setup": "tsx ./src/scripts/setup.ts",
     "type-check": "tsc --noEmit",
