@@ -10,6 +10,7 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
+    "@oyster/eslint": "*",
     "nanoid": "^3.0.0",
     "vitest": "^1.3.1"
   }
