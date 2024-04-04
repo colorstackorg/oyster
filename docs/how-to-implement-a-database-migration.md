@@ -43,13 +43,17 @@ files in the following manner:
 For example, a valid migration name is:
 
 ```
-2024-01-29T19:05:29Z-birthdate.ts
+20240311103301_job_offers.ts
 ```
 
-To get the ISO timestamp, you can simply open up a node terminal and run:
+## Common Errors
 
 ```
-new Date()
+An error occurred with the Kysely migrator. Error: corrupted migrations: previously executed migration <SOME_MIGRATION_NAME> is missing.
 ```
 
-and the output should be exactly what we want.
+The easiest way to fix this is to re-setup your database by running:
+
+```
+yarn db:setup
+```
