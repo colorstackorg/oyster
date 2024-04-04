@@ -5,12 +5,14 @@ import {
   useLoaderData,
   useSubmit,
 } from '@remix-run/react';
+import { useState } from 'react';
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
 import { Form, Input, Radio, Select, Text, validateForm } from '@oyster/ui';
 import { iife } from '@oyster/utils';
 
+import { CityCombobox } from '../shared/components/city-combobox';
 import { Route } from '../shared/constants';
 import { listEmails } from '../shared/core.server';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
@@ -77,6 +79,8 @@ function CensusForm() {
 
   const submit = useSubmit();
 
+  const [hasInternship, setHasInternship] = useState<boolean>(false);
+
   return (
     <RemixForm
       className="form gap-[inherit]"
@@ -128,7 +132,6 @@ function CensusForm() {
             value="1"
           />
           <Radio
-            defaultChecked
             id={'isInternationalStudent' + '0'}
             label="No"
             name="isInternationalStudent"
@@ -143,30 +146,60 @@ function CensusForm() {
         label="Do you have an internship this summer?"
         required
       >
-        <Input name="hasInternship" required />
+        <Radio.Group>
+          <Radio
+            id={'hasInternship' + '1'}
+            label="Yes"
+            name="hasInternship"
+            onChange={(e) => setHasInternship(e.currentTarget.value === '1')}
+            required
+            value="1"
+          />
+          <Radio
+            id={'hasInternship' + '0'}
+            label="No"
+            name="hasInternship"
+            onChange={(e) => setHasInternship(e.currentTarget.value === '1')}
+            required
+            value="0"
+          />
+        </Radio.Group>
       </Form.Field>
 
-      <Form.Field
-        error=""
-        label="What company will you be working with?"
-        required
-      >
-        <Input name="company" required />
-      </Form.Field>
+      {hasInternship && (
+        <Form.Field
+          error=""
+          label="What company will you be working with?"
+          required
+        >
+          <Input name="company" required />
+        </Form.Field>
+      )}
+
+      {hasInternship && (
+        <Form.Field
+          error=""
+          label="If you received multiple offers, list out the additional companies."
+        >
+          <Input name="additionalCompanies" />
+        </Form.Field>
+      )}
 
       <Form.Field
-        error=""
-        label="If you received multiple offers, list out the additional companies."
-      >
-        <Input name="additionalCompanies" />
-      </Form.Field>
-
-      <Form.Field
+        description="This will help us plan for our in-person events this summer."
         error=""
         label="What city will you be in this summer?"
         required
       >
-        <Input name="location" required />
+        <CityCombobox
+          defaultLatitude={undefined}
+          defaultLongitude={undefined}
+          defaultValue={undefined}
+          name="location"
+          latitudeName="locationLatitude"
+          longitudeName="locationLongitude"
+          required
+        />
       </Form.Field>
 
       <Form.Field
