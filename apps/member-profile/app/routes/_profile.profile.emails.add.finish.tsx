@@ -40,7 +40,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const email = await addEmailCookie.parse(request.headers.get('Cookie'));
 
   if (!email) {
-    return redirect(Route.ADD_EMAIL_START);
+    return redirect(Route['/profile/emails/add/start']);
   }
 
   return json({

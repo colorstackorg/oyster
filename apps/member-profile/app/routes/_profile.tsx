@@ -13,16 +13,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const isCensusEnabled = await isFeatureFlagEnabled('census_2024');
 
-  const year = new Date().getFullYear().toString().slice(-2);
-
   return json({
     isCensusEnabled,
-    year,
   });
 }
 
 export default function ProfileLayout() {
-  const { isCensusEnabled, year } = useLoaderData<typeof loader>();
+  const { isCensusEnabled } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -42,7 +39,7 @@ export default function ProfileLayout() {
             {isCensusEnabled && (
               <Dashboard.NavigationLink
                 icon={<Book />}
-                label={`Census '${year}`}
+                label="Census '24"
                 pathname={Route['/census']}
               />
             )}

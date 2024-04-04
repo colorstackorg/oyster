@@ -3,7 +3,13 @@ import { DB } from 'kysely-codegen/dist/db';
 
 import { db } from '../shared/db';
 import { truncate } from '../use-cases/truncate';
-import { TEST_COMPANY_1, TEST_COMPANY_2, TEST_COMPANY_3 } from './constants';
+import {
+  company1,
+  company2,
+  company3,
+  student1,
+  student1Emails,
+} from './constants';
 
 beforeEach(async () => {
   await db.transaction().execute(async (trx) => {
@@ -16,7 +22,28 @@ beforeEach(async () => {
 
 async function seed(trx: Transaction<DB>) {
   await trx
+    .insertInto('studentEmails')
+    .values([
+      ...student1Emails.map(({ email }) => {
+        return { email };
+      }),
+    ])
+    .execute();
+
+  await trx.insertInto('students').values([student1]).execute();
+
+  await trx
+    .updateTable('studentEmails')
+    .set({ studentId: student1.id })
+    .where(
+      'email',
+      'in',
+      student1Emails.map(({ email }) => email)
+    )
+    .execute();
+
+  await trx
     .insertInto('companies')
-    .values([TEST_COMPANY_1, TEST_COMPANY_2, TEST_COMPANY_3])
+    .values([company1, company2, company3])
     .execute();
 }
