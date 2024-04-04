@@ -9,6 +9,8 @@
     "./test/constants": "./src/test/constants.ts"
   },
   "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "migrate": "tsx ./src/scripts/migrate.ts && yarn types",
     "migrate:down": "tsx ./src/scripts/migrate.ts --down && yarn types",
     "seed": "tsx ./src/scripts/seed.ts && yarn types",
