@@ -1,6 +1,4 @@
 import { exec } from 'child_process';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 import { IS_PRODUCTION } from '../shared/env';
 
@@ -8,18 +6,27 @@ if (IS_PRODUCTION) {
   throw new Error('Cannot setup database in non-development environment.');
 }
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// This is the full path to the `setup.sql` file.
-const pathToInitFile = path.join(__dirname, 'setup.sql');
+const commands = [
+  'DROP DATABASE IF EXISTS colorstack',
+  'DROP DATABASE IF EXISTS colorstack_test',
+  'DROP ROLE IF EXISTS colorstack',
+  "CREATE ROLE colorstack WITH SUPERUSER LOGIN PASSWORD 'colorstack'",
+  'CREATE DATABASE colorstack OWNER colorstack',
+  'CREATE DATABASE colorstack_test OWNER colorstack',
+]
+  .map((command) => {
+    // The -c flag allows us to run commands sequentially.
+    // https://www.postgresql.org/docs/devel/app-psql.html#APP-PSQL-OPTION-COMMAND
+    return `-c "${command}"`;
+  })
+  .join(' ');
 
 exec(
   // By default, everyone will have the role "postgres" and the database
   // "postgres", so we use that to do our initial connection to the Postgres
   // shell. We also have to specify the host, which satisfies the "peer"
   // authentication requirement (if that is set in pg_hba.conf).
-  `psql -U postgres -h localhost -d postgres -f ${pathToInitFile}`,
+  `psql -U postgres -h localhost -d postgres ${commands}`,
   (error, stdout, stderr) => {
     if (stdout) {
       console.log(stdout);
