@@ -10,9 +10,12 @@
   },
   "license": "MIT",
   "scripts": {
+    "lint": "eslint ./src",
+    "lint:fix": "eslint ./src --fix",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
+    "@oyster/eslint": "*",
     "@oyster/tsconfig": "*",
     "@oyster/types": "*",
     "@oyster/utils": "*",
