@@ -13,7 +13,7 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@oyster/eslint": "*",
+    "@oyster/eslint-config": "*",
     "@oyster/tsconfig": "*",
     "@oyster/types": "*",
     "@oyster/utils": "*",

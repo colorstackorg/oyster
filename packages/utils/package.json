@@ -11,7 +11,7 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@oyster/eslint": "*",
+    "@oyster/eslint-config": "*",
     "nanoid": "^3.0.0",
     "vitest": "^1.3.1"
   }
