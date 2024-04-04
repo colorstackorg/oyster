@@ -47,7 +47,7 @@ export async function migrate(options: MigrateOptions = defaultOptions) {
     migrationLockTableName: 'kysely_migrations_lock',
   });
 
-  const { error, results } = !!options.down
+  const { error, results } = options.down
     ? await migrator.migrateDown()
     : await migrator.migrateToLatest();
 

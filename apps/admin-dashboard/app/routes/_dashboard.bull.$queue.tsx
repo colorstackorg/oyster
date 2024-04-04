@@ -69,7 +69,7 @@ function TypeNavigationItem({ type }: TypeNavigationItemProps) {
   return (
     <li>
       <NavLink
-        className="link [&.active]:text-primary text-black"
+        className="link text-black [&.active]:text-primary"
         to={generatePath(basePathname, { queue })}
       >
         {label}

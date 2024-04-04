@@ -19,7 +19,7 @@ import type { SearchCountriesResult } from '../../routes/countries.search';
 
 type EthnicityComboboxProps = Pick<InputProps, 'name' | 'required'>;
 
-export function EthnicityCombobox({ name, required }: EthnicityComboboxProps) {
+export function EthnicityCombobox({ name }: EthnicityComboboxProps) {
   const fetcher = useFetcher<SearchCountriesResult>();
 
   useEffect(() => {
@@ -70,7 +70,6 @@ type EthnicityMultiComboboxProps = Pick<MultiComboboxProps, 'defaultValues'> &
 export function EthnicityMultiCombobox({
   defaultValues,
   name,
-  required,
 }: EthnicityMultiComboboxProps) {
   const fetcher = useFetcher<SearchCountriesResult>();
 

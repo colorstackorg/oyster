@@ -1,7 +1,7 @@
 /**
  * Picks the keys from the object. Acts similar to the Typescript `Pick` type.
  *
- * @param object - The object to pick the keys from.
+ * @param input - The object to pick the keys from.
  * @param picker - The object that specifies which keys to pick.
  *
  * @example
@@ -11,20 +11,21 @@
  * ```
  */
 export function pick<
-  Object,
+  Input,
   Picker extends {
-    [k in keyof Object]?: true;
-  }
+    [k in keyof Input]?: true;
+  },
 >(
-  object: Object,
+  input: Input,
   picker: Picker
-): Pick<Object, Extract<keyof Object, keyof Picker>> {
+): Pick<Input, Extract<keyof Input, keyof Picker>> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result: any = {};
 
-  const keys = Object.keys(picker) as (keyof Object)[];
+  const keys = Object.keys(picker) as (keyof Input)[];
 
   keys.forEach((key) => {
-    result[key] = object[key];
+    result[key] = input[key];
   });
 
   return result;

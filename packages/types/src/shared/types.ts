@@ -1,1 +1,1 @@
-export type ExtractValue<T extends {}> = T[keyof T];
+export type ExtractValue<T extends object> = T[keyof T];

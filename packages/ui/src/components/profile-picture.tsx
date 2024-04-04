@@ -40,7 +40,7 @@ export function ProfilePicture({
     <Text
       className={cx(
         className,
-        'bg-primary flex items-center justify-center text-white'
+        'flex items-center justify-center bg-primary text-white'
       )}
     >
       {initials.toUpperCase()}

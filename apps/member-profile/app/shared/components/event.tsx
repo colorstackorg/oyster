@@ -13,7 +13,7 @@ export function EventSection({ children }: PropsWithChildren) {
 
 export function EventList({ children }: PropsWithChildren) {
   return (
-    <ul className="@[1440px]:grid-cols-4 @[1080px]:grid-cols-3 @[720px]:grid-cols-2 grid grid-cols-1 gap-4">
+    <ul className="grid grid-cols-1 gap-4 @[720px]:grid-cols-2 @[1080px]:grid-cols-3 @[1440px]:grid-cols-4">
       {children}
     </ul>
   );

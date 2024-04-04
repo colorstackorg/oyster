@@ -1,5 +1,3 @@
-import { describe, expect, test } from 'vitest';
-
 import { toEscapedString } from './to-escaped-string';
 
 describe(toEscapedString.name, () => {

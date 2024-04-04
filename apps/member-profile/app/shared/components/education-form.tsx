@@ -20,8 +20,8 @@ import {
 const EducationFormContext = React.createContext({
   isOtherFieldOfStudy: false,
   isOtherSchool: false,
-  setIsOtherFieldOfStudy: (value: boolean) => {},
-  setIsOtherSchool: (isOtherSchool: boolean) => {},
+  setIsOtherFieldOfStudy: (_: boolean) => {},
+  setIsOtherSchool: (_: boolean) => {},
 });
 
 export const EducationForm = () => {};
