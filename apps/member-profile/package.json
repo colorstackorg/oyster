@@ -39,6 +39,7 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
+    "@oyster/eslint-config": "*",
     "@oyster/tailwind": "*",
     "@oyster/tsconfig": "*",
     "@remix-run/dev": "^2.8.1",

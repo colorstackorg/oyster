@@ -25,6 +25,7 @@
     "react-email": "^1.7.10"
   },
   "devDependencies": {
+    "@oyster/eslint-config": "*",
     "@oyster/types": "*"
   }
 }

@@ -9,6 +9,7 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
+    "@oyster/eslint-config": "*",
     "zod": "^3.20.2"
   }
 }
