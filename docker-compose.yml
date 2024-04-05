@@ -9,6 +9,7 @@ services:
     container_name: oyster-postgres
     image: postgres:15-alpine
     ports:
+      # We're using port 5433 to avoid any potential conflicts.
       - 5433:5432
     volumes:
       - pg_data:/var/lib/postgresql/data
@@ -21,6 +22,7 @@ services:
     container_name: oyster-postgres-test
     image: postgres:15-alpine
     ports:
+      # We're using port 5434 to avoid any potential conflicts.
       - 5434:5432
     environment:
       POSTGRES_DB: colorstack_test
