@@ -68,13 +68,13 @@ Please ensure that you have the following software on your machine:
 
 ### Environment Variables
 
-Set up your environment variable files by doing the following:
+To set up your environment variables, run:
 
-- In `/apps/admin-dashboard`, duplicate the `.env.example` to `.env`.
-- In `/apps/api`, duplicate the `.env.example` to `.env`.
-- In `/apps/member-profile`, duplicate the `.env.example` to `.env`.
-- In `/packages/core`, duplicate the `.env.test.example` to `.env.test`.
-- In `/packages/db`, duplicate the `.env.example` to `.env`.
+```
+yarn env:setup
+```
+
+You'll now have `.env` files in all of your apps (and a couple packages)!
 
 You'll notice that a lot of environment variables are empty. Most of these empty
 variables are tied to the 3rd party integrations we have with platforms such as

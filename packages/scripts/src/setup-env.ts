@@ -4,32 +4,48 @@ import path from 'path';
 import prompt from 'prompt-sync';
 import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const monorepoRoot = path.join(__filename, '../../../..');
+
+const exampleFiles = [
+  path.join(monorepoRoot, 'apps/admin-dashboard/.env.example'),
+  path.join(monorepoRoot, 'apps/api/.env.example'),
+  path.join(monorepoRoot, 'apps/member-profile/.env.example'),
+  path.join(monorepoRoot, 'packages/core/.env.test.example'),
+  path.join(monorepoRoot, 'packages/db/.env.example'),
+];
+
 function setupEnvironmentFiles() {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-
-  const monorepoRoot = path.join(__dirname, '../../..');
-
-  const exampleFiles = [
-    path.join(monorepoRoot, 'apps/admin-dashboard/.env.example'),
-    path.join(monorepoRoot, 'apps/api/.env.example'),
-    path.join(monorepoRoot, 'apps/member-profile/.env.example'),
-    path.join(monorepoRoot, 'packages/core/.env.test.example'),
-    path.join(monorepoRoot, 'packages/db/.env.example'),
-  ];
-
   exampleFiles.forEach((file) => {
     const newFile = file.replace('.example', '');
     fs.copyFileSync(file, newFile);
-    console.log(`Created ${chalk.green(newFile)}.`);
   });
 }
 
-function getPermissionToOverwrite() {
+function getPermissionToOverwrite(): boolean {
+  const envFiles = exampleFiles
+    .filter((file) => {
+      return fs.existsSync(file.replace('.example', ''));
+    })
+    .map((file) => {
+      return file.replace('.example', '');
+    });
+
+  if (!envFiles.length) {
+    return true;
+  }
+
   console.warn(
-    chalk.yellow('Any existing ".env" files you have will be overwritten.'),
+    chalk.yellow('The following ".env" files you have will be overwritten.\n')
+  );
+
+  envFiles.forEach((file) => {
+    console.warn(chalk.yellow(`- ${file}`));
+  });
+
+  console.warn(
     chalk.yellow(
-      'If you had any variables enabled that were not in the ".env.example" files, you should write them somewhere and re-add them after this script finishes.\n'
+      '\nIf you had any variables enabled that were not in their corresponding ".env.example" (ie: email setup) files, you should jot those variables down somewhere and re-add them after this script finishes.\n'
     )
   );
 
