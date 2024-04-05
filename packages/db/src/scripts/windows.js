@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 class FileMigrationProvider {
   #props;
@@ -30,7 +31,17 @@ class FileMigrationProvider {
 }
 
 (async () => {
-  const migrationFolder = path.join(import.meta.url, '../../migrations');
+  console.log('import.meta.url', import.meta.url);
+  console.log('fileURLToPath', fileURLToPath(import.meta.url));
+  console.log(
+    'pathToFileURL(fileURLToPath).href',
+    pathToFileURL(fileURLToPath(import.meta.url)).href
+  );
+
+  const migrationFolder = path.join(
+    pathToFileURL(fileURLToPath(import.meta.url)).href,
+    '../../migrations'
+  );
 
   const migrations = await new FileMigrationProvider({
     fs,
