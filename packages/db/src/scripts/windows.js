@@ -11,37 +11,17 @@ class FileMigrationProvider {
     const migrations = {};
     const files = await this.#props.fs.readdir(this.#props.migrationFolder);
     for (const fileName of files) {
-      if (
-        fileName.endsWith('.js') ||
-        (fileName.endsWith('.ts') && !fileName.endsWith('.d.ts')) ||
-        fileName.endsWith('.mjs') ||
-        (fileName.endsWith('.mts') && !fileName.endsWith('.d.mts'))
-      ) {
-        const migration = await import(
-          /* webpackIgnore: true */ this.#props.path.join(
-            this.#props.migrationFolder,
-            fileName
-          )
-        );
-        const migrationKey = fileName.substring(0, fileName.lastIndexOf('.'));
-      }
+      const name = this.#props.path.join(this.#props.migrationFolder, fileName);
+      console.log({ name });
+      const migration = await import(name);
+      const migrationKey = fileName.substring(0, fileName.lastIndexOf('.'));
     }
     return migrations;
   }
 }
 
 (async () => {
-  console.log('import.meta.url', import.meta.url);
-  console.log('fileURLToPath', fileURLToPath(import.meta.url));
-  console.log(
-    'pathToFileURL(fileURLToPath).href',
-    pathToFileURL(fileURLToPath(import.meta.url)).href
-  );
-
-  const migrationFolder = path.join(
-    pathToFileURL(fileURLToPath(import.meta.url)).href,
-    '../../migrations'
-  );
+  const migrationFolder = path.join(import.meta.url, '../../migrations');
 
   const migrations = await new FileMigrationProvider({
     fs,
