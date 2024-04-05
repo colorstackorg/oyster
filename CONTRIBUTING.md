@@ -18,8 +18,8 @@ ColorStack members first, and then friends of ColorStack. ❤️
 - [Local Development](#local-development)
   - [Prerequisites](#prerequisites)
   - [Fork and Clone Repository](#fork-and-clone-repository)
-  - [Environment Variables](#environment-variables)
   - [Project Dependencies](#project-dependencies)
+  - [Environment Variables](#environment-variables)
   - [Database Setup](#database-setup)
     - [Postgres Setup](#postgres-setup)
     - [Executing Database Migrations](#executing-database-migrations)
@@ -101,12 +101,6 @@ To set up your Postgres databases, you can run:
 
 ```
 yarn dx:up
-```
-
-You should now be able to connect to your database like this:
-
-```sh
-psql colorstack -U colorstack
 ```
 
 #### Executing Database Migrations
