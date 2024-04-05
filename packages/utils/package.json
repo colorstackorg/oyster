@@ -2,12 +2,16 @@
   "name": "@oyster/utils",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "main": "./src/index.ts",
   "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
+    "@oyster/eslint-config": "*",
     "nanoid": "^3.0.0",
     "vitest": "^1.3.1"
   }

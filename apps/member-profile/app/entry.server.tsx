@@ -15,7 +15,7 @@ import { initializeFeatureFlagServer } from './shared/core.server';
 // and crash the application.
 import { ENV } from './shared/constants.server';
 
-initializeFeatureFlagServer();
+await initializeFeatureFlagServer();
 
 Sentry.init({
   dsn: ENV.SENTRY_DSN,

@@ -22,4 +22,4 @@ export function getStatsigKey() {
 
 // Types
 
-export type FeatureFlag = '';
+export type FeatureFlag = 'census_2024';

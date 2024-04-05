@@ -64,7 +64,7 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     await sendEmailCode(user(session), data);
 
-    return redirect(Route.ADD_EMAIL_FINISH, {
+    return redirect(Route['/profile/emails/add/finish'], {
       headers: [
         ['Set-Cookie', await addEmailCookie.serialize(data.email)],
         ['Set-Cookie', await commitSession(session)],

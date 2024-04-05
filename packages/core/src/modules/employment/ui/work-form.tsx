@@ -41,8 +41,8 @@ type WorkFormState = {
 const WorkFormContext = React.createContext<WorkFormState>({
   isCurrentRole: false,
   isOtherCompany: false,
-  setIsCurrentRole: (value: boolean) => {},
-  setIsOtherCompany: (value: boolean) => {},
+  setIsCurrentRole: (_: boolean) => {},
+  setIsOtherCompany: (_: boolean) => {},
 });
 
 export const WorkForm = () => {};

@@ -14,9 +14,9 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_DB: colorstack
-          POSTGRES_PASSWORD: colorstack
-          POSTGRES_USER: colorstack
+          POSTGRES_DB: oyster
+          POSTGRES_PASSWORD: oyster
+          POSTGRES_USER: oyster
         ports:
           - 5432:5432
         options: >-
@@ -31,7 +31,7 @@ jobs:
           5s --health-retries 5
 
     env:
-      DATABASE_URL: postgres://colorstack:colorstack@localhost:5432/colorstack
+      DATABASE_URL: postgres://oyster:oyster@localhost:5432/oyster
       REDIS_URL: redis://localhost:6379
 
     steps:

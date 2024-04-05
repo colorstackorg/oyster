@@ -67,7 +67,7 @@ function EducationHistorySection() {
         </Button.Group>
       </ProfileHeader>
 
-      {!!educationExperiences.length ? (
+      {educationExperiences.length ? (
         <>
           <ExperienceList>
             {educationExperiences.map((education) => {

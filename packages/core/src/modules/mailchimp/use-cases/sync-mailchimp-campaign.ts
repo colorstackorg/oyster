@@ -181,7 +181,7 @@ async function listCampaignActivity(
   const clicks: EmailCampaignClick[] = [];
   const opens: EmailCampaignOpen[] = [];
 
-  let pageSize = 1000;
+  const pageSize = 1000;
   let offset = 0;
 
   // This is the total number of records that have been returned thus far.

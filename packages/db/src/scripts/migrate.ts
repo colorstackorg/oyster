@@ -1,6 +1,6 @@
 import { program } from 'commander';
 
-import { migrate } from '../shared/migrate';
+import { migrate } from '../use-cases/migrate';
 
 const DOWN_FLAG = '--down';
 
@@ -13,4 +13,4 @@ program.parse();
 // Read the value of the "--down" flag.
 const { down } = program.opts();
 
-migrate(!!down);
+migrate({ down: !!down });

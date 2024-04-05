@@ -116,7 +116,7 @@ function PaginationItem({
   const linkCn = cx(
     'flex h-6 w-6 items-center justify-center rounded-full text-sm no-underline',
     !!active && 'bg-primary font-semibold text-white',
-    !disabled && !active && 'hover:text-primary hover:bg-gray-100',
+    !disabled && !active && 'hover:bg-gray-100 hover:text-primary',
     !disabled && 'cursor-pointer'
   );
 

@@ -23,7 +23,7 @@ type ComboboxValue = {
 
 const MultiComboboxContext = React.createContext({
   searchRef: createRef() as React.MutableRefObject<HTMLInputElement | null>,
-  setValues: (values: ComboboxValue[]) => {},
+  setValues: (_: ComboboxValue[]) => {},
   values: [] as ComboboxValue[],
 });
 

@@ -29,6 +29,18 @@ export type SurveyResponse = z.infer<typeof SurveyResponse>;
 
 // Use Case(s)
 
+export const AddSurveyResponseInput = SurveyResponse.pick({
+  email: true,
+  firstName: true,
+  id: true,
+  lastName: true,
+  respondedOn: true,
+  studentId: true,
+  surveyId: true,
+});
+
+type AddSurveyResponseInput = z.infer<typeof CreateSurveyInput>;
+
 export const CreateSurveyInput = Survey.pick({
   description: true,
   eventId: true,
