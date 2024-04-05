@@ -25,7 +25,7 @@ class FileMigrationProvider {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
 
-  const migrationFolder = path.join(__dirname, '../migrations');
+  const migrationFolder = 'file://' + path.join(__dirname, '../migrations');
   console.log('0', migrationFolder);
 
   const migrations = await new FileMigrationProvider({
