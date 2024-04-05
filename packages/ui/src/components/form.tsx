@@ -92,7 +92,7 @@ type ValidateResult<Data> = {
   errors: Record<keyof Data, string>;
 };
 
-export function validateForm<T extends z.ZodObject<any>>(
+export function validateForm<T extends z.AnyZodObject>(
   schema: T,
   data: unknown
 ): ValidateResult<z.infer<T>> {

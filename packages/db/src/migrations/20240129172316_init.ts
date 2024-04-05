@@ -1,7 +1,7 @@
 import { Kysely, sql } from 'kysely';
 
 export async function up(db: Kysely<any>) {
-  const result = await sql`
+  await sql`
     --
     -- PostgreSQL database dump
     --
@@ -1818,4 +1818,4 @@ export async function up(db: Kysely<any>) {
     `.execute(db);
 }
 
-export async function down(db: Kysely<any>) {}
+export async function down(_: Kysely<any>) {}

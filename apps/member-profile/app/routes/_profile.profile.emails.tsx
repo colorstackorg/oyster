@@ -1,8 +1,24 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet, useLoaderData, useNavigate } from '@remix-run/react';
+import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
+import {
+  Outlet,
+  Form as RemixForm,
+  useActionData,
+  useLoaderData,
+  useNavigate,
+  useSubmit,
+} from '@remix-run/react';
 import { Edit, Plus } from 'react-feather';
+import { z } from 'zod';
 
-import { Button, cx, Text } from '@oyster/ui';
+import {
+  Button,
+  Checkbox,
+  Form,
+  Text,
+  cx,
+  getActionErrors,
+  validateForm,
+} from '@oyster/ui';
 
 import {
   ProfileDescription,
@@ -10,17 +26,27 @@ import {
   ProfileSection,
   ProfileTitle,
 } from '../shared/components/profile';
+
 import { Route } from '../shared/constants';
+import { db, listEmails, updateAllowEmailShare } from '../shared/core.server';
 import { track } from '../shared/mixpanel.server';
-import { listEmails } from '../shared/queries';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+import { getMember } from '../shared/queries';
+import {
+  commitSession,
+  ensureUserAuthenticated,
+  toast,
+  user,
+} from '../shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const id = user(session);
 
-  const emails = await listEmails(id);
+  const [emails, student] = await Promise.all([
+    listEmails(id),
+    getMember(id).select('allowEmailShare').executeTakeFirstOrThrow(),
+  ]);
 
   track(request, 'Page Viewed', {
     Page: 'Profile - Email Addresses',
@@ -28,8 +54,56 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return json({
     emails,
+    student,
   });
 }
+
+const UpdateAllowEmailShare = z.object({
+  allowEmailShare: z.preprocess((value) => value === '1', z.boolean()),
+});
+
+type UpdateAllowEmailShare = z.infer<typeof UpdateAllowEmailShare>;
+
+export async function action({ request }: ActionFunctionArgs) {
+  const session = await ensureUserAuthenticated(request);
+
+  const form = await request.formData();
+
+  const { data, errors } = validateForm(
+    UpdateAllowEmailShare,
+    Object.fromEntries(form)
+  );
+
+  if (!data) {
+    return json({
+      error: '',
+      errors,
+    });
+  }
+
+  await db.transaction().execute(async (trx) => {
+    await updateAllowEmailShare(trx, user(session), data.allowEmailShare);
+  });
+
+  toast(session, {
+    message: 'Updated!',
+    type: 'success',
+  });
+
+  return json(
+    {
+      error: '',
+      errors,
+    },
+    {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    }
+  );
+}
+
+const { allowEmailShare } = UpdateAllowEmailShare.keyof().enum;
 
 export default function EmailsPage() {
   return (
@@ -41,12 +115,15 @@ export default function EmailsPage() {
 }
 
 function EmailAddressSection() {
-  const { emails } = useLoaderData<typeof loader>();
+  const { emails, student } = useLoaderData<typeof loader>();
+  const { errors } = getActionErrors(useActionData<typeof action>());
+
+  const submit = useSubmit();
 
   const navigate = useNavigate();
 
   function onAddEmail() {
-    navigate(Route.ADD_EMAIL_START);
+    navigate(Route['/profile/emails/add/start']);
   }
 
   function onChangePrimaryEmail() {
@@ -78,7 +155,7 @@ function EmailAddressSection() {
               <Text>{email.email}</Text>
 
               {email.primary && (
-                <Text className="text-gold font-medium uppercase" variant="sm">
+                <Text className="font-medium uppercase text-gold" variant="sm">
                   Primary
                 </Text>
               )}
@@ -98,6 +175,26 @@ function EmailAddressSection() {
           </Button>
         )}
       </Button.Group>
+
+      <RemixForm
+        className="form"
+        method="post"
+        onChange={(e) => submit(e.currentTarget)}
+      >
+        <Form.Field
+          description="If you go to school where there is a ColorStack chapter, this will allow that chapter's leaders to reach out to you about local events and opportunities."
+          error={errors.allowEmailShare}
+          label="Would you like to share your email with chapter leaders?"
+        >
+          <Checkbox
+            defaultChecked={student.allowEmailShare}
+            label="Share my email with chapter leaders! 🌟"
+            id={allowEmailShare}
+            name={allowEmailShare}
+            value="1"
+          />
+        </Form.Field>
+      </RemixForm>
     </ProfileSection>
   );
 }

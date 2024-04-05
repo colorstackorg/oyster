@@ -4,9 +4,12 @@
   "private": true,
   "main": "./src/index.ts",
   "scripts": {
-    "lint": "tsc --noEmit"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
+    "@oyster/eslint-config": "*",
     "zod": "^3.20.2"
   }
 }

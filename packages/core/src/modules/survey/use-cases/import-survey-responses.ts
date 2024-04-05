@@ -7,7 +7,7 @@ import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
 import { findMemberByEmail } from '@/modules/member/queries/find-member-by-email';
 import { parseCsv } from '@/shared/utils/csv.utils';
-import { SurveyResponse } from '../survey.types';
+import { AddSurveyResponseInput, SurveyResponse } from '../survey.types';
 
 const SurveyResponseRecord = z.object({
   Email: Email,
@@ -41,15 +41,7 @@ export async function importSurveyResponses(
 
       const student = await findMemberByEmail(email);
 
-      return SurveyResponse.pick({
-        email: true,
-        firstName: true,
-        id: true,
-        lastName: true,
-        respondedOn: true,
-        studentId: true,
-        surveyId: true,
-      }).parse({
+      return AddSurveyResponseInput.parse({
         email,
         firstName,
         id: id(),

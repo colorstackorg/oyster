@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { sql, Transaction, UpdateObject } from 'kysely';
+import { Transaction, UpdateObject } from 'kysely';
 
 import { toTitleCase } from '@oyster/utils';
 
@@ -190,21 +190,4 @@ export async function updateSocialsInformation(
   >
 ) {
   await trx.updateTable('students').set(data).where('id', '=', id).execute();
-}
-
-// "student_emails"
-
-export async function listEmails(id: string) {
-  const primary = sql<boolean>`(student_emails.email = students.email)`.as(
-    'primary'
-  );
-
-  const rows = await db
-    .selectFrom('students')
-    .leftJoin('studentEmails', 'students.id', 'studentEmails.studentId')
-    .select(['studentEmails.email', primary])
-    .where('students.id', '=', id)
-    .execute();
-
-  return rows;
 }

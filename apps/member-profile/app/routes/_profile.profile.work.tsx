@@ -72,7 +72,7 @@ function WorkHistorySection() {
         </Button.Group>
       </ProfileHeader>
 
-      {!!workExperiences.length ? (
+      {workExperiences.length ? (
         <>
           <ExperienceList>
             {workExperiences.map((experience) => {

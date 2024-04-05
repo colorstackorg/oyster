@@ -1,5 +1,6 @@
 import type { SelectExpression } from 'kysely';
-import type { DB } from 'kysely-codegen/dist/db';
+
+import { DB } from '@oyster/db';
 
 import { db } from '@/infrastructure/database';
 
@@ -10,7 +11,7 @@ type ListEventsQuery = Partial<{
 }>;
 
 export async function listEvents<
-  Selection extends SelectExpression<DB, 'events'>
+  Selection extends SelectExpression<DB, 'events'>,
 >({ limit = 100, page = 1, search }: ListEventsQuery, selections: Selection[]) {
   const query = db.selectFrom('events').$if(!!search, (qb) => {
     return qb.where('events.name', 'ilike', `%${search}%`);

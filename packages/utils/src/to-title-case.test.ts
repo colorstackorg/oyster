@@ -1,5 +1,3 @@
-import { describe, expect, test } from 'vitest';
-
 import { toTitleCase } from './to-title-case';
 
 const HELLO = 'Hello';

@@ -22,9 +22,13 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     SENTRY_DSN: true,
   }).extend({
     ENVIRONMENT: z.literal(Environment.DEVELOPMENT),
+    SMTP_HOST: EnvironmentVariable.optional(),
+    SMTP_PASSWORD: EnvironmentVariable.optional(),
+    SMTP_USERNAME: EnvironmentVariable.optional(),
   }),
   BaseEnvironmentConfig.extend({
     ENVIRONMENT: z.literal(Environment.PRODUCTION),
+    POSTMARK_API_TOKEN: EnvironmentVariable,
   }),
 ]);
 

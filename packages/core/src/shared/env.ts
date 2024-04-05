@@ -2,14 +2,14 @@ import { config } from 'dotenv';
 
 import { Environment } from './types';
 
-// Loads the .env file into `process.env`.
+// Loads the .env file into `process.env`. Note that if the config was already
+// loaded (for example, in tests), this will not overwrite any existing values.
 config();
 
 export const ENV = {
   AIRMEET_ACCESS_KEY: process.env.AIRMEET_ACCESS_KEY as string,
   AIRMEET_SECRET_KEY: process.env.AIRMEET_SECRET_KEY as string,
   API_URL: process.env.API_URL as string,
-  ENVIRONMENT: process.env.ENVIRONMENT as Environment,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID as string,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET as string,
   INTERNAL_SLACK_BOT_TOKEN: process.env.INTERNAL_SLACK_BOT_TOKEN as string,
@@ -36,6 +36,10 @@ export const ENV = {
   SWAG_UP_CLIENT_SECRET: process.env.SWAG_UP_CLIENT_SECRET as string,
 };
 
-export const DATABASE_URL = process.env.DATABASE_URL as string;
-export const IS_PRODUCTION = ENV.ENVIRONMENT === 'production';
-export const IS_TEST = ENV.ENVIRONMENT === 'test';
+// TODO: Below are the only variables that we need to process in the core,
+// package and thus in this file after the dotenv has loaded the config.
+// Everything else above should be colocated with its respective module.
+
+export const ENVIRONMENT = process.env.ENVIRONMENT as Environment;
+export const IS_PRODUCTION = ENVIRONMENT === 'production';
+export const IS_TEST = ENVIRONMENT === 'test';

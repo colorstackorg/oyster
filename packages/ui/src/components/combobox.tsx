@@ -14,8 +14,8 @@ import { Input, InputProps } from './input';
 
 const ComboboxContext = React.createContext({
   displayValue: '',
-  setDisplayValue: (value: string) => {},
-  setValue: (value: string) => {},
+  setDisplayValue: (_: string) => {},
+  setValue: (_: string) => {},
   value: '',
 });
 
@@ -47,7 +47,6 @@ export function Combobox({
 }
 
 export function ComboboxInput({
-  id,
   name,
   onChange,
   ...rest

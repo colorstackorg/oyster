@@ -90,4 +90,4 @@ export async function up(db: Kysely<any>) {
     .execute();
 }
 
-export async function down(db: Kysely<any>) {}
+export async function down(_: Kysely<any>) {}

@@ -218,7 +218,7 @@ function JobSection({ children }: PropsWithChildren) {
   return <div className="flex flex-col gap-4">{children}</div>;
 }
 
-function JobSectionData({ data }: { data: Object }) {
+function JobSectionData({ data }: { data: object }) {
   return (
     <pre className="overflow-hidden text-ellipsis rounded-lg bg-gray-100 p-4">
       <code className="text-gray-500">{JSON.stringify(data, null, 2)}</code>

@@ -1,18 +1,26 @@
 import { json, LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet } from '@remix-run/react';
-import { Award, Calendar, Folder, Home, User } from 'react-feather';
+import { Outlet, useLoaderData } from '@remix-run/react';
+import { Award, Book, Calendar, Folder, Home, User } from 'react-feather';
 
 import { Dashboard } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
+import { isFeatureFlagEnabled } from '../shared/core.server';
 import { ensureUserAuthenticated } from '../shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
-  return json({});
+
+  const isCensusEnabled = await isFeatureFlagEnabled('census_2024');
+
+  return json({
+    isCensusEnabled,
+  });
 }
 
 export default function ProfileLayout() {
+  const { isCensusEnabled } = useLoaderData<typeof loader>();
+
   return (
     <Dashboard>
       <Dashboard.Sidebar>
@@ -28,6 +36,13 @@ export default function ProfileLayout() {
               label="Home"
               pathname={Route.HOME}
             />
+            {isCensusEnabled && (
+              <Dashboard.NavigationLink
+                icon={<Book />}
+                label="Census '24"
+                pathname={Route['/census']}
+              />
+            )}
             <Dashboard.NavigationLink
               icon={<Folder />}
               label="Directory"

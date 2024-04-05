@@ -55,7 +55,7 @@ function EventNavigationItem({ label, to }: EventNavigationItemProps) {
       <NavLink
         className={({ isActive }) => {
           return cx(
-            'hover:text-primary underline',
+            'underline hover:text-primary',
             isActive && 'text-primary underline'
           );
         }}

@@ -49,10 +49,13 @@ Some things to keep in mind when making a pull request:
     - `test`: A change that adds missing tests.
     - `chore`: A change that is likely none of the above.
   - Be in all lowercase.
-  - Be present tense (ie: "fix", not "fixed").
   - Start with a verb (ie: "add ...", "implement ...", "update ...").
   - Have an emoji at the end of it (we like color around here). 🔥
-- Each PR should be attached to an issue, so be sure to add this to the PR
+- Please check the
+  ["allow edits from maintainers option"](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork)
+  when creating your PR. This allows us to more easily collaborate with you on
+  your work.
+- Most PRs should be attached to an issue, so be sure to add this to the PR
   description:
   ```
   Closes #<ISSUE_NUMBER>.
@@ -92,11 +95,6 @@ Please ensure that you have the following software on your machine:
    ```
    git checkout -b YOUR_BRANCH_NAME
    ```
-4. Install all project dependencies.
-
-   ```sh
-   yarn
-   ```
 
 ### Syncing a Forked Repository
 
@@ -113,7 +111,8 @@ Set up your environment variable files by doing the following:
 - In `/apps/admin-dashboard`, duplicate the `.env.example` to `.env`.
 - In `/apps/api`, duplicate the `.env.example` to `.env`.
 - In `/apps/member-profile`, duplicate the `.env.example` to `.env`.
-- In `/packages/core`, duplicate the `.env.example` to `.env`.
+- In `/packages/core`, duplicate the `.env.test.example` to `.env.test`.
+- In `/packages/db`, duplicate the `.env.example` to `.env`.
 
 You'll notice that a lot of environment variables are empty. Most of these empty
 variables are tied to the 3rd party integrations we have with platforms such as
@@ -122,30 +121,30 @@ enable these integrations in development, please see the
 [How to Enable Integrations](./docs/how-to-enable-integrations.md)
 documentation.
 
+### Project Dependencies
+
+To install all project dependencies, run:
+
+```sh
+yarn
+```
+
 ### Database Setup
 
 You'll need to make sure that Postgres and Redis are running in the background.
 
 #### Postgres Setup
 
-Once Postgres is running, you can connect to it by running:
+To set up your Postgres databases, you can run:
 
-```sh
-psql
+```
+yarn db:setup
 ```
 
-You'll then need to create 2 Postgres databases locally named `colorstack` and
-`colorstack-test`. Within the `psql` terminal, run:
-
-```postgresql
-CREATE DATABASE colorstack;
-CREATE DATABASE "colorstack-test";
-```
-
-You should now be able to connect to each database like this:
+You should now be able to connect to your database like this:
 
 ```sh
-psql colorstack
+psql colorstack -U colorstack
 ```
 
 #### Executing Database Migrations
@@ -206,8 +205,8 @@ You can log into the Member Profile and Admin Dashboard by sending a one-time
 code to your email OR by using your Google login.
 
 - [Recommended] To log in by sending a one-time code to your email, you'll first
-  need to enable the **Postmark** integration. See instructions on how to do so
-  [here](./docs/how-to-enable-integrations.md#postmark).
+  need to enable sending emails in development. See instructions on how to do so
+  [here](./docs/how-to-enable-emails.md).
 - To log in via Google, you'll first need to enable the **Google** integration.
   See instructions on how to do so
   [here](./docs/how-to-enable-integrations.md#google).
