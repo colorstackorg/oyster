@@ -24,7 +24,7 @@ const timestamp = iife(() => {
   );
 });
 
-const response = prompt()('Enter migration name: ');
+const response = prompt()('Enter a migration name: ');
 const name = response.toLowerCase().trim();
 
 writeFileSync(
