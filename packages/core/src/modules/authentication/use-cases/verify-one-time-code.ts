@@ -2,6 +2,7 @@ import { match } from 'ts-pattern';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
+import { IS_DEVELOPMENT } from '@/shared/env';
 import {
   OneTimeCodePurpose,
   VerifyOneTimeCodeInput,
@@ -18,7 +19,7 @@ export async function verifyOneTimeCode({ id, value }: VerifyOneTimeCodeInput) {
     throw new Error('There was no one-time code found. Please start over.');
   }
 
-  if (oneTimeCode.value !== value) {
+  if (oneTimeCode.value !== value && !IS_DEVELOPMENT) {
     throw new Error('The one-time code you entered is incorrect.');
   }
 

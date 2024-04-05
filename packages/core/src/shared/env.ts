@@ -41,5 +41,6 @@ export const ENV = {
 // Everything else above should be colocated with its respective module.
 
 export const ENVIRONMENT = process.env.ENVIRONMENT as Environment;
+export const IS_DEVELOPMENT = ENVIRONMENT === 'development';
 export const IS_PRODUCTION = ENVIRONMENT === 'production';
 export const IS_TEST = ENVIRONMENT === 'test';
