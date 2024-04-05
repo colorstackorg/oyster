@@ -13,61 +13,25 @@ their dreams of becoming software engineers. That being said, in order to make
 space for our community, we will be prioritizing all contributions from
 ColorStack members first, and then friends of ColorStack. ❤️
 
-## Your First PR
+## Table of Contents
 
-Getting your first PR in is always the hardest. We're going to reduce that
-barrier for you! After you finish your local development setup (instructions
-below), your first PR can simply be updating the
-[`CONTRIBUTORS.yml`](./CONTRIBUTORS.yml) file with your GitHub username!
-
-You can name that PR:
-
-```
-chore: my first contribution ❤️
-```
-
-## Deciding What to Work On
-
-You can start by browsing through our list of
-[issues](https://github.com/colorstackorg/oyster/issues) or creating your own
-issue that would improve our product. Once you've decided on an issue, leave a
-comment and wait to get approval from one of our codebase admins - this helps
-avoid multiple people working on this same issue.
-
-## Making a Pull Request
-
-Some things to keep in mind when making a pull request:
-
-- The target branch in our repository is `main`.
-- Fill out the PR template accordingly.
-- The name of the PR should:
-  - Start with one of the following prefixes:
-    - `feat`: A non-breaking change which adds functionality.
-    - `fix`: A non-breaking change which fixes an issue.
-    - `refactor`: A change that neither fixes a bug nor adds a feature.
-    - `docs`: A change only to in-code or markdown documentation.
-    - `test`: A change that adds missing tests.
-    - `chore`: A change that is likely none of the above.
-  - Be in all lowercase.
-  - Start with a verb (ie: "add ...", "implement ...", "update ...").
-  - Have an emoji at the end of it (we like color around here). 🔥
-- Please check the
-  ["allow edits from maintainers option"](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork)
-  when creating your PR. This allows us to more easily collaborate with you on
-  your work.
-- Most PRs should be attached to an issue, so be sure to add this to the PR
-  description:
-  ```
-  Closes #<ISSUE_NUMBER>.
-  ```
-  See more about
-  [linking a pull request to an issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue).
-- A PR can only be merged (by a maintainer) if:
-  - A maintainer has reviewed and approved it.
-  - All CI checks have passed. See [this](./.github/workflows/ci.yml) workflow
-    for more details.
-  - All branches are up to date before merging.
-  - All conversations are resolved.
+- [Local Development](#local-development)
+  - [Prerequisites](#prerequisites)
+  - [Fork and Clone Repository](#fork-and-clone-repository)
+  - [Environment Variables](#environment-variables)
+  - [Project Dependencies](#project-dependencies)
+  - [Database Setup](#database-setup)
+    - [Postgres Setup](#postgres-setup)
+    - [Executing Database Migrations](#executing-database-migrations)
+    - [Seeding the Database](#seeding-the-database)
+  - [Building the Project](#building-the-project)
+  - [Running the Applications](#running-the-applications)
+  - [Logging Into Applications](#logging-into-applications)
+  - [Editor Setup](#editor-setup)
+- [Making a Pull Request](#making-a-pull-request)
+  - [Your First PR](#your-first-pr)
+- [Deciding What to Work On](#deciding-what-to-work-on)
+- [License](#license)
 
 ## Local Development
 
@@ -77,10 +41,9 @@ To get started with local development, please follow these simple steps.
 
 Please ensure that you have the following software on your machine:
 
+- [Docker](https://docs.docker.com/engine/install)
 - [Node.js](https://nodejs.org/en/download/package-manager) (v20.x)
 - [Yarn](https://classic.yarnpkg.com/lang/en/docs/install) (v1)
-- [PostgreSQL](https://www.postgresql.org/download/) (v15.x)
-- [Redis](https://redis.io/docs/install/install-redis/)
 
 ### Fork and Clone Repository
 
@@ -91,18 +54,17 @@ Please ensure that you have the following software on your machine:
    ```
    git clone https://github.com/<YOUR_USERNAME>/oyster.git
    ```
-3. Create a new branch.
+3. [Configure the upstream repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/configuring-a-remote-repository-for-a-fork),
+   which will help you with
+   [syncing your fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork)
+   with the Oyster codebase as new code is added to it in the future.
+   ```
+   git remote add upstream https://github.com/colorstackorg/oyster.git
+   ```
+4. Create a new branch.
    ```
    git checkout -b YOUR_BRANCH_NAME
    ```
-
-### Syncing a Forked Repository
-
-In order to keep your forked repository up to date with the upstream repository,
-please read the following guides.
-
-- [Configuring a Remote Repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/configuring-a-remote-repository-for-a-fork)
-- [Syncing a Fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork)
 
 ### Environment Variables
 
@@ -223,6 +185,63 @@ life a bit easier:
 - [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
 - [Tailwind IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
 - [Typescript Importer](https://marketplace.visualstudio.com/items?itemName=pmneo.tsimporter)
+
+## Making a Pull Request
+
+Some things to keep in mind when making a pull request:
+
+- The target branch in our repository is `main`.
+- Fill out the PR template accordingly.
+- The name of the PR should:
+  - Start with one of the following prefixes:
+    - `feat`: A non-breaking change which adds functionality.
+    - `fix`: A non-breaking change which fixes an issue.
+    - `refactor`: A change that neither fixes a bug nor adds a feature.
+    - `docs`: A change only to in-code or markdown documentation.
+    - `test`: A change that adds missing tests.
+    - `chore`: A change that is likely none of the above.
+  - Be in all lowercase.
+  - Start with a verb (ie: "add ...", "implement ...", "update ...").
+  - Have an emoji at the end of it (we like color around here). 🔥
+- Please check the
+  ["allow edits from maintainers option"](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork)
+  when creating your PR. This allows us to more easily collaborate with you on
+  your work.
+- Most PRs should be attached to an issue, so be sure to add this to the PR
+  description:
+  ```
+  Closes #<ISSUE_NUMBER>.
+  ```
+  See more about
+  [linking a pull request to an issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue).
+- A PR can only be merged (by a maintainer) if:
+  - A maintainer has reviewed and approved it.
+  - All CI checks have passed. See [this](./.github/workflows/ci.yml) workflow
+    for more details.
+  - All branches are up to date before merging.
+  - All conversations are resolved.
+
+### Your First PR
+
+Getting your first PR in is always the hardest. Lucky for you, we love quick
+wins here at ColorStack, so we're going to reduce that barrier for you! After
+you finish your [local development](#local-development) setup, your first PR can
+simply be updating the [`CONTRIBUTORS.yml`](./CONTRIBUTORS.yml) file with your
+GitHub username!
+
+You can name that PR:
+
+```
+chore: my first contribution ❤️
+```
+
+## Deciding What to Work On
+
+You can start by browsing through our list of
+[issues](https://github.com/colorstackorg/oyster/issues) or creating your own
+issue that would improve our product. Once you've decided on an issue, leave a
+comment and wait to get approval from one of our codebase admins - this helps
+avoid multiple people working on this same issue.
 
 ## License
 
