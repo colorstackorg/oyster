@@ -14,9 +14,9 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: colorstack
-      POSTGRES_PASSWORD: colorstack
-      POSTGRES_USER: colorstack
+      POSTGRES_DB: oyster
+      POSTGRES_PASSWORD: oyster
+      POSTGRES_USER: oyster
 
   postgres-test:
     container_name: oyster-postgres-test
@@ -25,9 +25,9 @@ services:
       # We're using port 5434 to avoid any potential conflicts.
       - 5434:5432
     environment:
-      POSTGRES_DB: colorstack_test
-      POSTGRES_PASSWORD: colorstack
-      POSTGRES_USER: colorstack
+      POSTGRES_DB: oyster_test
+      POSTGRES_PASSWORD: oyster
+      POSTGRES_USER: oyster
 
   redis:
     container_name: oyster-redis
