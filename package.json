@@ -18,6 +18,7 @@
     "dx:down": "docker compose down",
     "dx:nuke": "docker compose down --volumes --remove-orphans",
     "dx:up": "docker compose up -d",
+    "env:setup": "yarn workspace @oyster/scripts env:setup",
     "lint": "turbo run lint --cache-dir=.turbo",
     "lint:fix": "turbo run lint:fix --cache-dir=.turbo",
     "prepare": "husky install",
