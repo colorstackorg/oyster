@@ -28,7 +28,7 @@ class FileMigrationProvider {
 
   const migrations = await new FileMigrationProvider({
     fs,
-    migrationFolder: path.resolve(__dirname, '../migrations'),
+    migrationFolder: 'file://' + path.resolve(__dirname, '../migrations'),
     path,
   }).getMigrations();
 
