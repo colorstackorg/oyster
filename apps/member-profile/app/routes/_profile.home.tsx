@@ -9,6 +9,7 @@ import {
   Instagram,
   Linkedin,
   Twitter,
+  GitHub,
   XCircle,
   Youtube,
 } from 'react-feather';
@@ -703,6 +704,8 @@ function SocialsCard() {
         />
 
         <SocialItem Icon={Twitter} href="https://twitter.com/colorstackorg" />
+
+        <SocialItem Icon={GitHub} href="https://github.com/colorstackorg" />
 
         <SocialItem
           Icon={Youtube}
