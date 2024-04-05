@@ -17,7 +17,8 @@
     "postinstall": "yarn run types",
     "seed": "tsx ./src/scripts/seed.ts && yarn types",
     "type-check": "tsc --noEmit",
-    "types": "node ./src/scripts/kysely-codegen.js"
+    "types": "node ./src/scripts/kysely-codegen.js",
+    "windows": "tsx ./src/scripts/windows.ts"
   },
   "dependencies": {
     "kysely": "^0.26.3",

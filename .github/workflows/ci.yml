@@ -19,8 +19,8 @@ jobs:
           cache: 'yarn'
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-      - name: Run database migrations and generate types
-        run: yarn db:migrate
+      - name: Test windows
+        run: yarn workspace @oyster/db windows
 
   ci:
     name: CI
