@@ -14,7 +14,6 @@ class FileMigrationProvider {
     console.log('2');
     for (const fileName of files) {
       const name = this.#props.path.join(this.#props.migrationFolder, fileName);
-      console.log({ name });
       const migration = await import(name);
       const migrationKey = fileName.substring(0, fileName.lastIndexOf('.'));
     }
@@ -23,7 +22,11 @@ class FileMigrationProvider {
 }
 
 (async () => {
-  const migrationFolder = path.join(import.meta.url, '../../migrations');
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+
+  const migrationFolder = path.join(__dirname, '../migrations');
+  console.log('0', migrationFolder);
 
   const migrations = await new FileMigrationProvider({
     fs,
