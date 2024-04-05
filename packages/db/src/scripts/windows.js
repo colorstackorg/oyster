@@ -13,7 +13,11 @@ class FileMigrationProvider {
     const files = await this.#props.fs.readdir(this.#props.migrationFolder);
     console.log('2');
     for (const fileName of files) {
-      const name = this.#props.path.join(this.#props.migrationFolder, fileName);
+      const name = this.#props.path.join(
+        'file://',
+        this.#props.migrationFolder,
+        fileName
+      );
       console.log('3', name);
       const migration = await import(name);
       const migrationKey = fileName.substring(0, fileName.lastIndexOf('.'));
@@ -28,7 +32,7 @@ class FileMigrationProvider {
 
   const migrations = await new FileMigrationProvider({
     fs,
-    migrationFolder: 'file://' + path.resolve(__dirname, '../migrations'),
+    migrationFolder: path.resolve(__dirname, '../migrations'),
     path,
   }).getMigrations();
 
