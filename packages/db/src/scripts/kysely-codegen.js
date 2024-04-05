@@ -10,9 +10,9 @@
 import { exec } from 'child_process';
 import { config } from 'dotenv';
 
-const env = config().parsed;
+config();
 
-if (env && env.DATABASE_URL) {
+if (process.env.DATABASE_URL) {
   exec(
     'kysely-codegen --dialect=postgres --camel-case',
     (error, stdout, stderr) => {
