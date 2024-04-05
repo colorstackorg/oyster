@@ -18,7 +18,7 @@
     "seed": "tsx ./src/scripts/seed.ts && yarn types",
     "type-check": "tsc --noEmit",
     "types": "node ./src/scripts/kysely-codegen.js",
-    "windows": "node ./src/scripts/windows.js"
+    "windows": "tsx ./src/scripts/windows.ts"
   },
   "dependencies": {
     "kysely": "^0.26.3",

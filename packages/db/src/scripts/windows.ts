@@ -1,21 +1,19 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
+import { fileURLToPath } from 'url';
 
 class FileMigrationProvider {
-  #props;
-  constructor(props) {
-    this.#props = props;
-  }
+  constructor(private props: any) {}
+
   async getMigrations() {
     const migrations = {};
-    console.log('1', this.#props.migrationFolder);
-    const files = await this.#props.fs.readdir(this.#props.migrationFolder);
+    console.log('1', this.props.migrationFolder);
+    const files = await this.props.fs.readdir(this.props.migrationFolder);
     console.log('2');
     for (const fileName of files) {
-      const name = this.#props.path.join(
+      const name = this.props.path.join(
         'file://',
-        this.#props.migrationFolder,
+        this.props.migrationFolder,
         fileName
       );
       console.log('3', name);
@@ -39,5 +37,5 @@ class FileMigrationProvider {
     path,
   }).getMigrations();
 
-  console.log(migrations.length);
+  console.log(migrations);
 })();
