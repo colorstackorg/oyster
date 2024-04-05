@@ -3,7 +3,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 class FileMigrationProvider {
-  constructor(private props: any) {}
+  constructor(props) {
+    this.props = props;
+  }
 
   async getMigrations() {
     const migrations = {};

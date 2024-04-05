@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import { FileMigrationProvider, Kysely, Migrator } from 'kysely';
 import { DB } from 'kysely-codegen/dist/db';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -33,15 +34,18 @@ export async function migrate(options: MigrateOptions = defaultOptions) {
 
   const db = options.db || createDatabaseConnection();
 
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
+  const isWindows = os.platform() === 'win32';
+
+  const migrationFolder = isWindows
+    ? path.join(import.meta.url, '../../migrations')
+    : path.join(fileURLToPath(import.meta.url), '../../migrations');
 
   const migrator = new Migrator({
     db,
     provider: new FileMigrationProvider({
       fs,
       path,
-      migrationFolder: path.join(__dirname, '../migrations'),
+      migrationFolder,
     }),
     migrationTableName: 'kysely_migrations',
     migrationLockTableName: 'kysely_migrations_lock',
