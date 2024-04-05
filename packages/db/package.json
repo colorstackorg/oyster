@@ -13,6 +13,8 @@
     "lint:fix": "eslint . --fix",
     "migrate": "tsx ./src/scripts/migrate.ts && yarn types",
     "migrate:down": "tsx ./src/scripts/migrate.ts --down && yarn types",
+    "migration:create": "tsx ./src/scripts/create-migration.ts",
+    "postinstall": "yarn run types",
     "seed": "tsx ./src/scripts/seed.ts && yarn types",
     "setup": "tsx ./src/scripts/setup.ts",
     "type-check": "tsc --noEmit",
@@ -26,7 +28,10 @@
     "@oyster/eslint-config": "*",
     "@oyster/tsconfig": "*",
     "@types/pg": "^8.11.2",
+    "@types/prompt-sync": "^4.2.3",
     "commander": "^12.0.0",
-    "kysely-codegen": "^0.10.1"
+    "dedent": "^0.7.0",
+    "kysely-codegen": "^0.10.1",
+    "prompt-sync": "^4.2.0"
   }
 }

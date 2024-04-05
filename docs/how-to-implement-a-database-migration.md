@@ -17,7 +17,7 @@ We have a [`migrate`](../packages/db/src/scripts/migrate.ts) script, which
 effectively executes any migrations that haven't been executed yet. To run this
 script:
 
-```
+```sh
 yarn db:migrate
 ```
 
@@ -30,26 +30,25 @@ that a migration has run successfully if it shows up in this query:
 select * from kysely_migrations;
 ```
 
-## How to Name Migrations
+## How to Create a Migration
 
-We have to establish some sort of order for migrations to run, given that these
-are classic "up"/"down" migrations. To establish this order, we'll name our
-files in the following manner:
+To create a migration file, run:
 
-```
-<ISO_TIMESTAMP>-<MIGRATION_NAME>.ts
+```sh
+yarn db:migration:create
 ```
 
-For example, a valid migration name is:
+In the prompt, you'll need to enter a name for your migration, and then your
+migration file will be created! Boom! 💥
+
+## Common Errors
 
 ```
-2024-01-29T19:05:29Z-birthdate.ts
+Error: corrupted migrations: previously executed migration <SOME_MIGRATION_NAME> is missing.
 ```
 
-To get the ISO timestamp, you can simply open up a node terminal and run:
+The easiest way to fix this is to re-setup your database by running:
 
 ```
-new Date()
+yarn db:setup
 ```
-
-and the output should be exactly what we want.
