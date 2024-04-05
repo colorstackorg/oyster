@@ -169,14 +169,11 @@ You should be logged in!
 
 ### Enabling Integrations
 
-You'll notice that a lot of environment variables are empty. Most of these empty
-variables are tied to the 3rd party integrations we have with platforms such as
-Google for authentication. If you would like to enable these integrations in
-development, please see the
+To enable any of our 3rd party integrations in development, please see the
 [How to Enable Integrations](./docs/how-to-enable-integrations.md)
 documentation.
 
-Also, to enable sending emails, please see the
+To enable sending emails, please see the
 [How to Enable Emails](./docs/how-to-enable-emails.md) documentation.
 
 ### Editor Setup
