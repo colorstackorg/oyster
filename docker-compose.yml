@@ -1,0 +1,42 @@
+# This file helps us easily spin up our Postgres and Redis databases in local
+# development (this is not meant to be used in production), bypassing the need
+# to install and configure these services on our local machines.
+
+version: '3.9'
+
+services:
+  postgres:
+    container_name: oyster-postgres
+    image: postgres:15-alpine
+    ports:
+      # We're using port 5433 to avoid any potential conflicts.
+      - 5433:5432
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: oyster
+      POSTGRES_PASSWORD: oyster
+      POSTGRES_USER: oyster
+
+  postgres-test:
+    container_name: oyster-postgres-test
+    image: postgres:15-alpine
+    ports:
+      # We're using port 5434 to avoid any potential conflicts.
+      - 5434:5432
+    environment:
+      POSTGRES_DB: oyster_test
+      POSTGRES_PASSWORD: oyster
+      POSTGRES_USER: oyster
+
+  redis:
+    container_name: oyster-redis
+    image: redis:latest
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+
+volumes:
+  pg_data:
+  redis_data:

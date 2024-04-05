@@ -16,9 +16,8 @@
     "migration:create": "tsx ./src/scripts/create-migration.ts",
     "postinstall": "yarn run types",
     "seed": "tsx ./src/scripts/seed.ts && yarn types",
-    "setup": "tsx ./src/scripts/setup.ts",
     "type-check": "tsc --noEmit",
-    "types": "kysely-codegen --dialect=postgres --camel-case"
+    "types": "node ./src/scripts/kysely-codegen.js"
   },
   "dependencies": {
     "kysely": "^0.26.3",
