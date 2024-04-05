@@ -92,8 +92,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const memberId = user(session);
 
-  let joined = false;
-
   await db.transaction().execute(async (trx) => {
     await upsertIcebreakerResponses(trx, memberId, [
       {

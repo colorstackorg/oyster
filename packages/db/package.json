@@ -9,8 +9,11 @@
     "./test/constants": "./src/test/constants.ts"
   },
   "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "migrate": "tsx ./src/scripts/migrate.ts && yarn types",
     "migrate:down": "tsx ./src/scripts/migrate.ts --down && yarn types",
+    "postinstall": "yarn run types",
     "seed": "tsx ./src/scripts/seed.ts && yarn types",
     "setup": "tsx ./src/scripts/setup.ts",
     "type-check": "tsc --noEmit",
@@ -21,6 +24,7 @@
     "pg": "^8.8.0"
   },
   "devDependencies": {
+    "@oyster/eslint-config": "*",
     "@oyster/tsconfig": "*",
     "@types/pg": "^8.11.2",
     "commander": "^12.0.0",

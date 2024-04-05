@@ -544,7 +544,7 @@ function LeaderboardCard({
       )}
 
       <ul className="flex flex-col gap-4">
-        {leaderboard.map((position, i) => {
+        {leaderboard.map((position) => {
           return (
             <LeaderboardPositionItem key={position.id} position={position} />
           );

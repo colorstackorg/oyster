@@ -40,9 +40,9 @@ export const Modal = ({
       >
         <aside
           className={cx(
-            'flex flex-col gap-4 overflow-scroll p-4 relative w-full z-10 max-w-[600px] max-h-[calc(100vh-5rem)] bg-white',
-            'rounded-t-lg animate-[modal-animation-mobile_250ms]',
-            'sm:rounded-lg sm:animate-[modal-animation_250ms]'
+            'relative z-10 flex max-h-[calc(100vh-5rem)] w-full max-w-[600px] flex-col gap-4 overflow-scroll bg-white p-4',
+            'animate-[modal-animation-mobile_250ms] rounded-t-lg',
+            'sm:animate-[modal-animation_250ms] sm:rounded-lg'
           )}
           id="modal"
           role="dialog"
@@ -54,7 +54,7 @@ export const Modal = ({
       <div
         aria-label="Modal Shader"
         className={cx(
-          'cursor-default h-screen w-screen left-0 top-0 fixed bg-black',
+          'fixed left-0 top-0 h-screen w-screen cursor-default bg-black',
           'animate-[modal-shader-animation_250ms_forwards]'
         )}
         onClick={onClose}

@@ -27,7 +27,7 @@ const HEADER_NAMES = Object.freeze([
  */
 export function getIpAddress(request: Request) {
   const possibleAddresses = HEADER_NAMES.flatMap((name) => {
-    let value = request.headers.get(name);
+    const value = request.headers.get(name);
 
     if (name === 'Forwarded') {
       return parseForwardedHeader(value);
@@ -54,7 +54,7 @@ function parseForwardedHeader(value: string | null) {
     return null;
   }
 
-  for (let part of value.split(';')) {
+  for (const part of value.split(';')) {
     if (part.startsWith('for=')) {
       return part.slice(4);
     }

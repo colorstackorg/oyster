@@ -47,7 +47,7 @@ export async function migrate(options: MigrateOptions = defaultOptions) {
     migrationLockTableName: 'kysely_migrations_lock',
   });
 
-  const { error, results } = !!options.down
+  const { error, results } = options.down
     ? await migrator.migrateDown()
     : await migrator.migrateToLatest();
 
@@ -68,7 +68,12 @@ export async function migrate(options: MigrateOptions = defaultOptions) {
   }
 
   if (error) {
-    console.error('An error occurred with the Kysely migrator.', error);
+    console.error(
+      'Something went wrong! To debug, see common migration errors here:',
+      'https://github.com/colorstackorg/oyster/blob/main/docs/how-to-implement-a-database-migration.md#common-errors.',
+      error
+    );
+
     process.exit(1);
   }
 

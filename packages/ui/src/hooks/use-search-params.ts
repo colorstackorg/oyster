@@ -1,10 +1,10 @@
 import { useSearchParams as _useSearchParams } from '@remix-run/react';
 import { z } from 'zod';
 
-export function useSearchParams<Schema extends z.ZodObject<any>>(
+export function useSearchParams<Schema extends z.AnyZodObject>(
   schema: Schema
 ): [z.infer<Schema>] {
-  const [_searchParams, _setSearchParams] = _useSearchParams();
+  const [_searchParams] = _useSearchParams();
 
   const searchParams = schema.parse(Object.fromEntries(_searchParams));
 
