@@ -17,7 +17,7 @@
     "postinstall": "yarn run types",
     "seed": "tsx ./src/scripts/seed.ts && yarn types",
     "type-check": "tsc --noEmit",
-    "types": "kysely-codegen --dialect=postgres --camel-case"
+    "types": "kysely-codegen --dialect=postgres --camel-case --env-file=.env.example"
   },
   "dependencies": {
     "kysely": "^0.26.3",
