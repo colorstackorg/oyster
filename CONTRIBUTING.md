@@ -27,6 +27,7 @@ ColorStack members first, and then friends of ColorStack. ❤️
   - [Building the Project](#building-the-project)
   - [Running the Applications](#running-the-applications)
   - [Logging Into Applications](#logging-into-applications)
+  - [Enabling Integrations](#enabling-integrations)
   - [Editor Setup](#editor-setup)
 - [Making a Pull Request](#making-a-pull-request)
   - [Your First PR](#your-first-pr)
@@ -86,8 +87,8 @@ You'll now have `.env` files in all of your apps (and a couple packages)!
 
 You'll notice that a lot of environment variables are empty. Most of these empty
 variables are tied to the 3rd party integrations we have with platforms such as
-Postmark for sending emails and Google for authentication. If you would like to
-enable these integrations in development, please see the
+Google for authentication. If you would like to enable these integrations in
+development, please see the
 [How to Enable Integrations](./docs/how-to-enable-integrations.md)
 documentation.
 
@@ -157,15 +158,23 @@ yarn dev --filter=api
 
 ### Logging Into Applications
 
-You can log into the Member Profile and Admin Dashboard by sending a one-time
-code to your email OR by using your Google login.
+In the development environment, you can bypass any real authentication when
+logging into the Member Profile and Admin Dashboard by doing the following:
 
-- [Recommended] To log in by sending a one-time code to your email, you'll first
-  need to enable sending emails in development. See instructions on how to do so
-  [here](./docs/how-to-enable-emails.md).
-- To log in via Google, you'll first need to enable the **Google** integration.
-  See instructions on how to do so
-  [here](./docs/how-to-enable-integrations.md#google).
+1. Click "Log In with OTP".
+2. Input the email that you seeded your database with.
+3. Input any 6-digit value.
+
+You should be logged in!
+
+### Enabling Integrations
+
+To enable any of our 3rd party integrations in development, please see the
+[How to Enable Integrations](./docs/how-to-enable-integrations.md)
+documentation.
+
+To enable sending emails, please see the
+[How to Enable Emails](./docs/how-to-enable-emails.md) documentation.
 
 ### Editor Setup
 
