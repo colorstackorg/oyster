@@ -66,6 +66,14 @@ Please ensure that you have the following software on your machine:
    git checkout -b YOUR_BRANCH_NAME
    ```
 
+### Project Dependencies
+
+To install all project dependencies, run:
+
+```sh
+yarn
+```
+
 ### Environment Variables
 
 To set up your environment variables, run:
@@ -82,14 +90,6 @@ Postmark for sending emails and Google for authentication. If you would like to
 enable these integrations in development, please see the
 [How to Enable Integrations](./docs/how-to-enable-integrations.md)
 documentation.
-
-### Project Dependencies
-
-To install all project dependencies, run:
-
-```sh
-yarn
-```
 
 ### Database Setup
 
