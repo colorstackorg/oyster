@@ -1,0 +1,26 @@
+version: '3.9'
+
+services:
+  postgres:
+    container_name: oyster-postgres
+    image: postgres:15-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: colorstack
+      POSTGRES_PASSWORD: colorstack
+      POSTGRES_USER: colorstack
+
+  redis:
+    container_name: oyster-redis
+    image: redis:latest
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+
+volumes:
+  pg_data:
+  redis_data:
