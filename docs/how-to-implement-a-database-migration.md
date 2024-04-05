@@ -17,7 +17,7 @@ We have a [`migrate`](../packages/db/src/scripts/migrate.ts) script, which
 effectively executes any migrations that haven't been executed yet. To run this
 script:
 
-```
+```sh
 yarn db:migrate
 ```
 
@@ -30,21 +30,16 @@ that a migration has run successfully if it shows up in this query:
 select * from kysely_migrations;
 ```
 
-## How to Name Migrations
+## How to Create a Migration
 
-We have to establish some sort of order for migrations to run, given that these
-are classic "up"/"down" migrations. To establish this order, we'll name our
-files in the following manner:
+To create a migration file, run:
 
-```
-<ISO_TIMESTAMP>-<MIGRATION_NAME>.ts
+```sh
+yarn db:migration:create
 ```
 
-For example, a valid migration name is:
-
-```
-20240311103301_job_offers.ts
-```
+In the prompt, you'll need to enter a name for your migration, and then your
+migration file will be created! Boom! 💥
 
 ## Common Errors
 
