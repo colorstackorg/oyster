@@ -13,6 +13,16 @@ services:
       POSTGRES_PASSWORD: colorstack
       POSTGRES_USER: colorstack
 
+  postgres-test:
+    container_name: oyster-postgres-test
+    image: postgres:15-alpine
+    ports:
+      - 5431:5432
+    environment:
+      POSTGRES_DB: colorstack_test
+      POSTGRES_PASSWORD: colorstack
+      POSTGRES_USER: colorstack
+
   redis:
     container_name: oyster-redis
     image: redis:latest

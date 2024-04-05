@@ -138,7 +138,7 @@ You'll need to make sure that Postgres and Redis are running in the background.
 To set up your Postgres databases, you can run:
 
 ```
-yarn db:setup
+yarn dx:up
 ```
 
 You should now be able to connect to your database like this:

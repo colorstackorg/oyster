@@ -49,6 +49,7 @@ Error: corrupted migrations: previously executed migration <SOME_MIGRATION_NAME>
 
 The easiest way to fix this is to re-setup your database by running:
 
-```
-yarn db:setup
+```sh
+yarn dx:nuke
+yarn dx:up
 ```
