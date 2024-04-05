@@ -1,3 +1,7 @@
+# This file helps us easily spin up our Postgres and Redis databases in local
+# development (this is not meant to be used in production), bypassing the need
+# to install and configure these services on our local machines.
+
 version: '3.9'
 
 services:
@@ -5,7 +9,7 @@ services:
     container_name: oyster-postgres
     image: postgres:15-alpine
     ports:
-      - 5432:5432
+      - 5433:5432
     volumes:
       - pg_data:/var/lib/postgresql/data
     environment:
@@ -17,7 +21,7 @@ services:
     container_name: oyster-postgres-test
     image: postgres:15-alpine
     ports:
-      - 5431:5432
+      - 5434:5432
     environment:
       POSTGRES_DB: colorstack_test
       POSTGRES_PASSWORD: colorstack
