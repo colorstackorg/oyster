@@ -69,7 +69,7 @@ jobs:
 
       - name: Lint
         run:
-          yarn lint --filter=[$GITHUB_BASE_REF]
+          yarn lint --filter=[$GITHUB_BASE_REF...$GITHUB_HEAD_REF]
 
       - name: Check types
         run:
