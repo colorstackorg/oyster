@@ -8,7 +8,7 @@ import {
   CompletedActivity,
   EmailCampaign,
   Event,
-  ExtractValue,
+  type ExtractValue,
   ProfileView,
   Student,
   StudentEmail,

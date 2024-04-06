@@ -2,7 +2,7 @@
 module.exports = {
   extends: ['@oyster/eslint-config/base'],
   parserOptions: {
-    project: __dirname + '/tsconfig.json',
+    tsconfigRootDir: __dirname,
   },
   rules: {
     'no-constant-condition': ['error', { checkLoops: false }],

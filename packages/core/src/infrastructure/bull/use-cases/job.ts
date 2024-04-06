@@ -1,7 +1,7 @@
-import { JobsOptions } from 'bullmq';
+import { type JobsOptions } from 'bullmq';
 
 import { QueueFromName } from '../bull';
-import { BullJob, BullQueue, GetBullJobData } from '../bull.types';
+import { BullJob, type BullQueue, type GetBullJobData } from '../bull.types';
 
 export function job<JobName extends BullJob['name']>(
   name: JobName,
