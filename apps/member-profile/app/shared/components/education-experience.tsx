@@ -3,8 +3,8 @@ import { Edit } from 'react-feather';
 
 import { IconButton, Text } from '@oyster/ui';
 
-import { Route } from '../constants';
 import { Experience } from './profile';
+import { Route } from '../constants';
 
 type EducationExperienceItemProps = {
   education: {

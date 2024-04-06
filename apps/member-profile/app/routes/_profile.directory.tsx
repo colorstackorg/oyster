@@ -1,4 +1,8 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import {
   generatePath,
   Link,
@@ -12,7 +16,7 @@ import { Filter, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { ExtractValue, Student } from '@oyster/types';
+import { type ExtractValue, Student } from '@oyster/types';
 import {
   Button,
   Dashboard,
@@ -466,6 +470,7 @@ function AppliedFilterGroup() {
         .filter(([_, value]) => !!value)
         .map(([key, value]) => {
           const url = new URL(_url);
+
           url.searchParams.delete(key);
 
           if (key === DirectoryFilterKey.hometown) {

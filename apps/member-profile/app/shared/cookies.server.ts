@@ -18,5 +18,6 @@ export const addEmailCookie = createCookie('add-email', {
 export function getTimezone(request: Request) {
   const cookie = request.headers.get('Cookie');
   const timezone = getCookie(cookie || '', 'timezone');
+
   return Timezone.parse(timezone);
 }

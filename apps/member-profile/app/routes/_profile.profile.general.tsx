@@ -1,4 +1,8 @@
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
@@ -6,7 +10,7 @@ import {
   useNavigation,
 } from '@remix-run/react';
 import { sql } from 'kysely';
-import { z } from 'zod';
+import { type z } from 'zod';
 
 import { Student } from '@oyster/types';
 import {

@@ -1,4 +1,8 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import {
   Form as RemixForm,
   Link as RemixLink,
@@ -8,12 +12,12 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
-import { PropsWithoutRef } from 'react';
+import { type PropsWithoutRef } from 'react';
 import { Award, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { CompletedActivity, Student } from '@oyster/types';
+import { type CompletedActivity, Student } from '@oyster/types';
 import {
   Button,
   cx,

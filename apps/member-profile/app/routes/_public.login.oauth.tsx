@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs, redirect } from '@remix-run/node';
+import { type LoaderFunctionArgs, redirect } from '@remix-run/node';
 import jwt from 'jsonwebtoken';
 
 import { toTitleCase } from '@oyster/utils';
@@ -35,6 +35,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // order to get the user ID.
   try {
     const data = jwt.verify(token, ENV.JWT_SECRET) as { id: string };
+
     id = data.id;
   } catch {
     return redirect(Route.LOGIN);

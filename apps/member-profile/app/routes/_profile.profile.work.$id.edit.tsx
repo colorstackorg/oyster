@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -28,8 +28,8 @@ import { Route } from '../shared/constants';
 import { editWorkExperience, getWorkExperience } from '../shared/core.server';
 import {
   EditWorkExperienceInput,
-  EmploymentType,
-  LocationType,
+  type EmploymentType,
+  type LocationType,
   WorkForm,
 } from '../shared/core.ui';
 import {
