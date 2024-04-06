@@ -70,7 +70,7 @@ jobs:
 
       - name: Lint
         run:
-          yarn lint --filter=[$BASE_SHA]
+          yarn lint --filter=...[$BASE_SHA]
 
       - name: Check types
         run:
