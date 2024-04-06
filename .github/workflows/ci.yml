@@ -70,19 +70,16 @@ jobs:
 
       - name: Lint
         run:
-          yarn lint --filter=...[$BASE_SHA]
+          yarn lint --filter=[$BASE_SHA]
 
       - name: Check types
         run:
-          yarn type-check --filter=[${{ github.event.pull_request.base.sha ||
-          'HEAD^1' }}]
+          yarn type-check --filter=[$BASE_SHA]
 
       - name: Build all packages and applications
         run:
-          yarn build --filter=[${{ github.event.pull_request.base.sha ||
-          'HEAD^1' }}]
+          yarn build --filter=[$BASE_SHA]
 
       - name: Run tests
         run:
-          yarn test --filter=[${{ github.event.pull_request.base.sha || 'HEAD^1'
-          }}]
+          yarn test --filter=[$BASE_SHA]
