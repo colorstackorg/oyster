@@ -2,8 +2,8 @@ import { id } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
-import { AddEducationInput } from '../education.types';
 import { checkMostRecentEducation } from './check-most-recent-education';
+import { type AddEducationInput } from '../education.types';
 
 export async function addEducation(input: AddEducationInput) {
   const educationId = id();

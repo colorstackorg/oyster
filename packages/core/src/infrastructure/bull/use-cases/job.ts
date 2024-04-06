@@ -1,5 +1,6 @@
 import { type JobsOptions } from 'bullmq';
 
+import { reportError } from '@/modules/sentry/use-cases/report-error';
 import { QueueFromName } from '../bull';
 import { BullJob, type BullQueue, type GetBullJobData } from '../bull.types';
 
@@ -15,6 +16,7 @@ export function job<JobName extends BullJob['name']>(
 
   if (!result.success) {
     reportError(result.error);
+
     return;
   }
 

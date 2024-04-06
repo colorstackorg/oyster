@@ -1,7 +1,7 @@
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
-import { Education } from '../education.types';
 import { checkMostRecentEducation } from './check-most-recent-education';
+import { type Education } from '../education.types';
 
 type DeleteEducationInput = Pick<Education, 'id' | 'studentId'>;
 

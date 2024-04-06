@@ -1,7 +1,7 @@
 import { id } from '@oyster/utils';
 
 import { db } from '@/infrastructure/database';
-import { CreateSurveyInput } from '../survey.types';
+import { type CreateSurveyInput } from '../survey.types';
 
 export async function createSurvey({
   description,

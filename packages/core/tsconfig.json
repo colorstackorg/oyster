@@ -1,6 +1,6 @@
 {
   "extends": "@oyster/tsconfig/base.json",
-  "include": ["src"],
+  "include": ["src", "tsup.config.ts", "vitest.config.ts"],
   "compilerOptions": {
     "baseUrl": ".",
     "jsx": "react-jsx",

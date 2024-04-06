@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 
-import { Event } from '@oyster/types';
+import { type Event } from '@oyster/types';
 import { id } from '@oyster/utils';
 
 import { db } from '@/infrastructure/database';

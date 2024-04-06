@@ -1,8 +1,11 @@
-import { OAuth2Client } from 'google-auth-library';
+import { type OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 
 import { ENV } from '@/shared/env';
-import { ExchangeCodeForTokenInput, OAuthService } from '../oauth.service';
+import {
+  type ExchangeCodeForTokenInput,
+  type OAuthService,
+} from '../oauth.service';
 
 export class GoogleOAuthService implements OAuthService {
   private client: OAuth2Client;

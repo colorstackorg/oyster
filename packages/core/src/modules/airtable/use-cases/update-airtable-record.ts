@@ -1,4 +1,4 @@
-import { GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { IS_PRODUCTION } from '@/shared/env';
 import { NotFoundError } from '@/shared/errors';
 import {
