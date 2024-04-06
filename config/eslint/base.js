@@ -15,7 +15,7 @@ module.exports = {
     'node_modules/',
   ],
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'import'],
   root: true,
   rules: {
     '@typescript-eslint/no-unused-vars': [
@@ -25,5 +25,32 @@ module.exports = {
         varsIgnorePattern: '^_',
       },
     ],
+    'import/order': [
+      'error',
+      {
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: true,
+        },
+        distinctGroup: false,
+        groups: [
+          ['external', 'builtin'],
+          'internal',
+          ['sibling', 'parent'],
+          'index',
+        ],
+        'newlines-between': 'always',
+        pathGroups: [
+          {
+            group: 'sibling',
+            pattern: '@/**',
+            position: 'before',
+          },
+        ],
+      },
+    ],
+  },
+  settings: {
+    'import/internal-regex': '^@oyster/',
   },
 };
