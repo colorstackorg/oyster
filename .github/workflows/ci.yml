@@ -37,6 +37,8 @@ jobs:
     steps:
       - name: Checkout repository code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Cache Turborepo setup
         uses: actions/cache@v4
