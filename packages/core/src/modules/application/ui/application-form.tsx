@@ -19,17 +19,17 @@ import {
   Link,
   Radio,
   Text,
-  TextProps,
   Textarea,
+  TextProps,
 } from '@oyster/ui';
 import { iife, toTitleCase } from '@oyster/utils';
 
+import { MajorCombobox } from './major-combobox';
+import { SchoolCombobox } from './school-combobox';
 import {
   EducationLevel,
   FORMATTED_EDUCATION_LEVEL,
 } from '../../education/education.types';
-import { MajorCombobox } from './major-combobox';
-import { SchoolCombobox } from './school-combobox';
 
 const ApplicationContext = React.createContext({
   isOtherMajor: false,
