@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ExtractValue } from '../shared/types';
+import { type ExtractValue } from '../shared/types';
 
 // Core
 
