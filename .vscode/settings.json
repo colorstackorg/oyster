@@ -11,8 +11,7 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "[typescript][typescriptreact]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll": "explicit",
-      "source.organizeImports": "explicit"
+      "source.fixAll": "explicit"
     }
   },
   "tailwindCSS.experimental.configFile": "./config/tailwind/tailwind.config.js",
