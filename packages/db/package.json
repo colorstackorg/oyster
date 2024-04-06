@@ -11,11 +11,11 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "migrate": "tsx ./src/scripts/migrate.ts && yarn types",
-    "migrate:down": "tsx ./src/scripts/migrate.ts --down && yarn types",
-    "migration:create": "tsx ./src/scripts/create-migration.ts",
-    "postinstall": "yarn run types",
-    "seed": "tsx ./src/scripts/seed.ts && yarn types",
+    "migrate": "bun run ./src/scripts/migrate.ts && bun run types",
+    "migrate:down": "bun run ./src/scripts/migrate.ts --down && bun run types",
+    "migration:create": "bun run ./src/scripts/create-migration.ts",
+    "postinstall": "bun run types",
+    "seed": "bun run ./src/scripts/seed.ts && bun run types",
     "type-check": "tsc --noEmit",
     "types": "node ./src/scripts/kysely-codegen.js"
   },
@@ -24,8 +24,8 @@
     "pg": "^8.8.0"
   },
   "devDependencies": {
-    "@oyster/eslint-config": "*",
-    "@oyster/tsconfig": "*",
+    "@oyster/eslint-config": "workspace:*",
+    "@oyster/tsconfig": "workspace:*",
     "@types/pg": "^8.11.2",
     "@types/prompt-sync": "^4.2.3",
     "commander": "^12.0.0",

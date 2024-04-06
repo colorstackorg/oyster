@@ -9,16 +9,16 @@
   },
   "scripts": {
     "build": "turbo run build --cache-dir=.turbo",
-    "db:migrate": "yarn workspace @oyster/db migrate",
-    "db:migration:create": "yarn workspace @oyster/db migration:create",
-    "db:seed": "yarn workspace @oyster/db seed",
-    "db:types": "yarn workspace @oyster/db types",
+    "db:migrate": "bun run --cwd packages/db migrate",
+    "db:migration:create": "bun run --cwd packages/db migration:create",
+    "db:seed": "bun run --cwd packages/db seed",
+    "db:types": "bun run --cwd packages/db types",
     "dev": "turbo run dev --cache-dir=.turbo",
-    "dev:apps": "yarn dev --filter='./apps/*'",
+    "dev:apps": "bun run dev --filter='./apps/*'",
     "dx:down": "docker compose down",
     "dx:nuke": "docker compose down --volumes --remove-orphans",
     "dx:up": "docker compose up -d",
-    "env:setup": "yarn workspace @oyster/scripts env:setup",
+    "env:setup": "bun run --cwd packages/scripts env:setup",
     "lint": "turbo run lint --cache-dir=.turbo",
     "lint:fix": "turbo run lint:fix --cache-dir=.turbo",
     "prepare": "husky install",
@@ -27,6 +27,7 @@
     "type-check": "turbo run type-check --cache-dir=.turbo"
   },
   "devDependencies": {
+    "@types/bun": "^1.0.12",
     "husky": "^8.0.0",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
@@ -34,8 +35,7 @@
     "typescript": "^5.4.2"
   },
   "engines": {
-    "npm": ">=7.0.0",
-    "node": "^20.0.0"
+    "npm": ">=7.0.0"
   },
-  "packageManager": "yarn@1.22.10"
+  "packageManager": "bun@1.1.2"
 }

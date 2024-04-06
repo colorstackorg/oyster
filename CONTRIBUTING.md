@@ -85,7 +85,7 @@ that directory.
 To install all project dependencies, run:
 
 ```sh
-yarn
+bun install
 ```
 
 ### Environment Variables
@@ -93,7 +93,7 @@ yarn
 To set up your environment variables, run:
 
 ```
-yarn env:setup
+bun run env:setup
 ```
 
 You'll now have `.env` files in all of your apps (and a couple packages)!
@@ -114,7 +114,7 @@ You'll need to make sure that Postgres and Redis are running in the background.
 To set up your Postgres databases, you can run:
 
 ```
-yarn dx:up
+bun run dx:up
 ```
 
 #### Executing Database Migrations
@@ -122,7 +122,7 @@ yarn dx:up
 To execute the database migrations, run:
 
 ```sh
-yarn db:migrate
+bun run db:migrate
 ```
 
 To verify that the migration was executed successfully, connect to your Postgres
@@ -140,7 +140,7 @@ Now that we have some tables, we're ready to add some seed data in our database,
 which will enable you to log into the Admin Dashboard and Member Profile. Run:
 
 ```sh
-yarn db:seed
+bun run db:seed
 ```
 
 Follow the prompt to add your email, and you will now be able to log into both
@@ -151,7 +151,7 @@ applications.
 You can build the project by running:
 
 ```sh
-yarn build
+bun run build
 ```
 
 ### Running the Applications
@@ -159,14 +159,14 @@ yarn build
 To run all of our _applications_, you can run:
 
 ```sh
-yarn dev:apps
+bun run dev:apps
 ```
 
 To run a _specific package or application_, you can use the `--filter` flag like
 this:
 
 ```sh
-yarn dev --filter=api
+bun run dev --filter=api
 ```
 
 ### Logging Into Applications

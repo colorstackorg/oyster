@@ -2,7 +2,7 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "yarn db:migrate && yarn build --filter=admin-dashboard",
+    "buildCommand": "bun run db:migrate && bun run build --filter=admin-dashboard",
     "nixpacksConfigPath": "/apps/admin-dashboard/railway.json",
     "watchPatterns": [
       "/apps/admin-dashboard/**/*",
@@ -12,7 +12,7 @@
     ]
   },
   "deploy": {
-    "startCommand": "yarn start --filter=admin-dashboard",
+    "startCommand": "bun run start --filter=admin-dashboard",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",

@@ -14,11 +14,11 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@oyster/core": "*",
-    "@oyster/db": "*",
-    "@oyster/types": "*",
-    "@oyster/ui": "*",
-    "@oyster/utils": "*",
+    "@oyster/core": "workspace:*",
+    "@oyster/db": "workspace:*",
+    "@oyster/types": "workspace:*",
+    "@oyster/ui": "workspace:*",
+    "@oyster/utils": "workspace:*",
     "@remix-run/node": "^2.8.1",
     "@remix-run/react": "^2.8.1",
     "@remix-run/serve": "^2.8.1",
@@ -39,9 +39,9 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
-    "@oyster/eslint-config": "*",
-    "@oyster/tailwind": "*",
-    "@oyster/tsconfig": "*",
+    "@oyster/eslint-config": "workspace:*",
+    "@oyster/tailwind": "workspace:*",
+    "@oyster/tsconfig": "workspace:*",
     "@remix-run/dev": "^2.8.1",
     "@types/node": "^18.7.18",
     "@types/react": "^18.0.26",

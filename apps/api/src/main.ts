@@ -5,7 +5,7 @@ import express from 'express';
 import helmet from 'helmet';
 
 import {
-  airtableWorker,
+  // airtableWorker,
   applicationWorker,
   educationWorker,
   emailMarketingWorker,
@@ -80,7 +80,7 @@ async function bootstrap() {
 }
 
 function initializeBullWorkers() {
-  airtableWorker.run();
+  // airtableWorker.run();
   applicationWorker.run();
   educationWorker.run();
   emailMarketingWorker.run();

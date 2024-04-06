@@ -56,26 +56,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-
 
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: 20
-          cache: 'yarn'
+          bun-version: 1.1.2
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Run database migrations and generate types
-        run: yarn db:migrate
+        run: bun run db:migrate
 
       - name: Lint
-        run: yarn lint --filter=[$BASE_SHA]
+        run: bun run lint --filter=[$BASE_SHA]
 
       - name: Check types
-        run: yarn type-check --filter=[$BASE_SHA]
+        run: bun run type-check --filter=[$BASE_SHA]
 
       - name: Build all packages and applications
-        run: yarn build --filter=[$BASE_SHA]
+        run: bun run build --filter=[$BASE_SHA]
 
       - name: Run tests
-        run: yarn test --filter=[$BASE_SHA]
+        run: bun run test --filter=[$BASE_SHA]

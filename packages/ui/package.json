@@ -15,10 +15,10 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@oyster/eslint-config": "*",
-    "@oyster/tsconfig": "*",
-    "@oyster/types": "*",
-    "@oyster/utils": "*",
+    "@oyster/eslint-config": "workspace:*",
+    "@oyster/tsconfig": "workspace:*",
+    "@oyster/types": "workspace:*",
+    "@oyster/utils": "workspace:*",
     "@remix-run/react": "^2.8.1",
     "@types/react": "^18.0.26",
     "react": "^18.2.0",

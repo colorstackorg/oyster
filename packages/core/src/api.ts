@@ -12,7 +12,7 @@ dayjs.extend(timezone);
 // This is only meant to be imported by the `api` application.
 
 export { job } from './infrastructure/bull/use-cases/job';
-export { airtableWorker } from './modules/airtable/airtable.worker';
+// export { airtableWorker } from './modules/airtable/airtable.worker';
 export { applicationWorker } from './modules/application/application.worker';
 export { OAuthCodeState } from './modules/authentication/authentication.types';
 export { oneTimeCodeWorker } from './modules/authentication/one-time-code.worker';
