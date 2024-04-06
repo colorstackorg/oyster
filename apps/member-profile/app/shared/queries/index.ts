@@ -1,10 +1,10 @@
 import dayjs from 'dayjs';
-import { Transaction, UpdateObject } from 'kysely';
+import { type Transaction, type UpdateObject } from 'kysely';
 
 import { toTitleCase } from '@oyster/utils';
 
-import { db, DB } from '../core.server';
-import { Country, DegreeType, FORMATTED_DEGREEE_TYPE } from '../core.ui';
+import { db, type DB } from '../core.server';
+import { Country, type DegreeType, FORMATTED_DEGREEE_TYPE } from '../core.ui';
 
 // "educations"
 

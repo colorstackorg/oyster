@@ -1,6 +1,6 @@
 import { Link, NavLink, Form as RemixForm, useSubmit } from '@remix-run/react';
 import React, {
-  PropsWithChildren,
+  type PropsWithChildren,
   useContext,
   useEffect,
   useState,
@@ -8,12 +8,12 @@ import React, {
 import { LogOut, Menu, X } from 'react-feather';
 import { z } from 'zod';
 
+import { IconButton } from './icon-button';
+import { SearchBar, type SearchBarProps } from './search-bar';
+import { Text } from './text';
 import { useDelayedValue } from '../hooks/use-delayed-value';
 import { useSearchParams } from '../hooks/use-search-params';
 import { cx } from '../utils/cx';
-import { IconButton } from './icon-button';
-import { SearchBar, SearchBarProps } from './search-bar';
-import { Text } from './text';
 
 type DashboardContextValue = {
   open: boolean;

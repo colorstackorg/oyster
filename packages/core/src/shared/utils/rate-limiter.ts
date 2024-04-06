@@ -1,6 +1,6 @@
 import { sleep } from '@oyster/utils';
 
-import { redis, RedisKey } from '@/infrastructure/redis';
+import { redis, type RedisKey } from '@/infrastructure/redis';
 
 type RateLimitOptions = {
   rateLimit: number;

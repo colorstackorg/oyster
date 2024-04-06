@@ -1,4 +1,4 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import {
   generatePath,
   Link,
@@ -6,7 +6,7 @@ import {
   useNavigate,
 } from '@remix-run/react';
 
-import { Student } from '@oyster/types';
+import { type Student } from '@oyster/types';
 import { Modal, ProfilePicture } from '@oyster/ui';
 
 import { Route } from '../shared/constants';

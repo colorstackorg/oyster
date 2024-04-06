@@ -1,8 +1,8 @@
-import React, { PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 import { match } from 'ts-pattern';
 
-import { cx } from '../utils/cx';
 import { Spinner } from './spinner';
+import { cx } from '../utils/cx';
 
 type ButtonProps = Pick<
   React.HTMLProps<HTMLButtonElement>,

@@ -1,4 +1,4 @@
-import { ActionFunctionArgs, json, redirect } from '@remix-run/node';
+import { type ActionFunctionArgs, json, redirect } from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,

@@ -1,5 +1,5 @@
 import { CamelCasePlugin, Kysely, PostgresDialect } from 'kysely';
-import { DB } from 'kysely-codegen/dist/db';
+import { type DB } from 'kysely-codegen/dist/db';
 import pg from 'pg';
 
 import { DATABASE_URL } from '../shared/env';

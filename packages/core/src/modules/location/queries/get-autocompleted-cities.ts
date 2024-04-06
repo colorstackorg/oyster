@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 import {
   getGoogleMapsKey,
-  GooglePlacesError,
   GOOGLE_PLACES_API_URL,
+  GooglePlacesError,
 } from '../location.shared';
 
 const GoogleAutocompleteData = z.object({

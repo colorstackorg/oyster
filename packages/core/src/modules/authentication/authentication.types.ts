@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Email, Entity, ExtractValue, Student } from '@oyster/types';
+import { Email, Entity, type ExtractValue, Student } from '@oyster/types';
 
 // Schemas
 
@@ -42,6 +42,7 @@ export const OAuthCodeState = z.object({
 
   oauthRedirectUrl: z.custom<`${string}/oauth/${string}`>((value) => {
     const { success } = z.string().url().safeParse(value);
+
     return success;
   }),
 });

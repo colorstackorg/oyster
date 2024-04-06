@@ -1,6 +1,10 @@
-import { createCookieSessionStorage, redirect, Session } from '@remix-run/node';
+import {
+  createCookieSessionStorage,
+  redirect,
+  type Session,
+} from '@remix-run/node';
 
-import { ToastProps } from '@oyster/ui';
+import { type ToastProps } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
 import { Route } from './constants';

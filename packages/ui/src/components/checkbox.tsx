@@ -1,8 +1,8 @@
-import React, { PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 import { Check as CheckIcon } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { ACCENT_COLORS, AccentColor } from '../utils/constants';
+import { ACCENT_COLORS, type AccentColor } from '../utils/constants';
 import { cx } from '../utils/cx';
 
 type CheckboxProps = Pick<

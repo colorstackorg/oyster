@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import {
   Entity,
-  ExtractValue,
+  type ExtractValue,
   ISO8601Date,
   NullishString,
   Student,

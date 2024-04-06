@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-import { ExtractValue } from '../shared/types';
-import { NullishString } from '../shared/zod';
 import { Student } from './student';
 import { Email, Entity } from './types';
+import { type ExtractValue } from '../shared/types';
+import { NullishString } from '../shared/zod';
 
 // Enums
 

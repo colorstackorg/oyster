@@ -1,7 +1,5 @@
 import { z } from 'zod';
 
-import { ExtractValue } from '../shared/types';
-import { NullishString } from '../shared/zod';
 import {
   Address,
   Demographic,
@@ -12,6 +10,8 @@ import {
   Major,
   Race,
 } from './types';
+import { type ExtractValue } from '../shared/types';
+import { NullishString } from '../shared/zod';
 
 // Enums
 

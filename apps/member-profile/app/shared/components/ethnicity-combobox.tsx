@@ -6,11 +6,11 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxPopover,
-  InputProps,
+  type InputProps,
   MultiCombobox,
   MultiComboboxDisplay,
   MultiComboboxItem,
-  MultiComboboxProps,
+  type MultiComboboxProps,
   MultiComboboxSearch,
   MultiComboboxValues,
 } from '@oyster/ui';

@@ -1,11 +1,15 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import { Outlet, Link as RemixLink, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { PropsWithChildren, PropsWithoutRef } from 'react';
+import { type PropsWithChildren, type PropsWithoutRef } from 'react';
 import {
   CheckCircle,
   ExternalLink,
-  Icon,
+  type Icon,
   Instagram,
   Linkedin,
   Twitter,
@@ -15,7 +19,7 @@ import {
 import { match } from 'ts-pattern';
 
 import {
-  ActivationRequirement,
+  type ActivationRequirement,
   StudentActiveStatus,
   Timezone,
 } from '@oyster/types';

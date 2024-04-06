@@ -56,11 +56,13 @@ export async function migrate(options: MigrateOptions = defaultOptions) {
 
       if (result.status === 'Success') {
         console.log(`${prefix}: Migration was executed successfully.`);
+
         return;
       }
 
       if (result.status === 'Error') {
         console.error(`${prefix}: Failed to execute migration.`);
+
         return;
       }
     });

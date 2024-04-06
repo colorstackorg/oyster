@@ -1,10 +1,16 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
-import React, { PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 import { BookOpen, Calendar, Globe, Home, Link, MapPin } from 'react-feather';
 
-import { cx, getButtonCn, ProfilePicture, Text, TextProps } from '@oyster/ui';
+import {
+  cx,
+  getButtonCn,
+  ProfilePicture,
+  Text,
+  type TextProps,
+} from '@oyster/ui';
 
 import { Card } from '../shared/components/card';
 import { EducationExperienceItem } from '../shared/components/education-experience';

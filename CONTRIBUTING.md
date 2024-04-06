@@ -192,7 +192,7 @@ To enable sending emails, please see the
 ### Editor Setup
 
 Surprise, surprise. We use [VSCode](https://code.visualstudio.com/download) to
-write code! After you download it, we'll need to enable some extensions to make
+write code! After you download it, we recommend enabling some extensions to make
 life a bit easier:
 
 - [Auto Rename Tag](https://marketplace.visualstudio.com/items?itemName=formulahendry.auto-rename-tag)
@@ -200,7 +200,6 @@ life a bit easier:
 - [Live Share](https://marketplace.visualstudio.com/items?itemName=MS-vsliveshare.vsliveshare)
 - [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
 - [Tailwind IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
-- [Typescript Importer](https://marketplace.visualstudio.com/items?itemName=pmneo.tsimporter)
 
 ## Making a Pull Request
 

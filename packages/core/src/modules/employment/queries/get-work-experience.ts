@@ -1,9 +1,9 @@
-import { SelectExpression } from 'kysely';
+import { type SelectExpression } from 'kysely';
 
-import { DB } from '@oyster/db';
+import { type DB } from '@oyster/db';
 
 import { db } from '@/infrastructure/database';
-import { WorkExperience } from '../employment.types';
+import { type WorkExperience } from '../employment.types';
 
 type GetWorkExperienceQuery = Pick<WorkExperience, 'id' | 'studentId'>;
 

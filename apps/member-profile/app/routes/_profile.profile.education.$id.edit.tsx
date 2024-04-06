@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -13,15 +13,15 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { generatePath } from 'react-router';
-import { z } from 'zod';
+import { type z } from 'zod';
 
-import { Major } from '@oyster/types';
+import { type Major } from '@oyster/types';
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
 import { EducationForm } from '../shared/components/education-form';
 import { Route } from '../shared/constants';
 import { db, editEducation } from '../shared/core.server';
-import { DegreeType, Education, School } from '../shared/core.ui';
+import { type DegreeType, Education, type School } from '../shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,

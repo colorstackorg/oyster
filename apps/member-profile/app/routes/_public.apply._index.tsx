@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  MetaFunction,
+  type MetaFunction,
   redirect,
 } from '@remix-run/node';
 import {
@@ -19,7 +19,7 @@ import {
   getActionErrors,
   Link,
   Text,
-  TextProps,
+  type TextProps,
   validateForm,
 } from '@oyster/ui';
 
@@ -85,6 +85,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   try {
     await apply(data);
+
     return redirect(Route.APPLICATION_THANK_YOU);
   } catch (e) {
     return json({

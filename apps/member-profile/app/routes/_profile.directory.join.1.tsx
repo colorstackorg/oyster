@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -23,16 +23,16 @@ import {
   InputField,
   Link,
   Text,
-  TextProps,
+  type TextProps,
   validateForm,
 } from '@oyster/ui';
 
+import { JoinDirectoryNextButton } from './_profile.directory.join';
 import { CurrentLocationField } from '../shared/components/profile.general';
 import { Route } from '../shared/constants';
 import { db } from '../shared/core.server';
 import { getMember, updateGeneralInformation } from '../shared/queries';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
-import { JoinDirectoryNextButton } from './_profile.directory.join';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

@@ -1,6 +1,6 @@
 import { config } from 'dotenv';
 
-import { Environment } from './types';
+import { type Environment } from './types';
 
 // Loads the .env file into `process.env`. Note that if the config was already
 // loaded (for example, in tests), this will not overwrite any existing values.

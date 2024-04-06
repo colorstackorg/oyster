@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { cx } from '../utils/cx';
 import { getInputCn } from './input';
+import { cx } from '../utils/cx';
 
 export type SelectProps = Pick<
   React.HTMLProps<HTMLSelectElement>,

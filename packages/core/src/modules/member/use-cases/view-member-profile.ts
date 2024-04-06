@@ -1,6 +1,6 @@
 import { id } from '@oyster/utils';
 
-import { GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { db } from '@/infrastructure/database';
 
 export async function viewMemberProfile({

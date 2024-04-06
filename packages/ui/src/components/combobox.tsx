@@ -1,16 +1,16 @@
 import React, {
-  PropsWithChildren,
+  type PropsWithChildren,
   useContext,
   useEffect,
   useState,
 } from 'react';
 
-import { cx } from '../utils/cx';
 import {
   ComboboxPopoverProvider,
   useComboboxPopover,
 } from './combobox-popover';
-import { Input, InputProps } from './input';
+import { Input, type InputProps } from './input';
+import { cx } from '../utils/cx';
 
 const ComboboxContext = React.createContext({
   displayValue: '',

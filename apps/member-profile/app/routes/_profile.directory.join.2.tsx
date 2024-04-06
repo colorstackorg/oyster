@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -17,6 +17,10 @@ import { nullableField, Student } from '@oyster/types';
 import { Button, Divider, getActionErrors, validateForm } from '@oyster/ui';
 
 import {
+  JoinDirectoryBackButton,
+  JoinDirectoryNextButton,
+} from './_profile.directory.join';
+import {
   EthnicityField,
   HometownField,
 } from '../shared/components/profile.personal';
@@ -28,10 +32,6 @@ import {
   updatePersonalInformation,
 } from '../shared/queries';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
-import {
-  JoinDirectoryBackButton,
-  JoinDirectoryNextButton,
-} from './_profile.directory.join';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

@@ -1,4 +1,8 @@
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
 import {
   Link,
   Form as RemixForm,
@@ -11,7 +15,7 @@ import { z } from 'zod';
 import { db } from '@oyster/db';
 import {
   Checkbox,
-  FieldProps,
+  type FieldProps,
   Form,
   Input,
   Radio,

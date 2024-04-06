@@ -1,4 +1,4 @@
-import { ZodError } from 'zod';
+import { type ZodError } from 'zod';
 
 import { extractZodErrorMessage } from '@/shared/utils/zod.utils';
 
@@ -21,11 +21,13 @@ export class ErrorWithContext extends Error {
 
   withContext(context: ErrorContext): this {
     this.context = context;
+
     return this;
   }
 
   withLevel(level: ErrorLevel): this {
     this.level = level;
+
     return this;
   }
 }

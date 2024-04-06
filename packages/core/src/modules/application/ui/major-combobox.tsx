@@ -6,9 +6,9 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxPopover,
-  ComboboxProps,
-  FieldProps,
-  InputProps,
+  type ComboboxProps,
+  type FieldProps,
+  type InputProps,
 } from '@oyster/ui';
 import { toEscapedString, toTitleCase } from '@oyster/utils';
 

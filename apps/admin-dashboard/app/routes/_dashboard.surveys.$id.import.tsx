@@ -1,10 +1,10 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   unstable_composeUploadHandlers as composeUploadHandlers,
   unstable_createFileUploadHandler as createFileUploadHandler,
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
@@ -78,6 +78,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   try {
     const csvString = await data.file.text();
     const result = await importSurveyResponses(params.id as string, csvString);
+
     count = result.count;
   } catch (e) {
     return json({
