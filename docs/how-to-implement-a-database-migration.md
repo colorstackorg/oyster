@@ -18,7 +18,7 @@ effectively executes any migrations that haven't been executed yet. To run this
 script:
 
 ```sh
-bun run db:migrate
+bun db:migrate
 ```
 
 Note: Kysely automatically knows which migrations have been executed or not
@@ -35,7 +35,7 @@ select * from kysely_migrations;
 To create a migration file, run:
 
 ```sh
-bun run db:migration:create
+bun db:migration:create
 ```
 
 In the prompt, you'll need to enter a name for your migration, and then your
@@ -50,6 +50,6 @@ Error: corrupted migrations: previously executed migration <SOME_MIGRATION_NAME>
 The easiest way to fix this is to re-setup your database by running:
 
 ```sh
-bun run dx:nuke
-bun run dx:up
+bun dx:nuke
+bun dx:up
 ```
