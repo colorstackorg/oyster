@@ -1,0 +1,7 @@
+{
+  "extends": "@oyster/tsconfig/base.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "module": "ESNext"
+  }
+}

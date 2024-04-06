@@ -22,7 +22,7 @@ type DashboardContextValue = {
 
 const DashboardContext = React.createContext<DashboardContextValue>({
   open: false,
-  setOpen: (open: boolean) => {},
+  setOpen: (_: boolean) => {},
 });
 
 export const Dashboard = ({ children }: PropsWithChildren) => {
@@ -142,7 +142,7 @@ Dashboard.Page = function Page({ children }: PropsWithChildren) {
   return (
     <section
       className={cx(
-        '@container box-border flex w-full flex-col gap-4 overflow-scroll p-4 pb-24',
+        'box-border flex w-full flex-col gap-4 overflow-scroll p-4 pb-24 @container',
         'md:p-6 md:pb-16'
       )}
     >

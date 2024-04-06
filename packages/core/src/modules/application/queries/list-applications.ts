@@ -52,7 +52,7 @@ export async function listApplications({
             .as('school');
         },
       ])
-      .orderBy('applications.createdAt', 'desc')
+      .orderBy('applications.createdAt', 'asc')
       .limit(limit)
       .offset((page - 1) * limit)
       .execute(),

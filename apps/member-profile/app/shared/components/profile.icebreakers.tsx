@@ -18,7 +18,7 @@ const initialPromptIds: PromptIds = {
 
 const IcebreakerContext = React.createContext({
   promptIds: initialPromptIds,
-  setPromptId(number: PromptNumber, promptId: string) {},
+  setPromptId(_number: PromptNumber, _promptId: string) {},
 });
 
 // Hook

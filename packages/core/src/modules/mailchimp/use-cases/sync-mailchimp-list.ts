@@ -75,7 +75,7 @@ async function listMailchimpCampaigns(
 ) {
   const result: Pick<EmailCampaign, 'id'>[] = [];
 
-  let pageSize = 1000;
+  const pageSize = 1000;
   let offset = 0;
 
   // This is the total number of records that exist in the list, which we'll

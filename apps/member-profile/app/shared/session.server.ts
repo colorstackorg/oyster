@@ -1,6 +1,7 @@
 import { createCookieSessionStorage, redirect, Session } from '@remix-run/node';
 
 import { ToastProps } from '@oyster/ui';
+import { id } from '@oyster/utils';
 
 import { Route } from './constants';
 import { ENV } from './constants.server';
@@ -64,6 +65,7 @@ export function user(session: Session): string {
 
 export function toast(session: Session, toast: ToastProps): void {
   session.flash(SESSION.TOAST, {
+    id: id(),
     message: toast.message,
     type: toast.type,
   });

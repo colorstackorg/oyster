@@ -139,7 +139,7 @@ export default function EventRegisterPage() {
         </Text>
       </div>
 
-      {!!event.isRegistered ? (
+      {event.isRegistered ? (
         <Text color="gray-500">
           It looks like you are already registered for this event. Your link to
           join the event should have been sent to your email. We can't wait to

@@ -28,6 +28,12 @@ export const FORMATTED_EMPLOYMENT_TYPE: Record<EmploymentType, string> = {
   part_time: 'Part-Time',
 };
 
+export const JobOfferStatus = {
+  ACCEPTED: 'accepted',
+  RECEIVED: 'received',
+  REJECTED: 'rejected',
+} as const;
+
 export const LocationType = {
   HYBRID: 'hybrid',
   IN_PERSON: 'in_person',
@@ -52,6 +58,24 @@ export const BaseCompany = z.object({
 });
 
 export const Company = Entity.merge(BaseCompany);
+
+export const JobOffer = Entity.omit({ deletedAt: true }).extend({
+  baseSalary: z.number().optional(),
+  bonus: z.number().optional(),
+  companyId: Company.shape.id.nullish(),
+  compensationType: z.string(),
+  employmentType: z.nativeEnum(EmploymentType),
+  hourlyPay: z.number().optional(),
+  location: z.string().optional(),
+  locationLatitude: z.number().optional(),
+  locationLongitude: z.number().optional(),
+  locationType: z.nativeEnum(LocationType),
+  otherCompany: NullishString.optional(),
+  startDate: ISO8601Date,
+  status: z.string(),
+  stockPerYear: z.number().optional(),
+  studentId: Student.shape.id,
+});
 
 export const WorkExperience = Entity.extend({
   companyId: Company.shape.id.nullish(),
@@ -91,6 +115,12 @@ export const EditWorkExperienceInput = AddWorkExperienceInput.extend({
   id: WorkExperience.shape.id,
 });
 
+export const UploadJobOfferInput = JobOffer.omit({
+  createdAt: true,
+  id: true,
+  updatedAt: true,
+});
+
 // Types
 
 export type AddWorkExperienceInput = z.infer<typeof AddWorkExperienceInput>;
@@ -102,4 +132,5 @@ export type DeleteWorkExperienceInput = z.infer<
 export type EditWorkExperienceInput = z.infer<typeof EditWorkExperienceInput>;
 export type EmploymentType = ExtractValue<typeof EmploymentType>;
 export type LocationType = ExtractValue<typeof LocationType>;
+export type UploadJobOfferInput = z.infer<typeof UploadJobOfferInput>;
 export type WorkExperience = z.infer<typeof WorkExperience>;

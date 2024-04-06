@@ -7,7 +7,9 @@ import { Dropdown } from './dropdown';
 import { IconButton } from './icon-button';
 import { Text } from './text';
 
-export type TableColumnProps<T extends Record<string, any> = any> = {
+type TableData = Record<string, unknown>;
+
+export type TableColumnProps<T extends TableData> = {
   displayName: string;
 
   /**
@@ -35,12 +37,13 @@ export type TableColumnProps<T extends Record<string, any> = any> = {
     | null;
 };
 
-type TableDropdownProps = any & {
+type TableDropdownProps<T extends TableData> = T & {
   onOpen(): void;
 };
 
-type TableProps = {
-  Dropdown?(props: TableDropdownProps): JSX.Element;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TableProps<T extends TableData = any> = {
+  Dropdown?(props: TableDropdownProps<T>): JSX.Element;
 
   /**
    * Array of columns that will be used to build the table's headers.
@@ -48,7 +51,7 @@ type TableProps = {
    * Each table row is built by iterating through these columns and finding the
    * associated key for each data row.
    */
-  columns: TableColumnProps[];
+  columns: TableColumnProps<T>[];
 
   /**
    * Array of data points that we will pass to each one of our table rows and
@@ -56,7 +59,7 @@ type TableProps = {
    *
    * This MUST be paginated according to the page size.
    */
-  data: any[];
+  data: T[];
 
   /**
    * Message that displays when there is no data for the table.

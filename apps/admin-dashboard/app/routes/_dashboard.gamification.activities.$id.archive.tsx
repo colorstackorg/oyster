@@ -21,7 +21,7 @@ import {
   toast,
 } from '../shared/session.server';
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
   return json({});

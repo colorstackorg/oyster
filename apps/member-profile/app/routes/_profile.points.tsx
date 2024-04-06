@@ -113,7 +113,7 @@ async function getPointsLeaderboard(
   id: string,
   { leaderboardLimit, timeframe, timezone }: PointsSearchParams
 ) {
-  let occurredAfter = getTimeframeDate(timeframe, timezone);
+  const occurredAfter = getTimeframeDate(timeframe, timezone);
 
   const rows = await db
     .with('positions', (db) => {
@@ -151,7 +151,7 @@ async function getActivityHistory(
   id: string,
   { historyLimit, timeframe, timezone }: PointsSearchParams
 ) {
-  let occurredAfter = getTimeframeDate(timeframe, timezone);
+  const occurredAfter = getTimeframeDate(timeframe, timezone);
 
   const query = db
     .selectFrom('completedActivities')
@@ -257,11 +257,11 @@ export default function PointsPage() {
         <TimeframeForm />
       </header>
 
-      <div className="@[1500px]:grid-cols-[1fr_1.5fr_1fr] @[900px]:grid-cols-2 grid grid-cols-1 gap-6">
-        <PointsLeaderboard className="@[1500px]:flex hidden" />
+      <div className="grid grid-cols-1 gap-6 @[900px]:grid-cols-2 @[1500px]:grid-cols-[1fr_1.5fr_1fr]">
+        <PointsLeaderboard className="hidden @[1500px]:flex" />
 
-        <div className="@container flex flex-col gap-[inherit]">
-          <div className="@[560px]:grid-cols-2 grid grid-cols-1 gap-[inherit]">
+        <div className="flex flex-col gap-[inherit] @container">
+          <div className="grid grid-cols-1 gap-[inherit] @[560px]:grid-cols-2">
             <TotalPointsCard />
             <TotalActivitiesCompletedCard />
           </div>
@@ -455,7 +455,7 @@ function ActivityHistory() {
         Activity History
       </Text>
 
-      {!!completedActivities.length ? (
+      {completedActivities.length ? (
         <>
           <ul className="flex flex-col gap-6">
             {completedActivities.map((activity) => {

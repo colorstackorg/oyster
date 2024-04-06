@@ -82,7 +82,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await request.formData();
 
-  let { data, errors } = validateForm(
+  const { data, errors } = validateForm(
     UpdateGeneralInformation,
     Object.fromEntries(form)
   );
@@ -94,7 +94,7 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  let { currentLocationLatitude, currentLocationLongitude, ...rest } = data;
+  const { currentLocationLatitude, currentLocationLongitude, ...rest } = data;
 
   await db.transaction().execute(async (trx) => {
     await updateGeneralInformation(trx, user(session), {

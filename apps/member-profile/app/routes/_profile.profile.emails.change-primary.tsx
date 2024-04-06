@@ -24,8 +24,7 @@ import {
 } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
-import { db, job } from '../shared/core.server';
-import { listEmails } from '../shared/queries';
+import { db, job, listEmails } from '../shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

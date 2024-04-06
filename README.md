@@ -58,6 +58,7 @@ apps
 |--- member-profile
 packages
 |--- core
+|--- db
 |--- email-templates
 |--- types
 |--- ui
@@ -70,9 +71,10 @@ section).
 The `packages` directory contains reusable pieces of code that are used across
 our applications.
 
-- `core`: Nearly all of our business logic, including our database layer and
-  more. Will eventually colocate feature-based UI next to its related business
-  logic.
+- `core`: Nearly all of our core business logic. Will eventually colocate
+  feature-based UI next to its related business logic.
+- `db`: Database layer, which houses all migrations, database scripts (ie:
+  `seed`) and testing utilities that involve the database.
 - `email-templates`: React-based email templates built with
   [Resend](https://resend.com).
 - `types`: Miscellaneous types shared across applications.

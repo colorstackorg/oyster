@@ -1,5 +1,5 @@
 import { json, LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, useNavigate } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import React, { PropsWithChildren } from 'react';
 import { BookOpen, Calendar, Globe, Home, Link, MapPin } from 'react-feather';
@@ -119,8 +119,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export default function MemberPage() {
   const { educationExperiences, icebreakerResponses, member, workExperiences } =
     useLoaderData<typeof loader>();
-
-  const navigate = useNavigate();
 
   return (
     <>

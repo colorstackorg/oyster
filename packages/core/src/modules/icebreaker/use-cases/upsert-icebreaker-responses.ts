@@ -1,10 +1,11 @@
 import { Insertable, Transaction } from 'kysely';
-import type { DB, IcebreakerResponses } from 'kysely-codegen/dist/db';
+
+import { DB } from '@oyster/db';
 
 export async function upsertIcebreakerResponses(
   trx: Transaction<DB>,
   memberId: string,
-  data: Insertable<IcebreakerResponses>[]
+  data: Insertable<DB['icebreakerResponses']>[]
 ) {
   await trx
     .deleteFrom('icebreakerResponses')

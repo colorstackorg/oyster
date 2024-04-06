@@ -5,6 +5,7 @@ node_modules
 # Environment Variables
 
 .env
+.env.test
 
 # Turborepo
 

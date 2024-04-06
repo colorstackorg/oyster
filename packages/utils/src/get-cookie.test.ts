@@ -1,5 +1,3 @@
-import { describe, expect, test } from 'vitest';
-
 import { getCookie } from './get-cookie';
 
 describe(getCookie.name, () => {

@@ -28,9 +28,9 @@ import {
 } from '../shared/components/profile';
 
 import { Route } from '../shared/constants';
-import { db, updateAllowEmailShare } from '../shared/core.server';
+import { db, listEmails, updateAllowEmailShare } from '../shared/core.server';
 import { track } from '../shared/mixpanel.server';
-import { getMember, listEmails } from '../shared/queries';
+import { getMember } from '../shared/queries';
 import {
   commitSession,
   ensureUserAuthenticated,
@@ -123,7 +123,7 @@ function EmailAddressSection() {
   const navigate = useNavigate();
 
   function onAddEmail() {
-    navigate(Route.ADD_EMAIL_START);
+    navigate(Route['/profile/emails/add/start']);
   }
 
   function onChangePrimaryEmail() {
