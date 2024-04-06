@@ -67,18 +67,20 @@ jobs:
 
       - name: Lint
         run:
-          yarn lint --filter=[origin/$GITHUB_BASE_REF...origin/$GITHUB_HEAD_REF]
+          yarn lint --filter=[${{ github.event.pull_request.base.sha || 'HEAD^1'
+          }}]
 
       - name: Check types
         run:
-          yarn type-check
-          --filter=[origin/$GITHUB_BASE_REF...origin/$GITHUB_HEAD_REF]
+          yarn type-check --filter=[${{ github.event.pull_request.base.sha ||
+          'HEAD^1' }}]
 
       - name: Build all packages and applications
         run:
-          yarn build
-          --filter=[origin/$GITHUB_BASE_REF...origin/$GITHUB_HEAD_REF]
+          yarn build --filter=[${{ github.event.pull_request.base.sha ||
+          'HEAD^1' }}]
 
       - name: Run tests
         run:
-          yarn test --filter=[origin/$GITHUB_BASE_REF...origin/$GITHUB_HEAD_REF]
+          yarn test --filter=[${{ github.event.pull_request.base.sha || 'HEAD^1'
+          }}]
