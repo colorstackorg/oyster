@@ -15,9 +15,20 @@ module.exports = {
     'node_modules/',
   ],
   parser: '@typescript-eslint/parser',
+  parserOptions: {
+    project: './tsconfig.json',
+  },
   plugins: ['@typescript-eslint', 'import'],
   root: true,
   rules: {
+    '@typescript-eslint/consistent-type-exports': [
+      'error',
+      { fixMixedExportsWithInlineTypeSpecifier: true },
+    ],
+    '@typescript-eslint/consistent-type-imports': [
+      'error',
+      { fixStyle: 'inline-type-imports' },
+    ],
     '@typescript-eslint/no-unused-vars': [
       'warn',
       {
