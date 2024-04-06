@@ -31,6 +31,7 @@ jobs:
           5s --health-retries 5
 
     env:
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
       DATABASE_URL: postgres://oyster:oyster@localhost:5432/oyster
       REDIS_URL: redis://localhost:6379
 
@@ -69,7 +70,7 @@ jobs:
 
       - name: Lint
         run:
-          yarn lint --filter=[$GITHUB_BASE_REF...$GITHUB_HEAD_REF]
+          yarn lint --filter=[$BASE_SHA]
 
       - name: Check types
         run:
