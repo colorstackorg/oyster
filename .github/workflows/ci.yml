@@ -69,17 +69,13 @@ jobs:
         run: yarn db:migrate
 
       - name: Lint
-        run:
-          yarn lint --filter=[$BASE_SHA]
+        run: yarn lint --filter=[$BASE_SHA]
 
       - name: Check types
-        run:
-          yarn type-check --filter=[$BASE_SHA]
+        run: yarn type-check --filter=[$BASE_SHA]
 
       - name: Build all packages and applications
-        run:
-          yarn build --filter=[$BASE_SHA]
+        run: yarn build --filter=[$BASE_SHA]
 
       - name: Run tests
-        run:
-          yarn test --filter=[$BASE_SHA]
+        run: yarn test --filter=[$BASE_SHA]
