@@ -66,13 +66,19 @@ jobs:
         run: yarn db:migrate
 
       - name: Lint
-        run: yarn lint --filter=[$GITHUB_BASE_REF...$GITHUB_HEAD_REF]
+        run:
+          yarn lint --filter=[origin/$GITHUB_BASE_REF...origin/$GITHUB_HEAD_REF]
 
       - name: Check types
-        run: yarn type-check --filter=[$GITHUB_BASE_REF...$GITHUB_HEAD_REF]
+        run:
+          yarn type-check
+          --filter=[origin/$GITHUB_BASE_REF...origin/$GITHUB_HEAD_REF]
 
       - name: Build all packages and applications
-        run: yarn build --filter=[$GITHUB_BASE_REF...$GITHUB_HEAD_REF]
+        run:
+          yarn build
+          --filter=[origin/$GITHUB_BASE_REF...origin/$GITHUB_HEAD_REF]
 
       - name: Run tests
-        run: yarn test --filter=[$GITHUB_BASE_REF...$GITHUB_HEAD_REF]
+        run:
+          yarn test --filter=[origin/$GITHUB_BASE_REF...origin/$GITHUB_HEAD_REF]
