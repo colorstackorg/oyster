@@ -13,7 +13,7 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "vitest run",
+    "test": "bun test --env-file=.env.test",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
@@ -46,11 +46,6 @@
     "@types/jsonwebtoken": "^9.0.2",
     "@types/mailchimp__mailchimp_marketing": "^3.0.8",
     "@types/nodemailer": "^6.4.14",
-    "nanoid": "^3.0.0",
-    "react": "^18.2.0",
-    "tsup": "^6.1.3",
-    "vite": "^5.0.0",
-    "vite-tsconfig-paths": "^4.3.1",
-    "vitest": "^1.3.1"
+    "react": "^18.2.0"
   }
 }

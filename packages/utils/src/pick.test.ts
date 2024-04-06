@@ -1,3 +1,5 @@
+import { describe, expect, test } from 'bun:test';
+
 import { pick } from './pick';
 
 describe(pick.name, () => {

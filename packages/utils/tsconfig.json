@@ -1,7 +1,4 @@
 {
   "extends": "@oyster/tsconfig/base.json",
-  "include": ["src"],
-  "compilerOptions": {
-    "types": ["vitest/globals"]
-  }
+  "include": ["src"]
 }

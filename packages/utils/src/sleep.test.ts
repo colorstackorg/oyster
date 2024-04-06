@@ -1,3 +1,5 @@
+import { describe, expect, test } from 'bun:test';
+
 import { sleep } from './sleep';
 
 describe(sleep.name, () => {

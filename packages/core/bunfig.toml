@@ -1,0 +1,2 @@
+[test]
+preload = ["@oyster/db/test/setup.global.ts"]

@@ -1,3 +1,5 @@
+import { describe, expect, test } from 'bun:test';
+
 import { toEscapedString } from './to-escaped-string';
 
 describe(toEscapedString.name, () => {

@@ -1,3 +1,5 @@
+import { describe, expect, test } from 'bun:test';
+
 import { toTitleCase } from './to-title-case';
 
 const HELLO = 'Hello';

@@ -1,3 +1,5 @@
+import { describe, expect, test } from 'bun:test';
+
 import { iife } from './iife';
 
 describe(iife.name, () => {

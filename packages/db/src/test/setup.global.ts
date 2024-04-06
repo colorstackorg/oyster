@@ -1,10 +1,60 @@
+// @ts-expect-error for now...
+import { beforeAll, beforeEach, afterAll } from 'bun:test';
+import { type Transaction } from 'kysely';
+import { type DB } from 'kysely-codegen/dist/db';
+
+import {
+  company1,
+  company2,
+  company3,
+  student1,
+  student1Emails,
+} from './constants';
 import { db } from '../shared/db';
 import { migrate } from '../use-cases/migrate';
+import { truncate } from '../use-cases/truncate';
 
-export async function setup() {
+beforeAll(async () => {
   await migrate({ db });
-}
+});
 
-export async function teardown() {
+beforeEach(async () => {
+  await db.transaction().execute(async (trx) => {
+    await truncate(trx);
+    await seed(trx);
+  });
+});
+
+afterAll(async () => {
   await db.destroy();
+});
+
+// Helpers
+
+async function seed(trx: Transaction<DB>) {
+  await trx
+    .insertInto('studentEmails')
+    .values([
+      ...student1Emails.map(({ email }) => {
+        return { email };
+      }),
+    ])
+    .execute();
+
+  await trx.insertInto('students').values([student1]).execute();
+
+  await trx
+    .updateTable('studentEmails')
+    .set({ studentId: student1.id })
+    .where(
+      'email',
+      'in',
+      student1Emails.map(({ email }) => email)
+    )
+    .execute();
+
+  await trx
+    .insertInto('companies')
+    .values([company1, company2, company3])
+    .execute();
 }
