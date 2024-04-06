@@ -31,12 +31,15 @@ jobs:
           5s --health-retries 5
 
     env:
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
       DATABASE_URL: postgres://oyster:oyster@localhost:5432/oyster
       REDIS_URL: redis://localhost:6379
 
     steps:
       - name: Checkout repository code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Cache Turborepo setup
         uses: actions/cache@v4
@@ -66,13 +69,13 @@ jobs:
         run: yarn db:migrate
 
       - name: Lint
-        run: yarn lint
+        run: yarn lint --filter=[$BASE_SHA]
 
       - name: Check types
-        run: yarn type-check
+        run: yarn type-check --filter=[$BASE_SHA]
 
       - name: Build all packages and applications
-        run: yarn build
+        run: yarn build --filter=[$BASE_SHA]
 
       - name: Run tests
-        run: yarn test
+        run: yarn test --filter=[$BASE_SHA]
