@@ -1,5 +1,5 @@
-import { Transaction, sql } from 'kysely';
-import { DB } from 'kysely-codegen/dist/db';
+import { type Transaction, sql } from 'kysely';
+import { type DB } from 'kysely-codegen/dist/db';
 import readline from 'readline';
 import { z } from 'zod';
 
@@ -169,6 +169,7 @@ let counter = 0;
 
 function id() {
   counter++;
+
   return counter.toString();
 }
 

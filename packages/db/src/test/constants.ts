@@ -1,5 +1,5 @@
-import { Insertable } from 'kysely';
-import { DB } from 'kysely-codegen/dist/db';
+import { type Insertable } from 'kysely';
+import { type DB } from 'kysely-codegen/dist/db';
 
 import { EducationLevel, Gender, Major } from '@oyster/types';
 
