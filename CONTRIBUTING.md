@@ -17,6 +17,7 @@ ColorStack members first, and then friends of ColorStack. ❤️
 
 - [Local Development](#local-development)
   - [Prerequisites](#prerequisites)
+    - [Installing Node w/ `nvm`](#installing-node-w-nvm)
   - [Fork and Clone Repository](#fork-and-clone-repository)
   - [Project Dependencies](#project-dependencies)
   - [Environment Variables](#environment-variables)
@@ -46,12 +47,24 @@ Please ensure that you have the following software on your machine:
 - [Node.js](https://nodejs.org/en/download/package-manager) (v20.x)
 - [Yarn](https://classic.yarnpkg.com/lang/en/docs/install) (v1)
 
+#### Installing Node w/ `nvm`
+
+Our recommendation is to use [`nvm`](https://nvm.sh) to install Node. The main
+benefit of `nvm` is that it allows you to quickly install and use different
+versions of Node on your machine.
+
+If you choose to use `nvm`, we would also recommend setting up a
+[shell integration](https://github.com/nvm-sh/nvm/blob/master/README.md#deeper-shell-integration),
+which will automatically install the right node version for any given directory
+that you're working in, as long as there is a [`.nvmrc`](./.nvmrc) file found in
+that directory.
+
 ### Fork and Clone Repository
 
-1. [Fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
-   the repository to your own GitHub account.
-2. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
-   the repository to your local machine.
+1. [Fork the repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
+   to your own GitHub account.
+2. [Clone the repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
+   to your local machine.
    ```
    git clone https://github.com/<YOUR_USERNAME>/oyster.git
    ```
