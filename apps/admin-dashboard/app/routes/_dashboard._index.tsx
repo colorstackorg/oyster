@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs, redirect } from '@remix-run/node';
+import { type LoaderFunctionArgs, redirect } from '@remix-run/node';
 
 import { Route } from '../shared/constants';
 import { getSession } from '../shared/session.server';

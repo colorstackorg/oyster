@@ -1,4 +1,8 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import { Edit, Menu, Plus, Trash } from 'react-feather';
@@ -10,7 +14,7 @@ import {
   IconButton,
   Pill,
   Table,
-  TableColumnProps,
+  type TableColumnProps,
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 

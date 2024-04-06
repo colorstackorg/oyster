@@ -1,4 +1,8 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import {
   Link,
   Outlet,
@@ -12,13 +16,13 @@ import { generatePath } from 'react-router';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { ExtractValue } from '@oyster/types';
+import { type ExtractValue } from '@oyster/types';
 import {
   cx,
   getIconButtonCn,
   Pagination,
   Table,
-  TableColumnProps,
+  type TableColumnProps,
   Text,
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';

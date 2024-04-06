@@ -1,4 +1,8 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import {
   Link,
   Outlet,
@@ -14,16 +18,16 @@ import { z } from 'zod';
 
 import { Application, ApplicationStatus } from '@oyster/types';
 import {
-  AccentColor,
+  type AccentColor,
   Dashboard,
   Dropdown,
   Pagination,
   Pill,
-  PillProps,
+  type PillProps,
   SearchBar,
   Select,
   Table,
-  TableColumnProps,
+  type TableColumnProps,
   useSearchParams,
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';

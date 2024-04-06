@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -38,6 +38,7 @@ const BullParams = z.object({
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
+
   return json({});
 }
 
@@ -47,6 +48,7 @@ const AddJobInput = z.object({
     .refine((value) => {
       try {
         JSON.parse(value);
+
         return true;
       } catch {
         return false;

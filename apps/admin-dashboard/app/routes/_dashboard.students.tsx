@@ -1,4 +1,8 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
@@ -21,7 +25,7 @@ import {
   IconButton,
   Pagination,
   Table,
-  TableColumnProps,
+  type TableColumnProps,
   useSearchParams,
 } from '@oyster/ui';
 

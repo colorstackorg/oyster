@@ -1,4 +1,4 @@
-import { ExtractValue } from '@oyster/types';
+import { type ExtractValue } from '@oyster/types';
 
 export const Route = {
   HOME: '/',
