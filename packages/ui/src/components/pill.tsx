@@ -1,10 +1,10 @@
 import { Link } from '@remix-run/react';
-import React, { PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 import { X } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { cx } from '../utils/cx';
 import { Text } from './text';
+import { cx } from '../utils/cx';
 
 export type PillProps = Pick<React.HTMLProps<HTMLElement>, 'children'> & {
   color:
