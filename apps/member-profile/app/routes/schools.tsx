@@ -35,8 +35,8 @@ async function listSchools(search: string) {
 
   if (search) {
     query = query
-      .where(sql`similarity(name, ${search}) > 0.15`)
-      .where(sql`word_similarity(name, ${search}) > 0.15`)
+      .where(sql<boolean>`similarity(name, ${search}) > 0.15`)
+      .where(sql<boolean>`word_similarity(name, ${search}) > 0.15`)
       .orderBy(sql`similarity(name, ${search})`, 'desc')
       .orderBy(sql`word_similarity(name, ${search})`, 'desc');
   } else {

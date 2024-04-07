@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./dist/db": "./dist/db.d.ts",
     "./test/*": "./src/test/*",
     "./test/constants": "./src/test/constants.ts"
   },
