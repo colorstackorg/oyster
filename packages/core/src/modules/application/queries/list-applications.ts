@@ -8,7 +8,7 @@ import { db } from '@/infrastructure/database';
 type ApplicationsSearchParams = {
   limit: number;
   page: number;
-  search: string;
+  search?: string;
   status: ApplicationStatus | 'all';
   timezone: string;
 };
