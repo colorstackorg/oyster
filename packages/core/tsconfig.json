@@ -1,6 +1,6 @@
 {
   "extends": "@oyster/tsconfig/base.json",
-  "include": ["src"],
+  "include": ["src", "../db/dist/db.d.ts"],
   "compilerOptions": {
     "baseUrl": ".",
     "jsx": "react-jsx",
