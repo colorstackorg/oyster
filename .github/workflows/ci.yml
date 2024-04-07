@@ -3,8 +3,6 @@ name: Continuous Integration
 on:
   pull_request:
     types: [opened, synchronize]
-  push:
-    branches: [rami/bun]
 
 jobs:
   ci:
@@ -70,13 +68,13 @@ jobs:
         run: bun db:migrate
 
       - name: Lint
-        run: bun lint
+        run: bun lint --filter=[$BASE_SHA]
 
       - name: Check types
-        run: bun type-check
+        run: bun type-check --filter=[$BASE_SHA]
 
       - name: Build all packages and applications
-        run: bun run build
+        run: bun run build --filter=[$BASE_SHA]
 
       - name: Run tests
-        run: bun run test
+        run: bun run test --filter=[$BASE_SHA]
