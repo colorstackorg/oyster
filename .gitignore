@@ -26,8 +26,9 @@ dist
 tsconfig.tsbuildinfo
 
 
-# Debugging
+# Yarn
 
+yarn.lock
 yarn-debug.log*
 yarn-error.log*
 
