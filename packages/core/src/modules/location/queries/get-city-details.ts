@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import {
   getGoogleMapsKey,
+  GoogleKeyMissingError,
   GOOGLE_PLACES_API_URL,
   GooglePlacesError,
 } from '../location.shared';
@@ -31,7 +32,13 @@ const GooglePlaceDetailsResponse = z.object({
 export async function getCityDetails(id: string) {
   const url = new URL(GOOGLE_PLACES_API_URL + '/details/json');
 
-  url.searchParams.set('key', getGoogleMapsKey());
+  const key = getGoogleMapsKey();
+
+  if (!key) {
+    throw new GoogleKeyMissingError();
+  }
+
+  url.searchParams.set('key', key);
   url.searchParams.set('fields', 'geometry,name');
   url.searchParams.set('place_id', id);
 
