@@ -1,4 +1,3 @@
-import { type DB } from 'db:types';
 import { CamelCasePlugin, Kysely, PostgresDialect } from 'kysely';
 import pg from 'pg';
 

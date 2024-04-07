@@ -1,4 +1,3 @@
-import { type DB } from 'db:types';
 import { type Transaction, sql } from 'kysely';
 import readline from 'readline';
 import { z } from 'zod';

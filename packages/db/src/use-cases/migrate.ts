@@ -1,4 +1,3 @@
-import { type DB } from 'db:types';
 import { promises as fs } from 'fs';
 import {
   Migrator,

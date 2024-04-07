@@ -1,4 +1,3 @@
-import { type DB } from 'db:types';
 import { type Insertable } from 'kysely';
 
 import { EducationLevel, Gender, Major } from '@oyster/types';

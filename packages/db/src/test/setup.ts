@@ -1,4 +1,3 @@
-import { type DB } from 'db:types';
 import { type Transaction } from 'kysely';
 
 import {

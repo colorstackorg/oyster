@@ -1,4 +1,3 @@
-import { type DB } from 'db:types';
 import { type Transaction, sql } from 'kysely';
 
 import { IS_PRODUCTION } from '../shared/env';
