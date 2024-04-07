@@ -1,7 +1,7 @@
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
-import { getMemberByEmail } from '@/modules/member/queries/find-member-by-email';
+import { getMemberByEmail } from '@/modules/member/queries/get-member-by-email';
 import { NotFoundError } from '@/shared/errors';
 import {
   getAirmeetEvent,
