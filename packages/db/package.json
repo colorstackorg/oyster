@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./dist/db": "./dist/db.d.ts",
     "./test/*": "./src/test/*",
     "./test/constants": "./src/test/constants.ts"
   },
@@ -19,7 +20,7 @@
     "types": "kysely-codegen --dialect=postgres --camel-case --out-file=./dist/db.d.ts"
   },
   "dependencies": {
-    "kysely": "^0.26.3",
+    "kysely": "^0.27.3",
     "pg": "^8.8.0"
   },
   "devDependencies": {

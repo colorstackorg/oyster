@@ -1,6 +1,6 @@
 {
   "extends": "@oyster/tsconfig/base.json",
-  "include": ["src", "./dist/db.d.ts"],
+  "include": ["src", "kysely-patch.d.ts", "./dist/db.d.ts"],
   "compilerOptions": {
     "jsx": "react-jsx",
     "module": "ESNext",

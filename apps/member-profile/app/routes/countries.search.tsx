@@ -48,7 +48,7 @@ async function searchCountries(search: string) {
             eb('countries.demonym', 'ilike', `%${search}%`),
             eb('countries.name', 'ilike', `%${search}%`),
             eb('countries.flagEmoji', '=', search),
-            sql`similarity(countries.name, ${search}) > 0.5`,
+            sql<boolean>`similarity(countries.name, ${search}) > 0.5`,
           ]);
         })
         .orderBy(sql`similarity(countries.name, ${search})`, 'desc');
