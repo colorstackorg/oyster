@@ -1,8 +1,8 @@
 import { type Transaction, sql } from 'kysely';
-import { type DB } from 'kysely-codegen/dist/db';
 import readline from 'readline';
 import { z } from 'zod';
 
+import { type DB } from '../../dist/db';
 import { db } from '../shared/db';
 import { IS_PRODUCTION } from '../shared/env';
 import { migrate } from '../use-cases/migrate';

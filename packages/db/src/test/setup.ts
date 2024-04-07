@@ -1,5 +1,4 @@
 import { type Transaction } from 'kysely';
-import { type DB } from 'kysely-codegen/dist/db';
 
 import {
   company1,
@@ -8,6 +7,7 @@ import {
   student1,
   student1Emails,
 } from './constants';
+import { type DB } from '../../dist/db';
 import { db } from '../shared/db';
 import { truncate } from '../use-cases/truncate';
 
