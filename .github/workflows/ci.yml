@@ -70,13 +70,13 @@ jobs:
         run: bun db:migrate
 
       - name: Lint
-        run: bun lint --filter=[$BASE_SHA]
+        run: bun lint
 
       - name: Check types
-        run: bun type-check --filter=[$BASE_SHA]
+        run: bun type-check
 
       - name: Build all packages and applications
-        run: bun run build --filter=[$BASE_SHA]
+        run: bun run build
 
       - name: Run tests
-        run: bun run test --filter=[$BASE_SHA]
+        run: bun run test
