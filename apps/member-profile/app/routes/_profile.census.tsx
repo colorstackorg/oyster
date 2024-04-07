@@ -9,7 +9,7 @@ import {
   useLoaderData,
   useSubmit,
 } from '@remix-run/react';
-import { useState } from 'react';
+import { type PropsWithChildren, useState } from 'react';
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
@@ -23,12 +23,13 @@ import {
   Text,
   Textarea,
   validateForm,
+  useRevalidateOnFocus,
 } from '@oyster/ui';
 import { iife } from '@oyster/utils';
 
 import { CityCombobox } from '../shared/components/city-combobox';
 import { Route } from '../shared/constants';
-import { listEmails } from '../shared/core.server';
+import { getMember } from '../shared/queries';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -36,19 +37,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const memberId = user(session);
 
-  const [emails] = await Promise.all([listEmails(memberId)]);
-
-  const primaryEmail = iife(() => {
-    const result = emails.find((email) => {
-      return email.primary;
-    });
-
-    return result ? result.email! : undefined;
-  });
+  const [member] = await Promise.all([
+    getMember(memberId).select(['email']).executeTakeFirstOrThrow(),
+  ]);
 
   return json({
-    emails,
-    primaryEmail,
+    email: member.email,
   });
 }
 
@@ -75,6 +69,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function CensusPage() {
+  useRevalidateOnFocus();
+
   return (
     <div className="mx-auto flex w-full max-w-[600px] flex-col gap-8">
       <Text variant="2xl">ColorStack Census '24</Text>
@@ -89,7 +85,7 @@ export default function CensusPage() {
 }
 
 function CensusForm() {
-  const { emails, primaryEmail } = useLoaderData<typeof loader>();
+  const { email } = useLoaderData<typeof loader>();
 
   const submit = useSubmit();
 
@@ -101,37 +97,36 @@ function CensusForm() {
       method="post"
       onBlur={(e) => submit(e.currentTarget)}
     >
-      <Form.Field
-        description={iife(() => {
-          return (
+      <CensusSection title="Basic Information">
+        <Form.Field
+          description={
             <Text>
-              If your preferred email is not listed here, please add it{' '}
+              If you'd like to change your primary email, please do that{' '}
               <Link
                 className="link"
                 target="_blank"
-                to={Route['/profile/emails/add/start']}
+                to={Route['/profile/emails']}
               >
                 here
-              </Link>{' '}
-              first.
+              </Link>
+              .
             </Text>
-          );
-        })}
-        error=""
-        label="Email"
-        labelFor="email"
-        required
-      >
-        <Select defaultValue={primaryEmail} id="email" name="email" required>
-          {emails.map((email) => {
-            return (
-              <option key={email.email} value={email.email!}>
-                {email.email}
-              </option>
-            );
-          })}
-        </Select>
-      </Form.Field>
+          }
+          error=""
+          label="Email"
+          labelFor="email"
+        >
+          <Select
+            defaultValue={email}
+            disabled
+            id="email"
+            name="email"
+            required
+          >
+            <option value={email}>{email}</option>
+          </Select>
+        </Form.Field>
+      </CensusSection>
 
       <Form.Field error="" label="School" labelFor="school" required>
         <Input name="school" required />
@@ -335,6 +330,21 @@ function CensusForm() {
         })}
       </Form.Field>
     </RemixForm>
+  );
+}
+
+function CensusSection({
+  children,
+  title,
+}: PropsWithChildren<{ title: string }>) {
+  return (
+    <section className="flex flex-col gap-[inherit]">
+      <Text className="-mb-4" color="gray-500" variant="xl">
+        {title}
+      </Text>
+
+      {children}
+    </section>
   );
 }
 
