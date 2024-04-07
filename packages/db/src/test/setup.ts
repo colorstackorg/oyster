@@ -9,6 +9,7 @@ import {
   student1Emails,
 } from './constants';
 import { db } from '../shared/db';
+import { type DB } from '../shared/types';
 import { truncate } from '../use-cases/truncate';
 
 beforeEach(async () => {

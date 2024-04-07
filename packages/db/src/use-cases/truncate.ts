@@ -2,6 +2,7 @@ import { type DB } from 'db:types';
 import { type Transaction, sql } from 'kysely';
 
 import { IS_PRODUCTION } from '../shared/env';
+import { type DB } from '../shared/types';
 
 /**
  * Truncates all tables in the database - wiping all rows, but does not affect

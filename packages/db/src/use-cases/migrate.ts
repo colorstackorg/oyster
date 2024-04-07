@@ -11,6 +11,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import { createDatabaseConnection } from './create-database-connection';
+import { type DB } from '../shared/types';
 
 type MigrateOptions = {
   db?: Kysely<DB>;

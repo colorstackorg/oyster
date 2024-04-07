@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import { db } from '../shared/db';
 import { IS_PRODUCTION } from '../shared/env';
+import { type DB } from '../shared/types';
 import { migrate } from '../use-cases/migrate';
 import { truncate } from '../use-cases/truncate';
 

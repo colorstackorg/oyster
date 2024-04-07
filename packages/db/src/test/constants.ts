@@ -3,6 +3,8 @@ import { type Insertable } from 'kysely';
 
 import { EducationLevel, Gender, Major } from '@oyster/types';
 
+import { type DB } from '../shared/types';
+
 // Constants
 
 export const company1: Insertable<DB['companies']> = {
