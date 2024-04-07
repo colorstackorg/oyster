@@ -43,9 +43,9 @@ To get started with local development, please follow these simple steps.
 
 Please ensure that you have the following software on your machine:
 
+- [Bun](https://bun.sh)
 - [Docker](https://docs.docker.com/engine/install)
-- [Node.js](https://nodejs.org/en/download/package-manager) (v20.x)
-- [Yarn](https://classic.yarnpkg.com/lang/en/docs/install) (v1)
+- [Node.js](https://nodejs.org/en/download/package-manager) (v20.x.x)
 
 #### Installing Node w/ `nvm`
 

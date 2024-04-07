@@ -31,8 +31,10 @@ codebase:
 
 - [BullMQ](https://docs.bullmq.io) to queue and process jobs asynchronously (in
   the background).
+- [Bun](https://bun.sh) as a Javascript runtime, pacakage manager, test runner,
+  and more!
 - [Kysely](https://kysely.dev) to query our SQL database in a type-safe way.
-- [Node.js](https://nodejs.org/en/about)...because yes!
+- [Node.js](https://nodejs.org/en/about) to build/run our Remix applications.
 - [PostgreSQL](https://www.postgresql.org/docs/15/index.html) to store all of
   our data.
 - [Railway](https://railway.app) to host our applications and databases.
