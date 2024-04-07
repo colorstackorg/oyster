@@ -7,6 +7,12 @@
     },
     "types": ["@remix-run/node", "vite/client"]
   },
-  "include": ["env.d.ts", "global.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": [
+    "env.d.ts",
+    "global.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "tailwind.config.js"
+  ],
   "exclude": ["node_modules"]
 }
