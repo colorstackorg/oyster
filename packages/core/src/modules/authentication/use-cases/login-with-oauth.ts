@@ -3,8 +3,8 @@ import { match } from 'ts-pattern';
 import { db } from '@/infrastructure/database';
 import { findMemberByEmail } from '@/modules/member/queries/find-member-by-email';
 import { signToken } from '@/shared/utils/auth.utils';
-import { OAuthCodeState } from '../authentication.types';
-import { OAuthServiceType } from '../oauth.service';
+import { type OAuthCodeState } from '../authentication.types';
+import { type OAuthServiceType } from '../oauth.service';
 import { GoogleOAuthService } from '../services/google-oauth.service';
 import { SlackOAuthService } from '../services/slack-oauth.service';
 

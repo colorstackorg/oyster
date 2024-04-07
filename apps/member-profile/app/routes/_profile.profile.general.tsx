@@ -1,4 +1,8 @@
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
@@ -6,7 +10,7 @@ import {
   useNavigation,
 } from '@remix-run/react';
 import { sql } from 'kysely';
-import { z } from 'zod';
+import { type z } from 'zod';
 
 import { Student } from '@oyster/types';
 import {
@@ -82,7 +86,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await request.formData();
 
-  let { data, errors } = validateForm(
+  const { data, errors } = validateForm(
     UpdateGeneralInformation,
     Object.fromEntries(form)
   );
@@ -94,7 +98,7 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  let { currentLocationLatitude, currentLocationLongitude, ...rest } = data;
+  const { currentLocationLatitude, currentLocationLongitude, ...rest } = data;
 
   await db.transaction().execute(async (trx) => {
     await updateGeneralInformation(trx, user(session), {

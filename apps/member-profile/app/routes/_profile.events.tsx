@@ -1,4 +1,4 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { NavLink, Outlet, useLoaderData } from '@remix-run/react';
 
 import { cx, Text } from '@oyster/ui';
@@ -55,7 +55,7 @@ function EventNavigationItem({ label, to }: EventNavigationItemProps) {
       <NavLink
         className={({ isActive }) => {
           return cx(
-            'hover:text-primary underline',
+            'underline hover:text-primary',
             isActive && 'text-primary underline'
           );
         }}

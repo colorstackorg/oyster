@@ -1,4 +1,4 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLocation, useNavigate } from '@remix-run/react';
 
 import { Modal } from '@oyster/ui';

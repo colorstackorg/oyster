@@ -1,7 +1,7 @@
-import React, { PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 import { match } from 'ts-pattern';
 
-import { ACCENT_COLORS, AccentColor } from '../utils/constants';
+import { ACCENT_COLORS, type AccentColor } from '../utils/constants';
 import { cx } from '../utils/cx';
 
 type RadioProps = Pick<
@@ -78,9 +78,11 @@ export const Radio = ({
 Radio.Group = function RadioGroup({ children }: PropsWithChildren) {
   const childrenWithProps = React.Children.map(children, (child, i: number) => {
     if (React.isValidElement(child)) {
-      return React.cloneElement(child, {
+      const props: Partial<RadioProps> = {
         color: ACCENT_COLORS[i % ACCENT_COLORS.length],
-      } as any);
+      };
+
+      return React.cloneElement(child, props);
     }
 
     return null;

@@ -3,8 +3,8 @@ import { ChevronLeft, ChevronRight } from 'react-feather';
 
 import { iife } from '@oyster/utils';
 
-import { cx } from '../utils/cx';
 import { Text } from './text';
+import { cx } from '../utils/cx';
 
 type PaginationValue = number | '...';
 
@@ -116,7 +116,7 @@ function PaginationItem({
   const linkCn = cx(
     'flex h-6 w-6 items-center justify-center rounded-full text-sm no-underline',
     !!active && 'bg-primary font-semibold text-white',
-    !disabled && !active && 'hover:text-primary hover:bg-gray-100',
+    !disabled && !active && 'hover:bg-gray-100 hover:text-primary',
     !disabled && 'cursor-pointer'
   );
 

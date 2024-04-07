@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -10,7 +10,7 @@ import {
   useLoaderData,
   useNavigation,
 } from '@remix-run/react';
-import { z } from 'zod';
+import { type z } from 'zod';
 
 import { Application } from '@oyster/types';
 import {

@@ -1,11 +1,11 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
 import { Divider, Text } from '@oyster/ui';
 
 // Profile
 
 export function ProfileColumn({ children }: PropsWithChildren) {
-  return <div className="@container flex flex-col gap-12">{children}</div>;
+  return <div className="flex flex-col gap-12 @container">{children}</div>;
 }
 
 export function ProfileDescription({ children }: PropsWithChildren) {

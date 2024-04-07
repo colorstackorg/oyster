@@ -2,8 +2,8 @@ import { id } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
-import { AddWorkExperienceInput } from '../employment.types';
 import { saveCompanyIfNecessary } from './save-company-if-necessary';
+import { type AddWorkExperienceInput } from '../employment.types';
 
 /**
  * Adds a work experience to the member's history, and emits a job to grant

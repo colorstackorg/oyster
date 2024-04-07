@@ -1,8 +1,8 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
-  SerializeFrom,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
 } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
@@ -16,7 +16,7 @@ import {
   IconButton,
   Pagination,
   Table,
-  TableColumnProps,
+  type TableColumnProps,
   useSearchParams,
 } from '@oyster/ui';
 

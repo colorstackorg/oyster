@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -10,7 +10,7 @@ import {
   useNavigate,
   useNavigation,
 } from '@remix-run/react';
-import { z } from 'zod';
+import { type z } from 'zod';
 
 import {
   Button,
@@ -64,7 +64,7 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     await sendEmailCode(user(session), data);
 
-    return redirect(Route.ADD_EMAIL_FINISH, {
+    return redirect(Route['/profile/emails/add/finish'], {
       headers: [
         ['Set-Cookie', await addEmailCookie.serialize(data.email)],
         ['Set-Cookie', await commitSession(session)],

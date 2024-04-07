@@ -1,10 +1,11 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
-  Session,
+  type Session,
 } from '@remix-run/node';
+
 import { Route } from '../shared/constants';
 import {
   destroySession,
@@ -14,6 +15,7 @@ import {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
+
   return json({});
 }
 

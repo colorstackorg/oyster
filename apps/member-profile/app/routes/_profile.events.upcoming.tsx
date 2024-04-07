@@ -1,4 +1,8 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
 import { Check, CheckCircle, ExternalLink } from 'react-feather';
@@ -134,7 +138,7 @@ export default function UpcomingEvents() {
   return (
     <>
       <EventSection>
-        {!!upcomingEvents.length ? (
+        {upcomingEvents.length ? (
           <EventList>
             {upcomingEvents.map((event) => {
               return <UpcomingEventItem key={event.id} event={event} />;
@@ -183,7 +187,7 @@ function UpcomingEventItem({ event }: UpcomingEventItemProps) {
               href={event.externalLink}
               target="_blank"
             >
-              <ExternalLink className="text-primary h-5 w-5" /> See Details
+              <ExternalLink className="h-5 w-5 text-primary" /> See Details
             </a>
           )}
 
@@ -224,7 +228,7 @@ function EventRegistrations({
 function RegisteredStatus({ registered }: { registered: boolean }) {
   return registered ? (
     <div className="flex items-center gap-2">
-      <CheckCircle className="text-primary h-5 w-5" />
+      <CheckCircle className="h-5 w-5 text-primary" />
       <Text className="text-primary" variant="sm">
         Going
       </Text>

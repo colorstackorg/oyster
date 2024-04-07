@@ -1,11 +1,10 @@
-import { z } from 'zod';
+import React, { type PropsWithChildren } from 'react';
+import { type z } from 'zod';
 
-import React, { PropsWithChildren } from 'react';
-
+import { Input, type InputProps } from './input';
+import { Text } from './text';
 import { cx } from '../utils/cx';
 import { zodErrorMap } from '../utils/zod';
-import { Input, InputProps } from './input';
-import { Text } from './text';
 
 export const Form = () => {};
 
@@ -92,7 +91,7 @@ type ValidateResult<Data> = {
   errors: Record<keyof Data, string>;
 };
 
-export function validateForm<T extends z.ZodObject<any>>(
+export function validateForm<T extends z.AnyZodObject>(
   schema: T,
   data: unknown
 ): ValidateResult<z.infer<T>> {
@@ -108,6 +107,7 @@ export function validateForm<T extends z.ZodObject<any>>(
 
   Object.keys(keys).forEach((_key) => {
     const key = _key as Key;
+
     errors[key] = '';
   });
 

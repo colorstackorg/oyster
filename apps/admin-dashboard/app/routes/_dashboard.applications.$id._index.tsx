@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -10,14 +10,14 @@ import {
   useNavigation,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { PropsWithChildren, useState } from 'react';
+import { type PropsWithChildren, useState } from 'react';
 
 import {
   Application as ApplicationType,
-  Gender,
-  Major,
-  OtherDemographic,
-  Race,
+  type Gender,
+  type Major,
+  type OtherDemographic,
+  type Race,
 } from '@oyster/types';
 import { Button, Text } from '@oyster/ui';
 
@@ -27,7 +27,7 @@ import {
   getApplication,
   rejectApplication,
 } from '../shared/core.server';
-import { Application, EducationLevel } from '../shared/core.ui';
+import { Application, type EducationLevel } from '../shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,
@@ -119,6 +119,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     });
   }
 }
+
 const ApplyFormData = ApplicationType.pick({
   contribution: true,
   educationLevel: true,

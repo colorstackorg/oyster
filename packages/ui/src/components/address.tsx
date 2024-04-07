@@ -1,10 +1,10 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
-import { Input, InputProps } from './input';
-import { Select, SelectProps } from './select';
+import { Input, type InputProps } from './input';
+import { Select, type SelectProps } from './select';
 
 export const Address = ({ children }: PropsWithChildren) => {
-  return <div className="@container grid gap-4">{children}</div>;
+  return <div className="grid gap-4 @container">{children}</div>;
 };
 
 Address.City = function City(props: InputProps) {
@@ -13,7 +13,7 @@ Address.City = function City(props: InputProps) {
 
 Address.HalfGrid = function HalfGrid({ children }: PropsWithChildren) {
   return (
-    <div className="@[560px]:grid-cols-2 grid grid-cols-1 gap-[inherit]">
+    <div className="grid grid-cols-1 gap-[inherit] @[560px]:grid-cols-2">
       {children}
     </div>
   );

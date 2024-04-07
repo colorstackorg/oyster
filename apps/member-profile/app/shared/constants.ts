@@ -1,9 +1,7 @@
-import { ExtractValue } from '@oyster/types';
+import { type ExtractValue } from '@oyster/types';
 
 export const Route = {
   ADD_EDUCATION: '/profile/education/add',
-  ADD_EMAIL_FINISH: '/profile/emails/add/finish',
-  ADD_EMAIL_START: '/profile/emails/add/start',
   ADD_WORK_EXPERIENCE: '/profile/work/add',
   APPLICATION: '/apply',
   APPLICATION_THANK_YOU: '/apply/thank-you',
@@ -18,6 +16,10 @@ export const Route = {
   LOGIN_OTP_VERIFY: '/login/otp/verify',
   HOME: '/home',
   POINTS: '/points',
+
+  // Census
+
+  '/census': '/census',
 
   // Directory
 
@@ -45,6 +47,8 @@ export const Route = {
   '/profile/education': '/profile/education',
   '/profile/education/:id/edit': '/profile/education/:id/edit',
   '/profile/emails': '/profile/emails',
+  '/profile/emails/add/finish': '/profile/emails/add/finish',
+  '/profile/emails/add/start': '/profile/emails/add/start',
   '/profile/general': '/profile/general',
   '/profile/icebreakers': '/profile/icebreakers',
   '/profile/personal': '/profile/personal',

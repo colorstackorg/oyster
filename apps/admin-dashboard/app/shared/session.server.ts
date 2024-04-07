@@ -1,6 +1,11 @@
-import { createCookieSessionStorage, redirect, Session } from '@remix-run/node';
+import {
+  createCookieSessionStorage,
+  redirect,
+  type Session,
+} from '@remix-run/node';
 
-import { ToastProps } from '@oyster/ui';
+import { type ToastProps } from '@oyster/ui';
+import { id } from '@oyster/utils';
 
 import { Route } from './constants';
 import { ENV } from './constants.server';
@@ -82,6 +87,7 @@ export function isAmbassador(session: Session) {
 
 export function toast(session: Session, toast: ToastProps) {
   session.flash(SESSION.TOAST, {
+    id: id(),
     message: toast.message,
     type: toast.type,
   });

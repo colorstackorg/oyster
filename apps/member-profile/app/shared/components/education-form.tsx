@@ -1,11 +1,11 @@
 import React, {
-  PropsWithChildren,
+  type PropsWithChildren,
   useContext,
   useEffect,
   useState,
 } from 'react';
 
-import { Major } from '@oyster/types';
+import { type Major } from '@oyster/types';
 import { DatePicker, Form, Input, Select } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
@@ -13,15 +13,15 @@ import {
   DegreeType,
   FORMATTED_DEGREEE_TYPE,
   MajorCombobox,
-  School,
+  type School,
   SchoolCombobox,
 } from '../core.ui';
 
 const EducationFormContext = React.createContext({
   isOtherFieldOfStudy: false,
   isOtherSchool: false,
-  setIsOtherFieldOfStudy: (value: boolean) => {},
-  setIsOtherSchool: (isOtherSchool: boolean) => {},
+  setIsOtherFieldOfStudy: (_: boolean) => {},
+  setIsOtherSchool: (_: boolean) => {},
 });
 
 export const EducationForm = () => {};

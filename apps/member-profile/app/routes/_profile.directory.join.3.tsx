@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -15,15 +15,15 @@ import { z } from 'zod';
 import { nullableField, Student } from '@oyster/types';
 import { Button, getActionErrors, InputField, validateForm } from '@oyster/ui';
 
+import {
+  JoinDirectoryBackButton,
+  JoinDirectoryNextButton,
+} from './_profile.directory.join';
 import { Route } from '../shared/constants';
 import { db } from '../shared/core.server';
 import { getMember, updateSocialsInformation } from '../shared/queries';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
 import { formatUrl } from '../shared/url.utils';
-import {
-  JoinDirectoryBackButton,
-  JoinDirectoryNextButton,
-} from './_profile.directory.join';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

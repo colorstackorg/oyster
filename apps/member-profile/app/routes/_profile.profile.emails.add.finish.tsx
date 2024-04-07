@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -11,7 +11,7 @@ import {
   useNavigate,
   useNavigation,
 } from '@remix-run/react';
-import { z } from 'zod';
+import { type z } from 'zod';
 
 import { StudentEmail } from '@oyster/types';
 import {
@@ -40,7 +40,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const email = await addEmailCookie.parse(request.headers.get('Cookie'));
 
   if (!email) {
-    return redirect(Route.ADD_EMAIL_START);
+    return redirect(Route['/profile/emails/add/start']);
   }
 
   return json({

@@ -1,6 +1,6 @@
 import { Link, NavLink, Form as RemixForm, useSubmit } from '@remix-run/react';
 import React, {
-  PropsWithChildren,
+  type PropsWithChildren,
   useContext,
   useEffect,
   useState,
@@ -8,12 +8,12 @@ import React, {
 import { LogOut, Menu, X } from 'react-feather';
 import { z } from 'zod';
 
+import { IconButton } from './icon-button';
+import { SearchBar, type SearchBarProps } from './search-bar';
+import { Text } from './text';
 import { useDelayedValue } from '../hooks/use-delayed-value';
 import { useSearchParams } from '../hooks/use-search-params';
 import { cx } from '../utils/cx';
-import { IconButton } from './icon-button';
-import { SearchBar, SearchBarProps } from './search-bar';
-import { Text } from './text';
 
 type DashboardContextValue = {
   open: boolean;
@@ -22,7 +22,7 @@ type DashboardContextValue = {
 
 const DashboardContext = React.createContext<DashboardContextValue>({
   open: false,
-  setOpen: (open: boolean) => {},
+  setOpen: (_: boolean) => {},
 });
 
 export const Dashboard = ({ children }: PropsWithChildren) => {
@@ -142,7 +142,7 @@ Dashboard.Page = function Page({ children }: PropsWithChildren) {
   return (
     <section
       className={cx(
-        '@container box-border flex w-full flex-col gap-4 overflow-scroll p-4 pb-24',
+        'box-border flex w-full flex-col gap-4 overflow-scroll p-4 pb-24 @container',
         'md:p-6 md:pb-16'
       )}
     >

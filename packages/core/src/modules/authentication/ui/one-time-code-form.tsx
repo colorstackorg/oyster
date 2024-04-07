@@ -1,14 +1,15 @@
-import { FieldProps, Form, Input } from '@oyster/ui';
+import { type FieldProps, Form, Input } from '@oyster/ui';
 
 export const OneTimeCodeForm = () => {};
 
 OneTimeCodeForm.CodeField = function CodeField({
+  description = 'Please input the 6-digit passcode that you received.',
   error,
   name,
-}: FieldProps<string>) {
+}: FieldProps<string> & { description?: string }) {
   return (
     <Form.Field
-      description="Please input the 6-digit passcode that you received."
+      description={description}
       error={error}
       labelFor={name}
       required

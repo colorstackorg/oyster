@@ -1,6 +1,6 @@
-import mailchimp, { Mailchimp } from '@mailchimp/mailchimp_marketing';
+import mailchimp, { type Mailchimp } from '@mailchimp/mailchimp_marketing';
 
-import { EmailCampaign, EmailList } from '@oyster/types';
+import { type EmailCampaign, type EmailList } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
@@ -58,6 +58,7 @@ export async function syncMailchimpList(input: SyncEmailListInput) {
 async function getMailchimpList(id: string) {
   try {
     const list = await mailchimp.lists.getList(id);
+
     return toList(list);
   } catch (e) {
     return null;
@@ -75,7 +76,7 @@ async function listMailchimpCampaigns(
 ) {
   const result: Pick<EmailCampaign, 'id'>[] = [];
 
-  let pageSize = 1000;
+  const pageSize = 1000;
   let offset = 0;
 
   // This is the total number of records that exist in the list, which we'll

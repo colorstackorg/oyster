@@ -1,5 +1,6 @@
-import { Transaction } from 'kysely';
-import { DB } from 'kysely-codegen/dist/db';
+import { type Transaction } from 'kysely';
+
+import { type DB } from '@oyster/db';
 
 export async function updateAllowEmailShare(
   trx: Transaction<DB>,

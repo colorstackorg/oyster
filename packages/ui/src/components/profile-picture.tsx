@@ -1,7 +1,7 @@
 import { match } from 'ts-pattern';
 
-import { cx } from '../utils/cx';
 import { Text } from './text';
+import { cx } from '../utils/cx';
 
 type ProfilePictureProps = {
   initials?: string;
@@ -40,7 +40,7 @@ export function ProfilePicture({
     <Text
       className={cx(
         className,
-        'bg-primary flex items-center justify-center text-white'
+        'flex items-center justify-center bg-primary text-white'
       )}
     >
       {initials.toUpperCase()}

@@ -1,5 +1,5 @@
 import { db } from '@/infrastructure/database';
-import { DegreeType, EducationLevel } from '../education.types';
+import { DegreeType, type EducationLevel } from '../education.types';
 
 const EducationLevelFromDegreeType: Record<DegreeType, EducationLevel> = {
   associate: 'undergraduate',

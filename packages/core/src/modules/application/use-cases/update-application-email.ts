@@ -1,4 +1,4 @@
-import { Application } from '@oyster/types';
+import { type Application } from '@oyster/types';
 
 import { db } from '@/infrastructure/database';
 

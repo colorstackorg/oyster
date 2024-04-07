@@ -1,48 +1,46 @@
+import { sql } from 'kysely';
+
 import { id } from '@oyster/utils';
 
 import { db } from '@/infrastructure/database';
-import { UploadJobOfferInput } from '../employment.types';
+import { type UploadJobOfferInput } from '../employment.types';
 
-/**
- * Adds a job offer to a student's profile.
- */
 export async function uploadJobOffer({
-  companyId,
-  studentId,
   baseSalary,
   bonus,
+  companyId,
   compensationType,
   employmentType,
   hourlyPay,
+  location,
+  locationLatitude,
+  locationLongitude,
+  locationType,
   otherCompany,
   startDate,
   status,
   stockPerYear,
-  location,
-  locationCoordinates,
-  locationType,
+  studentId,
 }: UploadJobOfferInput) {
-  const jobOfferId = id();
-
   await db.transaction().execute(async (trx) => {
     await trx
       .insertInto('jobOffers')
       .values({
-        id: id(),
         baseSalary,
         bonus,
         companyId,
         compensationType,
         employmentType,
         hourlyPay,
+        id: id(),
+        location,
+        locationCoordinates: sql`point(${locationLongitude}, ${locationLatitude})`,
+        locationType,
         otherCompany,
         startDate,
         status,
         stockPerYear,
         studentId,
-        location,
-        locationCoordinates,
-        locationType,
       })
       .execute();
   });

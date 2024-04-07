@@ -1,4 +1,4 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import {
   generatePath,
   Link,
@@ -65,7 +65,7 @@ export default function ProfileLayout() {
     <div className="mx-auto w-full max-w-4xl">
       <ProfileHeader />
 
-      <div className="@2xl:flex-row @2xl:gap-16 mx-auto flex flex-col gap-12">
+      <div className="mx-auto flex flex-col gap-12 @2xl:flex-row @2xl:gap-16">
         <ProfileNavigation />
 
         <div className="flex-1">

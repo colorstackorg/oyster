@@ -1,7 +1,7 @@
-import { ConversationsHistoryResponse } from '@slack/web-api';
+import { type ConversationsHistoryResponse } from '@slack/web-api';
 
 import { slack } from '@/modules/slack/instances';
-import { SlackMessage } from '@/modules/slack/slack.types';
+import { type SlackMessage } from '@/modules/slack/slack.types';
 import { RateLimiter } from '@/shared/utils/rate-limiter';
 
 type Message = NonNullable<ConversationsHistoryResponse['messages']>[number] & {

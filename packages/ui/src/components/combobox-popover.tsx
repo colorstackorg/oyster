@@ -1,22 +1,22 @@
 import React, {
   createRef,
-  PropsWithChildren,
+  type PropsWithChildren,
   useContext,
   useEffect,
   useRef,
   useState,
 } from 'react';
 
+import { useIsDropdownParent } from './dropdown';
+import { useIsModalParent } from './modal';
 import { useHydrated } from '../hooks/use-hydrated';
 import { useOnClickOutside } from '../hooks/use-on-click-outside';
 import { cx } from '../utils/cx';
-import { useIsDropdownParent } from './dropdown';
-import { useIsModalParent } from './modal';
 
 const ComboboxPopoverContext = React.createContext({
   popoverOpen: false,
   ref: createRef<HTMLDivElement | null>(),
-  setPopoverOpen: (open: boolean) => {},
+  setPopoverOpen: (_: boolean) => {},
 });
 
 export function useComboboxPopover() {
@@ -96,7 +96,7 @@ function useScrollFromModal() {
   }
 
   const [scrollTop, setScrollTop] = useState<number>(
-    !!modalElement ? modalElement.scrollTop : 0
+    modalElement ? modalElement.scrollTop : 0
   );
 
   useEffect(() => {

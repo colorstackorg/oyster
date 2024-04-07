@@ -1,11 +1,15 @@
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
 import {
   Form as RemixForm,
   useLoaderData,
   useNavigate,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 import { ArrowUp, Copy, RefreshCw, Trash } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
@@ -101,6 +105,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   await match(result.data)
     .with('duplicate', async () => {
       const queue = QueueFromName[job.queueName as BullQueue];
+
       return queue.add(job.name, job.data);
     })
     .with('promote', async () => {
@@ -218,7 +223,7 @@ function JobSection({ children }: PropsWithChildren) {
   return <div className="flex flex-col gap-4">{children}</div>;
 }
 
-function JobSectionData({ data }: { data: Object }) {
+function JobSectionData({ data }: { data: object }) {
   return (
     <pre className="overflow-hidden text-ellipsis rounded-lg bg-gray-100 p-4">
       <code className="text-gray-500">{JSON.stringify(data, null, 2)}</code>

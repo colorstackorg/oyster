@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -14,7 +14,7 @@ import { Button, Form, Modal } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { db, deleteEducation } from '../shared/core.server';
-import { Education } from '../shared/core.ui';
+import { type Education } from '../shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,

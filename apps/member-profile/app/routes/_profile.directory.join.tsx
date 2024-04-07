@@ -1,6 +1,6 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Link, Outlet, useLocation, useNavigate } from '@remix-run/react';
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'react-feather';
 import { match } from 'ts-pattern';
 
@@ -11,6 +11,7 @@ import { ensureUserAuthenticated } from '../shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
+
   return json({});
 }
 

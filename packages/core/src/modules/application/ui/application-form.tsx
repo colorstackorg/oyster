@@ -1,42 +1,42 @@
-import React, { PropsWithChildren, useContext, useState } from 'react';
+import React, { type PropsWithChildren, useContext, useState } from 'react';
 
 import {
-  Demographic,
+  type Demographic,
   FORMATTED_DEMOGRAPHICS,
   FORMATTED_GENDER,
   FORMATTED_OTHER_DEMOGRAPHICS,
   FORMATTED_RACE,
-  Gender,
+  type Gender,
   Major,
-  OtherDemographic,
-  Race,
+  type OtherDemographic,
+  type Race,
 } from '@oyster/types';
 import {
   Checkbox,
-  FieldProps,
+  type FieldProps,
   Form,
   Input,
   Link,
   Radio,
   Text,
   Textarea,
-  TextProps,
+  type TextProps,
 } from '@oyster/ui';
 import { iife, toTitleCase } from '@oyster/utils';
 
-import {
-  EducationLevel,
-  FORMATTED_EDUCATION_LEVEL,
-} from '../../education/education.types';
 import { MajorCombobox } from './major-combobox';
 import { SchoolCombobox } from './school-combobox';
+import {
+  type EducationLevel,
+  FORMATTED_EDUCATION_LEVEL,
+} from '../../education/education.types';
 
 const ApplicationContext = React.createContext({
   isOtherMajor: false,
   isOtherSchool: false,
   readOnly: false,
-  setIsOtherMajor: (value: boolean) => {},
-  setIsOtherSchool: (value: boolean) => {},
+  setIsOtherMajor: (_: boolean) => {},
+  setIsOtherSchool: (_: boolean) => {},
 });
 
 export const Application = ({

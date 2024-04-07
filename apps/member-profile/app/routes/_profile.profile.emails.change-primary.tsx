@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -11,7 +11,7 @@ import {
   useNavigate,
   useNavigation,
 } from '@remix-run/react';
-import { z } from 'zod';
+import { type z } from 'zod';
 
 import { Student } from '@oyster/types';
 import {
@@ -24,8 +24,7 @@ import {
 } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
-import { db, job } from '../shared/core.server';
-import { listEmails } from '../shared/queries';
+import { db, job, listEmails } from '../shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

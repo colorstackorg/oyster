@@ -1,11 +1,11 @@
-import { Job, QueueEvents, Worker, WorkerOptions } from 'bullmq';
+import { type Job, QueueEvents, Worker, type WorkerOptions } from 'bullmq';
 import { Redis } from 'ioredis';
-import { z, ZodType } from 'zod';
+import { type z, type ZodType } from 'zod';
 
 import { reportError } from '@/modules/sentry/use-cases/report-error';
 import { ENV } from '@/shared/env';
 import { ErrorWithContext, ZodParseError } from '@/shared/errors';
-import { BullQueue } from '../bull.types';
+import { type BullQueue } from '../bull.types';
 
 export function registerWorker<Schema extends ZodType>(
   name: BullQueue,
@@ -29,6 +29,7 @@ export function registerWorker<Schema extends ZodType>(
     name,
     async (input) => {
       const job = validateJob(schema, input);
+
       return processor(job);
     },
     options

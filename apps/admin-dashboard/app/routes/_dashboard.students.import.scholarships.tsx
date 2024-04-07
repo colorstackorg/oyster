@@ -1,10 +1,10 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   unstable_composeUploadHandlers as composeUploadHandlers,
   unstable_createFileUploadHandler as createFileUploadHandler,
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
@@ -17,7 +17,11 @@ import {
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
-import { Email, ScholarshipRecipient, ScholarshipType } from '@oyster/types';
+import {
+  Email,
+  ScholarshipRecipient,
+  type ScholarshipType,
+} from '@oyster/types';
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
@@ -32,6 +36,7 @@ import {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
+
   return json({});
 }
 
@@ -69,6 +74,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   try {
     const result = await importScholarshipRecipients(data);
+
     count = result.count;
   } catch (e) {
     return json({

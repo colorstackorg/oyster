@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { cx } from '../utils/cx';
 import { getInputCn } from './input';
+import { cx } from '../utils/cx';
 
 export type SelectProps = Pick<
   React.HTMLProps<HTMLSelectElement>,
@@ -27,7 +27,7 @@ export function Select({
     <select
       className={cx(
         getInputCn(),
-        'appearance-none bg-no-repeat bg-[position:center_right_0.5rem] bg-[length:1rem]',
+        'appearance-none bg-[length:1rem] bg-[position:center_right_0.5rem] bg-no-repeat',
         'focus-visible:outline-none',
         'required:invalid:text-gray-400',
 

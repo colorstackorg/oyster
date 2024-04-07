@@ -6,11 +6,11 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxPopover,
-  InputProps,
+  type InputProps,
   useDelayedValue,
 } from '@oyster/ui';
 
-import { School as _School } from '@/modules/education/education.types';
+import { type School as _School } from '@/modules/education/education.types';
 
 type School = Pick<_School, 'id' | 'name'>;
 

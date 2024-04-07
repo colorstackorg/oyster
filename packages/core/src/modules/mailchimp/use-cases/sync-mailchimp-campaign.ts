@@ -1,14 +1,14 @@
-import mailchimp, { Mailchimp } from '@mailchimp/mailchimp_marketing';
+import mailchimp, { type Mailchimp } from '@mailchimp/mailchimp_marketing';
 
 import {
-  EmailCampaign,
-  EmailCampaignClick,
-  EmailCampaignLink,
-  EmailCampaignOpen,
+  type EmailCampaign,
+  type EmailCampaignClick,
+  type EmailCampaignLink,
+  type EmailCampaignOpen,
 } from '@oyster/types';
 import { id } from '@oyster/utils';
 
-import { GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
 import { findMemberByEmail } from '@/modules/member/queries/find-member-by-email';
@@ -181,7 +181,7 @@ async function listCampaignActivity(
   const clicks: EmailCampaignClick[] = [];
   const opens: EmailCampaignOpen[] = [];
 
-  let pageSize = 1000;
+  const pageSize = 1000;
   let offset = 0;
 
   // This is the total number of records that have been returned thus far.

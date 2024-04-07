@@ -55,13 +55,8 @@ export async function getCrunchbaseOrganization(id: string) {
 
   let domain: string | undefined = undefined;
 
-  let {
-    identifier,
-    image_url,
-    listed_stock_symbol,
-    short_description,
-    website_url,
-  } = data.cards.fields;
+  const { fields } = data.cards;
+  let { website_url } = fields;
 
   if (website_url) {
     // This is really janky...but it looks like there's a possibility that
@@ -80,12 +75,12 @@ export async function getCrunchbaseOrganization(id: string) {
   }
 
   const result = BaseCompany.safeParse({
-    crunchbaseId: identifier.uuid,
-    description: short_description,
+    crunchbaseId: fields.identifier.uuid,
+    description: fields.short_description,
     domain,
-    name: identifier.value,
-    imageUrl: image_url,
-    stockSymbol: listed_stock_symbol,
+    name: fields.identifier.value,
+    imageUrl: fields.image_url,
+    stockSymbol: fields.listed_stock_symbol,
   });
 
   if (!result.success) {

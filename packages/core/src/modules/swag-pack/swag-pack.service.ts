@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-import { Address, SwagPackType } from '@oyster/types';
+import { type Address, type SwagPackType } from '@oyster/types';
 
 import { redis, RedisKey } from '@/infrastructure/redis';
 import {
   OAuthTokenResponse,
-  OAuthTokens,
+  type OAuthTokens,
 } from '@/modules/authentication/oauth.service';
 import { ENV, IS_PRODUCTION } from '@/shared/env';
 import { ErrorWithContext } from '@/shared/errors';

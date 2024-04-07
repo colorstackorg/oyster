@@ -1,18 +1,20 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
+  useLoaderData,
   useNavigation,
 } from '@remix-run/react';
 
 import { Button, Form, getActionErrors, validateForm } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
+import { ENV } from '../shared/constants.server';
 import { oneTimeCodeIdCookie } from '../shared/cookies.server';
 import { verifyOneTimeCode } from '../shared/core.server';
 import { OneTimeCodeForm, VerifyOneTimeCodeInput } from '../shared/core.ui';
@@ -27,7 +29,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect(Route['/login/otp/send']);
   }
 
-  return json({});
+  const description =
+    ENV.ENVIRONMENT === 'development'
+      ? 'In the development environment, you can any input any 6-digit code!'
+      : undefined;
+
+  return json({
+    description,
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -84,13 +93,18 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = VerifyOneTimeCodeInput.keyof().enum;
 
 export default function VerifyOneTimeCodePage() {
+  const { description } = useLoaderData<typeof loader>();
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
   const submitting = useNavigation().state === 'submitting';
 
   return (
     <RemixForm className="form" method="post">
-      <OneTimeCodeForm.CodeField error={errors.value} name={keys.value} />
+      <OneTimeCodeForm.CodeField
+        description={description}
+        error={errors.value}
+        name={keys.value}
+      />
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useContext, useRef } from 'react';
+import React, { type PropsWithChildren, useContext, useRef } from 'react';
 
 import { useOnClickOutside } from '../hooks/use-on-click-outside';
 import { cx } from '../utils/cx';
@@ -9,6 +9,7 @@ const DropdownContext = React.createContext({
 
 export function useIsDropdownParent() {
   const { _initialized } = useContext(DropdownContext);
+
   return !!_initialized;
 }
 

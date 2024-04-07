@@ -1,5 +1,5 @@
 import type { LinksFunction, MetaFunction } from '@remix-run/node';
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import {
   Links,
   Meta,
@@ -11,16 +11,15 @@ import {
 import { withSentry } from '@sentry/remix';
 
 import { Toast } from '@oyster/ui';
-
-import coreUiStylesheet from '@oyster/ui/index.css?url';
-import tailwindStylesheet from './tailwind.css?url';
+import uiStylesheet from '@oyster/ui/index.css?url';
 
 import { ENV } from './shared/constants.server';
 import { commitSession, getSession, SESSION } from './shared/session.server';
+import tailwindStylesheet from './tailwind.css?url';
 
 export const links: LinksFunction = () => {
   return [
-    { rel: 'stylesheet', href: coreUiStylesheet },
+    { rel: 'stylesheet', href: uiStylesheet },
     { rel: 'stylesheet', href: tailwindStylesheet },
   ];
 };
@@ -66,7 +65,10 @@ function App() {
 
       <body>
         <Outlet />
-        {toast && <Toast message={toast.message} type={toast.type} />}
+
+        {toast && (
+          <Toast key={toast.id} message={toast.message} type={toast.type} />
+        )}
 
         <script
           // https://remix.run/docs/en/v1/guides/envvars#browser-environment-variables

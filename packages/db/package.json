@@ -1,0 +1,36 @@
+{
+  "name": "@oyster/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./test/*": "./src/test/*",
+    "./test/constants": "./src/test/constants.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "migrate": "tsx ./src/scripts/migrate.ts && yarn types",
+    "migrate:down": "tsx ./src/scripts/migrate.ts --down && yarn types",
+    "migration:create": "tsx ./src/scripts/create-migration.ts",
+    "postinstall": "yarn run types",
+    "seed": "tsx ./src/scripts/seed.ts && yarn types",
+    "type-check": "tsc --noEmit",
+    "types": "node ./src/scripts/kysely-codegen.js"
+  },
+  "dependencies": {
+    "kysely": "^0.26.3",
+    "pg": "^8.8.0"
+  },
+  "devDependencies": {
+    "@oyster/eslint-config": "*",
+    "@oyster/tsconfig": "*",
+    "@types/pg": "^8.11.2",
+    "@types/prompt-sync": "^4.2.3",
+    "commander": "^12.0.0",
+    "dedent": "^0.7.0",
+    "kysely-codegen": "^0.10.1",
+    "prompt-sync": "^4.2.0"
+  }
+}

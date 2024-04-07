@@ -1,10 +1,10 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   unstable_composeUploadHandlers as composeUploadHandlers,
   unstable_createFileUploadHandler as createFileUploadHandler,
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
@@ -26,7 +26,7 @@ import {
   Modal,
   Select,
   Text,
-  TextProps,
+  type TextProps,
   validateForm,
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
@@ -92,6 +92,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   try {
     const result = await importProgramParticipants(data);
+
     count = result.count;
   } catch (e) {
     return json({

@@ -1,5 +1,9 @@
 {
-  "extends": "@oyster/tsconfig/react-library.json",
-  "include": ["src", "./types.d.ts"],
-  "exclude": ["dist", "node_modules"]
+  "extends": "@oyster/tsconfig/base.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "module": "ESNext"
+  }
 }

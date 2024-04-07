@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
 
-import { ApplicationStatus } from '@oyster/types';
+import { type ApplicationStatus } from '@oyster/types';
 
 import { db } from '@/infrastructure/database';
 
@@ -52,7 +52,7 @@ export async function listApplications({
             .as('school');
         },
       ])
-      .orderBy('applications.createdAt', 'desc')
+      .orderBy('applications.createdAt', 'asc')
       .limit(limit)
       .offset((page - 1) * limit)
       .execute(),

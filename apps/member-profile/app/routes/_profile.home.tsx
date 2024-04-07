@@ -1,21 +1,26 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import { Outlet, Link as RemixLink, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { PropsWithChildren, PropsWithoutRef } from 'react';
+import { type PropsWithChildren, type PropsWithoutRef } from 'react';
 import {
   CheckCircle,
   ExternalLink,
-  Icon,
+  type Icon,
   Instagram,
   Linkedin,
   Twitter,
+  GitHub,
   XCircle,
   Youtube,
 } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import {
-  ActivationRequirement,
+  type ActivationRequirement,
   StudentActiveStatus,
   Timezone,
 } from '@oyster/types';
@@ -544,7 +549,7 @@ function LeaderboardCard({
       )}
 
       <ul className="flex flex-col gap-4">
-        {leaderboard.map((position, i) => {
+        {leaderboard.map((position) => {
           return (
             <LeaderboardPositionItem key={position.id} position={position} />
           );
@@ -703,6 +708,8 @@ function SocialsCard() {
         />
 
         <SocialItem Icon={Twitter} href="https://twitter.com/colorstackorg" />
+
+        <SocialItem Icon={GitHub} href="https://github.com/colorstackorg" />
 
         <SocialItem
           Icon={Youtube}

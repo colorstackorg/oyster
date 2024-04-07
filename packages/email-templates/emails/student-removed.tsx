@@ -1,9 +1,7 @@
-import React from 'react';
-
-import { EmailTemplateData } from '../src/types';
 import { Email } from './components/email';
+import { type EmailTemplateData } from '../src/types';
 
-export function StudentRemovedEmail({}: EmailTemplateData<'student-removed'>) {
+export function StudentRemovedEmail(_: EmailTemplateData<'student-removed'>) {
   return (
     <Email.Template>
       <Email.Preview>

@@ -1,4 +1,4 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import {
   generatePath,
   Outlet,
@@ -72,7 +72,7 @@ function WorkHistorySection() {
         </Button.Group>
       </ProfileHeader>
 
-      {!!workExperiences.length ? (
+      {workExperiences.length ? (
         <>
           <ExperienceList>
             {workExperiences.map((experience) => {
