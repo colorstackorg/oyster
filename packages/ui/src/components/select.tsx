@@ -7,6 +7,7 @@ export type SelectProps = Pick<
   React.HTMLProps<HTMLSelectElement>,
   | 'children'
   | 'defaultValue'
+  | 'disabled'
   | 'id'
   | 'name'
   | 'onBlur'
@@ -19,6 +20,7 @@ export type SelectProps = Pick<
 export function Select({
   children,
   defaultValue = '',
+  disabled,
   placeholder = 'Select...',
   required,
   ...rest
@@ -35,6 +37,7 @@ export function Select({
         'bg-inherit'
       )}
       defaultValue={defaultValue}
+      disabled={disabled}
       required={required}
       {...rest}
     >
