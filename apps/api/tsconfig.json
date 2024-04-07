@@ -1,8 +1,12 @@
 {
   "extends": "@oyster/tsconfig/base.json",
   "exclude": ["node_modules", "dist"],
-  "include": ["src"],
+  "include": [
+    "src",
+    "../../packages/core/src/modules/mailchimp/mailchimp.types.d.ts"
+  ],
   "compilerOptions": {
+    "jsx": "react-jsx",
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "paths": {
