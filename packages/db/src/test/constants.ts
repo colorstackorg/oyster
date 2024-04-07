@@ -1,5 +1,5 @@
+import { type DB } from 'db:types';
 import { type Insertable } from 'kysely';
-import { type DB } from 'kysely-codegen/dist/db';
 
 import { EducationLevel, Gender, Major } from '@oyster/types';
 

@@ -1,2 +1,2 @@
-export type { DB } from 'kysely-codegen/dist/db';
+export { type DB } from 'db:types';
 export { db } from './shared/db';

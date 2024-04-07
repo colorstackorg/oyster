@@ -1,10 +1,14 @@
 {
   "extends": "@oyster/tsconfig/base.json",
-  "include": ["src"],
+  "include": ["src", "kysely-patch.d.ts", "./dist/db.d.ts"],
   "compilerOptions": {
+    "baseUrl": ".",
     "jsx": "react-jsx",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "paths": {
+      "db:types": ["./dist/db.d.ts"]
+    },
     "types": ["vitest/globals"]
   }
 }

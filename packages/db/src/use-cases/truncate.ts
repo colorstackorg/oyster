@@ -1,5 +1,5 @@
+import { type DB } from 'db:types';
 import { type Transaction, sql } from 'kysely';
-import { type DB } from 'kysely-codegen/dist/db';
 
 import { IS_PRODUCTION } from '../shared/env';
 

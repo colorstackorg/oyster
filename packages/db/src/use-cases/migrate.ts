@@ -1,3 +1,4 @@
+import { type DB } from 'db:types';
 import { promises as fs } from 'fs';
 import {
   Migrator,
@@ -5,7 +6,6 @@ import {
   type Migration,
   type MigrationProvider,
 } from 'kysely';
-import { type DB } from 'kysely-codegen/dist/db';
 import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
