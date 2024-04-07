@@ -2,9 +2,9 @@ import { type Transaction, sql } from 'kysely';
 import readline from 'readline';
 import { z } from 'zod';
 
-import { type DB } from '../../dist/db';
 import { db } from '../shared/db';
 import { IS_PRODUCTION } from '../shared/env';
+import { type DB } from '../shared/types';
 import { migrate } from '../use-cases/migrate';
 import { truncate } from '../use-cases/truncate';
 

@@ -1,8 +1,8 @@
 import { CamelCasePlugin, Kysely, PostgresDialect } from 'kysely';
 import pg from 'pg';
 
-import { type DB } from '../../dist/db';
 import { DATABASE_URL } from '../shared/env';
+import { type DB } from '../shared/types';
 
 export function createDatabaseConnection() {
   if (!DATABASE_URL) {
