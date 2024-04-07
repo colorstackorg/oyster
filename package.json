@@ -35,7 +35,8 @@
     "typescript": "^5.4.2"
   },
   "engines": {
-    "npm": ">=7.0.0"
+    "npm": ">=7.0.0",
+    "node": "^20.0.0"
   },
   "packageManager": "bun@1.1.2"
 }
