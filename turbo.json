@@ -2,26 +2,18 @@
   "$schema": "https://turborepo.org/schema.json",
   "pipeline": {
     "build": {
-      "dependsOn": ["^build"],
       "outputs": ["build/**", "dist/**"]
     },
     "dev": {
       "cache": false,
-      "dependsOn": ["^build"],
       "persistent": true
     },
-    "lint": {
-      "dependsOn": ["^build"]
-    },
-    "lint:fix": {
-      "dependsOn": ["^build"]
-    },
+    "lint": {},
+    "lint:fix": {},
     "start": {
       "cache": false
     },
     "test": {},
-    "type-check": {
-      "dependsOn": ["^build"]
-    }
+    "type-check": {}
   }
 }
