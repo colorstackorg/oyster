@@ -8,9 +8,6 @@
 // will be the case when setting up the project for the first time.
 
 import { exec } from 'child_process';
-import { config } from 'dotenv';
-
-config();
 
 if (process.env.DATABASE_URL) {
   exec(
@@ -25,7 +22,7 @@ if (process.env.DATABASE_URL) {
       }
 
       if (error) {
-        throw new Error(error);
+        throw error;
       }
     }
   );

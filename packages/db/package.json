@@ -17,7 +17,7 @@
     "postinstall": "bun types",
     "seed": "bun ./src/scripts/seed.ts && bun types",
     "type-check": "tsc --noEmit",
-    "types": "node ./src/scripts/kysely-codegen.js"
+    "types": "bun ./src/scripts/kysely-codegen.ts"
   },
   "dependencies": {
     "kysely": "^0.26.3",

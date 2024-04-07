@@ -1,10 +1,4 @@
-import { config } from 'dotenv';
-
 import { type Environment } from './types';
-
-// Loads the .env file into `process.env`. Note that if the config was already
-// loaded (for example, in tests), this will not overwrite any existing values.
-config();
 
 export const ENV = {
   AIRMEET_ACCESS_KEY: process.env.AIRMEET_ACCESS_KEY as string,
@@ -35,10 +29,6 @@ export const ENV = {
   SWAG_UP_CLIENT_ID: process.env.SWAG_UP_CLIENT_ID as string,
   SWAG_UP_CLIENT_SECRET: process.env.SWAG_UP_CLIENT_SECRET as string,
 };
-
-// TODO: Below are the only variables that we need to process in the core,
-// package and thus in this file after the dotenv has loaded the config.
-// Everything else above should be colocated with its respective module.
 
 export const ENVIRONMENT = process.env.ENVIRONMENT as Environment;
 export const IS_DEVELOPMENT = ENVIRONMENT === 'development';

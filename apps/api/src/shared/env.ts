@@ -2,13 +2,9 @@
 // variables necessary to run. If any are missing, this file will throw an error
 // and crash the application.
 
-import { config } from 'dotenv';
 import { z } from 'zod';
 
 import { Environment } from '@oyster/core/api';
-
-// Loads the .env file into `process.env`.
-config();
 
 const EnvironmentVariable = z.string().trim().min(1);
 
