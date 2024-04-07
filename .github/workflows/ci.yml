@@ -3,6 +3,8 @@ name: Continuous Integration
 on:
   pull_request:
     types: [opened, synchronize]
+  push:
+    branches: [rami/bun]
 
 jobs:
   ci:
