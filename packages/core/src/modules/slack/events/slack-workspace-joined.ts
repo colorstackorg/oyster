@@ -1,13 +1,13 @@
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { db } from '@/infrastructure/database';
-import { findMemberByEmail } from '@/modules/member/queries/find-member-by-email';
+import { getMemberByEmail } from '@/modules/member/queries/find-member-by-email';
 import { NotFoundError } from '@/shared/errors';
 
 export async function onSlackWorkspaceJoined({
   email,
   slackId,
 }: GetBullJobData<'slack.joined'>) {
-  const member = await findMemberByEmail(email);
+  const member = await getMemberByEmail(email);
 
   if (!member) {
     throw new NotFoundError(

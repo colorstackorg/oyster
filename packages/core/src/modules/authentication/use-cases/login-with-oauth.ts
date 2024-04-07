@@ -1,7 +1,7 @@
 import { match } from 'ts-pattern';
 
 import { db } from '@/infrastructure/database';
-import { findMemberByEmail } from '@/modules/member/queries/find-member-by-email';
+import { getMemberByEmail } from '@/modules/member/queries/find-member-by-email';
 import { signToken } from '@/shared/utils/auth.utils';
 import { type OAuthCodeState } from '../authentication.types';
 import { type OAuthServiceType } from '../oauth.service';
@@ -43,7 +43,7 @@ export async function loginWithOAuth(input: OAuthLoginInput) {
       .where('deletedAt', 'is', null)
       .executeTakeFirst();
   } else {
-    entity = await findMemberByEmail(email);
+    entity = await getMemberByEmail(email);
   }
 
   if (!entity) {

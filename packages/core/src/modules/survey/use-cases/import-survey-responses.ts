@@ -5,7 +5,7 @@ import { id } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
-import { findMemberByEmail } from '@/modules/member/queries/find-member-by-email';
+import { getMemberByEmail } from '@/modules/member/queries/find-member-by-email';
 import { parseCsv } from '@/shared/utils/csv.utils';
 import { AddSurveyResponseInput, SurveyResponse } from '../survey.types';
 
@@ -39,7 +39,7 @@ export async function importSurveyResponses(
         'Responded On': respondedOn,
       } = result.data;
 
-      const student = await findMemberByEmail(email);
+      const student = await getMemberByEmail(email);
 
       return AddSurveyResponseInput.parse({
         email,
