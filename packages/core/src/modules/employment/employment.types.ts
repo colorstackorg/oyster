@@ -76,6 +76,13 @@ export const JobOffer = Entity.omit({ deletedAt: true }).extend({
   studentId: Student.shape.id,
 });
 
+export const JobOfferFilters = z.object({
+  status: z.string().optional(),
+  companyId: Company.shape.id.nullish(),
+  employmentType: z.nativeEnum(EmploymentType).nullish(),
+  location: z.string().optional(),
+});
+
 export const WorkExperience = Entity.extend({
   companyId: Company.shape.id.nullish(),
   companyName: z.string().trim().min(1).nullish(),
@@ -130,6 +137,7 @@ export type DeleteWorkExperienceInput = z.infer<
 >;
 export type EditWorkExperienceInput = z.infer<typeof EditWorkExperienceInput>;
 export type EmploymentType = ExtractValue<typeof EmploymentType>;
+export type JobOfferFilters = ExtractValue<typeof JobOfferFilters>;
 export type LocationType = ExtractValue<typeof LocationType>;
 export type UploadJobOfferInput = z.infer<typeof UploadJobOfferInput>;
 export type WorkExperience = z.infer<typeof WorkExperience>;
