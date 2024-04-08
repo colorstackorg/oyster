@@ -9,6 +9,7 @@ export {
 } from './modules/authentication/shared/oauth.utils';
 export { sendOneTimeCode } from './modules/authentication/use-cases/send-one-time-code';
 export { verifyOneTimeCode } from './modules/authentication/use-cases/verify-one-time-code';
+export { listSchools } from './modules/education/queries/list-schools';
 export { addEducation } from './modules/education/use-cases/add-education';
 export { deleteEducation } from './modules/education/use-cases/delete-education';
 export { editEducation } from './modules/education/use-cases/edit-education';
