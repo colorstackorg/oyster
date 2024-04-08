@@ -10,7 +10,6 @@ import {
   useLoaderData,
   useNavigation,
 } from '@remix-run/react';
-import { sql } from 'kysely';
 import { z } from 'zod';
 
 import { Student } from '@oyster/types';
@@ -30,8 +29,8 @@ import {
 import { JoinDirectoryNextButton } from './_profile.directory.join';
 import { CurrentLocationField } from '../shared/components/profile.general';
 import { Route } from '../shared/constants';
-import { db } from '../shared/core.server';
-import { getMember, updateGeneralInformation } from '../shared/queries';
+import { updateMember } from '../shared/core.server';
+import { getMember } from '../shared/queries';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -72,12 +71,9 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  await db.transaction().execute(async (trx) => {
-    await updateGeneralInformation(trx, user(session), {
-      currentLocation: data.currentLocation,
-      currentLocationCoordinates: sql`point(${data.currentLocationLongitude}, ${data.currentLocationLatitude})`,
-      headline: data.headline,
-    });
+  await updateMember({
+    data,
+    where: { id: user(session) },
   });
 
   return redirect(Route['/directory/join/2']);

@@ -39,11 +39,11 @@ import { Card } from '../shared/components/card';
 import { Route } from '../shared/constants';
 import { getTimezone } from '../shared/cookies.server';
 import {
+  countEventAttendees,
   countMessagesSent,
   db,
   getActiveStreakLeaderboard,
   getActiveStreakLeaderboardPosition,
-  getEventsAttendedCount,
   getIpAddress,
 } from '../shared/core.server';
 import { setMixpanelProfile, track } from '../shared/mixpanel.server';
@@ -69,7 +69,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   ] = await Promise.all([
     getActiveStreakLeaderboard(),
     getStudent(id),
-    getEventsAttendedCount(id),
+    countEventAttendees({
+      where: { studentId: id },
+    }),
     countMessagesSent(id),
     getRecentActiveStatuses(id, timezone),
     getThisWeekActiveStatus(id, timezone),
