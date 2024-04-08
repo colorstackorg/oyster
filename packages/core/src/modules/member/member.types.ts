@@ -6,7 +6,7 @@ import { Company } from '@/modules/employment/employment.types';
 import { Country } from '@/modules/location/location.types';
 import { ListSearchParams } from '@/shared/types';
 
-// Schemas (Queries)
+// Queries
 
 export const ListMembersInDirectoryWhere = ListSearchParams.pick({
   search: true,
@@ -23,8 +23,14 @@ export const ListMembersInDirectoryWhere = ListSearchParams.pick({
   school: z.string().min(1).nullable().catch(null),
 });
 
-// Types
-
 export type ListMembersInDirectoryWhere = z.infer<
   typeof ListMembersInDirectoryWhere
 >;
+
+// Use Cases
+
+export const ChangePrimaryEmailInput = Student.pick({
+  email: true,
+});
+
+export type ChangePrimaryEmailInput = z.infer<typeof ChangePrimaryEmailInput>;
