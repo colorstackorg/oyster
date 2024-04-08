@@ -1,9 +1,8 @@
 import dayjs from 'dayjs';
-import { type Transaction, type UpdateObject } from 'kysely';
 
 import { toTitleCase } from '@oyster/utils';
 
-import { db, type DB } from '../core.server';
+import { db } from '../core.server';
 import { Country, type DegreeType, FORMATTED_DEGREEE_TYPE } from '../core.ui';
 
 // "educations"
@@ -102,60 +101,4 @@ export function getMember(id: string, options: GetMemberOptions = {}) {
             .as('school');
         });
     });
-}
-
-export async function updatePersonalInformation(
-  trx: Transaction<DB>,
-  id: string,
-  {
-    birthdate,
-    birthdateNotification,
-    ethnicities,
-    gender,
-    genderPronouns,
-    hometown,
-    hometownCoordinates,
-  }: Pick<
-    UpdateObject<DB, 'students'>,
-    | 'birthdate'
-    | 'birthdateNotification'
-    | 'gender'
-    | 'genderPronouns'
-    | 'hometown'
-    | 'hometownCoordinates'
-  > & {
-    ethnicities: string[];
-  }
-) {
-  await trx
-    .updateTable('students')
-    .set({
-      birthdate,
-      birthdateNotification,
-      gender,
-      genderPronouns,
-      hometown,
-      hometownCoordinates,
-    })
-    .where('id', '=', id)
-    .execute();
-
-  await trx
-    .deleteFrom('memberEthnicities')
-    .where('studentId', '=', id)
-    .execute();
-
-  if (ethnicities && ethnicities.length) {
-    const ethnicitiesToInsert = ethnicities.map((ethnicity) => {
-      return {
-        countryCode: ethnicity,
-        studentId: id,
-      };
-    });
-
-    await trx
-      .insertInto('memberEthnicities')
-      .values(ethnicitiesToInsert)
-      .execute();
-  }
 }
