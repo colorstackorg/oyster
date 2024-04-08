@@ -1,7 +1,7 @@
 import {
-  type LoaderFunctionArgs,
-  json,
   type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -14,10 +14,10 @@ import { addLink } from 'app/shared/queries/events';
 import { Event } from '@oyster/types';
 import {
   Button,
-  Modal,
-  Input,
   Form,
   getActionErrors,
+  Input,
+  Modal,
   validateForm,
 } from '@oyster/ui';
 
