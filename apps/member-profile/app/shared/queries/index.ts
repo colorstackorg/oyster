@@ -159,19 +159,3 @@ export async function updatePersonalInformation(
       .execute();
   }
 }
-
-export async function updateSocialsInformation(
-  trx: Transaction<DB>,
-  id: string,
-  data: Pick<
-    UpdateObject<DB, 'students'>,
-    | 'calendlyUrl'
-    | 'githubUrl'
-    | 'instagramHandle'
-    | 'linkedInUrl'
-    | 'personalWebsiteUrl'
-    | 'twitterHandle'
-  >
-) {
-  await trx.updateTable('students').set(data).where('id', '=', id).execute();
-}
