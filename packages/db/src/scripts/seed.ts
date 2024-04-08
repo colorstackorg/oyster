@@ -1,4 +1,4 @@
-import { type Transaction, sql } from 'kysely';
+import { sql, type Transaction } from 'kysely';
 import readline from 'readline';
 import { z } from 'zod';
 

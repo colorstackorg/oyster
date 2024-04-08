@@ -9,11 +9,11 @@ import { type PropsWithChildren, type PropsWithoutRef } from 'react';
 import {
   CheckCircle,
   ExternalLink,
+  GitHub,
   type Icon,
   Instagram,
   Linkedin,
   Twitter,
-  GitHub,
   XCircle,
   Youtube,
 } from 'react-feather';

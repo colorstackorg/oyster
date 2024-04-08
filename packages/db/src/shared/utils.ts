@@ -1,4 +1,4 @@
-import { sql, type RawBuilder } from 'kysely';
+import { type RawBuilder, sql } from 'kysely';
 
 type Point = {
   x: number;

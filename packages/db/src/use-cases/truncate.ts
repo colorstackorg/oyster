@@ -1,4 +1,4 @@
-import { type Transaction, sql } from 'kysely';
+import { sql, type Transaction } from 'kysely';
 
 import { IS_PRODUCTION } from '../shared/env';
 import { type DB } from '../shared/types';
