@@ -104,22 +104,6 @@ export function getMember(id: string, options: GetMemberOptions = {}) {
     });
 }
 
-export async function updateGeneralInformation(
-  trx: Transaction<DB>,
-  id: string,
-  data: Pick<
-    UpdateObject<DB, 'students'>,
-    | 'currentLocation'
-    | 'currentLocationCoordinates'
-    | 'firstName'
-    | 'headline'
-    | 'lastName'
-    | 'preferredName'
-  >
-) {
-  await trx.updateTable('students').set(data).where('id', '=', id).execute();
-}
-
 export async function updatePersonalInformation(
   trx: Transaction<DB>,
   id: string,

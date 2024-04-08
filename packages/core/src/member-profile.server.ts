@@ -38,6 +38,7 @@ export { listMembersInDirectory } from './modules/member/queries/list-members-in
 export { changePrimaryEmail } from './modules/member/use-cases/change-primary-email';
 export { joinMemberDirectory } from './modules/member/use-cases/join-member-directory';
 export { updateAllowEmailShare } from './modules/member/use-cases/update-allow-email-share';
+export { updateMember } from './modules/member/use-cases/update-member';
 export { reportError } from './modules/sentry/use-cases/report-error';
 export { countMessagesSent } from './modules/slack/queries/count-messages-sent';
 export { claimSwagPack } from './modules/swag-pack/use-cases/claim-swag-pack';
