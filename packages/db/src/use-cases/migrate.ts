@@ -1,9 +1,9 @@
 import { promises as fs } from 'fs';
 import {
-  Migrator,
   type Kysely,
   type Migration,
   type MigrationProvider,
+  Migrator,
 } from 'kysely';
 import os from 'os';
 import path from 'path';

@@ -33,12 +33,8 @@ import {
   GenderField,
   HometownField,
 } from '../shared/components/profile.personal';
-import { db } from '../shared/core.server';
-import {
-  getMember,
-  getMemberEthnicities,
-  updatePersonalInformation,
-} from '../shared/queries';
+import { updateMember } from '../shared/core.server';
+import { getMember, getMemberEthnicities } from '../shared/queries';
 import {
   commitSession,
   ensureUserAuthenticated,
@@ -108,16 +104,9 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  await db.transaction().execute(async (trx) => {
-    await updatePersonalInformation(trx, user(session), {
-      birthdate: data.birthdate,
-      birthdateNotification: data.birthdateNotification,
-      ethnicities: data.ethnicities || [],
-      gender: data.gender,
-      genderPronouns: data.genderPronouns,
-      hometown: data.hometown,
-      hometownCoordinates: sql`point(${data.hometownLongitude}, ${data.hometownLatitude})`,
-    });
+  await updateMember({
+    data: { ...data, ethnicities: data.ethnicities || [] },
+    where: { id: user(session) },
   });
 
   toast(session, {

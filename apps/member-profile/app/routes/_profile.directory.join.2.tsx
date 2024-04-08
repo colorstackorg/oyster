@@ -10,7 +10,6 @@ import {
   useLoaderData,
   useNavigation,
 } from '@remix-run/react';
-import { sql } from 'kysely';
 import { z } from 'zod';
 
 import { nullableField, Student } from '@oyster/types';
@@ -25,12 +24,8 @@ import {
   HometownField,
 } from '../shared/components/profile.personal';
 import { Route } from '../shared/constants';
-import { db } from '../shared/core.server';
-import {
-  getMember,
-  getMemberEthnicities,
-  updatePersonalInformation,
-} from '../shared/queries';
+import { updateMember } from '../shared/core.server';
+import { getMember, getMemberEthnicities } from '../shared/queries';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -83,12 +78,9 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  await db.transaction().execute(async (trx) => {
-    await updatePersonalInformation(trx, user(session), {
-      ethnicities: data.ethnicities || [],
-      hometown: data.hometown,
-      hometownCoordinates: sql`point(${data.hometownLongitude}, ${data.hometownLatitude})`,
-    });
+  await updateMember({
+    data: { ...data, ethnicities: data.ethnicities || [] },
+    where: { id: user(session) },
   });
 
   return redirect(Route['/directory/join/3']);
