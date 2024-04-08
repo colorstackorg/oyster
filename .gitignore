@@ -19,6 +19,10 @@ node_modules
 
 .cache
 
+# Vite
+
+vite.config.ts.timestamp*
+
 # Build
 
 build

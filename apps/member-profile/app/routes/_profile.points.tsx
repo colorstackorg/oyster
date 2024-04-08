@@ -11,13 +11,12 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { sql } from 'kysely';
 import { type PropsWithoutRef } from 'react';
 import { Award, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { type CompletedActivity, Student } from '@oyster/types';
+import { type CompletedActivity } from '@oyster/types';
 import {
   Button,
   cx,
@@ -37,7 +36,12 @@ import {
 } from '../shared/components/empty-state';
 import { Route } from '../shared/constants';
 import { getTimezone } from '../shared/cookies.server';
-import { db, getTotalPoints } from '../shared/core.server';
+import {
+  db,
+  getPointsLeaderboard,
+  getTotalPoints,
+  listActivities,
+} from '../shared/core.server';
 import { track } from '../shared/mixpanel.server';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
 
@@ -69,6 +73,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     timezone: getTimezone(request),
   });
 
+  const occurredAfter = getTimeframeDate(
+    searchParams.timeframe,
+    searchParams.timezone
+  );
+
   const id = user(session);
 
   const [
@@ -84,7 +93,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
         searchParams.timezone
       ),
     }),
-    getPointsLeaderboard(id, searchParams),
+    getPointsLeaderboard({
+      limit: searchParams.leaderboardLimit,
+      where: {
+        memberId: id,
+        occurredAfter,
+      },
+    }),
     listActivities(),
   ]);
 
@@ -100,55 +115,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     student: { id },
     totalActivitiesCompleted,
   });
-}
-
-const LeaderboardPosition = Student.pick({
-  firstName: true,
-  id: true,
-  lastName: true,
-  profilePicture: true,
-}).extend({
-  me: z.coerce.boolean(),
-  points: z.coerce.number().min(0),
-  rank: z.coerce.number().min(1),
-});
-
-async function getPointsLeaderboard(
-  id: string,
-  { leaderboardLimit, timeframe, timezone }: PointsSearchParams
-) {
-  const occurredAfter = getTimeframeDate(timeframe, timezone);
-
-  const rows = await db
-    .with('positions', (db) => {
-      return db
-        .selectFrom('completedActivities')
-        .select([(eb) => eb.fn.sum<string>('points').as('points'), 'studentId'])
-        .$if(!!occurredAfter, (eb) => {
-          return eb.where('occurredAt', '>=', occurredAfter);
-        })
-        .groupBy('studentId')
-        .orderBy('points', 'desc')
-        .limit(leaderboardLimit);
-    })
-    .selectFrom('positions')
-    .leftJoin('students', 'students.id', 'positions.studentId')
-    .select([
-      'positions.points',
-      'students.id',
-      'students.firstName',
-      'students.lastName',
-      'students.profilePicture',
-      sql<boolean>`students.id = ${id}`.as('me'),
-      sql<string>`rank() over (order by positions.points desc)`.as('rank'),
-    ])
-    .orderBy('points', 'desc')
-    .orderBy('createdAt', 'desc')
-    .execute();
-
-  const leaderboard = LeaderboardPosition.array().parse(rows);
-
-  return leaderboard;
 }
 
 async function getActivityHistory(
@@ -240,17 +206,6 @@ function getTimeframeDate(
     case 'today':
       return now.startOf('day').toDate();
   }
-}
-
-async function listActivities() {
-  const activities = await db
-    .selectFrom('activities')
-    .select(['description', 'id', 'name', 'period', 'points', 'type'])
-    .where('deletedAt', 'is', null)
-    .orderBy('points', 'asc')
-    .execute();
-
-  return activities;
 }
 
 export default function PointsPage() {

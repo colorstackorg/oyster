@@ -9,6 +9,7 @@ import { type PropsWithChildren, type PropsWithoutRef } from 'react';
 import {
   CheckCircle,
   ExternalLink,
+  GitHub,
   type Icon,
   Instagram,
   Linkedin,
@@ -38,11 +39,11 @@ import { Card } from '../shared/components/card';
 import { Route } from '../shared/constants';
 import { getTimezone } from '../shared/cookies.server';
 import {
+  countEventAttendees,
   countMessagesSent,
   db,
   getActiveStreakLeaderboard,
   getActiveStreakLeaderboardPosition,
-  getEventsAttendedCount,
   getIpAddress,
 } from '../shared/core.server';
 import { setMixpanelProfile, track } from '../shared/mixpanel.server';
@@ -68,7 +69,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   ] = await Promise.all([
     getActiveStreakLeaderboard(),
     getStudent(id),
-    getEventsAttendedCount(id),
+    countEventAttendees({
+      where: { studentId: id },
+    }),
     countMessagesSent(id),
     getRecentActiveStatuses(id, timezone),
     getThisWeekActiveStatus(id, timezone),
@@ -707,6 +710,8 @@ function SocialsCard() {
         />
 
         <SocialItem Icon={Twitter} href="https://twitter.com/colorstackorg" />
+
+        <SocialItem Icon={GitHub} href="https://github.com/colorstackorg" />
 
         <SocialItem
           Icon={Youtube}

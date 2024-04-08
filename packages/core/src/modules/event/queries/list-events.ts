@@ -1,4 +1,4 @@
-import type { SelectExpression } from 'kysely';
+import { type SelectExpression } from 'kysely';
 
 import { type DB } from '@oyster/db';
 

@@ -1,7 +1,7 @@
-import { type Transaction, sql } from 'kysely';
-import { type DB } from 'kysely-codegen/dist/db';
+import { sql, type Transaction } from 'kysely';
 
 import { IS_PRODUCTION } from '../shared/env';
+import { type DB } from '../shared/types';
 
 /**
  * Truncates all tables in the database - wiping all rows, but does not affect

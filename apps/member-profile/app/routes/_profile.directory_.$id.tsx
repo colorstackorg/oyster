@@ -17,9 +17,9 @@ import { EducationExperienceItem } from '../shared/components/education-experien
 import { ExperienceList } from '../shared/components/profile';
 import { ENV } from '../shared/constants.server';
 import {
+  countEventAttendees,
   countMessagesSent,
   getActiveStreak,
-  getEventsAttendedCount,
   getIcebreakerResponses,
   getTotalPoints,
   job,
@@ -52,7 +52,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   ] = await Promise.all([
     getActiveStreak(memberId),
     getEducationExperiences(memberId),
-    getEventsAttendedCount(memberId),
+    countEventAttendees({
+      where: { studentId: memberId },
+    }),
     getIcebreakerResponses(memberId, [
       'icebreakerResponses.promptId',
       'icebreakerResponses.text',
