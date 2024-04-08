@@ -32,6 +32,7 @@ export { upsertIcebreakerResponses } from './modules/icebreaker/use-cases/upsert
 export { getAutocompletedCities } from './modules/location/queries/get-autocompleted-cities';
 export { getCityDetails } from './modules/location/queries/get-city-details';
 export { listEmails } from './modules/member/queries/list-emails';
+export { listMembersInDirectory } from './modules/member/queries/list-members-in-directory';
 export { joinMemberDirectory } from './modules/member/use-cases/join-member-directory';
 export { updateAllowEmailShare } from './modules/member/use-cases/update-allow-email-share';
 export { reportError } from './modules/sentry/use-cases/report-error';
