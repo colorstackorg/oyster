@@ -19,10 +19,11 @@ export { searchCrunchbaseOrganizations } from './modules/employment/queries/sear
 export { addWorkExperience } from './modules/employment/use-cases/add-work-experience';
 export { deleteWorkExperience } from './modules/employment/use-cases/delete-work-experience';
 export { editWorkExperience } from './modules/employment/use-cases/edit-work-experience';
+export { countEventAttendees } from './modules/event/queries/count-event-attendees';
 export { countPastEvents } from './modules/event/queries/count-past-events';
 export { countUpcomingEvents } from './modules/event/queries/count-upcoming-events';
 export { getEvent } from './modules/event/queries/get-event';
-export { getEventsAttendedCount } from './modules/event/queries/get-events-attended-count';
+export { listEventAttendees } from './modules/event/queries/list-event-attendees';
 export { isFeatureFlagEnabled } from './modules/feature-flag/queries/is-feature-flag-enabled';
 export { initializeFeatureFlagServer } from './modules/feature-flag/use-cases/initialize-feature-flag-server';
 export { getTotalPoints } from './modules/gamification/queries/get-total-points';
