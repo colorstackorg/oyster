@@ -1,6 +1,6 @@
 import { type Transaction, type UpdateObject } from 'kysely';
 
-import { db, point, type DB } from '@oyster/db';
+import { type DB, db, point } from '@oyster/db';
 import { type Student } from '@oyster/types';
 
 type UpdateMemberOptions = {

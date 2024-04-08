@@ -74,6 +74,13 @@ module.exports = {
       { blankLine: 'always', prev: '*', next: 'function' },
       { blankLine: 'always', prev: 'function', next: '*' },
     ],
+    'sort-imports': [
+      'error',
+      {
+        ignoreCase: true,
+        ignoreDeclarationSort: true,
+      },
+    ],
   },
   settings: {
     'import/internal-regex': '^@oyster/',
