@@ -216,6 +216,11 @@ function EventDropdown({ id }: EventInView) {
                 <Upload /> Import Attendees
               </Link>
             </Dropdown.Item>
+            <Dropdown.Item>
+              <Link to={generatePath(Route.ADD_EVENT_LINK, { id })}>
+                <Upload /> Add Event Link
+              </Link>
+            </Dropdown.Item>
           </Dropdown.List>
         </Table.Dropdown>
       )}

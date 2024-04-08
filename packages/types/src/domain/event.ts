@@ -23,6 +23,7 @@ export const Event = z.object({
   name: z.string().trim().min(1),
   startTime: z.coerce.date(),
   type: z.nativeEnum(EventType),
+  link: z.string(),
 });
 
 export const EventAttendee = z.object({
