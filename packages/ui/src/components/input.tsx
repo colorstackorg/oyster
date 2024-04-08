@@ -21,6 +21,7 @@ export type InputProps = Pick<
   | 'required'
   | 'type'
   | 'value'
+  | 'disabled'
 > & {
   type?: Extract<HTMLInputTypeAttribute, 'email' | 'number' | 'text'>;
 };
@@ -44,6 +45,7 @@ export const Input = React.forwardRef(
 export function getInputCn() {
   return cx(
     'w-full rounded-lg border border-gray-300 p-2',
+    'disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none',
     'focus:border-primary'
   );
 }
