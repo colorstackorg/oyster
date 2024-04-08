@@ -8,6 +8,8 @@
   "editor.quickSuggestions": { "strings": "on" },
   "eslint.workingDirectories": ["./apps/*", "./config/*", "./packages/*"],
   "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.preferGoToSourceDefinition": true,
   "tailwindCSS.experimental.configFile": "./config/tailwind/tailwind.config.js",
   "tailwindCSS.experimental.classRegex": [
     ["cx\\(([^)]+)\\)", "'([^']*)'"],
