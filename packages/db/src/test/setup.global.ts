@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, afterAll } from 'bun:test';
+import { afterAll, beforeAll, beforeEach } from 'bun:test';
 import { type Transaction } from 'kysely';
 import { type DB } from 'kysely-codegen/dist/db';
 
