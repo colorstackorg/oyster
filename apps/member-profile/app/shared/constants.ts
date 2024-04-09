@@ -58,4 +58,8 @@ export const Route = {
   '/profile/integrations': '/profile/integrations',
 } as const;
 
+export const GITHUB_API = 'https://api.github.com/user';
+export const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
+export const GITHUB_OAUTH_URL = 'https://github.com/login/oauth/authorize';
+
 export type Route = ExtractValue<typeof Route>;
