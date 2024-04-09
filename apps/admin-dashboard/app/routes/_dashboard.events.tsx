@@ -217,8 +217,8 @@ function EventDropdown({ id }: EventInView) {
               </Link>
             </Dropdown.Item>
             <Dropdown.Item>
-              <Link to={generatePath(Route.ADD_EVENT_LINK, { id })}>
-                <Upload /> Add Event Link
+              <Link to={generatePath(Route.ADD_RECORDING, { id })}>
+                <Upload /> Add Recording
               </Link>
             </Dropdown.Item>
           </Dropdown.List>

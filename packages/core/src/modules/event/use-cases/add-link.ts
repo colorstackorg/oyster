@@ -1,9 +1,9 @@
-import { db } from '../core.server';
+import { db } from '@/infrastructure/database';
 
 export async function addLink(id: string, link: string) {
   await db
     .updateTable('events')
-    .set({ eventLink: link })
+    .set({ recordingLink: link })
     .where('id', '=', id)
     .executeTakeFirst();
 }

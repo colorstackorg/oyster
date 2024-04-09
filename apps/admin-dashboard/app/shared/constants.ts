@@ -24,7 +24,7 @@ export const Route = {
   CREATE_EVENT: '/events/create',
   EVENTS: '/events',
   IMPORT_EVENT_ATTENDEES: '/events/:id/import',
-  ADD_EVENT_LINK: '/events/:id/add',
+  ADD_RECORDING: '/events/:id/add-recording',
 
   // Gamification
 

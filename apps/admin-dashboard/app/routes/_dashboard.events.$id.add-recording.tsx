@@ -7,9 +7,9 @@ import {
 import {
   Form as RemixForm,
   useActionData,
+  useLoaderData,
   useNavigate,
 } from '@remix-run/react';
-import { addLink } from 'app/shared/queries/events';
 
 import { Event } from '@oyster/types';
 import {
@@ -21,6 +21,7 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { addLink, getEvent } from '@/admin-dashboard.server';
 import { Route } from '../shared/constants';
 import {
   commitSession,
@@ -28,14 +29,22 @@ import {
   toast,
 } from '../shared/session.server';
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  const event = await getEvent(params.id as string, ['events.recordingLink']);
+
+  if (!event) {
+    throw new Response(null, { status: 404 });
+  }
+
+  return json({
+    event,
+  });
 }
 
 const CreateEventFormData = Event.pick({
-  link: true,
+  recordingLink: true,
 });
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -55,7 +64,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     });
   }
 
-  await addLink(params.id as string, data.link as string);
+  await addLink(params.id as string, data.recordingLink as string);
 
   toast(session, {
     message: `Link uploaded successfully.`,
@@ -70,6 +79,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 export default function AddEventLink() {
+  const { event } = useLoaderData<typeof loader>();
+  const defaultValue = event.recordingLink || null;
   const navigate = useNavigate();
 
   function onClose() {
@@ -82,22 +93,30 @@ export default function AddEventLink() {
         <Modal.Title>Add Event URL</Modal.Title>
         <Modal.CloseButton />
       </Modal.Header>
-      <Modal.Description>Please Add a link for the event</Modal.Description>
+      <Modal.Description>
+        Please add a recording link for the event
+      </Modal.Description>
+      <p>{defaultValue ? `Default Value: ${defaultValue}` : ''}</p>
 
       <AddEventLinkForm />
     </Modal>
   );
 }
 
-const { link } = CreateEventFormData.keyof().enum;
+const { recordingLink } = CreateEventFormData.keyof().enum;
 
 function AddEventLinkForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field error={errors.link} label="Link" labelFor={link} required>
-        <Input id={link} name={link} required />
+      <Form.Field
+        error={errors.recordingLink}
+        label="Recording Link"
+        labelFor={recordingLink}
+        required
+      >
+        <Input id={recordingLink} name={recordingLink} required />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>

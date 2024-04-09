@@ -21,9 +21,9 @@ export const Event = z.object({
   externalLink: z.string().url().nullable(),
   id: Entity.shape.id,
   name: z.string().trim().min(1),
+  recordingLink: z.string().url().nullable(),
   startTime: z.coerce.date(),
   type: z.nativeEnum(EventType),
-  link: z.string(),
 });
 
 export const EventAttendee = z.object({
