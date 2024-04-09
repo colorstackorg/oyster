@@ -24,3 +24,5 @@ export { uploadOnboardingSession } from './modules/onboarding-session/use-cases/
 export { createSurvey } from './modules/survey/use-cases/create-survey';
 export { importSurveyResponses } from './modules/survey/use-cases/import-survey-responses';
 export { parseCsv } from './shared/utils/csv.utils';
+export { listInterviewExperiences } from './modules/interview-experiences/use-cases/list-interview-experiences';
+export { uploadInterviewExperience } from './modules/interview-experiences/use-cases/upload-interview-experience';
