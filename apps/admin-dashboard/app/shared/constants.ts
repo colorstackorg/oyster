@@ -21,10 +21,10 @@ export const Route = {
 
   // Events
 
+  ADD_EVENT_RECORDING: '/events/:id/add-recording',
   CREATE_EVENT: '/events/create',
   EVENTS: '/events',
   IMPORT_EVENT_ATTENDEES: '/events/:id/import',
-  ADD_RECORDING: '/events/:id/add-recording',
 
   // Gamification
 

@@ -13,8 +13,8 @@ export { verifyOneTimeCode } from './modules/authentication/use-cases/verify-one
 export { createSchool } from './modules/education/use-cases/create-school';
 export { getEvent } from './modules/event/queries/get-event';
 export { listEvents } from './modules/event/queries/list-events';
+export { addEventRecordingLink } from './modules/event/use-cases/add-event-recording-link';
 export { createEvent } from './modules/event/use-cases/create-event';
-export { addLink } from './modules/event/use-cases/add-link';
 export { archiveActivity } from './modules/gamification/use-cases/archive-activity';
 export { editActivity } from './modules/gamification/use-cases/edit-activity';
 export { addIcebreakerPrompt } from './modules/icebreaker/use-cases/add-icebreaker-prompt';

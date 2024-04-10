@@ -8,5 +8,5 @@ export async function up(db: Kysely<any>) {
 }
 
 export async function down(db: Kysely<any>) {
-  await db.schema.alterTable('events').dropColumn('event_link').execute();
+  await db.schema.alterTable('events').dropColumn('recording_link').execute();
 }
