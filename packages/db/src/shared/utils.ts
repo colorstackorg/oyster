@@ -6,5 +6,5 @@ type Point = {
 };
 
 export function point({ x, y }: Point): RawBuilder<Point> {
-  return sql<Point>`(${x}, ${y})`;
+  return sql<Point>`point(${x}, ${y})`;
 }
