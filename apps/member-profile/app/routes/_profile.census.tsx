@@ -90,6 +90,7 @@ function CensusForm() {
 
   const submit = useSubmit();
 
+  const [hasGraduated, setHasGraduated] = useState<boolean | null>(null);
   const [hasInternship, setHasInternship] = useState<boolean>(false);
 
   return (
@@ -127,7 +128,9 @@ function CensusForm() {
             <option value={email}>{email}</option>
           </Select>
         </Form.Field>
+      </CensusSection>
 
+      <CensusSection title="Education">
         <Form.Field
           description="If you've received your Bachelor's degree, you are officially ColorStack Alumni!"
           error=""
@@ -137,130 +140,170 @@ function CensusForm() {
           <Radio.Group>
             <Radio
               color="lime-100"
-              id={'isInternationalStudent' + '1'}
+              id={'hasGraduated' + '1'}
               label="Yes"
-              name="isInternationalStudent"
+              name="hasGraduated"
+              onChange={(e) => setHasGraduated(e.currentTarget.value === '1')}
               required
               value="1"
             />
             <Radio
               color="pink-100"
-              id={'isInternationalStudent' + '0'}
+              id={'hasGraduated' + '0'}
               label="No"
-              name="isInternationalStudent"
+              name="hasGraduated"
+              onChange={(e) => setHasGraduated(e.currentTarget.value === '1')}
               required
               value="0"
             />
           </Radio.Group>
         </Form.Field>
+
+        {hasGraduated === false && (
+          <>
+            <Form.Field
+              description="What school do you currently attend?"
+              error=""
+              label="School"
+              labelFor="school"
+              required
+            >
+              <Input name="school" required />
+            </Form.Field>
+
+            <Form.Field
+              error=""
+              label="Are you an international student?"
+              required
+            >
+              <Radio.Group>
+                <Radio
+                  color="lime-100"
+                  id={'isInternationalStudent' + '1'}
+                  label="Yes"
+                  name="isInternationalStudent"
+                  required
+                  value="1"
+                />
+                <Radio
+                  color="pink-100"
+                  id={'isInternationalStudent' + '0'}
+                  label="No"
+                  name="isInternationalStudent"
+                  required
+                  value="0"
+                />
+              </Radio.Group>
+            </Form.Field>
+
+            <Form.Field
+              error=""
+              label="My confidence in computer science related school work has increased since joining ColorStack."
+              required
+            >
+              <AgreeRating name="confidenceRatingSchool" />
+            </Form.Field>
+
+            <Form.Field
+              error=""
+              label="I am confident that I will graduate with my tech related degree."
+              required
+            >
+              <AgreeRating name="confidenceRatingGraduating" />
+            </Form.Field>
+
+            <Form.Field
+              error=""
+              label="I am confident that I will graduate with a full time offer in tech."
+              required
+            >
+              <AgreeRating name="confidenceRatingFullTimeJob" />
+            </Form.Field>
+          </>
+        )}
       </CensusSection>
 
-      <CensusSection title="Internship Plans">
-        <Form.Field
-          error=""
-          label="Do you have an internship this summer?"
-          required
-        >
-          <Radio.Group>
-            <Radio
-              id={'hasInternship' + '1'}
-              label="Yes"
-              name="hasInternship"
-              onChange={(e) => setHasInternship(e.currentTarget.value === '1')}
-              required
-              value="1"
-            />
-            <Radio
-              id={'hasInternship' + '0'}
-              label="No"
-              name="hasInternship"
-              onChange={(e) => setHasInternship(e.currentTarget.value === '1')}
-              required
-              value="0"
-            />
-          </Radio.Group>
-        </Form.Field>
-
-        {hasInternship && (
+      {hasGraduated === false && (
+        <CensusSection title="Work Plans">
           <Form.Field
             error=""
-            label="What company will you be working with?"
-            labelFor="company"
+            label="Do you have an internship this summer?"
             required
           >
-            <Input name="company" required />
+            <Radio.Group>
+              <Radio
+                color="lime-100"
+                id={'hasInternship' + '1'}
+                label="Yes"
+                name="hasInternship"
+                onChange={(e) =>
+                  setHasInternship(e.currentTarget.value === '1')
+                }
+                required
+                value="1"
+              />
+              <Radio
+                color="pink-100"
+                id={'hasInternship' + '0'}
+                label="No"
+                name="hasInternship"
+                onChange={(e) =>
+                  setHasInternship(e.currentTarget.value === '1')
+                }
+                required
+                value="0"
+              />
+            </Radio.Group>
           </Form.Field>
-        )}
 
-        {hasInternship && (
+          {hasInternship && (
+            <Form.Field
+              error=""
+              label="What company will you be working with?"
+              labelFor="company"
+              required
+            >
+              <Input name="company" required />
+            </Form.Field>
+          )}
+
+          {hasInternship && (
+            <Form.Field
+              error=""
+              label="If you received multiple offers, list out the additional companies."
+              labelFor="additionalCompanies"
+            >
+              <Input name="additionalCompanies" />
+            </Form.Field>
+          )}
+
+          <Form.Field
+            description="This will help us plan for our in-person events this summer."
+            error=""
+            label="What city will you be in this summer?"
+            labelFor="location"
+            required
+          >
+            <CityCombobox
+              defaultLatitude={undefined}
+              defaultLongitude={undefined}
+              defaultValue={undefined}
+              name="location"
+              latitudeName="locationLatitude"
+              longitudeName="locationLongitude"
+              required
+            />
+          </Form.Field>
+
           <Form.Field
             error=""
-            label="If you received multiple offers, list out the additional companies."
-            labelFor="additionalCompanies"
-          >
-            <Input name="additionalCompanies" />
-          </Form.Field>
-        )}
-
-        <Form.Field
-          description="This will help us plan for our in-person events this summer."
-          error=""
-          label="What city will you be in this summer?"
-          labelFor="location"
-          required
-        >
-          <CityCombobox
-            defaultLatitude={undefined}
-            defaultLongitude={undefined}
-            defaultValue={undefined}
-            name="location"
-            latitudeName="locationLatitude"
-            longitudeName="locationLongitude"
+            label="My confidence in technical interviewing has increased since joining ColorStack."
             required
-          />
-        </Form.Field>
-
-        <Form.Field
-          error=""
-          label="I am confident that I will graduate with a full time offer in tech."
-          required
-        >
-          <AgreeRating name="confidenceRatingFullTimeJob" />
-        </Form.Field>
-      </CensusSection>
-
-      <CensusSection title="School Information">
-        <Form.Field error="" label="School" labelFor="school" required>
-          <Input name="school" required />
-        </Form.Field>
-
-        <Form.Field error="" label="Are you an international student?" required>
-          <Radio.Group>
-            <Radio
-              id={'isInternationalStudent' + '1'}
-              label="Yes"
-              name="isInternationalStudent"
-              required
-              value="1"
-            />
-            <Radio
-              id={'isInternationalStudent' + '0'}
-              label="No"
-              name="isInternationalStudent"
-              required
-              value="0"
-            />
-          </Radio.Group>
-        </Form.Field>
-
-        <Form.Field
-          error=""
-          label="I am confident that I will graduate with my tech related degree."
-          required
-        >
-          <AgreeRating name="confidenceRatingGraduating" />
-        </Form.Field>
-      </CensusSection>
+          >
+            <AgreeRating name="confidenceRatingInterviewing" />
+          </Form.Field>
+        </CensusSection>
+      )}
 
       <CensusSection last title="ColorStack Feedback">
         <Form.Field
@@ -311,22 +354,6 @@ function CensusForm() {
             minRows={2}
             required
           />
-        </Form.Field>
-
-        <Form.Field
-          error=""
-          label="My confidence in computer science related school work has increased since joining ColorStack."
-          required
-        >
-          <AgreeRating name="confidenceRatingSchool" />
-        </Form.Field>
-
-        <Form.Field
-          error=""
-          label="My confidence in technical interviewing has increased since joining ColorStack."
-          required
-        >
-          <AgreeRating name="confidenceRatingInterviewing" />
         </Form.Field>
 
         <Form.Field
