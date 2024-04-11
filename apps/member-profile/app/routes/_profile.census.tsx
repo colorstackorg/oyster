@@ -30,7 +30,7 @@ import { iife } from '@oyster/utils';
 
 import { CityCombobox } from '../shared/components/city-combobox';
 import { Route } from '../shared/constants';
-import { getMember } from '../shared/queries';
+import { listEmails } from '../shared/core.server';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -38,12 +38,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const memberId = user(session);
 
-  const [member] = await Promise.all([
-    getMember(memberId).select(['email']).executeTakeFirstOrThrow(),
-  ]);
+  const [emails] = await Promise.all([listEmails(memberId)]);
+
+  const primaryEmail = emails.find((email) => {
+    return !!email.primary;
+  })!;
 
   return json({
-    email: member.email,
+    emails,
+    primaryEmail: primaryEmail.email,
   });
 }
 
@@ -86,7 +89,7 @@ export default function CensusPage() {
 }
 
 function CensusForm() {
-  const { email } = useLoaderData<typeof loader>();
+  const { emails, primaryEmail } = useLoaderData<typeof loader>();
 
   const submit = useSubmit();
 
@@ -103,29 +106,30 @@ function CensusForm() {
         <Form.Field
           description={
             <Text>
-              If you'd like to change your primary email, please do that{' '}
+              If you'd like to change your primary email, please add that email{' '}
               <Link
                 className="link"
                 target="_blank"
                 to={Route['/profile/emails']}
               >
                 here
-              </Link>
-              .
+              </Link>{' '}
+              first.
             </Text>
           }
           error=""
           label="Email"
           labelFor="email"
+          required
         >
-          <Select
-            defaultValue={email}
-            disabled
-            id="email"
-            name="email"
-            required
-          >
-            <option value={email}>{email}</option>
+          <Select defaultValue={primaryEmail} id="email" name="email" required>
+            {emails.map(({ email }) => {
+              return (
+                <option key={email} value={email}>
+                  {email}
+                </option>
+              );
+            })}
           </Select>
         </Form.Field>
       </CensusSection>
