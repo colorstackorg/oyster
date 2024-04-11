@@ -44,7 +44,6 @@ export const Input = React.forwardRef(
 export function getInputCn() {
   return cx(
     'w-full rounded-lg border border-gray-300 p-2',
-    'focus:border-primary',
-    'disabled:bg-gray-100 disabled:text-gray-500'
+    'focus:border-primary'
   );
 }
