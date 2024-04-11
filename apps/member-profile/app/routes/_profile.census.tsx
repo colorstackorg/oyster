@@ -2,10 +2,13 @@ import {
   type ActionFunctionArgs,
   json,
   type LoaderFunctionArgs,
+  redirect,
 } from '@remix-run/node';
+import { createCookie } from '@remix-run/node';
 import {
   Link,
   Form as RemixForm,
+  useActionData,
   useLoaderData,
   useSubmit,
 } from '@remix-run/react';
@@ -18,6 +21,7 @@ import {
   Divider,
   type FieldProps,
   Form,
+  getActionErrors,
   Input,
   Radio,
   Select,
@@ -31,7 +35,18 @@ import { iife } from '@oyster/utils';
 import { CityCombobox } from '../shared/components/city-combobox';
 import { Route } from '../shared/constants';
 import { listEmails } from '../shared/core.server';
+import { SubmitCensusResponseInput } from '../shared/core.ui';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
+
+const censusCookie = createCookie('census', {
+  maxAge: 60 * 60 * 24 * 30,
+  secure: true,
+});
+
+const CensusCookieData = z.union([
+  SubmitCensusResponseInput.partial(),
+  SubmitCensusResponseInput.pick({ email: true }),
+]);
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -40,22 +55,48 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const [emails] = await Promise.all([listEmails(memberId)]);
 
-  const primaryEmail = emails.find((email) => {
-    return !!email.primary;
-  })!;
+  const cookieHeader = request.headers.get('Cookie');
+  const parsedCookie = await censusCookie.parse(cookieHeader);
 
-  return json({
-    emails,
-    primaryEmail: primaryEmail.email,
-  });
+  let cookie: z.infer<typeof CensusCookieData>;
+
+  try {
+    cookie = CensusCookieData.parse(parsedCookie);
+  } catch (e) {
+    const { email } = emails.find((email) => {
+      return !!email.primary;
+    })!;
+
+    cookie = {
+      email,
+    };
+  }
+
+  return json(
+    {
+      emails,
+      primaryEmail: cookie.email,
+    },
+    {
+      headers: {
+        'Set-Cookie': await censusCookie.serialize(cookie),
+      },
+    }
+  );
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   await ensureUserAuthenticated(request);
 
   const form = await request.formData();
+  const values = Object.fromEntries(form);
 
-  const { data, errors } = validateForm(z.object({}), Object.fromEntries(form));
+  const { data, errors } =
+    values.intent === 'save'
+      ? validateForm(SubmitCensusResponseInput.partial(), values)
+      : validateForm(SubmitCensusResponseInput, values);
+
+  console.log(values, data, errors);
 
   if (!data) {
     return json({
@@ -64,12 +105,33 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
+  if (values.intent === 'save') {
+    const cookieHeader = request.headers.get('Cookie');
+    const parsedCookie = await censusCookie.parse(cookieHeader);
+
+    const cookie = {
+      ...CensusCookieData.parse(parsedCookie),
+      ...data,
+    };
+
+    return json(
+      {
+        error: '',
+        errors,
+      },
+      {
+        headers: {
+          'Set-Cookie': await censusCookie.serialize(cookie),
+        },
+      }
+    );
+  }
+
+  // Need to handle the actual submit as well...
+
   await db.transaction().execute(async (_) => {});
 
-  return json({
-    error: '',
-    errors,
-  });
+  return redirect(Route['/census/confirmation']);
 }
 
 export default function CensusPage() {
@@ -102,6 +164,8 @@ const CensusContext = React.createContext<CensusContext>({
   setHasInternship: (_: boolean) => {},
 });
 
+const keys = SubmitCensusResponseInput.keyof().enum;
+
 function CensusForm() {
   const submit = useSubmit();
 
@@ -123,15 +187,18 @@ function CensusForm() {
         }}
       >
         <BasicSection />
-        <EducationSection />
+        {/* <EducationSection />
         <WorkSection />
-        <ColorStackFeedbackSection />
+        <ColorStackFeedbackSection /> */}
+
+        <input name="intent" type="hidden" value="save" />
       </CensusContext.Provider>
     </RemixForm>
   );
 }
 
 function BasicSection() {
+  const { errors } = getActionErrors(useActionData<typeof action>());
   const { emails, primaryEmail } = useLoaderData<typeof loader>();
 
   return (
@@ -139,23 +206,29 @@ function BasicSection() {
       <Form.Field
         description={
           <Text>
-            If you'd like to change your primary email, please add that email{' '}
+            If you'd like to change your primary email but it's not listed
+            below, please add it{' '}
             <Link
               className="link"
               target="_blank"
-              to={Route['/profile/emails']}
+              to={Route['/profile/emails/add/start']}
             >
               here
             </Link>{' '}
             first.
           </Text>
         }
-        error=""
+        error={errors.email}
         label="Email"
-        labelFor="email"
+        labelFor={keys.email}
         required
       >
-        <Select defaultValue={primaryEmail} id="email" name="email" required>
+        <Select
+          defaultValue={primaryEmail}
+          id={keys.email}
+          name={keys.email}
+          required
+        >
           {emails.map(({ email }) => {
             return (
               <option key={email} value={email}>
