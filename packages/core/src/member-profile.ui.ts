@@ -32,5 +32,9 @@ export {
   IcebreakerResponse,
 } from './modules/icebreaker/icebreaker.types';
 export { Country } from './modules/location/location.types';
+export {
+  ChangePrimaryEmailInput,
+  ListMembersInDirectoryWhere,
+} from './modules/member/member.types';
 export { ClaimSwagPackInput } from './modules/swag-pack/swag-pack.types';
 export { Environment, ListSearchParams } from './shared/types';
