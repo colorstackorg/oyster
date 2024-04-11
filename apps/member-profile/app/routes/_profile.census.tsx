@@ -15,6 +15,7 @@ import { z } from 'zod';
 import { db } from '@oyster/db';
 import {
   Checkbox,
+  Divider,
   type FieldProps,
   Form,
   Input,
@@ -22,8 +23,8 @@ import {
   Select,
   Text,
   Textarea,
-  validateForm,
   useRevalidateOnFocus,
+  validateForm,
 } from '@oyster/ui';
 import { iife } from '@oyster/utils';
 
@@ -126,217 +127,253 @@ function CensusForm() {
             <option value={email}>{email}</option>
           </Select>
         </Form.Field>
+
+        <Form.Field
+          description="If you've received your Bachelor's degree, you are officially ColorStack Alumni!"
+          error=""
+          label="Have you already graduated?"
+          required
+        >
+          <Radio.Group>
+            <Radio
+              color="lime-100"
+              id={'isInternationalStudent' + '1'}
+              label="Yes"
+              name="isInternationalStudent"
+              required
+              value="1"
+            />
+            <Radio
+              color="pink-100"
+              id={'isInternationalStudent' + '0'}
+              label="No"
+              name="isInternationalStudent"
+              required
+              value="0"
+            />
+          </Radio.Group>
+        </Form.Field>
       </CensusSection>
 
-      <Form.Field error="" label="School" labelFor="school" required>
-        <Input name="school" required />
-      </Form.Field>
-
-      <Form.Field error="" label="Are you an international student?" required>
-        <Radio.Group>
-          <Radio
-            id={'isInternationalStudent' + '1'}
-            label="Yes"
-            name="isInternationalStudent"
-            required
-            value="1"
-          />
-          <Radio
-            id={'isInternationalStudent' + '0'}
-            label="No"
-            name="isInternationalStudent"
-            required
-            value="0"
-          />
-        </Radio.Group>
-      </Form.Field>
-
-      <Form.Field
-        error=""
-        label="Do you have an internship this summer?"
-        required
-      >
-        <Radio.Group>
-          <Radio
-            id={'hasInternship' + '1'}
-            label="Yes"
-            name="hasInternship"
-            onChange={(e) => setHasInternship(e.currentTarget.value === '1')}
-            required
-            value="1"
-          />
-          <Radio
-            id={'hasInternship' + '0'}
-            label="No"
-            name="hasInternship"
-            onChange={(e) => setHasInternship(e.currentTarget.value === '1')}
-            required
-            value="0"
-          />
-        </Radio.Group>
-      </Form.Field>
-
-      {hasInternship && (
+      <CensusSection title="Internship Plans">
         <Form.Field
           error=""
-          label="What company will you be working with?"
-          labelFor="company"
+          label="Do you have an internship this summer?"
           required
         >
-          <Input name="company" required />
+          <Radio.Group>
+            <Radio
+              id={'hasInternship' + '1'}
+              label="Yes"
+              name="hasInternship"
+              onChange={(e) => setHasInternship(e.currentTarget.value === '1')}
+              required
+              value="1"
+            />
+            <Radio
+              id={'hasInternship' + '0'}
+              label="No"
+              name="hasInternship"
+              onChange={(e) => setHasInternship(e.currentTarget.value === '1')}
+              required
+              value="0"
+            />
+          </Radio.Group>
         </Form.Field>
-      )}
 
-      {hasInternship && (
+        {hasInternship && (
+          <Form.Field
+            error=""
+            label="What company will you be working with?"
+            labelFor="company"
+            required
+          >
+            <Input name="company" required />
+          </Form.Field>
+        )}
+
+        {hasInternship && (
+          <Form.Field
+            error=""
+            label="If you received multiple offers, list out the additional companies."
+            labelFor="additionalCompanies"
+          >
+            <Input name="additionalCompanies" />
+          </Form.Field>
+        )}
+
+        <Form.Field
+          description="This will help us plan for our in-person events this summer."
+          error=""
+          label="What city will you be in this summer?"
+          labelFor="location"
+          required
+        >
+          <CityCombobox
+            defaultLatitude={undefined}
+            defaultLongitude={undefined}
+            defaultValue={undefined}
+            name="location"
+            latitudeName="locationLatitude"
+            longitudeName="locationLongitude"
+            required
+          />
+        </Form.Field>
+
         <Form.Field
           error=""
-          label="If you received multiple offers, list out the additional companies."
-          labelFor="additionalCompanies"
+          label="I am confident that I will graduate with a full time offer in tech."
+          required
         >
-          <Input name="additionalCompanies" />
+          <AgreeRating name="confidenceRatingFullTimeJob" />
         </Form.Field>
-      )}
+      </CensusSection>
 
-      <Form.Field
-        description="This will help us plan for our in-person events this summer."
-        error=""
-        label="What city will you be in this summer?"
-        labelFor="location"
-        required
-      >
-        <CityCombobox
-          defaultLatitude={undefined}
-          defaultLongitude={undefined}
-          defaultValue={undefined}
-          name="location"
-          latitudeName="locationLatitude"
-          longitudeName="locationLongitude"
+      <CensusSection title="School Information">
+        <Form.Field error="" label="School" labelFor="school" required>
+          <Input name="school" required />
+        </Form.Field>
+
+        <Form.Field error="" label="Are you an international student?" required>
+          <Radio.Group>
+            <Radio
+              id={'isInternationalStudent' + '1'}
+              label="Yes"
+              name="isInternationalStudent"
+              required
+              value="1"
+            />
+            <Radio
+              id={'isInternationalStudent' + '0'}
+              label="No"
+              name="isInternationalStudent"
+              required
+              value="0"
+            />
+          </Radio.Group>
+        </Form.Field>
+
+        <Form.Field
+          error=""
+          label="I am confident that I will graduate with my tech related degree."
           required
-        />
-      </Form.Field>
+        >
+          <AgreeRating name="confidenceRatingGraduating" />
+        </Form.Field>
+      </CensusSection>
 
-      <Form.Field
-        error=""
-        label="Which resources have been the most beneficial to you?"
-        required
-      >
-        {iife(() => {
-          const resources = [
-            'AlgoExpert',
-            'Wiki',
-            'Fam Fridays',
-            'Slack',
-            'Newsletter',
-            'InterviewPen',
-            'CompSciLib',
-          ];
-
-          return (
-            <Checkbox.Group>
-              {resources.map((resource) => {
-                return (
-                  <Checkbox
-                    key={resource}
-                    defaultChecked={undefined}
-                    id={'currentResources' + resource}
-                    label={resource}
-                    name="currentResources"
-                    value={resource}
-                  />
-                );
-              })}
-            </Checkbox.Group>
-          );
-        })}
-      </Form.Field>
-
-      <Form.Field
-        error=""
-        label="Which resources would you like to see added?"
-        labelFor="futureResources"
-        required
-      >
-        <Textarea
-          defaultValue={undefined}
-          id="futureResources"
-          name="futureResources"
-          minRows={2}
+      <CensusSection last title="ColorStack Feedback">
+        <Form.Field
+          error=""
+          label="Which resources have been the most beneficial to you?"
           required
-        />
-      </Form.Field>
+        >
+          {iife(() => {
+            const resources = [
+              'AlgoExpert',
+              'Wiki',
+              'Fam Fridays',
+              'Slack',
+              'Newsletter',
+              'InterviewPen',
+              'CompSciLib',
+            ];
 
-      <Form.Field
-        error=""
-        label="My confidence in computer science related school work has increased since joining ColorStack."
-        required
-      >
-        <AgreeRating name="confidenceRatingSchool" />
-      </Form.Field>
+            return (
+              <Checkbox.Group>
+                {resources.map((resource) => {
+                  return (
+                    <Checkbox
+                      key={resource}
+                      defaultChecked={undefined}
+                      id={'currentResources' + resource}
+                      label={resource}
+                      name="currentResources"
+                      value={resource}
+                    />
+                  );
+                })}
+              </Checkbox.Group>
+            );
+          })}
+        </Form.Field>
 
-      <Form.Field
-        error=""
-        label="My confidence in technical interviewing has increased since joining ColorStack."
-        required
-      >
-        <AgreeRating name="confidenceRatingInterviewing" />
-      </Form.Field>
+        <Form.Field
+          error=""
+          label="Which resources would you like to see added?"
+          labelFor="futureResources"
+          required
+        >
+          <Textarea
+            defaultValue={undefined}
+            id="futureResources"
+            name="futureResources"
+            minRows={2}
+            required
+          />
+        </Form.Field>
 
-      <Form.Field
-        error=""
-        label="I am confident that I will graduate with a full time offer in tech."
-        required
-      >
-        <AgreeRating name="confidenceRatingFullTimeJob" />
-      </Form.Field>
+        <Form.Field
+          error=""
+          label="My confidence in computer science related school work has increased since joining ColorStack."
+          required
+        >
+          <AgreeRating name="confidenceRatingSchool" />
+        </Form.Field>
 
-      <Form.Field
-        error=""
-        label="I am confident that I will graduate with my tech related degree."
-        required
-      >
-        <AgreeRating name="confidenceRatingGraduating" />
-      </Form.Field>
+        <Form.Field
+          error=""
+          label="My confidence in technical interviewing has increased since joining ColorStack."
+          required
+        >
+          <AgreeRating name="confidenceRatingInterviewing" />
+        </Form.Field>
 
-      <Form.Field
-        error=""
-        label="As a ColorStack member, what are you looking for most in the ColorStack community?"
-        required
-      >
-        {iife(() => {
-          const categories = [
-            'Career development (interview prep, resume review, etc.)',
-            'Access to opportunities',
-            'Academic help',
-            'Fellowship + networking',
-          ];
+        <Form.Field
+          error=""
+          label="As a ColorStack member, what are you looking for most in the ColorStack community?"
+          required
+        >
+          {iife(() => {
+            const categories = [
+              'Career development (interview prep, resume review, etc.)',
+              'Access to opportunities',
+              'Academic help',
+              'Fellowship + networking',
+            ];
 
-          return (
-            <Radio.Group>
-              {categories.map((category) => {
-                return (
-                  <Radio
-                    key={category}
-                    defaultChecked={undefined}
-                    id={'wants' + category}
-                    label={category}
-                    name="wants"
-                    required
-                    value={category}
-                  />
-                );
-              })}
-            </Radio.Group>
-          );
-        })}
-      </Form.Field>
+            return (
+              <Radio.Group>
+                {categories.map((category) => {
+                  return (
+                    <Radio
+                      key={category}
+                      defaultChecked={undefined}
+                      id={'wants' + category}
+                      label={category}
+                      name="wants"
+                      required
+                      value={category}
+                    />
+                  );
+                })}
+              </Radio.Group>
+            );
+          })}
+        </Form.Field>
+      </CensusSection>
     </RemixForm>
   );
 }
 
 function CensusSection({
   children,
+  last = false,
   title,
-}: PropsWithChildren<{ title: string }>) {
+}: PropsWithChildren<{
+  last?: boolean;
+  title: string;
+}>) {
   return (
     <section className="flex flex-col gap-[inherit]">
       <Text className="-mb-4" color="gray-500" variant="xl">
@@ -344,6 +381,8 @@ function CensusSection({
       </Text>
 
       {children}
+
+      {!last && <Divider />}
     </section>
   );
 }
