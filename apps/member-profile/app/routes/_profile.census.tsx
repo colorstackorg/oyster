@@ -9,7 +9,7 @@ import {
   useLoaderData,
   useSubmit,
 } from '@remix-run/react';
-import { type PropsWithChildren, useState } from 'react';
+import React, { type PropsWithChildren, useContext, useState } from 'react';
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
@@ -88,6 +88,20 @@ export default function CensusPage() {
   );
 }
 
+type CensusContext = {
+  hasGraduated: boolean | null;
+  hasInternship: boolean | null;
+  setHasGraduated(value: boolean): void;
+  setHasInternship(value: boolean): void;
+};
+
+const CensusContext = React.createContext<CensusContext>({
+  hasGraduated: null,
+  hasInternship: null,
+  setHasGraduated: (_: boolean) => {},
+  setHasInternship: (_: boolean) => {},
+});
+
 function CensusForm() {
   const submit = useSubmit();
 
@@ -100,31 +114,22 @@ function CensusForm() {
       method="post"
       onBlur={(e) => submit(e.currentTarget)}
     >
-      <BasicSection />
-
-      <EducationSection
-        hasGraduated={hasGraduated}
-        setHasGraduated={setHasGraduated}
-      />
-
-      <WorkSection
-        hasGraduated={hasGraduated}
-        hasInternship={hasInternship}
-        setHasInternship={setHasInternship}
-      />
-
-      <ColorStackFeedbackSection hasGraduated={hasGraduated} />
+      <CensusContext.Provider
+        value={{
+          hasGraduated,
+          hasInternship,
+          setHasGraduated,
+          setHasInternship,
+        }}
+      >
+        <BasicSection />
+        <EducationSection />
+        <WorkSection />
+        <ColorStackFeedbackSection />
+      </CensusContext.Provider>
     </RemixForm>
   );
 }
-
-type HasGraduatedProps = {
-  hasGraduated: boolean | null;
-};
-
-type HasInternshipProps = {
-  hasInternship: boolean | null;
-};
 
 function BasicSection() {
   const { emails, primaryEmail } = useLoaderData<typeof loader>();
@@ -182,10 +187,9 @@ function BasicSection() {
   );
 }
 
-function EducationSection({
-  hasGraduated,
-  setHasGraduated,
-}: HasGraduatedProps & { setHasGraduated(value: boolean): void }) {
+function EducationSection() {
+  const { hasGraduated, setHasGraduated } = useContext(CensusContext);
+
   return (
     <CensusSection title="Education">
       <Form.Field
@@ -309,12 +313,10 @@ function EducationSection({
   );
 }
 
-function WorkSection({
-  hasGraduated,
-  hasInternship,
-  setHasInternship,
-}: HasGraduatedProps &
-  HasInternshipProps & { setHasInternship(value: boolean): void }) {
+function WorkSection() {
+  const { hasGraduated, hasInternship, setHasInternship } =
+    useContext(CensusContext);
+
   if (hasGraduated === null) {
     return null;
   }
@@ -440,7 +442,9 @@ function WorkSection({
   );
 }
 
-function ColorStackFeedbackSection({ hasGraduated }: HasGraduatedProps) {
+function ColorStackFeedbackSection() {
+  const { hasGraduated } = useContext(CensusContext);
+
   return (
     <CensusSection last title="ColorStack Feedback">
       {hasGraduated ? (
