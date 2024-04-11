@@ -447,7 +447,36 @@ function ColorStackFeedbackSection() {
 
   return (
     <CensusSection last title="ColorStack Feedback">
-      {hasGraduated ? (
+      <Form.Field
+        error=""
+        label="Which resources have been the most beneficial to you?"
+        required
+      >
+        <Checkbox.Group>
+          {[
+            'AlgoExpert',
+            'CompSciLib',
+            'Fam Fridays',
+            'InterviewPen',
+            'Newsletter',
+            'Slack',
+            'Wiki',
+          ].map((resource) => {
+            return (
+              <Checkbox
+                key={resource}
+                defaultChecked={undefined}
+                id={'currentResources' + resource}
+                label={resource}
+                name="currentResources"
+                value={resource}
+              />
+            );
+          })}
+        </Checkbox.Group>
+      </Form.Field>
+
+      {hasGraduated && (
         <>
           <Form.Field
             error=""
@@ -488,37 +517,10 @@ function ColorStackFeedbackSection() {
             />
           </Form.Field>
         </>
-      ) : (
-        <>
-          <Form.Field
-            error=""
-            label="Which resources have been the most beneficial to you?"
-            required
-          >
-            <Checkbox.Group>
-              {[
-                'AlgoExpert',
-                'CompSciLib',
-                'Fam Fridays',
-                'InterviewPen',
-                'Newsletter',
-                'Slack',
-                'Wiki',
-              ].map((resource) => {
-                return (
-                  <Checkbox
-                    key={resource}
-                    defaultChecked={undefined}
-                    id={'currentResources' + resource}
-                    label={resource}
-                    name="currentResources"
-                    value={resource}
-                  />
-                );
-              })}
-            </Checkbox.Group>
-          </Form.Field>
+      )}
 
+      {hasGraduated === false && (
+        <>
           <Form.Field
             error=""
             label="Which resources would you like to see added?"
