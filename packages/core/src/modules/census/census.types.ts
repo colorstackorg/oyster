@@ -7,6 +7,8 @@ import { BooleanInput, multiSelectField, Student } from '@oyster/types';
 const CensusRating = z.coerce.number().min(1).max(5);
 
 export const BaseCensusResponse = z.object({
+  companyId: z.string().trim().optional(),
+  companyName: z.string().trim().optional(),
   currentResources: multiSelectField(z.string().trim()),
   email: Student.shape.email,
   hasGraduated: BooleanInput,

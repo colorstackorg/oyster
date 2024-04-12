@@ -43,6 +43,8 @@ import {
 } from '../shared/core.server';
 import {
   BaseCensusResponse,
+  CompanyCombobox,
+  CompanyFieldProvider,
   SchoolCombobox,
   SubmitCensusResponseData,
 } from '../shared/core.ui';
@@ -619,14 +621,20 @@ function WorkSection() {
       </Form.Field>
 
       {hasInternship && (
-        <Form.Field
-          error=""
-          label="What company will you be working with?"
-          labelFor="company"
-          required
-        >
-          <Input name="company" required />
-        </Form.Field>
+        <CompanyFieldProvider>
+          <Form.Field
+            error={errors.companyId}
+            label="What company will you be working with?"
+            labelFor={keys.companyId}
+            required
+          >
+            <CompanyCombobox
+              defaultCompanyName={progress.companyName}
+              defaultCrunchbaseId=""
+              name={keys.companyId}
+            />
+          </Form.Field>
+        </CompanyFieldProvider>
       )}
 
       {hasInternship && (
