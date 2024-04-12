@@ -72,6 +72,11 @@ async function getCensusCookie(request: Request) {
   return cookie;
 }
 
+const CensusFormIntent = {
+  SAVE: 'save',
+  SUBMIT: 'submit',
+} as const;
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
@@ -126,7 +131,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }),
   };
 
-  const isSave = form.get('intent') === 'save';
+  const isSave = form.get('intent') === CensusFormIntent.SAVE;
 
   const { data, errors } = isSave
     ? validateForm(CensusCookieObject, values)
@@ -216,7 +221,11 @@ function CensusForm() {
   const { progress } = useLoaderData<typeof loader>();
   const { error } = getActionErrors(useActionData<typeof action>());
   const submit = useSubmit();
-  const submitting = useNavigation().state === 'submitting';
+  const { state, formData } = useNavigation();
+
+  const submitting =
+    state === 'submitting' &&
+    formData?.get('intent') === CensusFormIntent.SUBMIT;
 
   const [hasGraduated, setHasGraduated] = useState<boolean | null>(
     progress.hasGraduated ?? null
@@ -256,12 +265,12 @@ function CensusForm() {
           loading={submitting}
           name="intent"
           type="submit"
-          value="submit"
+          value={CensusFormIntent.SUBMIT}
         >
           Submit
         </Button>
 
-        <input name="intent" type="hidden" value="save" />
+        <input name="intent" type="hidden" value={CensusFormIntent.SAVE} />
       </CensusContext.Provider>
     </RemixForm>
   );
