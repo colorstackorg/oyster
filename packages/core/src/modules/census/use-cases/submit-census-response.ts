@@ -24,7 +24,7 @@ export async function submitCensusResponse(
     // we can emit an event AFTER the transaction is successful.
 
     if (data.email !== member.email) {
-      const { emitPrimaryEmailChanged: emit } = await changePrimaryEmail(
+      const { emit } = await changePrimaryEmail(
         memberId,
         { email: data.email },
         { trx }

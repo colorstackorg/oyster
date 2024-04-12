@@ -9,6 +9,19 @@ type ChangePrimaryEmailOptions = {
   trx?: Transaction<DB>;
 };
 
+/**
+ * Changes the primary email of a member. This also emits an event to process
+ * the email change in the background (ie: Airtable, Slack).
+ *
+ * If an `options.trx` is provided, it will use that transaction to perform the
+ * update. Additionally, it will NOT emit the event since we have no way of
+ * knowing if the transaction will be committed or rolled back. Instead, this
+ * function returns a function to emit the event manually.
+ *
+ * @param id - ID of the member to change the primary email for.
+ * @param input - The new primary email (object).
+ * @param options - Options for the operation.
+ */
 export async function changePrimaryEmail(
   id: string,
   input: ChangePrimaryEmailInput,
@@ -45,7 +58,7 @@ export async function changePrimaryEmail(
       .execute();
   });
 
-  function emitPrimaryEmailChanged() {
+  function emit() {
     job('member_email.primary.changed', {
       previousEmail,
       studentId: id,
@@ -53,10 +66,10 @@ export async function changePrimaryEmail(
   }
 
   if (!options.trx) {
-    emitPrimaryEmailChanged();
+    emit();
   }
 
   return {
-    emitPrimaryEmailChanged,
+    emit,
   };
 }
