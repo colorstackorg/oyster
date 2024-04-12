@@ -9,7 +9,7 @@ const CensusRating = z.coerce.number().min(1).max(5);
 export const BaseCensusResponse = z.object({
   currentResources: multiSelectField(z.string().trim()),
   email: Student.shape.email,
-  hasGraduated: z.boolean(),
+  hasGraduated: BooleanInput,
   schoolId: Student.shape.schoolId,
   schoolName: z.string().trim().optional(),
   summerLocation: z.string().trim(),
