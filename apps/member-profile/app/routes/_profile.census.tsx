@@ -132,11 +132,6 @@ export async function action({ request }: ActionFunctionArgs) {
     ? validateForm(CensusCookieObject, values)
     : validateForm(SubmitCensusResponseData_, values);
 
-  console.log({
-    isSave,
-    ...(data ? { data } : { errors }),
-  });
-
   if (!data) {
     return json({
       error: '',
