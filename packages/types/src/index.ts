@@ -27,6 +27,7 @@ export { ScholarshipRecipient, ScholarshipType } from './domain/scholarship';
 export {
   ActivationRequirement,
   MemberEthnicity,
+  MemberType,
   Student,
   StudentActiveStatus,
   StudentEmail,
@@ -53,6 +54,6 @@ export {
   ISO8601Date,
   NullishString,
   Timezone,
-  checkboxField,
+  multiSelectField,
   nullableField,
 } from './shared/zod';

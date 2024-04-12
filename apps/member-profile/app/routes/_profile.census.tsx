@@ -15,9 +15,9 @@ import {
 } from '@remix-run/react';
 import React, { type PropsWithChildren, useContext, useState } from 'react';
 import { match } from 'ts-pattern';
-import { type z } from 'zod';
+import { z } from 'zod';
 
-import { db } from '@oyster/db';
+import { BooleanInput } from '@oyster/types';
 import {
   Button,
   Checkbox,
@@ -36,8 +36,12 @@ import {
 
 import { CityCombobox } from '../shared/components/city-combobox';
 import { Route } from '../shared/constants';
-import { listEmails } from '../shared/core.server';
-import { SchoolCombobox, SubmitCensusResponseInput } from '../shared/core.ui';
+import { listEmails, submitCensusResponse } from '../shared/core.server';
+import {
+  BaseCensusResponse,
+  SchoolCombobox,
+  SubmitCensusResponseData,
+} from '../shared/core.ui';
 import { getMember } from '../shared/queries';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
 
@@ -46,7 +50,19 @@ const censusCookie = createCookie('census', {
   secure: true,
 });
 
-const CensusCookieObject = SubmitCensusResponseInput.partial();
+const CensusCookieObject = z
+  .object({})
+  .merge(SubmitCensusResponseData.options[0])
+  .merge(SubmitCensusResponseData.options[1])
+  .extend({ hasGraduated: BooleanInput })
+  .partial();
+
+const SubmitCensusResponseData_ = z
+  .object({})
+  .merge(SubmitCensusResponseData.options[0].partial())
+  .merge(SubmitCensusResponseData.options[1].partial())
+  .merge(BaseCensusResponse)
+  .extend({ hasGraduated: BooleanInput });
 
 async function getCensusCookie(request: Request) {
   const cookieHeader = request.headers.get('Cookie');
@@ -99,7 +115,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
   const form = await request.formData();
 
@@ -114,7 +130,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const { data, errors } = isSave
     ? validateForm(CensusCookieObject, values)
-    : validateForm(SubmitCensusResponseInput, values);
+    : validateForm(SubmitCensusResponseData_, values);
 
   if (!data) {
     return json({
@@ -144,15 +160,20 @@ export async function action({ request }: ActionFunctionArgs) {
     );
   }
 
-  // Need to handle the actual submit as well...
+  try {
+    await submitCensusResponse(user(session), data as SubmitCensusResponseData);
 
-  await db.transaction().execute(async (_) => {});
-
-  return redirect(Route['/census/confirmation'], {
-    headers: {
-      'Set-Cookie': await censusCookie.serialize('', { maxAge: 1 }),
-    },
-  });
+    return redirect(Route['/census/confirmation'], {
+      headers: {
+        'Set-Cookie': await censusCookie.serialize('', { maxAge: 1 }),
+      },
+    });
+  } catch (e) {
+    return json({
+      error: (e as Error).message,
+      errors,
+    });
+  }
 }
 
 export default function CensusPage() {
@@ -189,7 +210,7 @@ const CensusContext = React.createContext<CensusContext>({
   setIsOtherSchool: (_: boolean) => {},
 });
 
-const keys = SubmitCensusResponseInput.keyof().enum;
+const keys = SubmitCensusResponseData_.keyof().enum;
 
 function CensusForm() {
   const { progress } = useLoaderData<typeof loader>();

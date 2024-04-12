@@ -1,37 +1,47 @@
 import { z } from 'zod';
 
-import { BooleanInput, checkboxField, Student } from '@oyster/types';
+import { BooleanInput, multiSelectField, Student } from '@oyster/types';
 
 // Use Cases
 
 const CensusRating = z.coerce.number().min(1).max(5);
 
-export const SubmitCensusResponseInput = z.object({
-  alumniProgramming: z.string().trim(),
-  communityNeeds: z.string().trim(),
-  confidenceRatingFullTimeJob: CensusRating,
-  confidenceRatingFullTimePreparedness: CensusRating,
-  confidenceRatingGraduating: CensusRating,
-  confidenceRatingInterviewing: CensusRating,
-  confidenceRatingSchool: CensusRating,
-  currentResources: checkboxField(z.string().trim()),
+export const BaseCensusResponse = z.object({
+  currentResources: multiSelectField(z.string().trim()),
   email: Student.shape.email,
-  futureResources: z.string().trim(),
-  joinAlumni: BooleanInput,
   hasGraduated: BooleanInput,
-  hasInternship: BooleanInput,
-  hasPartnerRole: BooleanInput,
-  hasTechnicalDegree: BooleanInput,
-  hasTechnicalRole: BooleanInput,
-  isInternational: BooleanInput,
-  memberId: Student.shape.id,
   schoolId: Student.shape.schoolId,
-  schoolName: z.string().trim(),
+  schoolName: z.string().trim().optional(),
   summerLocation: z.string().trim(),
   summerLocationLatitude: z.coerce.number(),
   summerLocationLongitude: z.coerce.number(),
 });
 
-export type SubmitCensusResponseInput = z.infer<
-  typeof SubmitCensusResponseInput
->;
+export const AlumniCensusResponse = BaseCensusResponse.extend({
+  alumniProgramming: z.string().trim(),
+  confidenceRatingFullTimePreparedness: CensusRating,
+  joinAlumni: BooleanInput,
+  hasGraduated: z.preprocess((value) => value === '1', z.literal(true)),
+  hasPartnerRole: BooleanInput,
+  hasTechnicalDegree: BooleanInput,
+  hasTechnicalRole: BooleanInput,
+});
+
+export const UndergraduateCensusResponse = BaseCensusResponse.extend({
+  communityNeeds: z.string().trim(),
+  confidenceRatingFullTimeJob: CensusRating,
+  confidenceRatingGraduating: CensusRating,
+  confidenceRatingInterviewing: CensusRating,
+  confidenceRatingSchool: CensusRating,
+  futureResources: z.string().trim(),
+  hasGraduated: z.preprocess((value) => value === '1', z.literal(false)),
+  hasInternship: BooleanInput,
+  isInternational: BooleanInput,
+});
+
+export const SubmitCensusResponseData = z.discriminatedUnion('hasGraduated', [
+  AlumniCensusResponse,
+  UndergraduateCensusResponse,
+]);
+
+export type SubmitCensusResponseData = z.infer<typeof SubmitCensusResponseData>;
