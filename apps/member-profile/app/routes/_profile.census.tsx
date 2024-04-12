@@ -15,9 +15,10 @@ import {
 } from '@remix-run/react';
 import React, { type PropsWithChildren, useContext, useState } from 'react';
 import { match } from 'ts-pattern';
-import { type z } from 'zod';
+import { z } from 'zod';
 
 import { db } from '@oyster/db';
+import { BooleanInput } from '@oyster/types';
 import {
   Button,
   Checkbox,
@@ -37,7 +38,11 @@ import {
 import { CityCombobox } from '../shared/components/city-combobox';
 import { Route } from '../shared/constants';
 import { listEmails } from '../shared/core.server';
-import { SchoolCombobox, SubmitCensusResponseInput } from '../shared/core.ui';
+import {
+  BaseCensusResponse,
+  SchoolCombobox,
+  SubmitCensusResponseInput,
+} from '../shared/core.ui';
 import { getMember } from '../shared/queries';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
 
@@ -46,7 +51,19 @@ const censusCookie = createCookie('census', {
   secure: true,
 });
 
-const CensusCookieObject = SubmitCensusResponseInput.partial();
+const CensusCookieObject = z
+  .object({})
+  .merge(SubmitCensusResponseInput.options[0])
+  .merge(SubmitCensusResponseInput.options[1])
+  .extend({ hasGraduated: BooleanInput })
+  .partial();
+
+const SubmitCensusResponseInput_ = z
+  .object({})
+  .merge(SubmitCensusResponseInput.options[0].partial())
+  .merge(SubmitCensusResponseInput.options[1].partial())
+  .merge(BaseCensusResponse)
+  .extend({ hasGraduated: BooleanInput });
 
 async function getCensusCookie(request: Request) {
   const cookieHeader = request.headers.get('Cookie');
@@ -114,7 +131,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const { data, errors } = isSave
     ? validateForm(CensusCookieObject, values)
-    : validateForm(SubmitCensusResponseInput, values);
+    : validateForm(SubmitCensusResponseInput_, values);
 
   if (!data) {
     return json({
@@ -189,7 +206,7 @@ const CensusContext = React.createContext<CensusContext>({
   setIsOtherSchool: (_: boolean) => {},
 });
 
-const keys = SubmitCensusResponseInput.keyof().enum;
+const keys = SubmitCensusResponseInput_.keyof().enum;
 
 function CensusForm() {
   const { progress } = useLoaderData<typeof loader>();
