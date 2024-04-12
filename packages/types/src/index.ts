@@ -53,5 +53,6 @@ export {
   ISO8601Date,
   NullishString,
   Timezone,
+  checkboxField,
   nullableField,
 } from './shared/zod';

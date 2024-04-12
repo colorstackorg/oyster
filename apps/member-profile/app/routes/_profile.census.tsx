@@ -87,14 +87,19 @@ export async function action({ request }: ActionFunctionArgs) {
   await ensureUserAuthenticated(request);
 
   const form = await request.formData();
-  const values = Object.fromEntries(form);
 
-  const { data, errors } =
-    values.intent === 'save'
-      ? validateForm(SaveCensusProgressInput, values)
-      : validateForm(SubmitCensusResponseInput, values);
+  const values = {
+    ...Object.fromEntries(form),
+    currentResources: form.getAll('currentResources'),
+  };
 
-  console.log(values, data);
+  const isSave = form.get('intent') === 'save';
+
+  const { data, errors } = isSave
+    ? validateForm(SaveCensusProgressInput, values)
+    : validateForm(SubmitCensusResponseInput, values);
+
+  console.log(values);
 
   if (!data) {
     return json({
@@ -103,7 +108,7 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  if (values.intent === 'save') {
+  if (isSave) {
     const cookieHeader = request.headers.get('Cookie');
     const parsedCookie = await censusCookie.parse(cookieHeader);
 
@@ -193,8 +198,8 @@ function CensusForm() {
       >
         <BasicSection />
         <EducationSection />
-        {/* <WorkSection /> */}
-        {/* <ColorStackFeedbackSection /> */}
+        <WorkSection />
+        <ColorStackFeedbackSection />
 
         <input name="intent" type="hidden" value="save" />
       </CensusContext.Provider>
@@ -410,6 +415,9 @@ function EducationSection() {
 }
 
 function WorkSection() {
+  const { progress } = useLoaderData<typeof loader>();
+  const { errors } = getActionErrors(useActionData<typeof action>());
+
   const { hasGraduated, hasInternship, setHasInternship } =
     useContext(CensusContext);
 
@@ -420,24 +428,26 @@ function WorkSection() {
   return hasGraduated ? (
     <CensusSection title="Work Plans">
       <Form.Field
-        error=""
+        error={errors.hasTechnicalRole}
         label="Have you accepted a full-time offer in a technical role?"
         required
       >
         <Radio.Group>
           <Radio
             color="lime-100"
-            id={'hasTechnicalRole' + '1'}
+            defaultChecked={progress.hasTechnicalRole === true}
+            id={keys.hasTechnicalRole + '1'}
             label="Yes"
-            name="hasTechnicalRole"
+            name={keys.hasTechnicalRole}
             required
             value="1"
           />
           <Radio
             color="pink-100"
-            id={'hasTechnicalRole' + '0'}
+            defaultChecked={progress.hasTechnicalRole === false}
+            id={keys.hasTechnicalRole + '0'}
             label="No"
-            name="hasTechnicalRole"
+            name={keys.hasTechnicalRole}
             required
             value="0"
           />
@@ -445,24 +455,26 @@ function WorkSection() {
       </Form.Field>
 
       <Form.Field
-        error=""
+        error={errors.hasPartnerRole}
         label="Do you work for (or will you be joining) a ColorStack partner?"
         required
       >
         <Radio.Group>
           <Radio
             color="lime-100"
-            id={'hasRoleWithPartner' + '1'}
+            defaultChecked={progress.hasPartnerRole === true}
+            id={keys.hasPartnerRole + '1'}
             label="Yes"
-            name="hasRoleWithPartner"
+            name={keys.hasPartnerRole}
             required
             value="1"
           />
           <Radio
             color="pink-100"
-            id={'hasRoleWithPartner' + '0'}
+            defaultChecked={progress.hasPartnerRole === false}
+            id={keys.hasPartnerRole + '0'}
             label="No"
-            name="hasRoleWithPartner"
+            name={keys.hasPartnerRole}
             required
             value="0"
           />
@@ -470,35 +482,40 @@ function WorkSection() {
       </Form.Field>
 
       <Form.Field
-        error=""
+        error={errors.confidenceRatingFullTimePreparedness}
         label="I feel more prepared for a full-time job because of ColorStack."
         required
       >
-        <AgreeRating name="confidenceRatingGraduating" />
+        <AgreeRating
+          defaultValue={progress.confidenceRatingFullTimePreparedness}
+          name={keys.confidenceRatingFullTimePreparedness}
+        />
       </Form.Field>
     </CensusSection>
   ) : (
     <CensusSection title="Work Plans">
       <Form.Field
-        error=""
+        error={errors.hasInternship}
         label="Do you have an internship this summer?"
         required
       >
         <Radio.Group>
           <Radio
             color="lime-100"
-            id={'hasInternship' + '1'}
+            defaultChecked={progress.hasInternship === true}
+            id={keys.hasInternship + '1'}
             label="Yes"
-            name="hasInternship"
+            name={keys.hasInternship}
             onChange={(e) => setHasInternship(e.currentTarget.value === '1')}
             required
             value="1"
           />
           <Radio
             color="pink-100"
-            id={'hasInternship' + '0'}
+            defaultChecked={progress.hasInternship === false}
+            id={keys.hasInternship + '0'}
             label="No"
-            name="hasInternship"
+            name={keys.hasInternship}
             onChange={(e) => setHasInternship(e.currentTarget.value === '1')}
             required
             value="0"
@@ -528,23 +545,29 @@ function WorkSection() {
       )}
 
       <Form.Field
-        error=""
+        error={errors.confidenceRatingInterviewing}
         label="My confidence in technical interviewing has increased since joining ColorStack."
         required
       >
-        <AgreeRating name="confidenceRatingInterviewing" />
+        <AgreeRating
+          defaultValue={progress.confidenceRatingInterviewing}
+          name={keys.confidenceRatingInterviewing}
+        />
       </Form.Field>
     </CensusSection>
   );
 }
 
 function ColorStackFeedbackSection() {
+  const { progress } = useLoaderData<typeof loader>();
+  const { errors } = getActionErrors(useActionData<typeof action>());
+
   const { hasGraduated } = useContext(CensusContext);
 
   return (
     <CensusSection last title="ColorStack Feedback">
       <Form.Field
-        error=""
+        error={errors.currentResources}
         label="Which resources have been the most beneficial to you?"
         required
       >
@@ -560,11 +583,11 @@ function ColorStackFeedbackSection() {
           ].map((resource) => {
             return (
               <Checkbox
+                defaultChecked={progress.currentResources?.includes(resource)}
+                id={keys.currentResources + resource}
                 key={resource}
-                defaultChecked={undefined}
-                id={'currentResources' + resource}
                 label={resource}
-                name="currentResources"
+                name={keys.currentResources}
                 value={resource}
               />
             );
@@ -575,24 +598,26 @@ function ColorStackFeedbackSection() {
       {hasGraduated && (
         <>
           <Form.Field
-            error=""
+            error={errors.joinAlumni}
             label="Would you join and be active in a postgrad/alumni ColorStack community?"
             required
           >
             <Radio.Group>
               <Radio
                 color="lime-100"
-                id={'joinAlumni' + '1'}
+                defaultChecked={progress.joinAlumni === true}
+                id={keys.joinAlumni + '1'}
                 label="Yes"
-                name="joinAlumni"
+                name={keys.joinAlumni}
                 required
                 value="1"
               />
               <Radio
                 color="pink-100"
-                id={'joinAlumni' + '0'}
+                defaultChecked={progress.joinAlumni === false}
+                id={keys.joinAlumni + '0'}
                 label="No"
-                name="joinAlumni"
+                name={keys.joinAlumni}
                 required
                 value="0"
               />
@@ -600,14 +625,15 @@ function ColorStackFeedbackSection() {
           </Form.Field>
 
           <Form.Field
-            error=""
+            error={errors.alumniProgramming}
             label="What type of programming would you like to see in a ColorStack alumni community?"
+            labelFor={keys.alumniProgramming}
             required
           >
             <Textarea
-              defaultValue={undefined}
-              id="alumniProgramming"
-              name="alumniProgramming"
+              defaultValue={progress.alumniProgramming}
+              id={keys.alumniProgramming}
+              name={keys.alumniProgramming}
               minRows={2}
               required
             />
@@ -618,49 +644,45 @@ function ColorStackFeedbackSection() {
       {hasGraduated === false && (
         <>
           <Form.Field
-            error=""
+            error={errors.futureResources}
             label="Which resources would you like to see added?"
-            labelFor="futureResources"
+            labelFor={keys.futureResources}
             required
           >
             <Textarea
-              defaultValue={undefined}
-              id="futureResources"
-              name="futureResources"
+              defaultValue={progress.futureResources}
+              id={keys.futureResources}
+              name={keys.futureResources}
               minRows={2}
               required
             />
           </Form.Field>
 
           <Form.Field
-            error=""
+            error={errors.communityNeeds}
             label="As a ColorStack member, what are you looking for most in the ColorStack community?"
             required
           >
-            {iife(() => {
-              return (
-                <Radio.Group>
-                  {[
-                    'Career development (interview prep, resume review, etc.)',
-                    'Access to opportunities',
-                    'Academic help',
-                    'Fellowship + networking',
-                  ].map((category) => {
-                    return (
-                      <Radio
-                        key={category}
-                        defaultChecked={undefined}
-                        id={'wants' + category}
-                        label={category}
-                        name="wants"
-                        required
-                        value={category}
-                      />
-                    );
-                  })}
-                </Radio.Group>
-              );
-            })}
+            <Radio.Group>
+              {[
+                'Career development (interview prep, resume review, etc.)',
+                'Access to opportunities',
+                'Academic help',
+                'Fellowship + networking',
+              ].map((category) => {
+                return (
+                  <Radio
+                    key={category}
+                    defaultChecked={undefined}
+                    id={'wants' + category}
+                    label={category}
+                    name="wants"
+                    required
+                    value={category}
+                  />
+                );
+              })}
+            </Radio.Group>
           </Form.Field>
         </>
       )}
