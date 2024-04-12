@@ -2,22 +2,29 @@ import {
   type ActionFunctionArgs,
   json,
   type LoaderFunctionArgs,
+  redirect,
 } from '@remix-run/node';
+import { createCookie } from '@remix-run/node';
 import {
   Link,
   Form as RemixForm,
+  useActionData,
   useLoaderData,
+  useNavigation,
   useSubmit,
 } from '@remix-run/react';
 import React, { type PropsWithChildren, useContext, useState } from 'react';
-import { z } from 'zod';
+import { match } from 'ts-pattern';
+import { type z } from 'zod';
 
 import { db } from '@oyster/db';
 import {
+  Button,
   Checkbox,
   Divider,
   type FieldProps,
   Form,
+  getActionErrors,
   Input,
   Radio,
   Select,
@@ -26,12 +33,28 @@ import {
   useRevalidateOnFocus,
   validateForm,
 } from '@oyster/ui';
-import { iife } from '@oyster/utils';
 
 import { CityCombobox } from '../shared/components/city-combobox';
 import { Route } from '../shared/constants';
 import { listEmails } from '../shared/core.server';
+import { SchoolCombobox, SubmitCensusResponseInput } from '../shared/core.ui';
+import { getMember } from '../shared/queries';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
+
+const censusCookie = createCookie('census', {
+  maxAge: 60 * 60 * 24 * 30,
+  secure: true,
+});
+
+const CensusCookieObject = SubmitCensusResponseInput.partial();
+
+async function getCensusCookie(request: Request) {
+  const cookieHeader = request.headers.get('Cookie');
+  const parsedCookie = await censusCookie.parse(cookieHeader);
+  const cookie = CensusCookieObject.parse(parsedCookie);
+
+  return cookie;
+}
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -40,14 +63,39 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const [emails] = await Promise.all([listEmails(memberId)]);
 
-  const primaryEmail = emails.find((email) => {
-    return !!email.primary;
-  })!;
+  let cookie: z.infer<typeof CensusCookieObject>;
 
-  return json({
-    emails,
-    primaryEmail: primaryEmail.email,
-  });
+  try {
+    cookie = await getCensusCookie(request);
+  } catch (e) {
+    const { email } = emails.find((email) => {
+      return !!email.primary;
+    })!;
+
+    const { schoolId, school: schoolName } = await getMember(memberId, {
+      school: true,
+    })
+      .select(['students.schoolId'])
+      .executeTakeFirstOrThrow();
+
+    cookie = {
+      email,
+      schoolId: schoolId || undefined,
+      schoolName: schoolName || undefined,
+    };
+  }
+
+  return json(
+    {
+      emails,
+      progress: cookie,
+    },
+    {
+      headers: {
+        'Set-Cookie': await censusCookie.serialize(cookie),
+      },
+    }
+  );
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -55,7 +103,18 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await request.formData();
 
-  const { data, errors } = validateForm(z.object({}), Object.fromEntries(form));
+  const values = {
+    ...Object.fromEntries(form),
+    ...(!!form.get('currentResources') && {
+      currentResources: form.getAll('currentResources'),
+    }),
+  };
+
+  const isSave = form.get('intent') === 'save';
+
+  const { data, errors } = isSave
+    ? validateForm(CensusCookieObject, values)
+    : validateForm(SubmitCensusResponseInput, values);
 
   if (!data) {
     return json({
@@ -64,11 +123,35 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
+  if (isSave) {
+    const existingCookie = await getCensusCookie(request);
+
+    const cookie = {
+      ...existingCookie,
+      ...data,
+    };
+
+    return json(
+      {
+        error: '',
+        errors,
+      },
+      {
+        headers: {
+          'Set-Cookie': await censusCookie.serialize(cookie),
+        },
+      }
+    );
+  }
+
+  // Need to handle the actual submit as well...
+
   await db.transaction().execute(async (_) => {});
 
-  return json({
-    error: '',
-    errors,
+  return redirect(Route['/census/confirmation'], {
+    headers: {
+      'Set-Cookie': await censusCookie.serialize('', { maxAge: 1 }),
+    },
   });
 }
 
@@ -91,22 +174,38 @@ export default function CensusPage() {
 type CensusContext = {
   hasGraduated: boolean | null;
   hasInternship: boolean | null;
+  isOtherSchool: boolean;
   setHasGraduated(value: boolean): void;
   setHasInternship(value: boolean): void;
+  setIsOtherSchool(value: boolean): void;
 };
 
 const CensusContext = React.createContext<CensusContext>({
   hasGraduated: null,
   hasInternship: null,
+  isOtherSchool: false,
   setHasGraduated: (_: boolean) => {},
   setHasInternship: (_: boolean) => {},
+  setIsOtherSchool: (_: boolean) => {},
 });
 
-function CensusForm() {
-  const submit = useSubmit();
+const keys = SubmitCensusResponseInput.keyof().enum;
 
-  const [hasGraduated, setHasGraduated] = useState<boolean | null>(null);
-  const [hasInternship, setHasInternship] = useState<boolean>(false);
+function CensusForm() {
+  const { progress } = useLoaderData<typeof loader>();
+  const { error } = getActionErrors(useActionData<typeof action>());
+  const submit = useSubmit();
+  const submitting = useNavigation().state === 'submitting';
+
+  const [hasGraduated, setHasGraduated] = useState<boolean | null>(
+    progress.hasGraduated ?? null
+  );
+
+  const [hasInternship, setHasInternship] = useState<boolean>(
+    progress.hasInternship ?? false
+  );
+
+  const [isOtherSchool, setIsOtherSchool] = useState<boolean>(false);
 
   return (
     <RemixForm
@@ -118,44 +217,67 @@ function CensusForm() {
         value={{
           hasGraduated,
           hasInternship,
+          isOtherSchool,
           setHasGraduated,
           setHasInternship,
+          setIsOtherSchool,
         }}
       >
         <BasicSection />
         <EducationSection />
         <WorkSection />
         <ColorStackFeedbackSection />
+
+        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+
+        <Button
+          fill
+          loading={submitting}
+          name="intent"
+          type="submit"
+          value="submit"
+        >
+          Submit
+        </Button>
+
+        <input name="intent" type="hidden" value="save" />
       </CensusContext.Provider>
     </RemixForm>
   );
 }
 
 function BasicSection() {
-  const { emails, primaryEmail } = useLoaderData<typeof loader>();
+  const { emails, progress } = useLoaderData<typeof loader>();
+  const { errors } = getActionErrors(useActionData<typeof action>());
 
   return (
     <CensusSection title="Basic Information">
       <Form.Field
         description={
           <Text>
-            If you'd like to change your primary email, please add that email{' '}
+            If you'd like to change your primary email but it's not listed
+            below, please add it{' '}
             <Link
               className="link"
               target="_blank"
-              to={Route['/profile/emails']}
+              to={Route['/profile/emails/add/start']}
             >
               here
             </Link>{' '}
             first.
           </Text>
         }
-        error=""
+        error={errors.email}
         label="Email"
-        labelFor="email"
+        labelFor={keys.email}
         required
       >
-        <Select defaultValue={primaryEmail} id="email" name="email" required>
+        <Select
+          defaultValue={progress.email}
+          id={keys.email}
+          name={keys.email}
+          required
+        >
           {emails.map(({ email }) => {
             return (
               <option key={email} value={email}>
@@ -168,18 +290,18 @@ function BasicSection() {
 
       <Form.Field
         description="This will help us plan for our in-person events this summer."
-        error=""
+        error={errors.summerLocation}
         label="What city will you be in this summer?"
-        labelFor="location"
+        labelFor={keys.summerLocation}
         required
       >
         <CityCombobox
-          defaultLatitude={undefined}
-          defaultLongitude={undefined}
-          defaultValue={undefined}
-          name="location"
-          latitudeName="locationLatitude"
-          longitudeName="locationLongitude"
+          defaultLatitude={progress.summerLocationLatitude}
+          defaultLongitude={progress.summerLocationLongitude}
+          defaultValue={progress.summerLocation}
+          name={keys.summerLocation}
+          latitudeName={keys.summerLocationLatitude}
+          longitudeName={keys.summerLocationLongitude}
           required
         />
       </Form.Field>
@@ -188,31 +310,37 @@ function BasicSection() {
 }
 
 function EducationSection() {
-  const { hasGraduated, setHasGraduated } = useContext(CensusContext);
+  const { progress } = useLoaderData<typeof loader>();
+  const { errors } = getActionErrors(useActionData<typeof action>());
+
+  const { hasGraduated, isOtherSchool, setHasGraduated, setIsOtherSchool } =
+    useContext(CensusContext);
 
   return (
     <CensusSection title="Education">
       <Form.Field
         description="If you've received your Bachelor's degree, you are officially ColorStack Alumni!"
-        error=""
+        error={errors.hasGraduated}
         label="Have you already graduated?"
         required
       >
         <Radio.Group>
           <Radio
             color="lime-100"
-            id={'hasGraduated' + '1'}
+            defaultChecked={progress.hasGraduated === true}
+            id={keys.hasGraduated + '1'}
             label="Yes"
-            name="hasGraduated"
+            name={keys.hasGraduated}
             onChange={(e) => setHasGraduated(e.currentTarget.value === '1')}
             required
             value="1"
           />
           <Radio
             color="pink-100"
-            id={'hasGraduated' + '0'}
+            defaultChecked={progress.hasGraduated === false}
+            id={keys.hasGraduated + '0'}
             label="No"
-            name="hasGraduated"
+            name={keys.hasGraduated}
             onChange={(e) => setHasGraduated(e.currentTarget.value === '1')}
             required
             value="0"
@@ -222,24 +350,26 @@ function EducationSection() {
 
       {hasGraduated === true && (
         <Form.Field
-          error=""
+          error={errors.hasTechnicalDegree}
           label="Did you graduate with a Computer Science (or related) degree?"
           required
         >
           <Radio.Group>
             <Radio
               color="lime-100"
-              id={'hasTechnicalDegree' + '1'}
+              defaultChecked={progress.hasTechnicalDegree === true}
+              id={keys.hasTechnicalDegree + '1'}
               label="Yes"
-              name="hasTechnicalDegree"
+              name={keys.hasTechnicalDegree}
               required
               value="1"
             />
             <Radio
               color="pink-100"
-              id={'hasTechnicalDegree' + '0'}
+              defaultChecked={progress.hasTechnicalDegree === false}
+              id={keys.hasTechnicalDegree + '0'}
               label="No"
-              name="hasTechnicalDegree"
+              name={keys.hasTechnicalDegree}
               required
               value="0"
             />
@@ -251,33 +381,58 @@ function EducationSection() {
         <>
           <Form.Field
             description="What school do you currently attend?"
-            error=""
+            error={errors.schoolId}
             label="School"
-            labelFor="school"
+            labelFor={keys.schoolId}
             required
           >
-            <Input name="school" required />
+            <SchoolCombobox
+              defaultValue={
+                progress.schoolId && progress.schoolName
+                  ? { id: progress.schoolId, name: progress.schoolName }
+                  : progress.schoolName
+                    ? { id: 'other', name: 'Other' }
+                    : undefined
+              }
+              name={keys.schoolId}
+              onSelect={(e) => {
+                setIsOtherSchool(e.currentTarget.value === 'other');
+              }}
+            />
+
+            {isOtherSchool && (
+              <Input
+                className="mt-2"
+                defaultValue={progress.schoolName}
+                id={keys.schoolName}
+                name={keys.schoolName}
+                placeholder="Enter school name here..."
+                required
+              />
+            )}
           </Form.Field>
 
           <Form.Field
-            error=""
+            error={errors.isInternational}
             label="Are you an international student?"
             required
           >
             <Radio.Group>
               <Radio
                 color="lime-100"
-                id={'isInternationalStudent' + '1'}
+                defaultChecked={progress.isInternational === true}
+                id={keys.isInternational + '1'}
                 label="Yes"
-                name="isInternationalStudent"
+                name={keys.isInternational}
                 required
                 value="1"
               />
               <Radio
                 color="pink-100"
-                id={'isInternationalStudent' + '0'}
+                defaultChecked={progress.isInternational === false}
+                id={keys.isInternational + '0'}
                 label="No"
-                name="isInternationalStudent"
+                name={keys.isInternational}
                 required
                 value="0"
               />
@@ -285,27 +440,36 @@ function EducationSection() {
           </Form.Field>
 
           <Form.Field
-            error=""
+            error={errors.confidenceRatingSchool}
             label="My confidence in Computer Science related school work has increased since joining ColorStack."
             required
           >
-            <AgreeRating name="confidenceRatingSchool" />
+            <AgreeRating
+              defaultValue={progress.confidenceRatingSchool}
+              name={keys.confidenceRatingSchool}
+            />
           </Form.Field>
 
           <Form.Field
-            error=""
-            label="I am confident that I will graduate with my tech related degree."
+            error={errors.confidenceRatingGraduating}
+            label="I am confident that I will graduate with my tech-related degree."
             required
           >
-            <AgreeRating name="confidenceRatingGraduating" />
+            <AgreeRating
+              defaultValue={progress.confidenceRatingGraduating}
+              name={keys.confidenceRatingGraduating}
+            />
           </Form.Field>
 
           <Form.Field
-            error=""
-            label="I am confident that I will graduate with a full time offer in tech."
+            error={errors.confidenceRatingFullTimeJob}
+            label="I am confident that I will graduate with a full-time offer in tech."
             required
           >
-            <AgreeRating name="confidenceRatingFullTimeJob" />
+            <AgreeRating
+              defaultValue={progress.confidenceRatingFullTimeJob}
+              name={keys.confidenceRatingFullTimeJob}
+            />
           </Form.Field>
         </>
       )}
@@ -314,6 +478,9 @@ function EducationSection() {
 }
 
 function WorkSection() {
+  const { progress } = useLoaderData<typeof loader>();
+  const { errors } = getActionErrors(useActionData<typeof action>());
+
   const { hasGraduated, hasInternship, setHasInternship } =
     useContext(CensusContext);
 
@@ -324,24 +491,26 @@ function WorkSection() {
   return hasGraduated ? (
     <CensusSection title="Work Plans">
       <Form.Field
-        error=""
+        error={errors.hasTechnicalRole}
         label="Have you accepted a full-time offer in a technical role?"
         required
       >
         <Radio.Group>
           <Radio
             color="lime-100"
-            id={'hasTechnicalRole' + '1'}
+            defaultChecked={progress.hasTechnicalRole === true}
+            id={keys.hasTechnicalRole + '1'}
             label="Yes"
-            name="hasTechnicalRole"
+            name={keys.hasTechnicalRole}
             required
             value="1"
           />
           <Radio
             color="pink-100"
-            id={'hasTechnicalRole' + '0'}
+            defaultChecked={progress.hasTechnicalRole === false}
+            id={keys.hasTechnicalRole + '0'}
             label="No"
-            name="hasTechnicalRole"
+            name={keys.hasTechnicalRole}
             required
             value="0"
           />
@@ -349,24 +518,26 @@ function WorkSection() {
       </Form.Field>
 
       <Form.Field
-        error=""
+        error={errors.hasPartnerRole}
         label="Do you work for (or will you be joining) a ColorStack partner?"
         required
       >
         <Radio.Group>
           <Radio
             color="lime-100"
-            id={'hasRoleWithPartner' + '1'}
+            defaultChecked={progress.hasPartnerRole === true}
+            id={keys.hasPartnerRole + '1'}
             label="Yes"
-            name="hasRoleWithPartner"
+            name={keys.hasPartnerRole}
             required
             value="1"
           />
           <Radio
             color="pink-100"
-            id={'hasRoleWithPartner' + '0'}
+            defaultChecked={progress.hasPartnerRole === false}
+            id={keys.hasPartnerRole + '0'}
             label="No"
-            name="hasRoleWithPartner"
+            name={keys.hasPartnerRole}
             required
             value="0"
           />
@@ -374,35 +545,40 @@ function WorkSection() {
       </Form.Field>
 
       <Form.Field
-        error=""
+        error={errors.confidenceRatingFullTimePreparedness}
         label="I feel more prepared for a full-time job because of ColorStack."
         required
       >
-        <AgreeRating name="confidenceRatingGraduating" />
+        <AgreeRating
+          defaultValue={progress.confidenceRatingFullTimePreparedness}
+          name={keys.confidenceRatingFullTimePreparedness}
+        />
       </Form.Field>
     </CensusSection>
   ) : (
     <CensusSection title="Work Plans">
       <Form.Field
-        error=""
+        error={errors.hasInternship}
         label="Do you have an internship this summer?"
         required
       >
         <Radio.Group>
           <Radio
             color="lime-100"
-            id={'hasInternship' + '1'}
+            defaultChecked={progress.hasInternship === true}
+            id={keys.hasInternship + '1'}
             label="Yes"
-            name="hasInternship"
+            name={keys.hasInternship}
             onChange={(e) => setHasInternship(e.currentTarget.value === '1')}
             required
             value="1"
           />
           <Radio
             color="pink-100"
-            id={'hasInternship' + '0'}
+            defaultChecked={progress.hasInternship === false}
+            id={keys.hasInternship + '0'}
             label="No"
-            name="hasInternship"
+            name={keys.hasInternship}
             onChange={(e) => setHasInternship(e.currentTarget.value === '1')}
             required
             value="0"
@@ -432,23 +608,29 @@ function WorkSection() {
       )}
 
       <Form.Field
-        error=""
+        error={errors.confidenceRatingInterviewing}
         label="My confidence in technical interviewing has increased since joining ColorStack."
         required
       >
-        <AgreeRating name="confidenceRatingInterviewing" />
+        <AgreeRating
+          defaultValue={progress.confidenceRatingInterviewing}
+          name={keys.confidenceRatingInterviewing}
+        />
       </Form.Field>
     </CensusSection>
   );
 }
 
 function ColorStackFeedbackSection() {
+  const { progress } = useLoaderData<typeof loader>();
+  const { errors } = getActionErrors(useActionData<typeof action>());
+
   const { hasGraduated } = useContext(CensusContext);
 
   return (
     <CensusSection last title="ColorStack Feedback">
       <Form.Field
-        error=""
+        error={errors.currentResources}
         label="Which resources have been the most beneficial to you?"
         required
       >
@@ -464,11 +646,11 @@ function ColorStackFeedbackSection() {
           ].map((resource) => {
             return (
               <Checkbox
+                defaultChecked={progress.currentResources?.includes(resource)}
+                id={keys.currentResources + resource}
                 key={resource}
-                defaultChecked={undefined}
-                id={'currentResources' + resource}
                 label={resource}
-                name="currentResources"
+                name={keys.currentResources}
                 value={resource}
               />
             );
@@ -479,24 +661,26 @@ function ColorStackFeedbackSection() {
       {hasGraduated && (
         <>
           <Form.Field
-            error=""
+            error={errors.joinAlumni}
             label="Would you join and be active in a postgrad/alumni ColorStack community?"
             required
           >
             <Radio.Group>
               <Radio
                 color="lime-100"
-                id={'joinAlumni' + '1'}
+                defaultChecked={progress.joinAlumni === true}
+                id={keys.joinAlumni + '1'}
                 label="Yes"
-                name="joinAlumni"
+                name={keys.joinAlumni}
                 required
                 value="1"
               />
               <Radio
                 color="pink-100"
-                id={'joinAlumni' + '0'}
+                defaultChecked={progress.joinAlumni === false}
+                id={keys.joinAlumni + '0'}
                 label="No"
-                name="joinAlumni"
+                name={keys.joinAlumni}
                 required
                 value="0"
               />
@@ -504,14 +688,15 @@ function ColorStackFeedbackSection() {
           </Form.Field>
 
           <Form.Field
-            error=""
+            error={errors.alumniProgramming}
             label="What type of programming would you like to see in a ColorStack alumni community?"
+            labelFor={keys.alumniProgramming}
             required
           >
             <Textarea
-              defaultValue={undefined}
-              id="alumniProgramming"
-              name="alumniProgramming"
+              defaultValue={progress.alumniProgramming}
+              id={keys.alumniProgramming}
+              name={keys.alumniProgramming}
               minRows={2}
               required
             />
@@ -522,49 +707,45 @@ function ColorStackFeedbackSection() {
       {hasGraduated === false && (
         <>
           <Form.Field
-            error=""
+            error={errors.futureResources}
             label="Which resources would you like to see added?"
-            labelFor="futureResources"
+            labelFor={keys.futureResources}
             required
           >
             <Textarea
-              defaultValue={undefined}
-              id="futureResources"
-              name="futureResources"
+              defaultValue={progress.futureResources}
+              id={keys.futureResources}
+              name={keys.futureResources}
               minRows={2}
               required
             />
           </Form.Field>
 
           <Form.Field
-            error=""
+            error={errors.communityNeeds}
             label="As a ColorStack member, what are you looking for most in the ColorStack community?"
             required
           >
-            {iife(() => {
-              return (
-                <Radio.Group>
-                  {[
-                    'Career development (interview prep, resume review, etc.)',
-                    'Access to opportunities',
-                    'Academic help',
-                    'Fellowship + networking',
-                  ].map((category) => {
-                    return (
-                      <Radio
-                        key={category}
-                        defaultChecked={undefined}
-                        id={'wants' + category}
-                        label={category}
-                        name="wants"
-                        required
-                        value={category}
-                      />
-                    );
-                  })}
-                </Radio.Group>
-              );
-            })}
+            <Radio.Group>
+              {[
+                'Career development (interview prep, resume review, etc.)',
+                'Access to opportunities',
+                'Academic help',
+                'Fellowship + networking',
+              ].map((category) => {
+                return (
+                  <Radio
+                    defaultChecked={progress.communityNeeds?.includes(category)}
+                    id={keys.communityNeeds + category}
+                    key={category}
+                    label={category}
+                    name={keys.communityNeeds}
+                    required
+                    value={category}
+                  />
+                );
+              })}
+            </Radio.Group>
           </Form.Field>
         </>
       )}
@@ -591,30 +772,40 @@ function CensusSection({ children, last = false, title }: CensusSectionProps) {
   );
 }
 
-function AgreeRating({ name }: Pick<FieldProps<string>, 'name'>) {
-  const ratings = [
-    'Strongly agree',
-    'Somewhat agree',
-    'Neither agree nor disagree',
-    'Somewhat disagree',
-    'Strongly disagree',
-  ];
-
+function AgreeRating({
+  defaultValue,
+  name,
+}: Pick<FieldProps<number>, 'defaultValue' | 'name'>) {
   return (
-    <Checkbox.Group>
-      {ratings.map((rating) => {
+    <Radio.Group>
+      {[
+        'Strongly agree',
+        'Somewhat agree',
+        'Neither agree nor disagree',
+        'Somewhat disagree',
+        'Strongly disagree',
+      ].map((label, i) => {
+        const value = (5 - i) as 1 | 2 | 3 | 4 | 5;
+
         return (
           <Radio
-            key={rating}
-            defaultChecked={undefined}
-            id={name + rating}
-            label={rating}
+            color={match(value)
+              .with(5, () => 'lime-100' as const)
+              .with(4, () => 'cyan-100' as const)
+              .with(3, () => 'blue-100' as const)
+              .with(2, () => 'orange-100' as const)
+              .with(1, () => 'red-100' as const)
+              .exhaustive()}
+            defaultChecked={defaultValue === value}
+            id={name + value}
+            key={value}
+            label={label}
             name={name}
             required
-            value={rating}
+            value={value}
           />
         );
       })}
-    </Checkbox.Group>
+    </Radio.Group>
   );
 }

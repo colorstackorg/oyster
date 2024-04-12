@@ -49,8 +49,10 @@ export {
 } from './domain/types';
 export type { ExtractValue } from './shared/types';
 export {
+  BooleanInput,
   ISO8601Date,
   NullishString,
   Timezone,
+  checkboxField,
   nullableField,
 } from './shared/zod';

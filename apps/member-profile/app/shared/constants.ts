@@ -20,6 +20,7 @@ export const Route = {
   // Census
 
   '/census': '/census',
+  '/census/confirmation': '/census/confirmation',
 
   // Directory
 

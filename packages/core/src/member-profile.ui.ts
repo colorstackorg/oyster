@@ -8,6 +8,7 @@ export {
   VerifyOneTimeCodeInput,
 } from './modules/authentication/authentication.types';
 export { OneTimeCodeForm } from './modules/authentication/ui/one-time-code-form';
+export { SubmitCensusResponseInput } from './modules/census/census.types';
 export {
   AddEducationInput,
   DegreeType,
