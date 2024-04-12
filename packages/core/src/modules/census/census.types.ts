@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
-import { BooleanInput, checkboxField, Student } from '@oyster/types';
+import { BooleanInput, multiSelectField, Student } from '@oyster/types';
 
 // Use Cases
 
 const CensusRating = z.coerce.number().min(1).max(5);
 
 export const BaseCensusResponse = z.object({
-  currentResources: checkboxField(z.string().trim()),
+  currentResources: multiSelectField(z.string().trim()),
   email: Student.shape.email,
   hasGraduated: z.boolean(),
   schoolId: Student.shape.schoolId,

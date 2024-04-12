@@ -34,7 +34,7 @@ export const Timezone = z.preprocess((value) => {
  *
  * @param schema - Zod schema to use for _each item_ in the array.
  */
-export function checkboxField<T extends z.ZodTypeAny>(schema: T) {
+export function multiSelectField<T extends z.ZodTypeAny>(schema: T) {
   return z.preprocess((value) => {
     return typeof value === 'string' ? value.split(',') : value;
   }, z.array(schema));
