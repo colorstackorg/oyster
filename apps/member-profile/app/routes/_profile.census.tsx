@@ -13,7 +13,8 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import React, { type PropsWithChildren, useContext, useState } from 'react';
-import { z } from 'zod';
+import { match } from 'ts-pattern';
+import { type z } from 'zod';
 
 import { db } from '@oyster/db';
 import {
@@ -43,10 +44,7 @@ const censusCookie = createCookie('census', {
   secure: true,
 });
 
-const CensusCookieData = z.union([
-  SubmitCensusResponseInput.partial(),
-  SubmitCensusResponseInput.pick({ email: true }),
-]);
+const SaveCensusProgressInput = SubmitCensusResponseInput.partial();
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -58,10 +56,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const cookieHeader = request.headers.get('Cookie');
   const parsedCookie = await censusCookie.parse(cookieHeader);
 
-  let cookie: z.infer<typeof CensusCookieData>;
+  let cookie: z.infer<typeof SaveCensusProgressInput>;
 
   try {
-    cookie = CensusCookieData.parse(parsedCookie);
+    cookie = SaveCensusProgressInput.parse(parsedCookie);
   } catch (e) {
     const { email } = emails.find((email) => {
       return !!email.primary;
@@ -75,7 +73,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json(
     {
       emails,
-      primaryEmail: cookie.email,
+      progress: cookie,
     },
     {
       headers: {
@@ -93,10 +91,10 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const { data, errors } =
     values.intent === 'save'
-      ? validateForm(SubmitCensusResponseInput.partial(), values)
+      ? validateForm(SaveCensusProgressInput, values)
       : validateForm(SubmitCensusResponseInput, values);
 
-  console.log(values, data, errors);
+  console.log(values, data);
 
   if (!data) {
     return json({
@@ -110,7 +108,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const parsedCookie = await censusCookie.parse(cookieHeader);
 
     const cookie = {
-      ...CensusCookieData.parse(parsedCookie),
+      ...SaveCensusProgressInput.parse(parsedCookie),
       ...data,
     };
 
@@ -167,10 +165,17 @@ const CensusContext = React.createContext<CensusContext>({
 const keys = SubmitCensusResponseInput.keyof().enum;
 
 function CensusForm() {
+  const { progress } = useLoaderData<typeof loader>();
+
   const submit = useSubmit();
 
-  const [hasGraduated, setHasGraduated] = useState<boolean | null>(null);
-  const [hasInternship, setHasInternship] = useState<boolean>(false);
+  const [hasGraduated, setHasGraduated] = useState<boolean | null>(
+    progress.hasGraduated ?? null
+  );
+
+  const [hasInternship, setHasInternship] = useState<boolean>(
+    progress.hasInternship ?? false
+  );
 
   return (
     <RemixForm
@@ -187,9 +192,9 @@ function CensusForm() {
         }}
       >
         <BasicSection />
-        {/* <EducationSection />
-        <WorkSection />
-        <ColorStackFeedbackSection /> */}
+        <EducationSection />
+        {/* <WorkSection /> */}
+        {/* <ColorStackFeedbackSection /> */}
 
         <input name="intent" type="hidden" value="save" />
       </CensusContext.Provider>
@@ -198,8 +203,8 @@ function CensusForm() {
 }
 
 function BasicSection() {
+  const { emails, progress } = useLoaderData<typeof loader>();
   const { errors } = getActionErrors(useActionData<typeof action>());
-  const { emails, primaryEmail } = useLoaderData<typeof loader>();
 
   return (
     <CensusSection title="Basic Information">
@@ -224,7 +229,7 @@ function BasicSection() {
         required
       >
         <Select
-          defaultValue={primaryEmail}
+          defaultValue={progress.email}
           id={keys.email}
           name={keys.email}
           required
@@ -241,18 +246,18 @@ function BasicSection() {
 
       <Form.Field
         description="This will help us plan for our in-person events this summer."
-        error=""
+        error={errors.summerLocation}
         label="What city will you be in this summer?"
-        labelFor="location"
+        labelFor={keys.summerLocation}
         required
       >
         <CityCombobox
-          defaultLatitude={undefined}
-          defaultLongitude={undefined}
-          defaultValue={undefined}
-          name="location"
-          latitudeName="locationLatitude"
-          longitudeName="locationLongitude"
+          defaultLatitude={progress.summerLocationLatitude}
+          defaultLongitude={progress.summerLocationLongitude}
+          defaultValue={progress.summerLocation}
+          name={keys.summerLocation}
+          latitudeName={keys.summerLocationLatitude}
+          longitudeName={keys.summerLocationLongitude}
           required
         />
       </Form.Field>
@@ -261,31 +266,36 @@ function BasicSection() {
 }
 
 function EducationSection() {
+  const { progress } = useLoaderData<typeof loader>();
+  const { errors } = getActionErrors(useActionData<typeof action>());
+
   const { hasGraduated, setHasGraduated } = useContext(CensusContext);
 
   return (
     <CensusSection title="Education">
       <Form.Field
         description="If you've received your Bachelor's degree, you are officially ColorStack Alumni!"
-        error=""
+        error={errors.hasGraduated}
         label="Have you already graduated?"
         required
       >
         <Radio.Group>
           <Radio
             color="lime-100"
-            id={'hasGraduated' + '1'}
+            defaultChecked={progress.hasGraduated === true}
+            id={keys.hasGraduated + '1'}
             label="Yes"
-            name="hasGraduated"
+            name={keys.hasGraduated}
             onChange={(e) => setHasGraduated(e.currentTarget.value === '1')}
             required
             value="1"
           />
           <Radio
             color="pink-100"
-            id={'hasGraduated' + '0'}
+            defaultChecked={progress.hasGraduated === false}
+            id={keys.hasGraduated + '0'}
             label="No"
-            name="hasGraduated"
+            name={keys.hasGraduated}
             onChange={(e) => setHasGraduated(e.currentTarget.value === '1')}
             required
             value="0"
@@ -295,24 +305,26 @@ function EducationSection() {
 
       {hasGraduated === true && (
         <Form.Field
-          error=""
+          error={errors.hasTechnicalDegree}
           label="Did you graduate with a Computer Science (or related) degree?"
           required
         >
           <Radio.Group>
             <Radio
               color="lime-100"
-              id={'hasTechnicalDegree' + '1'}
+              defaultChecked={progress.hasTechnicalDegree === true}
+              id={keys.hasTechnicalDegree + '1'}
               label="Yes"
-              name="hasTechnicalDegree"
+              name={keys.hasTechnicalDegree}
               required
               value="1"
             />
             <Radio
               color="pink-100"
-              id={'hasTechnicalDegree' + '0'}
+              defaultChecked={progress.hasTechnicalDegree === false}
+              id={keys.hasTechnicalDegree + '0'}
               label="No"
-              name="hasTechnicalDegree"
+              name={keys.hasTechnicalDegree}
               required
               value="0"
             />
@@ -333,24 +345,26 @@ function EducationSection() {
           </Form.Field>
 
           <Form.Field
-            error=""
+            error={errors.isInternational}
             label="Are you an international student?"
             required
           >
             <Radio.Group>
               <Radio
                 color="lime-100"
-                id={'isInternationalStudent' + '1'}
+                defaultChecked={progress.isInternational === true}
+                id={keys.isInternational + '1'}
                 label="Yes"
-                name="isInternationalStudent"
+                name={keys.isInternational}
                 required
                 value="1"
               />
               <Radio
                 color="pink-100"
-                id={'isInternationalStudent' + '0'}
+                defaultChecked={progress.isInternational === false}
+                id={keys.isInternational + '0'}
                 label="No"
-                name="isInternationalStudent"
+                name={keys.isInternational}
                 required
                 value="0"
               />
@@ -358,27 +372,36 @@ function EducationSection() {
           </Form.Field>
 
           <Form.Field
-            error=""
+            error={errors.confidenceRatingSchool}
             label="My confidence in Computer Science related school work has increased since joining ColorStack."
             required
           >
-            <AgreeRating name="confidenceRatingSchool" />
+            <AgreeRating
+              defaultValue={progress.confidenceRatingSchool}
+              name={keys.confidenceRatingSchool}
+            />
           </Form.Field>
 
           <Form.Field
-            error=""
-            label="I am confident that I will graduate with my tech related degree."
+            error={errors.confidenceRatingGraduating}
+            label="I am confident that I will graduate with my tech-related degree."
             required
           >
-            <AgreeRating name="confidenceRatingGraduating" />
+            <AgreeRating
+              defaultValue={progress.confidenceRatingGraduating}
+              name={keys.confidenceRatingGraduating}
+            />
           </Form.Field>
 
           <Form.Field
-            error=""
-            label="I am confident that I will graduate with a full time offer in tech."
+            error={errors.confidenceRatingFullTimeJob}
+            label="I am confident that I will graduate with a full-time offer in tech."
             required
           >
-            <AgreeRating name="confidenceRatingFullTimeJob" />
+            <AgreeRating
+              defaultValue={progress.confidenceRatingFullTimeJob}
+              name={keys.confidenceRatingFullTimeJob}
+            />
           </Form.Field>
         </>
       )}
@@ -664,30 +687,38 @@ function CensusSection({ children, last = false, title }: CensusSectionProps) {
   );
 }
 
-function AgreeRating({ name }: Pick<FieldProps<string>, 'name'>) {
-  const ratings = [
-    'Strongly agree',
-    'Somewhat agree',
-    'Neither agree nor disagree',
-    'Somewhat disagree',
-    'Strongly disagree',
-  ];
-
+function AgreeRating({
+  defaultValue,
+  name,
+}: Pick<FieldProps<number>, 'defaultValue' | 'name'>) {
   return (
-    <Checkbox.Group>
-      {ratings.map((rating) => {
+    <Radio.Group>
+      {[
+        ['Strongly agree', 5] as const,
+        ['Somewhat agree', 4] as const,
+        ['Neither agree nor disagree', 3] as const,
+        ['Somewhat disagree', 2] as const,
+        ['Strongly disagree', 1] as const,
+      ].map(([label, value]) => {
         return (
           <Radio
-            key={rating}
-            defaultChecked={undefined}
-            id={name + rating}
-            label={rating}
+            color={match(value)
+              .with(5, () => 'lime-100' as const)
+              .with(4, () => 'cyan-100' as const)
+              .with(3, () => 'blue-100' as const)
+              .with(2, () => 'orange-100' as const)
+              .with(1, () => 'red-100' as const)
+              .exhaustive()}
+            defaultChecked={defaultValue === value}
+            id={name + value}
+            key={value}
+            label={label as string}
             name={name}
             required
-            value={rating}
+            value={value}
           />
         );
       })}
-    </Checkbox.Group>
+    </Radio.Group>
   );
 }
