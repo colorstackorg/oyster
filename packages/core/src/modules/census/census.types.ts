@@ -10,9 +10,8 @@ export const BaseCensusResponse = z.object({
   currentResources: checkboxField(z.string().trim()),
   email: Student.shape.email,
   hasGraduated: z.boolean(),
-  memberId: Student.shape.id,
   schoolId: Student.shape.schoolId,
-  schoolName: z.string().trim(),
+  schoolName: z.string().trim().optional(),
   summerLocation: z.string().trim(),
   summerLocationLatitude: z.coerce.number(),
   summerLocationLongitude: z.coerce.number(),
@@ -40,11 +39,9 @@ export const UndergraduateCensusResponse = BaseCensusResponse.extend({
   isInternational: BooleanInput,
 });
 
-export const SubmitCensusResponseInput = z.discriminatedUnion('hasGraduated', [
+export const SubmitCensusResponseData = z.discriminatedUnion('hasGraduated', [
   AlumniCensusResponse,
   UndergraduateCensusResponse,
 ]);
 
-export type SubmitCensusResponseInput = z.infer<
-  typeof SubmitCensusResponseInput
->;
+export type SubmitCensusResponseData = z.infer<typeof SubmitCensusResponseData>;
