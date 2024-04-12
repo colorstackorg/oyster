@@ -12,9 +12,6 @@ export async function up(db: Kysely<any>) {
     .addColumn('submitted_at', 'timestamptz', (column) => {
       return column.notNull().defaultTo(sql`now()`);
     })
-    .addColumn('updated_at', 'timestamptz', (column) => {
-      return column.notNull().defaultTo(sql`now()`);
-    })
     .addColumn('year', 'integer', (column) => {
       return column.notNull();
     })
