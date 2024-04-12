@@ -27,6 +27,7 @@ export { ScholarshipRecipient, ScholarshipType } from './domain/scholarship';
 export {
   ActivationRequirement,
   MemberEthnicity,
+  MemberType,
   Student,
   StudentActiveStatus,
   StudentEmail,

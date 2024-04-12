@@ -18,9 +18,18 @@ export async function up(db: Kysely<any>) {
     .addColumn('year', 'integer', (column) => {
       return column.notNull();
     })
+    .addPrimaryKeyConstraint('census_responses_pkey', ['student_id', 'year'])
+    .execute();
+
+  await db.schema
+    .alterTable('students')
+    .addColumn('type', 'text', (column) => {
+      return column.notNull().defaultTo('student');
+    })
     .execute();
 }
 
 export async function down(db: Kysely<any>) {
+  await db.schema.alterTable('students').dropColumn('type').execute();
   await db.schema.dropTable('census_responses').execute();
 }
