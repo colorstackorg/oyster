@@ -10,6 +10,7 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
+  useNavigation,
   useSubmit,
 } from '@remix-run/react';
 import React, { type PropsWithChildren, useContext, useState } from 'react';
@@ -18,6 +19,7 @@ import { type z } from 'zod';
 
 import { db } from '@oyster/db';
 import {
+  Button,
   Checkbox,
   Divider,
   type FieldProps,
@@ -31,12 +33,12 @@ import {
   useRevalidateOnFocus,
   validateForm,
 } from '@oyster/ui';
-import { iife } from '@oyster/utils';
 
 import { CityCombobox } from '../shared/components/city-combobox';
 import { Route } from '../shared/constants';
 import { listEmails } from '../shared/core.server';
-import { SubmitCensusResponseInput } from '../shared/core.ui';
+import { SchoolCombobox, SubmitCensusResponseInput } from '../shared/core.ui';
+import { getMember } from '../shared/queries';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
 
 const censusCookie = createCookie('census', {
@@ -44,7 +46,15 @@ const censusCookie = createCookie('census', {
   secure: true,
 });
 
-const SaveCensusProgressInput = SubmitCensusResponseInput.partial();
+const CensusCookieObject = SubmitCensusResponseInput.partial();
+
+async function getCensusCookie(request: Request) {
+  const cookieHeader = request.headers.get('Cookie');
+  const parsedCookie = await censusCookie.parse(cookieHeader);
+  const cookie = CensusCookieObject.parse(parsedCookie);
+
+  return cookie;
+}
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -53,20 +63,25 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const [emails] = await Promise.all([listEmails(memberId)]);
 
-  const cookieHeader = request.headers.get('Cookie');
-  const parsedCookie = await censusCookie.parse(cookieHeader);
-
-  let cookie: z.infer<typeof SaveCensusProgressInput>;
+  let cookie: z.infer<typeof CensusCookieObject>;
 
   try {
-    cookie = SaveCensusProgressInput.parse(parsedCookie);
+    cookie = await getCensusCookie(request);
   } catch (e) {
     const { email } = emails.find((email) => {
       return !!email.primary;
     })!;
 
+    const { schoolId, school: schoolName } = await getMember(memberId, {
+      school: true,
+    })
+      .select(['students.schoolId'])
+      .executeTakeFirstOrThrow();
+
     cookie = {
       email,
+      schoolId: schoolId || undefined,
+      schoolName: schoolName || undefined,
     };
   }
 
@@ -90,16 +105,16 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const values = {
     ...Object.fromEntries(form),
-    currentResources: form.getAll('currentResources'),
+    ...(!!form.get('currentResources') && {
+      currentResources: form.getAll('currentResources'),
+    }),
   };
 
   const isSave = form.get('intent') === 'save';
 
   const { data, errors } = isSave
-    ? validateForm(SaveCensusProgressInput, values)
+    ? validateForm(CensusCookieObject, values)
     : validateForm(SubmitCensusResponseInput, values);
-
-  console.log(values);
 
   if (!data) {
     return json({
@@ -109,11 +124,10 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   if (isSave) {
-    const cookieHeader = request.headers.get('Cookie');
-    const parsedCookie = await censusCookie.parse(cookieHeader);
+    const existingCookie = await getCensusCookie(request);
 
     const cookie = {
-      ...SaveCensusProgressInput.parse(parsedCookie),
+      ...existingCookie,
       ...data,
     };
 
@@ -134,7 +148,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
   await db.transaction().execute(async (_) => {});
 
-  return redirect(Route['/census/confirmation']);
+  return redirect(Route['/census/confirmation'], {
+    headers: {
+      'Set-Cookie': await censusCookie.serialize('', { maxAge: 1 }),
+    },
+  });
 }
 
 export default function CensusPage() {
@@ -156,23 +174,28 @@ export default function CensusPage() {
 type CensusContext = {
   hasGraduated: boolean | null;
   hasInternship: boolean | null;
+  isOtherSchool: boolean;
   setHasGraduated(value: boolean): void;
   setHasInternship(value: boolean): void;
+  setIsOtherSchool(value: boolean): void;
 };
 
 const CensusContext = React.createContext<CensusContext>({
   hasGraduated: null,
   hasInternship: null,
+  isOtherSchool: false,
   setHasGraduated: (_: boolean) => {},
   setHasInternship: (_: boolean) => {},
+  setIsOtherSchool: (_: boolean) => {},
 });
 
 const keys = SubmitCensusResponseInput.keyof().enum;
 
 function CensusForm() {
   const { progress } = useLoaderData<typeof loader>();
-
+  const { error } = getActionErrors(useActionData<typeof action>());
   const submit = useSubmit();
+  const submitting = useNavigation().state === 'submitting';
 
   const [hasGraduated, setHasGraduated] = useState<boolean | null>(
     progress.hasGraduated ?? null
@@ -181,6 +204,8 @@ function CensusForm() {
   const [hasInternship, setHasInternship] = useState<boolean>(
     progress.hasInternship ?? false
   );
+
+  const [isOtherSchool, setIsOtherSchool] = useState<boolean>(false);
 
   return (
     <RemixForm
@@ -192,8 +217,10 @@ function CensusForm() {
         value={{
           hasGraduated,
           hasInternship,
+          isOtherSchool,
           setHasGraduated,
           setHasInternship,
+          setIsOtherSchool,
         }}
       >
         <BasicSection />
@@ -201,7 +228,19 @@ function CensusForm() {
         <WorkSection />
         <ColorStackFeedbackSection />
 
+        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+
         <input name="intent" type="hidden" value="save" />
+
+        <Button
+          fill
+          loading={submitting}
+          name="intent"
+          type="submit"
+          value="submit"
+        >
+          Submit
+        </Button>
       </CensusContext.Provider>
     </RemixForm>
   );
@@ -274,7 +313,8 @@ function EducationSection() {
   const { progress } = useLoaderData<typeof loader>();
   const { errors } = getActionErrors(useActionData<typeof action>());
 
-  const { hasGraduated, setHasGraduated } = useContext(CensusContext);
+  const { hasGraduated, isOtherSchool, setHasGraduated, setIsOtherSchool } =
+    useContext(CensusContext);
 
   return (
     <CensusSection title="Education">
@@ -341,12 +381,35 @@ function EducationSection() {
         <>
           <Form.Field
             description="What school do you currently attend?"
-            error=""
+            error={errors.schoolId}
             label="School"
-            labelFor="school"
+            labelFor={keys.schoolId}
             required
           >
-            <Input name="school" required />
+            <SchoolCombobox
+              defaultValue={
+                progress.schoolId && progress.schoolName
+                  ? { id: progress.schoolId, name: progress.schoolName }
+                  : progress.schoolName
+                    ? { id: 'other', name: 'Other' }
+                    : undefined
+              }
+              name={keys.schoolId}
+              onSelect={(e) => {
+                setIsOtherSchool(e.currentTarget.value === 'other');
+              }}
+            />
+
+            {isOtherSchool && (
+              <Input
+                className="mt-2"
+                defaultValue={progress.schoolName}
+                id={keys.schoolName}
+                name={keys.schoolName}
+                placeholder="Enter school name here..."
+                required
+              />
+            )}
           </Form.Field>
 
           <Form.Field

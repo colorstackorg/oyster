@@ -7,16 +7,16 @@ import { BooleanInput, checkboxField, Student } from '@oyster/types';
 const CensusRating = z.coerce.number().min(1).max(5);
 
 export const SubmitCensusResponseInput = z.object({
-  alumniProgramming: z.string().trim().min(1),
-  communityNeeds: z.string().trim().min(1),
+  alumniProgramming: z.string().trim(),
+  communityNeeds: z.string().trim(),
   confidenceRatingFullTimeJob: CensusRating,
   confidenceRatingFullTimePreparedness: CensusRating,
   confidenceRatingGraduating: CensusRating,
   confidenceRatingInterviewing: CensusRating,
   confidenceRatingSchool: CensusRating,
-  currentResources: checkboxField(z.string().trim().min(1)),
+  currentResources: checkboxField(z.string().trim()),
   email: Student.shape.email,
-  futureResources: z.string().trim().min(1),
+  futureResources: z.string().trim(),
   joinAlumni: BooleanInput,
   hasGraduated: BooleanInput,
   hasInternship: BooleanInput,
@@ -25,7 +25,9 @@ export const SubmitCensusResponseInput = z.object({
   hasTechnicalRole: BooleanInput,
   isInternational: BooleanInput,
   memberId: Student.shape.id,
-  summerLocation: z.string().trim().min(1),
+  schoolId: Student.shape.schoolId,
+  schoolName: z.string().trim(),
+  summerLocation: z.string().trim(),
   summerLocationLatitude: z.coerce.number(),
   summerLocationLongitude: z.coerce.number(),
 });
