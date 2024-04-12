@@ -151,6 +151,7 @@ async function getActivityHistory(
       )
       .select([
         'activities.name',
+        'completedActivities.censusYear',
         'completedActivities.description',
         'completedActivities.id',
         'completedActivities.occurredAt',
@@ -593,6 +594,11 @@ function ActivityHistoryItemDescription({
     })
     .with('respond_to_survey', () => {
       return <p>You responded to a survey: "{activity.surveyRespondedTo}"</p>;
+    })
+    .with('submit_census_response', () => {
+      return (
+        <p>You submitted a response to the Census ({activity.censusYear}).</p>
+      );
     })
     .with('update_education_history', () => {
       return <p>You added an education experience.</p>;
