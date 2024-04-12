@@ -1,11 +1,18 @@
-import { db } from '@oyster/db';
+import { type Transaction } from 'kysely';
+
+import { type DB, db } from '@oyster/db';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { type ChangePrimaryEmailInput } from '@/modules/member/member.types';
 
+type ChangePrimaryEmailOptions = {
+  trx?: Transaction<DB>;
+};
+
 export async function changePrimaryEmail(
   id: string,
-  input: ChangePrimaryEmailInput
+  input: ChangePrimaryEmailInput,
+  options: ChangePrimaryEmailOptions = {}
 ) {
   const student = await db
     .selectFrom('students')
@@ -28,14 +35,28 @@ export async function changePrimaryEmail(
 
   const previousEmail = student.email;
 
-  await db
-    .updateTable('students')
-    .set({ email: input.email })
-    .where('id', '=', id)
-    .execute();
+  await db.transaction().execute(async (trx) => {
+    trx = options.trx || trx;
 
-  job('member_email.primary.changed', {
-    previousEmail,
-    studentId: id,
+    await trx
+      .updateTable('students')
+      .set({ email: input.email })
+      .where('id', '=', id)
+      .execute();
   });
+
+  function emitPrimaryEmailChanged() {
+    job('member_email.primary.changed', {
+      previousEmail,
+      studentId: id,
+    });
+  }
+
+  if (!options.trx) {
+    emitPrimaryEmailChanged();
+  }
+
+  return {
+    emitPrimaryEmailChanged,
+  };
 }
