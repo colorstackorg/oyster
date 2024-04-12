@@ -10,7 +10,7 @@ export {
 export { OneTimeCodeForm } from './modules/authentication/ui/one-time-code-form';
 export {
   BaseCensusResponse,
-  SubmitCensusResponseInput,
+  SubmitCensusResponseData,
 } from './modules/census/census.types';
 export {
   AddEducationInput,
