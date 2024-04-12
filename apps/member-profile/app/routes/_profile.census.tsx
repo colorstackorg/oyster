@@ -230,8 +230,6 @@ function CensusForm() {
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
-        <input name="intent" type="hidden" value="save" />
-
         <Button
           fill
           loading={submitting}
@@ -241,6 +239,8 @@ function CensusForm() {
         >
           Submit
         </Button>
+
+        <input name="intent" type="hidden" value="save" />
       </CensusContext.Provider>
     </RemixForm>
   );
@@ -735,11 +735,11 @@ function ColorStackFeedbackSection() {
               ].map((category) => {
                 return (
                   <Radio
+                    defaultChecked={progress.communityNeeds?.includes(category)}
+                    id={keys.communityNeeds + category}
                     key={category}
-                    defaultChecked={undefined}
-                    id={'wants' + category}
                     label={category}
-                    name="wants"
+                    name={keys.communityNeeds}
                     required
                     value={category}
                   />
