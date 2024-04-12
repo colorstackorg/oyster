@@ -779,12 +779,14 @@ function AgreeRating({
   return (
     <Radio.Group>
       {[
-        ['Strongly agree', 5] as const,
-        ['Somewhat agree', 4] as const,
-        ['Neither agree nor disagree', 3] as const,
-        ['Somewhat disagree', 2] as const,
-        ['Strongly disagree', 1] as const,
-      ].map(([label, value]) => {
+        'Strongly agree',
+        'Somewhat agree',
+        'Neither agree nor disagree',
+        'Somewhat disagree',
+        'Strongly disagree',
+      ].map((label, i) => {
+        const value = (5 - i) as 1 | 2 | 3 | 4 | 5;
+
         return (
           <Radio
             color={match(value)
@@ -797,7 +799,7 @@ function AgreeRating({
             defaultChecked={defaultValue === value}
             id={name + value}
             key={value}
-            label={label as string}
+            label={label}
             name={name}
             required
             value={value}
