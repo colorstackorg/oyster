@@ -3,6 +3,7 @@ import { sql } from 'kysely';
 import { db } from '@oyster/db';
 import { MemberType } from '@oyster/types';
 
+import { job } from '@/infrastructure/bull/use-cases/job';
 import { type SubmitCensusResponseData } from '@/modules/census/census.types';
 import { changePrimaryEmail } from '@/modules/member/use-cases/change-primary-email';
 
@@ -11,6 +12,8 @@ export async function submitCensusResponse(
   data: SubmitCensusResponseData
 ) {
   let emitPrimaryEmailChanged: VoidFunction = () => {};
+
+  const year = new Date().getFullYear();
 
   await db.transaction().execute(async (trx) => {
     const member = await trx
@@ -58,7 +61,7 @@ export async function submitCensusResponse(
       .values({
         json,
         studentId: memberId,
-        year: new Date().getFullYear(),
+        year,
       })
       .onConflict((oc) => {
         return oc.columns(['studentId', 'year']).doUpdateSet({ json });
@@ -67,4 +70,10 @@ export async function submitCensusResponse(
   });
 
   emitPrimaryEmailChanged();
+
+  job('gamification.activity.completed', {
+    studentId: memberId,
+    type: 'submit_census_response',
+    year,
+  });
 }
