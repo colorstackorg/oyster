@@ -9,6 +9,7 @@ export {
 } from './modules/authentication/shared/oauth.utils';
 export { sendOneTimeCode } from './modules/authentication/use-cases/send-one-time-code';
 export { verifyOneTimeCode } from './modules/authentication/use-cases/verify-one-time-code';
+export { getCensusResponse } from './modules/census/queries/get-census-response';
 export { submitCensusResponse } from './modules/census/use-cases/submit-census-response';
 export { listSchools } from './modules/education/queries/list-schools';
 export { addEducation } from './modules/education/use-cases/add-education';
