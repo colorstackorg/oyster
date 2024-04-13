@@ -6,7 +6,6 @@ import {
 } from '@remix-run/node';
 import { createCookie } from '@remix-run/node';
 import {
-  Link,
   Form as RemixForm,
   useActionData,
   useLoaderData,
@@ -27,7 +26,6 @@ import {
   getActionErrors,
   Input,
   Radio,
-  Select,
   Text,
   Textarea,
   useRevalidateOnFocus,
@@ -36,11 +34,7 @@ import {
 
 import { CityCombobox } from '../shared/components/city-combobox';
 import { Route } from '../shared/constants';
-import {
-  getCensusResponse,
-  listEmails,
-  submitCensusResponse,
-} from '../shared/core.server';
+import { getCensusResponse, submitCensusResponse } from '../shared/core.server';
 import {
   BaseCensusResponse,
   CompanyCombobox,
@@ -101,17 +95,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect(Route['/census/confirmation']);
   }
 
-  const emails = await listEmails(memberId);
-
   let cookie: z.infer<typeof CensusCookieObject>;
 
   try {
     cookie = await getCensusCookie(request);
   } catch (e) {
-    const { email } = emails.find((email) => {
-      return !!email.primary;
-    })!;
-
     const { schoolId, school: schoolName } = await getMember(memberId, {
       school: true,
     })
@@ -119,17 +107,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
       .executeTakeFirstOrThrow();
 
     cookie = {
-      email,
       schoolId: schoolId || undefined,
       schoolName: schoolName || undefined,
     };
   }
 
   return json(
-    {
-      emails,
-      progress: cookie,
-    },
+    { progress: cookie },
     {
       headers: {
         'Set-Cookie': await censusCookie.serialize(cookie),
@@ -282,47 +266,11 @@ export default function CensusForm() {
 }
 
 function BasicSection() {
-  const { emails, progress } = useLoaderData<typeof loader>();
+  const { progress } = useLoaderData<typeof loader>();
   const { errors } = getActionErrors(useActionData<typeof action>());
 
   return (
     <CensusSection title="Basic Information">
-      <Form.Field
-        description={
-          <Text>
-            If you'd like to change your primary email but it's not listed
-            below, please add it{' '}
-            <Link
-              className="link"
-              target="_blank"
-              to={Route['/profile/emails/add/start']}
-            >
-              here
-            </Link>{' '}
-            first.
-          </Text>
-        }
-        error={errors.email}
-        label="Email"
-        labelFor={keys.email}
-        required
-      >
-        <Select
-          defaultValue={progress.email}
-          id={keys.email}
-          name={keys.email}
-          required
-        >
-          {emails.map(({ email }) => {
-            return (
-              <option key={email} value={email}>
-                {email}
-              </option>
-            );
-          })}
-        </Select>
-      </Form.Field>
-
       <Form.Field
         description="This will help us plan for our in-person events this summer."
         error={errors.summerLocation}
