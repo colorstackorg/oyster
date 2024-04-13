@@ -188,10 +188,12 @@ type CensusContext = {
   hasGraduated: boolean | null;
   hasInternship: boolean | null;
   hasTechnicalRole: boolean | null;
+  isInternational: boolean | null;
   isOtherSchool: boolean;
   setHasGraduated(value: boolean): void;
   setHasInternship(value: boolean): void;
   setHasTechnicalRole(value: boolean): void;
+  setIsInternational(value: boolean): void;
   setIsOtherSchool(value: boolean): void;
 };
 
@@ -199,10 +201,12 @@ const CensusContext = React.createContext<CensusContext>({
   hasGraduated: null,
   hasInternship: null,
   hasTechnicalRole: null,
+  isInternational: null,
   isOtherSchool: false,
   setHasGraduated: (_: boolean) => {},
   setHasInternship: (_: boolean) => {},
   setHasTechnicalRole: (_: boolean) => {},
+  setIsInternational: (_: boolean) => {},
   setIsOtherSchool: (_: boolean) => {},
 });
 
@@ -232,6 +236,7 @@ export default function CensusForm() {
     progress.hasInternship ?? false
   );
 
+  const [isInternational, setIsInternational] = useState<boolean | null>(null);
   const [isOtherSchool, setIsOtherSchool] = useState<boolean>(false);
 
   return (
@@ -245,10 +250,12 @@ export default function CensusForm() {
           hasGraduated,
           hasInternship,
           hasTechnicalRole,
+          isInternational,
           isOtherSchool,
           setHasGraduated,
           setHasInternship,
           setHasTechnicalRole,
+          setIsInternational,
           setIsOtherSchool,
         }}
       >
@@ -306,8 +313,14 @@ function EducationSection() {
   const { progress } = useLoaderData<typeof loader>();
   const { errors } = getActionErrors(useActionData<typeof action>());
 
-  const { hasGraduated, isOtherSchool, setHasGraduated, setIsOtherSchool } =
-    useContext(CensusContext);
+  const {
+    hasGraduated,
+    isInternational,
+    isOtherSchool,
+    setHasGraduated,
+    setIsInternational,
+    setIsOtherSchool,
+  } = useContext(CensusContext);
 
   return (
     <CensusSection title="Education">
@@ -417,6 +430,9 @@ function EducationSection() {
                 id={keys.isInternational + '1'}
                 label="Yes"
                 name={keys.isInternational}
+                onChange={(e) => {
+                  setIsInternational(e.currentTarget.value === '1');
+                }}
                 required
                 value="1"
               />
@@ -426,11 +442,31 @@ function EducationSection() {
                 id={keys.isInternational + '0'}
                 label="No"
                 name={keys.isInternational}
+                onChange={(e) => {
+                  setIsInternational(e.currentTarget.value === '1');
+                }}
                 required
                 value="0"
               />
             </Radio.Group>
           </Form.Field>
+
+          {isInternational && (
+            <Form.Field
+              error={errors.internationalSupport}
+              label="What can ColorStack do to support you as an international student?"
+              labelFor={keys.internationalSupport}
+              required
+            >
+              <Textarea
+                defaultValue={progress.internationalSupport}
+                id={keys.internationalSupport}
+                name={keys.internationalSupport}
+                minRows={2}
+                required
+              />
+            </Form.Field>
+          )}
 
           <Form.Field
             error={errors.isOnTrackToGraduate}

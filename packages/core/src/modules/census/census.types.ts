@@ -37,6 +37,7 @@ export const UndergraduateCensusResponse = BaseCensusResponse.extend({
   futureResources: z.string().trim(),
   hasGraduated: z.preprocess((value) => value === '1', z.literal(false)),
   hasInternship: BooleanInput,
+  internationalSupport: z.string().trim().optional(),
   isInternational: BooleanInput,
   isOnTrackToGraduate: BooleanInput,
 });
