@@ -397,7 +397,7 @@ function EducationSection() {
           {isInternational && (
             <Form.Field
               error={errors.internationalSupport}
-              label="What can ColorStack do to support you as an international student?"
+              label="Is there anything ColorStack can do to support you as an international student?"
               labelFor={keys.internationalSupport}
               required
             >
@@ -524,32 +524,47 @@ function WorkSection() {
       </Form.Field>
 
       {hasTechnicalRole && (
-        <Form.Field
-          error={errors.hasRoleThroughColorStack}
-          label="Did you learn about your current role via ColorStack?"
-          required
-        >
-          <Radio.Group>
-            <Radio
-              color="lime-100"
-              defaultChecked={progress.hasRoleThroughColorStack === true}
-              id={keys.hasRoleThroughColorStack + '1'}
-              label="Yes"
-              name={keys.hasRoleThroughColorStack}
-              required
-              value="1"
+        <>
+          <Form.Field
+            error={errors.hasRoleThroughColorStack}
+            label="Did you learn about your current role via ColorStack?"
+            required
+          >
+            <Radio.Group>
+              <Radio
+                color="lime-100"
+                defaultChecked={progress.hasRoleThroughColorStack === true}
+                id={keys.hasRoleThroughColorStack + '1'}
+                label="Yes"
+                name={keys.hasRoleThroughColorStack}
+                required
+                value="1"
+              />
+              <Radio
+                color="pink-100"
+                defaultChecked={progress.hasRoleThroughColorStack === false}
+                id={keys.hasRoleThroughColorStack + '0'}
+                label="No"
+                name={keys.hasRoleThroughColorStack}
+                required
+                value="0"
+              />
+            </Radio.Group>
+          </Form.Field>
+
+          <Form.Field
+            description="Please separate multiple companies with a comma."
+            error={errors.additionalOffers}
+            label="If you received multiple offers, list out the additional companies."
+            labelFor={keys.additionalOffers}
+          >
+            <Input
+              defaultValue={progress.additionalOffers}
+              id={keys.additionalOffers}
+              name={keys.additionalOffers}
             />
-            <Radio
-              color="pink-100"
-              defaultChecked={progress.hasRoleThroughColorStack === false}
-              id={keys.hasRoleThroughColorStack + '0'}
-              label="No"
-              name={keys.hasRoleThroughColorStack}
-              required
-              value="0"
-            />
-          </Radio.Group>
-        </Form.Field>
+          </Form.Field>
+        </>
       )}
 
       <Form.Field
@@ -612,11 +627,16 @@ function WorkSection() {
           </CompanyFieldProvider>
 
           <Form.Field
-            error=""
+            description="Please separate multiple companies with a comma."
+            error={errors.additionalOffers}
             label="If you received multiple offers, list out the additional companies."
-            labelFor="additionalCompanies"
+            labelFor={keys.additionalOffers}
           >
-            <Input name="additionalCompanies" />
+            <Input
+              defaultValue={progress.additionalOffers}
+              id={keys.additionalOffers}
+              name={keys.additionalOffers}
+            />
           </Form.Field>
 
           <Form.Field
