@@ -1,17 +1,18 @@
 import { z } from 'zod';
 
-import { BooleanInput, multiSelectField, Student } from '@oyster/types';
+import { BooleanInput, multiSelectField } from '@oyster/types';
 
 // Use Cases
 
 const CensusRating = z.coerce.number().min(1).max(5);
 
 export const BaseCensusResponse = z.object({
+  additionalOffers: z.string().trim().optional(),
+  companyId: z.string().trim().optional(),
+  companyName: z.string().trim().optional(),
   currentResources: multiSelectField(z.string().trim()),
-  email: Student.shape.email,
   hasGraduated: BooleanInput,
-  schoolId: Student.shape.schoolId,
-  schoolName: z.string().trim().optional(),
+  hasRoleThroughColorStack: BooleanInput,
   summerLocation: z.string().trim(),
   summerLocationLatitude: z.coerce.number(),
   summerLocationLongitude: z.coerce.number(),
@@ -22,7 +23,6 @@ export const AlumniCensusResponse = BaseCensusResponse.extend({
   confidenceRatingFullTimePreparedness: CensusRating,
   joinAlumni: BooleanInput,
   hasGraduated: z.preprocess((value) => value === '1', z.literal(true)),
-  hasPartnerRole: BooleanInput,
   hasTechnicalDegree: BooleanInput,
   hasTechnicalRole: BooleanInput,
 });
@@ -36,7 +36,9 @@ export const UndergraduateCensusResponse = BaseCensusResponse.extend({
   futureResources: z.string().trim(),
   hasGraduated: z.preprocess((value) => value === '1', z.literal(false)),
   hasInternship: BooleanInput,
+  internationalSupport: z.string().trim().optional(),
   isInternational: BooleanInput,
+  isOnTrackToGraduate: BooleanInput,
 });
 
 export const SubmitCensusResponseData = z.discriminatedUnion('hasGraduated', [

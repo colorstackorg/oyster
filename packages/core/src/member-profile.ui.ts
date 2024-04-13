@@ -29,6 +29,11 @@ export {
   LocationType,
   WorkExperience,
 } from './modules/employment/employment.types';
+export {
+  CompanyCombobox,
+  CompanyFieldProvider,
+  FreeTextCompanyInput,
+} from './modules/employment/ui/company-field';
 export { WorkExperienceItem } from './modules/employment/ui/work-experience';
 export { WorkForm } from './modules/employment/ui/work-form';
 export {
