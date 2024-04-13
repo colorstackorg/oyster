@@ -187,18 +187,22 @@ export async function action({ request }: ActionFunctionArgs) {
 type CensusContext = {
   hasGraduated: boolean | null;
   hasInternship: boolean | null;
+  hasTechnicalRole: boolean | null;
   isOtherSchool: boolean;
   setHasGraduated(value: boolean): void;
   setHasInternship(value: boolean): void;
+  setHasTechnicalRole(value: boolean): void;
   setIsOtherSchool(value: boolean): void;
 };
 
 const CensusContext = React.createContext<CensusContext>({
   hasGraduated: null,
   hasInternship: null,
+  hasTechnicalRole: null,
   isOtherSchool: false,
   setHasGraduated: (_: boolean) => {},
   setHasInternship: (_: boolean) => {},
+  setHasTechnicalRole: (_: boolean) => {},
   setIsOtherSchool: (_: boolean) => {},
 });
 
@@ -220,6 +224,10 @@ export default function CensusForm() {
     progress.hasGraduated ?? null
   );
 
+  const [hasTechnicalRole, setHasTechnicalRole] = useState<boolean>(
+    progress.hasTechnicalRole ?? false
+  );
+
   const [hasInternship, setHasInternship] = useState<boolean>(
     progress.hasInternship ?? false
   );
@@ -236,9 +244,11 @@ export default function CensusForm() {
         value={{
           hasGraduated,
           hasInternship,
+          hasTechnicalRole,
           isOtherSchool,
           setHasGraduated,
           setHasInternship,
+          setHasTechnicalRole,
           setIsOtherSchool,
         }}
       >
@@ -423,6 +433,33 @@ function EducationSection() {
           </Form.Field>
 
           <Form.Field
+            error={errors.isOnTrackToGraduate}
+            label="Are you on track to graduate in 4 years?"
+            required
+          >
+            <Radio.Group>
+              <Radio
+                color="lime-100"
+                defaultChecked={progress.isOnTrackToGraduate === true}
+                id={keys.isOnTrackToGraduate + '1'}
+                label="Yes"
+                name={keys.isOnTrackToGraduate}
+                required
+                value="1"
+              />
+              <Radio
+                color="pink-100"
+                defaultChecked={progress.isOnTrackToGraduate === false}
+                id={keys.isOnTrackToGraduate + '0'}
+                label="No"
+                name={keys.isOnTrackToGraduate}
+                required
+                value="0"
+              />
+            </Radio.Group>
+          </Form.Field>
+
+          <Form.Field
             error={errors.confidenceRatingSchool}
             label="My confidence in Computer Science related school work has increased since joining ColorStack."
             required
@@ -464,8 +501,13 @@ function WorkSection() {
   const { progress } = useLoaderData<typeof loader>();
   const { errors } = getActionErrors(useActionData<typeof action>());
 
-  const { hasGraduated, hasInternship, setHasInternship } =
-    useContext(CensusContext);
+  const {
+    hasGraduated,
+    hasInternship,
+    hasTechnicalRole,
+    setHasInternship,
+    setHasTechnicalRole,
+  } = useContext(CensusContext);
 
   if (hasGraduated === null) {
     return null;
@@ -485,6 +527,7 @@ function WorkSection() {
             id={keys.hasTechnicalRole + '1'}
             label="Yes"
             name={keys.hasTechnicalRole}
+            onChange={(e) => setHasTechnicalRole(e.currentTarget.value === '1')}
             required
             value="1"
           />
@@ -494,38 +537,41 @@ function WorkSection() {
             id={keys.hasTechnicalRole + '0'}
             label="No"
             name={keys.hasTechnicalRole}
+            onChange={(e) => setHasTechnicalRole(e.currentTarget.value === '1')}
             required
             value="0"
           />
         </Radio.Group>
       </Form.Field>
 
-      <Form.Field
-        error={errors.hasPartnerRole}
-        label="Do you work for (or will you be joining) a ColorStack partner?"
-        required
-      >
-        <Radio.Group>
-          <Radio
-            color="lime-100"
-            defaultChecked={progress.hasPartnerRole === true}
-            id={keys.hasPartnerRole + '1'}
-            label="Yes"
-            name={keys.hasPartnerRole}
-            required
-            value="1"
-          />
-          <Radio
-            color="pink-100"
-            defaultChecked={progress.hasPartnerRole === false}
-            id={keys.hasPartnerRole + '0'}
-            label="No"
-            name={keys.hasPartnerRole}
-            required
-            value="0"
-          />
-        </Radio.Group>
-      </Form.Field>
+      {hasTechnicalRole && (
+        <Form.Field
+          error={errors.hasRoleThroughColorStack}
+          label="Did you learn about your current role via ColorStack?"
+          required
+        >
+          <Radio.Group>
+            <Radio
+              color="lime-100"
+              defaultChecked={progress.hasRoleThroughColorStack === true}
+              id={keys.hasRoleThroughColorStack + '1'}
+              label="Yes"
+              name={keys.hasRoleThroughColorStack}
+              required
+              value="1"
+            />
+            <Radio
+              color="pink-100"
+              defaultChecked={progress.hasRoleThroughColorStack === false}
+              id={keys.hasRoleThroughColorStack + '0'}
+              label="No"
+              name={keys.hasRoleThroughColorStack}
+              required
+              value="0"
+            />
+          </Radio.Group>
+        </Form.Field>
+      )}
 
       <Form.Field
         error={errors.confidenceRatingFullTimePreparedness}
@@ -570,30 +616,57 @@ function WorkSection() {
       </Form.Field>
 
       {hasInternship && (
-        <CompanyFieldProvider>
+        <>
+          <CompanyFieldProvider>
+            <Form.Field
+              error={errors.companyId}
+              label="What company will you be working with?"
+              labelFor={keys.companyId}
+              required
+            >
+              <CompanyCombobox
+                defaultCompanyName={progress.companyName}
+                defaultCrunchbaseId=""
+                name={keys.companyId}
+              />
+            </Form.Field>
+          </CompanyFieldProvider>
+
           <Form.Field
-            error={errors.companyId}
-            label="What company will you be working with?"
-            labelFor={keys.companyId}
+            error=""
+            label="If you received multiple offers, list out the additional companies."
+            labelFor="additionalCompanies"
+          >
+            <Input name="additionalCompanies" />
+          </Form.Field>
+
+          <Form.Field
+            error={errors.hasRoleThroughColorStack}
+            label="Did you learn about your internship(s) via ColorStack?"
             required
           >
-            <CompanyCombobox
-              defaultCompanyName={progress.companyName}
-              defaultCrunchbaseId=""
-              name={keys.companyId}
-            />
+            <Radio.Group>
+              <Radio
+                color="lime-100"
+                defaultChecked={progress.hasRoleThroughColorStack === true}
+                id={keys.hasRoleThroughColorStack + '1'}
+                label="Yes"
+                name={keys.hasRoleThroughColorStack}
+                required
+                value="1"
+              />
+              <Radio
+                color="pink-100"
+                defaultChecked={progress.hasRoleThroughColorStack === false}
+                id={keys.hasRoleThroughColorStack + '0'}
+                label="No"
+                name={keys.hasRoleThroughColorStack}
+                required
+                value="0"
+              />
+            </Radio.Group>
           </Form.Field>
-        </CompanyFieldProvider>
-      )}
-
-      {hasInternship && (
-        <Form.Field
-          error=""
-          label="If you received multiple offers, list out the additional companies."
-          labelFor="additionalCompanies"
-        >
-          <Input name="additionalCompanies" />
-        </Form.Field>
+        </>
       )}
 
       <Form.Field

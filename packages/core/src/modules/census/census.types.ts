@@ -11,6 +11,7 @@ export const BaseCensusResponse = z.object({
   companyName: z.string().trim().optional(),
   currentResources: multiSelectField(z.string().trim()),
   hasGraduated: BooleanInput,
+  hasRoleThroughColorStack: BooleanInput,
   schoolId: Student.shape.schoolId,
   schoolName: z.string().trim().optional(),
   summerLocation: z.string().trim(),
@@ -23,7 +24,6 @@ export const AlumniCensusResponse = BaseCensusResponse.extend({
   confidenceRatingFullTimePreparedness: CensusRating,
   joinAlumni: BooleanInput,
   hasGraduated: z.preprocess((value) => value === '1', z.literal(true)),
-  hasPartnerRole: BooleanInput,
   hasTechnicalDegree: BooleanInput,
   hasTechnicalRole: BooleanInput,
 });
@@ -38,6 +38,7 @@ export const UndergraduateCensusResponse = BaseCensusResponse.extend({
   hasGraduated: z.preprocess((value) => value === '1', z.literal(false)),
   hasInternship: BooleanInput,
   isInternational: BooleanInput,
+  isOnTrackToGraduate: BooleanInput,
 });
 
 export const SubmitCensusResponseData = z.discriminatedUnion('hasGraduated', [
