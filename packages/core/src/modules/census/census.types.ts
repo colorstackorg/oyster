@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { BooleanInput, multiSelectField, Student } from '@oyster/types';
+import { BooleanInput, multiSelectField } from '@oyster/types';
 
 // Use Cases
 
@@ -12,8 +12,6 @@ export const BaseCensusResponse = z.object({
   currentResources: multiSelectField(z.string().trim()),
   hasGraduated: BooleanInput,
   hasRoleThroughColorStack: BooleanInput,
-  schoolId: Student.shape.schoolId,
-  schoolName: z.string().trim().optional(),
   summerLocation: z.string().trim(),
   summerLocationLatitude: z.coerce.number(),
   summerLocationLongitude: z.coerce.number(),

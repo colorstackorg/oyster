@@ -39,10 +39,8 @@ import {
   BaseCensusResponse,
   CompanyCombobox,
   CompanyFieldProvider,
-  SchoolCombobox,
   SubmitCensusResponseData,
 } from '../shared/core.ui';
-import { getMember } from '../shared/queries';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
 
 const censusCookie = createCookie('census', {
@@ -81,8 +79,6 @@ const CensusFormIntent = {
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const memberId = user(session);
-
   const response = await getCensusResponse({
     select: [],
     where: {
@@ -100,16 +96,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     cookie = await getCensusCookie(request);
   } catch (e) {
-    const { schoolId, school: schoolName } = await getMember(memberId, {
-      school: true,
-    })
-      .select(['students.schoolId'])
-      .executeTakeFirstOrThrow();
-
-    cookie = {
-      schoolId: schoolId || undefined,
-      schoolName: schoolName || undefined,
-    };
+    cookie = {};
   }
 
   return json(
@@ -189,12 +176,10 @@ type CensusContext = {
   hasInternship: boolean | null;
   hasTechnicalRole: boolean | null;
   isInternational: boolean | null;
-  isOtherSchool: boolean;
   setHasGraduated(value: boolean): void;
   setHasInternship(value: boolean): void;
   setHasTechnicalRole(value: boolean): void;
   setIsInternational(value: boolean): void;
-  setIsOtherSchool(value: boolean): void;
 };
 
 const CensusContext = React.createContext<CensusContext>({
@@ -202,12 +187,10 @@ const CensusContext = React.createContext<CensusContext>({
   hasInternship: null,
   hasTechnicalRole: null,
   isInternational: null,
-  isOtherSchool: false,
   setHasGraduated: (_: boolean) => {},
   setHasInternship: (_: boolean) => {},
   setHasTechnicalRole: (_: boolean) => {},
   setIsInternational: (_: boolean) => {},
-  setIsOtherSchool: (_: boolean) => {},
 });
 
 const keys = SubmitCensusResponseData_.keyof().enum;
@@ -236,8 +219,9 @@ export default function CensusForm() {
     progress.hasInternship ?? false
   );
 
-  const [isInternational, setIsInternational] = useState<boolean | null>(null);
-  const [isOtherSchool, setIsOtherSchool] = useState<boolean>(false);
+  const [isInternational, setIsInternational] = useState<boolean | null>(
+    progress.isInternational ?? null
+  );
 
   return (
     <RemixForm
@@ -251,12 +235,10 @@ export default function CensusForm() {
           hasInternship,
           hasTechnicalRole,
           isInternational,
-          isOtherSchool,
           setHasGraduated,
           setHasInternship,
           setHasTechnicalRole,
           setIsInternational,
-          setIsOtherSchool,
         }}
       >
         <BasicSection />
@@ -313,14 +295,8 @@ function EducationSection() {
   const { progress } = useLoaderData<typeof loader>();
   const { errors } = getActionErrors(useActionData<typeof action>());
 
-  const {
-    hasGraduated,
-    isInternational,
-    isOtherSchool,
-    setHasGraduated,
-    setIsInternational,
-    setIsOtherSchool,
-  } = useContext(CensusContext);
+  const { hasGraduated, isInternational, setHasGraduated, setIsInternational } =
+    useContext(CensusContext);
 
   return (
     <CensusSection title="Education">
@@ -385,39 +361,6 @@ function EducationSection() {
 
       {hasGraduated === false && (
         <>
-          <Form.Field
-            description="What school do you currently attend?"
-            error={errors.schoolId}
-            label="School"
-            labelFor={keys.schoolId}
-            required
-          >
-            <SchoolCombobox
-              defaultValue={
-                progress.schoolId && progress.schoolName
-                  ? { id: progress.schoolId, name: progress.schoolName }
-                  : progress.schoolName
-                    ? { id: 'other', name: 'Other' }
-                    : undefined
-              }
-              name={keys.schoolId}
-              onSelect={(e) => {
-                setIsOtherSchool(e.currentTarget.value === 'other');
-              }}
-            />
-
-            {isOtherSchool && (
-              <Input
-                className="mt-2"
-                defaultValue={progress.schoolName}
-                id={keys.schoolName}
-                name={keys.schoolName}
-                placeholder="Enter school name here..."
-                required
-              />
-            )}
-          </Form.Field>
-
           <Form.Field
             error={errors.isInternational}
             label="Are you an international student?"

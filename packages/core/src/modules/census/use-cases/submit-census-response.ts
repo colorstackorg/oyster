@@ -13,16 +13,9 @@ export async function submitCensusResponse(
   const year = new Date().getFullYear();
 
   await db.transaction().execute(async (trx) => {
-    // First, we update anything that should live directly on the member record,
-    // such as the member type and school information.
-
     await trx
       .updateTable('students')
-      .set({
-        otherSchool: data.schoolId ? null : data.schoolName,
-        schoolId: data.schoolId || null,
-        type: data.hasGraduated ? MemberType.ALUMNI : MemberType.STUDENT,
-      })
+      .set({ type: data.hasGraduated ? MemberType.ALUMNI : MemberType.STUDENT })
       .where('id', '=', memberId)
       .execute();
 
