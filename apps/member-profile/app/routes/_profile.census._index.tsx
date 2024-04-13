@@ -54,7 +54,6 @@ import { ensureUserAuthenticated, user } from '../shared/session.server';
 const censusCookie = createCookie('census', {
   httpOnly: true,
   maxAge: 60 * 60 * 24 * 30,
-  path: Route['/census'],
   secure: true,
 });
 
