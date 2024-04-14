@@ -45,6 +45,7 @@ async function getPastEvents({ timezone }: GetPastEventsInput) {
       'id',
       'name',
       'startTime',
+      'recordingLink',
       (eb) => {
         return eb
           .selectFrom(
@@ -144,6 +145,12 @@ function PastEventItem({ event }: PastEventItemProps) {
             id={event.id}
             profilePictures={event.profilePictures}
           />
+        )}
+
+        {!!event.recordingLink && (
+          <a className="link" href={event.recordingLink} target="_blank">
+            View Recorded Event
+          </a>
         )}
       </div>
     </li>
