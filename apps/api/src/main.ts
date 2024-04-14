@@ -26,12 +26,8 @@ import {
 import { healthRouter } from './routers/health.router';
 import { oauthRouter } from './routers/oauth.router';
 import { slackEventRouter } from './routers/slack-event.router';
-import { RawBodyRequest } from './shared/types';
-
-// Importing this file ensures that our application has all of the environment
-// variables necessary to run. If any are missing, this file will throw an error
-// and crash the application.
 import { ENV } from './shared/env';
+import { type RawBodyRequest } from './shared/types';
 
 // Some API endpoints require access to the `req.rawBody` buffer field, which
 // is not available by default. We need to whitelist these endpoints so that

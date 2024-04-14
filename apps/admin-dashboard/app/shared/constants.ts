@@ -1,4 +1,4 @@
-import { ExtractValue } from '@oyster/types';
+import { type ExtractValue } from '@oyster/types';
 
 export const Route = {
   HOME: '/',
@@ -21,6 +21,7 @@ export const Route = {
 
   // Events
 
+  ADD_EVENT_RECORDING: '/events/:id/add-recording',
   CREATE_EVENT: '/events/create',
   EVENTS: '/events',
   IMPORT_EVENT_ATTENDEES: '/events/:id/import',

@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -10,28 +10,23 @@ import {
   useLoaderData,
   useNavigation,
 } from '@remix-run/react';
-import { sql } from 'kysely';
 import { z } from 'zod';
 
 import { nullableField, Student } from '@oyster/types';
 import { Button, Divider, getActionErrors, validateForm } from '@oyster/ui';
 
 import {
+  JoinDirectoryBackButton,
+  JoinDirectoryNextButton,
+} from './_profile.directory.join';
+import {
   EthnicityField,
   HometownField,
 } from '../shared/components/profile.personal';
 import { Route } from '../shared/constants';
-import { db } from '../shared/core.server';
-import {
-  getMember,
-  getMemberEthnicities,
-  updatePersonalInformation,
-} from '../shared/queries';
+import { updateMember } from '../shared/core.server';
+import { getMember, getMemberEthnicities } from '../shared/queries';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
-import {
-  JoinDirectoryBackButton,
-  JoinDirectoryNextButton,
-} from './_profile.directory.join';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -83,12 +78,9 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  await db.transaction().execute(async (trx) => {
-    await updatePersonalInformation(trx, user(session), {
-      ethnicities: data.ethnicities || [],
-      hometown: data.hometown,
-      hometownCoordinates: sql`point(${data.hometownLongitude}, ${data.hometownLatitude})`,
-    });
+  await updateMember({
+    data: { ...data, ethnicities: data.ethnicities || [] },
+    where: { id: user(session) },
   });
 
   return redirect(Route['/directory/join/3']);

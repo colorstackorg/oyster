@@ -1,6 +1,6 @@
 import Statsig from 'statsig-node';
 
-import { FeatureFlag, getStatsigKey } from '../feature-flag.shared';
+import { type FeatureFlag, getStatsigKey } from '../feature-flag.shared';
 
 type IsFeatureFlagEnabledOptions = {
   user: string;

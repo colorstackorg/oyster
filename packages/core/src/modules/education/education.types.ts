@@ -3,7 +3,7 @@ import { z } from 'zod';
 import {
   Address,
   Entity,
-  ExtractValue,
+  type ExtractValue,
   ISO8601Date,
   Major,
   NullishString,

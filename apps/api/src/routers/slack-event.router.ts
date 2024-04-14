@@ -4,9 +4,12 @@ import { match } from 'ts-pattern';
 
 import { job } from '@oyster/core/api';
 
+import {
+  type SlackRequestBody,
+  SlackRequestHeaders,
+} from './slack-event.types';
 import { ENV } from '../shared/env';
-import { RawBodyRequest } from '../shared/types';
-import { SlackRequestBody, SlackRequestHeaders } from './slack-event.types';
+import { type RawBodyRequest } from '../shared/types';
 
 export const slackEventRouter = express.Router();
 

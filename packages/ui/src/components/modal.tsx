@@ -1,11 +1,11 @@
-import React, { PropsWithChildren, useContext } from 'react';
+import React, { type PropsWithChildren, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'react-feather';
 
-import { useHydrated } from '../hooks/use-hydrated';
-import { cx } from '../utils/cx';
 import { IconButton } from './icon-button';
 import { Text } from './text';
+import { useHydrated } from '../hooks/use-hydrated';
+import { cx } from '../utils/cx';
 
 const ModalContext = React.createContext({
   _initialized: false,
@@ -18,6 +18,7 @@ type ModalProps = PropsWithChildren<{
 
 export function useIsModalParent() {
   const { _initialized } = useContext(ModalContext);
+
   return !!_initialized;
 }
 

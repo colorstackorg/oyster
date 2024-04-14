@@ -1,4 +1,8 @@
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
@@ -25,7 +29,7 @@ import {
 } from '../shared/components/profile';
 import {
   IcebreakersProvider,
-  PromptNumber,
+  type PromptNumber,
   useIcebreakerContext,
 } from '../shared/components/profile.icebreakers';
 import {
@@ -186,6 +190,7 @@ function IcebreakerGroup({ number }: IcebreakerGroupProps) {
   const availablePrompts = icebreakerPrompts.filter((prompt) => {
     const { [number]: _, ...otherPromptIds } = promptIds;
     const promptIdsAlreadyUsed = Object.values(otherPromptIds).filter(Boolean);
+
     return !promptIdsAlreadyUsed.includes(prompt.id);
   });
 

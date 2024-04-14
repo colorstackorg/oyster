@@ -3,7 +3,7 @@ import { match } from 'ts-pattern';
 
 import type { ActivityPeriod } from '@oyster/types';
 
-import { GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { db } from '@/infrastructure/database';
 
 export async function revokeGamificationPoints(

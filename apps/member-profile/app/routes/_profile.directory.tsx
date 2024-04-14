@@ -1,4 +1,8 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import {
   generatePath,
   Link,
@@ -6,13 +10,11 @@ import {
   Form as RemixForm,
   useLoaderData,
 } from '@remix-run/react';
-import { sql } from 'kysely';
 import { useState } from 'react';
 import { Filter, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
-import { z } from 'zod';
 
-import { ExtractValue, Student } from '@oyster/types';
+import { type ExtractValue } from '@oyster/types';
 import {
   Button,
   Dashboard,
@@ -31,45 +33,29 @@ import { CityCombobox } from '../shared/components/city-combobox';
 import { CompanyCombobox } from '../shared/components/company-combobox';
 import { EthnicityCombobox } from '../shared/components/ethnicity-combobox';
 import { Route } from '../shared/constants';
-import { db } from '../shared/core.server';
+import { db, listMembersInDirectory } from '../shared/core.server';
 import {
-  Company,
-  Country,
+  ListMembersInDirectoryWhere,
   ListSearchParams,
   SchoolCombobox,
 } from '../shared/core.ui';
 import { ensureUserAuthenticated } from '../shared/session.server';
 import { formatName } from '../shared/utils/format.utils';
 
-const DirectoryFilterParams = z.object({
-  company: Company.shape.id.nullable().catch(null),
-  ethnicity: Country.shape.code.nullable().catch(null),
-  graduationYear: Student.shape.graduationYear.nullable().catch(null),
-  hometown: z.string().trim().min(1).nullable().catch(null),
-  hometownLatitude: z.coerce.number().nullable().catch(null),
-  hometownLongitude: z.coerce.number().nullable().catch(null),
-  location: z.string().trim().min(1).nullable().catch(null),
-  locationLatitude: z.coerce.number().nullable().catch(null),
-  locationLongitude: z.coerce.number().nullable().catch(null),
-  school: z.string().min(1).nullable().catch(null),
-});
-
-const DirectoryFilterParam = DirectoryFilterParams.keyof().enum;
-
-const DirectoryFilterKey = DirectoryFilterParams.omit({
+const DirectoryFilterKey = ListMembersInDirectoryWhere.omit({
   hometownLatitude: true,
   hometownLongitude: true,
   locationLatitude: true,
   locationLongitude: true,
+  search: true,
 }).keyof().enum;
 
-const DirectorySearchParams = ListSearchParams.omit({ timezone: true }).merge(
-  DirectoryFilterParams
-);
-
-type DirectoryFilterParam = ExtractValue<typeof DirectoryFilterParam>;
 type DirectoryFilterKey = ExtractValue<typeof DirectoryFilterKey>;
-type DirectorySearchParams = z.infer<typeof DirectorySearchParams>;
+
+const DirectorySearchParams = ListSearchParams.pick({
+  limit: true,
+  page: true,
+}).merge(ListMembersInDirectoryWhere);
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -80,9 +66,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     Object.fromEntries(url.searchParams)
   );
 
+  const { limit, page, ...where } = searchParams;
+
   const [filters, { members, totalCount }] = await Promise.all([
     getAppliedFilters(searchParams),
-    getMembers(searchParams),
+    listMembersInDirectory({ limit, page, where }),
   ]);
 
   return json({
@@ -95,116 +83,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
-async function getMembers({
-  company,
-  ethnicity,
-  graduationYear,
-  hometownLatitude,
-  hometownLongitude,
-  limit,
-  locationLatitude,
-  locationLongitude,
-  page,
-  school,
-  search,
-}: DirectorySearchParams) {
-  const query = db
-    .selectFrom('students')
-    .$if(!!search, (query) => {
-      return query.where((eb) => {
-        return eb.or([
-          eb('students.email', 'ilike', `%${search}%`),
-          eb('students.firstName', 'ilike', `%${search}%`),
-          eb('students.headline', 'ilike', `%${search}%`),
-          eb('students.lastName', 'ilike', `%${search}%`),
-          eb('students.preferredName', 'ilike', `%${search}%`),
-          eb(sql`first_name || ' ' || last_name`, 'ilike', `%${search}%`),
-        ]);
-      });
-    })
-    .$if(!!company, (query) => {
-      return query.where((eb) => {
-        return eb.exists(
-          eb
-            .selectFrom('workExperiences')
-            .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
-            .whereRef('workExperiences.studentId', '=', 'students.id')
-            .where('companies.crunchbaseId', '=', company)
-        );
-      });
-    })
-    .$if(!!ethnicity, (query) => {
-      return query.where((eb) => {
-        return eb.exists(
-          eb
-            .selectFrom('memberEthnicities')
-            .whereRef('memberEthnicities.studentId', '=', 'students.id')
-            .where('memberEthnicities.countryCode', '=', ethnicity)
-        );
-      });
-    })
-    .$if(!!graduationYear, (query) => {
-      return query.where(
-        'students.graduationYear',
-        '=',
-        graduationYear!.toString()
-      );
-    })
-    .$if(!!hometownLatitude && !!hometownLongitude, (query) => {
-      return query.where(
-        sql`students.hometown_coordinates <@> point(${hometownLongitude}, ${hometownLatitude})`,
-        '<=',
-        25
-      );
-    })
-    .$if(!!locationLatitude && !!locationLongitude, (query) => {
-      return query.where(
-        sql`students.current_location_coordinates <@> point(${locationLongitude}, ${locationLatitude})`,
-        '<=',
-        25
-      );
-    })
-    .$if(!!school, (query) => {
-      return query.where((eb) => {
-        return eb.exists(
-          eb
-            .selectFrom('educations')
-            .whereRef('educations.studentId', '=', 'students.id')
-            .where('educations.schoolId', '=', school)
-        );
-      });
-    })
-    .where('joinedMemberDirectoryAt', 'is not', null);
-
-  const [members, { count }] = await Promise.all([
-    query
-      .select([
-        'students.firstName',
-        'students.headline',
-        'students.id',
-        'students.lastName',
-        'students.preferredName',
-        'students.profilePicture',
-      ])
-      .orderBy('students.joinedMemberDirectoryAt', 'desc')
-      .limit(limit)
-      .offset((page - 1) * limit)
-      .execute(),
-
-    query
-      .select((eb) => eb.fn.countAll().as('count'))
-      .executeTakeFirstOrThrow(),
-  ]);
-
-  return {
-    members,
-    totalCount: Number(count),
-  };
-}
-
 async function getAppliedFilters(
   searchParams: Pick<
-    DirectorySearchParams,
+    ListMembersInDirectoryWhere,
     | 'company'
     | 'ethnicity'
     | 'graduationYear'
@@ -263,6 +144,8 @@ async function getAppliedFilters(
     school,
   };
 }
+
+const keys = ListMembersInDirectoryWhere.keyof().enum;
 
 export default function DirectoryPage() {
   return (
@@ -379,10 +262,10 @@ function FilterForm({ close }: { close: VoidFunction }) {
 
       {match(filterKey)
         .with('company', () => {
-          return <CompanyCombobox name={DirectoryFilterKey.company} />;
+          return <CompanyCombobox name={keys.company} />;
         })
         .with('ethnicity', () => {
-          return <EthnicityCombobox name={DirectoryFilterKey.ethnicity} />;
+          return <EthnicityCombobox name={keys.ethnicity} />;
         })
         .with('graduationYear', () => {
           const lowestYear = 2018;
@@ -396,7 +279,7 @@ function FilterForm({ close }: { close: VoidFunction }) {
           ).reverse();
 
           return (
-            <Select name={DirectoryFilterKey.graduationYear}>
+            <Select name={keys.graduationYear}>
               {years.map((year) => {
                 return (
                   <option key={year} value={year}>
@@ -410,9 +293,9 @@ function FilterForm({ close }: { close: VoidFunction }) {
         .with('hometown', () => {
           return (
             <CityCombobox
-              latitudeName={DirectoryFilterParam.hometownLatitude}
-              longitudeName={DirectoryFilterParam.hometownLongitude}
-              name={DirectoryFilterKey.hometown}
+              latitudeName={keys.hometownLatitude}
+              longitudeName={keys.hometownLongitude}
+              name={keys.hometown}
               required
             />
           );
@@ -420,15 +303,15 @@ function FilterForm({ close }: { close: VoidFunction }) {
         .with('location', () => {
           return (
             <CityCombobox
-              latitudeName={DirectoryFilterParam.locationLatitude}
-              longitudeName={DirectoryFilterParam.locationLongitude}
-              name={DirectoryFilterKey.location}
+              latitudeName={keys.locationLatitude}
+              longitudeName={keys.locationLongitude}
+              name={keys.location}
               required
             />
           );
         })
         .with('school', () => {
-          return <SchoolCombobox name={DirectoryFilterKey.school} />;
+          return <SchoolCombobox name={keys.school} />;
         })
         .with(null, () => {
           return null;
@@ -466,16 +349,17 @@ function AppliedFilterGroup() {
         .filter(([_, value]) => !!value)
         .map(([key, value]) => {
           const url = new URL(_url);
+
           url.searchParams.delete(key);
 
-          if (key === DirectoryFilterKey.hometown) {
-            url.searchParams.delete(DirectoryFilterParam.hometownLatitude);
-            url.searchParams.delete(DirectoryFilterParam.hometownLongitude);
+          if (key === keys.hometown) {
+            url.searchParams.delete(keys.hometownLatitude);
+            url.searchParams.delete(keys.hometownLongitude);
           }
 
-          if (key === DirectoryFilterKey.location) {
-            url.searchParams.delete(DirectoryFilterParam.locationLatitude);
-            url.searchParams.delete(DirectoryFilterParam.locationLongitude);
+          if (key === keys.location) {
+            url.searchParams.delete(keys.locationLatitude);
+            url.searchParams.delete(keys.locationLongitude);
           }
 
           // When the origin is included, it is an absolute URL but we need it

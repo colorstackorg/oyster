@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -9,7 +9,7 @@ import {
   useActionData,
   useNavigate,
 } from '@remix-run/react';
-import { z } from 'zod';
+import { type z } from 'zod';
 
 import { Activity } from '@oyster/types';
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';

@@ -1,6 +1,6 @@
 import { db } from '@/infrastructure/database';
 import { getSwagPackInventory, orderSwagPack } from '../swag-pack.service';
-import { ClaimSwagPackInput } from '../swag-pack.types';
+import { type ClaimSwagPackInput } from '../swag-pack.types';
 
 export async function claimSwagPack({
   addressCity,
@@ -61,5 +61,6 @@ export async function claimSwagPack({
  */
 async function getSwagPackType() {
   const bottleInventory = await getSwagPackInventory('bottle');
+
   return bottleInventory > 0 ? 'bottle' : 'hat';
 }

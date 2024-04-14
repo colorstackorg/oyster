@@ -1,4 +1,8 @@
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
@@ -15,8 +19,8 @@ import {
   ProfileSection,
   ProfileTitle,
 } from '../shared/components/profile';
-import { db } from '../shared/core.server';
-import { getMember, updateSocialsInformation } from '../shared/queries';
+import { updateMember } from '../shared/core.server';
+import { getMember } from '../shared/queries';
 import {
   commitSession,
   ensureUserAuthenticated,
@@ -74,8 +78,9 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  await db.transaction().execute(async (trx) => {
-    await updateSocialsInformation(trx, user(session), data);
+  await updateMember({
+    data,
+    where: { id: user(session) },
   });
 
   toast(session, {

@@ -257,6 +257,7 @@ export async function registerForAirmeetEvent(input: RegisterForEventInput) {
 
   if (!response.ok) {
     const error = new RegisterForAirmeetEventError().withContext(data);
+
     reportError(error);
     throw error;
   }

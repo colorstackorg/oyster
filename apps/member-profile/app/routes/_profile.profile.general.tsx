@@ -1,12 +1,15 @@
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
   useNavigation,
 } from '@remix-run/react';
-import { sql } from 'kysely';
-import { z } from 'zod';
+import { type z } from 'zod';
 
 import { Student } from '@oyster/types';
 import {
@@ -26,9 +29,8 @@ import {
   CurrentLocationField,
   PreferredNameField,
 } from '../shared/components/profile.general';
-import { db } from '../shared/core.server';
+import { updateMember } from '../shared/core.server';
 import { track } from '../shared/mixpanel.server';
-import { updateGeneralInformation } from '../shared/queries';
 import { getMember } from '../shared/queries/index';
 import {
   commitSession,
@@ -94,13 +96,9 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  const { currentLocationLatitude, currentLocationLongitude, ...rest } = data;
-
-  await db.transaction().execute(async (trx) => {
-    await updateGeneralInformation(trx, user(session), {
-      ...rest,
-      currentLocationCoordinates: sql`point(${currentLocationLongitude}, ${currentLocationLatitude})`,
-    });
+  await updateMember({
+    data,
+    where: { id: user(session) },
   });
 
   toast(session, {

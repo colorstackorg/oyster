@@ -1,11 +1,16 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import { Outlet, Link as RemixLink, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { PropsWithChildren, PropsWithoutRef } from 'react';
+import { type PropsWithChildren, type PropsWithoutRef } from 'react';
 import {
   CheckCircle,
   ExternalLink,
-  Icon,
+  GitHub,
+  type Icon,
   Instagram,
   Linkedin,
   Twitter,
@@ -15,7 +20,7 @@ import {
 import { match } from 'ts-pattern';
 
 import {
-  ActivationRequirement,
+  type ActivationRequirement,
   StudentActiveStatus,
   Timezone,
 } from '@oyster/types';
@@ -34,11 +39,11 @@ import { Card } from '../shared/components/card';
 import { Route } from '../shared/constants';
 import { getTimezone } from '../shared/cookies.server';
 import {
+  countEventAttendees,
   countMessagesSent,
   db,
   getActiveStreakLeaderboard,
   getActiveStreakLeaderboardPosition,
-  getEventsAttendedCount,
   getIpAddress,
 } from '../shared/core.server';
 import { setMixpanelProfile, track } from '../shared/mixpanel.server';
@@ -64,7 +69,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   ] = await Promise.all([
     getActiveStreakLeaderboard(),
     getStudent(id),
-    getEventsAttendedCount(id),
+    countEventAttendees({
+      where: { studentId: id },
+    }),
     countMessagesSent(id),
     getRecentActiveStatuses(id, timezone),
     getThisWeekActiveStatus(id, timezone),
@@ -703,6 +710,8 @@ function SocialsCard() {
         />
 
         <SocialItem Icon={Twitter} href="https://twitter.com/colorstackorg" />
+
+        <SocialItem Icon={GitHub} href="https://github.com/colorstackorg" />
 
         <SocialItem
           Icon={Youtube}

@@ -1,4 +1,4 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { NavLink, Outlet } from '@remix-run/react';
 import { generatePath } from 'react-router';
 
@@ -11,6 +11,7 @@ import { ensureUserAuthenticated } from '../shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
+
   return json({});
 }
 

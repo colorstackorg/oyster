@@ -1,8 +1,7 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
-import { sql } from 'kysely';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { z } from 'zod';
 
-import { db } from '../shared/core.server';
+import { listSchools } from '../shared/core.server';
 
 const SchoolsSearchParams = z.object({
   search: z.string().trim().min(1).catch(''),
@@ -18,7 +17,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
 
   try {
-    const schools = await listSchools(search);
+    const schools = await listSchools({
+      select: ['id', 'name'],
+      where: { search },
+    });
 
     return json({
       schools,
@@ -28,22 +30,4 @@ export async function loader({ request }: LoaderFunctionArgs) {
       schools: [],
     });
   }
-}
-
-async function listSchools(search: string) {
-  let query = db.selectFrom('schools').select(['id', 'name']).limit(25);
-
-  if (search) {
-    query = query
-      .where(sql`similarity(name, ${search}) > 0.15`)
-      .where(sql`word_similarity(name, ${search}) > 0.15`)
-      .orderBy(sql`similarity(name, ${search})`, 'desc')
-      .orderBy(sql`word_similarity(name, ${search})`, 'desc');
-  } else {
-    query = query.orderBy('name', 'asc');
-  }
-
-  const rows = await query.execute();
-
-  return rows;
 }

@@ -1,4 +1,8 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 
 import { getCityDetails } from '../shared/core.server';
 import { ensureUserAuthenticated } from '../shared/session.server';

@@ -1,17 +1,17 @@
 import React, {
   createRef,
-  PropsWithChildren,
+  type PropsWithChildren,
   useContext,
   useEffect,
   useRef,
   useState,
 } from 'react';
 
+import { useIsDropdownParent } from './dropdown';
+import { useIsModalParent } from './modal';
 import { useHydrated } from '../hooks/use-hydrated';
 import { useOnClickOutside } from '../hooks/use-on-click-outside';
 import { cx } from '../utils/cx';
-import { useIsDropdownParent } from './dropdown';
-import { useIsModalParent } from './modal';
 
 const ComboboxPopoverContext = React.createContext({
   popoverOpen: false,

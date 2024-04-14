@@ -39,6 +39,7 @@ export function getMembersAirtable() {
   const airtable = getAirtableInstance();
   const base = airtable.base(AIRTABLE_FAMILY_BASE_ID);
   const table = base('Members');
+
   return table;
 }
 

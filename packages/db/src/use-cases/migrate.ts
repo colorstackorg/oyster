@@ -1,16 +1,16 @@
 import { promises as fs } from 'fs';
 import {
-  Migrator,
   type Kysely,
   type Migration,
   type MigrationProvider,
+  Migrator,
 } from 'kysely';
-import { type DB } from 'kysely-codegen/dist/db';
 import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 import { createDatabaseConnection } from './create-database-connection';
+import { type DB } from '../shared/types';
 
 type MigrateOptions = {
   db?: Kysely<DB>;
@@ -56,11 +56,13 @@ export async function migrate(options: MigrateOptions = defaultOptions) {
 
       if (result.status === 'Success') {
         console.log(`${prefix}: Migration was executed successfully.`);
+
         return;
       }
 
       if (result.status === 'Error') {
         console.error(`${prefix}: Failed to execute migration.`);
+
         return;
       }
     });

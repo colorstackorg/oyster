@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -24,8 +24,12 @@ import {
 import { id } from '@oyster/utils';
 
 import {
+  JoinDirectoryBackButton,
+  JoinDirectoryNextButton,
+} from './_profile.directory.join';
+import {
   IcebreakersProvider,
-  PromptNumber,
+  type PromptNumber,
   useIcebreakerContext,
 } from '../shared/components/profile.icebreakers';
 import { Route } from '../shared/constants';
@@ -38,10 +42,6 @@ import {
 } from '../shared/core.server';
 import { IcebreakerPrompt, IcebreakerResponse } from '../shared/core.ui';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
-import {
-  JoinDirectoryBackButton,
-  JoinDirectoryNextButton,
-} from './_profile.directory.join';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -167,6 +167,7 @@ function IcebreakerGroup({ number }: IcebreakerGroupProps) {
   const availablePrompts = icebreakerPrompts.filter((prompt) => {
     const { [number]: _, ...otherPromptIds } = promptIds;
     const promptIdsAlreadyUsed = Object.values(otherPromptIds).filter(Boolean);
+
     return !promptIdsAlreadyUsed.includes(prompt.id);
   });
 

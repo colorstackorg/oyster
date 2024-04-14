@@ -8,12 +8,13 @@ import { PassThrough } from 'stream';
 
 import { getCookie } from '@oyster/utils';
 
+import { ENV } from './shared/constants.server';
 import { initializeFeatureFlagServer } from './shared/core.server';
 
 // Importing this file ensures that our application has all of the environment
 // variables necessary to run. If any are missing, this file will throw an error
 // and crash the application.
-import { ENV } from './shared/constants.server';
+import './shared/constants.server';
 
 await initializeFeatureFlagServer();
 

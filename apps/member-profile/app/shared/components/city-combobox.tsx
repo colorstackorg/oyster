@@ -6,8 +6,8 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxPopover,
-  ComboboxProps,
-  InputProps,
+  type ComboboxProps,
+  type InputProps,
   useDelayedValue,
 } from '@oyster/ui';
 

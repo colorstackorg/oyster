@@ -1,6 +1,9 @@
 import { slack } from '@/modules/slack/instances';
 import { ENV } from '@/shared/env';
-import { ExchangeCodeForTokenInput, OAuthService } from '../oauth.service';
+import {
+  type ExchangeCodeForTokenInput,
+  type OAuthService,
+} from '../oauth.service';
 
 export class SlackOAuthService implements OAuthService {
   async exchangeCodeForToken(input: ExchangeCodeForTokenInput) {

@@ -8,7 +8,7 @@ import {
   CompletedActivity,
   EmailCampaign,
   Event,
-  ExtractValue,
+  type ExtractValue,
   ProfileView,
   Student,
   StudentEmail,
@@ -236,6 +236,11 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         studentId: CompletedActivity.shape.studentId,
         surveyRespondedTo: Survey.shape.id,
         type: z.literal('respond_to_survey'),
+      }),
+      z.object({
+        studentId: CompletedActivity.shape.studentId,
+        type: z.literal('submit_census_response'),
+        year: z.number().int().min(2024),
       }),
       z.object({
         studentId: CompletedActivity.shape.studentId,

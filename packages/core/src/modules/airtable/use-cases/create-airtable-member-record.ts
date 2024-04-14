@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { type z } from 'zod';
 
 import {
   FORMATTED_DEMOGRAPHICS,
@@ -7,7 +7,7 @@ import {
   Student,
 } from '@oyster/types';
 
-import { GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { db } from '@/infrastructure/database';
 import { IS_PRODUCTION } from '@/shared/env';
 import { airtableRateLimiter, getMembersAirtable } from '../airtable.shared';

@@ -4,8 +4,8 @@ import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
 import { IS_DEVELOPMENT } from '@/shared/env';
 import {
-  OneTimeCodePurpose,
-  VerifyOneTimeCodeInput,
+  type OneTimeCodePurpose,
+  type VerifyOneTimeCodeInput,
 } from '../authentication.types';
 
 export async function verifyOneTimeCode({ id, value }: VerifyOneTimeCodeInput) {

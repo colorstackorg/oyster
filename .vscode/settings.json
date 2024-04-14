@@ -7,14 +7,9 @@
   "editor.rulers": [80],
   "editor.quickSuggestions": { "strings": "on" },
   "eslint.workingDirectories": ["./apps/*", "./config/*", "./packages/*"],
-  "typescript.preferences.importModuleSpecifier": "relative",
   "typescript.tsdk": "node_modules/typescript/lib",
-  "[typescript][typescriptreact]": {
-    "editor.codeActionsOnSave": {
-      "source.fixAll": "explicit",
-      "source.organizeImports": "explicit"
-    }
-  },
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.preferGoToSourceDefinition": true,
   "tailwindCSS.experimental.configFile": "./config/tailwind/tailwind.config.js",
   "tailwindCSS.experimental.classRegex": [
     ["cx\\(([^)]+)\\)", "'([^']*)'"],

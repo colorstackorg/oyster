@@ -1,4 +1,4 @@
-import { Application, ApplicationStatus } from '@oyster/types';
+import { type Application, ApplicationStatus } from '@oyster/types';
 import { id } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';

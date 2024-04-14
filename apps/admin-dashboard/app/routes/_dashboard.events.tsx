@@ -1,11 +1,15 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { Menu, Plus, Upload } from 'react-feather';
 import { generatePath } from 'react-router';
 
-import { Event } from '@oyster/types';
+import { type Event } from '@oyster/types';
 import {
   Dashboard,
   Dropdown,
@@ -13,7 +17,7 @@ import {
   Pagination,
   Pill,
   Table,
-  TableColumnProps,
+  type TableColumnProps,
   useSearchParams,
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
@@ -210,6 +214,11 @@ function EventDropdown({ id }: EventInView) {
             <Dropdown.Item>
               <Link to={generatePath(Route.IMPORT_EVENT_ATTENDEES, { id })}>
                 <Upload /> Import Attendees
+              </Link>
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <Link to={generatePath(Route.ADD_EVENT_RECORDING, { id })}>
+                <Upload /> Add Recording
               </Link>
             </Dropdown.Item>
           </Dropdown.List>

@@ -1,7 +1,7 @@
 import { id } from '@oyster/utils';
 
 import { db } from '@/infrastructure/database';
-import { AddAdminInput } from '../admin.types';
+import { type AddAdminInput } from '../admin.types';
 
 /**
  * Adds a new ColorStack admin. This will grant the user access to the Admin

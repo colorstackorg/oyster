@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-import { ExtractValue } from '../shared/types';
-import { NullishString } from '../shared/zod';
 import { Student } from './student';
 import { Email, Entity } from './types';
+import { type ExtractValue } from '../shared/types';
+import { NullishString } from '../shared/zod';
 
 // Enums
 
@@ -21,6 +21,7 @@ export const Event = z.object({
   externalLink: z.string().url().nullable(),
   id: Entity.shape.id,
   name: z.string().trim().min(1),
+  recordingLink: z.string().url().nullish(),
   startTime: z.coerce.date(),
   type: z.nativeEnum(EventType),
 });

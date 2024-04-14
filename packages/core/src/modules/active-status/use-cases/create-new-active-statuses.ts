@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
 
-import { StudentActiveStatus } from '@oyster/types';
+import { type StudentActiveStatus } from '@oyster/types';
 
-import { GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { db } from '@/infrastructure/database';
 
 type CreateNewActiveStatusesInput = GetBullJobData<'student.statuses.new'>;

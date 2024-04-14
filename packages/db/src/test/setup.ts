@@ -1,8 +1,5 @@
-import { Transaction } from 'kysely';
-import { DB } from 'kysely-codegen/dist/db';
+import { type Transaction } from 'kysely';
 
-import { db } from '../shared/db';
-import { truncate } from '../use-cases/truncate';
 import {
   company1,
   company2,
@@ -10,6 +7,9 @@ import {
   student1,
   student1Emails,
 } from './constants';
+import { db } from '../shared/db';
+import { type DB } from '../shared/types';
+import { truncate } from '../use-cases/truncate';
 
 beforeEach(async () => {
   await db.transaction().execute(async (trx) => {

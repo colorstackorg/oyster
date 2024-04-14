@@ -1,6 +1,6 @@
-import React, { PropsWithChildren, useContext, useState } from 'react';
+import React, { type PropsWithChildren, useContext, useState } from 'react';
 
-import { IcebreakerResponse } from '../core.ui';
+import { type IcebreakerResponse } from '../core.ui';
 
 // Types
 
@@ -39,6 +39,7 @@ export function IcebreakersProvider({
 }: IcebreakersProviderProps) {
   icebreakerResponses.forEach((response, i) => {
     const number = String(i + 1) as PromptNumber;
+
     initialPromptIds[number] = response.promptId;
   });
 

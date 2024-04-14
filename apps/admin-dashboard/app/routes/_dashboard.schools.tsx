@@ -1,8 +1,8 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
-  SerializeFrom,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
 } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
@@ -16,7 +16,7 @@ import {
   IconButton,
   Pagination,
   Table,
-  TableColumnProps,
+  type TableColumnProps,
   useSearchParams,
 } from '@oyster/ui';
 
@@ -45,13 +45,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 async function listSchools({ limit, page, search }: ListSearchParams) {
-  let query = db.selectFrom('schools');
-
-  if (search) {
-    query = query
-      .where(sql`similarity(name, ${search}) > 0.15`)
-      .where(sql`word_similarity(name, ${search}) > 0.15`);
-  }
+  const query = db.selectFrom('schools').$if(!!search, (qb) => {
+    return qb
+      .where(sql<boolean>`similarity(name, ${search}) > 0.15`)
+      .where(sql<boolean>`word_similarity(name, ${search}) > 0.15`);
+  });
 
   const [rows, countResult] = await Promise.all([
     query

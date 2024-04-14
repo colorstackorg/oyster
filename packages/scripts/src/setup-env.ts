@@ -17,8 +17,7 @@ const exampleFiles = [
 
 function setupEnvironmentFiles() {
   exampleFiles.forEach((file) => {
-    const newFile = file.replace('.example', '');
-    fs.copyFileSync(file, newFile);
+    fs.copyFileSync(file, file.replace('.example', ''));
   });
 }
 

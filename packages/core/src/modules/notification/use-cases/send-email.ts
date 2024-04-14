@@ -5,7 +5,7 @@ import {
   ApplicationAcceptedEmail,
   ApplicationCreatedEmail,
   ApplicationRejectedEmail,
-  EmailTemplate,
+  type EmailTemplate,
   OneTimeCodeSentEmail,
   PrimaryEmailChangedEmail,
   StudentActivatedEmail,

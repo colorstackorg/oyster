@@ -1,7 +1,7 @@
 import { match } from 'ts-pattern';
 
-import { cx } from '../utils/cx';
 import { Text } from './text';
+import { cx } from '../utils/cx';
 
 type ProfilePictureProps = {
   initials?: string;

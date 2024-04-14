@@ -1,8 +1,8 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 import { Mail } from 'react-feather';
 
-import { cx } from '../utils/cx';
 import { Text } from './text';
+import { cx } from '../utils/cx';
 
 export const Login = () => {};
 

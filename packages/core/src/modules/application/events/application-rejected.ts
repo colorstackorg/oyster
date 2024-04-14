@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 
 import { iife } from '@oyster/utils';
 
-import { GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
 
@@ -29,6 +29,7 @@ export async function onApplicationRejected({
             const now = dayjs().tz('America/Los_Angeles');
             const tomorrowMorning = now.add(1, 'day').hour(9);
             const delay = tomorrowMorning.diff(now);
+
             return delay;
           })
         : undefined,

@@ -1,11 +1,15 @@
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
 import {
   Form as RemixForm,
   useLoaderData,
   useNavigate,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 import { ArrowUp, Copy, RefreshCw, Trash } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
@@ -101,6 +105,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   await match(result.data)
     .with('duplicate', async () => {
       const queue = QueueFromName[job.queueName as BullQueue];
+
       return queue.add(job.name, job.data);
     })
     .with('promote', async () => {

@@ -1,6 +1,6 @@
 import { db } from '@/infrastructure/database';
-import { Education } from '../education.types';
 import { checkMostRecentEducation } from './check-most-recent-education';
+import { type Education } from '../education.types';
 
 type EditEducationInput = Pick<
   Education,

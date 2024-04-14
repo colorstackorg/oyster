@@ -1,9 +1,9 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, NavLink, Outlet, useLoaderData } from '@remix-run/react';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { ExtractValue } from '@oyster/types';
+import { type ExtractValue } from '@oyster/types';
 
 import { Route } from '../shared/constants';
 import { BullQueue } from '../shared/core.ui';

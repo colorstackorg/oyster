@@ -1,4 +1,4 @@
-import { OAuthCodeState } from '../authentication.types';
+import { type OAuthCodeState } from '../authentication.types';
 
 type GetAuthUriInput = Pick<OAuthCodeState, 'clientRedirectUrl' | 'context'>;
 

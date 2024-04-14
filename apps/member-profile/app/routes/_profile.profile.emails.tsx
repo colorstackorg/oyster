@@ -1,4 +1,8 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
 import {
   Outlet,
   Form as RemixForm,
@@ -13,10 +17,10 @@ import { z } from 'zod';
 import {
   Button,
   Checkbox,
-  Form,
-  Text,
   cx,
+  Form,
   getActionErrors,
+  Text,
   validateForm,
 } from '@oyster/ui';
 
@@ -26,7 +30,6 @@ import {
   ProfileSection,
   ProfileTitle,
 } from '../shared/components/profile';
-
 import { Route } from '../shared/constants';
 import { db, listEmails, updateAllowEmailShare } from '../shared/core.server';
 import { track } from '../shared/mixpanel.server';

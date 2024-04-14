@@ -1,4 +1,4 @@
-import { z, ZodError } from 'zod';
+import { type z, type ZodError } from 'zod';
 
 /**
  * Returns the error message that lives within the `error`. Note that even if

@@ -4,7 +4,7 @@ import { match } from 'ts-pattern';
 import type { ActivityPeriod, CompletedActivity } from '@oyster/types';
 import { id } from '@oyster/utils';
 
-import { GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
 import { IS_PRODUCTION } from '@/shared/env';
@@ -132,6 +132,16 @@ export async function grantGamificationPoints(
         .values({
           ...activityCompleted,
           surveyRespondedTo: input.surveyRespondedTo,
+        })
+        .onConflict((oc) => oc.doNothing())
+        .execute();
+    })
+    .with({ type: 'submit_census_response' }, async (input) => {
+      await db
+        .insertInto('completedActivities')
+        .values({
+          ...activityCompleted,
+          censusYear: input.year,
         })
         .onConflict((oc) => oc.doNothing())
         .execute();

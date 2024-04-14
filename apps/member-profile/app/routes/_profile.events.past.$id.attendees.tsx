@@ -1,4 +1,4 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import {
   generatePath,
   Link,
@@ -6,53 +6,35 @@ import {
   useNavigate,
 } from '@remix-run/react';
 
-import { Student } from '@oyster/types';
+import { type Student } from '@oyster/types';
 import { Modal, ProfilePicture } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
-import { db } from '../shared/core.server';
+import { countEventAttendees, listEventAttendees } from '../shared/core.server';
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const eventId = params.id as string;
 
   const [attendees, attendeesCount] = await Promise.all([
-    getEventAttendees(eventId),
-    getEventAttendeesCount(eventId),
+    listEventAttendees({
+      select: [
+        'students.firstName',
+        'students.id',
+        'students.lastName',
+        'students.preferredName',
+        'students.profilePicture',
+      ],
+      where: { eventId },
+    }),
+    countEventAttendees({
+      where: { eventId },
+    }),
   ]);
 
   return json({
     attendees,
     attendeesCount,
   });
-}
-
-async function getEventAttendees(eventId: string) {
-  const attendees = await db
-    .selectFrom('eventAttendees')
-    .leftJoin('students', 'students.id', 'eventAttendees.studentId')
-    .select([
-      'students.firstName',
-      'students.id',
-      'students.lastName',
-      'students.preferredName',
-      'students.profilePicture',
-    ])
-    .where('eventAttendees.eventId', '=', eventId)
-    .where('eventAttendees.studentId', 'is not', null)
-    .orderBy('eventAttendees.createdAt', 'asc')
-    .execute();
-
-  return attendees;
-}
-
-async function getEventAttendeesCount(eventId: string) {
-  const { count } = await db
-    .selectFrom('eventAttendees')
-    .select([(eb) => eb.fn.countAll<string>().as('count')])
-    .where('eventId', '=', eventId)
-    .executeTakeFirstOrThrow();
-
-  return count;
 }
 
 export default function EventAttendeesPage() {

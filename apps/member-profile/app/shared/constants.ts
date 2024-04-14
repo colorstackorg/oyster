@@ -1,4 +1,4 @@
-import { ExtractValue } from '@oyster/types';
+import { type ExtractValue } from '@oyster/types';
 
 export const Route = {
   ADD_EDUCATION: '/profile/education/add',
@@ -20,6 +20,7 @@ export const Route = {
   // Census
 
   '/census': '/census',
+  '/census/confirmation': '/census/confirmation',
 
   // Directory
 
