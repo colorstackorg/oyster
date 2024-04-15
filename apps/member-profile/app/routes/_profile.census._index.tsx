@@ -40,6 +40,7 @@ import {
   BaseCensusResponse,
   CompanyCombobox,
   CompanyFieldProvider,
+  FreeTextCompanyInput,
   SubmitCensusResponseData,
 } from '../shared/core.ui';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
@@ -533,11 +534,17 @@ function WorkSection() {
               labelFor={keys.companyId}
               required
             >
-              <CompanyCombobox
-                defaultCompanyName={progress.companyName}
-                defaultCrunchbaseId=""
-                name={keys.companyId}
-              />
+              <div className="flex flex-col gap-2">
+                <CompanyCombobox
+                  defaultCompanyName={progress.companyName}
+                  defaultCrunchbaseId=""
+                  name={keys.companyId}
+                />
+                <FreeTextCompanyInput
+                  defaultValue={progress.companyName}
+                  name={keys.companyName}
+                />
+              </div>
             </Form.Field>
           </CompanyFieldProvider>
 
@@ -634,11 +641,17 @@ function WorkSection() {
               labelFor={keys.companyId}
               required
             >
-              <CompanyCombobox
-                defaultCompanyName={progress.companyName}
-                defaultCrunchbaseId=""
-                name={keys.companyId}
-              />
+              <div className="flex flex-col gap-2">
+                <CompanyCombobox
+                  defaultCompanyName={progress.companyName}
+                  defaultCrunchbaseId=""
+                  name={keys.companyId}
+                />
+                <FreeTextCompanyInput
+                  defaultValue={progress.companyName}
+                  name={keys.companyName}
+                />
+              </div>
             </Form.Field>
           </CompanyFieldProvider>
 
