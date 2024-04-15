@@ -526,9 +526,24 @@ function WorkSection() {
 
       {hasTechnicalRole && (
         <>
+          <CompanyFieldProvider>
+            <Form.Field
+              error={errors.companyId}
+              label="What company did you accept a full-time offer for?"
+              labelFor={keys.companyId}
+              required
+            >
+              <CompanyCombobox
+                defaultCompanyName={progress.companyName}
+                defaultCrunchbaseId=""
+                name={keys.companyId}
+              />
+            </Form.Field>
+          </CompanyFieldProvider>
+
           <Form.Field
             error={errors.hasRoleThroughColorStack}
-            label="Did you learn about your current role via ColorStack?"
+            label="Did you learn about this role via ColorStack?"
             required
           >
             <Radio.Group>
