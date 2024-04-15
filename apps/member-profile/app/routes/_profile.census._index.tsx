@@ -43,6 +43,9 @@ import {
 } from '../shared/core.ui';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
 
+// NPS: 1-10
+// Friend through ColorStack: Yes/No
+
 const censusCookie = createCookie('census', {
   httpOnly: true,
   maxAge: 60 * 60 * 24 * 30,
@@ -698,11 +701,16 @@ function ColorStackFeedbackSection() {
         <Checkbox.Group>
           {[
             'AlgoExpert',
+            'Career Coaching',
             'CompSciLib',
             'Fam Fridays',
+            'interviewing.io',
             'InterviewPen',
             'Newsletter',
+            'Resume Book',
+            'Scholarships (Family Fund, Travel)',
             'Slack',
+            'StackedUp Summit',
             'Wiki',
           ].map((resource) => {
             return (
