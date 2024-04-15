@@ -12,6 +12,7 @@ export const BaseCensusResponse = z.object({
   companyName: z.string().trim().optional(),
   currentResources: multiSelectField(z.string().trim()),
   hasGraduated: BooleanInput,
+  hasMadeFriend: BooleanInput,
   hasRoleThroughColorStack: BooleanInput,
   nps: z.coerce.number().min(0).max(10),
   summerLocation: z.string().trim(),

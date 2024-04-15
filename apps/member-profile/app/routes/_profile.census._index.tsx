@@ -44,9 +44,6 @@ import {
 } from '../shared/core.ui';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
 
-// NPS: 1-10
-// Friend through ColorStack: Yes/No
-
 const censusCookie = createCookie('census', {
   httpOnly: true,
   maxAge: 60 * 60 * 24 * 30,
@@ -821,7 +818,34 @@ function ColorStackFeedbackSection() {
       )}
 
       <Form.Field
-        description="Please answer on a scale of 1 to 10, 10 meaning strongly recommend."
+        error={errors.hasMadeFriend}
+        label="Have you made a friend through ColorStack?"
+        required
+      >
+        <Radio.Group>
+          <Radio
+            color="lime-100"
+            defaultChecked={progress.hasMadeFriend === true}
+            id={keys.hasMadeFriend + '1'}
+            label="Yes"
+            name={keys.hasMadeFriend}
+            required
+            value="1"
+          />
+          <Radio
+            color="pink-100"
+            defaultChecked={progress.hasMadeFriend === false}
+            id={keys.hasMadeFriend + '0'}
+            label="No"
+            name={keys.hasMadeFriend}
+            required
+            value="0"
+          />
+        </Radio.Group>
+      </Form.Field>
+
+      <Form.Field
+        description="Please answer on a scale of 1 to 10, 10 being strongly recommend."
         error={errors.nps}
         label="How likely are you to recommend ColorStack to a friend?"
         labelFor={keys.nps}
