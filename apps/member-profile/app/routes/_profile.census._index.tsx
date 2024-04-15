@@ -26,6 +26,7 @@ import {
   getActionErrors,
   Input,
   Radio,
+  Select,
   Text,
   Textarea,
   useRevalidateOnFocus,
@@ -818,6 +819,29 @@ function ColorStackFeedbackSection() {
           </Form.Field>
         </>
       )}
+
+      <Form.Field
+        description="Please answer on a scale of 1 to 10, 10 meaning strongly recommend."
+        error={errors.nps}
+        label="How likely are you to recommend ColorStack to a friend?"
+        labelFor={keys.nps}
+        required
+      >
+        <Select
+          defaultValue={progress.nps}
+          id={keys.nps}
+          name={keys.nps}
+          required
+        >
+          {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map((score) => {
+            return (
+              <option key={score} value={score}>
+                {score}
+              </option>
+            );
+          })}
+        </Select>
+      </Form.Field>
     </CensusSection>
   );
 }
