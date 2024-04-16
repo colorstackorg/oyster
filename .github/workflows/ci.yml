@@ -52,10 +52,6 @@ jobs:
           # us to hit the cache on any CI runs on commit on any branch.
           restore-keys: |
             ${{ runner.os }}-turbo-
-    
-      #! DELETE THIS; DON'T PUSH TO PROD PLZ
-      - name: For act to work (local testing)
-        run:  npm -g install yarn
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
@@ -68,15 +64,18 @@ jobs:
 
       - name: Run database migrations and generate types
         run: yarn db:migrate
-
+      
       - name: Lint
-        run: yarn lint
+        run: yarn lint --filter=[$BASE_SHA]
+
+      - name: Check types
+        run: yarn type-check --filter=[$BASE_SHA]
 
       - name: Build all packages and applications
-        run: yarn build
+        run: yarn build --filter=[$BASE_SHA]
 
       - name: Run tests
-        run: yarn test
+        run: yarn test --filter=[$BASE_SHA]
 
       - name: Check if CONTRIBUTORS.yml is sorted
         id: check-sorted
