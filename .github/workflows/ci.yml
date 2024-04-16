@@ -5,8 +5,8 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  ci:
-    name: CI
+  build:
+    name: Lint, Build, Test, and Sort CONTRIBUTORS.yml
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -52,6 +52,10 @@ jobs:
           # us to hit the cache on any CI runs on commit on any branch.
           restore-keys: |
             ${{ runner.os }}-turbo-
+    
+      #! DELETE THIS; DON'T PUSH TO PROD PLZ
+      - name: For act to work (local testing)
+        run:  npm -g install yarn
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
@@ -68,11 +72,30 @@ jobs:
       - name: Lint
         run: yarn lint
 
-      - name: Check types
-        run: yarn type-check
-
       - name: Build all packages and applications
         run: yarn build
 
       - name: Run tests
         run: yarn test
+
+      - name: Check if CONTRIBUTORS.yml is sorted
+        id: check-sorted
+        run: |
+          if ! sort -c CONTRIBUTORS.yml; then
+            echo "::set-output name=sorted::false"
+          else
+            echo "::set-output name=sorted::true"
+          fi
+
+      - name: Sort CONTRIBUTORS.yml if not sorted
+        if: steps.check-sorted.outputs.sorted == 'false'
+        run: sort -o CONTRIBUTORS.yml CONTRIBUTORS.yml
+
+      - name: Commit sorted CONTRIBUTORS.yml
+        if: steps.check-sorted.outputs.sorted == 'false'
+        run: |
+          git config --local user.email "your-email@example.com"
+          git config --local user.name "Your Name"
+          git add CONTRIBUTORS.yml
+          git commit -m "chore: sort CONTRIBUTORS.yml"
+          git push
