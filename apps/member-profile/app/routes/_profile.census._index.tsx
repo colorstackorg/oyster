@@ -26,6 +26,7 @@ import {
   getActionErrors,
   Input,
   Radio,
+  Select,
   Text,
   Textarea,
   useRevalidateOnFocus,
@@ -39,6 +40,7 @@ import {
   BaseCensusResponse,
   CompanyCombobox,
   CompanyFieldProvider,
+  FreeTextCompanyInput,
   SubmitCensusResponseData,
 } from '../shared/core.ui';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
@@ -525,9 +527,30 @@ function WorkSection() {
 
       {hasTechnicalRole && (
         <>
+          <CompanyFieldProvider>
+            <Form.Field
+              error={errors.companyId}
+              label="What company did you accept a full-time offer for?"
+              labelFor={keys.companyId}
+              required
+            >
+              <div className="flex flex-col gap-2">
+                <CompanyCombobox
+                  defaultCompanyName={progress.companyName}
+                  defaultCrunchbaseId=""
+                  name={keys.companyId}
+                />
+                <FreeTextCompanyInput
+                  defaultValue={progress.companyName}
+                  name={keys.companyName}
+                />
+              </div>
+            </Form.Field>
+          </CompanyFieldProvider>
+
           <Form.Field
             error={errors.hasRoleThroughColorStack}
-            label="Did you learn about your current role via ColorStack?"
+            label="Did you learn about this role via ColorStack?"
             required
           >
             <Radio.Group>
@@ -618,11 +641,17 @@ function WorkSection() {
               labelFor={keys.companyId}
               required
             >
-              <CompanyCombobox
-                defaultCompanyName={progress.companyName}
-                defaultCrunchbaseId=""
-                name={keys.companyId}
-              />
+              <div className="flex flex-col gap-2">
+                <CompanyCombobox
+                  defaultCompanyName={progress.companyName}
+                  defaultCrunchbaseId=""
+                  name={keys.companyId}
+                />
+                <FreeTextCompanyInput
+                  defaultValue={progress.companyName}
+                  name={keys.companyName}
+                />
+              </div>
             </Form.Field>
           </CompanyFieldProvider>
 
@@ -698,11 +727,16 @@ function ColorStackFeedbackSection() {
         <Checkbox.Group>
           {[
             'AlgoExpert',
+            'Career Coaching',
             'CompSciLib',
             'Fam Fridays',
+            'interviewing.io',
             'InterviewPen',
             'Newsletter',
+            'Resume Book',
+            'Scholarships (Family Fund, Travel)',
             'Slack',
+            'StackedUp Summit',
             'Wiki',
           ].map((resource) => {
             return (
@@ -810,6 +844,56 @@ function ColorStackFeedbackSection() {
           </Form.Field>
         </>
       )}
+
+      <Form.Field
+        error={errors.hasMadeFriend}
+        label="Have you made a friend through ColorStack?"
+        required
+      >
+        <Radio.Group>
+          <Radio
+            color="lime-100"
+            defaultChecked={progress.hasMadeFriend === true}
+            id={keys.hasMadeFriend + '1'}
+            label="Yes"
+            name={keys.hasMadeFriend}
+            required
+            value="1"
+          />
+          <Radio
+            color="pink-100"
+            defaultChecked={progress.hasMadeFriend === false}
+            id={keys.hasMadeFriend + '0'}
+            label="No"
+            name={keys.hasMadeFriend}
+            required
+            value="0"
+          />
+        </Radio.Group>
+      </Form.Field>
+
+      <Form.Field
+        description="Please answer on a scale of 1 to 10, 10 being strongly recommend."
+        error={errors.nps}
+        label="How likely are you to recommend ColorStack to a friend?"
+        labelFor={keys.nps}
+        required
+      >
+        <Select
+          defaultValue={progress.nps}
+          id={keys.nps}
+          name={keys.nps}
+          required
+        >
+          {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map((score) => {
+            return (
+              <option key={score} value={score}>
+                {score}
+              </option>
+            );
+          })}
+        </Select>
+      </Form.Field>
     </CensusSection>
   );
 }
