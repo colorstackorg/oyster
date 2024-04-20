@@ -4,6 +4,7 @@ import { toast } from 'app/shared/session.server';
 
 import { addGithub } from '@/member-profile.server';
 import { GITHUB_API, GITHUB_TOKEN_URL, Route } from '../shared/constants';
+import { ENV } from '../shared/constants.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -19,8 +20,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       const bodyData = new FormData();
 
       bodyData.append('code', code);
-      bodyData.append('client_id', process.env.GITHUB_OAUTH_CLIENT_ID);
-      bodyData.append('client_secret', process.env.GITHUB_OAUTH_SECRET);
+      bodyData.append('client_id', ENV.GITHUB_OAUTH_CLIENT_ID);
+      bodyData.append('client_secret', ENV.GITHUB_OAUTH_SECRET);
       const accessTokenRes = await fetch(GITHUB_TOKEN_URL, {
         method: 'POST',
         body: bodyData,

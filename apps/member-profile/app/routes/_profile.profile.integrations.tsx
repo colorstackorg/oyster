@@ -11,6 +11,7 @@ import {
   ProfileSection,
   ProfileTitle,
 } from '../shared/components/profile';
+import { ENV } from '../shared/constants.server';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -18,7 +19,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const id = user(session);
 
-  const clientId = process.env.GITHUB_OAUTH_CLIENT_ID;
+  const clientId = ENV.GITHUB_OAUTH_CLIENT_ID;
 
   const student = await getMember(id)
     .select(['githubId'])
