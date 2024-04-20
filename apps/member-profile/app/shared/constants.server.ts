@@ -22,6 +22,8 @@ const BaseEnvironmentConfig = z.object({
   STUDENT_PROFILE_URL: EnvironmentVariable,
   SWAG_UP_CLIENT_ID: EnvironmentVariable,
   SWAG_UP_CLIENT_SECRET: EnvironmentVariable,
+  GITHUB_OAUTH_CLIENT_ID: EnvironmentVariable,
+  GITHUB_OAUTH_SECRET: EnvironmentVariable,
 });
 
 const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
