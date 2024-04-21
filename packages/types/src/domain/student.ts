@@ -24,6 +24,11 @@ export const ActivationRequirement = {
   SEND_INTRODUCTION_MESSAGE: 'send_introduction_message',
 } as const;
 
+export const MemberType = {
+  ALUMNI: 'alumni',
+  STUDENT: 'student',
+} as const;
+
 // Schemas
 
 const StudentSocialLinks = z.object({
@@ -178,6 +183,7 @@ export const Student = Entity.merge(StudentSocialLinks)
 
     slackId: z.string().optional(),
     swagUpOrderId: z.string().min(1).optional(),
+    type: z.nativeEnum(MemberType),
   });
 
 export const StudentEmail = Entity.omit({

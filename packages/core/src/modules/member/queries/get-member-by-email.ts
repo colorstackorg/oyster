@@ -1,6 +1,6 @@
 import { db } from '@/infrastructure/database';
 
-export function findMemberByEmail(email: string) {
+export function getMemberByEmail(email: string) {
   return db
     .selectFrom('students')
     .leftJoin('studentEmails', 'studentEmails.studentId', 'students.id')

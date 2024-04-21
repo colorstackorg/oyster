@@ -9,6 +9,10 @@ export {
 } from './modules/authentication/authentication.types';
 export { OneTimeCodeForm } from './modules/authentication/ui/one-time-code-form';
 export {
+  BaseCensusResponse,
+  SubmitCensusResponseData,
+} from './modules/census/census.types';
+export {
   AddEducationInput,
   DegreeType,
   Education,
@@ -25,6 +29,11 @@ export {
   LocationType,
   WorkExperience,
 } from './modules/employment/employment.types';
+export {
+  CompanyCombobox,
+  CompanyFieldProvider,
+  FreeTextCompanyInput,
+} from './modules/employment/ui/company-field';
 export { WorkExperienceItem } from './modules/employment/ui/work-experience';
 export { WorkForm } from './modules/employment/ui/work-form';
 export {

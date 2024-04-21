@@ -11,7 +11,7 @@ import { id } from '@oyster/utils';
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
-import { findMemberByEmail } from '@/modules/member/queries/find-member-by-email';
+import { getMemberByEmail } from '@/modules/member/queries/get-member-by-email';
 import { NotFoundError } from '@/shared/errors';
 
 export async function syncMailchimpCampaign({
@@ -152,7 +152,7 @@ async function getActivityData(campaignId: string) {
   // we can find them.
 
   for (const click of result.clicks) {
-    const student = await findMemberByEmail(click.email);
+    const student = await getMemberByEmail(click.email);
 
     if (student) {
       click.studentId = student.id;
@@ -160,7 +160,7 @@ async function getActivityData(campaignId: string) {
   }
 
   for (const open of result.opens) {
-    const student = await findMemberByEmail(open.email);
+    const student = await getMemberByEmail(open.email);
 
     if (student) {
       open.studentId = student.id;

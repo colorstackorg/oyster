@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 import { ErrorWithContext } from '@/shared/errors';
 
 // Constants
@@ -11,14 +9,25 @@ export const GOOGLE_PLACES_API_URL =
 
 export class GooglePlacesError extends ErrorWithContext {}
 
+const GOOGLE_MAPS_API_KEY_MISSING_MESSAGE =
+  '"GOOGLE_MAPS_API_KEY" is not set, so Google Maps API is disabled.';
+
+export class GoogleKeyMissingError extends ErrorWithContext {
+  constructor() {
+    super(GOOGLE_MAPS_API_KEY_MISSING_MESSAGE);
+  }
+}
+
 // Helpers
 
 export function getGoogleMapsKey() {
-  const result = z.string().min(1).safeParse(process.env.GOOGLE_MAPS_API_KEY);
+  const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
-  if (!result.success) {
-    throw new Error('Please provide a valid Google Maps API key.');
+  if (!GOOGLE_MAPS_API_KEY) {
+    console.warn(GOOGLE_MAPS_API_KEY_MISSING_MESSAGE);
+
+    return null;
   }
 
-  return result.data;
+  return GOOGLE_MAPS_API_KEY;
 }

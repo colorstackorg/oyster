@@ -3,6 +3,13 @@ import { db } from '@oyster/db';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { type ChangePrimaryEmailInput } from '@/modules/member/member.types';
 
+/**
+ * Changes the primary email of a member. This also emits an event to process
+ * the email change in the background (ie: Airtable, Slack).
+ *
+ * @param id - ID of the member to change the primary email for.
+ * @param input - The new primary email (object).
+ */
 export async function changePrimaryEmail(
   id: string,
   input: ChangePrimaryEmailInput
@@ -28,11 +35,13 @@ export async function changePrimaryEmail(
 
   const previousEmail = student.email;
 
-  await db
-    .updateTable('students')
-    .set({ email: input.email })
-    .where('id', '=', id)
-    .execute();
+  await db.transaction().execute(async (trx) => {
+    await trx
+      .updateTable('students')
+      .set({ email: input.email })
+      .where('id', '=', id)
+      .execute();
+  });
 
   job('member_email.primary.changed', {
     previousEmail,

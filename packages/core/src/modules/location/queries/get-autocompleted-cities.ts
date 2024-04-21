@@ -28,7 +28,13 @@ const GoogleAutocompleteData = z.object({
 export async function getAutocompletedCities(search: string) {
   const url = new URL(GOOGLE_PLACES_API_URL + '/autocomplete/json');
 
-  url.searchParams.set('key', getGoogleMapsKey());
+  const key = getGoogleMapsKey();
+
+  if (!key) {
+    return [];
+  }
+
+  url.searchParams.set('key', key);
   url.searchParams.set('input', search);
   url.searchParams.set(
     'types',

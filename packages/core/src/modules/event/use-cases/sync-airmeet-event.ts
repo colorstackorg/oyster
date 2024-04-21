@@ -1,7 +1,7 @@
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
-import { findMemberByEmail } from '@/modules/member/queries/find-member-by-email';
+import { getMemberByEmail } from '@/modules/member/queries/get-member-by-email';
 import { NotFoundError } from '@/shared/errors';
 import {
   getAirmeetEvent,
@@ -43,7 +43,7 @@ export async function syncAirmeetEvent({
 
     await Promise.all(
       attendees.map(async (attendee) => {
-        const student = await findMemberByEmail(attendee.email);
+        const student = await getMemberByEmail(attendee.email);
 
         await trx
           .insertInto('eventAttendees')
