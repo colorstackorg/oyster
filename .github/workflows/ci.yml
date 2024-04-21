@@ -70,13 +70,13 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Run database migrations and generate types
-        run: bun db:migrate
+        run: bun run db:migrate
 
       - name: Lint
-        run: bun lint --filter=[$BASE_SHA]
+        run: bun run lint --filter=[$BASE_SHA]
 
       - name: Check types
-        run: bun type-check --filter=[$BASE_SHA]
+        run: bun run type-check --filter=[$BASE_SHA]
 
       - name: Build all packages and applications
         run: bun run build --filter=[$BASE_SHA]

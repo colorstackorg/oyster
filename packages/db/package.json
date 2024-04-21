@@ -12,10 +12,10 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "migrate": "bun ./src/scripts/migrate.ts && bun types",
-    "migrate:down": "bun ./src/scripts/migrate.ts --down && bun types",
-    "migration:create": "bun ./src/scripts/create-migration.ts",
-    "seed": "bun ./src/scripts/seed.ts && bun types",
+    "migrate": "bun run ./src/scripts/migrate.ts && bun run types",
+    "migrate:down": "bun run ./src/scripts/migrate.ts --down && bun run types",
+    "migration:create": "bun run ./src/scripts/create-migration.ts",
+    "seed": "bun run ./src/scripts/seed.ts && bun run types",
     "type-check": "tsc --noEmit",
     "types": "kysely-codegen --dialect=postgres --camel-case --out-file=./dist/db.d.ts"
   },

@@ -2,7 +2,7 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "bun db:migrate && bun run build --filter=api",
+    "buildCommand": "bun run db:migrate && bun run --filter=@oyster/api build",
     "nixpacksConfigPath": "/apps/api/railway.json",
     "watchPatterns": [
       "/apps/api/**/*",
@@ -13,7 +13,7 @@
   },
   "deploy": {
     "numReplicas": 3,
-    "startCommand": "bun start --filter=api",
+    "startCommand": "bun run --filter=@oyster/api start",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",

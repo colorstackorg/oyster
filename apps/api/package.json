@@ -4,10 +4,10 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "dev": "bun --watch ./src/main.ts",
+    "dev": "bun run --watch ./src/main.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "start": "bun ./src/main.ts",
+    "start": "bun run ./src/main.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

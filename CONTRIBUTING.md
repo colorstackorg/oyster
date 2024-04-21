@@ -93,7 +93,7 @@ bun install
 To set up your environment variables, run:
 
 ```
-bun env:setup
+bun run env:setup
 ```
 
 You'll now have `.env` files in all of your apps (and a couple packages)!
@@ -114,7 +114,7 @@ You'll need to make sure that Postgres and Redis are running in the background.
 To set up your Postgres databases, you can run:
 
 ```
-bun dx:up
+bun run dx:up
 ```
 
 #### Executing Database Migrations
@@ -122,7 +122,7 @@ bun dx:up
 To execute the database migrations, run:
 
 ```sh
-bun db:migrate
+bun run db:migrate
 ```
 
 To verify that the migration was executed successfully, connect to your Postgres
@@ -140,7 +140,7 @@ Now that we have some tables, we're ready to add some seed data in our database,
 which will enable you to log into the Admin Dashboard and Member Profile. Run:
 
 ```sh
-bun db:seed
+bun run db:seed
 ```
 
 Follow the prompt to add your email, and you will now be able to log into both
@@ -159,14 +159,14 @@ bun run build
 To run all of our _applications_, you can run:
 
 ```sh
-bun dev:apps
+bun run dev:apps
 ```
 
 To run a _specific package or application_, you can use the `--filter` flag like
 this:
 
 ```sh
-bun dev --filter=api
+bun run dev --filter=api
 ```
 
 ### Logging Into Applications

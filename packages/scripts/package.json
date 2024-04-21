@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "env:setup": "bun ./src/setup-env.ts",
+    "env:setup": "bun run ./src/setup-env.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
