@@ -1,4 +1,4 @@
-import { describe, test, expect, spyOn } from 'bun:test';
+import { describe, expect, spyOn, test } from 'bun:test';
 
 import { company1, company4 } from '@oyster/db/test/constants';
 

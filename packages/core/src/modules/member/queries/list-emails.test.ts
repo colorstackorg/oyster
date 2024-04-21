@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'bun:test';
+import { describe, expect, test } from 'bun:test';
 
 import { student1, student1Emails } from '@oyster/db/test/constants';
 
