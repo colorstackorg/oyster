@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./dist/db": "./dist/db.d.ts",
     "./test/*": "./src/test/*",
     "./test/constants": "./src/test/constants.ts"
   },
@@ -14,13 +15,12 @@
     "migrate": "tsx ./src/scripts/migrate.ts && yarn types",
     "migrate:down": "tsx ./src/scripts/migrate.ts --down && yarn types",
     "migration:create": "tsx ./src/scripts/create-migration.ts",
-    "postinstall": "yarn run types",
     "seed": "tsx ./src/scripts/seed.ts && yarn types",
     "type-check": "tsc --noEmit",
-    "types": "node ./src/scripts/kysely-codegen.js"
+    "types": "kysely-codegen --dialect=postgres --camel-case --out-file=./dist/db.d.ts"
   },
   "dependencies": {
-    "kysely": "^0.26.3",
+    "kysely": "^0.27.3",
     "pg": "^8.8.0"
   },
   "devDependencies": {

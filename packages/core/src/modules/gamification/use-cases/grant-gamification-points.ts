@@ -136,6 +136,16 @@ export async function grantGamificationPoints(
         .onConflict((oc) => oc.doNothing())
         .execute();
     })
+    .with({ type: 'submit_census_response' }, async (input) => {
+      await db
+        .insertInto('completedActivities')
+        .values({
+          ...activityCompleted,
+          censusYear: input.year,
+        })
+        .onConflict((oc) => oc.doNothing())
+        .execute();
+    })
     .with(
       { type: 'update_education_history' },
       { type: 'update_work_history' },
