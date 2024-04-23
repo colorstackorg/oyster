@@ -148,18 +148,16 @@ function PastEventItem({ event }: PastEventItemProps) {
           />
         )}
 
-        {!!event.recordingLink && (
-          <a
-            className={cx(
-              getButtonCn({ fill: true, size: 'small', variant: 'secondary' }),
-              'mt-2'
-            )}
-            href={event.recordingLink}
-            target="_blank"
-          >
-            View Recording <Video />
-          </a>
-        )}
+        <a
+          className={cx(
+            getButtonCn({ fill: true, size: 'small', variant: 'secondary' }),
+            !event.recordingLink && 'invisible'
+          )}
+          href={event.recordingLink || undefined}
+          target="_blank"
+        >
+          View Recording <Video />
+        </a>
       </div>
     </li>
   );
