@@ -5,9 +5,10 @@ import {
 } from '@remix-run/node';
 import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
+import { Video } from 'react-feather';
 
 import { EventType } from '@oyster/types';
-import { ProfilePicture } from '@oyster/ui';
+import { cx, getButtonCn, ProfilePicture } from '@oyster/ui';
 
 import {
   EventDate,
@@ -44,6 +45,7 @@ async function getPastEvents({ timezone }: GetPastEventsInput) {
       'endTime',
       'id',
       'name',
+      'recordingLink',
       'startTime',
       (eb) => {
         return eb
@@ -145,6 +147,17 @@ function PastEventItem({ event }: PastEventItemProps) {
             profilePictures={event.profilePictures}
           />
         )}
+
+        <a
+          className={cx(
+            getButtonCn({ fill: true, size: 'small', variant: 'secondary' }),
+            !event.recordingLink && 'invisible'
+          )}
+          href={event.recordingLink || undefined}
+          target="_blank"
+        >
+          View Recording <Video />
+        </a>
       </div>
     </li>
   );
