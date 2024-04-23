@@ -5,9 +5,10 @@ import {
 } from '@remix-run/node';
 import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
+import { Video } from 'react-feather';
 
 import { EventType } from '@oyster/types';
-import { ProfilePicture } from '@oyster/ui';
+import { cx, getButtonCn, ProfilePicture } from '@oyster/ui';
 
 import {
   EventDate,
@@ -44,8 +45,8 @@ async function getPastEvents({ timezone }: GetPastEventsInput) {
       'endTime',
       'id',
       'name',
-      'startTime',
       'recordingLink',
+      'startTime',
       (eb) => {
         return eb
           .selectFrom(
@@ -135,7 +136,7 @@ function PastEventItem({ event }: PastEventItemProps) {
     <li className="flex flex-col rounded-3xl border border-gray-200">
       <div className="h-24 w-full rounded-[inherit] bg-[url(/images/colorstack-background.png)] bg-contain" />
 
-      <div className="flex flex-1 flex-col gap-3 p-4">
+      <div className="flex flex-1 flex-col gap-4 p-4">
         <EventName name={event.name} />
         <EventDate date={event.date} />
 
@@ -148,8 +149,15 @@ function PastEventItem({ event }: PastEventItemProps) {
         )}
 
         {!!event.recordingLink && (
-          <a className="link" href={event.recordingLink} target="_blank">
-            View Recorded Event
+          <a
+            className={cx(
+              getButtonCn({ fill: true, size: 'small', variant: 'secondary' }),
+              'mt-2'
+            )}
+            href={event.recordingLink}
+            target="_blank"
+          >
+            View Recording <Video />
           </a>
         )}
       </div>
