@@ -151,7 +151,6 @@ function PastEventItem({ event }: PastEventItemProps) {
         <a
           className={cx(
             getButtonCn({ fill: true, size: 'small', variant: 'secondary' }),
-            'mt-2',
             !event.recordingLink && 'invisible'
           )}
           href={event.recordingLink}
