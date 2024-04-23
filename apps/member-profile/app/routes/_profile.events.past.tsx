@@ -153,7 +153,7 @@ function PastEventItem({ event }: PastEventItemProps) {
             getButtonCn({ fill: true, size: 'small', variant: 'secondary' }),
             !event.recordingLink && 'invisible'
           )}
-          href={event.recordingLink}
+          href={event.recordingLink || undefined}
           target="_blank"
         >
           View Recording <Video />
