@@ -9,6 +9,8 @@ const BaseEnvironmentConfig = z.object({
   CRUNCHBASE_BASIC_API_KEY: EnvironmentVariable,
   DATABASE_URL: EnvironmentVariable,
   ENVIRONMENT: z.nativeEnum(Environment),
+  GITHUB_OAUTH_CLIENT_ID: EnvironmentVariable,
+  GITHUB_OAUTH_CLIENT_SECRET: EnvironmentVariable,
   GOOGLE_CLIENT_ID: EnvironmentVariable,
   GOOGLE_MAPS_API_KEY: EnvironmentVariable,
   JWT_SECRET: EnvironmentVariable,
@@ -27,6 +29,8 @@ const BaseEnvironmentConfig = z.object({
 const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
   BaseEnvironmentConfig.partial({
     CRUNCHBASE_BASIC_API_KEY: true,
+    GITHUB_OAUTH_CLIENT_ID: true,
+    GITHUB_OAUTH_CLIENT_SECRET: true,
     GOOGLE_CLIENT_ID: true,
     GOOGLE_MAPS_API_KEY: true,
     MIXPANEL_TOKEN: true,
