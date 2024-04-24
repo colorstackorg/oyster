@@ -1,6 +1,10 @@
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { IS_PRODUCTION } from '@/shared/env';
-import { airtableRateLimiter, getAirtableInstance } from '../airtable.shared';
+import {
+  AIRTABLE_API_KEY,
+  AIRTABLE_API_URI,
+  airtableRateLimiter,
+} from '../airtable.shared';
 
 export async function createAirtableRecord({
   baseId,
@@ -11,17 +15,22 @@ export async function createAirtableRecord({
     return;
   }
 
-  const airtable = getAirtableInstance();
-  const base = airtable.base(baseId);
-  const table = base(tableName);
-
   await airtableRateLimiter.process();
 
-  await table.create(data, {
-    // This means that if there is a select field (whether single or multi),
-    // if the value we send to Airtable is not already there, it should
-    // create that value instead of failing.
-    typecast: true,
+  await fetch(`${AIRTABLE_API_URI}/${baseId}/${tableName}`, {
+    body: JSON.stringify({
+      fields: data,
+
+      // This means that if there is a select field (whether single or multi),
+      // if the value we send to Airtable is not already there, it should
+      // create that value instead of failing.
+      typecast: true,
+    }),
+    headers: {
+      Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    method: 'post',
   });
 
   console.log({

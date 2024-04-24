@@ -1,10 +1,13 @@
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { getAirtableRecord } from '@/modules/airtable/queries/get-airtable-record';
 import { IS_PRODUCTION } from '@/shared/env';
 import { NotFoundError } from '@/shared/errors';
 import {
+  AIRTABLE_API_KEY,
+  AIRTABLE_API_URI,
+  AIRTABLE_FAMILY_BASE_ID,
+  AIRTABLE_MEMBERS_TABLE,
   airtableRateLimiter,
-  getAirtableRecord,
-  getMembersAirtable,
 } from '../airtable.shared';
 
 export async function updateAirtableRecord({
@@ -23,13 +26,19 @@ export async function updateAirtableRecord({
     });
   }
 
-  const table = getMembersAirtable();
-
   await airtableRateLimiter.process();
 
-  await table.update(record.id, {
-    Email: newEmail,
-  });
+  await fetch(
+    `${AIRTABLE_API_URI}/${AIRTABLE_FAMILY_BASE_ID}/${AIRTABLE_MEMBERS_TABLE}/${record.id}`,
+    {
+      body: JSON.stringify({ Email: newEmail }),
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'patch',
+    }
+  );
 
   console.log({
     code: 'airtable_record_updated',
