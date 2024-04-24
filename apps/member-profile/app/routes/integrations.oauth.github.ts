@@ -26,18 +26,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const memberId = user(session);
 
   try {
-    const { access_token } = await authenticateWithGithub({
+    const { accessToken } = await authenticateWithGithub({
       clientId: ENV.GITHUB_OAUTH_CLIENT_ID,
       clientSecret: ENV.GITHUB_OAUTH_CLIENT_SECRET,
       code,
     });
 
-    const profile = await getGithubProfile({ accessToken: access_token });
+    const githubProfile = await getGithubProfile({ accessToken });
 
     await updateMember({
       data: {
-        githubId: profile.id,
-        githubUrl: profile.url,
+        githubAccessToken: accessToken,
+        githubConnectedAt: new Date(),
+        githubId: githubProfile.id,
+        githubUrl: githubProfile.url,
       },
       where: {
         id: memberId,
