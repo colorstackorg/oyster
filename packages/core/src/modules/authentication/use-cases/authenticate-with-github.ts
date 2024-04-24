@@ -8,8 +8,6 @@ type AuthenticateWithGithubInput = {
 
 const GithubOauthResponse = z.object({
   access_token: z.string().trim().min(1),
-  scope: z.string().trim().min(1),
-  token_type: z.string().trim().min(1),
 });
 
 type GithubOauthResponse = z.infer<typeof GithubOauthResponse>;
@@ -25,12 +23,13 @@ export async function authenticateWithGithub(
 ): Promise<GithubOauthResponse> {
   const response = await fetch('https://github.com/login/oauth/access_token', {
     body: JSON.stringify({
-      code: input.code,
       client_id: input.clientId,
       client_secret: input.clientSecret,
+      code: input.code,
     }),
     headers: {
       Accept: 'application/json',
+      'Content-Type': 'application/json',
     },
     method: 'post',
   });
