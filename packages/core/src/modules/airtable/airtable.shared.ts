@@ -9,6 +9,7 @@ const { AIRTABLE_API_KEY } = process.env;
 
 export const AIRTABLE_API_URI = 'https://api.airtable.com/v0';
 export const AIRTABLE_MEMBERS_TABLE = 'Members';
+export const AIRTABLE_MEMBERS_URI = `${AIRTABLE_API_URI}/${AIRTABLE_FAMILY_BASE_ID}/${AIRTABLE_MEMBERS_TABLE}`;
 
 // Rate Limiter
 

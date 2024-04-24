@@ -1,9 +1,7 @@
 import { z } from 'zod';
 
 import {
-  AIRTABLE_API_URI,
-  AIRTABLE_FAMILY_BASE_ID,
-  AIRTABLE_MEMBERS_TABLE,
+  AIRTABLE_MEMBERS_URI,
   getAirtableHeaders,
 } from '@/modules/airtable/airtable.shared';
 
@@ -11,9 +9,7 @@ import {
  * @see https://airtable.com/developers/web/api/list-records
  */
 export async function getAirtableRecord(email: string) {
-  const url = new URL(
-    `${AIRTABLE_API_URI}/${AIRTABLE_FAMILY_BASE_ID}/${AIRTABLE_MEMBERS_TABLE}`
-  );
+  const url = new URL(AIRTABLE_MEMBERS_URI);
 
   url.searchParams.set('fields', '[]');
   url.searchParams.set('filterByFormula', `({Email} = "${email}")`);

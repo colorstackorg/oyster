@@ -3,9 +3,7 @@ import { getAirtableRecord } from '@/modules/airtable/queries/get-airtable-recor
 import { IS_PRODUCTION } from '@/shared/env';
 import { NotFoundError } from '@/shared/errors';
 import {
-  AIRTABLE_API_URI,
-  AIRTABLE_FAMILY_BASE_ID,
-  AIRTABLE_MEMBERS_TABLE,
+  AIRTABLE_MEMBERS_URI,
   airtableRateLimiter,
   getAirtableHeaders,
 } from '../airtable.shared';
@@ -31,14 +29,11 @@ export async function updateAirtableRecord({
 
   await airtableRateLimiter.process();
 
-  await fetch(
-    `${AIRTABLE_API_URI}/${AIRTABLE_FAMILY_BASE_ID}/${AIRTABLE_MEMBERS_TABLE}/${record.id}`,
-    {
-      body: JSON.stringify({ Email: newEmail }),
-      headers: getAirtableHeaders({ includeContentType: true }),
-      method: 'patch',
-    }
-  );
+  await fetch(`${AIRTABLE_MEMBERS_URI}/${record.id}`, {
+    body: JSON.stringify({ Email: newEmail }),
+    headers: getAirtableHeaders({ includeContentType: true }),
+    method: 'patch',
+  });
 
   console.log({
     code: 'airtable_record_updated',
