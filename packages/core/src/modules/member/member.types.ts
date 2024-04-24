@@ -33,10 +33,11 @@ export const ChangePrimaryEmailInput = Student.pick({
   email: true,
 });
 
-export const AddGithubInput = Student.pick({
+export type ChangePrimaryEmailInput = z.infer<typeof ChangePrimaryEmailInput>;
+
+export const LinkGithubAccountInput = Student.pick({
   githubId: true,
   githubUrl: true,
-});
+}).required();
 
-export type ChangePrimaryEmailInput = z.infer<typeof ChangePrimaryEmailInput>;
-export type AddGithubInput = z.infer<typeof AddGithubInput>;
+export type LinkGithubAccountInput = z.infer<typeof LinkGithubAccountInput>;

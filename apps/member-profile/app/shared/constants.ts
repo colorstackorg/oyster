@@ -52,14 +52,10 @@ export const Route = {
   '/profile/emails/add/start': '/profile/emails/add/start',
   '/profile/general': '/profile/general',
   '/profile/icebreakers': '/profile/icebreakers',
+  '/profile/integrations': '/profile/integrations',
   '/profile/personal': '/profile/personal',
   '/profile/socials': '/profile/socials',
   '/profile/work': '/profile/work',
-  '/profile/integrations': '/profile/integrations',
 } as const;
-
-export const GITHUB_API = 'https://api.github.com/user';
-export const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
-export const GITHUB_OAUTH_URL = 'https://github.com/login/oauth/authorize';
 
 export type Route = ExtractValue<typeof Route>;

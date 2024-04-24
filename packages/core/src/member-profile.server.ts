@@ -3,10 +3,12 @@ export { getActiveStreak } from './modules/active-status/queries/get-active-stre
 export { getActiveStreakLeaderboard } from './modules/active-status/queries/get-active-streak-leaderboard';
 export { getActiveStreakLeaderboardPosition } from './modules/active-status/queries/get-active-streak-leaderboard-position';
 export { apply } from './modules/application/use-cases/apply';
+export { getGithubProfile } from './modules/authentication/queries/get-github-profile';
 export {
   getGoogleAuthUri,
   getSlackAuthUri,
 } from './modules/authentication/shared/oauth.utils';
+export { authenticateWithGithub } from './modules/authentication/use-cases/authenticate-with-github';
 export { sendOneTimeCode } from './modules/authentication/use-cases/send-one-time-code';
 export { verifyOneTimeCode } from './modules/authentication/use-cases/verify-one-time-code';
 export { getCensusResponse } from './modules/census/queries/get-census-response';
@@ -41,7 +43,6 @@ export { searchCountries } from './modules/location/queries/search-countries';
 export { listEmails } from './modules/member/queries/list-emails';
 export { listMembersInDirectory } from './modules/member/queries/list-members-in-directory';
 export { changePrimaryEmail } from './modules/member/use-cases/change-primary-email';
-export { addGithub } from './modules/member/use-cases/add-github';
 export { joinMemberDirectory } from './modules/member/use-cases/join-member-directory';
 export { updateAllowEmailShare } from './modules/member/use-cases/update-allow-email-share';
 export { updateMember } from './modules/member/use-cases/update-member';

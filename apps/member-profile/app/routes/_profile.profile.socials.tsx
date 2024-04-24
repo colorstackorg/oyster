@@ -108,13 +108,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 }
 
-const {
-  calendlyUrl,
-  instagramHandle,
-  linkedInUrl,
-  personalWebsiteUrl,
-  twitterHandle,
-} = UpdateSocialsInformation.keyof().enum;
+const keys = UpdateSocialsInformation.keyof().enum;
 
 export default function UpdateSocialsInformationForm() {
   const { student } = useLoaderData<typeof loader>();
@@ -133,50 +127,49 @@ export default function UpdateSocialsInformationForm() {
           defaultValue={student.linkedInUrl || undefined}
           error={errors.linkedInUrl}
           label="LinkedIn URL"
-          name={linkedInUrl}
+          name={keys.linkedInUrl}
           required
         />
         <InputField
           defaultValue={student.instagramHandle || undefined}
           error={errors.instagramHandle}
           label="Instagram Handle"
-          name={instagramHandle}
+          name={keys.instagramHandle}
         />
         <InputField
           defaultValue={student.twitterHandle || undefined}
           error={errors.twitterHandle}
           label="Twitter Handle"
-          name={twitterHandle}
+          name={keys.twitterHandle}
         />
-        <div>
+
+        <div className="flex flex-col gap-2">
           <InputField
             defaultValue={student.githubUrl || undefined}
-            label="GitHub URL"
             disabled
-            readOnly
-            name={'githubUrl'}
+            label="GitHub URL"
+            name="_"
           />
-          <Text variant="xs">
-            You can connect your Github on the{' '}
-            <Link
-              to={Route['/profile/integrations']}
-              className="text-primary underline"
-            >
-              Integrations page
-            </Link>
+          <Text color="gray-500" variant="sm">
+            You can connect your GitHub account on the{' '}
+            <Link className="link" to={Route['/profile/integrations']}>
+              Integrations
+            </Link>{' '}
+            page.
           </Text>
         </div>
+
         <InputField
           defaultValue={student.calendlyUrl || undefined}
           error={errors.calendlyUrl}
           label="Calendly URL"
-          name={calendlyUrl}
+          name={keys.calendlyUrl}
         />
         <InputField
           defaultValue={student.personalWebsiteUrl || undefined}
           error={errors.personalWebsiteUrl}
           label="Personal Website"
-          name={personalWebsiteUrl}
+          name={keys.personalWebsiteUrl}
         />
 
         <Button.Group>
