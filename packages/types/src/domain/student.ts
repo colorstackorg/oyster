@@ -118,7 +118,6 @@ export const Student = Entity.merge(StudentSocialLinks)
     gender: z.nativeEnum(Gender),
     genderPronouns: z.string().trim().min(1).nullable(),
     graduationYear: z.coerce.number(),
-    githubId: z.number().optional(),
     headline: z.string().trim().min(1).nullable(),
     joinedAfterActivation: z.boolean(),
     joinedMemberDirectoryAt: z.coerce.date().nullable(),

@@ -146,7 +146,7 @@ export type FieldProps<T> = {
 
 type InputFieldProps = FieldProps<string> &
   Pick<FormFieldProps, 'description' | 'label' | 'required'> &
-  Pick<InputProps, 'disabled' | 'placeholder' | 'readOnly'>;
+  Pick<InputProps, 'disabled' | 'placeholder'>;
 
 export function InputField({
   defaultValue,
@@ -157,7 +157,6 @@ export function InputField({
   name,
   placeholder,
   required,
-  readOnly,
 }: InputFieldProps) {
   return (
     <Form.Field
@@ -174,7 +173,6 @@ export function InputField({
         name={name}
         placeholder={placeholder}
         required={required}
-        readOnly={readOnly}
       />
     </Form.Field>
   );
