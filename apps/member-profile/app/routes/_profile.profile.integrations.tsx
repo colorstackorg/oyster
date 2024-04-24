@@ -19,8 +19,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const id = user(session);
 
-  const clientId = ENV.GITHUB_OAUTH_CLIENT_ID;
-
   const member = await getMember(id)
     .select(['githubId'])
     .executeTakeFirstOrThrow();
@@ -34,7 +32,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 
   return json({
-    clientId,
     isGithubConnected: !!member.githubId,
     githubOauthUri,
   });
