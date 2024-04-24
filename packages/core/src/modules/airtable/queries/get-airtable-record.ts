@@ -7,6 +7,9 @@ import {
   AIRTABLE_MEMBERS_TABLE,
 } from '@/modules/airtable/airtable.shared';
 
+/**
+ * @see https://airtable.com/developers/web/api/list-records
+ */
 export async function getAirtableRecord(email: string) {
   const url = new URL(
     `${AIRTABLE_API_URI}/${AIRTABLE_FAMILY_BASE_ID}/${AIRTABLE_MEMBERS_TABLE}`

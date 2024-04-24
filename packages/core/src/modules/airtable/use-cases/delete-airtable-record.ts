@@ -10,6 +10,9 @@ import {
   airtableRateLimiter,
 } from '../airtable.shared';
 
+/**
+ * @see https://airtable.com/developers/web/api/delete-record
+ */
 export async function deleteAirtableRecord({
   email,
 }: GetBullJobData<'airtable.record.delete'>) {

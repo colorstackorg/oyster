@@ -10,6 +10,9 @@ import {
   airtableRateLimiter,
 } from '../airtable.shared';
 
+/**
+ * @see https://airtable.com/developers/web/api/update-record
+ */
 export async function updateAirtableRecord({
   newEmail,
   previousEmail,
