@@ -34,10 +34,3 @@ export const ChangePrimaryEmailInput = Student.pick({
 });
 
 export type ChangePrimaryEmailInput = z.infer<typeof ChangePrimaryEmailInput>;
-
-export const LinkGithubAccountInput = Student.pick({
-  githubId: true,
-  githubUrl: true,
-}).required();
-
-export type LinkGithubAccountInput = z.infer<typeof LinkGithubAccountInput>;
