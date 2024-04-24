@@ -1,9 +1,9 @@
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { IS_PRODUCTION } from '@/shared/env';
 import {
-  AIRTABLE_API_KEY,
   AIRTABLE_API_URI,
   airtableRateLimiter,
+  getAirtableHeaders,
 } from '../airtable.shared';
 
 /**
@@ -29,10 +29,7 @@ export async function createAirtableRecord({
       // create that value instead of failing.
       typecast: true,
     }),
-    headers: {
-      Authorization: `Bearer ${AIRTABLE_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
+    headers: getAirtableHeaders({ includeContentType: true }),
     method: 'post',
   });
 

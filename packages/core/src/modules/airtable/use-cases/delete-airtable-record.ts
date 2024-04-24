@@ -3,11 +3,11 @@ import { getAirtableRecord } from '@/modules/airtable/queries/get-airtable-recor
 import { IS_PRODUCTION } from '@/shared/env';
 import { NotFoundError } from '@/shared/errors';
 import {
-  AIRTABLE_API_KEY,
   AIRTABLE_API_URI,
   AIRTABLE_FAMILY_BASE_ID,
   AIRTABLE_MEMBERS_TABLE,
   airtableRateLimiter,
+  getAirtableHeaders,
 } from '../airtable.shared';
 
 /**
@@ -33,7 +33,7 @@ export async function deleteAirtableRecord({
   await fetch(
     `${AIRTABLE_API_URI}/${AIRTABLE_FAMILY_BASE_ID}/${AIRTABLE_MEMBERS_TABLE}/${record.id}`,
     {
-      headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
+      headers: getAirtableHeaders(),
       method: 'delete',
     }
   );

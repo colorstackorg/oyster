@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
 import {
-  AIRTABLE_API_KEY,
   AIRTABLE_API_URI,
   AIRTABLE_FAMILY_BASE_ID,
   AIRTABLE_MEMBERS_TABLE,
+  getAirtableHeaders,
 } from '@/modules/airtable/airtable.shared';
 
 /**
@@ -20,7 +20,7 @@ export async function getAirtableRecord(email: string) {
   url.searchParams.set('maxRecords', '1');
 
   const response = await fetch(url.toString(), {
-    headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
+    headers: getAirtableHeaders(),
     method: 'get',
   });
 

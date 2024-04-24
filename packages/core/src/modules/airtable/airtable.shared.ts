@@ -2,7 +2,8 @@ import { RateLimiter } from '@/shared/utils/rate-limiter';
 
 // Environment Variables
 
-export const { AIRTABLE_API_KEY, AIRTABLE_FAMILY_BASE_ID } = process.env;
+export const { AIRTABLE_FAMILY_BASE_ID } = process.env;
+const { AIRTABLE_API_KEY } = process.env;
 
 // Constants
 
@@ -18,3 +19,16 @@ export const airtableRateLimiter = new RateLimiter('airtable:connections', {
   rateLimit: 5,
   rateLimitWindow: 1,
 });
+
+// Functions
+
+export function getAirtableHeaders(
+  options: { includeContentType: boolean } = { includeContentType: false }
+) {
+  return {
+    Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+    ...(options.includeContentType && {
+      'Content-Type': 'application/json',
+    }),
+  };
+}
