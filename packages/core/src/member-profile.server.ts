@@ -3,10 +3,12 @@ export { getActiveStreak } from './modules/active-status/queries/get-active-stre
 export { getActiveStreakLeaderboard } from './modules/active-status/queries/get-active-streak-leaderboard';
 export { getActiveStreakLeaderboardPosition } from './modules/active-status/queries/get-active-streak-leaderboard-position';
 export { apply } from './modules/application/use-cases/apply';
+export { getGithubProfile } from './modules/authentication/queries/get-github-profile';
 export {
   getGoogleAuthUri,
   getSlackAuthUri,
 } from './modules/authentication/shared/oauth.utils';
+export { authenticateWithGithub } from './modules/authentication/use-cases/authenticate-with-github';
 export { sendOneTimeCode } from './modules/authentication/use-cases/send-one-time-code';
 export { verifyOneTimeCode } from './modules/authentication/use-cases/verify-one-time-code';
 export { getCensusResponse } from './modules/census/queries/get-census-response';
