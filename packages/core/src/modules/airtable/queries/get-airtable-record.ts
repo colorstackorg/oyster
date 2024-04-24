@@ -11,7 +11,6 @@ import {
 export async function getAirtableRecord(email: string) {
   const url = new URL(AIRTABLE_MEMBERS_URI);
 
-  url.searchParams.set('fields', '[]');
   url.searchParams.set('filterByFormula', `({Email} = "${email}")`);
   url.searchParams.set('maxRecords', '1');
 

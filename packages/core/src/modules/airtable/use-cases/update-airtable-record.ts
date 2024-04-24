@@ -30,7 +30,9 @@ export async function updateAirtableRecord({
   await airtableRateLimiter.process();
 
   await fetch(`${AIRTABLE_MEMBERS_URI}/${record.id}`, {
-    body: JSON.stringify({ Email: newEmail }),
+    body: JSON.stringify({
+      fields: { Email: newEmail },
+    }),
     headers: getAirtableHeaders({ includeContentType: true }),
     method: 'patch',
   });
