@@ -2,8 +2,9 @@ import { RateLimiter } from '@/shared/utils/rate-limiter';
 
 // Environment Variables
 
-export const { AIRTABLE_FAMILY_BASE_ID } = process.env;
-const { AIRTABLE_API_KEY } = process.env;
+const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
+
+export const AIRTABLE_FAMILY_BASE_ID = process.env.AIRTABLE_FAMILY_BASE_ID;
 
 // Constants
 
