@@ -2,7 +2,7 @@
 name: Bug Report 🐞
 about: Report any issues with the platform.
 title: ''
-labels: bug
+labels: Bug 🐞
 assignees: ''
 ---
 
