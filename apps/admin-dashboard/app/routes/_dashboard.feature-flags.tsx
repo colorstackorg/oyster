@@ -126,7 +126,7 @@ function FeatureFlagsTableDropdown({ id }: FeatureFlagInView) {
               <Link
                 to={generatePath(Route['/feature-flags/:id/delete'], { id })}
               >
-                <Trash /> Delete Feature Flag
+                <Trash /> Delete Flag
               </Link>
             </Dropdown.Item>
           </Dropdown.List>
