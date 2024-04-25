@@ -5,6 +5,7 @@ import { MemberType } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { type SubmitCensusResponseData } from '@/modules/census/census.types';
+import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 
 export async function submitCensusResponse(
   memberId: string,
@@ -13,6 +14,10 @@ export async function submitCensusResponse(
   const year = new Date().getFullYear();
 
   await db.transaction().execute(async (trx) => {
+    if (data.companyId) {
+      await saveCompanyIfNecessary(trx, data.companyId);
+    }
+
     await trx
       .updateTable('students')
       .set({ type: data.hasGraduated ? MemberType.ALUMNI : MemberType.STUDENT })

@@ -639,13 +639,6 @@ function ImportantResourcesCard() {
         </ResourceItem>
 
         <ResourceItem
-          description="A space for 1:1 coaching. Ask any career questions from resume help to negotiating your offer."
-          href="https://calendly.com/catalystcreation/color-stack-decoded-1-1-coaching-sessions-"
-        >
-          Career Coaching w/ Cataliña
-        </ResourceItem>
-
-        <ResourceItem
           description="A collection of our past event recordings. Don't miss a beat!"
           href="https://youtube.com/@colorstackinc.2266"
         >

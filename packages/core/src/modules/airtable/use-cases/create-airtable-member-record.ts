@@ -9,8 +9,12 @@ import {
 
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { db } from '@/infrastructure/database';
+import {
+  AIRTABLE_FAMILY_BASE_ID,
+  AIRTABLE_MEMBERS_TABLE,
+} from '@/modules/airtable/airtable.shared';
+import { createAirtableRecord } from '@/modules/airtable/use-cases/create-airtable-record';
 import { IS_PRODUCTION } from '@/shared/env';
-import { airtableRateLimiter, getMembersAirtable } from '../airtable.shared';
 
 const AirtableMemberRecord = Student.pick({
   email: true,
@@ -28,11 +32,11 @@ type AirtableMemberRecord = z.infer<typeof AirtableMemberRecord>;
 export async function createAirtableMemberRecord({
   studentId,
 }: GetBullJobData<'airtable.record.create.member'>) {
-  if (!IS_PRODUCTION) {
+  if (!IS_PRODUCTION || !AIRTABLE_FAMILY_BASE_ID) {
     return;
   }
 
-  const student = await db
+  const member = await db
     .selectFrom('students')
     .select([
       'email',
@@ -47,14 +51,11 @@ export async function createAirtableMemberRecord({
     .where('id', '=', studentId)
     .executeTakeFirstOrThrow();
 
-  const record = AirtableMemberRecord.parse(student);
+  const record = AirtableMemberRecord.parse(member);
 
-  const table = getMembersAirtable();
-
-  await airtableRateLimiter.process();
-
-  await table.create(
-    {
+  await createAirtableRecord({
+    baseId: AIRTABLE_FAMILY_BASE_ID,
+    data: {
       Email: record.email,
       'First Name': record.firstName,
       'Last Name': record.lastName,
@@ -66,17 +67,6 @@ export async function createAirtableMemberRecord({
         return FORMATTED_DEMOGRAPHICS[demographic];
       }),
     },
-    {
-      // This means that if there is a select field (whether single or multi),
-      // if the value we send to Airtable is not already there, it should
-      // create that value instead of failing.
-      typecast: true,
-    }
-  );
-
-  console.log({
-    code: 'airtable_record_created',
-    message: 'Airtable record was created.',
-    data: { studentId: record.id },
+    tableName: AIRTABLE_MEMBERS_TABLE,
   });
 }

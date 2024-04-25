@@ -253,10 +253,12 @@ chore: my first contribution ❤️
 ## Deciding What to Work On
 
 You can start by browsing through our list of
-[issues](https://github.com/colorstackorg/oyster/issues) or creating your own
-issue that would improve our product. Once you've decided on an issue, leave a
-comment and wait to get approval from one of our codebase admins - this helps
-avoid multiple people working on this same issue.
+[issues](https://github.com/colorstackorg/oyster/issues). Once you've decided on
+an issue, leave a comment and wait to get approval from one of our codebase
+admins - this helps avoid multiple people working on this same issue.
+
+If you have a feature request or idea that would improve our product, you can
+start a discussion in the `#oyster` channel in our Family Slack!
 
 ## License
 

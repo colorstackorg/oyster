@@ -4,6 +4,7 @@ import {
   type LoaderFunctionArgs,
 } from '@remix-run/node';
 import {
+  Link,
   Form as RemixForm,
   useActionData,
   useLoaderData,
@@ -12,13 +13,20 @@ import {
 import { z } from 'zod';
 
 import { nullableField, Student } from '@oyster/types';
-import { Button, getActionErrors, InputField, validateForm } from '@oyster/ui';
+import {
+  Button,
+  getActionErrors,
+  InputField,
+  Text,
+  validateForm,
+} from '@oyster/ui';
 
 import {
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
 } from '../shared/components/profile';
+import { Route } from '../shared/constants';
 import { updateMember } from '../shared/core.server';
 import { getMember } from '../shared/queries';
 import {
@@ -50,7 +58,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 const UpdateSocialsInformation = z.object({
   calendlyUrl: nullableField(Student.shape.calendlyUrl).transform(formatUrl),
-  githubUrl: nullableField(Student.shape.githubUrl).transform(formatUrl),
   instagramHandle: nullableField(Student.shape.instagramHandle),
   linkedInUrl: Student.shape.linkedInUrl.transform(formatUrl),
   personalWebsiteUrl: nullableField(Student.shape.personalWebsiteUrl).transform(
@@ -101,14 +108,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 }
 
-const {
-  calendlyUrl,
-  githubUrl,
-  instagramHandle,
-  linkedInUrl,
-  personalWebsiteUrl,
-  twitterHandle,
-} = UpdateSocialsInformation.keyof().enum;
+const keys = UpdateSocialsInformation.keyof().enum;
 
 export default function UpdateSocialsInformationForm() {
   const { student } = useLoaderData<typeof loader>();
@@ -127,38 +127,49 @@ export default function UpdateSocialsInformationForm() {
           defaultValue={student.linkedInUrl || undefined}
           error={errors.linkedInUrl}
           label="LinkedIn URL"
-          name={linkedInUrl}
+          name={keys.linkedInUrl}
           required
         />
         <InputField
           defaultValue={student.instagramHandle || undefined}
           error={errors.instagramHandle}
           label="Instagram Handle"
-          name={instagramHandle}
+          name={keys.instagramHandle}
         />
         <InputField
           defaultValue={student.twitterHandle || undefined}
           error={errors.twitterHandle}
           label="Twitter Handle"
-          name={twitterHandle}
+          name={keys.twitterHandle}
         />
-        <InputField
-          defaultValue={student.githubUrl || undefined}
-          error={errors.githubUrl}
-          label="GitHub URL"
-          name={githubUrl}
-        />
+
+        <div className="flex flex-col gap-2">
+          <InputField
+            defaultValue={student.githubUrl || undefined}
+            disabled
+            label="GitHub URL"
+            name="_"
+          />
+          <Text color="gray-500" variant="sm">
+            You can connect your GitHub account on the{' '}
+            <Link className="link" to={Route['/profile/integrations']}>
+              Integrations
+            </Link>{' '}
+            page.
+          </Text>
+        </div>
+
         <InputField
           defaultValue={student.calendlyUrl || undefined}
           error={errors.calendlyUrl}
           label="Calendly URL"
-          name={calendlyUrl}
+          name={keys.calendlyUrl}
         />
         <InputField
           defaultValue={student.personalWebsiteUrl || undefined}
           error={errors.personalWebsiteUrl}
           label="Personal Website"
-          name={personalWebsiteUrl}
+          name={keys.personalWebsiteUrl}
         />
 
         <Button.Group>

@@ -18,7 +18,8 @@ export type PillProps = Pick<React.HTMLProps<HTMLElement>, 'children'> & {
     | 'orange-100'
     | 'pink-100'
     | 'purple-100'
-    | 'red-100';
+    | 'red-100'
+    | 'success';
 
   onCloseHref?: string;
 };
@@ -54,6 +55,7 @@ export function getPillCn({ color, onCloseHref }: Omit<PillProps, 'children'>) {
       .with('pink-100', () => 'bg-pink-100')
       .with('purple-100', () => 'bg-purple-100')
       .with('red-100', () => 'bg-red-100')
+      .with('success', () => 'bg-success text-white')
       .exhaustive()
   );
 }
