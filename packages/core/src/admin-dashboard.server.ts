@@ -19,6 +19,7 @@ export { getFeatureFlag } from '@/modules/feature-flag/queries/get-feature-flag'
 export { listFeatureFlags } from '@/modules/feature-flag/queries/list-feature-flags';
 export { createFeatureFlag } from '@/modules/feature-flag/use-cases/create-feature-flag';
 export { deleteFeatureFlag } from '@/modules/feature-flag/use-cases/delete-feature-flag';
+export { editFeatureFlag } from '@/modules/feature-flag/use-cases/edit-feature-flag';
 export { archiveActivity } from './modules/gamification/use-cases/archive-activity';
 export { editActivity } from './modules/gamification/use-cases/edit-activity';
 export { addIcebreakerPrompt } from './modules/icebreaker/use-cases/add-icebreaker-prompt';

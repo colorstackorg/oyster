@@ -1,4 +1,5 @@
 import { db } from '@oyster/db';
+import { id } from '@oyster/utils';
 
 import { type CreateFeatureFlagInput } from '@/modules/feature-flag/feature-flag.types';
 
@@ -9,9 +10,10 @@ export async function createFeatureFlag(input: CreateFeatureFlagInput) {
       description: input.description,
       displayName: input.displayName,
       enabled: input.enabled,
+      id: id(),
       name: input.name,
     })
-    .returning(['id'])
+    .returning(['name'])
     .executeTakeFirstOrThrow();
 
   return flag;

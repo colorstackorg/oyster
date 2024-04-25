@@ -1,10 +1,19 @@
-import { db } from '@oyster/db';
+import { type SelectExpression } from 'kysely';
 
-export async function getFeatureFlag(id: number) {
+import { type DB, db } from '@oyster/db';
+
+type GetMembersOptions<Selection> = {
+  select: Selection[];
+  where: { id: string };
+};
+
+export async function getFeatureFlag<
+  Selection extends SelectExpression<DB, 'featureFlags'>,
+>({ select, where }: GetMembersOptions<Selection>) {
   const flag = await db
     .selectFrom('featureFlags')
-    .select(['displayName', 'id'])
-    .where('id', '=', id)
+    .select(select)
+    .where('id', '=', where.id)
     .executeTakeFirst();
 
   return flag;

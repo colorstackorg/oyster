@@ -12,7 +12,7 @@ import {
   Video,
 } from 'react-feather';
 
-import { Dashboard } from '@oyster/ui';
+import { Dashboard, Divider } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
 import { countPendingApplications } from '../shared/core.server';
@@ -92,6 +92,11 @@ export default function DashboardLayout() {
                   label="Schools"
                   pathname={Route.SCHOOLS}
                 />
+
+                <div className="my-2">
+                  <Divider />
+                </div>
+
                 <Dashboard.NavigationLink
                   icon={<ToggleRight />}
                   label="Feature Flags"

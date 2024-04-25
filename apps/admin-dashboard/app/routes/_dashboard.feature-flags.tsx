@@ -118,19 +118,13 @@ function FeatureFlagsTableDropdown({ id }: FeatureFlagInView) {
         <Table.Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link
-                to={generatePath(Route['/feature-flags/:id/edit'], {
-                  id: id.toString(),
-                })}
-              >
-                <Edit /> Edit Feature Flag
+              <Link to={generatePath(Route['/feature-flags/:id/edit'], { id })}>
+                <Edit /> Edit Flag
               </Link>
             </Dropdown.Item>
             <Dropdown.Item>
               <Link
-                to={generatePath(Route['/feature-flags/:id/delete'], {
-                  id: id.toString(),
-                })}
+                to={generatePath(Route['/feature-flags/:id/delete'], { id })}
               >
                 <Trash /> Delete Feature Flag
               </Link>

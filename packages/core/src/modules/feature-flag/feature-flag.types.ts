@@ -11,7 +11,7 @@ const FeatureFlag = z.object({
   description: z.string().trim().optional(),
   displayName: z.string().trim().min(1),
   enabled: BooleanInput,
-  id: z.coerce.number(),
+  id: Entity.shape.id,
   name: z
     .string()
     .trim()
@@ -31,3 +31,11 @@ export const CreateFeatureFlagInput = FeatureFlag.pick({
 });
 
 export type CreateFeatureFlagInput = z.infer<typeof CreateFeatureFlagInput>;
+
+export const EditFeatureFlagInput = FeatureFlag.pick({
+  description: true,
+  displayName: true,
+  enabled: true,
+}).partial();
+
+export type EditFeatureFlagInput = z.infer<typeof EditFeatureFlagInput>;

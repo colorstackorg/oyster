@@ -24,7 +24,10 @@ import {
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const flag = await getFeatureFlag(parseInt(params.id as string));
+  const flag = await getFeatureFlag({
+    select: ['displayName'],
+    where: { id: params.id as string },
+  });
 
   if (!flag) {
     throw new Response(null, { status: 404 });
@@ -38,7 +41,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  await deleteFeatureFlag(parseInt(params.id as string));
+  await deleteFeatureFlag(params.id as string);
 
   toast(session, {
     message: 'Deleted feature flag.',

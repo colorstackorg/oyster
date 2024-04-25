@@ -13,7 +13,7 @@ export async function up(db: Kysely<any>) {
     .addColumn('enabled', 'boolean', (column) => {
       return column.notNull().defaultTo(false);
     })
-    .addColumn('id', 'serial', (column) => {
+    .addColumn('id', 'text', (column) => {
       return column.primaryKey();
     })
     .addColumn('name', 'text', (column) => {
