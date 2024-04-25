@@ -30,7 +30,6 @@ export { countUpcomingEvents } from './modules/event/queries/count-upcoming-even
 export { getEvent } from './modules/event/queries/get-event';
 export { listEventAttendees } from './modules/event/queries/list-event-attendees';
 export { isFeatureFlagEnabled } from './modules/feature-flag/queries/is-feature-flag-enabled';
-export { initializeFeatureFlagServer } from './modules/feature-flag/use-cases/initialize-feature-flag-server';
 export { getPointsLeaderboard } from './modules/gamification/queries/get-points-leaderboard';
 export { getTotalPoints } from './modules/gamification/queries/get-total-points';
 export { listActivities } from './modules/gamification/queries/list-activities';
