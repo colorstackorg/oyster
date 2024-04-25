@@ -17,6 +17,7 @@ import {
 } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
+import { listFeatureFlags } from '../shared/core.server';
 import { ensureUserAuthenticated } from '../shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -24,8 +25,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     allowAmbassador: true,
   });
 
+  const flags = await listFeatureFlags();
+
   return json({
-    flags: [{ code: '', description: '', name: '' }],
+    flags,
   });
 }
 
@@ -74,7 +77,7 @@ function FeatureFlagsTable() {
   );
 }
 
-function FeatureFlagsTableDropdown({ code }: FeatureFlagInView) {
+function FeatureFlagsTableDropdown({ id }: FeatureFlagInView) {
   const [open, setOpen] = useState<boolean>(false);
 
   function onClose() {
@@ -91,7 +94,11 @@ function FeatureFlagsTableDropdown({ code }: FeatureFlagInView) {
         <Table.Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={generatePath(Route['/feature-flags'], { code })}>
+              <Link
+                to={generatePath(Route['/feature-flags/:id/edit'], {
+                  id: id.toString(),
+                })}
+              >
                 <Edit /> Edit Feature Flag
               </Link>
             </Dropdown.Item>
