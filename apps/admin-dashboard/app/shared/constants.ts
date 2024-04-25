@@ -30,6 +30,7 @@ export const Route = {
 
   '/feature-flags': '/feature-flags',
   '/feature-flags/create': '/feature-flags/create',
+  '/feature-flags/:id/delete': '/feature-flags/:id/delete',
   '/feature-flags/:id/edit': '/feature-flags/:id/edit',
 
   // Gamification

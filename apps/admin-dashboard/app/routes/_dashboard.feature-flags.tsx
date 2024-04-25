@@ -5,7 +5,7 @@ import {
 } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
-import { Edit, Plus } from 'react-feather';
+import { Edit, Plus, Trash } from 'react-feather';
 import { generatePath } from 'react-router';
 
 import {
@@ -124,6 +124,15 @@ function FeatureFlagsTableDropdown({ id }: FeatureFlagInView) {
                 })}
               >
                 <Edit /> Edit Feature Flag
+              </Link>
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <Link
+                to={generatePath(Route['/feature-flags/:id/delete'], {
+                  id: id.toString(),
+                })}
+              >
+                <Trash /> Delete Feature Flag
               </Link>
             </Dropdown.Item>
           </Dropdown.List>
