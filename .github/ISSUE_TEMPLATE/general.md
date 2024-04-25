@@ -1,6 +1,6 @@
 ---
 name: General 📤
-about: A generic ticket (for admin use only).
+about: For admin use only.
 title: ''
 labels:
 assignees: ''
