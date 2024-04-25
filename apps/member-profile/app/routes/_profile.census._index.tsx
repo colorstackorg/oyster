@@ -35,6 +35,7 @@ import {
 
 import { CityCombobox } from '../shared/components/city-combobox';
 import { Route } from '../shared/constants';
+import { ENV } from '../shared/constants.server';
 import { getCensusResponse, submitCensusResponse } from '../shared/core.server';
 import {
   BaseCensusResponse,
@@ -48,7 +49,7 @@ import { ensureUserAuthenticated, user } from '../shared/session.server';
 const censusCookie = createCookie('census', {
   httpOnly: true,
   maxAge: 60 * 60 * 24 * 30,
-  secure: true,
+  secure: ENV.ENVIRONMENT === 'production',
 });
 
 const CensusCookieObject = z
@@ -72,11 +73,6 @@ async function getCensusCookie(request: Request) {
 
   return cookie;
 }
-
-const CensusFormIntent = {
-  SAVE: 'save',
-  SUBMIT: 'submit',
-} as const;
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -123,9 +119,9 @@ export async function action({ request }: ActionFunctionArgs) {
     }),
   };
 
-  const isSave = form.get('intent') === CensusFormIntent.SAVE;
+  const isSubmit = form.get('intent') === 'submit';
 
-  const { data, errors } = isSave
+  const { data, errors } = !isSubmit
     ? validateForm(CensusCookieObject, values)
     : validateForm(SubmitCensusResponseData_, values);
 
@@ -136,7 +132,7 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  if (isSave) {
+  if (!isSubmit) {
     const existingCookie = await getCensusCookie(request);
 
     const cookie = {
@@ -206,8 +202,7 @@ export default function CensusForm() {
   const { state, formData } = useNavigation();
 
   const submitting =
-    state === 'submitting' &&
-    formData?.get('intent') === CensusFormIntent.SUBMIT;
+    state === 'submitting' && formData?.get('intent') === 'submit';
 
   const [hasGraduated, setHasGraduated] = useState<boolean | null>(
     progress.hasGraduated ?? null
@@ -255,12 +250,10 @@ export default function CensusForm() {
           loading={submitting}
           name="intent"
           type="submit"
-          value={CensusFormIntent.SUBMIT}
+          value="submit"
         >
           Submit
         </Button>
-
-        <input name="intent" type="hidden" value={CensusFormIntent.SAVE} />
       </CensusContext.Provider>
     </RemixForm>
   );
