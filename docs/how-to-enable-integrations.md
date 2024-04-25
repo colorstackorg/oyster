@@ -11,7 +11,6 @@ We have integrations with the following platforms:
 - Mailchimp (Email Marketing)
 - Sentry (Error Monitoring)
 - Slack (Community Home, Authentication)
-- Statsig (Feature Flag)
 - SwagUp (Swag Packs)
 
 ## Airmeet
@@ -134,20 +133,6 @@ To enable the **Slack** integration:
    ```
    SLACK_CLIENT_ID
    SLACK_TEAM_ID
-   ```
-
-## Statsig
-
-To enable the **Statsig** integration:
-
-1.
-2. In `/api/.env`, set the following variables:
-   ```
-   STATSIG_SECRET_KEY
-   ```
-3. In `/member-profile/.env`, set the following variables:
-   ```
-   STATSIG_SECRET_KEY
    ```
 
 ## SwagUp
