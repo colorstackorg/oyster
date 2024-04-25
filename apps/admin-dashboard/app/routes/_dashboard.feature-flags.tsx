@@ -12,6 +12,7 @@ import {
   Dashboard,
   Dropdown,
   getButtonCn,
+  Pill,
   Table,
   type TableColumnProps,
 } from '@oyster/ui';
@@ -56,14 +57,37 @@ function FeatureFlagsTable() {
 
   const columns: TableColumnProps<FeatureFlagInView>[] = [
     {
-      displayName: 'Code',
-      size: '400',
-      render: (flag) => flag.code,
+      displayName: 'Status',
+      size: '120',
+      render: (flag) => {
+        return flag.enabled ? (
+          <Pill color="lime-100">Enabled</Pill>
+        ) : (
+          <Pill color="red-100">Disabled</Pill>
+        );
+      },
     },
     {
       displayName: 'Name',
+      size: '160',
+      render: (flag) => {
+        return (
+          // TODO: Move styling to design system.
+          <code className="rounded-md border border-gray-200 bg-gray-50 px-1 py-0.5 text-sm text-gray-400">
+            {flag.name}
+          </code>
+        );
+      },
+    },
+    {
+      displayName: 'Display Name',
       size: '200',
-      render: (flag) => flag.name,
+      render: (flag) => flag.displayName,
+    },
+    {
+      displayName: 'Description',
+      size: null,
+      render: (flag) => flag.description,
     },
   ];
 

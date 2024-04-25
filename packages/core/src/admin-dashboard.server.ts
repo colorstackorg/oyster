@@ -16,6 +16,7 @@ export { listEvents } from './modules/event/queries/list-events';
 export { addEventRecordingLink } from './modules/event/use-cases/add-event-recording-link';
 export { createEvent } from './modules/event/use-cases/create-event';
 export { listFeatureFlags } from '@/modules/feature-flag/queries/list-feature-flags';
+export { createFeatureFlag } from '@/modules/feature-flag/use-cases/create-feature-flag';
 export { archiveActivity } from './modules/gamification/use-cases/archive-activity';
 export { editActivity } from './modules/gamification/use-cases/edit-activity';
 export { addIcebreakerPrompt } from './modules/icebreaker/use-cases/add-icebreaker-prompt';

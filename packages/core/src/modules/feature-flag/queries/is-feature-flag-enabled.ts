@@ -1,12 +1,12 @@
 import { db } from '@oyster/db';
 
-import { type FeatureFlag } from '../feature-flag.shared';
+import { type FeatureFlagName } from '../feature-flag.types';
 
-export async function isFeatureFlagEnabled(flag: FeatureFlag) {
+export async function isFeatureFlagEnabled(name: FeatureFlagName) {
   const enabledFlag = await db
     .selectFrom('featureFlags')
-    .where('code', '=', flag)
     .where('enabled', '=', true)
+    .where('name', '=', name)
     .executeTakeFirst();
 
   return !!enabledFlag;

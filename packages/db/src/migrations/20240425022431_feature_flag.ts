@@ -3,13 +3,13 @@ import { type Kysely, sql } from 'kysely';
 export async function up(db: Kysely<any>) {
   await db.schema
     .createTable('feature_flags')
-    .addColumn('code', 'text', (column) => {
-      return column.notNull().unique();
-    })
     .addColumn('created_at', 'timestamptz', (column) => {
       return column.notNull().defaultTo(sql`now()`);
     })
     .addColumn('description', 'text')
+    .addColumn('display_name', 'text', (column) => {
+      return column.notNull();
+    })
     .addColumn('enabled', 'boolean', (column) => {
       return column.notNull().defaultTo(false);
     })
@@ -17,7 +17,7 @@ export async function up(db: Kysely<any>) {
       return column.primaryKey();
     })
     .addColumn('name', 'text', (column) => {
-      return column.notNull();
+      return column.notNull().unique();
     })
     .execute();
 }

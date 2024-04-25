@@ -3,7 +3,8 @@ import { db } from '@oyster/db';
 export async function listFeatureFlags() {
   const flags = await db
     .selectFrom('featureFlags')
-    .select(['code', 'createdAt', 'description', 'enabled', 'id', 'name'])
+    .select(['description', 'displayName', 'enabled', 'id', 'name'])
+    .orderBy('createdAt', 'desc')
     .execute();
 
   return flags;
