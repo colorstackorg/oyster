@@ -26,6 +26,11 @@ export const Route = {
   EVENTS: '/events',
   IMPORT_EVENT_ATTENDEES: '/events/:id/import',
 
+  // Feature Flags
+
+  '/feature-flags': '/feature-flags',
+  '/feature-flags/create': '/feature-flags/create',
+
   // Gamification
 
   ACTIVITIES: '/gamification/activities',

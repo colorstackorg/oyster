@@ -7,6 +7,7 @@ import {
   Layers,
   MapPin,
   Target,
+  ToggleRight,
   User,
   Video,
 } from 'react-feather';
@@ -90,6 +91,11 @@ export default function DashboardLayout() {
                   icon={<MapPin />}
                   label="Schools"
                   pathname={Route.SCHOOLS}
+                />
+                <Dashboard.NavigationLink
+                  icon={<ToggleRight />}
+                  label="Feature Flags"
+                  pathname={Route['/feature-flags']}
                 />
                 <Dashboard.NavigationLink
                   icon={<Target />}
