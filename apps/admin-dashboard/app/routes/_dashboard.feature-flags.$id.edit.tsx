@@ -94,7 +94,7 @@ export default function EditFeatureFlagModal() {
   const submitting = useNavigation().state === 'submitting';
 
   function onClose() {
-    navigate(-1);
+    navigate(Route['/feature-flags']);
   }
 
   return (

@@ -82,7 +82,7 @@ export default function CreateFeatureFlagModal() {
   const submitting = useNavigation().state === 'submitting';
 
   function onClose() {
-    navigate(-1);
+    navigate(Route['/feature-flags']);
   }
 
   return (
