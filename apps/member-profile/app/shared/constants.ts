@@ -52,6 +52,7 @@ export const Route = {
   '/profile/emails/add/start': '/profile/emails/add/start',
   '/profile/general': '/profile/general',
   '/profile/icebreakers': '/profile/icebreakers',
+  '/profile/integrations': '/profile/integrations',
   '/profile/personal': '/profile/personal',
   '/profile/socials': '/profile/socials',
   '/profile/work': '/profile/work',

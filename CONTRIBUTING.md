@@ -33,6 +33,7 @@ ColorStack members first, and then friends of ColorStack. ❤️
 - [Making a Pull Request](#making-a-pull-request)
   - [Your First PR](#your-first-pr)
 - [Deciding What to Work On](#deciding-what-to-work-on)
+  - [Proposing Ideas](#proposing-ideas)
 - [License](#license)
 
 ## Local Development
@@ -253,10 +254,17 @@ chore: my first contribution ❤️
 ## Deciding What to Work On
 
 You can start by browsing through our list of
-[issues](https://github.com/colorstackorg/oyster/issues) or creating your own
-issue that would improve our product. Once you've decided on an issue, leave a
-comment and wait to get approval from one of our codebase admins - this helps
-avoid multiple people working on this same issue.
+[issues](https://github.com/colorstackorg/oyster/issues). Once you've decided on
+an issue, leave a comment and wait to get approval from one of our codebase
+admins - this helps avoid multiple people working on this same issue.
+
+### Proposing Ideas
+
+If you have a feature request or idea that would improve our product, please
+start a discussion in our
+[GitHub Discussions](https://github.com/colorstackorg/oyster/discussions) space!
+If the maintainers see value in the idea, they will create issue from that
+discussion.
 
 ## License
 
