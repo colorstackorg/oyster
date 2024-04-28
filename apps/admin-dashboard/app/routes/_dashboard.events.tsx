@@ -6,7 +6,7 @@ import {
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { Menu, Plus, Upload } from 'react-feather';
+import { Menu, Plus, RefreshCw, Upload } from 'react-feather';
 import { generatePath } from 'react-router';
 
 import { type Event } from '@oyster/types';
@@ -118,6 +118,11 @@ function EventsMenuDropdown() {
             <Dropdown.Item>
               <Link to={Route.CREATE_EVENT}>
                 <Plus /> Create Event
+              </Link>
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <Link to={Route.SYNC_AIRMEET_EVENT}>
+                <RefreshCw /> Sync Airmeet Event
               </Link>
             </Dropdown.Item>
           </Dropdown.List>
