@@ -1,6 +1,5 @@
 import { afterAll, beforeAll, beforeEach } from 'bun:test';
 import { type Transaction } from 'kysely';
-import { type DB } from 'kysely-codegen/dist/db';
 
 import {
   company1,
@@ -10,6 +9,7 @@ import {
   student1Emails,
 } from './constants';
 import { db } from '../shared/db';
+import { type DB } from '../shared/types';
 import { migrate } from '../use-cases/migrate';
 import { truncate } from '../use-cases/truncate';
 
