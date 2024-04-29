@@ -160,14 +160,7 @@ bun run build
 To run all of our _applications_, you can run:
 
 ```sh
-bun run dev:apps
-```
-
-To run a _specific package or application_, you can use the `--filter` flag like
-this:
-
-```sh
-bun run dev --filter=api
+bun run dev
 ```
 
 ### Logging Into Applications

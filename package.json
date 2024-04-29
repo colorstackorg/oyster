@@ -13,8 +13,8 @@
     "db:migration:create": "bun run --filter=@oyster/db migration:create",
     "db:seed": "bun run --filter=@oyster/db seed",
     "db:types": "bun run --filter=@oyster/db types",
-    "dev": "turbo run dev --cache-dir=.turbo",
-    "dev:apps": "bun run --filter='./apps/*' dev",
+    "dev": "turbo run dev --filter='./apps/*'",
+    "dev:all": "turbo run dev",
     "dx:down": "docker compose down",
     "dx:nuke": "docker compose down --volumes --remove-orphans",
     "dx:up": "docker compose up -d",
@@ -22,7 +22,7 @@
     "lint": "turbo run lint --cache-dir=.turbo",
     "lint:fix": "turbo run lint:fix --cache-dir=.turbo",
     "prepare": "husky install",
-    "start": "turbo run start --cache-dir=.turbo",
+    "start": "turbo run start",
     "test": "turbo run test --cache-dir=.turbo",
     "type-check": "turbo run type-check --cache-dir=.turbo"
   },
@@ -38,5 +38,5 @@
     "npm": ">=7.0.0",
     "node": "^20.0.0"
   },
-  "packageManager": "^bun@1.1.4"
+  "packageManager": "^bun@1.1.6"
 }
