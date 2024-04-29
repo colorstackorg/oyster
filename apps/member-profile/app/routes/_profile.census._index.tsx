@@ -4,13 +4,10 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { createCookie } from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
-  useLoaderData,
   useNavigation,
-  useSubmit,
 } from '@remix-run/react';
 import React, { type PropsWithChildren, useContext, useState } from 'react';
 import { match } from 'ts-pattern';
@@ -35,7 +32,6 @@ import {
 
 import { CityCombobox } from '../shared/components/city-combobox';
 import { Route } from '../shared/constants';
-import { ENV } from '../shared/constants.server';
 import { getCensusResponse, submitCensusResponse } from '../shared/core.server';
 import {
   BaseCensusResponse,
@@ -46,33 +42,12 @@ import {
 } from '../shared/core.ui';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
 
-const censusCookie = createCookie('census', {
-  httpOnly: true,
-  maxAge: 60 * 60 * 24 * 30,
-  secure: ENV.ENVIRONMENT === 'production',
-});
-
-const CensusCookieObject = z
-  .object({})
-  .merge(SubmitCensusResponseData.options[0])
-  .merge(SubmitCensusResponseData.options[1])
-  .extend({ hasGraduated: BooleanInput })
-  .partial();
-
 const SubmitCensusResponseData_ = z
   .object({})
   .merge(SubmitCensusResponseData.options[0].partial())
   .merge(SubmitCensusResponseData.options[1].partial())
   .merge(BaseCensusResponse)
   .extend({ hasGraduated: BooleanInput });
-
-async function getCensusCookie(request: Request) {
-  const cookieHeader = request.headers.get('Cookie');
-  const parsedCookie = await censusCookie.parse(cookieHeader);
-  const cookie = CensusCookieObject.parse(parsedCookie);
-
-  return cookie;
-}
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -89,22 +64,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect(Route['/census/confirmation']);
   }
 
-  let cookie: z.infer<typeof CensusCookieObject>;
-
-  try {
-    cookie = await getCensusCookie(request);
-  } catch (e) {
-    cookie = {};
-  }
-
-  return json(
-    { progress: cookie },
-    {
-      headers: {
-        'Set-Cookie': await censusCookie.serialize(cookie),
-      },
-    }
-  );
+  return json({});
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -119,11 +79,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }),
   };
 
-  const isSubmit = form.get('intent') === 'submit';
-
-  const { data, errors } = !isSubmit
-    ? validateForm(CensusCookieObject, values)
-    : validateForm(SubmitCensusResponseData_, values);
+  const { data, errors } = validateForm(SubmitCensusResponseData_, values);
 
   if (!data) {
     return json({
@@ -132,35 +88,10 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  if (!isSubmit) {
-    const existingCookie = await getCensusCookie(request);
-
-    const cookie = {
-      ...existingCookie,
-      ...data,
-    };
-
-    return json(
-      {
-        error: '',
-        errors,
-      },
-      {
-        headers: {
-          'Set-Cookie': await censusCookie.serialize(cookie),
-        },
-      }
-    );
-  }
-
   try {
     await submitCensusResponse(user(session), data as SubmitCensusResponseData);
 
-    return redirect(Route['/census/confirmation'], {
-      headers: {
-        'Set-Cookie': await censusCookie.serialize('', { maxAge: 1 }),
-      },
-    });
+    return redirect(Route['/census/confirmation']);
   } catch (e) {
     return json({
       error: (e as Error).message,
@@ -196,36 +127,19 @@ const keys = SubmitCensusResponseData_.keyof().enum;
 export default function CensusForm() {
   useRevalidateOnFocus();
 
-  const { progress } = useLoaderData<typeof loader>();
   const { error } = getActionErrors(useActionData<typeof action>());
-  const submit = useSubmit();
   const { state, formData } = useNavigation();
 
   const submitting =
     state === 'submitting' && formData?.get('intent') === 'submit';
 
-  const [hasGraduated, setHasGraduated] = useState<boolean | null>(
-    progress.hasGraduated ?? null
-  );
-
-  const [hasTechnicalRole, setHasTechnicalRole] = useState<boolean>(
-    progress.hasTechnicalRole ?? false
-  );
-
-  const [hasInternship, setHasInternship] = useState<boolean>(
-    progress.hasInternship ?? false
-  );
-
-  const [isInternational, setIsInternational] = useState<boolean | null>(
-    progress.isInternational ?? null
-  );
+  const [hasGraduated, setHasGraduated] = useState<boolean | null>(null);
+  const [hasTechnicalRole, setHasTechnicalRole] = useState<boolean>(false);
+  const [hasInternship, setHasInternship] = useState<boolean>(false);
+  const [isInternational, setIsInternational] = useState<boolean | null>(null);
 
   return (
-    <RemixForm
-      className="form gap-[inherit]"
-      method="post"
-      onBlur={(e) => submit(e.currentTarget)}
-    >
+    <RemixForm className="form gap-[inherit]" method="post">
       <CensusContext.Provider
         value={{
           hasGraduated,
@@ -260,7 +174,6 @@ export default function CensusForm() {
 }
 
 function BasicSection() {
-  const { progress } = useLoaderData<typeof loader>();
   const { errors } = getActionErrors(useActionData<typeof action>());
 
   return (
@@ -273,9 +186,6 @@ function BasicSection() {
         required
       >
         <CityCombobox
-          defaultLatitude={progress.summerLocationLatitude}
-          defaultLongitude={progress.summerLocationLongitude}
-          defaultValue={progress.summerLocation}
           name={keys.summerLocation}
           latitudeName={keys.summerLocationLatitude}
           longitudeName={keys.summerLocationLongitude}
@@ -287,7 +197,6 @@ function BasicSection() {
 }
 
 function EducationSection() {
-  const { progress } = useLoaderData<typeof loader>();
   const { errors } = getActionErrors(useActionData<typeof action>());
 
   const { hasGraduated, isInternational, setHasGraduated, setIsInternational } =
@@ -304,7 +213,6 @@ function EducationSection() {
         <Radio.Group>
           <Radio
             color="lime-100"
-            defaultChecked={progress.hasGraduated === true}
             id={keys.hasGraduated + '1'}
             label="Yes"
             name={keys.hasGraduated}
@@ -314,7 +222,6 @@ function EducationSection() {
           />
           <Radio
             color="pink-100"
-            defaultChecked={progress.hasGraduated === false}
             id={keys.hasGraduated + '0'}
             label="No"
             name={keys.hasGraduated}
@@ -334,7 +241,6 @@ function EducationSection() {
           <Radio.Group>
             <Radio
               color="lime-100"
-              defaultChecked={progress.hasTechnicalDegree === true}
               id={keys.hasTechnicalDegree + '1'}
               label="Yes"
               name={keys.hasTechnicalDegree}
@@ -343,7 +249,6 @@ function EducationSection() {
             />
             <Radio
               color="pink-100"
-              defaultChecked={progress.hasTechnicalDegree === false}
               id={keys.hasTechnicalDegree + '0'}
               label="No"
               name={keys.hasTechnicalDegree}
@@ -364,7 +269,6 @@ function EducationSection() {
             <Radio.Group>
               <Radio
                 color="lime-100"
-                defaultChecked={progress.isInternational === true}
                 id={keys.isInternational + '1'}
                 label="Yes"
                 name={keys.isInternational}
@@ -376,7 +280,6 @@ function EducationSection() {
               />
               <Radio
                 color="pink-100"
-                defaultChecked={progress.isInternational === false}
                 id={keys.isInternational + '0'}
                 label="No"
                 name={keys.isInternational}
@@ -397,7 +300,6 @@ function EducationSection() {
               required
             >
               <Textarea
-                defaultValue={progress.internationalSupport}
                 id={keys.internationalSupport}
                 name={keys.internationalSupport}
                 minRows={2}
@@ -414,7 +316,6 @@ function EducationSection() {
             <Radio.Group>
               <Radio
                 color="lime-100"
-                defaultChecked={progress.isOnTrackToGraduate === true}
                 id={keys.isOnTrackToGraduate + '1'}
                 label="Yes"
                 name={keys.isOnTrackToGraduate}
@@ -423,7 +324,6 @@ function EducationSection() {
               />
               <Radio
                 color="pink-100"
-                defaultChecked={progress.isOnTrackToGraduate === false}
                 id={keys.isOnTrackToGraduate + '0'}
                 label="No"
                 name={keys.isOnTrackToGraduate}
@@ -438,10 +338,7 @@ function EducationSection() {
             label="My confidence in Computer Science related school work has increased since joining ColorStack."
             required
           >
-            <AgreeRating
-              defaultValue={progress.confidenceRatingSchool}
-              name={keys.confidenceRatingSchool}
-            />
+            <AgreeRating name={keys.confidenceRatingSchool} />
           </Form.Field>
 
           <Form.Field
@@ -449,10 +346,7 @@ function EducationSection() {
             label="I am confident that I will graduate with my tech-related degree."
             required
           >
-            <AgreeRating
-              defaultValue={progress.confidenceRatingGraduating}
-              name={keys.confidenceRatingGraduating}
-            />
+            <AgreeRating name={keys.confidenceRatingGraduating} />
           </Form.Field>
 
           <Form.Field
@@ -460,10 +354,7 @@ function EducationSection() {
             label="I am confident that I will graduate with a full-time offer in tech."
             required
           >
-            <AgreeRating
-              defaultValue={progress.confidenceRatingFullTimeJob}
-              name={keys.confidenceRatingFullTimeJob}
-            />
+            <AgreeRating name={keys.confidenceRatingFullTimeJob} />
           </Form.Field>
         </>
       )}
@@ -472,7 +363,6 @@ function EducationSection() {
 }
 
 function WorkSection() {
-  const { progress } = useLoaderData<typeof loader>();
   const { errors } = getActionErrors(useActionData<typeof action>());
 
   const {
@@ -497,7 +387,6 @@ function WorkSection() {
         <Radio.Group>
           <Radio
             color="lime-100"
-            defaultChecked={progress.hasTechnicalRole === true}
             id={keys.hasTechnicalRole + '1'}
             label="Yes"
             name={keys.hasTechnicalRole}
@@ -507,7 +396,6 @@ function WorkSection() {
           />
           <Radio
             color="pink-100"
-            defaultChecked={progress.hasTechnicalRole === false}
             id={keys.hasTechnicalRole + '0'}
             label="No"
             name={keys.hasTechnicalRole}
@@ -528,15 +416,8 @@ function WorkSection() {
               required
             >
               <div className="flex flex-col gap-2">
-                <CompanyCombobox
-                  defaultCompanyName={progress.companyName}
-                  defaultCrunchbaseId=""
-                  name={keys.companyId}
-                />
-                <FreeTextCompanyInput
-                  defaultValue={progress.companyName}
-                  name={keys.companyName}
-                />
+                <CompanyCombobox name={keys.companyId} />
+                <FreeTextCompanyInput name={keys.companyName} />
               </div>
             </Form.Field>
           </CompanyFieldProvider>
@@ -549,7 +430,6 @@ function WorkSection() {
             <Radio.Group>
               <Radio
                 color="lime-100"
-                defaultChecked={progress.hasRoleThroughColorStack === true}
                 id={keys.hasRoleThroughColorStack + '1'}
                 label="Yes"
                 name={keys.hasRoleThroughColorStack}
@@ -558,7 +438,6 @@ function WorkSection() {
               />
               <Radio
                 color="pink-100"
-                defaultChecked={progress.hasRoleThroughColorStack === false}
                 id={keys.hasRoleThroughColorStack + '0'}
                 label="No"
                 name={keys.hasRoleThroughColorStack}
@@ -574,11 +453,7 @@ function WorkSection() {
             label="If you received multiple offers, list out the additional companies."
             labelFor={keys.additionalOffers}
           >
-            <Input
-              defaultValue={progress.additionalOffers}
-              id={keys.additionalOffers}
-              name={keys.additionalOffers}
-            />
+            <Input id={keys.additionalOffers} name={keys.additionalOffers} />
           </Form.Field>
         </>
       )}
@@ -588,10 +463,7 @@ function WorkSection() {
         label="I feel more prepared for a full-time job because of ColorStack."
         required
       >
-        <AgreeRating
-          defaultValue={progress.confidenceRatingFullTimePreparedness}
-          name={keys.confidenceRatingFullTimePreparedness}
-        />
+        <AgreeRating name={keys.confidenceRatingFullTimePreparedness} />
       </Form.Field>
     </CensusSection>
   ) : (
@@ -604,7 +476,6 @@ function WorkSection() {
         <Radio.Group>
           <Radio
             color="lime-100"
-            defaultChecked={progress.hasInternship === true}
             id={keys.hasInternship + '1'}
             label="Yes"
             name={keys.hasInternship}
@@ -614,7 +485,6 @@ function WorkSection() {
           />
           <Radio
             color="pink-100"
-            defaultChecked={progress.hasInternship === false}
             id={keys.hasInternship + '0'}
             label="No"
             name={keys.hasInternship}
@@ -635,15 +505,8 @@ function WorkSection() {
               required
             >
               <div className="flex flex-col gap-2">
-                <CompanyCombobox
-                  defaultCompanyName={progress.companyName}
-                  defaultCrunchbaseId=""
-                  name={keys.companyId}
-                />
-                <FreeTextCompanyInput
-                  defaultValue={progress.companyName}
-                  name={keys.companyName}
-                />
+                <CompanyCombobox name={keys.companyId} />
+                <FreeTextCompanyInput name={keys.companyName} />
               </div>
             </Form.Field>
           </CompanyFieldProvider>
@@ -654,11 +517,7 @@ function WorkSection() {
             label="If you received multiple offers, list out the additional companies."
             labelFor={keys.additionalOffers}
           >
-            <Input
-              defaultValue={progress.additionalOffers}
-              id={keys.additionalOffers}
-              name={keys.additionalOffers}
-            />
+            <Input id={keys.additionalOffers} name={keys.additionalOffers} />
           </Form.Field>
 
           <Form.Field
@@ -669,7 +528,6 @@ function WorkSection() {
             <Radio.Group>
               <Radio
                 color="lime-100"
-                defaultChecked={progress.hasRoleThroughColorStack === true}
                 id={keys.hasRoleThroughColorStack + '1'}
                 label="Yes"
                 name={keys.hasRoleThroughColorStack}
@@ -678,7 +536,6 @@ function WorkSection() {
               />
               <Radio
                 color="pink-100"
-                defaultChecked={progress.hasRoleThroughColorStack === false}
                 id={keys.hasRoleThroughColorStack + '0'}
                 label="No"
                 name={keys.hasRoleThroughColorStack}
@@ -695,17 +552,13 @@ function WorkSection() {
         label="My confidence in technical interviewing has increased since joining ColorStack."
         required
       >
-        <AgreeRating
-          defaultValue={progress.confidenceRatingInterviewing}
-          name={keys.confidenceRatingInterviewing}
-        />
+        <AgreeRating name={keys.confidenceRatingInterviewing} />
       </Form.Field>
     </CensusSection>
   );
 }
 
 function ColorStackFeedbackSection() {
-  const { progress } = useLoaderData<typeof loader>();
   const { errors } = getActionErrors(useActionData<typeof action>());
 
   const { hasGraduated } = useContext(CensusContext);
@@ -734,7 +587,6 @@ function ColorStackFeedbackSection() {
           ].map((resource) => {
             return (
               <Checkbox
-                defaultChecked={progress.currentResources?.includes(resource)}
                 id={keys.currentResources + resource}
                 key={resource}
                 label={resource}
@@ -756,7 +608,6 @@ function ColorStackFeedbackSection() {
             <Radio.Group>
               <Radio
                 color="lime-100"
-                defaultChecked={progress.joinAlumni === true}
                 id={keys.joinAlumni + '1'}
                 label="Yes"
                 name={keys.joinAlumni}
@@ -765,7 +616,6 @@ function ColorStackFeedbackSection() {
               />
               <Radio
                 color="pink-100"
-                defaultChecked={progress.joinAlumni === false}
                 id={keys.joinAlumni + '0'}
                 label="No"
                 name={keys.joinAlumni}
@@ -782,7 +632,6 @@ function ColorStackFeedbackSection() {
             required
           >
             <Textarea
-              defaultValue={progress.alumniProgramming}
               id={keys.alumniProgramming}
               name={keys.alumniProgramming}
               minRows={2}
@@ -801,7 +650,6 @@ function ColorStackFeedbackSection() {
             required
           >
             <Textarea
-              defaultValue={progress.futureResources}
               id={keys.futureResources}
               name={keys.futureResources}
               minRows={2}
@@ -823,7 +671,6 @@ function ColorStackFeedbackSection() {
               ].map((category) => {
                 return (
                   <Radio
-                    defaultChecked={progress.communityNeeds?.includes(category)}
                     id={keys.communityNeeds + category}
                     key={category}
                     label={category}
@@ -846,7 +693,6 @@ function ColorStackFeedbackSection() {
         <Radio.Group>
           <Radio
             color="lime-100"
-            defaultChecked={progress.hasMadeFriend === true}
             id={keys.hasMadeFriend + '1'}
             label="Yes"
             name={keys.hasMadeFriend}
@@ -855,7 +701,6 @@ function ColorStackFeedbackSection() {
           />
           <Radio
             color="pink-100"
-            defaultChecked={progress.hasMadeFriend === false}
             id={keys.hasMadeFriend + '0'}
             label="No"
             name={keys.hasMadeFriend}
@@ -872,12 +717,7 @@ function ColorStackFeedbackSection() {
         labelFor={keys.nps}
         required
       >
-        <Select
-          defaultValue={progress.nps}
-          id={keys.nps}
-          name={keys.nps}
-          required
-        >
+        <Select id={keys.nps} name={keys.nps} required>
           {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map((score) => {
             return (
               <option key={score} value={score}>

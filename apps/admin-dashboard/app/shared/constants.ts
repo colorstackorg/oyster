@@ -25,6 +25,7 @@ export const Route = {
   CREATE_EVENT: '/events/create',
   EVENTS: '/events',
   IMPORT_EVENT_ATTENDEES: '/events/:id/import',
+  SYNC_AIRMEET_EVENT: '/events/sync-airmeet-event',
 
   // Feature Flags
 
