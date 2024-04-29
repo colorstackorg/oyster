@@ -40,6 +40,7 @@ let email = '';
 async function seed(trx: Transaction<DB>) {
   const schoolId1 = id();
   const schoolId2 = id();
+  const schoolId3 = id();
 
   await trx
     .insertInto('schools')
@@ -57,6 +58,13 @@ async function seed(trx: Transaction<DB>) {
         addressZip: '14850',
         id: schoolId2,
         name: 'Cornell University',
+      },
+      {
+        addressCity: 'Austin',
+        addressState: 'TX',
+        addressZip: '78712',
+        id: schoolId3,
+        name: 'University of Texas at Austin',
       },
       {
         addressCity: 'Washington',
@@ -125,6 +133,46 @@ async function seed(trx: Transaction<DB>) {
     .updateTable('studentEmails')
     .set({ studentId: memberId })
     .where('email', '=', email)
+    .execute();
+
+  await trx
+    .insertInto('applications')
+    .values([
+      {
+        id: id(),
+        email: 'student1@cornell.edu',
+        contribution: 'Working on Oyster!',
+        educationLevel: 'undergraduate',
+        gender: '',
+        goals: '',
+        graduationYear: 2026,
+        firstName: 'Big',
+        lastName: 'Red',
+        linkedInUrl: 'https://www.linkedin.com/',
+        major: 'computer_science',
+        otherDemographics: [],
+        race: [],
+        schoolId: schoolId2,
+        status: 'pending',
+      },
+      {
+        id: id(),
+        email: 'student2@utexas.edu',
+        contribution: 'Working on Oyster!',
+        educationLevel: 'Bootcamp',
+        gender: '',
+        goals: '',
+        graduationYear: 2024,
+        firstName: 'Bevo',
+        lastName: 'Longhorn',
+        linkedInUrl: 'https://www.linkedin.com/',
+        major: 'information_science',
+        otherDemographics: [''],
+        race: [''],
+        schoolId: schoolId3,
+        status: 'pending',
+      },
+    ])
     .execute();
 }
 
