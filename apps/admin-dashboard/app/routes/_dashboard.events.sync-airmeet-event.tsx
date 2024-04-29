@@ -12,7 +12,6 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
-import { Event } from '@oyster/types';
 import {
   Button,
   Form,
@@ -37,7 +36,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 const SyncAirmeetEventFormData = z.object({
-  eventId: Event.shape.id,
+  eventId: z.string().uuid('The ID must be a valid UUID.'),
 });
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -52,19 +51,17 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (!data) {
     return json({
-      error: 'Something went wrong, please try again.',
+      error: '',
       errors,
     });
   }
 
-  const { eventId } = Object.fromEntries(form);
-
   job('event.sync', {
-    eventId: eventId as string,
+    eventId: data.eventId,
   });
 
   toast(session, {
-    message: `Airmeet Event Synced.`,
+    message: 'Event is being synced. Check back soon.',
     type: 'success',
   });
 
@@ -79,7 +76,7 @@ export default function SyncAirmeetEventPage() {
   const navigate = useNavigate();
 
   function onClose() {
-    navigate(-1);
+    navigate(Route.EVENTS);
   }
 
   return (
@@ -94,30 +91,29 @@ export default function SyncAirmeetEventPage() {
   );
 }
 
-const { eventId } = SyncAirmeetEventFormData.keyof().enum;
+const keys = SyncAirmeetEventFormData.keyof().enum;
 
 function SyncAirmeetEventForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
   const submitting = useNavigation().state === 'submitting';
 
   return (
-    <RemixForm>
+    <RemixForm className="form" method="post">
       <Form.Field
+        description="You can find the ID from the Airmeet event URL."
         error={errors.eventId}
         label="Airmeet ID"
-        labelFor={eventId}
+        labelFor={keys.eventId}
         required
       >
-        <Input id={eventId} name={eventId} required />
+        <Input id={keys.eventId} name={keys.eventId} required />
       </Form.Field>
-
-      <br />
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
         <Button loading={submitting} type="submit">
-          Sync Airmeet Event
+          Sync
         </Button>
       </Button.Group>
     </RemixForm>
