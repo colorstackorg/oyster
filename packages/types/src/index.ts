@@ -46,7 +46,6 @@ export {
   Major,
   OtherDemographic,
   Race,
-  SwagPackType,
 } from './domain/types';
 export type { ExtractValue } from './shared/types';
 export {
