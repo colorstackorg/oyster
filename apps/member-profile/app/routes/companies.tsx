@@ -6,7 +6,7 @@ import {
 import { z } from 'zod';
 
 import {
-  reportError,
+  reportException,
   searchCrunchbaseOrganizations,
 } from '../shared/core.server';
 import { ensureUserAuthenticated } from '../shared/session.server';
@@ -33,7 +33,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       companies,
     });
   } catch (e) {
-    reportError(e);
+    reportException(e);
 
     return json({
       companies: [],
