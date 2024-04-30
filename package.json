@@ -14,7 +14,6 @@
     "db:seed": "bun run --filter=@oyster/db seed",
     "db:types": "bun run --filter=@oyster/db types",
     "dev": "turbo run dev --filter='./apps/*'",
-    "dev:all": "turbo run dev",
     "dx:down": "docker compose down",
     "dx:nuke": "docker compose down --volumes --remove-orphans",
     "dx:up": "docker compose up -d",
