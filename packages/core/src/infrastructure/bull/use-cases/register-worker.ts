@@ -2,7 +2,7 @@ import { type Job, QueueEvents, Worker, type WorkerOptions } from 'bullmq';
 import { Redis } from 'ioredis';
 import { type z, type ZodType } from 'zod';
 
-import { reportError } from '@/modules/sentry/use-cases/report-error';
+import { reportException } from '@/modules/sentry/use-cases/report-exception';
 import { ENV } from '@/shared/env';
 import { ErrorWithContext, ZodParseError } from '@/shared/errors';
 import { type BullQueue } from '../bull.types';
@@ -40,7 +40,7 @@ export function registerWorker<Schema extends ZodType>(
   });
 
   queueEvents.on('failed', ({ failedReason, jobId }) => {
-    reportError(
+    reportException(
       new BullJobFailedError(failedReason).withContext({
         jobId,
       })

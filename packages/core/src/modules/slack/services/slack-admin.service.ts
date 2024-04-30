@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { redis, RedisKey } from '@/infrastructure/redis';
-import { reportError } from '@/modules/sentry/use-cases/report-error';
+import { reportException } from '@/modules/sentry/use-cases/report-exception';
 import { ErrorWithContext, ZodParseError } from '@/shared/errors';
 import { RateLimiter } from '@/shared/utils/rate-limiter';
 
@@ -42,7 +42,7 @@ export async function deactivateSlackUser(id: string) {
   }
 
   if (error) {
-    reportError(error);
+    reportException(error);
     throw error;
   }
 
@@ -85,7 +85,7 @@ export async function inviteSlackUser(email: string) {
   }
 
   if (error) {
-    reportError(error);
+    reportException(error);
     throw error;
   }
 

@@ -2,7 +2,7 @@ import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
 import { updateMailchimpListMember } from '@/modules/mailchimp/use-cases/update-mailchimp-list-member';
-import { reportError } from '@/modules/sentry/use-cases/report-error';
+import { reportException } from '@/modules/sentry/use-cases/report-exception';
 import { updateSlackEmail } from '@/modules/slack/services/slack-user.service';
 import { NotFoundError } from '@/shared/errors';
 
@@ -77,7 +77,7 @@ async function updateEmailMarketingMember(
       id: input.previousEmail,
     });
   } catch (e) {
-    reportError(e);
+    reportException(e);
   }
 }
 
@@ -91,6 +91,6 @@ async function updateEmailOnSlack(input: UpdateSlackUserInput) {
 
     await updateSlackEmail(id, input.email);
   } catch (e) {
-    reportError(e);
+    reportException(e);
   }
 }
