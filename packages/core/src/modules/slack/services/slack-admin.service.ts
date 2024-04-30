@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
-import { redis, RedisKey } from '@/infrastructure/redis';
+import { job } from '@/infrastructure/bull/use-cases/job';
+import { redis } from '@/infrastructure/redis';
 import { reportError } from '@/modules/sentry/use-cases/report-error';
 import { ErrorWithContext, ZodParseError } from '@/shared/errors';
 import { RateLimiter } from '@/shared/utils/rate-limiter';
@@ -89,6 +90,10 @@ export async function inviteSlackUser(email: string) {
     throw error;
   }
 
+  job('slack.invited', {
+    email,
+  });
+
   console.log({
     code: 'slack_user_invited',
     message: 'User was invited to the Slack workspace.',
@@ -101,8 +106,8 @@ async function fetchFromSlack(
   { body }: { body: URLSearchParams }
 ) {
   const [cookie, token] = await Promise.all([
-    redis.get(RedisKey.SLACK_LEGACY_COOKIE),
-    redis.get(RedisKey.SLACK_LEGACY_TOKEN),
+    redis.get('slack:legacy_cookie'),
+    redis.get('slack:legacy_token'),
   ]);
 
   if (!cookie || !token) {
