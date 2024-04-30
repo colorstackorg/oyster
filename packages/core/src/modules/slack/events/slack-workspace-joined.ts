@@ -25,6 +25,5 @@ export async function onSlackWorkspaceJoined({
       slackId,
     })
     .where('id', '=', member.id)
-    .where('slackId', 'is', null)
     .execute();
 }
