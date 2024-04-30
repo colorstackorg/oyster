@@ -21,8 +21,6 @@ export const RedisKey = {
   SLACK_GET_MESSAGE_CONNECTIONS: 'slack:connections:get_message',
   SLACK_INVITE_USER_CONNECTIONS: 'slack:connections:invite_user',
   SLACK_JOIN_CHANNEL_CONNECTIONS: 'slack:connections:join_channel',
-  SLACK_LEGACY_COOKIE: 'slack:legacy_cookie',
-  SLACK_LEGACY_TOKEN: 'slack:legacy_token',
 } as const;
 
 export type RedisKey = ExtractValue<typeof RedisKey>;
