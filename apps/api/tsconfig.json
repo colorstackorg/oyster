@@ -6,6 +6,7 @@
     "../../packages/core/src/modules/mailchimp/mailchimp.types.d.ts"
   ],
   "compilerOptions": {
+    "baseUrl": ".",
     "jsx": "react-jsx",
     "module": "ESNext",
     "moduleResolution": "Bundler",
