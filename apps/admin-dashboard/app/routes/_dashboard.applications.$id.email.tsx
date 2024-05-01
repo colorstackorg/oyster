@@ -93,7 +93,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const url = new URL(request.url);
 
-  url.pathname = Route.APPLICATIONS;
+  url.pathname = Route['/applications'];
 
   return redirect(url.toString(), {
     headers: {

@@ -65,7 +65,7 @@ export async function action({ request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.EVENTS, {
+  return redirect(Route['/events'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -76,7 +76,7 @@ export default function SyncAirmeetEventPage() {
   const navigate = useNavigate();
 
   function onClose() {
-    navigate(Route.EVENTS);
+    navigate(Route['/events']);
   }
 
   return (

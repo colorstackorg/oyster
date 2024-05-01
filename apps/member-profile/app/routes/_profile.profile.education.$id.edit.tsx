@@ -169,7 +169,7 @@ export default function EditEducationPage() {
 
   function onDelete() {
     navigate(
-      generatePath(Route.DELETE_EDUCATION, {
+      generatePath(Route['/profile/education/:id/delete'], {
         id: education.id,
       })
     );

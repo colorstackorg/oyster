@@ -52,7 +52,7 @@ function EducationHistorySection() {
   const navigate = useNavigate();
 
   function onAddExperience() {
-    navigate(Route.ADD_EDUCATION);
+    navigate(Route['/profile/education/add']);
   }
 
   return (

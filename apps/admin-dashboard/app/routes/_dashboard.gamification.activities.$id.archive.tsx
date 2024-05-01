@@ -38,7 +38,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
       type: 'success',
     });
 
-    return redirect(Route.ACTIVITIES, {
+    return redirect(Route['/gamification/activities'], {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
@@ -58,7 +58,7 @@ export default function ArchiveActivityPage() {
   const submitting = useNavigation().state === 'submitting';
 
   function onClose() {
-    navigate(Route.ACTIVITIES);
+    navigate(Route['/gamification/activities']);
   }
 
   function onBack() {

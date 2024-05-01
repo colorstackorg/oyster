@@ -34,7 +34,7 @@ export default function ProfileLayout() {
             <Dashboard.NavigationLink
               icon={<Home />}
               label="Home"
-              pathname={Route.HOME}
+              pathname={Route['/home']}
             />
             {isCensusEnabled && (
               <Dashboard.NavigationLink
@@ -51,7 +51,7 @@ export default function ProfileLayout() {
             <Dashboard.NavigationLink
               icon={<Award />}
               label="Points"
-              pathname={Route.POINTS}
+              pathname={Route['/points']}
             />
             <Dashboard.NavigationLink
               icon={<Calendar />}

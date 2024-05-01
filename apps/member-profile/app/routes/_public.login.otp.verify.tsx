@@ -27,7 +27,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
 
   if (!oneTimeCodeId) {
-    return redirect(Route.LOGIN_OTP_SEND);
+    return redirect(Route['/login/otp/send']);
   }
 
   const description =
@@ -80,7 +80,7 @@ export async function action({ request }: ActionFunctionArgs) {
       Method: 'OTP',
     });
 
-    const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route.HOME;
+    const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route['/home'];
 
     return redirect(redirectUrl, {
       headers: {

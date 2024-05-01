@@ -83,11 +83,14 @@ export async function action({ params, request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(generatePath(Route.BULL_REPEATABLES, { queue: queueName }), {
-    headers: {
-      'Set-Cookie': await commitSession(session),
-    },
-  });
+  return redirect(
+    generatePath(Route['/bull/:queue/repeatables'], { queue: queueName }),
+    {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    }
+  );
 }
 
 export default function AddRepeatablePage() {

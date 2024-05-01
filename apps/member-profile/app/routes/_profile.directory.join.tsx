@@ -20,7 +20,7 @@ export default function JoinDirectoryLayout() {
   const navigate = useNavigate();
 
   function onClose() {
-    navigate(Route.HOME);
+    navigate(Route['/home']);
   }
 
   return (

@@ -130,7 +130,7 @@ function EmailAddressSection() {
   }
 
   function onChangePrimaryEmail() {
-    navigate(Route.CHANGE_PRIMARY_EMAIL);
+    navigate(Route['/profile/emails/change-primary']);
   }
 
   return (

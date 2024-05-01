@@ -90,7 +90,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.STUDENTS, {
+  return redirect(Route['/students'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -103,7 +103,7 @@ export default function GrantPointsPage() {
   const navigate = useNavigate();
 
   function onClose() {
-    navigate(Route.STUDENTS);
+    navigate(Route['/students']);
   }
 
   return (

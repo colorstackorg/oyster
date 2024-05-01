@@ -21,7 +21,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await getSession(request);
 
-  return redirect(Route.LOGIN, {
+  return redirect(Route['/login'], {
     headers: {
       'Set-Cookie': await destroySession(session),
     },

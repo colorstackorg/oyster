@@ -8,7 +8,7 @@ import { ensureUserAuthenticated } from '../shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
-    redirectTo: `${Route.LOGIN}?context=claim-swag-pack`,
+    redirectTo: `${Route['/login']}?context=claim-swag-pack`,
   });
 
   return json({});
@@ -18,7 +18,7 @@ export default function ClaimSwagPackLayout() {
   const navigate = useNavigate();
 
   function onClose() {
-    navigate(Route.HOME);
+    navigate(Route['/home']);
   }
 
   return (

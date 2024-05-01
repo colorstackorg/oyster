@@ -75,7 +75,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     session.set(SESSION.USER_ID, userId);
 
-    const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route.HOME;
+    const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route['/'];
 
     return redirect(redirectUrl, {
       headers: {

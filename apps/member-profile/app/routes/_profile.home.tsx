@@ -382,7 +382,7 @@ function ClaimSwagPackCard() {
 
       <Button.Group>
         <RemixLink
-          to={Route.CLAIM_SWAG_PACK}
+          to={Route['/home/claim-swag-pack']}
           className={getButtonCn({ variant: 'primary' })}
         >
           Claim Swag Pack
