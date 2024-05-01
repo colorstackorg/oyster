@@ -36,6 +36,11 @@ export async function listApplications({
       return qb.where('applications.status', '=', status);
     });
 
+  const orderDirection =
+    status === 'accepted' || status === 'rejected' || status === 'all'
+      ? 'desc'
+      : 'asc';
+
   const [rows, { count }] = await Promise.all([
     query
       .leftJoin('schools', 'schools.id', 'applications.schoolId')
@@ -52,7 +57,7 @@ export async function listApplications({
             .as('school');
         },
       ])
-      .orderBy('applications.createdAt', 'asc')
+      .orderBy('applications.createdAt', orderDirection)
       .limit(limit)
       .offset((page - 1) * limit)
       .execute(),
