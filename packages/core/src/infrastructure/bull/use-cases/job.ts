@@ -68,6 +68,7 @@ const QueueNameFromJobName: Record<BullJob['name'], BullQueue> = {
   'slack.channel.unarchive': 'slack',
   'slack.deactivate': 'slack',
   'slack.invite': 'slack',
+  'slack.invited': 'slack',
   'slack.joined': 'slack',
   'slack.message.add': 'slack',
   'slack.message.added': 'slack',

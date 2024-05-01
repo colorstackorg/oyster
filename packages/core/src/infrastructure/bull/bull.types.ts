@@ -395,6 +395,12 @@ export const SlackBullJob = z.discriminatedUnion('name', [
     }),
   }),
   z.object({
+    name: z.literal('slack.invited'),
+    data: z.object({
+      email: Student.shape.email,
+    }),
+  }),
+  z.object({
     name: z.literal('slack.joined'),
     data: z.object({
       email: Student.shape.email,

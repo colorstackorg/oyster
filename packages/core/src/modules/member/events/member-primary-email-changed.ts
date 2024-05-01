@@ -3,8 +3,11 @@ import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
 import { updateMailchimpListMember } from '@/modules/mailchimp/use-cases/update-mailchimp-list-member';
 import { reportError } from '@/modules/sentry/use-cases/report-error';
-import { updateSlackEmail } from '@/modules/slack/services/slack-user.service';
-import { NotFoundError } from '@/shared/errors';
+import {
+  getSlackUserByEmail,
+  updateSlackEmail,
+} from '@/modules/slack/services/slack-user.service';
+import { ErrorWithContext, NotFoundError } from '@/shared/errors';
 
 type UpdateEmailMarketingMemberInput = {
   email: string;
@@ -13,6 +16,7 @@ type UpdateEmailMarketingMemberInput = {
 
 type UpdateSlackUserInput = {
   email: string;
+  previousEmail: string;
   slackId: string | null;
 };
 
@@ -40,6 +44,7 @@ export async function onPrimaryEmailChanged({
 
     updateEmailOnSlack({
       email: student.newEmail,
+      previousEmail,
       slackId: student.slackId,
     }),
   ]);
@@ -83,10 +88,27 @@ async function updateEmailMarketingMember(
 
 async function updateEmailOnSlack(input: UpdateSlackUserInput) {
   try {
-    const id = input.slackId;
+    let id = input.slackId;
 
     if (!id) {
-      return;
+      // This is the case in which the member is trying to change their email
+      // before they've accepted their Slack invitation. We'll attempt to find
+      // their Slack account, which should be registered under their previous
+      // email.
+      const user = await getSlackUserByEmail(input.previousEmail);
+
+      if (user) {
+        id = user.id;
+      } else {
+        // If it's not found, there's not much we can do. We'll throw and
+        // report to Sentry.
+        throw new ErrorWithContext(
+          'Failed to update Slack account email.'
+        ).withContext({
+          email: input.email,
+          previousEmail: input.previousEmail,
+        });
+      }
     }
 
     await updateSlackEmail(id, input.email);
