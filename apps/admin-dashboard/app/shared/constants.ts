@@ -8,6 +8,7 @@ export const Route = {
   APPLICATION: '/applications/:id',
   APPLICATIONS: '/applications',
   UPDATE_APPLICATION_EMAIL: '/applications/:id/email',
+  ACCEPT_APPLICATION: '/applications/:id/accept',
 
   // Bull
 

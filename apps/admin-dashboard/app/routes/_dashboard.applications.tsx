@@ -201,6 +201,9 @@ function ApplicationsTable() {
       {...(searchParams.status === 'pending' && {
         Dropdown: ApplicationDropdown,
       })}
+      {...(searchParams.status === 'rejected' && {
+        Dropdown: ApplicationDropdown,
+      })}
     />
   );
 }
@@ -225,6 +228,8 @@ function ApplicationDropdown({ id }: ApplicationInView) {
 
   const { search } = useLocation();
 
+  const [searchParams] = useSearchParams(ApplicationsSearchParams);
+
   function onClose() {
     setOpen(false);
   }
@@ -238,18 +243,34 @@ function ApplicationDropdown({ id }: ApplicationInView) {
       {open && (
         <Table.Dropdown>
           <Dropdown.List>
-            <Dropdown.Item>
-              <Link
-                to={{
-                  pathname: generatePath(Route.UPDATE_APPLICATION_EMAIL, {
-                    id,
-                  }),
-                  search,
-                }}
-              >
-                <Edit /> Update Email
-              </Link>
-            </Dropdown.Item>
+            {searchParams.status === 'pending' && (
+              <Dropdown.Item>
+                <Link
+                  to={{
+                    pathname: generatePath(Route.UPDATE_APPLICATION_EMAIL, {
+                      id,
+                    }),
+                    search,
+                  }}
+                >
+                  <Edit /> Update Email
+                </Link>
+              </Dropdown.Item>
+            )}
+            {searchParams.status === 'rejected' && (
+              <Dropdown.Item>
+                <Link
+                  to={{
+                    pathname: generatePath(Route.ACCEPT_APPLICATION, {
+                      id,
+                    }),
+                    search,
+                  }}
+                >
+                  <Edit /> Accept Application
+                </Link>
+              </Dropdown.Item>
+            )}
           </Dropdown.List>
         </Table.Dropdown>
       )}
