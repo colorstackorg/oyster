@@ -90,7 +90,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.EVENTS, {
+  return redirect(Route['/events'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -168,7 +168,7 @@ export default function ImportEventAttendeesPage() {
   const navigate = useNavigate();
 
   function onClose() {
-    navigate(Route.EVENTS);
+    navigate(Route['/events']);
   }
 
   return (

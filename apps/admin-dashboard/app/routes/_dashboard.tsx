@@ -47,12 +47,12 @@ export default function DashboardLayout() {
                 <Dashboard.NavigationLink
                   icon={<Layers />}
                   label={`Applications (${pendingApplications})`}
-                  pathname={Route.APPLICATIONS}
+                  pathname={Route['/applications']}
                 />
                 <Dashboard.NavigationLink
                   icon={<Video />}
                   label="Onboarding Sessions"
-                  pathname={Route.ONBOARDING_SESSIONS}
+                  pathname={Route['/onboarding-sessions']}
                 />
               </>
             ) : (
@@ -60,37 +60,37 @@ export default function DashboardLayout() {
                 <Dashboard.NavigationLink
                   icon={<Layers />}
                   label={`Applications (${pendingApplications})`}
-                  pathname={Route.APPLICATIONS}
+                  pathname={Route['/applications']}
                 />
                 <Dashboard.NavigationLink
                   icon={<User />}
                   label="Students"
-                  pathname={Route.STUDENTS}
+                  pathname={Route['/students']}
                 />
                 <Dashboard.NavigationLink
                   icon={<Gift />}
                   label="Gamification"
-                  pathname={Route.ACTIVITIES}
+                  pathname={Route['/gamification/activities']}
                 />
                 <Dashboard.NavigationLink
                   icon={<Video />}
                   label="Onboarding Sessions"
-                  pathname={Route.ONBOARDING_SESSIONS}
+                  pathname={Route['/onboarding-sessions']}
                 />
                 <Dashboard.NavigationLink
                   icon={<Calendar />}
                   label="Events"
-                  pathname={Route.EVENTS}
+                  pathname={Route['/events']}
                 />
                 <Dashboard.NavigationLink
                   icon={<HelpCircle />}
                   label="Surveys"
-                  pathname={Route.SURVEYS}
+                  pathname={Route['/surveys']}
                 />
                 <Dashboard.NavigationLink
                   icon={<MapPin />}
                   label="Schools"
-                  pathname={Route.SCHOOLS}
+                  pathname={Route['/schools']}
                 />
 
                 <div className="my-2">
@@ -105,7 +105,7 @@ export default function DashboardLayout() {
                 <Dashboard.NavigationLink
                   icon={<Target />}
                   label="Bull"
-                  pathname={Route.BULL}
+                  pathname={Route['/bull']}
                 />
               </>
             )}

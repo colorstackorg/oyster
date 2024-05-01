@@ -116,7 +116,7 @@ export async function action({ request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.STUDENTS, {
+  return redirect(Route['/students'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -196,7 +196,7 @@ export default function ImportResourcesPage() {
   const navigate = useNavigate();
 
   function onClose() {
-    navigate(Route.STUDENTS);
+    navigate(Route['/students']);
   }
 
   return (
@@ -261,7 +261,7 @@ function ImportResourcesForm() {
 }
 
 function ResourceFieldDescription(props: Pick<TextProps, 'className'>) {
-  const to = `${Route.RESOURCES_CREATE}?redirect=${Route.STUDENTS_IMPORT_RESOURCES}`;
+  const to = `${Route['/resources/create']}?redirect=${Route['/students/import/resources']}`;
 
   return (
     <Text {...props}>

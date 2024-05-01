@@ -78,7 +78,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.ONBOARDING_SESSIONS, {
+  return redirect(Route['/onboarding-sessions'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -95,7 +95,7 @@ export default function AddOnboardingSessionAttendeesPage() {
   const navigate = useNavigate();
 
   function onClose() {
-    navigate(Route.ONBOARDING_SESSIONS);
+    navigate(Route['/onboarding-sessions']);
   }
 
   return (

@@ -92,7 +92,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.SURVEYS, {
+  return redirect(Route['/surveys'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -105,7 +105,7 @@ export default function ImportSurveyResponsesPage() {
   const navigate = useNavigate();
 
   function onClose() {
-    navigate(Route.SURVEYS);
+    navigate(Route['/surveys']);
   }
 
   return (

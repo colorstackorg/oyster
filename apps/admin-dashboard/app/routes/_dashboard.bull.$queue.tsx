@@ -58,7 +58,7 @@ function TypeNavigationItem({ type }: TypeNavigationItemProps) {
 
   const basePathname = match(type)
     .with('job', () => Route['/bull/:queue/jobs'])
-    .with('repeatable', () => Route.BULL_REPEATABLES)
+    .with('repeatable', () => Route['/bull/:queue/repeatables'])
     .exhaustive();
 
   const label = match(type)

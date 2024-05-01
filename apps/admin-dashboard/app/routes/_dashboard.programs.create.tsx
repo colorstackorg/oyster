@@ -80,7 +80,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const url = new URL(request.url);
 
-  const redirectTo = url.searchParams.get('redirect') || Route.STUDENTS;
+  const redirectTo = url.searchParams.get('redirect') || Route['/students'];
 
   return redirect(redirectTo, {
     headers: {

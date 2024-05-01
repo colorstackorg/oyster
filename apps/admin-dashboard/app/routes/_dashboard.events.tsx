@@ -116,12 +116,12 @@ function EventsMenuDropdown() {
         <Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={Route.CREATE_EVENT}>
+              <Link to={Route['/events/create']}>
                 <Plus /> Create Event
               </Link>
             </Dropdown.Item>
             <Dropdown.Item>
-              <Link to={Route.SYNC_AIRMEET_EVENT}>
+              <Link to={Route['/events/sync-airmeet-event']}>
                 <RefreshCw /> Sync Airmeet Event
               </Link>
             </Dropdown.Item>
@@ -217,12 +217,14 @@ function EventDropdown({ id }: EventInView) {
         <Table.Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={generatePath(Route.IMPORT_EVENT_ATTENDEES, { id })}>
+              <Link to={generatePath(Route['/events/:id/import'], { id })}>
                 <Upload /> Import Attendees
               </Link>
             </Dropdown.Item>
             <Dropdown.Item>
-              <Link to={generatePath(Route.ADD_EVENT_RECORDING, { id })}>
+              <Link
+                to={generatePath(Route['/events/:id/add-recording'], { id })}
+              >
                 <Upload /> Add Recording
               </Link>
             </Dropdown.Item>

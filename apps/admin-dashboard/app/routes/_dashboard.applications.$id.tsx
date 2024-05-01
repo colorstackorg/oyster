@@ -21,7 +21,7 @@ export default function ApplicationLayout() {
 
   function onClose() {
     navigate({
-      pathname: Route.APPLICATIONS,
+      pathname: Route['/applications'],
       search,
     });
   }
