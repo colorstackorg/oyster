@@ -57,7 +57,7 @@ function WorkHistorySection() {
   const navigate = useNavigate();
 
   function onAddExperience() {
-    navigate(Route.ADD_WORK_EXPERIENCE);
+    navigate(Route['/profile/work/add']);
   }
 
   return (
@@ -82,7 +82,7 @@ function WorkHistorySection() {
                   experience={experience}
                   onClickEdit={() => {
                     navigate(
-                      generatePath(Route.EDIT_WORK_EXPERIENCE, {
+                      generatePath(Route['/profile/work/:id/edit'], {
                         id: experience.id,
                       })
                     );

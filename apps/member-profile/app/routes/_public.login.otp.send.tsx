@@ -33,7 +33,7 @@ export async function action({ request }: ActionFunctionArgs) {
       purpose: 'student_login',
     });
 
-    return redirect(Route.LOGIN_OTP_VERIFY, {
+    return redirect(Route['/login/otp/verify'], {
       headers: {
         'Set-Cookie': await oneTimeCodeIdCookie.serialize(id),
       },

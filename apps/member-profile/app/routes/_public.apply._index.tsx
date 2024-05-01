@@ -86,7 +86,7 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     await apply(data);
 
-    return redirect(Route.APPLICATION_THANK_YOU);
+    return redirect(Route['/apply/thank-you']);
   } catch (e) {
     return json({
       error: (e as Error).message,

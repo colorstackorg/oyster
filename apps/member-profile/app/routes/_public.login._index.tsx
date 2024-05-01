@@ -46,7 +46,7 @@ export default function LoginPage() {
     <Login.ButtonGroup>
       {!!googleAuthUri && <Login.GoogleButton href={googleAuthUri} />}
       {!!slackAuthUri && <Login.SlackButton href={slackAuthUri} />}
-      <Login.OtpButton href={Route.LOGIN_OTP_SEND} />
+      <Login.OtpButton href={Route['/login/otp/send']} />
 
       {error && (
         <div className="mt-4">

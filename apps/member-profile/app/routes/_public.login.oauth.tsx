@@ -22,7 +22,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!token) {
     session.flash('error', error);
 
-    return redirect(Route.LOGIN, {
+    return redirect(Route['/login'], {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
@@ -38,7 +38,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     id = data.id;
   } catch {
-    return redirect(Route.LOGIN);
+    return redirect(Route['/login']);
   }
 
   session.set(SESSION.USER_ID, id);
@@ -47,7 +47,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     Method: toTitleCase(method) as 'Google' | 'Slack',
   });
 
-  const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route.HOME;
+  const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route['/home'];
 
   return redirect(redirectUrl, {
     headers: {

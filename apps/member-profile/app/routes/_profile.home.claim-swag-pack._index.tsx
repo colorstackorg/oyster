@@ -79,7 +79,7 @@ export async function action({ request }: ActionFunctionArgs) {
       studentId: user(session),
     });
 
-    return redirect(Route.CLAIM_SWAG_PACK_CONFIRMATION);
+    return redirect(Route['/home/claim-swag-pack/confirmation']);
   } catch (e) {
     reportException(e);
 

@@ -152,7 +152,7 @@ export default function EditWorkExperiencePage() {
 
   function onDelete() {
     navigate(
-      generatePath(Route.DELETE_WORK_EXPERIENCE, {
+      generatePath(Route['/profile/work/:id/delete'], {
         id: workExperience.id,
       })
     );
