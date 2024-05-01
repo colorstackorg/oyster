@@ -21,7 +21,7 @@ import {
 } from '@oyster/ui';
 
 import { Route } from '../shared/constants';
-import { claimSwagPack, db, reportError } from '../shared/core.server';
+import { claimSwagPack, db, reportException } from '../shared/core.server';
 import { ClaimSwagPackInput } from '../shared/core.ui';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
 
@@ -81,7 +81,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return redirect(Route.CLAIM_SWAG_PACK_CONFIRMATION);
   } catch (e) {
-    reportError(e);
+    reportException(e);
 
     return json({
       error: `Something went wrong. Please double check that you have a valid address. If you are still having trouble, reach out to membership@colorstack.org for further assistance.`,
