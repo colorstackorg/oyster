@@ -36,10 +36,7 @@ export async function listApplications({
       return qb.where('applications.status', '=', status);
     });
 
-  const orderDirection =
-    status === 'accepted' || status === 'rejected' || status === 'all'
-      ? 'desc'
-      : 'asc';
+  const orderDirection = status === 'pending' ? 'asc' : 'desc';
 
   const [rows, { count }] = await Promise.all([
     query
