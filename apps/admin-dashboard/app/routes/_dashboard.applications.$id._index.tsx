@@ -226,7 +226,7 @@ export default function ApplicationPage() {
   );
 }
 
-const ApplicationKey = ApplyFormData.keyof().enum;
+const keys = ApplyFormData.keyof().enum;
 
 function ApplicationFieldGroup({
   showAll,
@@ -237,120 +237,120 @@ function ApplicationFieldGroup({
     <Application readOnly>
       <Application.FirstNameField
         defaultValue={application.firstName}
-        name={ApplicationKey.firstName}
+        name={keys.firstName}
       />
 
       <Application.LastNameField
         defaultValue={application.lastName}
-        name={ApplicationKey.lastName}
+        name={keys.lastName}
       />
 
       <Application.EmailField
         defaultValue={application.email}
-        name={ApplicationKey.email}
+        name={keys.email}
       />
 
       <Application.LinkedInField
         defaultValue={application.linkedInUrl}
-        name={ApplicationKey.linkedInUrl}
+        name={keys.linkedInUrl}
       />
 
       <Application.SchoolField
         defaultValue={application.school || 'Other'}
-        name={ApplicationKey.schoolId}
+        name={keys.schoolId}
       />
 
       <Application.OtherSchoolField
         defaultValue={application.otherSchool || undefined}
-        name={ApplicationKey.otherSchool}
+        name={keys.otherSchool}
       />
 
       <Application.MajorField
         defaultValue={(application.major as Major) || undefined}
-        name={ApplicationKey.major}
+        name={keys.major}
       />
 
       <Application.OtherMajorField
         defaultValue={application.otherMajor || undefined}
-        name={ApplicationKey.otherMajor}
+        name={keys.otherMajor}
       />
 
       <Application.EducationLevelField
         defaultValue={
           (application.educationLevel as EducationLevel) || undefined
         }
-        name={ApplicationKey.educationLevel}
+        name={keys.educationLevel}
       />
 
       <Application.GraduationYearField
         defaultValue={application.graduationYear}
-        name={ApplicationKey.graduationYear}
+        name={keys.graduationYear}
       />
 
       <Application.RaceField
         defaultValue={(application.race as Race[]) || undefined}
-        name={ApplicationKey.race}
+        name={keys.race}
       />
 
       <Application.GenderField
         defaultValue={(application.gender as Gender) || undefined}
-        name={ApplicationKey.gender}
+        name={keys.gender}
       />
 
       <Application.OtherDemographicsField
         defaultValue={
           (application.otherDemographics as OtherDemographic[]) || undefined
         }
-        name={ApplicationKey.otherDemographics}
+        name={keys.otherDemographics}
       />
 
       <Application.GoalsField
         defaultValue={application.goals}
-        name={ApplicationKey.goals}
+        name={keys.goals}
       />
 
       <Application.ContributionField
         defaultValue={application.contribution}
-        name={ApplicationKey.contribution}
+        name={keys.contribution}
       />
     </Application>
   ) : (
     <Application readOnly>
       <Application.SchoolField
         defaultValue={application.school || 'Other'}
-        name={ApplicationKey.schoolId}
+        name={keys.schoolId}
       />
 
       <Application.OtherSchoolField
         defaultValue={application.otherSchool || undefined}
-        name={ApplicationKey.otherSchool}
+        name={keys.otherSchool}
       />
 
       <Application.MajorField
         defaultValue={(application.major as Major) || undefined}
-        name={ApplicationKey.major}
+        name={keys.major}
       />
 
       <Application.OtherMajorField
         defaultValue={application.otherMajor || undefined}
-        name={ApplicationKey.otherMajor}
+        name={keys.otherMajor}
       />
 
       <Application.EducationLevelField
         defaultValue={
           (application.educationLevel as EducationLevel) || undefined
         }
-        name={ApplicationKey.educationLevel}
+        name={keys.educationLevel}
       />
 
       <Application.GraduationYearField
         defaultValue={application.graduationYear}
-        name={ApplicationKey.graduationYear}
+        name={keys.graduationYear}
       />
 
       <Application.RaceField
         defaultValue={(application.race as Race[]) || undefined}
-        name={ApplicationKey.race}
+        name={keys.race}
       />
     </Application>
   );

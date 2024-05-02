@@ -84,7 +84,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-const { attendees, date } = UploadOnboardingSessionInput.keyof().enum;
+const keys = UploadOnboardingSessionInput.keyof().enum;
 
 export default function UploadOnboardingSessionPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
@@ -97,10 +97,10 @@ export default function UploadOnboardingSessionPage() {
       </Modal.Header>
 
       <RemixForm className="form" method="post">
-        <OnboardingSessionForm.DateField error={errors.date} name={date} />
+        <OnboardingSessionForm.DateField error={errors.date} name={keys.date} />
         <OnboardingSessionAttendeesField
           error={errors.attendees}
-          name={attendees}
+          name={keys.attendees}
         />
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
