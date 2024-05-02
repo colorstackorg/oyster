@@ -13,7 +13,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
@@ -193,14 +192,8 @@ async function importResourceUsers(input: ImportResourceUsersInput) {
 }
 
 export default function ImportResourcesPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/students']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>Import Resource Users</Modal.Title>
         <Modal.CloseButton />

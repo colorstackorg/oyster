@@ -8,8 +8,8 @@ import {
   generatePath,
   Form as RemixForm,
   useActionData,
-  useNavigate,
   useNavigation,
+  useParams,
 } from '@remix-run/react';
 import { z } from 'zod';
 
@@ -94,14 +94,14 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 export default function AddRepeatablePage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
+  const { queue } = useParams();
 
   return (
-    <Modal onClose={onClose}>
+    <Modal
+      onCloseTo={generatePath(Route['/bull/:queue/repeatables'], {
+        queue: queue as string,
+      })}
+    >
       <Modal.Header>
         <Modal.Title>Add Repeatable</Modal.Title>
         <Modal.CloseButton />

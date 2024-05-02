@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Link, Outlet, useLocation, useNavigate } from '@remix-run/react';
+import { Link, Outlet, useLocation } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'react-feather';
 import { match } from 'ts-pattern';
@@ -17,14 +17,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function JoinDirectoryLayout() {
   const { pathname } = useLocation();
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/home']);
-  }
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/home']}>
       <Modal.Header>
         <Modal.Title>Welcome to the Member Directory! 🤝</Modal.Title>
         <Modal.CloseButton />

@@ -7,7 +7,6 @@ import {
 import {
   Form as RemixForm,
   useActionData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
@@ -100,14 +99,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function CreateEventPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/events']}>
       <Modal.Header>
         <Modal.Title>Create Event</Modal.Title>
         <Modal.CloseButton />

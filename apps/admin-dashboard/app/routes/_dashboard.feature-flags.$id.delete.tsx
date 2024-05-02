@@ -7,7 +7,6 @@ import {
 import {
   Form as RemixForm,
   useLoaderData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 
@@ -57,16 +56,10 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
 export default function DeleteFeatureFlagModal() {
   const { flag } = useLoaderData<typeof loader>();
-
-  const navigate = useNavigate();
   const submitting = useNavigation().state === 'submitting';
 
-  function onClose() {
-    navigate(Route['/feature-flags']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/feature-flags']}>
       <Modal.Header>
         <Modal.Title>Delete Flag ({flag.displayName})</Modal.Title>
         <Modal.CloseButton />

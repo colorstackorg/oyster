@@ -7,7 +7,6 @@ import {
 import {
   Form as RemixForm,
   useActionData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 
@@ -72,14 +71,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function CreateSchoolPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/schools']}>
       <Modal.Header>
         <Modal.Title>Create School</Modal.Title>
         <Modal.CloseButton />

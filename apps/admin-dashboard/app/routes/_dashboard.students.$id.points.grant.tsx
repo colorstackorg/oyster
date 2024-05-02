@@ -8,7 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
@@ -100,14 +99,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
 export default function GrantPointsPage() {
   const { student } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/students']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>
           Grant Points to {student.firstName} {student.lastName}

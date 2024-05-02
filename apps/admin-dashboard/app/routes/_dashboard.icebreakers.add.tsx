@@ -7,7 +7,6 @@ import {
 import {
   Form as RemixForm,
   useActionData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 
@@ -20,6 +19,7 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { Route } from '../shared/constants';
 import { addIcebreakerPrompt } from '../shared/core.server';
 import { AddIcebreakerPromptInput } from '../shared/core.ui';
 import {
@@ -66,14 +66,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function AddIcebreakerPromptPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/']}>
       <Modal.Header>
         <Modal.Title>Add Icebreaker Prompt</Modal.Title>
         <Modal.CloseButton />

@@ -8,7 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 import { type z } from 'zod';
@@ -99,14 +98,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
 export default function UpdateStudentEmailPage() {
   const { student } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/students']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>
           Update Email - {student.firstName} {student.lastName}

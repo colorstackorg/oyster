@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet, useLocation, useNavigate } from '@remix-run/react';
+import { Outlet, useLocation } from '@remix-run/react';
 
 import { Modal } from '@oyster/ui';
 
@@ -15,19 +15,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function ApplicationLayout() {
-  const navigate = useNavigate();
-
   const { search } = useLocation();
 
-  function onClose() {
-    navigate({
-      pathname: Route['/applications'],
-      search,
-    });
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/applications'] + search}>
       <Outlet />
     </Modal>
   );

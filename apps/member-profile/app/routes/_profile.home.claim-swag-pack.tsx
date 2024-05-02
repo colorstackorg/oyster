@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet, useNavigate } from '@remix-run/react';
+import { Outlet } from '@remix-run/react';
 
 import { Modal } from '@oyster/ui';
 
@@ -15,14 +15,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function ClaimSwagPackLayout() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/home']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/home']}>
       <Outlet />
     </Modal>
   );

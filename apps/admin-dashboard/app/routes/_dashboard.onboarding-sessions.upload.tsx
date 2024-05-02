@@ -7,7 +7,6 @@ import {
 import {
   Form as RemixForm,
   useActionData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
@@ -93,17 +92,10 @@ const { attendees, date } = UploadOnboardingSessionInput.keyof().enum;
 
 export default function UploadOnboardingSessionPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
-
   const submitting = useNavigation().state === 'submitting';
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/onboarding-sessions']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/onboarding-sessions']}>
       <Modal.Header>
         <Modal.Title>Upload Onboarding Session</Modal.Title>
         <Modal.CloseButton />

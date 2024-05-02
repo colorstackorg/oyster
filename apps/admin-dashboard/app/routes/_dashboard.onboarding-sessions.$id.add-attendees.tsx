@@ -7,7 +7,6 @@ import {
 import {
   Form as RemixForm,
   useActionData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
@@ -89,17 +88,10 @@ const { attendees } = AddOnboardingSessionAttendeesInput.keyof().enum;
 
 export default function AddOnboardingSessionAttendeesPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
-
   const submitting = useNavigation().state === 'submitting';
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/onboarding-sessions']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/onboarding-sessions']}>
       <Modal.Header>
         <Modal.Title>Add Onboarding Session Attendees</Modal.Title>
         <Modal.CloseButton />

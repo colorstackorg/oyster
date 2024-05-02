@@ -70,16 +70,12 @@ export default function DeleteWorkExperiencePage() {
 
   const navigate = useNavigate();
 
-  function onClose() {
-    navigate(Route['/profile/work']);
-  }
-
   function onBack() {
     navigate(-1);
   }
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/work']}>
       <Modal.Header>
         <Modal.Title>Delete Work Experience</Modal.Title>
         <Modal.CloseButton />

@@ -13,7 +13,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
@@ -174,14 +173,8 @@ async function importProgramParticipants(
 }
 
 export default function ImportProgramsPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/students']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>Import Program Participants</Modal.Title>
         <Modal.CloseButton />

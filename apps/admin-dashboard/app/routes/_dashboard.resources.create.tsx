@@ -7,7 +7,6 @@ import {
 import {
   Form as RemixForm,
   useActionData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 import { type z } from 'zod';
@@ -86,14 +85,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function CreateResourcePage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>Create Resource</Modal.Title>
         <Modal.CloseButton />
