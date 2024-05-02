@@ -10,11 +10,12 @@ import {
   useNavigate,
 } from '@remix-run/react';
 
+import { db } from '@oyster/db';
 import { Button, Form, Modal } from '@oyster/ui';
 
 import { type Education } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
-import { db, deleteEducation } from '@/shared/core.server';
+import { deleteEducation } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { Filter, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 
+import { db } from '@oyster/db';
 import { type ExtractValue } from '@oyster/types';
 import {
   Button,
@@ -38,7 +39,7 @@ import { CityCombobox } from '@/shared/components/city-combobox';
 import { CompanyCombobox } from '@/shared/components/company-combobox';
 import { EthnicityCombobox } from '@/shared/components/ethnicity-combobox';
 import { Route } from '@/shared/constants';
-import { db, listMembersInDirectory } from '@/shared/core.server';
+import { listMembersInDirectory } from '@/shared/core.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 import { formatName } from '@/shared/utils/format.utils';
 

@@ -11,6 +11,7 @@ import {
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import {
   Button,
   Form,
@@ -33,7 +34,6 @@ import {
   useIcebreakerContext,
 } from '@/shared/components/profile.icebreakers';
 import {
-  db,
   getIcebreakerPrompts,
   upsertIcebreakerResponses,
 } from '@/shared/core.server';

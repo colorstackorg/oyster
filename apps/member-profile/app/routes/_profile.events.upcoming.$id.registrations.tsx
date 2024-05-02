@@ -1,11 +1,11 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, Link, useLoaderData } from '@remix-run/react';
 
+import { db } from '@oyster/db';
 import { type Student } from '@oyster/types';
 import { Modal, ProfilePicture } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
-import { db } from '@/shared/core.server';
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const registrations = await getEventRegistrations(params.id as string);

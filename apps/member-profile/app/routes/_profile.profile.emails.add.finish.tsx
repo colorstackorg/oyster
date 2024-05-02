@@ -11,6 +11,7 @@ import {
 } from '@remix-run/react';
 import { type z } from 'zod';
 
+import { db } from '@oyster/db';
 import { StudentEmail } from '@oyster/types';
 import {
   Button,
@@ -24,7 +25,7 @@ import {
 import { OneTimeCode, OneTimeCodePurpose } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { addEmailCookie } from '@/shared/cookies.server';
-import { db, job } from '@/shared/core.server';
+import { job } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

@@ -16,6 +16,7 @@ import { Award, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import { type CompletedActivity } from '@oyster/types';
 import {
   Button,
@@ -37,7 +38,6 @@ import {
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import {
-  db,
   getPointsLeaderboard,
   getTotalPoints,
   listActivities,

@@ -19,6 +19,7 @@ import {
 } from 'react-feather';
 import { match } from 'ts-pattern';
 
+import { db } from '@oyster/db';
 import {
   type ActivationRequirement,
   StudentActiveStatus,
@@ -41,7 +42,6 @@ import { getTimezone } from '@/shared/cookies.server';
 import {
   countEventAttendees,
   countMessagesSent,
-  db,
   getActiveStreakLeaderboard,
   getActiveStreakLeaderboardPosition,
   getIpAddress,

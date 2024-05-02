@@ -12,6 +12,7 @@ import {
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import {
   Button,
   Form,
@@ -34,7 +35,6 @@ import {
 } from '@/shared/components/profile.icebreakers';
 import { Route } from '@/shared/constants';
 import {
-  db,
   getIcebreakerPrompts,
   getIcebreakerResponses,
   joinMemberDirectory,

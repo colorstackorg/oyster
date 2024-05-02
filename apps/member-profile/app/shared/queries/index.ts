@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 
+import { db } from '@oyster/db';
 import { toTitleCase } from '@oyster/utils';
 
 import {
@@ -7,7 +8,6 @@ import {
   type DegreeType,
   FORMATTED_DEGREEE_TYPE,
 } from '@/member-profile.ui';
-import { db } from '@/shared/core.server';
 
 // "educations"
 
