@@ -7,7 +7,6 @@ import {
 import {
   Form as RemixForm,
   useActionData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 
@@ -77,16 +76,10 @@ const keys = CreateFeatureFlagInput.keyof().enum;
 
 export default function CreateFeatureFlagModal() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const navigate = useNavigate();
   const submitting = useNavigation().state === 'submitting';
 
-  function onClose() {
-    navigate(Route['/feature-flags']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/feature-flags']}>
       <Modal.Header>
         <Modal.Title>Create Flag</Modal.Title>
         <Modal.CloseButton />

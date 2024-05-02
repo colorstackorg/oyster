@@ -57,16 +57,12 @@ export default function ArchiveActivityPage() {
 
   const submitting = useNavigation().state === 'submitting';
 
-  function onClose() {
-    navigate(Route['/gamification/activities']);
-  }
-
   function onBack() {
     navigate(-1);
   }
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/gamification/activities']}>
       <Modal.Header>
         <Modal.Title>Archive Activity</Modal.Title>
         <Modal.CloseButton />

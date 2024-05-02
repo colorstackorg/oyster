@@ -79,12 +79,8 @@ export default function ActivateStudentPage() {
     navigate(-1);
   }
 
-  function onClose() {
-    navigate(Route['/students']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>Activate Student</Modal.Title>
         <Modal.CloseButton />

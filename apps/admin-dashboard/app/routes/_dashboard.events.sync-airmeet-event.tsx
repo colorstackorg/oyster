@@ -7,7 +7,6 @@ import {
 import {
   Form as RemixForm,
   useActionData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
@@ -73,14 +72,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function SyncAirmeetEventPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/events']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/events']}>
       <Modal.Header>
         <Modal.Title>Sync Airmeet Event</Modal.Title>
         <Modal.CloseButton />

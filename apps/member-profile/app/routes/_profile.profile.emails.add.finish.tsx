@@ -8,7 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 import { type z } from 'zod';
@@ -168,17 +167,10 @@ const { code } = AddEmailFormData.keyof().enum;
 export default function AddEmailPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
   const { email } = useLoaderData<typeof loader>();
-
-  const navigate = useNavigate();
-
   const submitting = useNavigation().state === 'submitting';
 
-  function onClose() {
-    navigate(Route['/profile/emails']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/emails']}>
       <Modal.Header>
         <Modal.Title>Add Email Address</Modal.Title>
         <Modal.CloseButton />

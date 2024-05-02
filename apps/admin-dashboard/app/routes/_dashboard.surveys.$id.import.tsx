@@ -12,7 +12,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
@@ -102,14 +101,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
 export default function ImportSurveyResponsesPage() {
   const { survey } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/surveys']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/surveys']}>
       <Modal.Header>
         <Modal.Title>Import Survey Responses</Modal.Title>
         <Modal.CloseButton />

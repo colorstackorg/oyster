@@ -7,7 +7,6 @@ import {
 import {
   Form as RemixForm,
   useActionData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 import { type z } from 'zod';
@@ -90,14 +89,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function CreateProgramPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>Create Program</Modal.Title>
         <Modal.CloseButton />

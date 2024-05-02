@@ -7,7 +7,6 @@ import {
 import {
   Form as RemixForm,
   useLoaderData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 import { Calendar, Check, ExternalLink } from 'react-feather';
@@ -117,16 +116,10 @@ async function registerForEvent({
 
 export default function EventRegisterPage() {
   const { event } = useLoaderData<typeof loader>();
-
-  const navigate = useNavigate();
   const submitting = useNavigation().state === 'submitting';
 
-  function onClose() {
-    navigate(Route['/events/upcoming']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/events/upcoming']}>
       <Modal.Header>
         <Modal.Title>{event.name}</Modal.Title>
         <Modal.CloseButton />

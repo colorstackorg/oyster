@@ -163,10 +163,6 @@ export default function EditEducationPage() {
 
   const navigate = useNavigate();
 
-  function onClose() {
-    navigate(Route['/profile/education']);
-  }
-
   function onDelete() {
     navigate(
       generatePath(Route['/profile/education/:id/delete'], {
@@ -181,7 +177,7 @@ export default function EditEducationPage() {
       : { id: 'other', name: 'Other' };
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/education']}>
       <Modal.Header>
         <Modal.Title>Edit Education</Modal.Title>
         <Modal.CloseButton />

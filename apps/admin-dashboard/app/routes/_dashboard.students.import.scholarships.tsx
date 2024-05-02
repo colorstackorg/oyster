@@ -11,7 +11,6 @@ import {
 import {
   Form as RemixForm,
   useActionData,
-  useNavigate,
   useNavigation,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
@@ -187,14 +186,8 @@ async function importScholarshipRecipients(
 }
 
 export default function ImportScholarshipsPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/students']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>Import Scholarship Recipients</Modal.Title>
         <Modal.CloseButton />
