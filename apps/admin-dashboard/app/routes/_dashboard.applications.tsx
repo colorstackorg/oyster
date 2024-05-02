@@ -240,25 +240,31 @@ function ApplicationDropdown({ id }: ApplicationInView) {
       {open && (
         <Table.Dropdown>
           <Dropdown.List>
-            {['pending', 'rejected'].includes(searchParams.status) && (
+            {searchParams.status === 'pending' && (
               <Dropdown.Item>
                 <Link
                   to={{
-                    pathname: generatePath(
-                      searchParams.status === 'pending'
-                        ? Route.UPDATE_APPLICATION_EMAIL
-                        : Route.ACCEPT_APPLICATION,
-                      {
-                        id,
-                      }
-                    ),
+                    pathname: generatePath(Route.UPDATE_APPLICATION_EMAIL, {
+                      id,
+                    }),
                     search,
                   }}
                 >
-                  <Edit />{' '}
-                  {searchParams.status === 'pending'
-                    ? 'Update Email'
-                    : 'Accept Application'}
+                  <Edit /> Update Email
+                </Link>
+              </Dropdown.Item>
+            )}
+            {searchParams.status === 'rejected' && (
+              <Dropdown.Item>
+                <Link
+                  to={{
+                    pathname: generatePath(Route.ACCEPT_APPLICATION, {
+                      id,
+                    }),
+                    search,
+                  }}
+                >
+                  <Edit /> Accept Application
                 </Link>
               </Dropdown.Item>
             )}
