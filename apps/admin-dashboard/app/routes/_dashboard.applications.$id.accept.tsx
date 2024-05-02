@@ -62,15 +62,9 @@ export async function action({ params, request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    if ((e as Error).message.includes('FK_7b8cdcaabacb80df1ed8f7dbbea')) {
-      return json({
-        error: "You don't have the permissions to accept an application",
-      });
-    } else {
-      return json({
-        error: (e as Error).message,
-      });
-    }
+    return json({
+      error: (e as Error).message,
+    });
   }
 }
 
