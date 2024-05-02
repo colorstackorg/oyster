@@ -161,7 +161,7 @@ async function addEmail(input: AddEmailInput) {
   });
 }
 
-const { code } = AddEmailFormData.keyof().enum;
+const keys = AddEmailFormData.keyof().enum;
 
 export default function AddEmailPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
@@ -181,8 +181,13 @@ export default function AddEmailPage() {
       </Modal.Description>
 
       <RemixForm className="form" method="post">
-        <Form.Field error={errors.code} label="Code" labelFor={code} required>
-          <Input autoFocus id={code} name={code} required />
+        <Form.Field
+          error={errors.code}
+          label="Code"
+          labelFor={keys.code}
+          required
+        >
+          <Input autoFocus id={keys.code} name={keys.code} required />
         </Form.Field>
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>

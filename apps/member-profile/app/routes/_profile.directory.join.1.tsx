@@ -78,12 +78,7 @@ export async function action({ request }: ActionFunctionArgs) {
   return redirect(Route['/directory/join/2']);
 }
 
-const {
-  currentLocation,
-  currentLocationLatitude,
-  currentLocationLongitude,
-  headline,
-} = UpdateGeneralInformation.keyof().enum;
+const keys = UpdateGeneralInformation.keyof().enum;
 
 export default function UpdateGeneralInformationForm() {
   const { student } = useLoaderData<typeof loader>();
@@ -96,7 +91,7 @@ export default function UpdateGeneralInformationForm() {
         description="A LinkedIn-style headline."
         error={errors.headline}
         label="Headline"
-        name={headline}
+        name={keys.headline}
         placeholder="Incoming SWE Intern @ Google | Cornell '26"
         required
       />
@@ -108,9 +103,9 @@ export default function UpdateGeneralInformationForm() {
         defaultLongitude={student.currentLocationCoordinates?.x}
         defaultValue={student.currentLocation || undefined}
         error={errors.currentLocation}
-        name={currentLocation}
-        latitudeName={currentLocationLatitude}
-        longitudeName={currentLocationLongitude}
+        name={keys.currentLocation}
+        latitudeName={keys.currentLocationLatitude}
+        longitudeName={keys.currentLocationLongitude}
       />
 
       <Divider />

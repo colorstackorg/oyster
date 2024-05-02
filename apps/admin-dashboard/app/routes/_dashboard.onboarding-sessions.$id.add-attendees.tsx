@@ -80,7 +80,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 }
 
-const { attendees } = AddOnboardingSessionAttendeesInput.keyof().enum;
+const keys = AddOnboardingSessionAttendeesInput.keyof().enum;
 
 export default function AddOnboardingSessionAttendeesPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
@@ -95,7 +95,7 @@ export default function AddOnboardingSessionAttendeesPage() {
       <RemixForm className="form" method="post">
         <OnboardingSessionAttendeesField
           error={errors.attendees}
-          name={attendees}
+          name={keys.attendees}
         />
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>

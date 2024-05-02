@@ -80,7 +80,7 @@ export default function ApplicationsPage() {
   );
 }
 
-const { search, status } = ApplicationsSearchParams.keyof().enum;
+const keys = ApplicationsSearchParams.keyof().enum;
 
 const statuses = Object.values(ApplicationStatus);
 
@@ -97,16 +97,16 @@ function FilterApplicationsForm() {
     >
       <SearchBar
         defaultValue={searchParams.search}
-        name={search}
-        id={search}
+        name={keys.search}
+        id={keys.search}
         placeholder="Search by email or name..."
       />
 
       <div className="ml-auto w-32">
         <Select
           defaultValue={searchParams.status}
-          id={status}
-          name={status}
+          id={keys.status}
+          name={keys.status}
           placeholder="Status..."
           required
         >

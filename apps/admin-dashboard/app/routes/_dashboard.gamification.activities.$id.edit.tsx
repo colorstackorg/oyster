@@ -95,8 +95,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 }
 
-const { description, name, period, points, type } =
-  EditActivityInput.keyof().enum;
+const keys = EditActivityInput.keyof().enum;
 
 export default function EditActivityPage() {
   const { activity } = useLoaderData<typeof loader>();
@@ -113,31 +112,31 @@ export default function EditActivityPage() {
         <ActivityForm.NameField
           defaultValue={activity.name}
           error={errors.name}
-          name={name}
+          name={keys.name}
         />
 
         <ActivityForm.DescriptionField
           defaultValue={activity.description || undefined}
           error={errors.description}
-          name={description}
+          name={keys.description}
         />
 
         <ActivityForm.TypeField
           defaultValue={(activity.type as Activity['type']) || undefined}
           error={errors.type}
-          name={type}
+          name={keys.type}
         />
 
         <ActivityForm.PeriodField
           defaultValue={(activity.period as ActivityPeriod) || undefined}
           error={errors.period}
-          name={period}
+          name={keys.period}
         />
 
         <ActivityForm.PointsField
           defaultValue={activity.points}
           error={errors.points}
-          name={points}
+          name={keys.points}
         />
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>

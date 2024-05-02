@@ -97,33 +97,48 @@ export default function CreateProgramPage() {
   );
 }
 
-const { endDate, name, startDate } = CreateProgramInput.keyof().enum;
+const keys = CreateProgramInput.keyof().enum;
 
 function CreateProgramForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field error={errors.name} label="Name" labelFor={name} required>
-        <Input id={name} name={name} required />
+      <Form.Field
+        error={errors.name}
+        label="Name"
+        labelFor={keys.name}
+        required
+      >
+        <Input id={keys.name} name={keys.name} required />
       </Form.Field>
 
       <Form.Field
         error={errors.startDate}
         label="Start Date"
-        labelFor={startDate}
+        labelFor={keys.startDate}
         required
       >
-        <DatePicker id={startDate} name={startDate} type="date" required />
+        <DatePicker
+          id={keys.startDate}
+          name={keys.startDate}
+          type="date"
+          required
+        />
       </Form.Field>
 
       <Form.Field
         error={errors.endDate}
         label="End Date"
-        labelFor={endDate}
+        labelFor={keys.endDate}
         required
       >
-        <DatePicker id={endDate} name={endDate} type="date" required />
+        <DatePicker
+          id={keys.endDate}
+          name={keys.endDate}
+          type="date"
+          required
+        />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>

@@ -93,15 +93,20 @@ export default function CreateResourcePage() {
   );
 }
 
-const { name } = CreateResourceInput.keyof().enum;
+const keys = CreateResourceInput.keyof().enum;
 
 function CreateResourceForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field error={errors.name} label="Name" labelFor={name} required>
-        <Input id={name} name={name} required />
+      <Form.Field
+        error={errors.name}
+        label="Name"
+        labelFor={keys.name}
+        required
+      >
+        <Input id={keys.name} name={keys.name} required />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>

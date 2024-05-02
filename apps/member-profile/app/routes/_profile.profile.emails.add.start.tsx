@@ -127,7 +127,7 @@ async function sendEmailCode(studentId: string, input: SendEmailCodeInput) {
   });
 }
 
-const { email } = SendEmailCodeInput.keyof().enum;
+const keys = SendEmailCodeInput.keyof().enum;
 
 export default function AddEmailPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
@@ -148,13 +148,13 @@ export default function AddEmailPage() {
         <Form.Field
           error={errors.email}
           label="Email"
-          labelFor={email}
+          labelFor={keys.email}
           required
         >
           <Input
             autoFocus
-            id={email}
-            name={email}
+            id={keys.email}
+            name={keys.email}
             placeholder="me@gmail.com"
             required
           />

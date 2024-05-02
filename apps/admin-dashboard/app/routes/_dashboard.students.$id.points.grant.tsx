@@ -57,8 +57,6 @@ const GrantPointsInput = CompletedActivity.pick({
 
 type GrantPointsInput = z.infer<typeof GrantPointsInput>;
 
-const GrantPointsKey = GrantPointsInput.keyof().enum;
-
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
@@ -113,6 +111,8 @@ export default function GrantPointsPage() {
   );
 }
 
+const keys = GrantPointsInput.keyof().enum;
+
 function GrantPointsForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
@@ -121,13 +121,13 @@ function GrantPointsForm() {
       <Form.Field
         error={errors.points}
         label="Points"
-        labelFor={GrantPointsKey.points}
+        labelFor={keys.points}
         required
       >
         <Input
-          id={GrantPointsKey.points}
+          id={keys.points}
           min={1}
-          name={GrantPointsKey.points}
+          name={keys.points}
           required
           type="number"
         />
@@ -136,13 +136,13 @@ function GrantPointsForm() {
       <Form.Field
         error={errors.description}
         label="Description"
-        labelFor={GrantPointsKey.description}
+        labelFor={keys.description}
         required
       >
         <Textarea
-          id={GrantPointsKey.description}
+          id={keys.description}
           minRows={2}
-          name={GrantPointsKey.description}
+          name={keys.description}
           required
         />
       </Form.Field>

@@ -184,7 +184,7 @@ export default function ImportProgramsPage() {
   );
 }
 
-const { file, program } = ImportProgramParticipantsInput.keyof().enum;
+const keys = ImportProgramParticipantsInput.keyof().enum;
 
 function ImportProgramsForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
@@ -196,10 +196,10 @@ function ImportProgramsForm() {
         description={<ProgramFieldDescription />}
         error={errors.program}
         label="Program"
-        labelFor={program}
+        labelFor={keys.program}
         required
       >
-        <Select id={program} name={program} required>
+        <Select id={keys.program} name={keys.program} required>
           {programs.map((program) => {
             return (
               <option key={program.id} value={program.id}>
@@ -214,10 +214,16 @@ function ImportProgramsForm() {
         description="Please upload a .csv file."
         error={errors.file}
         label="File"
-        labelFor={file}
+        labelFor={keys.file}
         required
       >
-        <input accept=".csv" id={file} name={file} required type="file" />
+        <input
+          accept=".csv"
+          id={keys.file}
+          name={keys.file}
+          required
+          type="file"
+        />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>

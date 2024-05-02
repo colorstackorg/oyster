@@ -179,15 +179,21 @@ export default function ImportEventAttendeesPage() {
   );
 }
 
-const { file } = ImportEventAttendeesInput.keyof().enum;
+const keys = ImportEventAttendeesInput.keyof().enum;
 
 function ImportEventAttendeesForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
-      <Form.Field error={errors.file} labelFor={file} required>
-        <input accept=".csv" id={file} name={file} required type="file" />
+      <Form.Field error={errors.file} labelFor={keys.file} required>
+        <input
+          accept=".csv"
+          id={keys.file}
+          name={keys.file}
+          required
+          type="file"
+        />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>

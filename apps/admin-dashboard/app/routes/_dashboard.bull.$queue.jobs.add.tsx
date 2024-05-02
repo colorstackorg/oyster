@@ -62,8 +62,6 @@ const AddJobInput = z.object({
 
 type AddJobInput = z.infer<typeof AddJobInput>;
 
-const AddJobKey = AddJobInput.keyof().enum;
-
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
@@ -119,6 +117,8 @@ export default function AddJobPage() {
   );
 }
 
+const keys = AddJobInput.keyof().enum;
+
 function AddJobForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
@@ -127,24 +127,19 @@ function AddJobForm() {
       <Form.Field
         error={errors.name}
         label="Name"
-        labelFor={AddJobKey.name}
+        labelFor={keys.name}
         required
       >
-        <Input id={AddJobKey.name} name={AddJobKey.name} required />
+        <Input id={keys.name} name={keys.name} required />
       </Form.Field>
 
       <Form.Field
         error={errors.data}
         label="Data"
-        labelFor={AddJobKey.data}
+        labelFor={keys.data}
         required
       >
-        <Textarea
-          id={AddJobKey.data}
-          minRows={4}
-          name={AddJobKey.data}
-          required
-        />
+        <Textarea id={keys.data} minRows={4} name={keys.data} required />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>

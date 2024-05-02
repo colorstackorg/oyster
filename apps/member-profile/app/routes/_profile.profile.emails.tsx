@@ -106,7 +106,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 }
 
-const { allowEmailShare } = UpdateAllowEmailShare.keyof().enum;
+const keys = UpdateAllowEmailShare.keyof().enum;
 
 export default function EmailsPage() {
   return (
@@ -192,8 +192,8 @@ function EmailAddressSection() {
           <Checkbox
             defaultChecked={student.allowEmailShare}
             label="Share my email with chapter leaders! 🌟"
-            id={allowEmailShare}
-            name={allowEmailShare}
+            id={keys.allowEmailShare}
+            name={keys.allowEmailShare}
             value="1"
           />
         </Form.Field>

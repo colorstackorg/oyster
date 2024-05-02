@@ -118,15 +118,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 }
 
-const {
-  currentLocation,
-  currentLocationLatitude,
-  currentLocationLongitude,
-  firstName,
-  headline,
-  lastName,
-  preferredName,
-} = UpdateGeneralInformation.keyof().enum;
+const keys = UpdateGeneralInformation.keyof().enum;
 
 export default function UpdateGeneralInformationSection() {
   const { errors } = getActionErrors(useActionData<typeof action>());
@@ -143,14 +135,14 @@ export default function UpdateGeneralInformationSection() {
           defaultValue={student.firstName}
           error={errors.firstName}
           label="First Name"
-          name={firstName}
+          name={keys.firstName}
           required
         />
         <InputField
           defaultValue={student.lastName}
           error={errors.lastName}
           label="Last Name"
-          name={lastName}
+          name={keys.lastName}
           required
         />
         <PreferredNameField
@@ -158,7 +150,7 @@ export default function UpdateGeneralInformationSection() {
           error={errors.preferredName}
           firstName={student.firstName}
           lastName={student.lastName}
-          name={preferredName}
+          name={keys.preferredName}
         />
 
         <Divider />
@@ -168,7 +160,7 @@ export default function UpdateGeneralInformationSection() {
           description="A LinkedIn-style headline."
           error={errors.headline}
           label="Headline"
-          name={headline}
+          name={keys.headline}
           placeholder="Incoming SWE Intern @ Google | Cornell '26"
           required
         />
@@ -180,9 +172,9 @@ export default function UpdateGeneralInformationSection() {
           defaultLongitude={student.currentLocationCoordinates?.x}
           defaultValue={student.currentLocation || undefined}
           error={errors.currentLocation}
-          name={currentLocation}
-          latitudeName={currentLocationLatitude}
-          longitudeName={currentLocationLongitude}
+          name={keys.currentLocation}
+          latitudeName={keys.currentLocationLatitude}
+          longitudeName={keys.currentLocationLongitude}
         />
 
         <Button.Group>

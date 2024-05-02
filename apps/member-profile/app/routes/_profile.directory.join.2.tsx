@@ -85,12 +85,7 @@ export async function action({ request }: ActionFunctionArgs) {
   return redirect(Route['/directory/join/3']);
 }
 
-const {
-  ethnicities: ethnicitiesKey,
-  hometown,
-  hometownLatitude,
-  hometownLongitude,
-} = UpdatePersonalInformation.keyof().enum;
+const keys = UpdatePersonalInformation.keyof().enum;
 
 export default function UpdatePersonalInformationForm() {
   const { ethnicities, student } = useLoaderData<typeof loader>();
@@ -103,9 +98,9 @@ export default function UpdatePersonalInformationForm() {
         defaultLongitude={student.hometownCoordinates?.x}
         defaultValue={student.hometown || undefined}
         error={errors.hometown}
-        name={hometown}
-        latitudeName={hometownLatitude}
-        longitudeName={hometownLongitude}
+        name={keys.hometown}
+        latitudeName={keys.hometownLatitude}
+        longitudeName={keys.hometownLongitude}
       />
 
       <Divider />
@@ -113,7 +108,7 @@ export default function UpdatePersonalInformationForm() {
       <EthnicityField
         defaultValue={ethnicities}
         error={errors.ethnicities}
-        name={ethnicitiesKey}
+        name={keys.ethnicities}
       />
 
       <Button.Group spacing="between">
