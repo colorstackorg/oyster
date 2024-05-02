@@ -84,12 +84,8 @@ export default function ApplicationPage() {
     navigate(-1);
   }
 
-  function onClose() {
-    navigate(-1);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/applications']}>
       <Modal.Header>
         <Modal.Title>Accept Application</Modal.Title>
         <Modal.CloseButton />
