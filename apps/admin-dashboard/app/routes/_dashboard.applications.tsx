@@ -246,7 +246,7 @@ function ApplicationDropdown({ id }: ApplicationInView) {
               <Dropdown.Item>
                 <Link
                   to={{
-                    pathname: generatePath(Route.'/applications/:id/email', {
+                    pathname: generatePath(Route['/applications/:id/email'], {
                       id,
                     }),
                     search,
@@ -260,7 +260,7 @@ function ApplicationDropdown({ id }: ApplicationInView) {
               <Dropdown.Item>
                 <Link
                   to={{
-                    pathname: generatePath(Route.'/applications/:id/accept', {
+                    pathname: generatePath(Route['/applications/:id/accept'], {
                       id,
                     }),
                     search,
