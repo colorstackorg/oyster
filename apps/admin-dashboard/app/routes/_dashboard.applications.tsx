@@ -198,10 +198,7 @@ function ApplicationsTable() {
       columns={columns}
       data={applications}
       emptyMessage="No pending applications left to review."
-      {...(searchParams.status === 'pending' && {
-        Dropdown: ApplicationDropdown,
-      })}
-      {...(searchParams.status === 'rejected' && {
+      {...(['pending', 'rejected'].includes(searchParams.status) && {
         Dropdown: ApplicationDropdown,
       })}
     />
@@ -243,31 +240,25 @@ function ApplicationDropdown({ id }: ApplicationInView) {
       {open && (
         <Table.Dropdown>
           <Dropdown.List>
-            {searchParams.status === 'pending' && (
+            {['pending', 'rejected'].includes(searchParams.status) && (
               <Dropdown.Item>
                 <Link
                   to={{
-                    pathname: generatePath(Route.UPDATE_APPLICATION_EMAIL, {
-                      id,
-                    }),
+                    pathname: generatePath(
+                      searchParams.status === 'pending'
+                        ? Route.UPDATE_APPLICATION_EMAIL
+                        : Route.ACCEPT_APPLICATION,
+                      {
+                        id,
+                      }
+                    ),
                     search,
                   }}
                 >
-                  <Edit /> Update Email
-                </Link>
-              </Dropdown.Item>
-            )}
-            {searchParams.status === 'rejected' && (
-              <Dropdown.Item>
-                <Link
-                  to={{
-                    pathname: generatePath(Route.ACCEPT_APPLICATION, {
-                      id,
-                    }),
-                    search,
-                  }}
-                >
-                  <Edit /> Accept Application
+                  <Edit />{' '}
+                  {searchParams.status === 'pending'
+                    ? 'Update Email'
+                    : 'Accept Application'}
                 </Link>
               </Dropdown.Item>
             )}
