@@ -8,6 +8,7 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
+  useLocation,
   useNavigate,
 } from '@remix-run/react';
 
@@ -68,10 +69,10 @@ export async function action({ params, request }: ActionFunctionArgs) {
   }
 }
 
-export default function ApplicationPage() {
+export default function AcceptApplicationPage() {
   const { application } = useLoaderData<typeof loader>();
   const { error } = useActionData<typeof action>() || {};
-
+  const { search } = useLocation();
   const navigate = useNavigate();
 
   function onBack() {
@@ -79,7 +80,7 @@ export default function ApplicationPage() {
   }
 
   return (
-    <Modal onCloseTo={Route['/applications']}>
+    <Modal onCloseTo={Route['/applications'] + search}>
       <Modal.Header>
         <Modal.Title>Accept Application</Modal.Title>
         <Modal.CloseButton />
