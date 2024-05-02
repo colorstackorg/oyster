@@ -44,7 +44,7 @@ type EnsureUserAuthenticatedOptions = {
 
 export async function ensureUserAuthenticated(
   request: Request,
-  { redirectTo = Route.LOGIN }: EnsureUserAuthenticatedOptions = {}
+  { redirectTo = Route['/login'] }: EnsureUserAuthenticatedOptions = {}
 ): Promise<Session> {
   const session = await getSession(request);
 

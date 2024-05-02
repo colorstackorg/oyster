@@ -8,8 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
-  useNavigation,
 } from '@remix-run/react';
 
 import {
@@ -85,16 +83,8 @@ export default function ChangePrimaryEmailPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
   const { emails } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  const submitting = useNavigation().state === 'submitting';
-
-  function onClose() {
-    navigate(Route['/profile/emails']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/emails']}>
       <Modal.Header>
         <Modal.Title>Change Primary Email Address</Modal.Title>
         <Modal.CloseButton />
@@ -132,9 +122,7 @@ export default function ChangePrimaryEmailPage() {
         </Form.Field>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Save
-          </Button>
+          <Button.Submit>Save</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

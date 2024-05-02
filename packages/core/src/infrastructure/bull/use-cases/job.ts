@@ -1,6 +1,6 @@
 import { type JobsOptions } from 'bullmq';
 
-import { reportError } from '@/modules/sentry/use-cases/report-error';
+import { reportException } from '@/modules/sentry/use-cases/report-exception';
 import { QueueFromName } from '../bull';
 import { BullJob, type BullQueue, type GetBullJobData } from '../bull.types';
 
@@ -15,7 +15,7 @@ export function job<JobName extends BullJob['name']>(
   });
 
   if (!result.success) {
-    reportError(result.error);
+    reportException(result.error);
 
     return;
   }
@@ -25,7 +25,7 @@ export function job<JobName extends BullJob['name']>(
   const queueName = QueueNameFromJobName[job.name];
   const queue = QueueFromName[queueName];
 
-  queue.add(job.name, job.data, options).catch((e) => reportError(e));
+  queue.add(job.name, job.data, options).catch((e) => reportException(e));
 }
 
 const QueueNameFromJobName: Record<BullJob['name'], BullQueue> = {

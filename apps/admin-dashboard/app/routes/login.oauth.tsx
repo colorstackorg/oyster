@@ -42,7 +42,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   session.set(SESSION.IS_AMBASSADOR, ambassador);
   session.set(SESSION.USER_ID, id);
 
-  const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route.HOME;
+  const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route['/'];
 
   return redirect(redirectUrl, {
     headers: {

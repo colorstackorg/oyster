@@ -209,7 +209,10 @@ function JobsTable() {
           <Link
             className="link"
             to={{
-              pathname: generatePath(Route.BULL_JOB, { id: job.id, queue }),
+              pathname: generatePath(Route['/bull/:queue/jobs/:id'], {
+                id: job.id,
+                queue,
+              }),
               search,
             }}
           >

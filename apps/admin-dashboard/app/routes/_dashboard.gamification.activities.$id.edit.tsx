@@ -8,7 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
 } from '@remix-run/react';
 import { type z } from 'zod';
 
@@ -89,7 +88,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.ACTIVITIES, {
+  return redirect(Route['/gamification/activities'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -103,14 +102,8 @@ export default function EditActivityPage() {
   const { activity } = useLoaderData<typeof loader>();
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.ACTIVITIES);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/gamification/activities']}>
       <Modal.Header>
         <Modal.Title>Edit Activity</Modal.Title>
         <Modal.CloseButton />

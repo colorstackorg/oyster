@@ -117,7 +117,7 @@ function SurveysActionDropdown() {
         <Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={Route.CREATE_SURVEY}>
+              <Link to={Route['/surveys/create']}>
                 <Plus /> New Survey
               </Link>
             </Dropdown.Item>
@@ -195,7 +195,7 @@ function SurveyDropdown({ id }: SurveyInView) {
         <Table.Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={generatePath(Route.IMPORT_SURVEY_RESPONSES, { id })}>
+              <Link to={generatePath(Route['/surveys/:id/import'], { id })}>
                 <Upload /> Import Survey Responses
               </Link>
             </Dropdown.Item>

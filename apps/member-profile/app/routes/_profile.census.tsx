@@ -13,7 +13,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const isCensusEnabled = await isFeatureFlagEnabled('census_2024');
 
   if (!isCensusEnabled) {
-    return redirect(Route.HOME);
+    return redirect(Route['/home']);
   }
 
   return json({});

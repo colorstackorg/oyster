@@ -4,12 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { type z } from 'zod';
 
 import { Resource, ResourceStatus } from '@oyster/types';
@@ -76,7 +71,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const url = new URL(request.url);
 
-  const redirectTo = url.searchParams.get('redirect') || Route.STUDENTS;
+  const redirectTo = url.searchParams.get('redirect') || Route['/students'];
 
   return redirect(redirectTo, {
     headers: {
@@ -86,14 +81,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function CreateResourcePage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>Create Resource</Modal.Title>
         <Modal.CloseButton />
@@ -109,8 +98,6 @@ const { name } = CreateResourceInput.keyof().enum;
 function CreateResourceForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
       <Form.Field error={errors.name} label="Name" labelFor={name} required>
@@ -120,9 +107,7 @@ function CreateResourceForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Create
-        </Button>
+        <Button.Submit>Create</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

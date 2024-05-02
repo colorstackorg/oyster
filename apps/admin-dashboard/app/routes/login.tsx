@@ -10,7 +10,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);
 
   if (session.has(SESSION.USER_ID)) {
-    return redirect(Route.HOME);
+    return redirect(Route['/']);
   }
 
   return json({});

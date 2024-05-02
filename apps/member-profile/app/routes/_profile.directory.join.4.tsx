@@ -8,7 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
@@ -132,8 +131,6 @@ const {
 export default function UpsertIcebreakerResponsesForm() {
   const { icebreakerResponses } = useLoaderData<typeof loader>();
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
       <IcebreakersProvider icebreakerResponses={icebreakerResponses}>
@@ -144,9 +141,7 @@ export default function UpsertIcebreakerResponsesForm() {
 
       <Button.Group spacing="between">
         <JoinDirectoryBackButton to={Route['/directory/join/3']} />
-        <JoinDirectoryNextButton submitting={submitting}>
-          Finish
-        </JoinDirectoryNextButton>
+        <JoinDirectoryNextButton>Finish</JoinDirectoryNextButton>
       </Button.Group>
     </RemixForm>
   );

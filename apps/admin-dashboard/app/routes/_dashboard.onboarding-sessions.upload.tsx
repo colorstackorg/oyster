@@ -4,12 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
@@ -76,7 +71,7 @@ export async function action({ request }: ActionFunctionArgs) {
       type: 'success',
     });
 
-    return redirect(Route.ONBOARDING_SESSIONS, {
+    return redirect(Route['/onboarding-sessions'], {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
@@ -94,16 +89,8 @@ const { attendees, date } = UploadOnboardingSessionInput.keyof().enum;
 export default function UploadOnboardingSessionPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.ONBOARDING_SESSIONS);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/onboarding-sessions']}>
       <Modal.Header>
         <Modal.Title>Upload Onboarding Session</Modal.Title>
         <Modal.CloseButton />
@@ -119,9 +106,7 @@ export default function UploadOnboardingSessionPage() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Upload
-          </Button>
+          <Button.Submit>Upload</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>
