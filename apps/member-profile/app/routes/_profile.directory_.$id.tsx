@@ -12,6 +12,7 @@ import {
   type TextProps,
 } from '@oyster/ui';
 
+import { WorkExperienceItem } from '@/member-profile.ui';
 import { Card } from '@/shared/components/card';
 import { EducationExperienceItem } from '@/shared/components/education-experience';
 import { ExperienceList } from '@/shared/components/profile';
@@ -25,7 +26,6 @@ import {
   job,
   listWorkExperiences,
 } from '@/shared/core.server';
-import { WorkExperienceItem } from '@/shared/core.ui';
 import {
   getEducationExperiences,
   getMember,

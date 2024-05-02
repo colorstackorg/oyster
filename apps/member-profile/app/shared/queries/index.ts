@@ -2,12 +2,12 @@ import dayjs from 'dayjs';
 
 import { toTitleCase } from '@oyster/utils';
 
-import { db } from '@/shared/core.server';
 import {
   Country,
   type DegreeType,
   FORMATTED_DEGREEE_TYPE,
-} from '@/shared/core.ui';
+} from '@/member-profile.ui';
+import { db } from '@/shared/core.server';
 
 // "educations"
 

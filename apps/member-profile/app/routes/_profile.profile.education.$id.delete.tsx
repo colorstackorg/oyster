@@ -12,9 +12,9 @@ import {
 
 import { Button, Form, Modal } from '@oyster/ui';
 
+import { type Education } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { db, deleteEducation } from '@/shared/core.server';
-import { type Education } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,

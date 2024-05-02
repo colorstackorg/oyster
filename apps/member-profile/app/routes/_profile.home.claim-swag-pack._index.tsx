@@ -16,9 +16,9 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { ClaimSwagPackInput } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { claimSwagPack, db, reportException } from '@/shared/core.server';
-import { ClaimSwagPackInput } from '@/shared/core.ui';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {

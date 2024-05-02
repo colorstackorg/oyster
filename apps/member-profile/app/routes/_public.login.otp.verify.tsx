@@ -12,11 +12,11 @@ import {
 
 import { Button, Form, getActionErrors, validateForm } from '@oyster/ui';
 
+import { OneTimeCodeForm, VerifyOneTimeCodeInput } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
 import { oneTimeCodeIdCookie } from '@/shared/cookies.server';
 import { verifyOneTimeCode } from '@/shared/core.server';
-import { OneTimeCodeForm, VerifyOneTimeCodeInput } from '@/shared/core.ui';
 import { trackWithoutRequest } from '@/shared/mixpanel.server';
 import { commitSession, getSession, SESSION } from '@/shared/session.server';
 

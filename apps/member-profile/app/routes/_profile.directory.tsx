@@ -29,16 +29,16 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
+import {
+  ListMembersInDirectoryWhere,
+  ListSearchParams,
+  SchoolCombobox,
+} from '@/member-profile.ui';
 import { CityCombobox } from '@/shared/components/city-combobox';
 import { CompanyCombobox } from '@/shared/components/company-combobox';
 import { EthnicityCombobox } from '@/shared/components/ethnicity-combobox';
 import { Route } from '@/shared/constants';
 import { db, listMembersInDirectory } from '@/shared/core.server';
-import {
-  ListMembersInDirectoryWhere,
-  ListSearchParams,
-  SchoolCombobox,
-} from '@/shared/core.ui';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 import { formatName } from '@/shared/utils/format.utils';
 

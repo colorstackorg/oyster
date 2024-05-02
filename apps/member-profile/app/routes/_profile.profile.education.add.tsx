@@ -10,10 +10,10 @@ import { type z } from 'zod';
 
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
+import { AddEducationInput } from '@/member-profile.ui';
 import { EducationForm } from '@/shared/components/education-form';
 import { Route } from '@/shared/constants';
 import { addEducation } from '@/shared/core.server';
-import { AddEducationInput } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,

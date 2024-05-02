@@ -21,10 +21,10 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { OneTimeCode, OneTimeCodePurpose } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { addEmailCookie } from '@/shared/cookies.server';
 import { db, job } from '@/shared/core.server';
-import { OneTimeCode, OneTimeCodePurpose } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,

@@ -24,14 +24,14 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '@/shared/constants';
-import { editWorkExperience, getWorkExperience } from '@/shared/core.server';
 import {
   EditWorkExperienceInput,
   type EmploymentType,
   type LocationType,
   WorkForm,
-} from '@/shared/core.ui';
+} from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
+import { editWorkExperience, getWorkExperience } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

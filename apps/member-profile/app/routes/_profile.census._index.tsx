@@ -26,16 +26,16 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { CityCombobox } from '@/shared/components/city-combobox';
-import { Route } from '@/shared/constants';
-import { getCensusResponse, submitCensusResponse } from '@/shared/core.server';
 import {
   BaseCensusResponse,
   CompanyCombobox,
   CompanyFieldProvider,
   FreeTextCompanyInput,
   SubmitCensusResponseData,
-} from '@/shared/core.ui';
+} from '@/member-profile.ui';
+import { CityCombobox } from '@/shared/components/city-combobox';
+import { Route } from '@/shared/constants';
+import { getCensusResponse, submitCensusResponse } from '@/shared/core.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 const SubmitCensusResponseData_ = z

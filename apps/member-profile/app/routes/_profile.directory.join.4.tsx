@@ -22,6 +22,7 @@ import {
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
+import { IcebreakerPrompt, IcebreakerResponse } from '@/member-profile.ui';
 import {
   JoinDirectoryBackButton,
   JoinDirectoryNextButton,
@@ -39,7 +40,6 @@ import {
   joinMemberDirectory,
   upsertIcebreakerResponses,
 } from '@/shared/core.server';
-import { IcebreakerPrompt, IcebreakerResponse } from '@/shared/core.ui';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {

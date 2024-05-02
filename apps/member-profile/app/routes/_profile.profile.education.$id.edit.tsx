@@ -17,10 +17,10 @@ import { type z } from 'zod';
 import { type Major } from '@oyster/types';
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
+import { type DegreeType, Education, type School } from '@/member-profile.ui';
 import { EducationForm } from '@/shared/components/education-form';
 import { Route } from '@/shared/constants';
 import { db, editEducation } from '@/shared/core.server';
-import { type DegreeType, Education, type School } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,

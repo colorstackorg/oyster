@@ -7,12 +7,12 @@ import {
   Select,
 } from '@oyster/ui';
 
+import { type Country } from '@/member-profile.ui';
 import {
   CityCombobox,
   type CityComboboxProps,
 } from '@/shared/components/city-combobox';
 import { EthnicityMultiCombobox } from '@/shared/components/ethnicity-combobox';
-import { type Country } from '@/shared/core.ui';
 
 export function BirthdateNotificationField({
   defaultValue,
