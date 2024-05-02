@@ -16,7 +16,6 @@ import {
   Modal,
   validateForm,
 } from '@oyster/ui';
-import { sleep } from '@oyster/utils';
 
 import { Route } from '../shared/constants';
 import { addAdmin } from '../shared/core.server';
@@ -35,8 +34,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
-
-  await sleep(500000);
 
   const form = await request.formData();
 
