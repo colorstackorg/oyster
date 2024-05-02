@@ -130,6 +130,7 @@ To verify that the migration was executed successfully, connect to your Postgres
 database and run:
 
 ```sh
+psql postgresql://oyster:oyster@localhost:5433/oyster
 \d
 ```
 
@@ -146,6 +147,16 @@ yarn db:seed
 
 Follow the prompt to add your email, and you will now be able to log into both
 applications.
+
+#### Clean up
+
+Once you are done developing, you might want to stop containers from running.
+Keeping your containers up can eat up ypur battery life, so its best to take
+them down once you are done using them in a session. Run:
+
+```
+yarn dx:down
+```
 
 ### Building the Project
 
