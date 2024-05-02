@@ -194,7 +194,7 @@ export default function ImportScholarshipsPage() {
   );
 }
 
-const { file } = ImportScholarshipRecipientsInput.keyof().enum;
+const keys = ImportScholarshipRecipientsInput.keyof().enum;
 
 function ImportScholarshipsForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
@@ -205,10 +205,16 @@ function ImportScholarshipsForm() {
         description="Please upload a .csv file."
         error={errors.file}
         label="File"
-        labelFor={file}
+        labelFor={keys.file}
         required
       >
-        <input accept=".csv" id={file} name={file} required type="file" />
+        <input
+          accept=".csv"
+          id={keys.file}
+          name={keys.file}
+          required
+          type="file"
+        />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>

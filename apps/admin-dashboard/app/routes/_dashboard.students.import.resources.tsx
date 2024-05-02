@@ -203,7 +203,7 @@ export default function ImportResourcesPage() {
   );
 }
 
-const { file, resource } = ImportResourceUsersInput.keyof().enum;
+const keys = ImportResourceUsersInput.keyof().enum;
 
 function ImportResourcesForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
@@ -215,10 +215,10 @@ function ImportResourcesForm() {
         description={<ResourceFieldDescription />}
         error={errors.resource}
         label="Resource"
-        labelFor={resource}
+        labelFor={keys.resource}
         required
       >
-        <Select id={resource} name={resource} required>
+        <Select id={keys.resource} name={keys.resource} required>
           {resources.map((resource) => {
             return (
               <option key={resource.id} value={resource.id}>
@@ -233,10 +233,16 @@ function ImportResourcesForm() {
         description="Please upload a .csv file."
         error={errors.file}
         label="File"
-        labelFor={file}
+        labelFor={keys.file}
         required
       >
-        <input accept=".csv" id={file} name={file} required type="file" />
+        <input
+          accept=".csv"
+          id={keys.file}
+          name={keys.file}
+          required
+          type="file"
+        />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>

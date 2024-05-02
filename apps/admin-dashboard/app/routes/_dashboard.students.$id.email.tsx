@@ -117,15 +117,20 @@ export default function UpdateStudentEmailPage() {
   );
 }
 
-const { email } = UpdateStudentEmailInput.keyof().enum;
+const keys = UpdateStudentEmailInput.keyof().enum;
 
 function UpdateStudentEmailForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field error={errors.email} label="Email" labelFor={email} required>
-        <Input id={email} name={email} required />
+      <Form.Field
+        error={errors.email}
+        label="Email"
+        labelFor={keys.email}
+        required
+      >
+        <Input id={keys.email} name={keys.email} required />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>

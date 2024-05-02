@@ -61,8 +61,6 @@ const PointsSearchParams = z.object({
 
 type PointsSearchParams = z.infer<typeof PointsSearchParams>;
 
-const PointsSearchParam = PointsSearchParams.keyof().enum;
-
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
@@ -238,6 +236,8 @@ export default function PointsPage() {
   );
 }
 
+const keys = PointsSearchParams.keyof().enum;
+
 function TimeframeForm() {
   const [searchParams] = useSearchParams(PointsSearchParams);
 
@@ -251,8 +251,8 @@ function TimeframeForm() {
     >
       <Select
         defaultValue={searchParams.timeframe}
-        name={PointsSearchParam.timeframe}
-        id={PointsSearchParam.timeframe}
+        name={keys.timeframe}
+        id={keys.timeframe}
         placeholder="Timeframe"
         required
       >
@@ -263,8 +263,8 @@ function TimeframeForm() {
       </Select>
 
       <input
-        name={PointsSearchParam.leaderboardLimit}
-        id={PointsSearchParam.leaderboardLimit}
+        name={keys.leaderboardLimit}
+        id={keys.leaderboardLimit}
         type="hidden"
         value={searchParams.leaderboardLimit}
       />
@@ -293,8 +293,8 @@ function PointsLeaderboard({
         >
           <Select
             defaultValue={searchParams.leaderboardLimit}
-            name={PointsSearchParam.leaderboardLimit}
-            id={PointsSearchParam.leaderboardLimit}
+            name={keys.leaderboardLimit}
+            id={keys.leaderboardLimit}
             required
           >
             <option value="10">Top 10</option>
@@ -304,8 +304,8 @@ function PointsLeaderboard({
           </Select>
 
           <input
-            name={PointsSearchParam.timeframe}
-            id={PointsSearchParam.timeframe}
+            name={keys.timeframe}
+            id={keys.timeframe}
             type="hidden"
             value={searchParams.timeframe}
           />
