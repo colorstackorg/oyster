@@ -21,13 +21,13 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { createEvent } from '../shared/core.server';
+import { Route } from '@/shared/constants';
+import { createEvent } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

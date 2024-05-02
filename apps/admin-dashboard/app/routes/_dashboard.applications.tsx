@@ -32,11 +32,11 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { listApplications } from '../shared/core.server';
-import { ListSearchParams } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { listApplications } from '@/shared/core.server';
+import { ListSearchParams } from '@/shared/core.ui';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const ApplicationsSearchParams = ListSearchParams.extend({
   status: Application.shape.status.or(z.literal('all')).catch('pending'),

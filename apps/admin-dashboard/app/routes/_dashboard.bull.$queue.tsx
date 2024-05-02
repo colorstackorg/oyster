@@ -5,9 +5,9 @@ import { z } from 'zod';
 
 import { type ExtractValue } from '@oyster/types';
 
-import { Route } from '../shared/constants';
-import { BullQueue } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { Route } from '@/shared/constants';
+import { BullQueue } from '@/shared/core.ui';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const BullType = {
   JOB: 'job',

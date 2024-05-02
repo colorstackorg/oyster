@@ -29,11 +29,11 @@ import {
   useSearchParams,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { db } from '../shared/core.server';
-import { ListSearchParams } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { db } from '@/shared/core.server';
+import { ListSearchParams } from '@/shared/core.ui';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

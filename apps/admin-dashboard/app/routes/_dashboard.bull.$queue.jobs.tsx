@@ -27,11 +27,11 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { QueueFromName } from '../shared/core.server';
-import { BullQueue, ListSearchParams } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { QueueFromName } from '@/shared/core.server';
+import { BullQueue, ListSearchParams } from '@/shared/core.ui';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const BullStatus = {
   COMPLETED: 'completed',

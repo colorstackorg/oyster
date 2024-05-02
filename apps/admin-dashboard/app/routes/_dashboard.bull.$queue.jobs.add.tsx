@@ -22,14 +22,14 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { QueueFromName } from '../shared/core.server';
-import { BullQueue } from '../shared/core.ui';
+import { Route } from '@/shared/constants';
+import { QueueFromName } from '@/shared/core.server';
+import { BullQueue } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 const BullParams = z.object({
   queue: z.nativeEnum(BullQueue),

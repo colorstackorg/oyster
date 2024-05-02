@@ -21,13 +21,13 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { db, updateMemberEmail } from '../shared/core.server';
+import { Route } from '@/shared/constants';
+import { db, updateMemberEmail } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

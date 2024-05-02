@@ -20,13 +20,13 @@ import {
 } from '@oyster/ui';
 
 import { addEventRecordingLink, getEvent } from '@/admin-dashboard.server';
-import { Route } from '../shared/constants';
-import { AddEventRecordingLinkInput } from '../shared/core.ui';
+import { Route } from '@/shared/constants';
+import { AddEventRecordingLinkInput } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

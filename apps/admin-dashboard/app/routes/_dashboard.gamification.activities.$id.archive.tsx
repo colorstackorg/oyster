@@ -13,13 +13,13 @@ import {
 
 import { Button, Form, Modal } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { archiveActivity } from '../shared/core.server';
+import { Route } from '@/shared/constants';
+import { archiveActivity } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

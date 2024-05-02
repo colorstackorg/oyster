@@ -1,4 +1,4 @@
-import { db } from '../core.server';
+import { db } from '@oyster/db';
 
 export async function isAmbassador(adminId: string) {
   const admin = await db
