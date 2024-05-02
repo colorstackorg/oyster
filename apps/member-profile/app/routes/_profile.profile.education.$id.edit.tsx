@@ -9,7 +9,6 @@ import {
   useActionData,
   useLoaderData,
   useNavigate,
-  useNavigation,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { generatePath } from 'react-router';
@@ -159,17 +158,11 @@ export default function EditEducationPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
   const { education } = useLoaderData<typeof loader>();
 
-  const submitting = useNavigation().state === 'submitting';
-
   const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/profile/education']);
-  }
 
   function onDelete() {
     navigate(
-      generatePath(Route.DELETE_EDUCATION, {
+      generatePath(Route['/profile/education/:id/delete'], {
         id: education.id,
       })
     );
@@ -181,7 +174,7 @@ export default function EditEducationPage() {
       : { id: 'other', name: 'Other' };
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/education']}>
       <Modal.Header>
         <Modal.Title>Edit Education</Modal.Title>
         <Modal.CloseButton />
@@ -229,9 +222,9 @@ export default function EditEducationPage() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group flexDirection="row-reverse" spacing="between">
-          <Button name="action" loading={submitting} type="submit" value="edit">
+          <Button.Submit name="action" value="edit">
             Update
-          </Button>
+          </Button.Submit>
 
           <Button
             color="error"

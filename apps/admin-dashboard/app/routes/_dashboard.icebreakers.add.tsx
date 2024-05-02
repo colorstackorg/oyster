@@ -4,12 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 
 import {
   Button,
@@ -20,6 +15,7 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { Route } from '../shared/constants';
 import { addIcebreakerPrompt } from '../shared/core.server';
 import { AddIcebreakerPromptInput } from '../shared/core.ui';
 import {
@@ -66,14 +62,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function AddIcebreakerPromptPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/']}>
       <Modal.Header>
         <Modal.Title>Add Icebreaker Prompt</Modal.Title>
         <Modal.CloseButton />
@@ -89,8 +79,6 @@ const keys = AddIcebreakerPromptInput.keyof().enum;
 function AddIcebreakerPromptForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
       <Form.Field
@@ -105,9 +93,7 @@ function AddIcebreakerPromptForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Add
-        </Button>
+        <Button.Submit>Add</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

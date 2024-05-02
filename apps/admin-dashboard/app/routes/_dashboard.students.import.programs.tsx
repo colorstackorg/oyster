@@ -13,8 +13,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
-  useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
 
@@ -108,7 +106,7 @@ export async function action({ request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.STUDENTS, {
+  return redirect(Route['/students'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -174,14 +172,8 @@ async function importProgramParticipants(
 }
 
 export default function ImportProgramsPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.STUDENTS);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>Import Program Participants</Modal.Title>
         <Modal.CloseButton />
@@ -197,8 +189,6 @@ const { file, program } = ImportProgramParticipantsInput.keyof().enum;
 function ImportProgramsForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
   const { programs } = useLoaderData<typeof loader>();
-
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
@@ -233,16 +223,14 @@ function ImportProgramsForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Import
-        </Button>
+        <Button.Submit>Import</Button.Submit>
       </Button.Group>
     </RemixForm>
   );
 }
 
 function ProgramFieldDescription(props: Pick<TextProps, 'className'>) {
-  const to = `${Route.PROGRAMS_CREATE}?redirect=${Route.STUDENTS_IMPORT_PROGRAMS}`;
+  const to = `${Route['/programs/create']}?redirect=${Route['/students/import/programs']}`;
 
   return (
     <Text {...props}>

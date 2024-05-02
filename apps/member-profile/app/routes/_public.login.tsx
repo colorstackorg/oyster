@@ -25,7 +25,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // We're only going to show the description for the Claim Swag Pack flow
   // in the initial login page, and not any subsequent OTP (or other) pages.
   const isFirstLoginPage: boolean =
-    new URL(request.url).pathname === Route.LOGIN;
+    new URL(request.url).pathname === Route['/login'];
 
   const description: string | null =
     context === 'claim-swag-pack' && isFirstLoginPage

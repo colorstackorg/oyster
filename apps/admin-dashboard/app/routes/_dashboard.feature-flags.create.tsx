@@ -4,12 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 
 import {
   Button,
@@ -78,15 +73,8 @@ const keys = CreateFeatureFlagInput.keyof().enum;
 export default function CreateFeatureFlagModal() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const navigate = useNavigate();
-  const submitting = useNavigation().state === 'submitting';
-
-  function onClose() {
-    navigate(Route['/feature-flags']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/feature-flags']}>
       <Modal.Header>
         <Modal.Title>Create Flag</Modal.Title>
         <Modal.CloseButton />
@@ -134,9 +122,7 @@ export default function CreateFeatureFlagModal() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Create
-          </Button>
+          <Button.Submit>Create</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

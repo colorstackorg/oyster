@@ -6,7 +6,7 @@ import { ENV } from '../shared/constants.server';
 import {
   authenticateWithGithub,
   getGithubProfile,
-  reportError,
+  reportException,
   updateMember,
 } from '../shared/core.server';
 import { ensureUserAuthenticated, user } from '../shared/session.server';
@@ -53,7 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       memberId,
     });
 
-    reportError(error);
+    reportException(error);
   }
 
   return redirect(Route['/profile/integrations']);

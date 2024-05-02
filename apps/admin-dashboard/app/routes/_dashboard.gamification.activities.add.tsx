@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { type z } from 'zod';
 
 import { Activity } from '@oyster/types';
@@ -64,7 +60,7 @@ export async function action({ request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.ACTIVITIES, {
+  return redirect(Route['/gamification/activities'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -91,14 +87,8 @@ const { description, name, period, points, type } =
 export default function AddActivityPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.ACTIVITIES);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/gamification/activities']}>
       <Modal.Header>
         <Modal.Title>Add Activity</Modal.Title>
         <Modal.CloseButton />

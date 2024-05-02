@@ -4,12 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import {
@@ -65,7 +60,7 @@ export async function action({ request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.EVENTS, {
+  return redirect(Route['/events'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -73,14 +68,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function SyncAirmeetEventPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.EVENTS);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/events']}>
       <Modal.Header>
         <Modal.Title>Sync Airmeet Event</Modal.Title>
         <Modal.CloseButton />
@@ -95,7 +84,6 @@ const keys = SyncAirmeetEventFormData.keyof().enum;
 
 function SyncAirmeetEventForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <RemixForm className="form" method="post">
@@ -112,9 +100,7 @@ function SyncAirmeetEventForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Sync
-        </Button>
+        <Button.Submit>Sync</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

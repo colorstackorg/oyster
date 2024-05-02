@@ -157,19 +157,19 @@ function StudentsUploadDropdown() {
         <Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={Route.STUDENTS_IMPORT_RESOURCES}>
+              <Link to={Route['/students/import/resources']}>
                 <Hash /> Import Resource Users
               </Link>
             </Dropdown.Item>
 
             <Dropdown.Item>
-              <Link to={Route.STUDENTS_IMPORT_PROGRAMS}>
+              <Link to={Route['/students/import/programs']}>
                 <Users /> Import Program Participants
               </Link>
             </Dropdown.Item>
 
             <Dropdown.Item>
-              <Link to={Route.STUDENTS_IMPORT_SCHOLARSHIPS}>
+              <Link to={Route['/students/import/scholarships']}>
                 <DollarSign /> Import Scholarship Recipients
               </Link>
             </Dropdown.Item>
@@ -256,26 +256,30 @@ function StudentDropdown({ activatedAt, id }: StudentInView) {
           <Dropdown.List>
             {!activatedAt && (
               <Dropdown.Item>
-                <Link to={generatePath(Route.ACTIVATE_STUDENT, { id })}>
+                <Link
+                  to={generatePath(Route['/students/:id/activate'], { id })}
+                >
                   <Zap /> Activate Member
                 </Link>
               </Dropdown.Item>
             )}
 
             <Dropdown.Item>
-              <Link to={generatePath(Route.GRANT_POINTS, { id })}>
+              <Link
+                to={generatePath(Route['/students/:id/points/grant'], { id })}
+              >
                 <Gift /> Grant Points
               </Link>
             </Dropdown.Item>
 
             <Dropdown.Item>
-              <Link to={generatePath(Route.UPDATE_STUDENT_EMAIL, { id })}>
+              <Link to={generatePath(Route['/students/:id/email'], { id })}>
                 <Edit /> Update Email
               </Link>
             </Dropdown.Item>
 
             <Dropdown.Item>
-              <Link to={generatePath(Route.REMOVE_STUDENT, { id })}>
+              <Link to={generatePath(Route['/students/:id/remove'], { id })}>
                 <Trash /> Delete Member
               </Link>
             </Dropdown.Item>

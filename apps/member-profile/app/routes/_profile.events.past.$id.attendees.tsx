@@ -1,10 +1,5 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import {
-  generatePath,
-  Link,
-  useLoaderData,
-  useNavigate,
-} from '@remix-run/react';
+import { generatePath, Link, useLoaderData } from '@remix-run/react';
 
 import { type Student } from '@oyster/types';
 import { Modal, ProfilePicture } from '@oyster/ui';
@@ -40,14 +35,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
 export default function EventAttendeesPage() {
   const { attendees, attendeesCount } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/events/past']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/events/past']}>
       <Modal.Header>
         <Modal.Title>Attendees List ({attendeesCount})</Modal.Title>
         <Modal.CloseButton />

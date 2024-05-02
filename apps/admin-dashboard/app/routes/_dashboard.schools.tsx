@@ -135,7 +135,7 @@ function SchoolsActionDropdown() {
         <Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={Route.CREATE_SCHOOL}>
+              <Link to={Route['/schools/create']}>
                 <Plus /> Create School
               </Link>
             </Dropdown.Item>
@@ -211,7 +211,7 @@ function SchoolsTableDropdown({ id }: SchoolInView) {
         <Table.Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={generatePath(Route.EDIT_SCHOOL, { id })}>
+              <Link to={generatePath(Route['/schools/:id/edit'], { id })}>
                 <Edit /> Edit School
               </Link>
             </Dropdown.Item>

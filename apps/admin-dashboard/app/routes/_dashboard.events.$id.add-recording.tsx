@@ -8,7 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
 } from '@remix-run/react';
 
 import {
@@ -67,7 +66,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.EVENTS, {
+  return redirect(Route['/events'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -75,14 +74,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 export default function AddEventRecordingModal() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.EVENTS);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/events']}>
       <Modal.Header>
         <Modal.Title>Add Recording</Modal.Title>
         <Modal.CloseButton />

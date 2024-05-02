@@ -13,8 +13,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
-  useNavigation,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { z } from 'zod';
@@ -116,7 +114,7 @@ export async function action({ request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.STUDENTS, {
+  return redirect(Route['/students'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -193,14 +191,8 @@ async function importResourceUsers(input: ImportResourceUsersInput) {
 }
 
 export default function ImportResourcesPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.STUDENTS);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>Import Resource Users</Modal.Title>
         <Modal.CloseButton />
@@ -216,8 +208,6 @@ const { file, resource } = ImportResourceUsersInput.keyof().enum;
 function ImportResourcesForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
   const { resources } = useLoaderData<typeof loader>();
-
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
@@ -252,16 +242,14 @@ function ImportResourcesForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Import
-        </Button>
+        <Button.Submit>Import</Button.Submit>
       </Button.Group>
     </RemixForm>
   );
 }
 
 function ResourceFieldDescription(props: Pick<TextProps, 'className'>) {
-  const to = `${Route.RESOURCES_CREATE}?redirect=${Route.STUDENTS_IMPORT_RESOURCES}`;
+  const to = `${Route['/resources/create']}?redirect=${Route['/students/import/resources']}`;
 
   return (
     <Text {...props}>

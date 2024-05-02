@@ -142,7 +142,9 @@ function ApplicationsTable() {
           <Link
             className="link"
             to={{
-              pathname: generatePath(Route.APPLICATION, { id: application.id }),
+              pathname: generatePath(Route['/applications/:id'], {
+                id: application.id,
+              }),
               search,
             }}
           >
@@ -244,7 +246,7 @@ function ApplicationDropdown({ id }: ApplicationInView) {
               <Dropdown.Item>
                 <Link
                   to={{
-                    pathname: generatePath(Route.UPDATE_APPLICATION_EMAIL, {
+                    pathname: generatePath(Route.'/applications/:id/email', {
                       id,
                     }),
                     search,
@@ -258,7 +260,7 @@ function ApplicationDropdown({ id }: ApplicationInView) {
               <Dropdown.Item>
                 <Link
                   to={{
-                    pathname: generatePath(Route.ACCEPT_APPLICATION, {
+                    pathname: generatePath(Route.'/applications/:id/accept', {
                       id,
                     }),
                     search,

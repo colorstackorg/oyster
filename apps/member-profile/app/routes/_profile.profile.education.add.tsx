@@ -4,12 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type z } from 'zod';
 
@@ -107,16 +102,8 @@ const {
 export default function AddEducationPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/profile/education']);
-  }
-
-  const submitting = useNavigation().state === 'submitting';
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/education']}>
       <Modal.Header>
         <Modal.Title>Add Education</Modal.Title>
         <Modal.CloseButton />
@@ -148,9 +135,7 @@ export default function AddEducationPage() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Save
-          </Button>
+          <Button.Submit>Save</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

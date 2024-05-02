@@ -146,20 +146,16 @@ export default function EditWorkExperiencePage() {
 
   const submitting = useNavigation().state === 'submitting';
 
-  function onClose() {
-    navigate(Route['/profile/work']);
-  }
-
   function onDelete() {
     navigate(
-      generatePath(Route.DELETE_WORK_EXPERIENCE, {
+      generatePath(Route['/profile/work/:id/delete'], {
         id: workExperience.id,
       })
     );
   }
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/work']}>
       <Modal.Header>
         <Modal.Title>Edit Work Experience</Modal.Title>
         <Modal.CloseButton />
@@ -244,14 +240,12 @@ export default function EditWorkExperiencePage() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group flexDirection="row-reverse" spacing="between">
-          <Button loading={submitting} type="submit">
-            Update
-          </Button>
+          <Button.Submit>Update</Button.Submit>
 
           <Button
             color="error"
-            loading={submitting}
             onClick={onDelete}
+            submitting={submitting}
             type="button"
             variant="secondary"
           >

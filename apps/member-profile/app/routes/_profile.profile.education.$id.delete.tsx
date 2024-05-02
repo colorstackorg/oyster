@@ -82,16 +82,12 @@ export default function DeleteEducationPage() {
 
   const navigate = useNavigate();
 
-  function onClose() {
-    navigate(Route['/profile/education']);
-  }
-
   function onBack() {
     navigate(-1);
   }
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/education']}>
       <Modal.Header>
         <Modal.Title>Delete Education</Modal.Title>
         <Modal.CloseButton />

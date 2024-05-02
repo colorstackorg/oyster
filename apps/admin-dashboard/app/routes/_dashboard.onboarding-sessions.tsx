@@ -133,7 +133,7 @@ export default function OnboardingSessionsPage() {
 function UploadOnboardingSessionButton() {
   return (
     <Link
-      to={Route.UPLOAD_ONBOARDING_SESSIONS}
+      to={Route['/onboarding-sessions/upload']}
       className={getButtonCn({ variant: 'primary' })}
     >
       <Plus size={16} /> Upload Session
@@ -211,9 +211,12 @@ function OnboardingSessionsDropdown({ id }: OnboardingSessionInView) {
           <Dropdown.List>
             <Dropdown.Item>
               <Link
-                to={generatePath(Route.ADD_ONBOARDING_SESSION_ATTENDEES, {
-                  id,
-                })}
+                to={generatePath(
+                  Route['/onboarding-sessions/:id/add-attendees'],
+                  {
+                    id,
+                  }
+                )}
               >
                 <Plus /> Add Attendees
               </Link>
