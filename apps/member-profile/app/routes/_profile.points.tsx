@@ -454,14 +454,14 @@ function ActivityHistory() {
 
                   <Button.Group>
                     <RemixLink
-                      to={Route.ADD_EDUCATION}
+                      to={Route['/profile/education/add']}
                       className={getButtonCn({ variant: 'secondary' })}
                     >
                       <Plus /> Add Education
                     </RemixLink>
 
                     <RemixLink
-                      to={Route.ADD_WORK_EXPERIENCE}
+                      to={Route['/profile/work/add']}
                       className={getButtonCn({ variant: 'secondary' })}
                     >
                       <Plus /> Add Work Experience

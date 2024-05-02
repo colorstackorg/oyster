@@ -4,11 +4,7 @@ import {
   type MetaFunction,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { Application as ApplicationType } from '@oyster/types';
@@ -86,7 +82,7 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     await apply(data);
 
-    return redirect(Route.APPLICATION_THANK_YOU);
+    return redirect(Route['/apply/thank-you']);
   } catch (e) {
     return json({
       error: (e as Error).message,
@@ -99,8 +95,6 @@ const ApplicationKey = ApplyFormData.keyof().enum;
 
 export default function ApplicationPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <>
@@ -192,9 +186,7 @@ export default function ApplicationPage() {
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
-        <Button fill loading={submitting} type="submit">
-          Apply
-        </Button>
+        <Button.Submit fill>Apply</Button.Submit>
       </RemixForm>
     </>
   );

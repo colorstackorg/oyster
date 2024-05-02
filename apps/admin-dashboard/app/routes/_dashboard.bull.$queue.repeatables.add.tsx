@@ -8,8 +8,7 @@ import {
   generatePath,
   Form as RemixForm,
   useActionData,
-  useNavigate,
-  useNavigation,
+  useParams,
 } from '@remix-run/react';
 import { z } from 'zod';
 
@@ -83,22 +82,25 @@ export async function action({ params, request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(generatePath(Route.BULL_REPEATABLES, { queue: queueName }), {
-    headers: {
-      'Set-Cookie': await commitSession(session),
-    },
-  });
+  return redirect(
+    generatePath(Route['/bull/:queue/repeatables'], { queue: queueName }),
+    {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    }
+  );
 }
 
 export default function AddRepeatablePage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
+  const { queue } = useParams();
 
   return (
-    <Modal onClose={onClose}>
+    <Modal
+      onCloseTo={generatePath(Route['/bull/:queue/repeatables'], {
+        queue: queue as string,
+      })}
+    >
       <Modal.Header>
         <Modal.Title>Add Repeatable</Modal.Title>
         <Modal.CloseButton />
@@ -111,8 +113,6 @@ export default function AddRepeatablePage() {
 
 function AddRepeatableForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <RemixForm className="form" method="post">
@@ -146,9 +146,7 @@ function AddRepeatableForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Add
-        </Button>
+        <Button.Submit>Add</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

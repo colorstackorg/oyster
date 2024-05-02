@@ -38,7 +38,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
       type: 'success',
     });
 
-    return redirect(Route.ACTIVITIES, {
+    return redirect(Route['/gamification/activities'], {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
@@ -57,16 +57,12 @@ export default function ArchiveActivityPage() {
 
   const submitting = useNavigation().state === 'submitting';
 
-  function onClose() {
-    navigate(Route.ACTIVITIES);
-  }
-
   function onBack() {
     navigate(-1);
   }
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/gamification/activities']}>
       <Modal.Header>
         <Modal.Title>Archive Activity</Modal.Title>
         <Modal.CloseButton />
@@ -81,18 +77,13 @@ export default function ArchiveActivityPage() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group flexDirection="row-reverse">
-          <Button
-            color="error"
-            loading={submitting}
-            type="submit"
-            variant="secondary"
-          >
+          <Button.Submit color="error" variant="secondary">
             Archive
-          </Button>
+          </Button.Submit>
 
           <Button
-            loading={submitting}
             onClick={onBack}
+            submitting={submitting}
             type="button"
             variant="secondary"
           >

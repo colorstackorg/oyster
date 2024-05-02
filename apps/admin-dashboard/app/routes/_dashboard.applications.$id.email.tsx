@@ -8,7 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 import { type z } from 'zod';
 
@@ -93,7 +92,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const url = new URL(request.url);
 
-  url.pathname = Route.APPLICATIONS;
+  url.pathname = Route['/applications'];
 
   return redirect(url.toString(), {
     headers: {
@@ -128,8 +127,6 @@ const { email } = UpdateApplicationEmailInput.keyof().enum;
 function UpdateApplicationEmailForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
       <Form.Field error={errors.email} label="Email" labelFor={email} required>
@@ -139,9 +136,7 @@ function UpdateApplicationEmailForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Update
-        </Button>
+        <Button.Submit>Update</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

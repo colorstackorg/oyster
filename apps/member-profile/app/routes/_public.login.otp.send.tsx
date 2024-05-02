@@ -1,9 +1,5 @@
 import { type ActionFunctionArgs, json, redirect } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 
 import { Button, Form, getActionErrors, validateForm } from '@oyster/ui';
 
@@ -33,7 +29,7 @@ export async function action({ request }: ActionFunctionArgs) {
       purpose: 'student_login',
     });
 
-    return redirect(Route.LOGIN_OTP_VERIFY, {
+    return redirect(Route['/login/otp/verify'], {
       headers: {
         'Set-Cookie': await oneTimeCodeIdCookie.serialize(id),
       },
@@ -51,17 +47,11 @@ const keys = SendOneTimeCodeInput.keyof().enum;
 export default function SendOneTimeCodePage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
       <OneTimeCodeForm.EmailField error={errors.email} name={keys.email} />
-
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
-
-      <Button fill loading={submitting} type="submit">
-        Send Code
-      </Button>
+      <Button.Submit fill>Send Code</Button.Submit>
     </RemixForm>
   );
 }

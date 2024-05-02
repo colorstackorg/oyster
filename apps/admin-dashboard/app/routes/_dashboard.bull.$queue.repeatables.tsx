@@ -103,7 +103,7 @@ export default function RepeatablesPage() {
               backgroundColorOnHover: 'gray-200',
               shape: 'square',
             })}
-            to={generatePath(Route.ADD_BULL_REPEATABLE, { queue })}
+            to={generatePath(Route['/bull/:queue/repeatables/add'], { queue })}
           >
             <Plus />
           </Link>

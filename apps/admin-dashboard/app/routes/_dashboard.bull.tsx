@@ -31,7 +31,7 @@ export default function BullPage() {
               <li key={queue}>
                 <NavLink
                   className="link text-black [&.active]:text-primary"
-                  to={generatePath(Route.BULL_QUEUE, { queue })}
+                  to={generatePath(Route['/bull/:queue'], { queue })}
                 >
                   {toTitleCase(queue)}
                 </NavLink>

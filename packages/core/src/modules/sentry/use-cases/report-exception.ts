@@ -6,7 +6,7 @@ import {
   ErrorWithContext,
 } from '@/shared/errors';
 
-export function reportError(error: unknown): void {
+export function reportException(error: unknown): void {
   let context: ErrorContext | undefined = undefined;
   let level: ErrorLevel = 'error';
 

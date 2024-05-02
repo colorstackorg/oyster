@@ -8,8 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
-  useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
 
@@ -90,7 +88,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.STUDENTS, {
+  return redirect(Route['/students'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -100,14 +98,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
 export default function GrantPointsPage() {
   const { student } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.STUDENTS);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>
           Grant Points to {student.firstName} {student.lastName}
@@ -123,8 +115,6 @@ export default function GrantPointsPage() {
 
 function GrantPointsForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <RemixForm className="form" method="post">
@@ -160,9 +150,7 @@ function GrantPointsForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Grant
-        </Button>
+        <Button.Submit>Grant</Button.Submit>
       </Button.Group>
     </RemixForm>
   );
