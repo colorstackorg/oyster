@@ -60,6 +60,13 @@ which will automatically install the right node version for any given directory
 that you're working in, as long as there is a [`.nvmrc`](./.nvmrc) file found in
 that directory.
 
+If for whatever reason you don't want to set up a shell integration, you can
+switch to the appropriate Node version manually by doing:
+
+```sh
+nvm install && nvm use
+```
+
 ### Fork and Clone Repository
 
 1. [Fork the repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
