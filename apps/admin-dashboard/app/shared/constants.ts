@@ -2,6 +2,7 @@ const ROUTES = [
   '/',
   '/applications',
   '/applications/:id',
+  '/applications/:id/accept',
   '/applications/:id/email',
   '/bull',
   '/bull/:queue',

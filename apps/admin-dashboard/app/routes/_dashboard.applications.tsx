@@ -200,7 +200,7 @@ function ApplicationsTable() {
       columns={columns}
       data={applications}
       emptyMessage="No pending applications left to review."
-      {...(searchParams.status === 'pending' && {
+      {...(['pending', 'rejected'].includes(searchParams.status) && {
         Dropdown: ApplicationDropdown,
       })}
     />
@@ -227,6 +227,8 @@ function ApplicationDropdown({ id }: ApplicationInView) {
 
   const { search } = useLocation();
 
+  const [searchParams] = useSearchParams(ApplicationsSearchParams);
+
   function onClose() {
     setOpen(false);
   }
@@ -240,18 +242,34 @@ function ApplicationDropdown({ id }: ApplicationInView) {
       {open && (
         <Table.Dropdown>
           <Dropdown.List>
-            <Dropdown.Item>
-              <Link
-                to={{
-                  pathname: generatePath(Route['/applications/:id/email'], {
-                    id,
-                  }),
-                  search,
-                }}
-              >
-                <Edit /> Update Email
-              </Link>
-            </Dropdown.Item>
+            {searchParams.status === 'pending' && (
+              <Dropdown.Item>
+                <Link
+                  to={{
+                    pathname: generatePath(Route['/applications/:id/email'], {
+                      id,
+                    }),
+                    search,
+                  }}
+                >
+                  <Edit /> Update Email
+                </Link>
+              </Dropdown.Item>
+            )}
+            {searchParams.status === 'rejected' && (
+              <Dropdown.Item>
+                <Link
+                  to={{
+                    pathname: generatePath(Route['/applications/:id/accept'], {
+                      id,
+                    }),
+                    search,
+                  }}
+                >
+                  <Edit /> Accept Application
+                </Link>
+              </Dropdown.Item>
+            )}
           </Dropdown.List>
         </Table.Dropdown>
       )}
