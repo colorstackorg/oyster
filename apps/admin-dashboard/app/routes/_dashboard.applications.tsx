@@ -32,10 +32,10 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
+import { listApplications } from '@/admin-dashboard.server';
+import { ListSearchParams } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
-import { listApplications } from '@/shared/core.server';
-import { ListSearchParams } from '@/shared/core.ui';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const ApplicationsSearchParams = ListSearchParams.extend({

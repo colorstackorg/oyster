@@ -16,6 +16,7 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import { Email, Program, ProgramParticipant } from '@oyster/types';
 import {
   Button,
@@ -29,8 +30,8 @@ import {
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
+import { parseCsv } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
-import { db, parseCsv } from '@/shared/core.server';
 import { findStudentByEmail } from '@/shared/queries/student';
 import {
   commitSession,

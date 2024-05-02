@@ -11,10 +11,11 @@ import {
   useNavigate,
 } from '@remix-run/react';
 
+import { db } from '@oyster/db';
 import { Button, Form, Modal } from '@oyster/ui';
 
+import { activateMember } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
-import { activateMember, db } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

@@ -14,8 +14,8 @@ import {
 
 import { Dashboard, Divider } from '@oyster/ui';
 
+import { countPendingApplications } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
-import { countPendingApplications } from '@/shared/core.server';
 import { getSession, isAmbassador } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {

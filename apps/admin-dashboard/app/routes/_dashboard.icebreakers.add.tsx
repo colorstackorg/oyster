@@ -15,9 +15,9 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { addIcebreakerPrompt } from '@/admin-dashboard.server';
+import { AddIcebreakerPromptInput } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
-import { addIcebreakerPrompt } from '@/shared/core.server';
-import { AddIcebreakerPromptInput } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,

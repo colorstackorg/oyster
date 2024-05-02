@@ -17,10 +17,10 @@ import { z } from 'zod';
 
 import { IconButton, Modal, Text } from '@oyster/ui';
 
+import { QueueFromName } from '@/admin-dashboard.server';
+import { BullQueue } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
-import { QueueFromName } from '@/shared/core.server';
-import { BullQueue } from '@/shared/core.ui';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const BullParams = z.object({

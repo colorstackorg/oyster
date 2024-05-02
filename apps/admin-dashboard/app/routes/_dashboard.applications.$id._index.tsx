@@ -21,13 +21,13 @@ import {
 } from '@oyster/types';
 import { Button, Text } from '@oyster/ui';
 
-import { Route } from '@/shared/constants';
 import {
   acceptApplication,
   getApplication,
   rejectApplication,
-} from '@/shared/core.server';
-import { Application, type EducationLevel } from '@/shared/core.ui';
+} from '@/admin-dashboard.server';
+import { Application, type EducationLevel } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,

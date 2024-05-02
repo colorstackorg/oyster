@@ -5,8 +5,8 @@ import { z } from 'zod';
 
 import { type ExtractValue } from '@oyster/types';
 
+import { BullQueue } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
-import { BullQueue } from '@/shared/core.ui';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const BullType = {

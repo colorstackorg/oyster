@@ -21,8 +21,11 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import {
+  getApplication,
+  updateEmailApplication,
+} from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
-import { getApplication, updateEmailApplication } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

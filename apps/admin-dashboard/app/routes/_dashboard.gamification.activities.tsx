@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { Edit, Menu, Plus, Trash } from 'react-feather';
 import { generatePath } from 'react-router';
 
+import { db } from '@oyster/db';
 import {
   Dashboard,
   Dropdown,
@@ -19,7 +20,6 @@ import {
 import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
-import { db } from '@/shared/core.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {

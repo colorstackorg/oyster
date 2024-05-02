@@ -13,8 +13,8 @@ import {
 
 import { Button, Form, Modal } from '@oyster/ui';
 
+import { archiveActivity } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
-import { archiveActivity } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

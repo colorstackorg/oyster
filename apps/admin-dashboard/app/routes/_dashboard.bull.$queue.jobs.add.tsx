@@ -22,9 +22,9 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { QueueFromName } from '@/admin-dashboard.server';
+import { BullQueue } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
-import { QueueFromName } from '@/shared/core.server';
-import { BullQueue } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,

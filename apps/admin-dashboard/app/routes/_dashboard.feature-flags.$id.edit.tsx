@@ -21,9 +21,9 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { editFeatureFlag, getFeatureFlag } from '@/admin-dashboard.server';
+import { EditFeatureFlagInput } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
-import { editFeatureFlag, getFeatureFlag } from '@/shared/core.server';
-import { EditFeatureFlagInput } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,

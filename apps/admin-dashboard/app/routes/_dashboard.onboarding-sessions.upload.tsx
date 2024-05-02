@@ -9,13 +9,13 @@ import { z } from 'zod';
 
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
+import { uploadOnboardingSession } from '@/admin-dashboard.server';
+import { OnboardingSession } from '@/admin-dashboard.ui';
 import {
   OnboardingSessionAttendeesField,
   OnboardingSessionForm,
 } from '@/shared/components/onboarding-session-form';
 import { Route } from '@/shared/constants';
-import { uploadOnboardingSession } from '@/shared/core.server';
-import { OnboardingSession } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,

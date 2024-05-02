@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { Edit, Menu, Plus } from 'react-feather';
 import { generatePath } from 'react-router';
 
+import { db } from '@oyster/db';
 import {
   Dashboard,
   Dropdown,
@@ -20,9 +21,8 @@ import {
   useSearchParams,
 } from '@oyster/ui';
 
+import { ListSearchParams } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
-import { db } from '@/shared/core.server';
-import { ListSearchParams } from '@/shared/core.ui';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {

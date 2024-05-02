@@ -17,8 +17,8 @@ import {
   type TableColumnProps,
 } from '@oyster/ui';
 
+import { listFeatureFlags } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
-import { listFeatureFlags } from '@/shared/core.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {

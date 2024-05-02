@@ -20,8 +20,8 @@ import {
 } from '@oyster/ui';
 
 import { addEventRecordingLink, getEvent } from '@/admin-dashboard.server';
+import { AddEventRecordingLinkInput } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
-import { AddEventRecordingLinkInput } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,

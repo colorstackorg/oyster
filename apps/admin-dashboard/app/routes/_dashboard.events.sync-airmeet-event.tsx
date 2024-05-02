@@ -16,8 +16,8 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { job } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
-import { job } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

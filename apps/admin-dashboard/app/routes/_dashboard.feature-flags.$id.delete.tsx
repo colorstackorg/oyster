@@ -8,8 +8,8 @@ import { Form as RemixForm, useLoaderData } from '@remix-run/react';
 
 import { Button, Modal } from '@oyster/ui';
 
+import { deleteFeatureFlag, getFeatureFlag } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
-import { deleteFeatureFlag, getFeatureFlag } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

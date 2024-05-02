@@ -22,10 +22,10 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
+import { listEvents } from '@/admin-dashboard.server';
+import { ListSearchParams } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
-import { listEvents } from '@/shared/core.server';
-import { ListSearchParams } from '@/shared/core.ui';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {

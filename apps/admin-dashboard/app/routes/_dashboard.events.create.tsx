@@ -21,8 +21,8 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
+import { createEvent } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
-import { createEvent } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

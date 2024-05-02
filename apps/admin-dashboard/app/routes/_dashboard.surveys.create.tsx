@@ -22,9 +22,9 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { createSurvey, listEvents } from '@/admin-dashboard.server';
+import { CreateSurveyInput } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
-import { createSurvey, listEvents } from '@/shared/core.server';
-import { CreateSurveyInput } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,

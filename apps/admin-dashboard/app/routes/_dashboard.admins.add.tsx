@@ -17,9 +17,9 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { addAdmin } from '@/admin-dashboard.server';
+import { AddAdminInput } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
-import { addAdmin } from '@/shared/core.server';
-import { AddAdminInput } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,

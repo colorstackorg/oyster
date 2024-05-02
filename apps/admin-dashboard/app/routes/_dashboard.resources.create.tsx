@@ -7,6 +7,7 @@ import {
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { type z } from 'zod';
 
+import { db } from '@oyster/db';
 import { Resource, ResourceStatus } from '@oyster/types';
 import {
   Button,
@@ -19,7 +20,6 @@ import {
 import { id } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
-import { db } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

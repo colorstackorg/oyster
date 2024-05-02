@@ -15,9 +15,9 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { createSchool } from '@/admin-dashboard.server';
+import { CreateSchoolInput } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
-import { createSchool } from '@/shared/core.server';
-import { CreateSchoolInput } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,
