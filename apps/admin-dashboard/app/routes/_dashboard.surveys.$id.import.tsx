@@ -12,7 +12,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
 
@@ -122,8 +121,6 @@ const keys = ImportSurveyResponsesInput.keyof().enum;
 function ImportSurveyResponsesForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
       <Form.Field error={errors.file} labelFor={keys.file} required>
@@ -139,9 +136,7 @@ function ImportSurveyResponsesForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Import
-        </Button>
+        <Button.Submit>Import</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { type z } from 'zod';
 
 import { Program } from '@oyster/types';
@@ -106,8 +102,6 @@ const { endDate, name, startDate } = CreateProgramInput.keyof().enum;
 function CreateProgramForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
       <Form.Field error={errors.name} label="Name" labelFor={name} required>
@@ -135,9 +129,7 @@ function CreateProgramForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Create
-        </Button>
+        <Button.Submit>Create</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

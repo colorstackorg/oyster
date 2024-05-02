@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
@@ -88,7 +84,6 @@ const { attendees } = AddOnboardingSessionAttendeesInput.keyof().enum;
 
 export default function AddOnboardingSessionAttendeesPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <Modal onCloseTo={Route['/onboarding-sessions']}>
@@ -106,9 +101,7 @@ export default function AddOnboardingSessionAttendeesPage() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Upload
-          </Button>
+          <Button.Submit>Upload</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

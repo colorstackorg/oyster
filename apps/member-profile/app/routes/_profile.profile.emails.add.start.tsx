@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { type z } from 'zod';
 
 import {
@@ -135,7 +131,6 @@ const { email } = SendEmailCodeInput.keyof().enum;
 
 export default function AddEmailPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <Modal onCloseTo={Route['/profile/emails']}>
@@ -168,9 +163,7 @@ export default function AddEmailPage() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Send Code
-          </Button>
+          <Button.Submit>Send Code</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

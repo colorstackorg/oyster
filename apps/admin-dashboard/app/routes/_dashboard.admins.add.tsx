@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import {
@@ -97,8 +93,6 @@ const keys = AddAdminInput.keyof().enum;
 function AddAdminForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
       <Form.Field
@@ -147,9 +141,7 @@ function AddAdminForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Add
-        </Button>
+        <Button.Submit>Add</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

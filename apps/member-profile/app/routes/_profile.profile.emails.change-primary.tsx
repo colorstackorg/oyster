@@ -8,7 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 
 import {
@@ -83,7 +82,6 @@ const keys = ChangePrimaryEmailInput.keyof().enum;
 export default function ChangePrimaryEmailPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
   const { emails } = useLoaderData<typeof loader>();
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <Modal onCloseTo={Route['/profile/emails']}>
@@ -124,9 +122,7 @@ export default function ChangePrimaryEmailPage() {
         </Form.Field>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Save
-          </Button>
+          <Button.Submit>Save</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

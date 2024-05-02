@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useLoaderData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useLoaderData } from '@remix-run/react';
 import { Calendar, Check, ExternalLink } from 'react-feather';
 
 import { Button, getButtonCn, Modal, Text } from '@oyster/ui';
@@ -116,7 +112,6 @@ async function registerForEvent({
 
 export default function EventRegisterPage() {
   const { event } = useLoaderData<typeof loader>();
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <Modal onCloseTo={Route['/events/upcoming']}>
@@ -158,9 +153,9 @@ export default function EventRegisterPage() {
           )}
 
           {!event.isRegistered && (
-            <Button loading={submitting} type="submit">
+            <Button.Submit>
               <Check className="h-5 w-5" /> Register
-            </Button>
+            </Button.Submit>
           )}
         </Button.Group>
       </RemixForm>

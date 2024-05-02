@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { Event, EventType } from '@oyster/types';
@@ -119,8 +115,6 @@ const EVENT_TYPES = Object.values(EventType);
 function CreateEventForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
       <Form.Field error={errors.name} label="Name" labelFor={name} required>
@@ -184,9 +178,7 @@ function CreateEventForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Create
-        </Button>
+        <Button.Submit>Create</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

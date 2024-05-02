@@ -1,3 +1,4 @@
+import { useNavigation } from '@remix-run/react';
 import React, { type PropsWithChildren } from 'react';
 import { match } from 'ts-pattern';
 
@@ -10,8 +11,8 @@ type ButtonProps = Pick<
 > & {
   color?: 'error' | 'primary' | 'success';
   fill?: boolean;
-  loading?: boolean;
   size?: 'regular' | 'small';
+  submitting?: boolean;
   variant?: 'primary' | 'secondary';
 };
 
@@ -20,8 +21,8 @@ export const Button = ({
   color,
   disabled,
   fill,
-  loading,
   size,
+  submitting,
   type = 'button',
   variant,
   ...rest
@@ -29,15 +30,23 @@ export const Button = ({
   return (
     <button
       className={getButtonCn({ color, fill, size, variant })}
-      disabled={!!disabled || !!loading}
+      disabled={!!disabled || !!submitting}
       // @ts-expect-error b/c TS does not like it...
       type={type}
       {...rest}
     >
       {children}
-      {loading && <Spinner color={color} />}
+      {submitting && <Spinner color={color} />}
     </button>
   );
+};
+
+Button.Submit = function SubmitButton(
+  props: Omit<ButtonProps, 'loading' | 'type'>
+) {
+  const submitting = useNavigation().state === 'submitting';
+
+  return <Button submitting={submitting} type="submit" {...props} />;
 };
 
 export function getButtonCn({

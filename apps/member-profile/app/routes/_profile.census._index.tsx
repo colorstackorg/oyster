@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import React, { type PropsWithChildren, useContext, useState } from 'react';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
@@ -128,10 +124,6 @@ export default function CensusForm() {
   useRevalidateOnFocus();
 
   const { error } = getActionErrors(useActionData<typeof action>());
-  const { state, formData } = useNavigation();
-
-  const submitting =
-    state === 'submitting' && formData?.get('intent') === 'submit';
 
   const [hasGraduated, setHasGraduated] = useState<boolean | null>(null);
   const [hasTechnicalRole, setHasTechnicalRole] = useState<boolean>(false);
@@ -159,15 +151,7 @@ export default function CensusForm() {
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
-        <Button
-          fill
-          loading={submitting}
-          name="intent"
-          type="submit"
-          value="submit"
-        >
-          Submit
-        </Button>
+        <Button.Submit fill>Submit</Button.Submit>
       </CensusContext.Provider>
     </RemixForm>
   );

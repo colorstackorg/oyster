@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 
 import {
   Address,
@@ -95,8 +91,6 @@ const keys = ClaimSwagPackFormData.keyof().enum;
 export default function ClaimSwagPack() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <>
       <Modal.Header>
@@ -174,9 +168,7 @@ export default function ClaimSwagPack() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Claim Swag Pack
-          </Button>
+          <Button.Submit>Claim Swag Pack</Button.Submit>
         </Button.Group>
       </RemixForm>
     </>

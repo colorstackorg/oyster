@@ -8,7 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 
 import {
@@ -88,7 +87,6 @@ const keys = EditFeatureFlagInput.keyof().enum;
 export default function EditFeatureFlagModal() {
   const { flag } = useLoaderData<typeof loader>();
   const { error, errors } = getActionErrors(useActionData<typeof action>());
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <Modal onCloseTo={Route['/feature-flags']}>
@@ -139,9 +137,7 @@ export default function EditFeatureFlagModal() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Edit
-          </Button>
+          <Button.Submit>Edit</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

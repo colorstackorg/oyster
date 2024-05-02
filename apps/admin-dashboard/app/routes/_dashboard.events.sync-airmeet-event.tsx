@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import {
@@ -88,7 +84,6 @@ const keys = SyncAirmeetEventFormData.keyof().enum;
 
 function SyncAirmeetEventForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <RemixForm className="form" method="post">
@@ -105,9 +100,7 @@ function SyncAirmeetEventForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Sync
-        </Button>
+        <Button.Submit>Sync</Button.Submit>
       </Button.Group>
     </RemixForm>
   );
