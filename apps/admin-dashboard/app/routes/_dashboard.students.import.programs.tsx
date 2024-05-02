@@ -13,7 +13,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
 
@@ -191,8 +190,6 @@ function ImportProgramsForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
   const { programs } = useLoaderData<typeof loader>();
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
       <Form.Field
@@ -226,9 +223,7 @@ function ImportProgramsForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Import
-        </Button>
+        <Button.Submit>Import</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

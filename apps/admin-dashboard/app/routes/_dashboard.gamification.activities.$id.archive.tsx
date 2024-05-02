@@ -77,18 +77,13 @@ export default function ArchiveActivityPage() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group flexDirection="row-reverse">
-          <Button
-            color="error"
-            loading={submitting}
-            type="submit"
-            variant="secondary"
-          >
+          <Button.Submit color="error" variant="secondary">
             Archive
-          </Button>
+          </Button.Submit>
 
           <Button
-            loading={submitting}
             onClick={onBack}
+            submitting={submitting}
             type="button"
             variant="secondary"
           >

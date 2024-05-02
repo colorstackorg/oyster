@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useLoaderData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useLoaderData } from '@remix-run/react';
 
 import { Button, Modal } from '@oyster/ui';
 
@@ -56,7 +52,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
 export default function DeleteFeatureFlagModal() {
   const { flag } = useLoaderData<typeof loader>();
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <Modal onCloseTo={Route['/feature-flags']}>
@@ -72,9 +67,7 @@ export default function DeleteFeatureFlagModal() {
 
       <RemixForm className="form" method="post">
         <Button.Group>
-          <Button color="error" loading={submitting} type="submit">
-            Delete
-          </Button>
+          <Button.Submit color="error">Delete</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

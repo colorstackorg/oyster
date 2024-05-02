@@ -7,7 +7,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 import { type z } from 'zod';
 
@@ -132,7 +131,6 @@ const {
 export default function UpdateGeneralInformationSection() {
   const { errors } = getActionErrors(useActionData<typeof action>());
   const { student } = useLoaderData<typeof loader>();
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <ProfileSection>
@@ -188,9 +186,7 @@ export default function UpdateGeneralInformationSection() {
         />
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Save
-          </Button>
+          <Button.Submit>Save</Button.Submit>
         </Button.Group>
       </RemixForm>
     </ProfileSection>

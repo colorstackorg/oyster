@@ -8,7 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
 
@@ -117,8 +116,6 @@ export default function GrantPointsPage() {
 function GrantPointsForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
       <Form.Field
@@ -153,9 +150,7 @@ function GrantPointsForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Grant
-        </Button>
+        <Button.Submit>Grant</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

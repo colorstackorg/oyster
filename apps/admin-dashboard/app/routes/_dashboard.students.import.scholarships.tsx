@@ -8,11 +8,7 @@ import {
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
@@ -203,8 +199,6 @@ const { file } = ImportScholarshipRecipientsInput.keyof().enum;
 function ImportScholarshipsForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
       <Form.Field
@@ -220,9 +214,7 @@ function ImportScholarshipsForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Import
-        </Button>
+        <Button.Submit>Import</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

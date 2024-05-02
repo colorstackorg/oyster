@@ -143,10 +143,10 @@ export default function ApplicationPage() {
 
   const { formData, state } = useNavigation();
 
-  const acceptButtonLoading =
+  const acceptButtonSubmitting =
     state === 'submitting' && formData?.get('action') === 'accept';
 
-  const rejectButtonLoading =
+  const rejectButtonSubmitting =
     state === 'submitting' && formData?.get('action') === 'reject';
 
   const { application } = useLoaderData<typeof loader>();
@@ -189,8 +189,8 @@ export default function ApplicationPage() {
             <Button.Group>
               <Button
                 color="success"
-                loading={acceptButtonLoading}
                 name="action"
+                submitting={acceptButtonSubmitting}
                 type="submit"
                 value="accept"
               >
@@ -199,8 +199,8 @@ export default function ApplicationPage() {
 
               <Button
                 color="error"
-                loading={rejectButtonLoading}
                 name="action"
+                submitting={rejectButtonSubmitting}
                 type="submit"
                 value="reject"
               >

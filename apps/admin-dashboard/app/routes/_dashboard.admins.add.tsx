@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import {
@@ -20,6 +16,7 @@ import {
   Modal,
   validateForm,
 } from '@oyster/ui';
+import { sleep } from '@oyster/utils';
 
 import { Route } from '../shared/constants';
 import { addAdmin } from '../shared/core.server';
@@ -38,6 +35,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
+
+  await sleep(500000);
 
   const form = await request.formData();
 
@@ -97,8 +96,6 @@ const keys = AddAdminInput.keyof().enum;
 function AddAdminForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
       <Form.Field
@@ -147,9 +144,7 @@ function AddAdminForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Add
-        </Button>
+        <Button.Submit>Add</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

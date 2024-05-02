@@ -8,7 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 
 import { Button, Form, getActionErrors, validateForm } from '@oyster/ui';
@@ -101,8 +100,6 @@ export default function VerifyOneTimeCodePage() {
   const { description } = useLoaderData<typeof loader>();
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
       <OneTimeCodeForm.CodeField
@@ -113,9 +110,7 @@ export default function VerifyOneTimeCodePage() {
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
-      <Button fill loading={submitting} type="submit">
-        Verify Code
-      </Button>
+      <Button.Submit fill>Verify Code</Button.Submit>
     </RemixForm>
   );
 }

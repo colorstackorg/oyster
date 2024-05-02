@@ -7,7 +7,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 import { sql } from 'kysely';
 import { z } from 'zod';
@@ -142,8 +141,6 @@ export default function UpdatePersonalInformationForm() {
   const { ethnicities, student } = useLoaderData<typeof loader>();
   const { errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <ProfileSection>
       <ProfileHeader>
@@ -199,9 +196,7 @@ export default function UpdatePersonalInformationForm() {
         />
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Save
-          </Button>
+          <Button.Submit>Save</Button.Submit>
         </Button.Group>
       </RemixForm>
     </ProfileSection>

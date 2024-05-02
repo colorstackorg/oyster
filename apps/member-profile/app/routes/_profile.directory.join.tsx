@@ -131,11 +131,10 @@ export function JoinDirectoryBackButton({
 
 export function JoinDirectoryNextButton({
   children = 'Next',
-  submitting,
-}: PropsWithChildren<{ submitting: boolean }>) {
+}: PropsWithChildren) {
   return (
-    <Button loading={submitting} type="submit">
+    <Button.Submit>
       {children} <ArrowRight size={20} />
-    </Button>
+    </Button.Submit>
   );
 }

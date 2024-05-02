@@ -7,7 +7,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
@@ -150,8 +149,6 @@ const {
 export default function UpsertIcebreakerResponsesForm() {
   const { icebreakerResponses } = useLoaderData<typeof loader>();
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <ProfileSection>
       <ProfileHeader>
@@ -166,9 +163,7 @@ export default function UpsertIcebreakerResponsesForm() {
         </IcebreakersProvider>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Save
-          </Button>
+          <Button.Submit>Save</Button.Submit>
         </Button.Group>
       </RemixForm>
     </ProfileSection>

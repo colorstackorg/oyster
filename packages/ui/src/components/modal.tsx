@@ -27,7 +27,7 @@ export const Modal = ({
   children,
   onCloseTo,
 }: ModalProps): JSX.Element | null => {
-  const hydrated: boolean = useHydrated();
+  const hydrated = useHydrated();
 
   if (!hydrated) {
     return null;

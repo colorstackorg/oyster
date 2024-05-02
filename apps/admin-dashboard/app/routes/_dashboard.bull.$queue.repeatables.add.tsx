@@ -8,7 +8,6 @@ import {
   generatePath,
   Form as RemixForm,
   useActionData,
-  useNavigation,
   useParams,
 } from '@remix-run/react';
 import { z } from 'zod';
@@ -115,8 +114,6 @@ export default function AddRepeatablePage() {
 function AddRepeatableForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
       <Form.Field
@@ -149,9 +146,7 @@ function AddRepeatableForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Add
-        </Button>
+        <Button.Submit>Add</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

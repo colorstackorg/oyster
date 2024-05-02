@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 
 import {
   Button,
@@ -88,8 +84,6 @@ const keys = CreateSchoolInput.keyof().enum;
 function CreateSchoolForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
       <Form.Field
@@ -152,9 +146,7 @@ function CreateSchoolForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Create
-        </Button>
+        <Button.Submit>Create</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

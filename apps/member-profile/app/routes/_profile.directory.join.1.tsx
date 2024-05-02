@@ -8,7 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
 
@@ -90,8 +89,6 @@ export default function UpdateGeneralInformationForm() {
   const { student } = useLoaderData<typeof loader>();
   const { errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
       <InputField
@@ -135,7 +132,7 @@ export default function UpdateGeneralInformationForm() {
       </Form.Field>
 
       <Button.Group>
-        <JoinDirectoryNextButton submitting={submitting} />
+        <JoinDirectoryNextButton />
       </Button.Group>
     </RemixForm>
   );

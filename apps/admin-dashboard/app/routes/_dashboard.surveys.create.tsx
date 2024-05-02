@@ -8,7 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 import { sql } from 'kysely';
 
@@ -100,8 +99,6 @@ function CreateSurveyForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
   const { events } = useLoaderData<typeof loader>();
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
       <Form.Field
@@ -140,9 +137,7 @@ function CreateSurveyForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Create
-        </Button>
+        <Button.Submit>Create</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

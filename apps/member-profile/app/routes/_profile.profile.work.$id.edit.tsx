@@ -240,14 +240,12 @@ export default function EditWorkExperiencePage() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group flexDirection="row-reverse" spacing="between">
-          <Button loading={submitting} type="submit">
-            Update
-          </Button>
+          <Button.Submit>Update</Button.Submit>
 
           <Button
             color="error"
-            loading={submitting}
             onClick={onDelete}
+            submitting={submitting}
             type="button"
             variant="secondary"
           >
