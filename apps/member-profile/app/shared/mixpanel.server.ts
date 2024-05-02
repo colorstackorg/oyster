@@ -1,8 +1,8 @@
 import Mixpanel from 'mixpanel';
 import UserAgentParser from 'ua-parser-js';
 
+import { getIpAddress } from '@/member-profile.server';
 import { ENV } from '@/shared/constants.server';
-import { getIpAddress } from '@/shared/core.server';
 import { getSession, user } from '@/shared/session.server';
 
 // Instances

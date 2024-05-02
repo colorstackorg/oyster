@@ -24,6 +24,7 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { editWorkExperience, getWorkExperience } from '@/member-profile.server';
 import {
   EditWorkExperienceInput,
   type EmploymentType,
@@ -31,7 +32,6 @@ import {
   WorkForm,
 } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
-import { editWorkExperience, getWorkExperience } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

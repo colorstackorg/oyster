@@ -27,6 +27,10 @@ import {
 } from '@oyster/ui';
 
 import {
+  getCensusResponse,
+  submitCensusResponse,
+} from '@/member-profile.server';
+import {
   BaseCensusResponse,
   CompanyCombobox,
   CompanyFieldProvider,
@@ -35,7 +39,6 @@ import {
 } from '@/member-profile.ui';
 import { CityCombobox } from '@/shared/components/city-combobox';
 import { Route } from '@/shared/constants';
-import { getCensusResponse, submitCensusResponse } from '@/shared/core.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 const SubmitCensusResponseData_ = z

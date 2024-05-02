@@ -22,10 +22,10 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { job } from '@/member-profile.server';
 import { OneTimeCode, OneTimeCodePurpose } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { addEmailCookie } from '@/shared/cookies.server';
-import { job } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

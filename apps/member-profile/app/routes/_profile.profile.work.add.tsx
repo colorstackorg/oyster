@@ -17,9 +17,9 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { addWorkExperience } from '@/member-profile.server';
 import { AddWorkExperienceInput, WorkForm } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
-import { addWorkExperience } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

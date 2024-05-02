@@ -13,9 +13,9 @@ import {
 import { db } from '@oyster/db';
 import { Button, Form, Modal } from '@oyster/ui';
 
+import { deleteEducation } from '@/member-profile.server';
 import { type Education } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
-import { deleteEducation } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

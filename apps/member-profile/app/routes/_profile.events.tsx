@@ -3,8 +3,8 @@ import { NavLink, Outlet, useLoaderData } from '@remix-run/react';
 
 import { cx, Text } from '@oyster/ui';
 
+import { countPastEvents, countUpcomingEvents } from '@/member-profile.server';
 import { Route } from '@/shared/constants';
-import { countPastEvents, countUpcomingEvents } from '@/shared/core.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {

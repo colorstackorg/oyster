@@ -9,6 +9,7 @@ import { Briefcase, Plus } from 'react-feather';
 
 import { Button } from '@oyster/ui';
 
+import { listWorkExperiences } from '@/member-profile.server';
 import { WorkExperienceItem } from '@/member-profile.ui';
 import {
   EmptyState,
@@ -22,7 +23,6 @@ import {
   ProfileTitle,
 } from '@/shared/components/profile';
 import { Route } from '@/shared/constants';
-import { listWorkExperiences } from '@/shared/core.server';
 import { track } from '@/shared/mixpanel.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 

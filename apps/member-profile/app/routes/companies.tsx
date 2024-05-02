@@ -8,7 +8,7 @@ import { z } from 'zod';
 import {
   reportException,
   searchCrunchbaseOrganizations,
-} from '@/shared/core.server';
+} from '@/member-profile.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const CompaniesSearchParams = z.object({

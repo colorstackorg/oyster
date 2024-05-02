@@ -19,6 +19,7 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { updateMember } from '@/member-profile.server';
 import {
   ProfileHeader,
   ProfileSection,
@@ -28,7 +29,6 @@ import {
   CurrentLocationField,
   PreferredNameField,
 } from '@/shared/components/profile.general';
-import { updateMember } from '@/shared/core.server';
 import { track } from '@/shared/mixpanel.server';
 import { getMember } from '@/shared/queries/index';
 import {

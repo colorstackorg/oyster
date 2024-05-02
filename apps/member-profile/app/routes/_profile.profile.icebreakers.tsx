@@ -22,6 +22,10 @@ import {
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
+import {
+  getIcebreakerPrompts,
+  upsertIcebreakerResponses,
+} from '@/member-profile.server';
 import { IcebreakerPrompt, IcebreakerResponse } from '@/member-profile.ui';
 import {
   ProfileHeader,
@@ -33,10 +37,6 @@ import {
   type PromptNumber,
   useIcebreakerContext,
 } from '@/shared/components/profile.icebreakers';
-import {
-  getIcebreakerPrompts,
-  upsertIcebreakerResponses,
-} from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

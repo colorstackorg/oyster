@@ -5,7 +5,7 @@ import {
 } from '@remix-run/node';
 import { z } from 'zod';
 
-import { getAutocompletedCities } from '@/shared/core.server';
+import { getAutocompletedCities } from '@/member-profile.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const CitiesSearchParams = z.object({

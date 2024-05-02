@@ -20,13 +20,13 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { updateMember } from '@/member-profile.server';
 import {
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
 } from '@/shared/components/profile';
 import { Route } from '@/shared/constants';
-import { updateMember } from '@/shared/core.server';
 import { getMember } from '@/shared/queries';
 import {
   commitSession,

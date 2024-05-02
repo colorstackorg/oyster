@@ -5,7 +5,7 @@ import {
 } from '@remix-run/node';
 import { z } from 'zod';
 
-import { searchCountries } from '@/shared/core.server';
+import { searchCountries } from '@/member-profile.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const CountriesSearchParams = z.object({

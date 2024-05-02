@@ -20,6 +20,7 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { updateMember } from '@/member-profile.server';
 import {
   ProfileHeader,
   ProfileSection,
@@ -32,7 +33,6 @@ import {
   GenderField,
   HometownField,
 } from '@/shared/components/profile.personal';
-import { updateMember } from '@/shared/core.server';
 import { getMember, getMemberEthnicities } from '@/shared/queries';
 import {
   commitSession,

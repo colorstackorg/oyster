@@ -25,10 +25,10 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { updateMember } from '@/member-profile.server';
 import { JoinDirectoryNextButton } from '@/routes/_profile.directory.join';
 import { CurrentLocationField } from '@/shared/components/profile.general';
 import { Route } from '@/shared/constants';
-import { updateMember } from '@/shared/core.server';
 import { getMember } from '@/shared/queries';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 

@@ -19,9 +19,9 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { changePrimaryEmail, listEmails } from '@/member-profile.server';
 import { ChangePrimaryEmailInput } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
-import { changePrimaryEmail, listEmails } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

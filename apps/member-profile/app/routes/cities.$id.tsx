@@ -4,7 +4,7 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 
-import { getCityDetails } from '@/shared/core.server';
+import { getCityDetails } from '@/member-profile.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {

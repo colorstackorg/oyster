@@ -36,16 +36,16 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { Card } from '@/shared/components/card';
-import { Route } from '@/shared/constants';
-import { getTimezone } from '@/shared/cookies.server';
 import {
   countEventAttendees,
   countMessagesSent,
   getActiveStreakLeaderboard,
   getActiveStreakLeaderboardPosition,
   getIpAddress,
-} from '@/shared/core.server';
+} from '@/member-profile.server';
+import { Card } from '@/shared/components/card';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
 import { setMixpanelProfile, track } from '@/shared/mixpanel.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 

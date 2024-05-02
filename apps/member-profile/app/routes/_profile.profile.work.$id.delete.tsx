@@ -12,8 +12,11 @@ import {
 
 import { Button, Form, Modal } from '@oyster/ui';
 
+import {
+  deleteWorkExperience,
+  getWorkExperience,
+} from '@/member-profile.server';
 import { Route } from '@/shared/constants';
-import { deleteWorkExperience, getWorkExperience } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,

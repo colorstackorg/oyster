@@ -19,9 +19,9 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { apply } from '@/member-profile.server';
 import { Application } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
-import { apply } from '@/shared/core.server';
 import { formatUrl } from '@/shared/url.utils';
 
 export const meta: MetaFunction = () => {

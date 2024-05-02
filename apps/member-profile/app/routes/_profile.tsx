@@ -4,8 +4,8 @@ import { Award, Book, Calendar, Folder, Home, User } from 'react-feather';
 
 import { Dashboard } from '@oyster/ui';
 
+import { isFeatureFlagEnabled } from '@/member-profile.server';
 import { Route } from '@/shared/constants';
-import { isFeatureFlagEnabled } from '@/shared/core.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {

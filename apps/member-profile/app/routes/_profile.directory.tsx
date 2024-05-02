@@ -30,6 +30,7 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
+import { listMembersInDirectory } from '@/member-profile.server';
 import {
   ListMembersInDirectoryWhere,
   ListSearchParams,
@@ -39,7 +40,6 @@ import { CityCombobox } from '@/shared/components/city-combobox';
 import { CompanyCombobox } from '@/shared/components/company-combobox';
 import { EthnicityCombobox } from '@/shared/components/ethnicity-combobox';
 import { Route } from '@/shared/constants';
-import { listMembersInDirectory } from '@/shared/core.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 import { formatName } from '@/shared/utils/format.utils';
 

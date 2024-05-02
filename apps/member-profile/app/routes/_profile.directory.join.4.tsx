@@ -23,6 +23,12 @@ import {
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
+import {
+  getIcebreakerPrompts,
+  getIcebreakerResponses,
+  joinMemberDirectory,
+  upsertIcebreakerResponses,
+} from '@/member-profile.server';
 import { IcebreakerPrompt, IcebreakerResponse } from '@/member-profile.ui';
 import {
   JoinDirectoryBackButton,
@@ -34,12 +40,6 @@ import {
   useIcebreakerContext,
 } from '@/shared/components/profile.icebreakers';
 import { Route } from '@/shared/constants';
-import {
-  getIcebreakerPrompts,
-  getIcebreakerResponses,
-  joinMemberDirectory,
-  upsertIcebreakerResponses,
-} from '@/shared/core.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {

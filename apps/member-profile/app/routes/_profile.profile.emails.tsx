@@ -25,6 +25,7 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { listEmails, updateAllowEmailShare } from '@/member-profile.server';
 import {
   ProfileDescription,
   ProfileHeader,
@@ -32,7 +33,6 @@ import {
   ProfileTitle,
 } from '@/shared/components/profile';
 import { Route } from '@/shared/constants';
-import { listEmails, updateAllowEmailShare } from '@/shared/core.server';
 import { track } from '@/shared/mixpanel.server';
 import { getMember } from '@/shared/queries';
 import {

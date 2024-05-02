@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { nullableField, Student } from '@oyster/types';
 import { Button, Divider, getActionErrors, validateForm } from '@oyster/ui';
 
+import { updateMember } from '@/member-profile.server';
 import {
   JoinDirectoryBackButton,
   JoinDirectoryNextButton,
@@ -23,7 +24,6 @@ import {
   HometownField,
 } from '@/shared/components/profile.personal';
 import { Route } from '@/shared/constants';
-import { updateMember } from '@/shared/core.server';
 import { getMember, getMemberEthnicities } from '@/shared/queries';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 

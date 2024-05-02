@@ -30,6 +30,11 @@ import {
   useSearchParams,
 } from '@oyster/ui';
 
+import {
+  getPointsLeaderboard,
+  getTotalPoints,
+  listActivities,
+} from '@/member-profile.server';
 import { Card } from '@/shared/components/card';
 import {
   EmptyState,
@@ -37,11 +42,6 @@ import {
 } from '@/shared/components/empty-state';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
-import {
-  getPointsLeaderboard,
-  getTotalPoints,
-  listActivities,
-} from '@/shared/core.server';
 import { track } from '@/shared/mixpanel.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 

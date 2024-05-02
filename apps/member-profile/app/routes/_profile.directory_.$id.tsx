@@ -12,11 +12,6 @@ import {
   type TextProps,
 } from '@oyster/ui';
 
-import { WorkExperienceItem } from '@/member-profile.ui';
-import { Card } from '@/shared/components/card';
-import { EducationExperienceItem } from '@/shared/components/education-experience';
-import { ExperienceList } from '@/shared/components/profile';
-import { ENV } from '@/shared/constants.server';
 import {
   countEventAttendees,
   countMessagesSent,
@@ -25,7 +20,12 @@ import {
   getTotalPoints,
   job,
   listWorkExperiences,
-} from '@/shared/core.server';
+} from '@/member-profile.server';
+import { WorkExperienceItem } from '@/member-profile.ui';
+import { Card } from '@/shared/components/card';
+import { EducationExperienceItem } from '@/shared/components/education-experience';
+import { ExperienceList } from '@/shared/components/profile';
+import { ENV } from '@/shared/constants.server';
 import {
   getEducationExperiences,
   getMember,
