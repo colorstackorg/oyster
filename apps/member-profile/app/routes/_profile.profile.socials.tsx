@@ -24,17 +24,17 @@ import {
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
-} from '../shared/components/profile';
-import { Route } from '../shared/constants';
-import { updateMember } from '../shared/core.server';
-import { getMember } from '../shared/queries';
+} from '@/shared/components/profile';
+import { Route } from '@/shared/constants';
+import { updateMember } from '@/shared/core.server';
+import { getMember } from '@/shared/queries';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
-import { formatUrl } from '../shared/url.utils';
+} from '@/shared/session.server';
+import { formatUrl } from '@/shared/url.utils';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

@@ -9,16 +9,16 @@ import { Calendar, Check, ExternalLink } from 'react-feather';
 
 import { Button, getButtonCn, Modal, Text } from '@oyster/ui';
 
-import { formatEventDate } from '../shared/components/event';
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { db, getEvent, job } from '../shared/core.server';
+import { formatEventDate } from '@/shared/components/event';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { db, getEvent, job } from '@/shared/core.server';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

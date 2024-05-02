@@ -8,8 +8,8 @@ import { z } from 'zod';
 import {
   reportException,
   searchCrunchbaseOrganizations,
-} from '../shared/core.server';
-import { ensureUserAuthenticated } from '../shared/session.server';
+} from '@/shared/core.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const CompaniesSearchParams = z.object({
   search: z.string().trim().min(1).catch(''),

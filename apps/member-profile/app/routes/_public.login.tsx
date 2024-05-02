@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 import { Login, Public, Text } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
+import { Route } from '@/shared/constants';
 
 export const LoginSearchParams = z.object({
   context: z.enum(['claim-swag-pack']).nullish().catch(null),

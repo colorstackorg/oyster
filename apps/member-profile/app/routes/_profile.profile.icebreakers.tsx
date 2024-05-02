@@ -25,24 +25,24 @@ import {
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
-} from '../shared/components/profile';
+} from '@/shared/components/profile';
 import {
   IcebreakersProvider,
   type PromptNumber,
   useIcebreakerContext,
-} from '../shared/components/profile.icebreakers';
+} from '@/shared/components/profile.icebreakers';
 import {
   db,
   getIcebreakerPrompts,
   upsertIcebreakerResponses,
-} from '../shared/core.server';
-import { IcebreakerPrompt, IcebreakerResponse } from '../shared/core.ui';
+} from '@/shared/core.server';
+import { IcebreakerPrompt, IcebreakerResponse } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

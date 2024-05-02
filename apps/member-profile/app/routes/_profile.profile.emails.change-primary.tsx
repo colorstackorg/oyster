@@ -19,15 +19,15 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { changePrimaryEmail, listEmails } from '../shared/core.server';
-import { ChangePrimaryEmailInput } from '../shared/core.ui';
+import { Route } from '@/shared/constants';
+import { changePrimaryEmail, listEmails } from '@/shared/core.server';
+import { ChangePrimaryEmailInput } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

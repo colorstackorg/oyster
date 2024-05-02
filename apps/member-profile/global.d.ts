@@ -1,4 +1,4 @@
-import type { Environment } from './app/shared/core.ui';
+import type { Environment } from '@/shared/core.ui';
 
 declare global {
   interface Window {

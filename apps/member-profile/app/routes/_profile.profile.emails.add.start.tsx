@@ -17,15 +17,15 @@ import {
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { addEmailCookie } from '../shared/cookies.server';
-import { db, job } from '../shared/core.server';
-import { OneTimeCode, OneTimeCodePurpose } from '../shared/core.ui';
+import { Route } from '@/shared/constants';
+import { addEmailCookie } from '@/shared/cookies.server';
+import { db, job } from '@/shared/core.server';
+import { OneTimeCode, OneTimeCodePurpose } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

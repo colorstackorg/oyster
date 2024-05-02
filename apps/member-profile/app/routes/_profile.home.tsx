@@ -35,9 +35,9 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { Card } from '../shared/components/card';
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
+import { Card } from '@/shared/components/card';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
 import {
   countEventAttendees,
   countMessagesSent,
@@ -45,9 +45,9 @@ import {
   getActiveStreakLeaderboard,
   getActiveStreakLeaderboardPosition,
   getIpAddress,
-} from '../shared/core.server';
-import { setMixpanelProfile, track } from '../shared/mixpanel.server';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+} from '@/shared/core.server';
+import { setMixpanelProfile, track } from '@/shared/mixpanel.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 const RECENT_WEEKS = 16;
 

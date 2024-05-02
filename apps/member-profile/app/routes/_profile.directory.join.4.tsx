@@ -25,22 +25,22 @@ import { id } from '@oyster/utils';
 import {
   JoinDirectoryBackButton,
   JoinDirectoryNextButton,
-} from './_profile.directory.join';
+} from '@/routes/_profile.directory.join';
 import {
   IcebreakersProvider,
   type PromptNumber,
   useIcebreakerContext,
-} from '../shared/components/profile.icebreakers';
-import { Route } from '../shared/constants';
+} from '@/shared/components/profile.icebreakers';
+import { Route } from '@/shared/constants';
 import {
   db,
   getIcebreakerPrompts,
   getIcebreakerResponses,
   joinMemberDirectory,
   upsertIcebreakerResponses,
-} from '../shared/core.server';
-import { IcebreakerPrompt, IcebreakerResponse } from '../shared/core.ui';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+} from '@/shared/core.server';
+import { IcebreakerPrompt, IcebreakerResponse } from '@/shared/core.ui';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

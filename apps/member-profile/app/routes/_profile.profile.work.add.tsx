@@ -17,15 +17,15 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { addWorkExperience } from '../shared/core.server';
-import { AddWorkExperienceInput, WorkForm } from '../shared/core.ui';
+import { Route } from '@/shared/constants';
+import { addWorkExperience } from '@/shared/core.server';
+import { AddWorkExperienceInput, WorkForm } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

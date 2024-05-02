@@ -10,8 +10,8 @@ import {
   useDelayedValue,
 } from '@oyster/ui';
 
-import type { SearchCompaniesResult } from '../../routes/companies';
-import { type Company } from '../core.ui';
+import type { SearchCompaniesResult } from '@/routes/companies';
+import { type Company } from '@/shared/core.ui';
 
 type CompanyComboboxProps = FieldProps<Pick<Company, 'crunchbaseId' | 'name'>>;
 

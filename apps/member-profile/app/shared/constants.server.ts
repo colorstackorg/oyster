@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Environment } from './core.ui';
+import { Environment } from '@/shared/core.ui';
 
 const EnvironmentVariable = z.string().trim().min(1);
 

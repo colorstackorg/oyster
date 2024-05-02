@@ -12,15 +12,15 @@ import {
 
 import { Button, Form, Modal } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { db, deleteEducation } from '../shared/core.server';
-import { type Education } from '../shared/core.ui';
+import { Route } from '@/shared/constants';
+import { db, deleteEducation } from '@/shared/core.server';
+import { type Education } from '@/shared/core.ui';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
