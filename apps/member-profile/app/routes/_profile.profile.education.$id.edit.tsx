@@ -14,19 +14,20 @@ import dayjs from 'dayjs';
 import { generatePath } from 'react-router';
 import { type z } from 'zod';
 
+import { db } from '@oyster/db';
 import { type Major } from '@oyster/types';
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
-import { EducationForm } from '../shared/components/education-form';
-import { Route } from '../shared/constants';
-import { db, editEducation } from '../shared/core.server';
-import { type DegreeType, Education, type School } from '../shared/core.ui';
+import { editEducation } from '@/member-profile.server';
+import { type DegreeType, Education, type School } from '@/member-profile.ui';
+import { EducationForm } from '@/shared/components/education-form';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

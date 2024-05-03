@@ -1,6 +1,6 @@
 import React, { type PropsWithChildren, useContext, useState } from 'react';
 
-import { type IcebreakerResponse } from '../core.ui';
+import { type IcebreakerResponse } from '@/member-profile.ui';
 
 // Types
 

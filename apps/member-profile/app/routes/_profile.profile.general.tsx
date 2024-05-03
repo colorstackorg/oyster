@@ -19,24 +19,24 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { updateMember } from '@/member-profile.server';
 import {
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
-} from '../shared/components/profile';
+} from '@/shared/components/profile';
 import {
   CurrentLocationField,
   PreferredNameField,
-} from '../shared/components/profile.general';
-import { updateMember } from '../shared/core.server';
-import { track } from '../shared/mixpanel.server';
-import { getMember } from '../shared/queries/index';
+} from '@/shared/components/profile.general';
+import { track } from '@/shared/mixpanel.server';
+import { getMember } from '@/shared/queries/index';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

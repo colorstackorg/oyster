@@ -16,9 +16,9 @@ import utc from 'dayjs/plugin/utc.js';
 import { Toast } from '@oyster/ui';
 import uiStylesheet from '@oyster/ui/index.css?url';
 
-import { ENV } from './shared/constants.server';
-import { commitSession, getSession, SESSION } from './shared/session.server';
-import tailwindStylesheet from './tailwind.css?url';
+import { ENV } from '@/shared/constants.server';
+import { commitSession, getSession, SESSION } from '@/shared/session.server';
+import tailwindStylesheet from '@/tailwind.css?url';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);

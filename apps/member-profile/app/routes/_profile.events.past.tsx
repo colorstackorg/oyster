@@ -7,6 +7,7 @@ import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
 import { Video } from 'react-feather';
 
+import { db } from '@oyster/db';
 import { EventType } from '@oyster/types';
 import { cx, getButtonCn, ProfilePicture } from '@oyster/ui';
 
@@ -16,11 +17,10 @@ import {
   EventName,
   EventSection,
   formatEventDate,
-} from '../shared/components/event';
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { db } from '../shared/core.server';
-import { ensureUserAuthenticated } from '../shared/session.server';
+} from '@/shared/components/event';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

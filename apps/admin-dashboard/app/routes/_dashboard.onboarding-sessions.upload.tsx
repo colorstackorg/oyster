@@ -9,18 +9,18 @@ import { z } from 'zod';
 
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
+import { uploadOnboardingSession } from '@/admin-dashboard.server';
+import { OnboardingSession } from '@/admin-dashboard.ui';
 import {
   OnboardingSessionAttendeesField,
   OnboardingSessionForm,
-} from '../shared/components/onboarding-session-form';
-import { Route } from '../shared/constants';
-import { uploadOnboardingSession } from '../shared/core.server';
-import { OnboardingSession } from '../shared/core.ui';
+} from '@/shared/components/onboarding-session-form';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {

@@ -12,10 +12,6 @@ import {
   type TextProps,
 } from '@oyster/ui';
 
-import { Card } from '../shared/components/card';
-import { EducationExperienceItem } from '../shared/components/education-experience';
-import { ExperienceList } from '../shared/components/profile';
-import { ENV } from '../shared/constants.server';
 import {
   countEventAttendees,
   countMessagesSent,
@@ -24,15 +20,19 @@ import {
   getTotalPoints,
   job,
   listWorkExperiences,
-} from '../shared/core.server';
-import { WorkExperienceItem } from '../shared/core.ui';
+} from '@/member-profile.server';
+import { WorkExperienceItem } from '@/member-profile.ui';
+import { Card } from '@/shared/components/card';
+import { EducationExperienceItem } from '@/shared/components/education-experience';
+import { ExperienceList } from '@/shared/components/profile';
+import { ENV } from '@/shared/constants.server';
 import {
   getEducationExperiences,
   getMember,
   getMemberEthnicities,
-} from '../shared/queries';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
-import { formatHeadline, formatName } from '../shared/utils/format.utils';
+} from '@/shared/queries';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
+import { formatHeadline, formatName } from '@/shared/utils/format.utils';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

@@ -14,6 +14,7 @@ import {
 import { Edit, Plus } from 'react-feather';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import {
   Button,
   Checkbox,
@@ -24,22 +25,22 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { listEmails, updateAllowEmailShare } from '@/member-profile.server';
 import {
   ProfileDescription,
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
-} from '../shared/components/profile';
-import { Route } from '../shared/constants';
-import { db, listEmails, updateAllowEmailShare } from '../shared/core.server';
-import { track } from '../shared/mixpanel.server';
-import { getMember } from '../shared/queries';
+} from '@/shared/components/profile';
+import { Route } from '@/shared/constants';
+import { track } from '@/shared/mixpanel.server';
+import { getMember } from '@/shared/queries';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

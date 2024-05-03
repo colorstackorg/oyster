@@ -6,6 +6,7 @@ import {
 } from '@remix-run/node';
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 
+import { db } from '@oyster/db';
 import {
   Address,
   Button,
@@ -16,10 +17,10 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { claimSwagPack, db, reportException } from '../shared/core.server';
-import { ClaimSwagPackInput } from '../shared/core.ui';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+import { claimSwagPack, reportException } from '@/member-profile.server';
+import { ClaimSwagPackInput } from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

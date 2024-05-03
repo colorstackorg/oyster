@@ -19,10 +19,10 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { apply } from '../shared/core.server';
-import { Application } from '../shared/core.ui';
-import { formatUrl } from '../shared/url.utils';
+import { apply } from '@/member-profile.server';
+import { Application } from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
+import { formatUrl } from '@/shared/url.utils';
 
 export const meta: MetaFunction = () => {
   return [{ title: 'ColorStack Family Application' }];

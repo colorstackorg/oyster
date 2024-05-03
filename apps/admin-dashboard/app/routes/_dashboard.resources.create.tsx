@@ -7,6 +7,7 @@ import {
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { type z } from 'zod';
 
+import { db } from '@oyster/db';
 import { Resource, ResourceStatus } from '@oyster/types';
 import {
   Button,
@@ -18,13 +19,12 @@ import {
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { db } from '../shared/core.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

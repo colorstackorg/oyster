@@ -14,7 +14,7 @@ import { getCookie } from '@oyster/utils';
 // Importing this file ensures that our application has all of the environment
 // variables necessary to run. If any are missing, this file will throw an error
 // and crash the application.
-import { ENV } from './shared/constants.server';
+import { ENV } from '@/shared/constants.server';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);

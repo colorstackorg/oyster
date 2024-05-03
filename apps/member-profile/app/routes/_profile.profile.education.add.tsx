@@ -10,16 +10,16 @@ import { type z } from 'zod';
 
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
-import { EducationForm } from '../shared/components/education-form';
-import { Route } from '../shared/constants';
-import { addEducation } from '../shared/core.server';
-import { AddEducationInput } from '../shared/core.ui';
+import { addEducation } from '@/member-profile.server';
+import { AddEducationInput } from '@/member-profile.ui';
+import { EducationForm } from '@/shared/components/education-form';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

@@ -20,26 +20,26 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { updateMember } from '@/member-profile.server';
 import {
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
-} from '../shared/components/profile';
+} from '@/shared/components/profile';
 import {
   BirthdateField,
   BirthdateNotificationField,
   EthnicityField,
   GenderField,
   HometownField,
-} from '../shared/components/profile.personal';
-import { updateMember } from '../shared/core.server';
-import { getMember, getMemberEthnicities } from '../shared/queries';
+} from '@/shared/components/profile.personal';
+import { getMember, getMemberEthnicities } from '@/shared/queries';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

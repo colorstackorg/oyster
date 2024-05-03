@@ -5,8 +5,9 @@ import {
 } from '@remix-run/node';
 import { sql } from 'kysely';
 
-import { db } from '../shared/core.server';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { db } from '@oyster/db';
+
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {

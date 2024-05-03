@@ -11,6 +11,7 @@ import {
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import {
   Button,
   Form,
@@ -22,27 +23,26 @@ import {
 import { id } from '@oyster/utils';
 
 import {
+  getIcebreakerPrompts,
+  upsertIcebreakerResponses,
+} from '@/member-profile.server';
+import { IcebreakerPrompt, IcebreakerResponse } from '@/member-profile.ui';
+import {
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
-} from '../shared/components/profile';
+} from '@/shared/components/profile';
 import {
   IcebreakersProvider,
   type PromptNumber,
   useIcebreakerContext,
-} from '../shared/components/profile.icebreakers';
-import {
-  db,
-  getIcebreakerPrompts,
-  upsertIcebreakerResponses,
-} from '../shared/core.server';
-import { IcebreakerPrompt, IcebreakerResponse } from '../shared/core.ui';
+} from '@/shared/components/profile.icebreakers';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

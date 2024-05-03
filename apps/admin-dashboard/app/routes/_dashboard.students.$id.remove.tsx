@@ -6,15 +6,16 @@ import {
 } from '@remix-run/node';
 import { Form as RemixForm, useLoaderData } from '@remix-run/react';
 
+import { db } from '@oyster/db';
 import { Button, Modal } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { db, job } from '../shared/core.server';
+import { job } from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

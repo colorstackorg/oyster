@@ -15,7 +15,7 @@ import {
   MultiComboboxValues,
 } from '@oyster/ui';
 
-import type { SearchCountriesResult } from '../../routes/countries.search';
+import type { SearchCountriesResult } from '@/routes/countries.search';
 
 type EthnicityComboboxProps = Pick<InputProps, 'name' | 'required'>;
 

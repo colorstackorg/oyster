@@ -7,6 +7,7 @@ import {
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { type z } from 'zod';
 
+import { db } from '@oyster/db';
 import {
   Button,
   Form,
@@ -17,15 +18,15 @@ import {
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { addEmailCookie } from '../shared/cookies.server';
-import { db, job } from '../shared/core.server';
-import { OneTimeCode, OneTimeCodePurpose } from '../shared/core.ui';
+import { job } from '@/member-profile.server';
+import { OneTimeCode, OneTimeCodePurpose } from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
+import { addEmailCookie } from '@/shared/cookies.server';
 import {
   commitSession,
   ensureUserAuthenticated,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

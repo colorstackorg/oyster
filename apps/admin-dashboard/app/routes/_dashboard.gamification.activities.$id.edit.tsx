@@ -11,17 +11,18 @@ import {
 } from '@remix-run/react';
 import { type z } from 'zod';
 
+import { db } from '@oyster/db';
 import { Activity, type ActivityPeriod } from '@oyster/types';
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
-import { ActivityForm } from '../shared/components/activity-form';
-import { Route } from '../shared/constants';
-import { db, editActivity } from '../shared/core.server';
+import { editActivity } from '@/admin-dashboard.server';
+import { ActivityForm } from '@/shared/components/activity-form';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

@@ -3,10 +3,10 @@ import { useLoaderData } from '@remix-run/react';
 
 import { Form, Login } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { ENV } from '../shared/constants.server';
-import { getGoogleAuthUri, getSlackAuthUri } from '../shared/core.server';
-import { commitSession, getSession } from '../shared/session.server';
+import { getGoogleAuthUri, getSlackAuthUri } from '@/member-profile.server';
+import { Route } from '@/shared/constants';
+import { ENV } from '@/shared/constants.server';
+import { commitSession, getSession } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);

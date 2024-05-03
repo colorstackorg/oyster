@@ -15,14 +15,14 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { createSchool } from '../shared/core.server';
-import { CreateSchoolInput } from '../shared/core.ui';
+import { createSchool } from '@/admin-dashboard.server';
+import { CreateSchoolInput } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

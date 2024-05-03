@@ -1,15 +1,15 @@
 import { type LoaderFunctionArgs, redirect } from '@remix-run/node';
 
-import { ErrorWithContext } from '@/shared/errors';
-import { Route } from '../shared/constants';
-import { ENV } from '../shared/constants.server';
 import {
   authenticateWithGithub,
   getGithubProfile,
   reportException,
   updateMember,
-} from '../shared/core.server';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+} from '@/member-profile.server';
+import { Route } from '@/shared/constants';
+import { ENV } from '@/shared/constants.server';
+import { ErrorWithContext } from '@/shared/errors';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 // Note: This serves as a REST endpoint when authenticating with GitHub.
 

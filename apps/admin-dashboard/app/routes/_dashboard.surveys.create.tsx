@@ -22,14 +22,14 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { createSurvey, listEvents } from '../shared/core.server';
-import { CreateSurveyInput } from '../shared/core.ui';
+import { createSurvey, listEvents } from '@/admin-dashboard.server';
+import { CreateSurveyInput } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

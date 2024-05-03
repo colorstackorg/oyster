@@ -7,16 +7,17 @@ import {
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
-import { OnboardingSessionAttendeesField } from '../shared/components/onboarding-session-form';
-import { Route } from '../shared/constants';
-import { addOnboardingSessionAttendees, db } from '../shared/core.server';
+import { addOnboardingSessionAttendees } from '@/admin-dashboard.server';
+import { OnboardingSessionAttendeesField } from '@/shared/components/onboarding-session-form';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {

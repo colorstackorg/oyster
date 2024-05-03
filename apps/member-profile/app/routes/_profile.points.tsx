@@ -16,6 +16,7 @@ import { Award, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import { type CompletedActivity } from '@oyster/types';
 import {
   Button,
@@ -29,21 +30,20 @@ import {
   useSearchParams,
 } from '@oyster/ui';
 
-import { Card } from '../shared/components/card';
 import {
-  EmptyState,
-  EmptyStateContainer,
-} from '../shared/components/empty-state';
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import {
-  db,
   getPointsLeaderboard,
   getTotalPoints,
   listActivities,
-} from '../shared/core.server';
-import { track } from '../shared/mixpanel.server';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+} from '@/member-profile.server';
+import { Card } from '@/shared/components/card';
+import {
+  EmptyState,
+  EmptyStateContainer,
+} from '@/shared/components/empty-state';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { track } from '@/shared/mixpanel.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 const TIMEFRAME = {
   ALL_TIME: 'all_time',
