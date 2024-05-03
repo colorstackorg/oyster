@@ -51,7 +51,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const { data, errors, ok } = await validateForm(request, CreateSurveyInput);
 
   if (!ok) {
-    return json({ errors });
+    return json({ errors }, { status: 400 });
   }
 
   await createSurvey({

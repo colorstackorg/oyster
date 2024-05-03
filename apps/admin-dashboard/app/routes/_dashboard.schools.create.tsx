@@ -36,7 +36,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const { data, errors, ok } = await validateForm(request, CreateSchoolInput);
 
   if (!ok) {
-    return json({ errors });
+    return json({ errors }, { status: 400 });
   }
 
   await createSchool({

@@ -64,7 +64,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const { data, errors, ok } = await validateForm(request, EditActivityInput);
 
   if (!ok) {
-    return json({ errors });
+    return json({ errors }, { status: 400 });
   }
 
   await editActivity({

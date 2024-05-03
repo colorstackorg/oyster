@@ -53,7 +53,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const { data, errors, ok } = await validateForm(request, AddRepeatableInput);
 
   if (!ok) {
-    return json({ errors });
+    return json({ errors }, { status: 400 });
   }
 
   const { queue: queueName } = BullParams.parse(params);

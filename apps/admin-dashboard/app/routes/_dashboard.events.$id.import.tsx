@@ -65,7 +65,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   );
 
   if (!ok) {
-    return json({ errors });
+    return json({ errors }, { status: 400 });
   }
 
   let count = 0;

@@ -63,7 +63,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   );
 
   if (!ok) {
-    return json({ errors });
+    return json({ errors }, { status: 400 });
   }
 
   const result = await updateMemberEmail({

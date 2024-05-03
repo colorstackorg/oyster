@@ -64,7 +64,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const { data, errors, ok } = await validateForm(request, GrantPointsInput);
 
   if (!ok) {
-    return json({ errors });
+    return json({ errors }, { status: 400 });
   }
 
   job('gamification.activity.completed', {

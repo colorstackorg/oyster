@@ -55,7 +55,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const { data, errors, ok } = await validateForm(form, CreateEventFormData);
 
   if (!ok) {
-    return json({ errors });
+    return json({ errors }, { status: 400 });
   }
 
   const values = Object.fromEntries(form);

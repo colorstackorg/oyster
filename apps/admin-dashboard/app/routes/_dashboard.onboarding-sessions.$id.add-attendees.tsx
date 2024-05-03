@@ -59,7 +59,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   );
 
   if (!ok) {
-    return json({ errors });
+    return json({ errors }, { status: 400 });
   }
 
   await addOnboardingSessionAttendees(params.id as string, data);
