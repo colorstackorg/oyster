@@ -63,9 +63,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 

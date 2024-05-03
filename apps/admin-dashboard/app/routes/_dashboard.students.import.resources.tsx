@@ -101,9 +101,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     count = result.count;
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 
   toast(session, {

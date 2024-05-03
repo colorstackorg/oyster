@@ -110,9 +110,10 @@ export async function action({ params, request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: 'Something went wrong, please try again.',
-    });
+    return json(
+      { error: 'Something went wrong, please try again.' },
+      { status: 500 }
+    );
   }
 }
 
