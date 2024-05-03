@@ -44,12 +44,9 @@ type CreateProgramInput = z.infer<typeof CreateProgramInput>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, success } = await validateForm(
-    request,
-    CreateProgramInput
-  );
+  const { data, errors, ok } = await validateForm(request, CreateProgramInput);
 
-  if (!success) {
+  if (!ok) {
     return json({ errors });
   }
 

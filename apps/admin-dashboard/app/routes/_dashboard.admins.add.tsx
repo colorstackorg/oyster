@@ -35,7 +35,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, success } = await validateForm(
+  const { data, errors, ok } = await validateForm(
     request,
     AddAdminInput.extend({
       isAmbassador: z.preprocess(
@@ -45,7 +45,7 @@ export async function action({ request }: ActionFunctionArgs) {
     })
   );
 
-  if (!success) {
+  if (!ok) {
     return json({ errors });
   }
 

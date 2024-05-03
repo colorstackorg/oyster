@@ -62,12 +62,12 @@ export async function action({ params, request }: ActionFunctionArgs) {
     allowAmbassador: true,
   });
 
-  const { data, errors, success } = await validateForm(
+  const { data, errors, ok } = await validateForm(
     request,
     UpdateApplicationEmailInput
   );
 
-  if (!success) {
+  if (!ok) {
     return json({
       error: 'Please fix the errors above.',
       errors,

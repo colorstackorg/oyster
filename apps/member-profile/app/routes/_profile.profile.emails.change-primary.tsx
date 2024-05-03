@@ -42,12 +42,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, success } = await validateForm(
+  const { data, errors, ok } = await validateForm(
     request,
     ChangePrimaryEmailInput
   );
 
-  if (!success) {
+  if (!ok) {
     return json({ errors });
   }
 
@@ -67,7 +67,6 @@ export async function action({ request }: ActionFunctionArgs) {
   } catch (e) {
     return json({
       error: (e as Error).message,
-      errors,
     });
   }
 }

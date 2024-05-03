@@ -50,12 +50,9 @@ type AddRepeatableInput = z.infer<typeof AddRepeatableInput>;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, success } = await validateForm(
-    request,
-    AddRepeatableInput
-  );
+  const { data, errors, ok } = await validateForm(request, AddRepeatableInput);
 
-  if (!success) {
+  if (!ok) {
     return json({
       error: 'Please fix the errors above.',
       errors,

@@ -71,7 +71,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await request.formData();
 
-  const { data, errors, success } = await validateForm(
+  const { data, errors, ok } = await validateForm(
     {
       ...Object.fromEntries(form),
       ...(!!form.get('currentResources') && {
@@ -81,7 +81,7 @@ export async function action({ request }: ActionFunctionArgs) {
     SubmitCensusResponseData_
   );
 
-  if (!success) {
+  if (!ok) {
     return json({ errors });
   }
 
@@ -92,7 +92,6 @@ export async function action({ request }: ActionFunctionArgs) {
   } catch (e) {
     return json({
       error: (e as Error).message,
-      errors,
     });
   }
 }

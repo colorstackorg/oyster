@@ -37,12 +37,12 @@ const SyncAirmeetEventFormData = z.object({
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, success } = await validateForm(
+  const { data, errors, ok } = await validateForm(
     request,
     SyncAirmeetEventFormData
   );
 
-  if (!success) {
+  if (!ok) {
     return json({
       error: '',
       errors,

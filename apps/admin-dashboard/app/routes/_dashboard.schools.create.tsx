@@ -33,12 +33,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, success } = await validateForm(
-    request,
-    CreateSchoolInput
-  );
+  const { data, errors, ok } = await validateForm(request, CreateSchoolInput);
 
-  if (!success) {
+  if (!ok) {
     return json({ errors });
   }
 

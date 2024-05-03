@@ -48,12 +48,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, success } = await validateForm(
-    request,
-    CreateSurveyInput
-  );
+  const { data, errors, ok } = await validateForm(request, CreateSurveyInput);
 
-  if (!success) {
+  if (!ok) {
     return json({ errors });
   }
 

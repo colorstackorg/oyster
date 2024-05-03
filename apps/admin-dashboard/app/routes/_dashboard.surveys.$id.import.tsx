@@ -60,12 +60,12 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors, success } = await validateForm(
+  const { data, errors, ok } = await validateForm(
     form,
     ImportSurveyResponsesInput
   );
 
-  if (!success) {
+  if (!ok) {
     return json({ errors });
   }
 
@@ -79,7 +79,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
   } catch (e) {
     return json({
       error: (e as Error).message,
-      errors,
     });
   }
 

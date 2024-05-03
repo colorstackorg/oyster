@@ -39,12 +39,9 @@ type CreateActivityInput = z.infer<typeof CreateActivityInput>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, success } = await validateForm(
-    request,
-    CreateActivityInput
-  );
+  const { data, errors, ok } = await validateForm(request, CreateActivityInput);
 
-  if (!success) {
+  if (!ok) {
     return json({ errors });
   }
 

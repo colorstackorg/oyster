@@ -90,12 +90,12 @@ const EditWorkExperienceFormData = EditWorkExperienceInput.omit({
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, success } = await validateForm(
+  const { data, errors, ok } = await validateForm(
     request,
     EditWorkExperienceFormData
   );
 
-  if (!success) {
+  if (!ok) {
     return json({ errors });
   }
 
@@ -126,7 +126,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
   } catch (e) {
     return json({
       error: (e as Error).message,
-      errors,
     });
   }
 }

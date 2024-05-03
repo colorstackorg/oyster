@@ -56,12 +56,12 @@ type UpdateGeneralInformation = z.infer<typeof UpdateGeneralInformation>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, success } = await validateForm(
+  const { data, errors, ok } = await validateForm(
     request,
     UpdateGeneralInformation
   );
 
-  if (!success) {
+  if (!ok) {
     return json({ errors });
   }
 

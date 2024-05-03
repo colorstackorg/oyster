@@ -65,13 +65,10 @@ type AddJobInput = z.infer<typeof AddJobInput>;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, success } = await validateForm(request, AddJobInput);
+  const { data, errors, ok } = await validateForm(request, AddJobInput);
 
-  if (!success) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors });
   }
 
   const { queue: queueName } = BullParams.parse(params);

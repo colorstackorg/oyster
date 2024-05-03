@@ -61,12 +61,9 @@ type EditActivityInput = z.infer<typeof EditActivityInput>;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, success } = await validateForm(
-    request,
-    EditActivityInput
-  );
+  const { data, errors, ok } = await validateForm(request, EditActivityInput);
 
-  if (!success) {
+  if (!ok) {
     return json({ errors });
   }
 

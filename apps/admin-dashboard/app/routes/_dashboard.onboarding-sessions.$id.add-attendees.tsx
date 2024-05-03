@@ -53,12 +53,12 @@ export async function action({ params, request }: ActionFunctionArgs) {
     allowAmbassador: true,
   });
 
-  const { data, errors, success } = await validateForm(
+  const { data, errors, ok } = await validateForm(
     request,
     AddOnboardingSessionAttendeesInput
   );
 
-  if (!success) {
+  if (!ok) {
     return json({ errors });
   }
 

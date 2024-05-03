@@ -45,12 +45,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, success } = await validateForm(
+  const { data, errors, ok } = await validateForm(
     request,
     AddEventRecordingLinkInput
   );
 
-  if (!success) {
+  if (!ok) {
     return json({
       error: 'Something went wrong, please try again to upload event link.',
       errors,

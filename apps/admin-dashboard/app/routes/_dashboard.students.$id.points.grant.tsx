@@ -61,12 +61,9 @@ type GrantPointsInput = z.infer<typeof GrantPointsInput>;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, success } = await validateForm(
-    request,
-    GrantPointsInput
-  );
+  const { data, errors, ok } = await validateForm(request, GrantPointsInput);
 
-  if (!success) {
+  if (!ok) {
     return json({ errors });
   }
 

@@ -59,16 +59,13 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors, success } = await validateForm(
+  const { data, errors, ok } = await validateForm(
     form,
     ImportEventAttendeesInput
   );
 
-  if (!success) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors });
   }
 
   let count = 0;
@@ -80,7 +77,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
   } catch (e) {
     return json({
       error: (e as Error).message,
-      errors,
     });
   }
 

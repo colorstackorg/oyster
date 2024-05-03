@@ -66,7 +66,7 @@ type ApplyFormData = z.infer<typeof ApplyFormData>;
 export async function action({ request }: ActionFunctionArgs) {
   const form = await request.formData();
 
-  const { data, errors, success } = await validateForm(
+  const { data, errors, ok } = await validateForm(
     {
       ...Object.fromEntries(form),
       otherDemographics: form.getAll('otherDemographics'),
@@ -75,7 +75,7 @@ export async function action({ request }: ActionFunctionArgs) {
     ApplyFormData
   );
 
-  if (!success) {
+  if (!ok) {
     return json({
       error: 'Please fix the issues above.',
       errors,
@@ -89,7 +89,6 @@ export async function action({ request }: ActionFunctionArgs) {
   } catch (e) {
     return json({
       error: (e as Error).message,
-      errors,
     });
   }
 }
