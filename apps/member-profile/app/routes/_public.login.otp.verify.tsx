@@ -40,11 +40,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    VerifyOneTimeCodeInput.pick({ value: true }),
-    Object.fromEntries(form)
+  const { data, errors } = await validateForm(
+    request,
+    VerifyOneTimeCodeInput.pick({ value: true })
   );
 
   if (!data) {

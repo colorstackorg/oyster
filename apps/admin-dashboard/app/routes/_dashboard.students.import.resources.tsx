@@ -85,10 +85,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors } = validateForm(
-    ImportResourceUsersInput,
-    Object.fromEntries(form)
-  );
+  const { data, errors } = await validateForm(form, ImportResourceUsersInput);
 
   if (!data) {
     return json({

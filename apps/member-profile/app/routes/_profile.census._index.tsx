@@ -71,14 +71,15 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await request.formData();
 
-  const values = {
-    ...Object.fromEntries(form),
-    ...(!!form.get('currentResources') && {
-      currentResources: form.getAll('currentResources'),
-    }),
-  };
-
-  const { data, errors } = validateForm(SubmitCensusResponseData_, values);
+  const { data, errors } = await validateForm(
+    {
+      ...Object.fromEntries(form),
+      ...(!!form.get('currentResources') && {
+        currentResources: form.getAll('currentResources'),
+      }),
+    },
+    SubmitCensusResponseData_
+  );
 
   if (!data) {
     return json({

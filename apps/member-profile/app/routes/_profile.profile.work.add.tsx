@@ -52,11 +52,10 @@ type AddWorkExperienceFormData = z.infer<typeof AddWorkExperienceFormData>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const values = Object.fromEntries(form);
-
-  const { data, errors } = validateForm(AddWorkExperienceFormData, values);
+  const { data, errors } = await validateForm(
+    request,
+    AddWorkExperienceFormData
+  );
 
   if (!data) {
     return json({

@@ -65,10 +65,7 @@ type AddJobInput = z.infer<typeof AddJobInput>;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-  const values = Object.fromEntries(form);
-
-  const { data, errors } = validateForm(AddJobInput, values);
+  const { data, errors } = await validateForm(request, AddJobInput);
 
   if (!data) {
     return json({

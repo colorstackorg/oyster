@@ -62,11 +62,9 @@ export async function action({ params, request }: ActionFunctionArgs) {
     allowAmbassador: true,
   });
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpdateApplicationEmailInput,
-    Object.fromEntries(form)
+  const { data, errors } = await validateForm(
+    request,
+    UpdateApplicationEmailInput
   );
 
   if (!data) {

@@ -90,11 +90,9 @@ const EditWorkExperienceFormData = EditWorkExperienceInput.omit({
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    EditWorkExperienceFormData,
-    Object.fromEntries(form)
+  const { data, errors } = await validateForm(
+    request,
+    EditWorkExperienceFormData
   );
 
   if (!data) {

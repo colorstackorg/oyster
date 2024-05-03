@@ -1,6 +1,8 @@
 import React, { type PropsWithChildren } from 'react';
 import { type z } from 'zod';
 
+import { iife } from '@oyster/utils';
+
 import { Input, type InputProps } from './input';
 import { Text } from './text';
 import { cx } from '../utils/cx';
@@ -91,10 +93,25 @@ type ValidateResult<Data> = {
   errors: Record<keyof Data, string>;
 };
 
-export function validateForm<T extends z.AnyZodObject>(
-  schema: T,
-  data: unknown
-): ValidateResult<z.infer<T>> {
+export async function validateForm<T extends z.AnyZodObject>(
+  input:
+    | Request
+    | FormData
+    | Record<string, FormDataEntryValue | FormDataEntryValue[]>,
+  schema: T
+): Promise<ValidateResult<z.infer<T>>> {
+  const data = await iife(async () => {
+    if (input instanceof Request) {
+      input = await input.formData();
+    }
+
+    if (input instanceof FormData) {
+      return Object.fromEntries(input as FormData);
+    }
+
+    return input;
+  });
+
   const result = schema.safeParse(data, {
     errorMap: zodErrorMap,
   });

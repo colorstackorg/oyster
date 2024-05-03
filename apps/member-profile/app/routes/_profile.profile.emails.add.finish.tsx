@@ -65,12 +65,7 @@ type AddEmailFormData = z.infer<typeof AddEmailFormData>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    AddEmailFormData,
-    Object.fromEntries(form)
-  );
+  const { data, errors } = await validateForm(request, AddEmailFormData);
 
   if (!data) {
     return json({

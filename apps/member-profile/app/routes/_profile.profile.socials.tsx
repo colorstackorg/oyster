@@ -70,11 +70,9 @@ type UpdateSocialsInformation = z.infer<typeof UpdateSocialsInformation>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpdateSocialsInformation,
-    Object.fromEntries(form)
+  const { data, errors } = await validateForm(
+    request,
+    UpdateSocialsInformation
   );
 
   if (!data) {

@@ -35,16 +35,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
+  const { data, errors } = await validateForm(
+    request,
     AddAdminInput.extend({
       isAmbassador: z.preprocess(
         (value) => value === '1',
         AddAdminInput.shape.isAmbassador
       ),
-    }),
-    Object.fromEntries(form)
+    })
   );
 
   if (!data) {

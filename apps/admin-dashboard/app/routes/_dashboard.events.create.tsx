@@ -52,10 +52,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await request.formData();
 
-  const { data, errors } = validateForm(
-    CreateEventFormData,
-    Object.fromEntries(form)
-  );
+  const { data, errors } = await validateForm(form, CreateEventFormData);
 
   if (!data) {
     return json({

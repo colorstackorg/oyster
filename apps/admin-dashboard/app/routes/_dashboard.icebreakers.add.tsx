@@ -33,11 +33,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    AddIcebreakerPromptInput,
-    Object.fromEntries(form)
+  const { data, errors } = await validateForm(
+    request,
+    AddIcebreakerPromptInput
   );
 
   if (!data) {

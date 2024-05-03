@@ -54,9 +54,9 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors } = validateForm(
-    ImportScholarshipRecipientsInput,
-    Object.fromEntries(form)
+  const { data, errors } = await validateForm(
+    form,
+    ImportScholarshipRecipientsInput
   );
 
   if (!data) {

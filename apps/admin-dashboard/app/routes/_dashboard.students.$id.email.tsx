@@ -57,12 +57,7 @@ type UpdateStudentEmailInput = z.infer<typeof UpdateStudentEmailInput>;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpdateStudentEmailInput,
-    Object.fromEntries(form)
-  );
+  const { data, errors } = await validateForm(request, UpdateStudentEmailInput);
 
   if (!data) {
     return json({

@@ -45,11 +45,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    AddEventRecordingLinkInput,
-    Object.fromEntries(form)
+  const { data, errors } = await validateForm(
+    request,
+    AddEventRecordingLinkInput
   );
 
   if (!data) {

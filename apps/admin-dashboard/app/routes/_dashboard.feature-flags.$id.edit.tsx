@@ -50,12 +50,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    EditFeatureFlagInput,
-    Object.fromEntries(form)
-  );
+  const { data, errors } = await validateForm(request, EditFeatureFlagInput);
 
   if (!data) {
     return json({

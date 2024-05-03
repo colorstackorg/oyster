@@ -43,12 +43,7 @@ type SendEmailCodeInput = z.infer<typeof SendEmailCodeInput>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    SendEmailCodeInput,
-    Object.fromEntries(form)
-  );
+  const { data, errors } = await validateForm(request, SendEmailCodeInput);
 
   if (!data) {
     return json({

@@ -45,12 +45,7 @@ const ClaimSwagPackFormData = ClaimSwagPackInput.omit({
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    ClaimSwagPackFormData,
-    Object.fromEntries(form)
-  );
+  const { data, errors } = await validateForm(request, ClaimSwagPackFormData);
 
   if (!data) {
     return json({

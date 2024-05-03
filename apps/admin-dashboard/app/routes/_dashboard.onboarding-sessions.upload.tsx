@@ -49,11 +49,9 @@ export async function action({ request }: ActionFunctionArgs) {
     allowAmbassador: true,
   });
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UploadOnboardingSessionInput,
-    Object.fromEntries(form)
+  const { data, errors } = await validateForm(
+    request,
+    UploadOnboardingSessionInput
   );
 
   if (!data) {

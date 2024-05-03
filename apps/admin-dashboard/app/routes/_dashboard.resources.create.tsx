@@ -41,12 +41,7 @@ type CreateResourceInput = z.infer<typeof CreateResourceInput>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    CreateResourceInput,
-    Object.fromEntries(form)
-  );
+  const { data, errors } = await validateForm(request, CreateResourceInput);
 
   if (!data) {
     return json({

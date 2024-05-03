@@ -9,11 +9,9 @@ import { Route } from '@/shared/constants';
 import { oneTimeCodeIdCookie } from '@/shared/cookies.server';
 
 export async function action({ request }: ActionFunctionArgs) {
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    SendOneTimeCodeInput.omit({ purpose: true }),
-    Object.fromEntries(form)
+  const { data, errors } = await validateForm(
+    request,
+    SendOneTimeCodeInput.omit({ purpose: true })
   );
 
   if (!data) {

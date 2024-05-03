@@ -71,12 +71,7 @@ type UpdateAllowEmailShare = z.infer<typeof UpdateAllowEmailShare>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpdateAllowEmailShare,
-    Object.fromEntries(form)
-  );
+  const { data, errors } = await validateForm(request, UpdateAllowEmailShare);
 
   if (!data) {
     return json({

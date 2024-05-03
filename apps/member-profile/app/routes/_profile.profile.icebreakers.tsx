@@ -80,11 +80,9 @@ type UpsertIcebreakerResponsesInput = z.infer<
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpsertIcebreakerResponsesInput,
-    Object.fromEntries(form)
+  const { data, errors } = await validateForm(
+    request,
+    UpsertIcebreakerResponsesInput
   );
 
   if (!data) {
