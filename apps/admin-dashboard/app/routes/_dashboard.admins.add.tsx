@@ -59,7 +59,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Added admin.',
-    type: 'success',
   });
 
   return redirect(Route['/'], {

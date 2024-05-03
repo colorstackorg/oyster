@@ -63,7 +63,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Deleted education.',
-      type: 'success',
     });
 
     return redirect(Route['/profile/education'], {

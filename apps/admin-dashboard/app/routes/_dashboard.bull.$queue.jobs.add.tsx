@@ -79,7 +79,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Added job.',
-    type: 'success',
   });
 
   return redirect(

@@ -115,7 +115,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Edited work experience.',
-      type: 'success',
     });
 
     return redirect(Route['/profile/work'], {

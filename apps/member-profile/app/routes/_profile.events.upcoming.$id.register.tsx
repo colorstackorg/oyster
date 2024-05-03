@@ -71,7 +71,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Registered!',
-    type: 'success',
   });
 
   return redirect(Route['/events'], {

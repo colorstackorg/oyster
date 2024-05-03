@@ -82,7 +82,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: `Imported ${count} event attendees.`,
-    type: 'success',
   });
 
   return redirect(Route['/events'], {

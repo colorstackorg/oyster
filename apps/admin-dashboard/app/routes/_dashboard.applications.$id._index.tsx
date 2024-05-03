@@ -90,7 +90,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
         toast(session, {
           message: 'Application has been accepted.',
-          type: 'success',
         });
 
         break;
@@ -101,7 +100,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
         toast(session, {
           message: 'Application has been rejected.',
-          type: 'success',
         });
 
         break;

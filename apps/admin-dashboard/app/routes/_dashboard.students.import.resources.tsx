@@ -108,7 +108,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: `Imported ${count} resource users.`,
-    type: 'success',
   });
 
   return redirect(Route['/students'], {

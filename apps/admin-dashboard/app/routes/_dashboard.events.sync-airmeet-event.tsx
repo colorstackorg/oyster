@@ -55,7 +55,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Event is being synced. Check back soon.',
-    type: 'success',
   });
 
   return redirect(Route['/events'], {

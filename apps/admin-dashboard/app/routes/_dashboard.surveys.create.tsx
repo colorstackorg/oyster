@@ -61,8 +61,7 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   toast(session, {
-    message: `Created survey.`,
-    type: 'success',
+    message: 'Created survey.',
   });
 
   return redirect(Route['/surveys'], {

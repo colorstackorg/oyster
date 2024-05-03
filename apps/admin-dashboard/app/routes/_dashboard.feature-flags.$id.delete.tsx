@@ -40,7 +40,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Deleted feature flag.',
-    type: 'success',
   });
 
   return redirect(Route['/feature-flags'], {

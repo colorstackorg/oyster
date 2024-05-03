@@ -56,7 +56,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Your primary email address was updated.',
-      type: 'success',
     });
 
     return redirect(Route['/profile/emails'], {

@@ -54,7 +54,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Application has been accepted.',
-      type: 'success',
     });
 
     return redirect(Route['/applications'], {

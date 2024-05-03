@@ -68,10 +68,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   );
 
   if (!ok) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+    return json({ errors });
   }
 
   const result = updateEmailApplication({
@@ -88,7 +85,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Updated application email.',
-    type: 'success',
   });
 
   const url = new URL(request.url);

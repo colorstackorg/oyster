@@ -61,7 +61,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Link uploaded successfully.',
-    type: 'success',
   });
 
   return redirect(Route['/events'], {

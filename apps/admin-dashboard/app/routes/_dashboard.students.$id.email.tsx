@@ -80,7 +80,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Updated member email.',
-    type: 'success',
   });
 
   return redirect(Route['/students'], {

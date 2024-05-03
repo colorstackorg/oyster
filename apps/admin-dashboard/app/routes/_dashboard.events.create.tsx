@@ -55,10 +55,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const { data, errors, ok } = await validateForm(form, CreateEventFormData);
 
   if (!ok) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+    return json({ errors });
   }
 
   const values = Object.fromEntries(form);
@@ -81,7 +78,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: `Created ${data.name}.`,
-    type: 'success',
   });
 
   return redirect(Route['/events'], {

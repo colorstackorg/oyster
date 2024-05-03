@@ -76,7 +76,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Points granted successfully.',
-    type: 'success',
   });
 
   return redirect(Route['/students'], {

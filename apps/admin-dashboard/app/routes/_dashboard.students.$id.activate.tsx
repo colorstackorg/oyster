@@ -55,7 +55,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Activated student.',
-      type: 'success',
     });
 
     return redirect(Route['/students'], {

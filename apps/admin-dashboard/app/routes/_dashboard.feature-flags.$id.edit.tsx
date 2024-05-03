@@ -56,10 +56,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   );
 
   if (!ok) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+    return json({ errors });
   }
 
   await editFeatureFlag(params.id as string, {
@@ -70,7 +67,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Edited feature flag.',
-    type: 'success',
   });
 
   return redirect(Route['/feature-flags'], {

@@ -66,7 +66,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: `Added ${data.attendees.length} attendees.`,
-    type: 'success',
   });
 
   return redirect(Route['/onboarding-sessions'], {

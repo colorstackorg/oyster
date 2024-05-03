@@ -77,7 +77,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: `Imported ${count} scholarship recipients.`,
-    type: 'success',
   });
 
   return redirect(Route['/students'], {

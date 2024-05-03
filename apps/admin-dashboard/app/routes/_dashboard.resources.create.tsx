@@ -58,7 +58,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: `Created ${data.name}.`,
-    type: 'success',
   });
 
   const url = new URL(request.url);

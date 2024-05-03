@@ -35,7 +35,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Archived activity.',
-      type: 'success',
     });
 
     return redirect(Route['/gamification/activities'], {

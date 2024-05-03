@@ -89,7 +89,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Added email address to your profile.',
-      type: 'success',
     });
 
     return redirect(Route['/profile/emails'], {

@@ -68,7 +68,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Added education.',
-      type: 'success',
     });
 
     return redirect(Route['/profile/education'], {

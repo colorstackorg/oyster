@@ -46,7 +46,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Added icebreaker prompt.',
-    type: 'success',
   });
 
   return redirect('/icebreakers/add', {

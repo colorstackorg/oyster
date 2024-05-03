@@ -63,7 +63,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Uploaded onboarding session.',
-      type: 'success',
     });
 
     return redirect(Route['/onboarding-sessions'], {

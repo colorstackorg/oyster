@@ -84,7 +84,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: `Imported ${count} survey responses.`,
-    type: 'success',
   });
 
   return redirect(Route['/surveys'], {

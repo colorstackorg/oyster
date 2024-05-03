@@ -53,10 +53,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const { data, errors, ok } = await validateForm(request, AddRepeatableInput);
 
   if (!ok) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+    return json({ errors });
   }
 
   const { queue: queueName } = BullParams.parse(params);
@@ -72,7 +69,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Added repeatable.',
-    type: 'success',
   });
 
   return redirect(

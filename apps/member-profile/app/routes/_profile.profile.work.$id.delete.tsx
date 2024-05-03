@@ -53,7 +53,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Deleted work experience.',
-      type: 'success',
     });
 
     return redirect(Route['/profile/work'], {
