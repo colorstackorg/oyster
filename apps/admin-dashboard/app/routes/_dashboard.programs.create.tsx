@@ -13,7 +13,7 @@ import {
   Button,
   DatePicker,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
@@ -44,13 +44,13 @@ type CreateProgramInput = z.infer<typeof CreateProgramInput>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors } = await validateForm(request, CreateProgramInput);
+  const { data, errors, success } = await validateForm(
+    request,
+    CreateProgramInput
+  );
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   await db
@@ -95,7 +95,7 @@ export default function CreateProgramPage() {
 const keys = CreateProgramInput.keyof().enum;
 
 function CreateProgramForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

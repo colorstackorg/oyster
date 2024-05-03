@@ -19,7 +19,7 @@ import {
   Address,
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Modal,
   validateForm,
 } from '@oyster/ui';
@@ -90,16 +90,13 @@ const EditWorkExperienceFormData = EditWorkExperienceInput.omit({
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors } = await validateForm(
+  const { data, errors, success } = await validateForm(
     request,
     EditWorkExperienceFormData
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   if (data.startDate && data.endDate && data.startDate > data.endDate) {
@@ -137,7 +134,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 const keys = EditWorkExperienceFormData.keyof().enum;
 
 export default function EditWorkExperiencePage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const { workExperience } = useLoaderData<typeof loader>();
 
   const navigate = useNavigate();

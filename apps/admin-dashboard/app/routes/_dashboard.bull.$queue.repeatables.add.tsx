@@ -15,7 +15,7 @@ import { z } from 'zod';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
@@ -50,9 +50,12 @@ type AddRepeatableInput = z.infer<typeof AddRepeatableInput>;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors } = await validateForm(request, AddRepeatableInput);
+  const { data, errors, success } = await validateForm(
+    request,
+    AddRepeatableInput
+  );
 
-  if (!data) {
+  if (!success) {
     return json({
       error: 'Please fix the errors above.',
       errors,
@@ -107,7 +110,7 @@ export default function AddRepeatablePage() {
 const keys = AddRepeatableInput.keyof().enum;
 
 function AddRepeatableForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

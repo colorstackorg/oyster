@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs, json, redirect } from '@remix-run/node';
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 
-import { Button, Form, getActionErrors, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, validateForm } from '@oyster/ui';
 
 import { sendOneTimeCode } from '@/admin-dashboard.server';
 import { OneTimeCodeForm, SendOneTimeCodeInput } from '@/admin-dashboard.ui';
@@ -9,16 +9,13 @@ import { Route } from '@/shared/constants';
 import { oneTimeCodeIdCookie } from '@/shared/cookies.server';
 
 export async function action({ request }: ActionFunctionArgs) {
-  const { data, errors } = await validateForm(
+  const { data, errors, success } = await validateForm(
     request,
     SendOneTimeCodeInput.omit({ purpose: true })
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   try {
@@ -43,7 +40,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = SendOneTimeCodeInput.keyof().enum;
 
 export default function SendOneTimeCodePage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

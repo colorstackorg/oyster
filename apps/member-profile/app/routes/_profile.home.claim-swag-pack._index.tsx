@@ -11,7 +11,7 @@ import {
   Address,
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Modal,
   Text,
   validateForm,
@@ -45,13 +45,13 @@ const ClaimSwagPackFormData = ClaimSwagPackInput.omit({
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors } = await validateForm(request, ClaimSwagPackFormData);
+  const { data, errors, success } = await validateForm(
+    request,
+    ClaimSwagPackFormData
+  );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the issues above.',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   if (data.addressState === 'PR') {
@@ -85,7 +85,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = ClaimSwagPackFormData.keyof().enum;
 
 export default function ClaimSwagPack() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <>

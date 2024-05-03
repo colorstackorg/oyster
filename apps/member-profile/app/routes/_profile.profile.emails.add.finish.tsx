@@ -16,7 +16,7 @@ import { StudentEmail } from '@oyster/types';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
@@ -65,13 +65,13 @@ type AddEmailFormData = z.infer<typeof AddEmailFormData>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors } = await validateForm(request, AddEmailFormData);
+  const { data, errors, success } = await validateForm(
+    request,
+    AddEmailFormData
+  );
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   const email = await addEmailCookie.parse(request.headers.get('Cookie'));
@@ -160,7 +160,7 @@ async function addEmail(input: AddEmailInput) {
 const keys = AddEmailFormData.keyof().enum;
 
 export default function AddEmailPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const { email } = useLoaderData<typeof loader>();
 
   return (

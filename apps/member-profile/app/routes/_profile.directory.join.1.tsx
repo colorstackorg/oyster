@@ -17,7 +17,7 @@ import {
   Checkbox,
   Divider,
   Form,
-  getActionErrors,
+  getErrors,
   InputField,
   Link,
   Text,
@@ -56,16 +56,13 @@ type UpdateGeneralInformation = z.infer<typeof UpdateGeneralInformation>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors } = await validateForm(
+  const { data, errors, success } = await validateForm(
     request,
     UpdateGeneralInformation
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   await updateMember({
@@ -80,7 +77,7 @@ const keys = UpdateGeneralInformation.keyof().enum;
 
 export default function UpdateGeneralInformationForm() {
   const { student } = useLoaderData<typeof loader>();
-  const { errors } = getActionErrors(useActionData<typeof action>());
+  const { errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

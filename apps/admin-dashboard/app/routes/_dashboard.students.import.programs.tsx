@@ -21,7 +21,7 @@ import { Email, Program, ProgramParticipant } from '@oyster/types';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Modal,
   Select,
   Text,
@@ -75,16 +75,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors } = await validateForm(
+  const { data, errors, success } = await validateForm(
     form,
     ImportProgramParticipantsInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   let count = 0;
@@ -96,7 +93,6 @@ export async function action({ request }: ActionFunctionArgs) {
   } catch (e) {
     return json({
       error: (e as Error).message,
-      errors,
     });
   }
 
@@ -188,7 +184,7 @@ export default function ImportProgramsPage() {
 const keys = ImportProgramParticipantsInput.keyof().enum;
 
 function ImportProgramsForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const { programs } = useLoaderData<typeof loader>();
 
   return (

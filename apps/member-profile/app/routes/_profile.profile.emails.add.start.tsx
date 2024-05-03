@@ -11,7 +11,7 @@ import { db } from '@oyster/db';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
@@ -43,13 +43,13 @@ type SendEmailCodeInput = z.infer<typeof SendEmailCodeInput>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors } = await validateForm(request, SendEmailCodeInput);
+  const { data, errors, success } = await validateForm(
+    request,
+    SendEmailCodeInput
+  );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   try {
@@ -126,7 +126,7 @@ async function sendEmailCode(studentId: string, input: SendEmailCodeInput) {
 const keys = SendEmailCodeInput.keyof().enum;
 
 export default function AddEmailPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Modal onCloseTo={Route['/profile/emails']}>

@@ -17,7 +17,7 @@ import { z } from 'zod';
 
 import { db } from '@oyster/db';
 import { Email, EventAttendee } from '@oyster/types';
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
 import { getEvent, job, parseCsv } from '@/admin-dashboard.server';
@@ -59,9 +59,12 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors } = await validateForm(form, ImportEventAttendeesInput);
+  const { data, errors, success } = await validateForm(
+    form,
+    ImportEventAttendeesInput
+  );
 
-  if (!data) {
+  if (!success) {
     return json({
       error: 'Something went wrong, please try again.',
       errors,
@@ -180,7 +183,7 @@ export default function ImportEventAttendeesPage() {
 const keys = ImportEventAttendeesInput.keyof().enum;
 
 function ImportEventAttendeesForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">

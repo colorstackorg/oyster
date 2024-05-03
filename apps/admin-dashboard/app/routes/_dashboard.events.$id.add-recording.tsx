@@ -13,7 +13,7 @@ import {
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
@@ -45,12 +45,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors } = await validateForm(
+  const { data, errors, success } = await validateForm(
     request,
     AddEventRecordingLinkInput
   );
 
-  if (!data) {
+  if (!success) {
     return json({
       error: 'Something went wrong, please try again to upload event link.',
       errors,
@@ -88,7 +88,7 @@ const keys = AddEventRecordingLinkInput.keyof().enum;
 
 function AddEventRecordingForm() {
   const { event } = useLoaderData<typeof loader>();
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

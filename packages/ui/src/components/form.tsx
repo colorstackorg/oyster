@@ -1,7 +1,7 @@
+import { type SerializeFrom } from '@remix-run/node';
+import { useActionData } from '@remix-run/react';
 import React, { type PropsWithChildren } from 'react';
 import { type z } from 'zod';
-
-import { iife } from '@oyster/utils';
 
 import { Input, type InputProps } from './input';
 import { Text } from './text';
@@ -67,31 +67,31 @@ Form.Field = function FormField({
 
 // Validation Utilities
 
-type GetActionErrorsInput<T> =
+type GetErrorsInput<T> =
   | {
-      error: string | undefined;
-      errors: T | undefined;
+      error?: string | undefined;
+      errors?: T | undefined;
     }
   | undefined;
 
-type ActionErrors<T> = {
-  error: string;
-  errors: T;
-};
-
-export function getActionErrors<T>(
-  input: GetActionErrorsInput<T>
-): ActionErrors<T> {
+export function getErrors<T>(input: GetErrorsInput<T>) {
   return {
-    error: input?.error || '',
+    error: input?.error || undefined,
     errors: input?.errors || ({} as T),
   };
 }
 
-type ValidateResult<Data> = {
-  data: Data | undefined;
-  errors: Record<keyof Data, string>;
-};
+type ValidateResult<Data> =
+  | {
+      data: Data;
+      errors: Partial<Record<keyof Data, string>>;
+      success: true;
+    }
+  | {
+      data: undefined;
+      errors: Partial<Record<keyof Data, string>>;
+      success: false;
+    };
 
 export async function validateForm<T extends z.AnyZodObject>(
   input:
@@ -100,54 +100,36 @@ export async function validateForm<T extends z.AnyZodObject>(
     | Record<string, FormDataEntryValue | FormDataEntryValue[]>,
   schema: T
 ): Promise<ValidateResult<z.infer<T>>> {
-  const data = await iife(async () => {
-    if (input instanceof Request) {
-      input = await input.formData();
-    }
+  if (input instanceof Request) {
+    input = await input.formData();
+  }
 
-    if (input instanceof FormData) {
-      return Object.fromEntries(input as FormData);
-    }
-
-    return input;
-  });
+  const data = input instanceof FormData ? Object.fromEntries(input) : input;
 
   const result = schema.safeParse(data, {
     errorMap: zodErrorMap,
   });
 
-  const errors = {} as ValidateResult<T>['errors'];
-
-  const keys = schema.keyof().enum;
-
-  type Key = keyof z.infer<T>;
-
-  Object.keys(keys).forEach((_key) => {
-    const key = _key as Key;
-
-    errors[key] = '';
-  });
-
   if (result.success) {
     return {
       data: result.data,
-      errors,
+      errors: {},
+      success: true,
     };
   }
 
+  const errors: ValidateResult<T>['errors'] = {};
+
   const { fieldErrors } = result.error.formErrors;
 
-  Object.entries(fieldErrors).forEach(([_key, fieldErrors]) => {
-    const key = _key as Key;
-
-    if (fieldErrors) {
-      errors[key] = fieldErrors[0] || '';
-    }
+  Object.entries(fieldErrors).forEach(([key, fieldErrors]) => {
+    errors[key as keyof z.infer<T>] = fieldErrors?.[0];
   });
 
   return {
     data: undefined,
     errors,
+    success: false,
   };
 }
 

@@ -7,7 +7,7 @@ import {
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { uploadOnboardingSession } from '@/admin-dashboard.server';
 import { OnboardingSession } from '@/admin-dashboard.ui';
@@ -49,16 +49,13 @@ export async function action({ request }: ActionFunctionArgs) {
     allowAmbassador: true,
   });
 
-  const { data, errors } = await validateForm(
+  const { data, errors, success } = await validateForm(
     request,
     UploadOnboardingSessionInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   try {
@@ -85,7 +82,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = UploadOnboardingSessionInput.keyof().enum;
 
 export default function UploadOnboardingSessionPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Modal onCloseTo={Route['/onboarding-sessions']}>

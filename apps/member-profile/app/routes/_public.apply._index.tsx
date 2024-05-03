@@ -12,7 +12,7 @@ import {
   Button,
   Checkbox,
   Form,
-  getActionErrors,
+  getErrors,
   Link,
   Text,
   type TextProps,
@@ -66,7 +66,7 @@ type ApplyFormData = z.infer<typeof ApplyFormData>;
 export async function action({ request }: ActionFunctionArgs) {
   const form = await request.formData();
 
-  const { data, errors } = await validateForm(
+  const { data, errors, success } = await validateForm(
     {
       ...Object.fromEntries(form),
       otherDemographics: form.getAll('otherDemographics'),
@@ -75,7 +75,7 @@ export async function action({ request }: ActionFunctionArgs) {
     ApplyFormData
   );
 
-  if (!data) {
+  if (!success) {
     return json({
       error: 'Please fix the issues above.',
       errors,
@@ -97,7 +97,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = ApplyFormData.keyof().enum;
 
 export default function ApplicationPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <>

@@ -15,7 +15,7 @@ import { Application } from '@oyster/types';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
@@ -62,12 +62,12 @@ export async function action({ params, request }: ActionFunctionArgs) {
     allowAmbassador: true,
   });
 
-  const { data, errors } = await validateForm(
+  const { data, errors, success } = await validateForm(
     request,
     UpdateApplicationEmailInput
   );
 
-  if (!data) {
+  if (!success) {
     return json({
       error: 'Please fix the errors above.',
       errors,
@@ -126,7 +126,7 @@ export default function UpdateApplicationEmailPage() {
 const keys = UpdateApplicationEmailInput.keyof().enum;
 
 function UpdateApplicationEmailForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

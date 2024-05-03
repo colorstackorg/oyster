@@ -10,7 +10,7 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 
-import { Button, Form, getActionErrors, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, validateForm } from '@oyster/ui';
 
 import { verifyOneTimeCode } from '@/admin-dashboard.server';
 import { OneTimeCodeForm, VerifyOneTimeCodeInput } from '@/admin-dashboard.ui';
@@ -39,16 +39,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const { data, errors } = await validateForm(
+  const { data, errors, success } = await validateForm(
     request,
     VerifyOneTimeCodeInput.pick({ value: true })
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   const oneTimeCodeId = await oneTimeCodeIdCookie.parse(
@@ -91,7 +88,7 @@ const keys = VerifyOneTimeCodeInput.keyof().enum;
 
 export default function VerifyOneTimeCodePage() {
   const { description } = useLoaderData<typeof loader>();
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

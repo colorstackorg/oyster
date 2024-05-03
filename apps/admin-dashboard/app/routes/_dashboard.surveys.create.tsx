@@ -14,7 +14,7 @@ import { sql } from 'kysely';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   Select,
@@ -48,13 +48,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors } = await validateForm(request, CreateSurveyInput);
+  const { data, errors, success } = await validateForm(
+    request,
+    CreateSurveyInput
+  );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   await createSurvey({
@@ -91,7 +91,7 @@ export default function CreateSurveyPage() {
 const keys = CreateSurveyInput.keyof().enum;
 
 function CreateSurveyForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const { events } = useLoaderData<typeof loader>();
 
   return (

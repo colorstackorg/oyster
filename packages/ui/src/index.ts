@@ -8,12 +8,7 @@ export { Dashboard } from './components/dashboard';
 export { DatePicker } from './components/date-picker';
 export { Divider } from './components/divider';
 export { Dropdown } from './components/dropdown';
-export {
-  Form,
-  InputField,
-  getActionErrors,
-  validateForm,
-} from './components/form';
+export { Form, getErrors, InputField, validateForm } from './components/form';
 export type { FieldProps } from './components/form';
 export { IconButton, getIconButtonCn } from './components/icon-button';
 export { Input, getInputCn } from './components/input';

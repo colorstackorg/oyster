@@ -16,7 +16,7 @@ import { type z } from 'zod';
 
 import { db } from '@oyster/db';
 import { type Major } from '@oyster/types';
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { editEducation } from '@/member-profile.server';
 import { type DegreeType, Education, type School } from '@/member-profile.ui';
@@ -99,14 +99,14 @@ type EditEducationFormData = z.infer<typeof EditEducationFormData>;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors } = await validateForm(request, EditEducationFormData);
+  const { data, errors, success } = await validateForm(
+    request,
+    EditEducationFormData
+  );
 
   try {
-    if (!data) {
-      return json({
-        error: 'Please fix the above errors.',
-        errors,
-      });
+    if (!success) {
+      return json({ errors });
     }
 
     if (data.startDate && data.endDate && data.startDate > data.endDate) {
@@ -143,7 +143,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 const keys = EditEducationFormData.keyof().enum;
 
 export default function EditEducationPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const { education } = useLoaderData<typeof loader>();
 
   const navigate = useNavigate();

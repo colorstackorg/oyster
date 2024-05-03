@@ -13,7 +13,7 @@ import {
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Modal,
   Select,
   validateForm,
@@ -42,13 +42,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors } = await validateForm(request, ChangePrimaryEmailInput);
+  const { data, errors, success } = await validateForm(
+    request,
+    ChangePrimaryEmailInput
+  );
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   try {
@@ -75,7 +75,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = ChangePrimaryEmailInput.keyof().enum;
 
 export default function ChangePrimaryEmailPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const { emails } = useLoaderData<typeof loader>();
 
   return (

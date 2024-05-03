@@ -9,7 +9,7 @@ import { type z } from 'zod';
 
 import { db } from '@oyster/db';
 import { Activity } from '@oyster/types';
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
 import { ActivityForm } from '@/shared/components/activity-form';
@@ -39,13 +39,13 @@ type CreateActivityInput = z.infer<typeof CreateActivityInput>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors } = await validateForm(request, CreateActivityInput);
+  const { data, errors, success } = await validateForm(
+    request,
+    CreateActivityInput
+  );
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   await addActivity(data);
@@ -79,7 +79,7 @@ async function addActivity(input: CreateActivityInput) {
 const keys = CreateActivityInput.keyof().enum;
 
 export default function AddActivityPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Modal onCloseTo={Route['/gamification/activities']}>

@@ -18,7 +18,7 @@ import {
   ScholarshipRecipient,
   type ScholarshipType,
 } from '@oyster/types';
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
 import { parseCsv } from '@/admin-dashboard.server';
@@ -54,16 +54,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors } = await validateForm(
+  const { data, errors, success } = await validateForm(
     form,
     ImportScholarshipRecipientsInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   let count = 0;
@@ -198,7 +195,7 @@ export default function ImportScholarshipsPage() {
 const keys = ImportScholarshipRecipientsInput.keyof().enum;
 
 function ImportScholarshipsForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">

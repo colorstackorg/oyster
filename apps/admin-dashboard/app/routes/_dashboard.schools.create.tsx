@@ -9,7 +9,7 @@ import { Form as RemixForm, useActionData } from '@remix-run/react';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
@@ -33,13 +33,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors } = await validateForm(request, CreateSchoolInput);
+  const { data, errors, success } = await validateForm(
+    request,
+    CreateSchoolInput
+  );
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   await createSchool({
@@ -77,7 +77,7 @@ export default function CreateSchoolPage() {
 const keys = CreateSchoolInput.keyof().enum;
 
 function CreateSchoolForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

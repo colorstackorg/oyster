@@ -16,7 +16,7 @@ import {
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { importSurveyResponses } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
@@ -60,13 +60,13 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors } = await validateForm(form, ImportSurveyResponsesInput);
+  const { data, errors, success } = await validateForm(
+    form,
+    ImportSurveyResponsesInput
+  );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   let count = 0;
@@ -117,7 +117,7 @@ export default function ImportSurveyResponsesPage() {
 const keys = ImportSurveyResponsesInput.keyof().enum;
 
 function ImportSurveyResponsesForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">

@@ -16,7 +16,7 @@ import {
   Divider,
   type FieldProps,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Radio,
   Select,
@@ -71,7 +71,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await request.formData();
 
-  const { data, errors } = await validateForm(
+  const { data, errors, success } = await validateForm(
     {
       ...Object.fromEntries(form),
       ...(!!form.get('currentResources') && {
@@ -81,11 +81,8 @@ export async function action({ request }: ActionFunctionArgs) {
     SubmitCensusResponseData_
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   try {
@@ -127,7 +124,7 @@ const keys = SubmitCensusResponseData_.keyof().enum;
 export default function CensusForm() {
   useRevalidateOnFocus();
 
-  const { error } = getActionErrors(useActionData<typeof action>());
+  const { error } = getErrors(useActionData<typeof action>());
 
   const [hasGraduated, setHasGraduated] = useState<boolean | null>(null);
   const [hasTechnicalRole, setHasTechnicalRole] = useState<boolean>(false);
@@ -162,7 +159,7 @@ export default function CensusForm() {
 }
 
 function BasicSection() {
-  const { errors } = getActionErrors(useActionData<typeof action>());
+  const { errors } = getErrors(useActionData<typeof action>());
 
   return (
     <CensusSection title="Basic Information">
@@ -185,7 +182,7 @@ function BasicSection() {
 }
 
 function EducationSection() {
-  const { errors } = getActionErrors(useActionData<typeof action>());
+  const { errors } = getErrors(useActionData<typeof action>());
 
   const { hasGraduated, isInternational, setHasGraduated, setIsInternational } =
     useContext(CensusContext);
@@ -351,7 +348,7 @@ function EducationSection() {
 }
 
 function WorkSection() {
-  const { errors } = getActionErrors(useActionData<typeof action>());
+  const { errors } = getErrors(useActionData<typeof action>());
 
   const {
     hasGraduated,
@@ -547,7 +544,7 @@ function WorkSection() {
 }
 
 function ColorStackFeedbackSection() {
-  const { errors } = getActionErrors(useActionData<typeof action>());
+  const { errors } = getErrors(useActionData<typeof action>());
 
   const { hasGraduated } = useContext(CensusContext);
 

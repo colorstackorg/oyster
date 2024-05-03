@@ -12,7 +12,7 @@ import {
   Button,
   DatePicker,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   Select,
@@ -52,9 +52,12 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await request.formData();
 
-  const { data, errors } = await validateForm(form, CreateEventFormData);
+  const { data, errors, success } = await validateForm(
+    form,
+    CreateEventFormData
+  );
 
-  if (!data) {
+  if (!success) {
     return json({
       error: 'Something went wrong, please try again.',
       errors,
@@ -109,7 +112,7 @@ const keys = CreateEventFormData.keyof().enum;
 const EVENT_TYPES = Object.values(EventType);
 
 function CreateEventForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

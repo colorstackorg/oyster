@@ -8,7 +8,7 @@ import { Form as RemixForm, useActionData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type z } from 'zod';
 
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { addEducation } from '@/member-profile.server';
 import { AddEducationInput } from '@/member-profile.ui';
@@ -44,13 +44,13 @@ type AddEducationFormData = z.infer<typeof AddEducationFormData>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors } = await validateForm(request, AddEducationFormData);
+  const { data, errors, success } = await validateForm(
+    request,
+    AddEducationFormData
+  );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the above errors.',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   if (data.startDate && data.endDate && data.startDate > data.endDate) {
@@ -87,7 +87,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = AddEducationFormData.keyof().enum;
 
 export default function AddEducationPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Modal onCloseTo={Route['/profile/education']}>

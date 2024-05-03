@@ -16,7 +16,7 @@ import { Student } from '@oyster/types';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
@@ -57,13 +57,13 @@ type UpdateStudentEmailInput = z.infer<typeof UpdateStudentEmailInput>;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors } = await validateForm(request, UpdateStudentEmailInput);
+  const { data, errors, success } = await validateForm(
+    request,
+    UpdateStudentEmailInput
+  );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!success) {
+    return json({ errors });
   }
 
   const result = await updateMemberEmail({
@@ -116,7 +116,7 @@ export default function UpdateStudentEmailPage() {
 const keys = UpdateStudentEmailInput.keyof().enum;
 
 function UpdateStudentEmailForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">
