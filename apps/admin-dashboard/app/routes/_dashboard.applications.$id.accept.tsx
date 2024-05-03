@@ -17,10 +17,10 @@ import { Button, Form, Modal } from '@oyster/ui';
 import { acceptApplication, getApplication } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
+  admin,
   commitSession,
   ensureUserAuthenticated,
   toast,
-  user,
 } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -47,10 +47,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
     allowAmbassador: true,
   });
 
-  const adminId = user(session);
-
   try {
-    await acceptApplication(params.id as string, adminId);
+    await acceptApplication(params.id as string, admin(session));
 
     toast(session, {
       message: 'Application has been accepted.',
