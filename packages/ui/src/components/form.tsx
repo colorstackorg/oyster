@@ -132,6 +132,15 @@ type ValidateFormInput =
   | FormData
   | Record<string, FormDataEntryValue | FormDataEntryValue[]>;
 
+/**
+ * Validates a form against a Zod schema.
+ *
+ * The input is flexible and can either be a `Request`, `FormData`, or a plain
+ * object. Ultimately, the input is converted to a plain object before being
+ * validated.
+ *
+ * The `ok` property in the result indicates whether the form is valid or not.
+ */
 export async function validateForm<T extends z.AnyZodObject>(
   input: ValidateFormInput,
   schema: T
