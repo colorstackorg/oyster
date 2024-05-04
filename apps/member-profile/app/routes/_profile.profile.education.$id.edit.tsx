@@ -104,11 +104,11 @@ export async function action({ params, request }: ActionFunctionArgs) {
     EditEducationFormData
   );
 
-  try {
-    if (!ok) {
-      return json({ errors }, { status: 400 });
-    }
+  if (!ok) {
+    return json({ errors }, { status: 400 });
+  }
 
+  try {
     if (data.startDate && data.endDate && data.startDate > data.endDate) {
       return json({
         error: 'End date must be after the start date.',
