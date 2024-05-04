@@ -87,9 +87,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return redirect(Route['/apply/thank-you']);
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
