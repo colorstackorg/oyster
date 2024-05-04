@@ -46,7 +46,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!ok) {
-    return json({ errors });
+    return json({ errors }, { status: 400 });
   }
 
   const oneTimeCodeId = await oneTimeCodeIdCookie.parse(

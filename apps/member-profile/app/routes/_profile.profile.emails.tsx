@@ -77,7 +77,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!ok) {
-    return json({ errors });
+    return json({ errors }, { status: 400 });
   }
 
   await db.transaction().execute(async (trx) => {

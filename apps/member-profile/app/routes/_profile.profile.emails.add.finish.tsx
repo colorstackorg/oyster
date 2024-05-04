@@ -68,7 +68,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const { data, errors, ok } = await validateForm(request, AddEmailFormData);
 
   if (!ok) {
-    return json({ errors });
+    return json({ errors }, { status: 400 });
   }
 
   const email = await addEmailCookie.parse(request.headers.get('Cookie'));
