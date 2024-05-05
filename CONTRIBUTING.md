@@ -158,8 +158,8 @@ applications.
 #### Clean up
 
 Once you are done developing, you might want to stop containers from running.
-Keeping your containers up can eat up ypur battery life, so its best to take
-them down once you are done using them in a session. Run:
+Keeping your containers up can eat up your battery life, so its best to take
+them down once you are done using them. Run:
 
 ```
 yarn dx:down
