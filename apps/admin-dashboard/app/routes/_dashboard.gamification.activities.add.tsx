@@ -7,18 +7,18 @@ import {
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { type z } from 'zod';
 
+import { db } from '@oyster/db';
 import { Activity } from '@oyster/types';
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import { ActivityForm } from '../shared/components/activity-form';
-import { Route } from '../shared/constants';
-import { db } from '../shared/core.server';
+import { ActivityForm } from '@/shared/components/activity-form';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -81,8 +81,7 @@ async function addActivity(input: CreateActivityInput) {
     .execute();
 }
 
-const { description, name, period, points, type } =
-  CreateActivityInput.keyof().enum;
+const keys = CreateActivityInput.keyof().enum;
 
 export default function AddActivityPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
@@ -95,14 +94,14 @@ export default function AddActivityPage() {
       </Modal.Header>
 
       <RemixForm className="form" method="post">
-        <ActivityForm.NameField error={errors.name} name={name} />
+        <ActivityForm.NameField error={errors.name} name={keys.name} />
         <ActivityForm.DescriptionField
           error={errors.description}
-          name={description}
+          name={keys.description}
         />
-        <ActivityForm.TypeField error={errors.type} name={type} />
-        <ActivityForm.PeriodField error={errors.period} name={period} />
-        <ActivityForm.PointsField error={errors.points} name={points} />
+        <ActivityForm.TypeField error={errors.type} name={keys.type} />
+        <ActivityForm.PeriodField error={errors.period} name={keys.period} />
+        <ActivityForm.PointsField error={errors.points} name={keys.points} />
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

@@ -12,13 +12,13 @@ import {
 
 import { Button, Form, getActionErrors, validateForm } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { ENV } from '../shared/constants.server';
-import { oneTimeCodeIdCookie } from '../shared/cookies.server';
-import { verifyOneTimeCode } from '../shared/core.server';
-import { OneTimeCodeForm, VerifyOneTimeCodeInput } from '../shared/core.ui';
-import { trackWithoutRequest } from '../shared/mixpanel.server';
-import { commitSession, getSession, SESSION } from '../shared/session.server';
+import { verifyOneTimeCode } from '@/member-profile.server';
+import { OneTimeCodeForm, VerifyOneTimeCodeInput } from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
+import { ENV } from '@/shared/constants.server';
+import { oneTimeCodeIdCookie } from '@/shared/cookies.server';
+import { trackWithoutRequest } from '@/shared/mixpanel.server';
+import { commitSession, getSession, SESSION } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const oneTimeCodeId = await oneTimeCodeIdCookie.parse(

@@ -19,6 +19,7 @@ import {
 } from 'react-feather';
 import { match } from 'ts-pattern';
 
+import { db } from '@oyster/db';
 import {
   type ActivationRequirement,
   StudentActiveStatus,
@@ -35,19 +36,18 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { Card } from '../shared/components/card';
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
 import {
   countEventAttendees,
   countMessagesSent,
-  db,
   getActiveStreakLeaderboard,
   getActiveStreakLeaderboardPosition,
   getIpAddress,
-} from '../shared/core.server';
-import { setMixpanelProfile, track } from '../shared/mixpanel.server';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+} from '@/member-profile.server';
+import { Card } from '@/shared/components/card';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { setMixpanelProfile, track } from '@/shared/mixpanel.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 const RECENT_WEEKS = 16;
 

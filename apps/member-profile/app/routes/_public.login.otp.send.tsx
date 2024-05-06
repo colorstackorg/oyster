@@ -3,10 +3,10 @@ import { Form as RemixForm, useActionData } from '@remix-run/react';
 
 import { Button, Form, getActionErrors, validateForm } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { oneTimeCodeIdCookie } from '../shared/cookies.server';
-import { sendOneTimeCode } from '../shared/core.server';
-import { OneTimeCodeForm, SendOneTimeCodeInput } from '../shared/core.ui';
+import { sendOneTimeCode } from '@/member-profile.server';
+import { OneTimeCodeForm, SendOneTimeCodeInput } from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
+import { oneTimeCodeIdCookie } from '@/shared/cookies.server';
 
 export async function action({ request }: ActionFunctionArgs) {
   const form = await request.formData();

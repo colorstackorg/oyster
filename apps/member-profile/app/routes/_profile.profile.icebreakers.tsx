@@ -11,6 +11,7 @@ import {
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import {
   Button,
   Form,
@@ -22,27 +23,26 @@ import {
 import { id } from '@oyster/utils';
 
 import {
+  getIcebreakerPrompts,
+  upsertIcebreakerResponses,
+} from '@/member-profile.server';
+import { IcebreakerPrompt, IcebreakerResponse } from '@/member-profile.ui';
+import {
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
-} from '../shared/components/profile';
+} from '@/shared/components/profile';
 import {
   IcebreakersProvider,
   type PromptNumber,
   useIcebreakerContext,
-} from '../shared/components/profile.icebreakers';
-import {
-  db,
-  getIcebreakerPrompts,
-  upsertIcebreakerResponses,
-} from '../shared/core.server';
-import { IcebreakerPrompt, IcebreakerResponse } from '../shared/core.ui';
+} from '@/shared/components/profile.icebreakers';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -137,14 +137,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 }
 
-const {
-  icebreakerPrompt1,
-  icebreakerPrompt2,
-  icebreakerPrompt3,
-  icebreakerResponse1,
-  icebreakerResponse2,
-  icebreakerResponse3,
-} = UpsertIcebreakerResponsesInput.keyof().enum;
+const keys = UpsertIcebreakerResponsesInput.keyof().enum;
 
 export default function UpsertIcebreakerResponsesForm() {
   const { icebreakerResponses } = useLoaderData<typeof loader>();
@@ -196,15 +189,15 @@ function IcebreakerGroup({ number }: IcebreakerGroupProps) {
     .exhaustive();
 
   const promptName = match(number)
-    .with('1', () => icebreakerPrompt1)
-    .with('2', () => icebreakerPrompt2)
-    .with('3', () => icebreakerPrompt3)
+    .with('1', () => keys.icebreakerPrompt1)
+    .with('2', () => keys.icebreakerPrompt2)
+    .with('3', () => keys.icebreakerPrompt3)
     .exhaustive();
 
   const responseName = match(number)
-    .with('1', () => icebreakerResponse1)
-    .with('2', () => icebreakerResponse2)
-    .with('3', () => icebreakerResponse3)
+    .with('1', () => keys.icebreakerResponse1)
+    .with('2', () => keys.icebreakerResponse2)
+    .with('3', () => keys.icebreakerResponse3)
     .exhaustive();
 
   const response = icebreakerResponses[parseInt(number) - 1];

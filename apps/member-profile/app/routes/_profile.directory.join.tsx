@@ -6,8 +6,8 @@ import { match } from 'ts-pattern';
 
 import { Button, cx, getButtonCn, Modal, Text } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { Route } from '@/shared/constants';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

@@ -21,13 +21,16 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { getApplication, updateEmailApplication } from '../shared/core.server';
+import {
+  getApplication,
+  updateEmailApplication,
+} from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
@@ -122,15 +125,20 @@ export default function UpdateApplicationEmailPage() {
   );
 }
 
-const { email } = UpdateApplicationEmailInput.keyof().enum;
+const keys = UpdateApplicationEmailInput.keyof().enum;
 
 function UpdateApplicationEmailForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field error={errors.email} label="Email" labelFor={email} required>
-        <Input id={email} name={email} required />
+      <Form.Field
+        error={errors.email}
+        label="Email"
+        labelFor={keys.email}
+        required
+      >
+        <Input id={keys.email} name={keys.email} required />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>

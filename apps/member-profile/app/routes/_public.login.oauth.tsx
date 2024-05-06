@@ -3,10 +3,10 @@ import jwt from 'jsonwebtoken';
 
 import { toTitleCase } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { ENV } from '../shared/constants.server';
-import { trackWithoutRequest } from '../shared/mixpanel.server';
-import { commitSession, getSession, SESSION } from '../shared/session.server';
+import { Route } from '@/shared/constants';
+import { ENV } from '@/shared/constants.server';
+import { trackWithoutRequest } from '@/shared/mixpanel.server';
+import { commitSession, getSession, SESSION } from '@/shared/session.server';
 
 // TODO: Add Zod validation here.
 

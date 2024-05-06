@@ -15,15 +15,16 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { db, importSurveyResponses } from '../shared/core.server';
+import { importSurveyResponses } from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

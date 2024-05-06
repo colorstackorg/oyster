@@ -16,6 +16,7 @@ import { Award, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import { type CompletedActivity } from '@oyster/types';
 import {
   Button,
@@ -29,21 +30,20 @@ import {
   useSearchParams,
 } from '@oyster/ui';
 
-import { Card } from '../shared/components/card';
 import {
-  EmptyState,
-  EmptyStateContainer,
-} from '../shared/components/empty-state';
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import {
-  db,
   getPointsLeaderboard,
   getTotalPoints,
   listActivities,
-} from '../shared/core.server';
-import { track } from '../shared/mixpanel.server';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+} from '@/member-profile.server';
+import { Card } from '@/shared/components/card';
+import {
+  EmptyState,
+  EmptyStateContainer,
+} from '@/shared/components/empty-state';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { track } from '@/shared/mixpanel.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 const TIMEFRAME = {
   ALL_TIME: 'all_time',
@@ -60,8 +60,6 @@ const PointsSearchParams = z.object({
 });
 
 type PointsSearchParams = z.infer<typeof PointsSearchParams>;
-
-const PointsSearchParam = PointsSearchParams.keyof().enum;
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -238,6 +236,8 @@ export default function PointsPage() {
   );
 }
 
+const keys = PointsSearchParams.keyof().enum;
+
 function TimeframeForm() {
   const [searchParams] = useSearchParams(PointsSearchParams);
 
@@ -251,8 +251,8 @@ function TimeframeForm() {
     >
       <Select
         defaultValue={searchParams.timeframe}
-        name={PointsSearchParam.timeframe}
-        id={PointsSearchParam.timeframe}
+        name={keys.timeframe}
+        id={keys.timeframe}
         placeholder="Timeframe"
         required
       >
@@ -263,8 +263,8 @@ function TimeframeForm() {
       </Select>
 
       <input
-        name={PointsSearchParam.leaderboardLimit}
-        id={PointsSearchParam.leaderboardLimit}
+        name={keys.leaderboardLimit}
+        id={keys.leaderboardLimit}
         type="hidden"
         value={searchParams.leaderboardLimit}
       />
@@ -293,8 +293,8 @@ function PointsLeaderboard({
         >
           <Select
             defaultValue={searchParams.leaderboardLimit}
-            name={PointsSearchParam.leaderboardLimit}
-            id={PointsSearchParam.leaderboardLimit}
+            name={keys.leaderboardLimit}
+            id={keys.leaderboardLimit}
             required
           >
             <option value="10">Top 10</option>
@@ -304,8 +304,8 @@ function PointsLeaderboard({
           </Select>
 
           <input
-            name={PointsSearchParam.timeframe}
-            id={PointsSearchParam.timeframe}
+            name={keys.timeframe}
+            id={keys.timeframe}
             type="hidden"
             value={searchParams.timeframe}
           />

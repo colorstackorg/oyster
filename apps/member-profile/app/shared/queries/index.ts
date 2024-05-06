@@ -1,9 +1,13 @@
 import dayjs from 'dayjs';
 
+import { db } from '@oyster/db';
 import { toTitleCase } from '@oyster/utils';
 
-import { db } from '../core.server';
-import { Country, type DegreeType, FORMATTED_DEGREEE_TYPE } from '../core.ui';
+import {
+  Country,
+  type DegreeType,
+  FORMATTED_DEGREEE_TYPE,
+} from '@/member-profile.ui';
 
 // "educations"
 

@@ -14,15 +14,15 @@ import { z } from 'zod';
 import { nullableField, Student } from '@oyster/types';
 import { Button, getActionErrors, InputField, validateForm } from '@oyster/ui';
 
+import { updateMember } from '@/member-profile.server';
 import {
   JoinDirectoryBackButton,
   JoinDirectoryNextButton,
-} from './_profile.directory.join';
-import { Route } from '../shared/constants';
-import { updateMember } from '../shared/core.server';
-import { getMember } from '../shared/queries';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
-import { formatUrl } from '../shared/url.utils';
+} from '@/routes/_profile.directory.join';
+import { Route } from '@/shared/constants';
+import { getMember } from '@/shared/queries';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
+import { formatUrl } from '@/shared/url.utils';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -81,14 +81,7 @@ export async function action({ request }: ActionFunctionArgs) {
   return redirect(Route['/directory/join/4']);
 }
 
-const {
-  calendlyUrl,
-  githubUrl,
-  instagramHandle,
-  linkedInUrl,
-  personalWebsiteUrl,
-  twitterHandle,
-} = UpdateSocialsInformation.keyof().enum;
+const keys = UpdateSocialsInformation.keyof().enum;
 
 export default function UpdateSocialsInformationForm() {
   const { student } = useLoaderData<typeof loader>();
@@ -100,38 +93,38 @@ export default function UpdateSocialsInformationForm() {
         defaultValue={student.linkedInUrl || undefined}
         error={errors.linkedInUrl}
         label="LinkedIn URL"
-        name={linkedInUrl}
+        name={keys.linkedInUrl}
         required
       />
       <InputField
         defaultValue={student.instagramHandle || undefined}
         error={errors.instagramHandle}
         label="Instagram Handle"
-        name={instagramHandle}
+        name={keys.instagramHandle}
       />
       <InputField
         defaultValue={student.twitterHandle || undefined}
         error={errors.twitterHandle}
         label="Twitter Handle"
-        name={twitterHandle}
+        name={keys.twitterHandle}
       />
       <InputField
         defaultValue={student.githubUrl || undefined}
         error={errors.githubUrl}
         label="GitHub URL"
-        name={githubUrl}
+        name={keys.githubUrl}
       />
       <InputField
         defaultValue={student.calendlyUrl || undefined}
         error={errors.calendlyUrl}
         label="Calendly URL"
-        name={calendlyUrl}
+        name={keys.calendlyUrl}
       />
       <InputField
         defaultValue={student.personalWebsiteUrl || undefined}
         error={errors.personalWebsiteUrl}
         label="Personal Website"
-        name={personalWebsiteUrl}
+        name={keys.personalWebsiteUrl}
       />
 
       <Button.Group spacing="between">

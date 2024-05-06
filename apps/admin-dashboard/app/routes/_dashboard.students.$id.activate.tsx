@@ -11,15 +11,16 @@ import {
   useNavigate,
 } from '@remix-run/react';
 
+import { db } from '@oyster/db';
 import { Button, Form, Modal } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { activateMember, db } from '../shared/core.server';
+import { activateMember } from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

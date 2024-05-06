@@ -24,20 +24,20 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { editWorkExperience, getWorkExperience } from '../shared/core.server';
+import { editWorkExperience, getWorkExperience } from '@/member-profile.server';
 import {
   EditWorkExperienceInput,
   type EmploymentType,
   type LocationType,
   WorkForm,
-} from '../shared/core.ui';
+} from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

@@ -4,8 +4,11 @@ import { generatePath, Link, useLoaderData } from '@remix-run/react';
 import { type Student } from '@oyster/types';
 import { Modal, ProfilePicture } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { countEventAttendees, listEventAttendees } from '../shared/core.server';
+import {
+  countEventAttendees,
+  listEventAttendees,
+} from '@/member-profile.server';
+import { Route } from '@/shared/constants';
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const eventId = params.id as string;

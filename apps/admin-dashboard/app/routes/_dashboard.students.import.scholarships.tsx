@@ -12,6 +12,7 @@ import { Form as RemixForm, useActionData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import {
   Email,
   ScholarshipRecipient,
@@ -20,14 +21,14 @@ import {
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { db, parseCsv } from '../shared/core.server';
-import { findStudentByEmail } from '../shared/queries/student';
+import { parseCsv } from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
+import { findStudentByEmail } from '@/shared/queries/student';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -194,7 +195,7 @@ export default function ImportScholarshipsPage() {
   );
 }
 
-const { file } = ImportScholarshipRecipientsInput.keyof().enum;
+const keys = ImportScholarshipRecipientsInput.keyof().enum;
 
 function ImportScholarshipsForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
@@ -205,10 +206,16 @@ function ImportScholarshipsForm() {
         description="Please upload a .csv file."
         error={errors.file}
         label="File"
-        labelFor={file}
+        labelFor={keys.file}
         required
       >
-        <input accept=".csv" id={file} name={file} required type="file" />
+        <input
+          accept=".csv"
+          id={keys.file}
+          name={keys.file}
+          required
+          type="file"
+        />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>

@@ -14,19 +14,20 @@ import dayjs from 'dayjs';
 import { generatePath } from 'react-router';
 import { type z } from 'zod';
 
+import { db } from '@oyster/db';
 import { type Major } from '@oyster/types';
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
-import { EducationForm } from '../shared/components/education-form';
-import { Route } from '../shared/constants';
-import { db, editEducation } from '../shared/core.server';
-import { type DegreeType, Education, type School } from '../shared/core.ui';
+import { editEducation } from '@/member-profile.server';
+import { type DegreeType, Education, type School } from '@/member-profile.ui';
+import { EducationForm } from '@/shared/components/education-form';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -144,15 +145,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   }
 }
 
-const {
-  degreeType,
-  endDate,
-  major,
-  otherMajor,
-  otherSchool,
-  schoolId,
-  startDate,
-} = EditEducationFormData.keyof().enum;
+const keys = EditEducationFormData.keyof().enum;
 
 export default function EditEducationPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
@@ -185,37 +178,37 @@ export default function EditEducationPage() {
           <EducationForm.SchoolField
             defaultValue={school}
             error={errors.schoolId}
-            name={schoolId}
+            name={keys.schoolId}
           />
           <EducationForm.OtherSchoolField
             defaultValue={education.otherSchool || undefined}
             error={errors.otherSchool}
-            name={otherSchool}
+            name={keys.otherSchool}
           />
           <EducationForm.DegreeTypeField
             defaultValue={education.degreeType as DegreeType}
             error={errors.degreeType}
-            name={degreeType}
+            name={keys.degreeType}
           />
           <EducationForm.FieldOfStudyField
             defaultValue={education.major as Major}
             error={errors.major}
-            name={major}
+            name={keys.major}
           />
           <EducationForm.OtherFieldOfStudyField
             defaultValue={education.otherMajor || undefined}
             error={errors.otherMajor}
-            name={otherMajor}
+            name={keys.otherMajor}
           />
           <EducationForm.StartDateField
             defaultValue={education.startDate.slice(0, 7)}
             error={errors.startDate}
-            name={startDate}
+            name={keys.startDate}
           />
           <EducationForm.EndDateField
             defaultValue={education.endDate.slice(0, 7)}
             error={errors.endDate}
-            name={endDate}
+            name={keys.endDate}
           />
         </EducationForm.Context>
 

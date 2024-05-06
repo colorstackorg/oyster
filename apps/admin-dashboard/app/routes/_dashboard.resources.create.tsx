@@ -7,6 +7,7 @@ import {
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { type z } from 'zod';
 
+import { db } from '@oyster/db';
 import { Resource, ResourceStatus } from '@oyster/types';
 import {
   Button,
@@ -18,13 +19,12 @@ import {
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { db } from '../shared/core.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -93,15 +93,20 @@ export default function CreateResourcePage() {
   );
 }
 
-const { name } = CreateResourceInput.keyof().enum;
+const keys = CreateResourceInput.keyof().enum;
 
 function CreateResourceForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field error={errors.name} label="Name" labelFor={name} required>
-        <Input id={name} name={name} required />
+      <Form.Field
+        error={errors.name}
+        label="Name"
+        labelFor={keys.name}
+        required
+      >
+        <Input id={keys.name} name={keys.name} required />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>

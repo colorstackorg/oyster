@@ -14,18 +14,18 @@ import { z } from 'zod';
 import { nullableField, Student } from '@oyster/types';
 import { Button, Divider, getActionErrors, validateForm } from '@oyster/ui';
 
+import { updateMember } from '@/member-profile.server';
 import {
   JoinDirectoryBackButton,
   JoinDirectoryNextButton,
-} from './_profile.directory.join';
+} from '@/routes/_profile.directory.join';
 import {
   EthnicityField,
   HometownField,
-} from '../shared/components/profile.personal';
-import { Route } from '../shared/constants';
-import { updateMember } from '../shared/core.server';
-import { getMember, getMemberEthnicities } from '../shared/queries';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+} from '@/shared/components/profile.personal';
+import { Route } from '@/shared/constants';
+import { getMember, getMemberEthnicities } from '@/shared/queries';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -85,12 +85,7 @@ export async function action({ request }: ActionFunctionArgs) {
   return redirect(Route['/directory/join/3']);
 }
 
-const {
-  ethnicities: ethnicitiesKey,
-  hometown,
-  hometownLatitude,
-  hometownLongitude,
-} = UpdatePersonalInformation.keyof().enum;
+const keys = UpdatePersonalInformation.keyof().enum;
 
 export default function UpdatePersonalInformationForm() {
   const { ethnicities, student } = useLoaderData<typeof loader>();
@@ -103,9 +98,9 @@ export default function UpdatePersonalInformationForm() {
         defaultLongitude={student.hometownCoordinates?.x}
         defaultValue={student.hometown || undefined}
         error={errors.hometown}
-        name={hometown}
-        latitudeName={hometownLatitude}
-        longitudeName={hometownLongitude}
+        name={keys.hometown}
+        latitudeName={keys.hometownLatitude}
+        longitudeName={keys.hometownLongitude}
       />
 
       <Divider />
@@ -113,7 +108,7 @@ export default function UpdatePersonalInformationForm() {
       <EthnicityField
         defaultValue={ethnicities}
         error={errors.ethnicities}
-        name={ethnicitiesKey}
+        name={keys.ethnicities}
       />
 
       <Button.Group spacing="between">

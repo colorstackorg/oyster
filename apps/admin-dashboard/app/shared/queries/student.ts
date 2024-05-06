@@ -1,4 +1,4 @@
-import { db } from '../core.server';
+import { db } from '@oyster/db';
 
 export function findStudentByEmail(email: string) {
   return db

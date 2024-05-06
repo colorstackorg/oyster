@@ -5,10 +5,10 @@ import { CheckCircle } from 'react-feather';
 
 import { Text } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { getCensusResponse } from '../shared/core.server';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+import { getCensusResponse } from '@/member-profile.server';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

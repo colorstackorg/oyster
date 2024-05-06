@@ -21,14 +21,14 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { QueueFromName } from '../shared/core.server';
-import { BullQueue } from '../shared/core.ui';
+import { QueueFromName } from '@/admin-dashboard.server';
+import { BullQueue } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 const BullParams = z.object({
   queue: z.nativeEnum(BullQueue),
@@ -46,8 +46,6 @@ const AddRepeatableInput = z.object({
 });
 
 type AddRepeatableInput = z.infer<typeof AddRepeatableInput>;
-
-const AddRepeatableKey = AddRepeatableInput.keyof().enum;
 
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -111,6 +109,8 @@ export default function AddRepeatablePage() {
   );
 }
 
+const keys = AddRepeatableInput.keyof().enum;
+
 function AddRepeatableForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
@@ -119,28 +119,20 @@ function AddRepeatableForm() {
       <Form.Field
         error={errors.name}
         label="Name"
-        labelFor={AddRepeatableKey.name}
+        labelFor={keys.name}
         required
       >
-        <Input
-          id={AddRepeatableKey.name}
-          name={AddRepeatableKey.name}
-          required
-        />
+        <Input id={keys.name} name={keys.name} required />
       </Form.Field>
 
       <Form.Field
         description="Please format the job to be in the PT timezone."
         error={errors.pattern}
         label="Pattern (CRON)"
-        labelFor={AddRepeatableKey.pattern}
+        labelFor={keys.pattern}
         required
       >
-        <Input
-          id={AddRepeatableKey.pattern}
-          name={AddRepeatableKey.pattern}
-          required
-        />
+        <Input id={keys.pattern} name={keys.pattern} required />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>

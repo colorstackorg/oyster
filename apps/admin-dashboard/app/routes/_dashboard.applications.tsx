@@ -32,11 +32,11 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { listApplications } from '../shared/core.server';
-import { ListSearchParams } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { listApplications } from '@/admin-dashboard.server';
+import { ListSearchParams } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const ApplicationsSearchParams = ListSearchParams.extend({
   status: Application.shape.status.or(z.literal('all')).catch('pending'),
@@ -80,7 +80,7 @@ export default function ApplicationsPage() {
   );
 }
 
-const { search, status } = ApplicationsSearchParams.keyof().enum;
+const keys = ApplicationsSearchParams.keyof().enum;
 
 const statuses = Object.values(ApplicationStatus);
 
@@ -97,16 +97,16 @@ function FilterApplicationsForm() {
     >
       <SearchBar
         defaultValue={searchParams.search}
-        name={search}
-        id={search}
+        name={keys.search}
+        id={keys.search}
         placeholder="Search by email or name..."
       />
 
       <div className="ml-auto w-32">
         <Select
           defaultValue={searchParams.status}
-          id={status}
-          name={status}
+          id={keys.status}
+          name={keys.status}
           placeholder="Status..."
           required
         >
