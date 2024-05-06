@@ -17,6 +17,7 @@ import { deleteSlackMessage } from './use-cases/delete-slack-message';
 import { inviteToSlackWorkspace } from './use-cases/invite-to-slack-workspace';
 import { removeSlackReaction } from './use-cases/remove-slack-reaction';
 import { renameSlackChannel } from './use-cases/rename-slack-channel';
+import { sendStackBotMassNotification } from './use-cases/send-stackbot-mass-notification';
 import { unarchiveSlackChannel } from './use-cases/unarchive-slack-channel';
 
 export const slackWorker = registerWorker(
@@ -50,6 +51,9 @@ export const slackWorker = registerWorker(
       })
       .with({ name: 'slack.joined' }, async ({ data }) => {
         return onSlackWorkspaceJoined(data);
+      })
+      .with({ name: 'slack.mass.message' }, async ({ data }) => {
+        return sendStackBotMassNotification(data);
       })
       .with({ name: 'slack.message.add' }, async ({ data }) => {
         return addSlackMessage(data);

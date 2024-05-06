@@ -408,6 +408,12 @@ export const SlackBullJob = z.discriminatedUnion('name', [
     }),
   }),
   z.object({
+    name: z.literal('slack.mass.message'),
+    data: z.object({
+      message: z.string().trim().min(1),
+    }),
+  }),
+  z.object({
     name: z.literal('slack.message.add'),
     data: SlackMessage.pick({
       channelId: true,

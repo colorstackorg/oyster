@@ -70,6 +70,7 @@ const QueueNameFromJobName: Record<BullJob['name'], BullQueue> = {
   'slack.invite': 'slack',
   'slack.invited': 'slack',
   'slack.joined': 'slack',
+  'slack.mass.message': 'slack',
   'slack.message.add': 'slack',
   'slack.message.added': 'slack',
   'slack.message.change': 'slack',
