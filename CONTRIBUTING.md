@@ -25,6 +25,7 @@ ColorStack members first, and then friends of ColorStack. ❤️
     - [Postgres Setup](#postgres-setup)
     - [Executing Database Migrations](#executing-database-migrations)
     - [Seeding the Database](#seeding-the-database)
+    - [Stopping the Database](#stopping-the-database)
   - [Building the Project](#building-the-project)
   - [Running the Applications](#running-the-applications)
   - [Logging Into Applications](#logging-into-applications)
@@ -133,16 +134,6 @@ To execute the database migrations, run:
 yarn db:migrate
 ```
 
-To verify that the migration was executed successfully, connect to your Postgres
-database and run:
-
-```sh
-psql postgresql://oyster:oyster@localhost:5433/oyster
-\d
-```
-
-You should see a bunch of SQL tables!
-
 #### Seeding the Database
 
 Now that we have some tables, we're ready to add some seed data in our database,
@@ -155,11 +146,11 @@ yarn db:seed
 Follow the prompt to add your email, and you will now be able to log into both
 applications.
 
-#### Clean up
+#### Stopping the Database
 
-Once you are done developing, you might want to stop containers from running.
-Keeping your containers up can eat up your battery life, so its best to take
-them down once you are done using them. Run:
+Once you are done developing, you might want to stop the database containers
+from running. Keeping your containers up can eat up your battery life, so it's
+recommended to take them down once you are done using them. Run:
 
 ```
 yarn dx:down
