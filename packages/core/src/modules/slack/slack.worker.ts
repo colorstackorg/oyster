@@ -52,9 +52,6 @@ export const slackWorker = registerWorker(
       .with({ name: 'slack.joined' }, async ({ data }) => {
         return onSlackWorkspaceJoined(data);
       })
-      .with({ name: 'slack.mass.message' }, async ({ data }) => {
-        return sendStackBotMassNotification(data);
-      })
       .with({ name: 'slack.message.add' }, async ({ data }) => {
         return addSlackMessage(data);
       })
