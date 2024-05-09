@@ -19,6 +19,7 @@ export { deleteEducation } from './modules/education/use-cases/delete-education'
 export { editEducation } from './modules/education/use-cases/edit-education';
 export { getCrunchbaseOrganization } from './modules/employment/queries/get-crunchbase-organization';
 export { getWorkExperience } from './modules/employment/queries/get-work-experience';
+export { listJobOffers } from './modules/employment/queries/list-job-offers';
 export { listWorkExperiences } from './modules/employment/queries/list-work-experiences';
 export { searchCrunchbaseOrganizations } from './modules/employment/queries/search-crunchbase-organizations';
 export { addWorkExperience } from './modules/employment/use-cases/add-work-experience';
