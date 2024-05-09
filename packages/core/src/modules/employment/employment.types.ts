@@ -19,6 +19,8 @@ export const EmploymentType = {
   PART_TIME: 'part_time',
 } as const;
 
+export type EmploymentType = ExtractValue<typeof EmploymentType>;
+
 export const FORMATTED_EMPLOYMENT_TYPE: Record<EmploymentType, string> = {
   apprenticeship: 'Apprenticeship',
   contract: 'Contract',
@@ -40,13 +42,15 @@ export const LocationType = {
   REMOTE: 'remote',
 } as const;
 
+export type LocationType = ExtractValue<typeof LocationType>;
+
 export const FORMATTED_LOCATION_TYPE: Record<LocationType, string> = {
   hybrid: 'Hybrid',
   in_person: 'In-Person',
   remote: 'Remote',
 };
 
-// Schemas (Base)
+// Domain
 
 export const BaseCompany = z.object({
   crunchbaseId: z.string(),
@@ -57,7 +61,11 @@ export const BaseCompany = z.object({
   stockSymbol: z.string().optional(),
 });
 
+export type BaseCompany = z.infer<typeof BaseCompany>;
+
 export const Company = Entity.merge(BaseCompany);
+
+export type Company = z.infer<typeof Company>;
 
 export const JobOffer = Entity.omit({ deletedAt: true }).extend({
   baseSalary: z.number().optional(),
@@ -90,7 +98,21 @@ export const WorkExperience = Entity.extend({
   title: z.string().trim().min(1),
 });
 
-// Schemas (Use Cases)
+export type WorkExperience = z.infer<typeof WorkExperience>;
+
+// Queries
+
+export const ListJobOffersWhere = z.object({
+  company: Company.shape.id.nullable().catch(null),
+  employmentType: JobOffer.shape.employmentType.nullable().catch(null),
+  locationLatitude: JobOffer.shape.locationLatitude,
+  locationLongitude: JobOffer.shape.locationLongitude,
+  status: JobOffer.shape.status.nullable().catch(null),
+});
+
+export type ListJobOffersWhere = z.infer<typeof ListJobOffersWhere>;
+
+// Use Case(s)
 
 export const AddWorkExperienceInput = WorkExperience.pick({
   companyName: true,
@@ -106,14 +128,22 @@ export const AddWorkExperienceInput = WorkExperience.pick({
   companyCrunchbaseId: Company.shape.crunchbaseId,
 });
 
+export type AddWorkExperienceInput = z.infer<typeof AddWorkExperienceInput>;
+
 export const DeleteWorkExperienceInput = WorkExperience.pick({
   id: true,
   studentId: true,
 });
 
+export type DeleteWorkExperienceInput = z.infer<
+  typeof DeleteWorkExperienceInput
+>;
+
 export const EditWorkExperienceInput = AddWorkExperienceInput.extend({
   id: WorkExperience.shape.id,
 });
+
+export type EditWorkExperienceInput = z.infer<typeof EditWorkExperienceInput>;
 
 export const UploadJobOfferInput = JobOffer.omit({
   createdAt: true,
@@ -121,16 +151,4 @@ export const UploadJobOfferInput = JobOffer.omit({
   updatedAt: true,
 });
 
-// Types
-
-export type AddWorkExperienceInput = z.infer<typeof AddWorkExperienceInput>;
-export type BaseCompany = z.infer<typeof BaseCompany>;
-export type Company = z.infer<typeof Company>;
-export type DeleteWorkExperienceInput = z.infer<
-  typeof DeleteWorkExperienceInput
->;
-export type EditWorkExperienceInput = z.infer<typeof EditWorkExperienceInput>;
-export type EmploymentType = ExtractValue<typeof EmploymentType>;
-export type LocationType = ExtractValue<typeof LocationType>;
 export type UploadJobOfferInput = z.infer<typeof UploadJobOfferInput>;
-export type WorkExperience = z.infer<typeof WorkExperience>;

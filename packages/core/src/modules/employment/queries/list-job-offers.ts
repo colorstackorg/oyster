@@ -1,73 +1,53 @@
-import { ListSearchParams } from '@/shared/types';
-import { Company, EmploymentType, JobOfferStatus } from '../employment.types';
-import { db } from '@/infrastructure/database';
 import { sql } from 'kysely';
-import { z } from 'zod';
-import { ExtractValue } from '@oyster/types';
 
-const JobOfferFilterParams = z.object({
-  company: Company.shape.id.nullable().catch(null),
-  employmentType: z.nativeEnum(EmploymentType),
-  location: z.string().trim().min(1).nullable().catch(null),
-  status: z.nativeEnum(JobOfferStatus),
-});
+import { db } from '@/infrastructure/database';
+import { type ListJobOffersWhere } from '../employment.types';
 
-const JobOfferFilterParam = JobOfferFilterParams.keyof().enum;
+type ListJobOffersOptions = {
+  limit: number;
+  page: number;
+  where: ListJobOffersWhere;
+};
 
-const JobOfferSearchParams = ListSearchParams.omit({
-  timezone: true,
-  search: true,
-}).merge(JobOfferFilterParams);
-
-type JobOfferFilterParam = ExtractValue<typeof JobOfferFilterParam>;
-type JobOfferSearchParams = z.infer<typeof JobOfferSearchParams>;
-
-async function listJobOffers({
-  company,
-  employmentType,
-  location,
-  status,
-}: JobOfferSearchParams) {
+export async function listJobOffers({
+  limit,
+  page,
+  where,
+}: ListJobOffersOptions) {
   const query = db
     .selectFrom('jobOffers')
-    .$if(!!company, (query) => {
-      return query.where((eb) => {
-        return eb.exists(
-          eb
-            .selectFrom('jobOffers')
-            .where('companies.crunchbaseId', '=', company)
-        );
-      });
+    .$if(!!where.company, (query) => {
+      return query.where('companyId', '=', where.company);
     })
-    .$if(!!employmentType, (query) => {
-      return query.where((eb) => {
-        return eb.exists(
-          eb
-            .selectFom('jobOffers')
-            .where('jobOffers.employmentType', '=', employmentType)
-        );
-      });
+    .$if(!!where.employmentType, (query) => {
+      return query.where('employmentType', '=', where.employmentType);
     })
-    .$if(!!location, (query) => {
-      return query.where((eb) => {
-        return eb.exists(
-          eb.selectFrom('jobOffers').where('jobOffers.location', '=', location)
-        );
-      });
+    .$if(!!where.locationLatitude && !!where.locationLongitude, (query) => {
+      return query.where(
+        sql`location_coordinates <@> point(${where.locationLongitude}, ${where.locationLatitude})`,
+        '<=',
+        25
+      );
     })
-    .$if(!!status, (query) => {
-      return query.where((eb) => {
-        return eb.exists(
-          eb.selectFrom('jobOffers').where('jobOffers.status', '=', status)
-        );
-      });
+    .$if(!!where.status, (query) => {
+      return query.where('status', '=', where.status);
     });
 
-  const [joboffers, { count }] = await Promise.all([
-    query.select([
-      'jobOffers.company',
-      'jobOffers.employmentType',
-      'jobOffers.',
-    ]),
+  const [jobOffers, { count }] = await Promise.all([
+    query
+      .select(['jobOffers.id'])
+      .orderBy('jobOffers.createdAt', 'desc')
+      .limit(limit)
+      .offset((page - 1) * limit)
+      .execute(),
+
+    query
+      .select((eb) => eb.fn.countAll<string>().as('count'))
+      .executeTakeFirstOrThrow(),
   ]);
+
+  return {
+    jobOffers,
+    totalCount: Number(count),
+  };
 }
