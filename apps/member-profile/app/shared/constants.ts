@@ -1,8 +1,6 @@
 const ROUTES = [
   '/apply',
   '/apply/thank-you',
-  '/census',
-  '/census/confirmation',
   '/directory',
   '/directory/join',
   '/directory/join/1',
