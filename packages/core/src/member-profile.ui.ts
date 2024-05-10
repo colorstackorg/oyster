@@ -9,10 +9,6 @@ export {
 } from './modules/authentication/authentication.types';
 export { OneTimeCodeForm } from './modules/authentication/ui/one-time-code-form';
 export {
-  BaseCensusResponse,
-  SubmitCensusResponseData,
-} from './modules/census/census.types';
-export {
   AddEducationInput,
   DegreeType,
   Education,

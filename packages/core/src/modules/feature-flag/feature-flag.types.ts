@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { BooleanInput, Entity } from '@oyster/types';
 
-export type FeatureFlagName = 'census_2024';
+export type FeatureFlagName = '';
 
 // Domain
 
