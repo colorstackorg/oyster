@@ -181,7 +181,7 @@ function TableBody({
 
 Table.Dropdown = function TableDropdown({ children }: PropsWithChildren) {
   return (
-    <Dropdown className="fixed right-[unset] mt-[unset] translate-x-[calc(-100%-0.5rem)]">
+    <Dropdown className="fixed right-16 mt-[unset] md:right-20">
       {children}
     </Dropdown>
   );
