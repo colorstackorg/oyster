@@ -81,7 +81,7 @@ function ProfileHeader() {
   const { student } = useLoaderData<typeof loader>();
 
   return (
-    <header className="mb-12 flex items-center justify-start gap-4">
+    <header className="mb-12 flex items-start justify-start gap-4 lg:items-center">
       <Link to={generatePath(Route['/directory/:id'], { id: student.id })}>
         <ProfilePicture
           initials={student.initials}
