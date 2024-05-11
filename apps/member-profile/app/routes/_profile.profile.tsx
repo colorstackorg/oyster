@@ -90,7 +90,7 @@ function ProfileHeader() {
         />
       </Link>
 
-      <div>
+      <div className="break-words">
         <Text variant="2xl">{student.name}</Text>
         <Text color="gray-500">{student.headline}</Text>
       </div>
