@@ -68,25 +68,27 @@ jobs:
       - name: Run database migrations and generate types
         run: yarn db:migrate
 
-      - name: Check if user exists in PostgreSQL and post warning message
+      - name: Check if user exists in PostgreSQL
+        id: check_user
+        run: |
+          github_id=$(echo "${{ github.event.pull_request.user.id }}")
+          exists=$(psql "$DATABASE_URL" -tAc "SELECT EXISTS (SELECT 1 FROM students WHERE github_id = '$github_id');")
+          if [ "$exists" != "t" ]; then
+            echo "::set-output name=warning_message::It doesn't seem like you are a ColorStack member. This codebase is primarily meant to benefit our students so that they can gain experience contributing to a codebase, so unfortunately your contribution will not be prioritized. If you are a ColorStack member, then be sure to connect your GitHub account in your Member Profile."
+          fi
+
+      - name: Post warning message as comment
+        if: steps.check_user.outputs.warning_message != ''
         uses: actions/github-script@v6
         with:
           script: |
-            const g = require('@actions/github');
-
-            const github_id = context.payload.pull_request.user.id;
-            const exists = psql("$DATABASE_URL", `-tAc "SELECT EXISTS (SELECT 1 FROM students WHERE github_id = '${github_id}');"`);
-
-            if (exists !== 't') {
-              const body = "It doesn't seem like you are a ColorStack member. This codebase is primarily meant to benefit our students so that they can gain experience contributing to a codebase, so unfortunately your contribution will not be prioritized. If you are a ColorStack member, then be sure to connect your GitHub account in your Member Profile.";
-
-              g.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: body
-              });
-            }
+            const warningMessage = "${{ steps.check_user.outputs.warning_message }}";
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: warningMessage
+            });
 
       - name: Lint
         run: yarn lint --filter=[$BASE_SHA]
