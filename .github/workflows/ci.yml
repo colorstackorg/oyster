@@ -72,7 +72,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const github = require('@actions/github');
+            const g = require('@actions/github');
 
             const github_id = context.payload.pull_request.user.id;
             const exists = psql("$DATABASE_URL", `-tAc "SELECT EXISTS (SELECT 1 FROM students WHERE github_id = '${github_id}');"`);
@@ -80,7 +80,7 @@ jobs:
             if (exists !== 't') {
               const body = "It doesn't seem like you are a ColorStack member. This codebase is primarily meant to benefit our students so that they can gain experience contributing to a codebase, so unfortunately your contribution will not be prioritized. If you are a ColorStack member, then be sure to connect your GitHub account in your Member Profile.";
 
-              github.rest.issues.createComment({
+              g.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
