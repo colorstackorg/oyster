@@ -1,11 +1,15 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import { z } from 'zod';
 
 import {
-  reportError,
+  reportException,
   searchCrunchbaseOrganizations,
-} from '../shared/core.server';
-import { ensureUserAuthenticated } from '../shared/session.server';
+} from '@/member-profile.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const CompaniesSearchParams = z.object({
   search: z.string().trim().min(1).catch(''),
@@ -29,7 +33,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       companies,
     });
   } catch (e) {
-    reportError(e);
+    reportException(e);
 
     return json({
       companies: [],

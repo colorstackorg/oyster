@@ -5,6 +5,7 @@ import { id } from '@oyster/utils';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
 import { sendEmail } from '@/modules/notification/use-cases/send-email';
+import { IS_DEVELOPMENT } from '@/shared/env';
 import type {
   OneTimeCode,
   SendOneTimeCodeInput,
@@ -67,14 +68,16 @@ export async function sendOneTimeCode({
     { delay: 1000 * 60 * 10 }
   );
 
-  await sendEmail({
-    to: email,
-    name: 'one-time-code-sent',
-    data: {
-      code: oneTimeCode.value,
-      firstName: entity.firstName!,
-    },
-  });
+  if (!IS_DEVELOPMENT) {
+    await sendEmail({
+      to: email,
+      name: 'one-time-code-sent',
+      data: {
+        code: oneTimeCode.value,
+        firstName: entity.firstName!,
+      },
+    });
+  }
 
   return {
     id: oneTimeCode.id,

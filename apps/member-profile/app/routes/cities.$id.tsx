@@ -1,7 +1,11 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 
-import { getCityDetails } from '../shared/core.server';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { getCityDetails } from '@/member-profile.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

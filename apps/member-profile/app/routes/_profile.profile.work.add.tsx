@@ -1,15 +1,10 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
@@ -22,18 +17,19 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { addWorkExperience } from '../shared/core.server';
-import { AddWorkExperienceInput, WorkForm } from '../shared/core.ui';
+import { addWorkExperience } from '@/member-profile.server';
+import { AddWorkExperienceInput, WorkForm } from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
+
   return json({});
 }
 
@@ -98,16 +94,8 @@ const keys = AddWorkExperienceFormData.keyof().enum;
 export default function AddWorkExperiencePage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const navigate = useNavigate();
-
-  const submitting = useNavigation().state === 'submitting';
-
-  function onClose() {
-    navigate(Route['/profile/work']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/work']}>
       <Modal.Header>
         <Modal.Title>Add Work Experience</Modal.Title>
         <Modal.CloseButton />
@@ -160,9 +148,7 @@ export default function AddWorkExperiencePage() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Save
-          </Button>
+          <Button.Submit>Save</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

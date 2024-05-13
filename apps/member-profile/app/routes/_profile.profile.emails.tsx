@@ -1,4 +1,8 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
 import {
   Outlet,
   Form as RemixForm,
@@ -10,33 +14,33 @@ import {
 import { Edit, Plus } from 'react-feather';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import {
   Button,
   Checkbox,
-  Form,
-  Text,
   cx,
+  Form,
   getActionErrors,
+  Text,
   validateForm,
 } from '@oyster/ui';
 
+import { listEmails, updateAllowEmailShare } from '@/member-profile.server';
 import {
   ProfileDescription,
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
-} from '../shared/components/profile';
-
-import { Route } from '../shared/constants';
-import { db, listEmails, updateAllowEmailShare } from '../shared/core.server';
-import { track } from '../shared/mixpanel.server';
-import { getMember } from '../shared/queries';
+} from '@/shared/components/profile';
+import { Route } from '@/shared/constants';
+import { track } from '@/shared/mixpanel.server';
+import { getMember } from '@/shared/queries';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -103,7 +107,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 }
 
-const { allowEmailShare } = UpdateAllowEmailShare.keyof().enum;
+const keys = UpdateAllowEmailShare.keyof().enum;
 
 export default function EmailsPage() {
   return (
@@ -127,7 +131,7 @@ function EmailAddressSection() {
   }
 
   function onChangePrimaryEmail() {
-    navigate(Route.CHANGE_PRIMARY_EMAIL);
+    navigate(Route['/profile/emails/change-primary']);
   }
 
   return (
@@ -189,8 +193,8 @@ function EmailAddressSection() {
           <Checkbox
             defaultChecked={student.allowEmailShare}
             label="Share my email with chapter leaders! 🌟"
-            id={allowEmailShare}
-            name={allowEmailShare}
+            id={keys.allowEmailShare}
+            name={keys.allowEmailShare}
             value="1"
           />
         </Form.Field>

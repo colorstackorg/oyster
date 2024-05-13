@@ -1,38 +1,40 @@
-import React, { PropsWithChildren, useContext } from 'react';
+import { Link, useNavigate } from '@remix-run/react';
+import React, { type PropsWithChildren, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'react-feather';
 
-import { useHydrated } from '../hooks/use-hydrated';
-import { cx } from '../utils/cx';
 import { IconButton } from './icon-button';
 import { Text } from './text';
+import { useHydrated } from '../hooks/use-hydrated';
+import { cx } from '../utils/cx';
 
 const ModalContext = React.createContext({
   _initialized: false,
-  onClose: () => {},
+  onCloseTo: '',
 });
-
-type ModalProps = PropsWithChildren<{
-  onClose: VoidFunction;
-}>;
 
 export function useIsModalParent() {
   const { _initialized } = useContext(ModalContext);
+
   return !!_initialized;
 }
 
+type ModalProps = PropsWithChildren<{
+  onCloseTo: string;
+}>;
+
 export const Modal = ({
   children,
-  onClose,
+  onCloseTo,
 }: ModalProps): JSX.Element | null => {
-  const hydrated: boolean = useHydrated();
+  const hydrated = useHydrated();
 
   if (!hydrated) {
     return null;
   }
 
   return createPortal(
-    <ModalContext.Provider value={{ _initialized: true, onClose }}>
+    <ModalContext.Provider value={{ _initialized: true, onCloseTo }}>
       <div
         className={cx(
           'flex h-screen w-screen items-end justify-center sm:items-center'
@@ -51,15 +53,12 @@ export const Modal = ({
         </aside>
       </div>
 
-      <div
-        aria-label="Modal Shader"
+      <Link
         className={cx(
           'fixed left-0 top-0 h-screen w-screen cursor-default bg-black',
           'animate-[modal-shader-animation_250ms_forwards]'
         )}
-        onClick={onClose}
-        role="button"
-        tabIndex={0}
+        to={onCloseTo}
       />
     </ModalContext.Provider>,
     document.body
@@ -67,14 +66,15 @@ export const Modal = ({
 };
 
 Modal.CloseButton = function ModalCloseButton() {
-  const { onClose } = useContext(ModalContext);
+  const { onCloseTo } = useContext(ModalContext);
+  const navigate = useNavigate();
 
   return (
     <IconButton
       backgroundColor="gray-100"
       backgroundColorOnHover="gray-200"
       icon={<X />}
-      onClick={onClose}
+      onClick={() => navigate(onCloseTo)}
     />
   );
 };

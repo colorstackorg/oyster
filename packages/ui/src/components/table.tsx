@@ -1,11 +1,11 @@
-import React, { PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 import { MoreVertical } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { cx } from '../utils/cx';
 import { Dropdown } from './dropdown';
 import { IconButton } from './icon-button';
 import { Text } from './text';
+import { cx } from '../utils/cx';
 
 type TableData = Record<string, unknown>;
 
@@ -181,7 +181,7 @@ function TableBody({
 
 Table.Dropdown = function TableDropdown({ children }: PropsWithChildren) {
   return (
-    <Dropdown className="fixed right-[unset] mt-[unset] translate-x-[calc(-100%-0.5rem)]">
+    <Dropdown className="fixed right-16 mt-[unset] md:right-20">
       {children}
     </Dropdown>
   );

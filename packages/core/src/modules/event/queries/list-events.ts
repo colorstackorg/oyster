@@ -1,6 +1,6 @@
-import type { SelectExpression } from 'kysely';
+import { type SelectExpression } from 'kysely';
 
-import { DB } from '@oyster/db';
+import { type DB } from '@oyster/db';
 
 import { db } from '@/infrastructure/database';
 

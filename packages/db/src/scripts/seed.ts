@@ -1,10 +1,10 @@
-import { Transaction, sql } from 'kysely';
-import { DB } from 'kysely-codegen/dist/db';
+import { sql, type Transaction } from 'kysely';
 import readline from 'readline';
 import { z } from 'zod';
 
 import { db } from '../shared/db';
 import { IS_PRODUCTION } from '../shared/env';
+import { type DB } from '../shared/types';
 import { migrate } from '../use-cases/migrate';
 import { truncate } from '../use-cases/truncate';
 
@@ -40,6 +40,7 @@ let email = '';
 async function seed(trx: Transaction<DB>) {
   const schoolId1 = id();
   const schoolId2 = id();
+  const schoolId3 = id();
 
   await trx
     .insertInto('schools')
@@ -57,6 +58,13 @@ async function seed(trx: Transaction<DB>) {
         addressZip: '14850',
         id: schoolId2,
         name: 'Cornell University',
+      },
+      {
+        addressCity: 'Austin',
+        addressState: 'TX',
+        addressZip: '78712',
+        id: schoolId3,
+        name: 'University of Texas at Austin',
       },
       {
         addressCity: 'Washington',
@@ -126,6 +134,46 @@ async function seed(trx: Transaction<DB>) {
     .set({ studentId: memberId })
     .where('email', '=', email)
     .execute();
+
+  await trx
+    .insertInto('applications')
+    .values([
+      {
+        id: id(),
+        email: 'student1@cornell.edu',
+        contribution: 'Working on Oyster!',
+        educationLevel: 'undergraduate',
+        gender: '',
+        goals: '',
+        graduationYear: 2026,
+        firstName: 'Big',
+        lastName: 'Red',
+        linkedInUrl: 'https://www.linkedin.com/',
+        major: 'computer_science',
+        otherDemographics: [],
+        race: [],
+        schoolId: schoolId2,
+        status: 'pending',
+      },
+      {
+        id: id(),
+        email: 'student2@utexas.edu',
+        contribution: 'Working on Oyster!',
+        educationLevel: 'Bootcamp',
+        gender: '',
+        goals: '',
+        graduationYear: 2024,
+        firstName: 'Bevo',
+        lastName: 'Longhorn',
+        linkedInUrl: 'https://www.linkedin.com/',
+        major: 'information_science',
+        otherDemographics: [''],
+        race: [''],
+        schoolId: schoolId3,
+        status: 'pending',
+      },
+    ])
+    .execute();
 }
 
 async function setEmailFromCommandLine() {
@@ -169,6 +217,7 @@ let counter = 0;
 
 function id() {
   counter++;
+
   return counter.toString();
 }
 

@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 import { Calendar } from 'react-feather';
 import { match } from 'ts-pattern';
 

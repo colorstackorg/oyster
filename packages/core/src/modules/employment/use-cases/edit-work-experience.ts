@@ -1,6 +1,6 @@
 import { db } from '@/infrastructure/database';
-import { EditWorkExperienceInput } from '../employment.types';
 import { saveCompanyIfNecessary } from './save-company-if-necessary';
+import { type EditWorkExperienceInput } from '../employment.types';
 
 /**
  * Edits an existing work experience from the member's history.

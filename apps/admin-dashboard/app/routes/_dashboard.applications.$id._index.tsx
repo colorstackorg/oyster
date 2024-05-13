@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -10,30 +10,30 @@ import {
   useNavigation,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { PropsWithChildren, useState } from 'react';
+import { type PropsWithChildren, useState } from 'react';
 
 import {
   Application as ApplicationType,
-  Gender,
-  Major,
-  OtherDemographic,
-  Race,
+  type Gender,
+  type Major,
+  type OtherDemographic,
+  type Race,
 } from '@oyster/types';
 import { Button, Text } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
 import {
   acceptApplication,
   getApplication,
   rejectApplication,
-} from '../shared/core.server';
-import { Application, EducationLevel } from '../shared/core.ui';
+} from '@/admin-dashboard.server';
+import { Application, type EducationLevel } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
@@ -108,7 +108,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
       }
     }
 
-    return redirect(Route.APPLICATIONS, {
+    return redirect(Route['/applications'], {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
@@ -119,6 +119,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     });
   }
 }
+
 const ApplyFormData = ApplicationType.pick({
   contribution: true,
   educationLevel: true,
@@ -142,10 +143,10 @@ export default function ApplicationPage() {
 
   const { formData, state } = useNavigation();
 
-  const acceptButtonLoading =
+  const acceptButtonSubmitting =
     state === 'submitting' && formData?.get('action') === 'accept';
 
-  const rejectButtonLoading =
+  const rejectButtonSubmitting =
     state === 'submitting' && formData?.get('action') === 'reject';
 
   const { application } = useLoaderData<typeof loader>();
@@ -188,8 +189,8 @@ export default function ApplicationPage() {
             <Button.Group>
               <Button
                 color="success"
-                loading={acceptButtonLoading}
                 name="action"
+                submitting={acceptButtonSubmitting}
                 type="submit"
                 value="accept"
               >
@@ -198,8 +199,8 @@ export default function ApplicationPage() {
 
               <Button
                 color="error"
-                loading={rejectButtonLoading}
                 name="action"
+                submitting={rejectButtonSubmitting}
                 type="submit"
                 value="reject"
               >
@@ -225,7 +226,7 @@ export default function ApplicationPage() {
   );
 }
 
-const ApplicationKey = ApplyFormData.keyof().enum;
+const keys = ApplyFormData.keyof().enum;
 
 function ApplicationFieldGroup({
   showAll,
@@ -236,120 +237,120 @@ function ApplicationFieldGroup({
     <Application readOnly>
       <Application.FirstNameField
         defaultValue={application.firstName}
-        name={ApplicationKey.firstName}
+        name={keys.firstName}
       />
 
       <Application.LastNameField
         defaultValue={application.lastName}
-        name={ApplicationKey.lastName}
+        name={keys.lastName}
       />
 
       <Application.EmailField
         defaultValue={application.email}
-        name={ApplicationKey.email}
+        name={keys.email}
       />
 
       <Application.LinkedInField
         defaultValue={application.linkedInUrl}
-        name={ApplicationKey.linkedInUrl}
+        name={keys.linkedInUrl}
       />
 
       <Application.SchoolField
         defaultValue={application.school || 'Other'}
-        name={ApplicationKey.schoolId}
+        name={keys.schoolId}
       />
 
       <Application.OtherSchoolField
         defaultValue={application.otherSchool || undefined}
-        name={ApplicationKey.otherSchool}
+        name={keys.otherSchool}
       />
 
       <Application.MajorField
         defaultValue={(application.major as Major) || undefined}
-        name={ApplicationKey.major}
+        name={keys.major}
       />
 
       <Application.OtherMajorField
         defaultValue={application.otherMajor || undefined}
-        name={ApplicationKey.otherMajor}
+        name={keys.otherMajor}
       />
 
       <Application.EducationLevelField
         defaultValue={
           (application.educationLevel as EducationLevel) || undefined
         }
-        name={ApplicationKey.educationLevel}
+        name={keys.educationLevel}
       />
 
       <Application.GraduationYearField
         defaultValue={application.graduationYear}
-        name={ApplicationKey.graduationYear}
+        name={keys.graduationYear}
       />
 
       <Application.RaceField
         defaultValue={(application.race as Race[]) || undefined}
-        name={ApplicationKey.race}
+        name={keys.race}
       />
 
       <Application.GenderField
         defaultValue={(application.gender as Gender) || undefined}
-        name={ApplicationKey.gender}
+        name={keys.gender}
       />
 
       <Application.OtherDemographicsField
         defaultValue={
           (application.otherDemographics as OtherDemographic[]) || undefined
         }
-        name={ApplicationKey.otherDemographics}
+        name={keys.otherDemographics}
       />
 
       <Application.GoalsField
         defaultValue={application.goals}
-        name={ApplicationKey.goals}
+        name={keys.goals}
       />
 
       <Application.ContributionField
         defaultValue={application.contribution}
-        name={ApplicationKey.contribution}
+        name={keys.contribution}
       />
     </Application>
   ) : (
     <Application readOnly>
       <Application.SchoolField
         defaultValue={application.school || 'Other'}
-        name={ApplicationKey.schoolId}
+        name={keys.schoolId}
       />
 
       <Application.OtherSchoolField
         defaultValue={application.otherSchool || undefined}
-        name={ApplicationKey.otherSchool}
+        name={keys.otherSchool}
       />
 
       <Application.MajorField
         defaultValue={(application.major as Major) || undefined}
-        name={ApplicationKey.major}
+        name={keys.major}
       />
 
       <Application.OtherMajorField
         defaultValue={application.otherMajor || undefined}
-        name={ApplicationKey.otherMajor}
+        name={keys.otherMajor}
       />
 
       <Application.EducationLevelField
         defaultValue={
           (application.educationLevel as EducationLevel) || undefined
         }
-        name={ApplicationKey.educationLevel}
+        name={keys.educationLevel}
       />
 
       <Application.GraduationYearField
         defaultValue={application.graduationYear}
-        name={ApplicationKey.graduationYear}
+        name={keys.graduationYear}
       />
 
       <Application.RaceField
         defaultValue={(application.race as Race[]) || undefined}
-        name={ApplicationKey.race}
+        name={keys.race}
       />
     </Application>
   );

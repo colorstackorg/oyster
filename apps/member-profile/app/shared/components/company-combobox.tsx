@@ -6,12 +6,12 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxPopover,
-  FieldProps,
+  type FieldProps,
   useDelayedValue,
 } from '@oyster/ui';
 
-import type { SearchCompaniesResult } from '../../routes/companies';
-import { Company } from '../core.ui';
+import { type Company } from '@/member-profile.ui';
+import type { SearchCompaniesResult } from '@/routes/companies';
 
 type CompanyComboboxProps = FieldProps<Pick<Company, 'crunchbaseId' | 'name'>>;
 

@@ -1,76 +1,61 @@
-import { ExtractValue } from '@oyster/types';
+const ROUTES = [
+  '/',
+  '/applications',
+  '/applications/:id',
+  '/applications/:id/accept',
+  '/applications/:id/email',
+  '/bull',
+  '/bull/:queue',
+  '/bull/:queue/jobs',
+  '/bull/:queue/jobs/add',
+  '/bull/:queue/jobs/:id',
+  '/bull/:queue/repeatables',
+  '/bull/:queue/repeatables/add',
+  '/events',
+  '/events/create',
+  '/events/sync-airmeet-event',
+  '/events/:id/add-recording',
+  '/events/:id/import',
+  '/feature-flags',
+  '/feature-flags/create',
+  '/feature-flags/:id/delete',
+  '/feature-flags/:id/edit',
+  '/gamification/activities',
+  '/gamification/activities/add',
+  '/gamification/activities/:id/archive',
+  '/gamification/activities/:id/edit',
+  '/login',
+  '/login/otp/send',
+  '/login/otp/verify',
+  '/onboarding-sessions',
+  '/onboarding-sessions/upload',
+  '/onboarding-sessions/:id/add-attendees',
+  '/programs/create',
+  '/resources/create',
+  '/schools',
+  '/schools/create',
+  '/schools/:id/edit',
+  '/students',
+  '/students/import/programs',
+  '/students/import/resources',
+  '/students/import/scholarships',
+  '/students/:id/activate',
+  '/students/:id/email',
+  '/students/:id/points/grant',
+  '/students/:id/remove',
+  '/surveys',
+  '/surveys/create',
+  '/surveys/:id/import',
+] as const;
 
-export const Route = {
-  HOME: '/',
+export type Route = (typeof ROUTES)[number];
 
-  // Applications
+type RouteMap = {
+  [Key in Route]: Key;
+};
 
-  APPLICATION: '/applications/:id',
-  APPLICATIONS: '/applications',
-  UPDATE_APPLICATION_EMAIL: '/applications/:id/email',
+export const Route = ROUTES.reduce((result, route) => {
+  Object.assign(result, { [route]: route });
 
-  // Bull
-
-  '/bull/:queue/jobs': '/bull/:queue/jobs',
-  '/bull/:queue/jobs/add': '/bull/:queue/jobs/add',
-  ADD_BULL_REPEATABLE: '/bull/:queue/repeatables/add',
-  BULL: '/bull',
-  BULL_JOB: '/bull/:queue/jobs/:id',
-  BULL_QUEUE: '/bull/:queue',
-  BULL_REPEATABLES: '/bull/:queue/repeatables',
-
-  // Events
-
-  CREATE_EVENT: '/events/create',
-  EVENTS: '/events',
-  IMPORT_EVENT_ATTENDEES: '/events/:id/import',
-
-  // Gamification
-
-  ACTIVITIES: '/gamification/activities',
-  ADD_ACTIVITY: '/gamification/activities/add',
-  ARCHIVE_ACTIVITY: '/gamification/activities/:id/archive',
-  EDIT_ACTIVITY: '/gamification/activities/:id/edit',
-
-  // Login
-
-  '/login': '/login',
-  '/login/otp/send': '/login/otp/send',
-  '/login/otp/verify': '/login/otp/verify',
-
-  // Onboarding Sessions
-
-  ADD_ONBOARDING_SESSION_ATTENDEES: '/onboarding-sessions/:id/add-attendees',
-  ONBOARDING_SESSIONS: '/onboarding-sessions',
-  UPLOAD_ONBOARDING_SESSIONS: '/onboarding-sessions/upload',
-
-  // Schools
-
-  CREATE_SCHOOL: '/schools/create',
-  EDIT_SCHOOL: '/schools/:id/edit',
-  SCHOOLS: '/schools',
-
-  // Students
-
-  ACTIVATE_STUDENT: '/students/:id/activate',
-  GRANT_POINTS: '/students/:id/points/grant',
-  REMOVE_STUDENT: '/students/:id/remove',
-  STUDENTS: '/students',
-  STUDENTS_IMPORT_PROGRAMS: '/students/import/programs',
-  STUDENTS_IMPORT_RESOURCES: '/students/import/resources',
-  STUDENTS_IMPORT_SCHOLARSHIPS: '/students/import/scholarships',
-  UPDATE_STUDENT_EMAIL: '/students/:id/email',
-
-  // Surveys
-
-  CREATE_SURVEY: '/surveys/create',
-  IMPORT_SURVEY_RESPONSES: '/surveys/:id/import',
-  SURVEYS: '/surveys',
-
-  // Others
-
-  PROGRAMS_CREATE: '/programs/create',
-  RESOURCES_CREATE: '/resources/create',
-} as const;
-
-export type Route = ExtractValue<typeof Route>;
+  return result;
+}, {} as RouteMap);

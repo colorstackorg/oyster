@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -10,17 +10,18 @@ import {
   useNavigate,
 } from '@remix-run/react';
 
+import { db } from '@oyster/db';
 import { Button, Form, Modal } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { db, deleteEducation } from '../shared/core.server';
-import { Education } from '../shared/core.ui';
+import { deleteEducation } from '@/member-profile.server';
+import { type Education } from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -82,16 +83,12 @@ export default function DeleteEducationPage() {
 
   const navigate = useNavigate();
 
-  function onClose() {
-    navigate(Route['/profile/education']);
-  }
-
   function onBack() {
     navigate(-1);
   }
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/education']}>
       <Modal.Header>
         <Modal.Title>Delete Education</Modal.Title>
         <Modal.CloseButton />

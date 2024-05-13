@@ -8,17 +8,20 @@
     ]
   },
   "scripts": {
-    "prepare": "husky install",
     "build": "turbo run build --cache-dir=.turbo",
     "db:migrate": "yarn workspace @oyster/db migrate",
     "db:migration:create": "yarn workspace @oyster/db migration:create",
     "db:seed": "yarn workspace @oyster/db seed",
-    "db:setup": "yarn workspace @oyster/db setup",
     "db:types": "yarn workspace @oyster/db types",
     "dev": "turbo run dev --cache-dir=.turbo",
     "dev:apps": "yarn dev --filter='./apps/*'",
+    "dx:down": "docker compose down",
+    "dx:nuke": "docker compose down --volumes --remove-orphans",
+    "dx:up": "docker compose up -d",
+    "env:setup": "yarn workspace @oyster/scripts env:setup",
     "lint": "turbo run lint --cache-dir=.turbo",
     "lint:fix": "turbo run lint:fix --cache-dir=.turbo",
+    "prepare": "husky install",
     "start": "turbo run start --cache-dir=.turbo",
     "test": "turbo run test --cache-dir=.turbo",
     "type-check": "turbo run type-check --cache-dir=.turbo"

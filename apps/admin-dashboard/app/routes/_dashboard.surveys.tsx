@@ -1,28 +1,28 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
-  SerializeFrom,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
 } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import { Menu, Plus, Upload } from 'react-feather';
 import { generatePath } from 'react-router';
 
+import { db } from '@oyster/db';
 import {
   Dashboard,
   Dropdown,
   IconButton,
   Pagination,
   Table,
-  TableColumnProps,
+  type TableColumnProps,
   useSearchParams,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { db } from '../shared/core.server';
-import { ListSearchParams } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { ListSearchParams } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -71,6 +71,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   await ensureUserAuthenticated(request);
+
   return json({});
 }
 
@@ -116,7 +117,7 @@ function SurveysActionDropdown() {
         <Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={Route.CREATE_SURVEY}>
+              <Link to={Route['/surveys/create']}>
                 <Plus /> New Survey
               </Link>
             </Dropdown.Item>
@@ -194,7 +195,7 @@ function SurveyDropdown({ id }: SurveyInView) {
         <Table.Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={generatePath(Route.IMPORT_SURVEY_RESPONSES, { id })}>
+              <Link to={generatePath(Route['/surveys/:id/import'], { id })}>
                 <Upload /> Import Survey Responses
               </Link>
             </Dropdown.Item>

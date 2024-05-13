@@ -1,11 +1,11 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, Link, useLoaderData } from '@remix-run/react';
 import { ArrowRight, Eye } from 'react-feather';
 
 import { Button, getButtonCn, Text } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+import { Route } from '@/shared/constants';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

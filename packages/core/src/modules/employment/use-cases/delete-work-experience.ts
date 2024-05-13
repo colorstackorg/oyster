@@ -1,6 +1,6 @@
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
-import { DeleteWorkExperienceInput } from '../employment.types';
+import { type DeleteWorkExperienceInput } from '../employment.types';
 
 /**
  * Deletes the work experience from the member's history.

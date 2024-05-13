@@ -1,29 +1,28 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
 } from '@remix-run/react';
+import { type z } from 'zod';
 
-import { z } from 'zod';
-
-import { Activity, ActivityPeriod } from '@oyster/types';
+import { db } from '@oyster/db';
+import { Activity, type ActivityPeriod } from '@oyster/types';
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
-import { ActivityForm } from '../shared/components/activity-form';
-import { Route } from '../shared/constants';
-import { db, editActivity } from '../shared/core.server';
+import { editActivity } from '@/admin-dashboard.server';
+import { ActivityForm } from '@/shared/components/activity-form';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -90,28 +89,21 @@ export async function action({ params, request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.ACTIVITIES, {
+  return redirect(Route['/gamification/activities'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
   });
 }
 
-const { description, name, period, points, type } =
-  EditActivityInput.keyof().enum;
+const keys = EditActivityInput.keyof().enum;
 
 export default function EditActivityPage() {
   const { activity } = useLoaderData<typeof loader>();
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.ACTIVITIES);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/gamification/activities']}>
       <Modal.Header>
         <Modal.Title>Edit Activity</Modal.Title>
         <Modal.CloseButton />
@@ -121,31 +113,31 @@ export default function EditActivityPage() {
         <ActivityForm.NameField
           defaultValue={activity.name}
           error={errors.name}
-          name={name}
+          name={keys.name}
         />
 
         <ActivityForm.DescriptionField
           defaultValue={activity.description || undefined}
           error={errors.description}
-          name={description}
+          name={keys.description}
         />
 
         <ActivityForm.TypeField
           defaultValue={(activity.type as Activity['type']) || undefined}
           error={errors.type}
-          name={type}
+          name={keys.type}
         />
 
         <ActivityForm.PeriodField
           defaultValue={(activity.period as ActivityPeriod) || undefined}
           error={errors.period}
-          name={period}
+          name={keys.period}
         />
 
         <ActivityForm.PointsField
           defaultValue={activity.points}
           error={errors.points}
-          name={points}
+          name={keys.points}
         />
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>

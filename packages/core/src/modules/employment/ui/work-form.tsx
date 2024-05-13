@@ -1,6 +1,6 @@
 import { useFetcher } from '@remix-run/react';
 import React, {
-  PropsWithChildren,
+  type PropsWithChildren,
   useContext,
   useEffect,
   useState,
@@ -14,7 +14,7 @@ import {
   ComboboxItem,
   ComboboxPopover,
   DatePicker,
-  FieldProps,
+  type FieldProps,
   Form,
   Input,
   Select,
@@ -23,12 +23,12 @@ import {
 import { order } from '@oyster/utils';
 
 import {
-  BaseCompany,
-  Company,
-  EmploymentType,
+  type BaseCompany,
+  type Company,
+  type EmploymentType,
   FORMATTED_EMPLOYMENT_TYPE,
   FORMATTED_LOCATION_TYPE,
-  LocationType,
+  type LocationType,
 } from '../employment.types';
 
 type WorkFormState = {

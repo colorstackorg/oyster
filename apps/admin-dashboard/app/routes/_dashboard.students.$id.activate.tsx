@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -11,15 +11,16 @@ import {
   useNavigate,
 } from '@remix-run/react';
 
+import { db } from '@oyster/db';
 import { Button, Form, Modal } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { activateMember, db } from '../shared/core.server';
+import { activateMember } from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -27,7 +28,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const student = await getStudent(params.id as string);
 
   if (!student) {
-    return redirect(Route.STUDENTS);
+    return redirect(Route['/students']);
   }
 
   return json({
@@ -57,7 +58,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
       type: 'success',
     });
 
-    return redirect(Route.STUDENTS, {
+    return redirect(Route['/students'], {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
@@ -79,12 +80,8 @@ export default function ActivateStudentPage() {
     navigate(-1);
   }
 
-  function onClose() {
-    navigate(Route.STUDENTS);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>Activate Student</Modal.Title>
         <Modal.CloseButton />

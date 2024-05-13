@@ -1,11 +1,11 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { NavLink, Outlet, useLoaderData } from '@remix-run/react';
 
 import { cx, Text } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { countPastEvents, countUpcomingEvents } from '../shared/core.server';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { countPastEvents, countUpcomingEvents } from '@/member-profile.server';
+import { Route } from '@/shared/constants';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

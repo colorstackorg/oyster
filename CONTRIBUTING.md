@@ -13,26 +13,203 @@ their dreams of becoming software engineers. That being said, in order to make
 space for our community, we will be prioritizing all contributions from
 ColorStack members first, and then friends of ColorStack. ❤️
 
-## Your First PR
+## Table of Contents
 
-Getting your first PR in is always the hardest. We're going to reduce that
-barrier for you! After you finish your local development setup (instructions
-below), your first PR can simply be updating the
-[`CONTRIBUTORS.yml`](./CONTRIBUTORS.yml) file with your GitHub username!
+- [Local Development](#local-development)
+  - [Prerequisites](#prerequisites)
+    - [Installing Node w/ `nvm`](#installing-node-w-nvm)
+  - [Fork and Clone Repository](#fork-and-clone-repository)
+  - [Project Dependencies](#project-dependencies)
+  - [Environment Variables](#environment-variables)
+  - [Database Setup](#database-setup)
+    - [Postgres Setup](#postgres-setup)
+    - [Executing Database Migrations](#executing-database-migrations)
+    - [Seeding the Database](#seeding-the-database)
+    - [Stopping the Database](#stopping-the-database)
+  - [Building the Project](#building-the-project)
+  - [Running the Applications](#running-the-applications)
+  - [Logging Into Applications](#logging-into-applications)
+  - [Enabling Integrations](#enabling-integrations)
+  - [Editor Setup](#editor-setup)
+- [Making a Pull Request](#making-a-pull-request)
+  - [Your First PR](#your-first-pr)
+- [Deciding What to Work On](#deciding-what-to-work-on)
+  - [Proposing Ideas](#proposing-ideas)
+- [License](#license)
 
-You can name that PR:
+## Local Development
+
+To get started with local development, please follow these simple steps.
+
+### Prerequisites
+
+Please ensure that you have the following software on your machine:
+
+- [Docker](https://docs.docker.com/engine/install)
+- [Node.js](https://nodejs.org/en/download/package-manager) (v20.x)
+- [Yarn](https://classic.yarnpkg.com/lang/en/docs/install) (v1)
+
+#### Installing Node w/ `nvm`
+
+Our recommendation is to use [`nvm`](https://nvm.sh) to install Node. The main
+benefit of `nvm` is that it allows you to quickly install and use different
+versions of Node on your machine.
+
+If you choose to use `nvm`, we would also recommend setting up a
+[shell integration](https://github.com/nvm-sh/nvm/blob/master/README.md#deeper-shell-integration),
+which will automatically install the right node version for any given directory
+that you're working in, as long as there is a [`.nvmrc`](./.nvmrc) file found in
+that directory.
+
+If you don't want to set up a shell integration, you can switch to the
+appropriate Node version manually by doing:
+
+```sh
+nvm install && nvm use
+```
+
+### Fork and Clone Repository
+
+1. [Fork the repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
+   to your own GitHub account.
+2. [Clone the repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
+   to your local machine.
+   ```
+   git clone https://github.com/<YOUR_USERNAME>/oyster.git
+   ```
+3. [Configure the upstream repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/configuring-a-remote-repository-for-a-fork),
+   which will help you with
+   [syncing your fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork)
+   with the Oyster codebase as new code is added to it in the future.
+   ```
+   git remote add upstream https://github.com/colorstackorg/oyster.git
+   ```
+4. Create a new branch.
+   ```
+   git checkout -b YOUR_BRANCH_NAME
+   ```
+
+### Project Dependencies
+
+To install all project dependencies, run:
+
+```sh
+yarn
+```
+
+### Environment Variables
+
+To set up your environment variables, run:
 
 ```
-chore: my first contribution ❤️
+yarn env:setup
 ```
 
-## Deciding What to Work On
+You'll now have `.env` files in all of your apps (and a couple packages)!
 
-You can start by browsing through our list of
-[issues](https://github.com/colorstackorg/oyster/issues) or creating your own
-issue that would improve our product. Once you've decided on an issue, leave a
-comment and wait to get approval from one of our codebase admins - this helps
-avoid multiple people working on this same issue.
+You'll notice that a lot of environment variables are empty. Most of these empty
+variables are tied to the 3rd party integrations we have with platforms such as
+Google for authentication. If you would like to enable these integrations in
+development, please see the
+[How to Enable Integrations](./docs/how-to-enable-integrations.md)
+documentation.
+
+### Database Setup
+
+You'll need to make sure that Postgres and Redis are running in the background.
+
+#### Postgres Setup
+
+To set up your Postgres databases, you can run:
+
+```
+yarn dx:up
+```
+
+#### Executing Database Migrations
+
+To execute the database migrations, run:
+
+```sh
+yarn db:migrate
+```
+
+#### Seeding the Database
+
+Now that we have some tables, we're ready to add some seed data in our database,
+which will enable you to log into the Admin Dashboard and Member Profile. Run:
+
+```sh
+yarn db:seed
+```
+
+Follow the prompt to add your email, and you will now be able to log into both
+applications.
+
+#### Stopping the Database
+
+Once you are done developing, you might want to stop the database containers
+from running. Keeping your containers up can eat up your battery life, so it's
+recommended to take them down once you are done using them. Run:
+
+```
+yarn dx:down
+```
+
+### Building the Project
+
+You can build the project by running:
+
+```sh
+yarn build
+```
+
+### Running the Applications
+
+To run all of our _applications_, you can run:
+
+```sh
+yarn dev:apps
+```
+
+To run a _specific package or application_, you can use the `--filter` flag like
+this:
+
+```sh
+yarn dev --filter=api
+```
+
+### Logging Into Applications
+
+In the development environment, you can bypass any real authentication when
+logging into the Member Profile and Admin Dashboard by doing the following:
+
+1. Click "Log In with OTP".
+2. Input the email that you seeded your database with.
+3. Input any 6-digit value.
+
+You should be logged in!
+
+### Enabling Integrations
+
+To enable any of our 3rd party integrations in development, please see the
+[How to Enable Integrations](./docs/how-to-enable-integrations.md)
+documentation.
+
+To enable sending emails, please see the
+[How to Enable Emails](./docs/how-to-enable-emails.md) documentation.
+
+### Editor Setup
+
+Surprise, surprise. We use [VSCode](https://code.visualstudio.com/download) to
+write code! After you download it, we recommend enabling some extensions to make
+life a bit easier:
+
+- [Auto Rename Tag](https://marketplace.visualstudio.com/items?itemName=formulahendry.auto-rename-tag)
+- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+- [Live Share](https://marketplace.visualstudio.com/items?itemName=MS-vsliveshare.vsliveshare)
+- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+- [Tailwind IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
 
 ## Making a Pull Request
 
@@ -69,160 +246,34 @@ Some things to keep in mind when making a pull request:
   - All branches are up to date before merging.
   - All conversations are resolved.
 
-## Local Development
+### Your First PR
 
-To get started with local development, please follow these simple steps.
+Getting your first PR in is always the hardest. Lucky for you, we love quick
+wins here at ColorStack, so we're going to reduce that barrier for you! After
+you finish your [local development](#local-development) setup, your first PR can
+simply be updating the [`CONTRIBUTORS.yml`](./CONTRIBUTORS.yml) file with your
+GitHub username!
 
-### Prerequisites
-
-Please ensure that you have the following software on your machine:
-
-- [Node.js](https://nodejs.org/en/download/package-manager) (v20.x)
-- [Yarn](https://classic.yarnpkg.com/lang/en/docs/install) (v1)
-- [PostgreSQL](https://www.postgresql.org/download/) (v15.x)
-- [Redis](https://redis.io/docs/install/install-redis/)
-
-### Fork and Clone Repository
-
-1. [Fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
-   the repository to your own GitHub account.
-2. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
-   the repository to your local machine.
-   ```
-   git clone https://github.com/<YOUR_USERNAME>/oyster.git
-   ```
-3. Create a new branch.
-   ```
-   git checkout -b YOUR_BRANCH_NAME
-   ```
-
-### Syncing a Forked Repository
-
-In order to keep your forked repository up to date with the upstream repository,
-please read the following guides.
-
-- [Configuring a Remote Repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/configuring-a-remote-repository-for-a-fork)
-- [Syncing a Fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork)
-
-### Environment Variables
-
-Set up your environment variable files by doing the following:
-
-- In `/apps/admin-dashboard`, duplicate the `.env.example` to `.env`.
-- In `/apps/api`, duplicate the `.env.example` to `.env`.
-- In `/apps/member-profile`, duplicate the `.env.example` to `.env`.
-- In `/packages/core`, duplicate the `.env.test.example` to `.env.test`.
-- In `/packages/db`, duplicate the `.env.example` to `.env`.
-
-You'll notice that a lot of environment variables are empty. Most of these empty
-variables are tied to the 3rd party integrations we have with platforms such as
-Postmark for sending emails and Google for authentication. If you would like to
-enable these integrations in development, please see the
-[How to Enable Integrations](./docs/how-to-enable-integrations.md)
-documentation.
-
-### Project Dependencies
-
-To install all project dependencies, run:
-
-```sh
-yarn
-```
-
-### Database Setup
-
-You'll need to make sure that Postgres and Redis are running in the background.
-
-#### Postgres Setup
-
-To set up your Postgres databases, you can run:
+You can name that PR:
 
 ```
-yarn db:setup
+chore: my first contribution ❤️
 ```
 
-You should now be able to connect to your database like this:
+## Deciding What to Work On
 
-```sh
-psql colorstack -U colorstack
-```
+You can start by browsing through our list of
+[issues](https://github.com/colorstackorg/oyster/issues). Once you've decided on
+an issue, leave a comment and wait to get approval from one of our codebase
+admins - this helps avoid multiple people working on this same issue.
 
-#### Executing Database Migrations
+### Proposing Ideas
 
-To execute the database migrations, run:
-
-```sh
-yarn db:migrate
-```
-
-To verify that the migration was executed successfully, connect to your Postgres
-database and run:
-
-```sh
-\d
-```
-
-You should see a bunch of SQL tables!
-
-#### Seeding the Database
-
-Now that we have some tables, we're ready to add some seed data in our database,
-which will enable you to log into the Admin Dashboard and Member Profile. Run:
-
-```sh
-yarn db:seed
-```
-
-Follow the prompt to add your email, and you will now be able to log into both
-applications.
-
-### Building the Project
-
-You can build the project by running:
-
-```sh
-yarn build
-```
-
-### Running the Applications
-
-To run all of our _applications_, you can run:
-
-```sh
-yarn dev:apps
-```
-
-To run a _specific package or application_, you can use the `--filter` flag like
-this:
-
-```sh
-yarn dev --filter=api
-```
-
-### Logging Into Applications
-
-You can log into the Member Profile and Admin Dashboard by sending a one-time
-code to your email OR by using your Google login.
-
-- [Recommended] To log in by sending a one-time code to your email, you'll first
-  need to enable sending emails in development. See instructions on how to do so
-  [here](./docs/how-to-enable-emails.md).
-- To log in via Google, you'll first need to enable the **Google** integration.
-  See instructions on how to do so
-  [here](./docs/how-to-enable-integrations.md#google).
-
-### Editor Setup
-
-Surprise, surprise. We use [VSCode](https://code.visualstudio.com/download) to
-write code! After you download it, we'll need to enable some extensions to make
-life a bit easier:
-
-- [Auto Rename Tag](https://marketplace.visualstudio.com/items?itemName=formulahendry.auto-rename-tag)
-- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
-- [Live Share](https://marketplace.visualstudio.com/items?itemName=MS-vsliveshare.vsliveshare)
-- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
-- [Tailwind IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
-- [Typescript Importer](https://marketplace.visualstudio.com/items?itemName=pmneo.tsimporter)
+If you have a feature request or idea that would improve our product, please
+start a discussion in our
+[GitHub Discussions](https://github.com/colorstackorg/oyster/discussions) space!
+If the maintainers see value in the idea, they will create issue from that
+discussion.
 
 ## License
 

@@ -1,12 +1,17 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
 import { useState } from 'react';
 import { Plus } from 'react-feather';
 import { generatePath } from 'react-router';
-import { z } from 'zod';
+import { type z } from 'zod';
 
+import { db } from '@oyster/db';
 import {
   ACCENT_COLORS,
   Dashboard,
@@ -14,17 +19,16 @@ import {
   getButtonCn,
   Pagination,
   Pill,
-  PillProps,
+  type PillProps,
   Table,
-  TableColumnProps,
+  type TableColumnProps,
   useSearchParams,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { db } from '../shared/core.server';
-import { ListSearchParams } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { ListSearchParams } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const OnboardingSessionsSearchParams = ListSearchParams.omit({
   search: true,
@@ -129,7 +133,7 @@ export default function OnboardingSessionsPage() {
 function UploadOnboardingSessionButton() {
   return (
     <Link
-      to={Route.UPLOAD_ONBOARDING_SESSIONS}
+      to={Route['/onboarding-sessions/upload']}
       className={getButtonCn({ variant: 'primary' })}
     >
       <Plus size={16} /> Upload Session
@@ -207,9 +211,12 @@ function OnboardingSessionsDropdown({ id }: OnboardingSessionInView) {
           <Dropdown.List>
             <Dropdown.Item>
               <Link
-                to={generatePath(Route.ADD_ONBOARDING_SESSION_ATTENDEES, {
-                  id,
-                })}
+                to={generatePath(
+                  Route['/onboarding-sessions/:id/add-attendees'],
+                  {
+                    id,
+                  }
+                )}
               >
                 <Plus /> Add Attendees
               </Link>

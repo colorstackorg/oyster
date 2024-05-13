@@ -1,9 +1,15 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
+import { Video } from 'react-feather';
 
+import { db } from '@oyster/db';
 import { EventType } from '@oyster/types';
-import { ProfilePicture } from '@oyster/ui';
+import { cx, getButtonCn, ProfilePicture } from '@oyster/ui';
 
 import {
   EventDate,
@@ -11,11 +17,10 @@ import {
   EventName,
   EventSection,
   formatEventDate,
-} from '../shared/components/event';
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { db } from '../shared/core.server';
-import { ensureUserAuthenticated } from '../shared/session.server';
+} from '@/shared/components/event';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -40,6 +45,7 @@ async function getPastEvents({ timezone }: GetPastEventsInput) {
       'endTime',
       'id',
       'name',
+      'recordingLink',
       'startTime',
       (eb) => {
         return eb
@@ -141,6 +147,17 @@ function PastEventItem({ event }: PastEventItemProps) {
             profilePictures={event.profilePictures}
           />
         )}
+
+        <a
+          className={cx(
+            getButtonCn({ fill: true, size: 'small', variant: 'secondary' }),
+            !event.recordingLink && 'invisible'
+          )}
+          href={event.recordingLink || undefined}
+          target="_blank"
+        >
+          View Recording <Video />
+        </a>
       </div>
     </li>
   );

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Environment } from './core.ui';
+import { Environment } from '@/member-profile.ui';
 
 const EnvironmentVariable = z.string().trim().min(1);
 
@@ -9,6 +9,8 @@ const BaseEnvironmentConfig = z.object({
   CRUNCHBASE_BASIC_API_KEY: EnvironmentVariable,
   DATABASE_URL: EnvironmentVariable,
   ENVIRONMENT: z.nativeEnum(Environment),
+  GITHUB_OAUTH_CLIENT_ID: EnvironmentVariable,
+  GITHUB_OAUTH_CLIENT_SECRET: EnvironmentVariable,
   GOOGLE_CLIENT_ID: EnvironmentVariable,
   GOOGLE_MAPS_API_KEY: EnvironmentVariable,
   JWT_SECRET: EnvironmentVariable,
@@ -18,7 +20,6 @@ const BaseEnvironmentConfig = z.object({
   SESSION_SECRET: EnvironmentVariable,
   SLACK_CLIENT_ID: EnvironmentVariable,
   SLACK_TEAM_ID: EnvironmentVariable,
-  STATSIG_SECRET_KEY: EnvironmentVariable,
   STUDENT_PROFILE_URL: EnvironmentVariable,
   SWAG_UP_CLIENT_ID: EnvironmentVariable,
   SWAG_UP_CLIENT_SECRET: EnvironmentVariable,
@@ -27,13 +28,14 @@ const BaseEnvironmentConfig = z.object({
 const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
   BaseEnvironmentConfig.partial({
     CRUNCHBASE_BASIC_API_KEY: true,
+    GITHUB_OAUTH_CLIENT_ID: true,
+    GITHUB_OAUTH_CLIENT_SECRET: true,
     GOOGLE_CLIENT_ID: true,
     GOOGLE_MAPS_API_KEY: true,
     MIXPANEL_TOKEN: true,
     SENTRY_DSN: true,
     SLACK_CLIENT_ID: true,
     SLACK_TEAM_ID: true,
-    STATSIG_SECRET_KEY: true,
     SWAG_UP_CLIENT_ID: true,
     SWAG_UP_CLIENT_SECRET: true,
   }).extend({

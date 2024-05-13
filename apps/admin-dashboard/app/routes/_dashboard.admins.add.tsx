@@ -1,15 +1,10 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import {
@@ -22,17 +17,18 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { addAdmin } from '../shared/core.server';
-import { AddAdminInput } from '../shared/core.ui';
+import { addAdmin } from '@/admin-dashboard.server';
+import { AddAdminInput } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
+
   return json({});
 }
 
@@ -72,7 +68,7 @@ export async function action({ request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.HOME, {
+  return redirect(Route['/'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -80,14 +76,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function AddAdminPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/']}>
       <Modal.Header>
         <Modal.Title>Add Admin</Modal.Title>
         <Modal.CloseButton />
@@ -102,8 +92,6 @@ const keys = AddAdminInput.keyof().enum;
 
 function AddAdminForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <RemixForm className="form" method="post">
@@ -153,9 +141,7 @@ function AddAdminForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Add
-        </Button>
+        <Button.Submit>Add</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

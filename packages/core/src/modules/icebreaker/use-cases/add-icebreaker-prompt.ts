@@ -1,7 +1,7 @@
 import { id } from '@oyster/utils';
 
 import { db } from '@/infrastructure/database';
-import { AddIcebreakerPromptInput } from '../icebreaker.types';
+import { type AddIcebreakerPromptInput } from '../icebreaker.types';
 
 export async function addIcebreakerPrompt(input: AddIcebreakerPromptInput) {
   await db

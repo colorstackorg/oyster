@@ -1,19 +1,15 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
-  useNavigation,
 } from '@remix-run/react';
-import { z } from 'zod';
 
-import { Student } from '@oyster/types';
 import {
   Button,
   Form,
@@ -23,14 +19,15 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { db, job, listEmails } from '../shared/core.server';
+import { changePrimaryEmail, listEmails } from '@/member-profile.server';
+import { ChangePrimaryEmailInput } from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -41,12 +38,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     emails,
   });
 }
-
-const ChangePrimaryEmailInput = Student.pick({
-  email: true,
-});
-
-type ChangePrimaryEmailInput = z.infer<typeof ChangePrimaryEmailInput>;
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -86,56 +77,14 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-async function changePrimaryEmail(id: string, input: ChangePrimaryEmailInput) {
-  const student = await db
-    .selectFrom('students')
-    .select(['email'])
-    .where('id', '=', id)
-    .executeTakeFirstOrThrow();
-
-  if (input.email === student.email) {
-    throw new Error('This is already your primary email.');
-  }
-
-  const studentEmail = await db
-    .selectFrom('studentEmails')
-    .where('email', 'ilike', input.email)
-    .executeTakeFirst();
-
-  if (!studentEmail) {
-    throw new Error('The email you are trying to make primary was not found.');
-  }
-
-  const previousEmail = student.email;
-
-  await db
-    .updateTable('students')
-    .set({ email: input.email })
-    .where('id', '=', id)
-    .execute();
-
-  job('member_email.primary.changed', {
-    previousEmail,
-    studentId: id,
-  });
-}
-
-const { email } = ChangePrimaryEmailInput.keyof().enum;
+const keys = ChangePrimaryEmailInput.keyof().enum;
 
 export default function ChangePrimaryEmailPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
   const { emails } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  const submitting = useNavigation().state === 'submitting';
-
-  function onClose() {
-    navigate(Route['/profile/emails']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/emails']}>
       <Modal.Header>
         <Modal.Title>Change Primary Email Address</Modal.Title>
         <Modal.CloseButton />
@@ -154,10 +103,10 @@ export default function ChangePrimaryEmailPage() {
           description="If you don't see your email listed here, please add it to your profile first."
           error={errors.email}
           label="Email"
-          labelFor={email}
+          labelFor={keys.email}
           required
         >
-          <Select id={email} name={email} required>
+          <Select id={keys.email} name={keys.email} required>
             {emails.map((email) => {
               return (
                 <option
@@ -173,9 +122,7 @@ export default function ChangePrimaryEmailPage() {
         </Form.Field>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Save
-          </Button>
+          <Button.Submit>Save</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

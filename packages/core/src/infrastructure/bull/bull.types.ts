@@ -8,7 +8,7 @@ import {
   CompletedActivity,
   EmailCampaign,
   Event,
-  ExtractValue,
+  type ExtractValue,
   ProfileView,
   Student,
   StudentEmail,
@@ -239,6 +239,11 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
       }),
       z.object({
         studentId: CompletedActivity.shape.studentId,
+        type: z.literal('submit_census_response'),
+        year: z.number().int().min(2024),
+      }),
+      z.object({
+        studentId: CompletedActivity.shape.studentId,
         type: z.literal('update_education_history'),
       }),
       z.object({
@@ -385,6 +390,12 @@ export const SlackBullJob = z.discriminatedUnion('name', [
   }),
   z.object({
     name: z.literal('slack.invite'),
+    data: z.object({
+      email: Student.shape.email,
+    }),
+  }),
+  z.object({
+    name: z.literal('slack.invited'),
     data: z.object({
       email: Student.shape.email,
     }),

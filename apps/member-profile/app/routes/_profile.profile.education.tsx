@@ -1,25 +1,25 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData, useNavigate } from '@remix-run/react';
 import { BookOpen, Plus } from 'react-feather';
 
 import { Button } from '@oyster/ui';
 
-import { EducationExperienceItem } from '../shared/components/education-experience';
+import { EducationExperienceItem } from '@/shared/components/education-experience';
 import {
   EmptyState,
   EmptyStateContainer,
-} from '../shared/components/empty-state';
+} from '@/shared/components/empty-state';
 import {
   ExperienceList,
   ProfileDescription,
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
-} from '../shared/components/profile';
-import { Route } from '../shared/constants';
-import { track } from '../shared/mixpanel.server';
-import { getEducationExperiences } from '../shared/queries';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+} from '@/shared/components/profile';
+import { Route } from '@/shared/constants';
+import { track } from '@/shared/mixpanel.server';
+import { getEducationExperiences } from '@/shared/queries';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -52,7 +52,7 @@ function EducationHistorySection() {
   const navigate = useNavigate();
 
   function onAddExperience() {
-    navigate(Route.ADD_EDUCATION);
+    navigate(Route['/profile/education/add']);
   }
 
   return (

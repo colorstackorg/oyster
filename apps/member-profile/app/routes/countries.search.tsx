@@ -1,9 +1,12 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
-import { sql } from 'kysely';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import { z } from 'zod';
 
-import { db } from '../shared/core.server';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { searchCountries } from '@/member-profile.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const CountriesSearchParams = z.object({
   search: z.string().trim().min(1).catch(''),
@@ -20,37 +23,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
     Object.fromEntries(url.searchParams)
   );
 
-  const countries = await searchCountries(search);
-
-  return json({
-    countries,
-  });
-}
-
-async function searchCountries(search: string) {
-  const countries = await db
-    .selectFrom('countries')
-    .select([
+  const countries = await searchCountries({
+    select: [
       'countries.code',
       'countries.demonym',
       'countries.flagEmoji',
       'countries.name',
-    ])
-    .$if(!!search, (qb) => {
-      return qb
-        .where((eb) => {
-          return eb.or([
-            eb('countries.code', 'ilike', `${search}%`),
-            eb('countries.demonym', 'ilike', `%${search}%`),
-            eb('countries.name', 'ilike', `%${search}%`),
-            eb('countries.flagEmoji', '=', search),
-            sql`similarity(countries.name, ${search}) > 0.5`,
-          ]);
-        })
-        .orderBy(sql`similarity(countries.name, ${search})`, 'desc');
-    })
-    .orderBy('countries.demonym', 'asc')
-    .execute();
+    ],
+    where: { search },
+  });
 
-  return countries;
+  return json({
+    countries,
+  });
 }

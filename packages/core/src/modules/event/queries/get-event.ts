@@ -1,7 +1,7 @@
 import type { SelectExpression } from 'kysely';
 
-import { DB } from '@oyster/db';
-import { EventType } from '@oyster/types';
+import { type DB } from '@oyster/db';
+import { type EventType } from '@oyster/types';
 
 import { db } from '@/infrastructure/database';
 

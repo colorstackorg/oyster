@@ -1,12 +1,12 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 
 import { Form, Login } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { ENV } from '../shared/constants.server';
-import { getGoogleAuthUri, getSlackAuthUri } from '../shared/core.server';
-import { commitSession, getSession } from '../shared/session.server';
+import { getGoogleAuthUri, getSlackAuthUri } from '@/member-profile.server';
+import { Route } from '@/shared/constants';
+import { ENV } from '@/shared/constants.server';
+import { commitSession, getSession } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);
@@ -46,7 +46,7 @@ export default function LoginPage() {
     <Login.ButtonGroup>
       {!!googleAuthUri && <Login.GoogleButton href={googleAuthUri} />}
       {!!slackAuthUri && <Login.SlackButton href={slackAuthUri} />}
-      <Login.OtpButton href={Route.LOGIN_OTP_SEND} />
+      <Login.OtpButton href={Route['/login/otp/send']} />
 
       {error && (
         <div className="mt-4">

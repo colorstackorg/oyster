@@ -1,8 +1,8 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
-  SerializeFrom,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
 } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
@@ -10,20 +10,20 @@ import { useState } from 'react';
 import { Edit, Menu, Plus } from 'react-feather';
 import { generatePath } from 'react-router';
 
+import { db } from '@oyster/db';
 import {
   Dashboard,
   Dropdown,
   IconButton,
   Pagination,
   Table,
-  TableColumnProps,
+  type TableColumnProps,
   useSearchParams,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { db } from '../shared/core.server';
-import { ListSearchParams } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { ListSearchParams } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
@@ -45,13 +45,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 async function listSchools({ limit, page, search }: ListSearchParams) {
-  let query = db.selectFrom('schools');
-
-  if (search) {
-    query = query
-      .where(sql`similarity(name, ${search}) > 0.15`)
-      .where(sql`word_similarity(name, ${search}) > 0.15`);
-  }
+  const query = db.selectFrom('schools').$if(!!search, (qb) => {
+    return qb
+      .where(sql<boolean>`similarity(name, ${search}) > 0.15`)
+      .where(sql<boolean>`word_similarity(name, ${search}) > 0.15`);
+  });
 
   const [rows, countResult] = await Promise.all([
     query
@@ -137,7 +135,7 @@ function SchoolsActionDropdown() {
         <Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={Route.CREATE_SCHOOL}>
+              <Link to={Route['/schools/create']}>
                 <Plus /> Create School
               </Link>
             </Dropdown.Item>
@@ -213,7 +211,7 @@ function SchoolsTableDropdown({ id }: SchoolInView) {
         <Table.Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={generatePath(Route.EDIT_SCHOOL, { id })}>
+              <Link to={generatePath(Route['/schools/:id/edit'], { id })}>
                 <Edit /> Edit School
               </Link>
             </Dropdown.Item>

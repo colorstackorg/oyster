@@ -1,8 +1,12 @@
 import * as Sentry from '@sentry/node';
 
-import { ErrorContext, ErrorLevel, ErrorWithContext } from '@/shared/errors';
+import {
+  type ErrorContext,
+  type ErrorLevel,
+  ErrorWithContext,
+} from '@/shared/errors';
 
-export function reportError(error: unknown): void {
+export function reportException(error: unknown): void {
   let context: ErrorContext | undefined = undefined;
   let level: ErrorLevel = 'error';
 

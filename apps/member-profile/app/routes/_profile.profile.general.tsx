@@ -1,12 +1,14 @@
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
-import { sql } from 'kysely';
-import { z } from 'zod';
+import { type z } from 'zod';
 
 import { Student } from '@oyster/types';
 import {
@@ -17,25 +19,24 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { updateMember } from '@/member-profile.server';
 import {
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
-} from '../shared/components/profile';
+} from '@/shared/components/profile';
 import {
   CurrentLocationField,
   PreferredNameField,
-} from '../shared/components/profile.general';
-import { db } from '../shared/core.server';
-import { track } from '../shared/mixpanel.server';
-import { updateGeneralInformation } from '../shared/queries';
-import { getMember } from '../shared/queries/index';
+} from '@/shared/components/profile.general';
+import { track } from '@/shared/mixpanel.server';
+import { getMember } from '@/shared/queries/index';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -94,13 +95,9 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  const { currentLocationLatitude, currentLocationLongitude, ...rest } = data;
-
-  await db.transaction().execute(async (trx) => {
-    await updateGeneralInformation(trx, user(session), {
-      ...rest,
-      currentLocationCoordinates: sql`point(${currentLocationLongitude}, ${currentLocationLatitude})`,
-    });
+  await updateMember({
+    data,
+    where: { id: user(session) },
   });
 
   toast(session, {
@@ -121,20 +118,11 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 }
 
-const {
-  currentLocation,
-  currentLocationLatitude,
-  currentLocationLongitude,
-  firstName,
-  headline,
-  lastName,
-  preferredName,
-} = UpdateGeneralInformation.keyof().enum;
+const keys = UpdateGeneralInformation.keyof().enum;
 
 export default function UpdateGeneralInformationSection() {
   const { errors } = getActionErrors(useActionData<typeof action>());
   const { student } = useLoaderData<typeof loader>();
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <ProfileSection>
@@ -147,14 +135,14 @@ export default function UpdateGeneralInformationSection() {
           defaultValue={student.firstName}
           error={errors.firstName}
           label="First Name"
-          name={firstName}
+          name={keys.firstName}
           required
         />
         <InputField
           defaultValue={student.lastName}
           error={errors.lastName}
           label="Last Name"
-          name={lastName}
+          name={keys.lastName}
           required
         />
         <PreferredNameField
@@ -162,7 +150,7 @@ export default function UpdateGeneralInformationSection() {
           error={errors.preferredName}
           firstName={student.firstName}
           lastName={student.lastName}
-          name={preferredName}
+          name={keys.preferredName}
         />
 
         <Divider />
@@ -172,7 +160,7 @@ export default function UpdateGeneralInformationSection() {
           description="A LinkedIn-style headline."
           error={errors.headline}
           label="Headline"
-          name={headline}
+          name={keys.headline}
           placeholder="Incoming SWE Intern @ Google | Cornell '26"
           required
         />
@@ -184,15 +172,13 @@ export default function UpdateGeneralInformationSection() {
           defaultLongitude={student.currentLocationCoordinates?.x}
           defaultValue={student.currentLocation || undefined}
           error={errors.currentLocation}
-          name={currentLocation}
-          latitudeName={currentLocationLatitude}
-          longitudeName={currentLocationLongitude}
+          name={keys.currentLocation}
+          latitudeName={keys.currentLocationLatitude}
+          longitudeName={keys.currentLocationLongitude}
         />
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Save
-          </Button>
+          <Button.Submit>Save</Button.Submit>
         </Button.Group>
       </RemixForm>
     </ProfileSection>

@@ -1,4 +1,8 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import {
   Link,
   Outlet,
@@ -12,22 +16,22 @@ import { generatePath } from 'react-router';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { ExtractValue } from '@oyster/types';
+import { type ExtractValue } from '@oyster/types';
 import {
   cx,
   getIconButtonCn,
   Pagination,
   Table,
-  TableColumnProps,
+  type TableColumnProps,
   Text,
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { QueueFromName } from '../shared/core.server';
-import { BullQueue, ListSearchParams } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { QueueFromName } from '@/admin-dashboard.server';
+import { BullQueue, ListSearchParams } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const BullStatus = {
   COMPLETED: 'completed',
@@ -205,7 +209,10 @@ function JobsTable() {
           <Link
             className="link"
             to={{
-              pathname: generatePath(Route.BULL_JOB, { id: job.id, queue }),
+              pathname: generatePath(Route['/bull/:queue/jobs/:id'], {
+                id: job.id,
+                queue,
+              }),
               search,
             }}
           >

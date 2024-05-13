@@ -1,32 +1,38 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
-import React, { PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 import { BookOpen, Calendar, Globe, Home, Link, MapPin } from 'react-feather';
 
-import { cx, getButtonCn, ProfilePicture, Text, TextProps } from '@oyster/ui';
-
-import { Card } from '../shared/components/card';
-import { EducationExperienceItem } from '../shared/components/education-experience';
-import { ExperienceList } from '../shared/components/profile';
-import { ENV } from '../shared/constants.server';
 import {
+  cx,
+  getButtonCn,
+  ProfilePicture,
+  Text,
+  type TextProps,
+} from '@oyster/ui';
+
+import {
+  countEventAttendees,
   countMessagesSent,
   getActiveStreak,
-  getEventsAttendedCount,
   getIcebreakerResponses,
   getTotalPoints,
   job,
   listWorkExperiences,
-} from '../shared/core.server';
-import { WorkExperienceItem } from '../shared/core.ui';
+} from '@/member-profile.server';
+import { WorkExperienceItem } from '@/member-profile.ui';
+import { Card } from '@/shared/components/card';
+import { EducationExperienceItem } from '@/shared/components/education-experience';
+import { ExperienceList } from '@/shared/components/profile';
+import { ENV } from '@/shared/constants.server';
 import {
   getEducationExperiences,
   getMember,
   getMemberEthnicities,
-} from '../shared/queries';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
-import { formatHeadline, formatName } from '../shared/utils/format.utils';
+} from '@/shared/queries';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
+import { formatHeadline, formatName } from '@/shared/utils/format.utils';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -46,7 +52,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   ] = await Promise.all([
     getActiveStreak(memberId),
     getEducationExperiences(memberId),
-    getEventsAttendedCount(memberId),
+    countEventAttendees({
+      where: { studentId: memberId },
+    }),
     getIcebreakerResponses(memberId, [
       'icebreakerResponses.promptId',
       'icebreakerResponses.text',

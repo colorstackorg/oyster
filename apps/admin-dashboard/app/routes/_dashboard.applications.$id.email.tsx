@@ -1,16 +1,15 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
-import { z } from 'zod';
+import { type z } from 'zod';
 
 import { Application } from '@oyster/types';
 import {
@@ -22,13 +21,16 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { getApplication, updateEmailApplication } from '../shared/core.server';
+import {
+  getApplication,
+  updateEmailApplication,
+} from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
@@ -93,7 +95,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const url = new URL(request.url);
 
-  url.pathname = Route.APPLICATIONS;
+  url.pathname = Route['/applications'];
 
   return redirect(url.toString(), {
     headers: {
@@ -123,25 +125,26 @@ export default function UpdateApplicationEmailPage() {
   );
 }
 
-const { email } = UpdateApplicationEmailInput.keyof().enum;
+const keys = UpdateApplicationEmailInput.keyof().enum;
 
 function UpdateApplicationEmailForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
-      <Form.Field error={errors.email} label="Email" labelFor={email} required>
-        <Input id={email} name={email} required />
+      <Form.Field
+        error={errors.email}
+        label="Email"
+        labelFor={keys.email}
+        required
+      >
+        <Input id={keys.email} name={keys.email} required />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Update
-        </Button>
+        <Button.Submit>Update</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

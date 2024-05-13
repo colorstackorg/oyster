@@ -1,4 +1,8 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import {
   Link,
   Outlet,
@@ -14,25 +18,25 @@ import { z } from 'zod';
 
 import { Application, ApplicationStatus } from '@oyster/types';
 import {
-  AccentColor,
+  type AccentColor,
   Dashboard,
   Dropdown,
   Pagination,
   Pill,
-  PillProps,
+  type PillProps,
   SearchBar,
   Select,
   Table,
-  TableColumnProps,
+  type TableColumnProps,
   useSearchParams,
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { listApplications } from '../shared/core.server';
-import { ListSearchParams } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { listApplications } from '@/admin-dashboard.server';
+import { ListSearchParams } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const ApplicationsSearchParams = ListSearchParams.extend({
   status: Application.shape.status.or(z.literal('all')).catch('pending'),
@@ -76,7 +80,7 @@ export default function ApplicationsPage() {
   );
 }
 
-const { search, status } = ApplicationsSearchParams.keyof().enum;
+const keys = ApplicationsSearchParams.keyof().enum;
 
 const statuses = Object.values(ApplicationStatus);
 
@@ -93,16 +97,16 @@ function FilterApplicationsForm() {
     >
       <SearchBar
         defaultValue={searchParams.search}
-        name={search}
-        id={search}
+        name={keys.search}
+        id={keys.search}
         placeholder="Search by email or name..."
       />
 
       <div className="ml-auto w-32">
         <Select
           defaultValue={searchParams.status}
-          id={status}
-          name={status}
+          id={keys.status}
+          name={keys.status}
           placeholder="Status..."
           required
         >
@@ -138,7 +142,9 @@ function ApplicationsTable() {
           <Link
             className="link"
             to={{
-              pathname: generatePath(Route.APPLICATION, { id: application.id }),
+              pathname: generatePath(Route['/applications/:id'], {
+                id: application.id,
+              }),
               search,
             }}
           >
@@ -194,7 +200,7 @@ function ApplicationsTable() {
       columns={columns}
       data={applications}
       emptyMessage="No pending applications left to review."
-      {...(searchParams.status === 'pending' && {
+      {...(['pending', 'rejected'].includes(searchParams.status) && {
         Dropdown: ApplicationDropdown,
       })}
     />
@@ -221,6 +227,8 @@ function ApplicationDropdown({ id }: ApplicationInView) {
 
   const { search } = useLocation();
 
+  const [searchParams] = useSearchParams(ApplicationsSearchParams);
+
   function onClose() {
     setOpen(false);
   }
@@ -234,18 +242,34 @@ function ApplicationDropdown({ id }: ApplicationInView) {
       {open && (
         <Table.Dropdown>
           <Dropdown.List>
-            <Dropdown.Item>
-              <Link
-                to={{
-                  pathname: generatePath(Route.UPDATE_APPLICATION_EMAIL, {
-                    id,
-                  }),
-                  search,
-                }}
-              >
-                <Edit /> Update Email
-              </Link>
-            </Dropdown.Item>
+            {searchParams.status === 'pending' && (
+              <Dropdown.Item>
+                <Link
+                  to={{
+                    pathname: generatePath(Route['/applications/:id/email'], {
+                      id,
+                    }),
+                    search,
+                  }}
+                >
+                  <Edit /> Update Email
+                </Link>
+              </Dropdown.Item>
+            )}
+            {searchParams.status === 'rejected' && (
+              <Dropdown.Item>
+                <Link
+                  to={{
+                    pathname: generatePath(Route['/applications/:id/accept'], {
+                      id,
+                    }),
+                    search,
+                  }}
+                >
+                  <Edit /> Accept Application
+                </Link>
+              </Dropdown.Item>
+            )}
           </Dropdown.List>
         </Table.Dropdown>
       )}

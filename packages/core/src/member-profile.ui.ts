@@ -22,9 +22,15 @@ export {
   EmploymentType,
   FORMATTED_EMPLOYMENT_TYPE,
   FORMATTED_LOCATION_TYPE,
+  ListJobOffersWhere,
   LocationType,
   WorkExperience,
 } from './modules/employment/employment.types';
+export {
+  CompanyCombobox,
+  CompanyFieldProvider,
+  FreeTextCompanyInput,
+} from './modules/employment/ui/company-field';
 export { WorkExperienceItem } from './modules/employment/ui/work-experience';
 export { WorkForm } from './modules/employment/ui/work-form';
 export {
@@ -32,5 +38,9 @@ export {
   IcebreakerResponse,
 } from './modules/icebreaker/icebreaker.types';
 export { Country } from './modules/location/location.types';
+export {
+  ChangePrimaryEmailInput,
+  ListMembersInDirectoryWhere,
+} from './modules/member/member.types';
 export { ClaimSwagPackInput } from './modules/swag-pack/swag-pack.types';
 export { Environment, ListSearchParams } from './shared/types';

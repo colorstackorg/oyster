@@ -1,7 +1,7 @@
 import { id } from '@oyster/utils';
 
 import { db } from '@/infrastructure/database';
-import { CreateSchoolInput } from '../education.types';
+import { type CreateSchoolInput } from '../education.types';
 
 export async function createSchool({
   addressCity,

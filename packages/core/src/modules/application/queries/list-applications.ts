@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
 
-import { ApplicationStatus } from '@oyster/types';
+import { type ApplicationStatus } from '@oyster/types';
 
 import { db } from '@/infrastructure/database';
 
@@ -36,6 +36,8 @@ export async function listApplications({
       return qb.where('applications.status', '=', status);
     });
 
+  const orderDirection = status === 'pending' ? 'asc' : 'desc';
+
   const [rows, { count }] = await Promise.all([
     query
       .leftJoin('schools', 'schools.id', 'applications.schoolId')
@@ -52,7 +54,7 @@ export async function listApplications({
             .as('school');
         },
       ])
-      .orderBy('applications.createdAt', 'asc')
+      .orderBy('applications.createdAt', orderDirection)
       .limit(limit)
       .offset((page - 1) * limit)
       .execute(),

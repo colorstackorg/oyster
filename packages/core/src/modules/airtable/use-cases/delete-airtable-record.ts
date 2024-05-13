@@ -1,12 +1,16 @@
-import { GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { getAirtableRecord } from '@/modules/airtable/queries/get-airtable-record';
 import { IS_PRODUCTION } from '@/shared/env';
 import { NotFoundError } from '@/shared/errors';
 import {
+  AIRTABLE_MEMBERS_URI,
   airtableRateLimiter,
-  getAirtableRecord,
-  getMembersAirtable,
+  getAirtableHeaders,
 } from '../airtable.shared';
 
+/**
+ * @see https://airtable.com/developers/web/api/delete-record
+ */
 export async function deleteAirtableRecord({
   email,
 }: GetBullJobData<'airtable.record.delete'>) {
@@ -22,11 +26,12 @@ export async function deleteAirtableRecord({
     });
   }
 
-  const table = getMembersAirtable();
-
   await airtableRateLimiter.process();
 
-  await table.destroy(record.id);
+  await fetch(`${AIRTABLE_MEMBERS_URI}/${record.id}`, {
+    headers: getAirtableHeaders(),
+    method: 'delete',
+  });
 
   console.log({
     code: 'airtable_record_deleted',

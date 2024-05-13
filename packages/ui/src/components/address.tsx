@@ -1,7 +1,7 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
-import { Input, InputProps } from './input';
-import { Select, SelectProps } from './select';
+import { Input, type InputProps } from './input';
+import { Select, type SelectProps } from './select';
 
 export const Address = ({ children }: PropsWithChildren) => {
   return <div className="grid gap-4 @container">{children}</div>;

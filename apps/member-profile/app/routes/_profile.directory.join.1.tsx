@@ -1,16 +1,14 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
-import { sql } from 'kysely';
 import { z } from 'zod';
 
 import { Student } from '@oyster/types';
@@ -23,16 +21,16 @@ import {
   InputField,
   Link,
   Text,
-  TextProps,
+  type TextProps,
   validateForm,
 } from '@oyster/ui';
 
-import { CurrentLocationField } from '../shared/components/profile.general';
-import { Route } from '../shared/constants';
-import { db } from '../shared/core.server';
-import { getMember, updateGeneralInformation } from '../shared/queries';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
-import { JoinDirectoryNextButton } from './_profile.directory.join';
+import { updateMember } from '@/member-profile.server';
+import { JoinDirectoryNextButton } from '@/routes/_profile.directory.join';
+import { CurrentLocationField } from '@/shared/components/profile.general';
+import { Route } from '@/shared/constants';
+import { getMember } from '@/shared/queries';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -72,29 +70,19 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  await db.transaction().execute(async (trx) => {
-    await updateGeneralInformation(trx, user(session), {
-      currentLocation: data.currentLocation,
-      currentLocationCoordinates: sql`point(${data.currentLocationLongitude}, ${data.currentLocationLatitude})`,
-      headline: data.headline,
-    });
+  await updateMember({
+    data,
+    where: { id: user(session) },
   });
 
   return redirect(Route['/directory/join/2']);
 }
 
-const {
-  currentLocation,
-  currentLocationLatitude,
-  currentLocationLongitude,
-  headline,
-} = UpdateGeneralInformation.keyof().enum;
+const keys = UpdateGeneralInformation.keyof().enum;
 
 export default function UpdateGeneralInformationForm() {
   const { student } = useLoaderData<typeof loader>();
   const { errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <RemixForm className="form" method="post">
@@ -103,7 +91,7 @@ export default function UpdateGeneralInformationForm() {
         description="A LinkedIn-style headline."
         error={errors.headline}
         label="Headline"
-        name={headline}
+        name={keys.headline}
         placeholder="Incoming SWE Intern @ Google | Cornell '26"
         required
       />
@@ -115,9 +103,9 @@ export default function UpdateGeneralInformationForm() {
         defaultLongitude={student.currentLocationCoordinates?.x}
         defaultValue={student.currentLocation || undefined}
         error={errors.currentLocation}
-        name={currentLocation}
-        latitudeName={currentLocationLatitude}
-        longitudeName={currentLocationLongitude}
+        name={keys.currentLocation}
+        latitudeName={keys.currentLocationLatitude}
+        longitudeName={keys.currentLocationLongitude}
       />
 
       <Divider />
@@ -139,7 +127,7 @@ export default function UpdateGeneralInformationForm() {
       </Form.Field>
 
       <Button.Group>
-        <JoinDirectoryNextButton submitting={submitting} />
+        <JoinDirectoryNextButton />
       </Button.Group>
     </RemixForm>
   );

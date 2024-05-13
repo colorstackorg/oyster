@@ -1,24 +1,21 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useLoaderData,
-  useNavigate,
-} from '@remix-run/react';
+import { Form as RemixForm, useLoaderData } from '@remix-run/react';
 
+import { db } from '@oyster/db';
 import { Button, Modal } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { db, job } from '../shared/core.server';
+import { job } from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -30,7 +27,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     .executeTakeFirst();
 
   if (!student) {
-    return redirect(Route.STUDENTS);
+    return redirect(Route['/students']);
   }
 
   return json({
@@ -61,7 +58,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.STUDENTS, {
+  return redirect(Route['/students'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -71,14 +68,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
 export default function RemoveMemberPage() {
   const { student } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.STUDENTS);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>
           Remove {student.firstName} {student.lastName}

@@ -1,21 +1,27 @@
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
 import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
+import {
+  generatePath,
   Form as RemixForm,
   useLoaderData,
-  useNavigate,
+  useParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 import { ArrowUp, Copy, RefreshCw, Trash } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { IconButton, Modal, Text } from '@oyster/ui';
 
-import { getTimezone } from '../shared/cookies.server';
-import { QueueFromName } from '../shared/core.server';
-import { BullQueue } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { QueueFromName } from '@/admin-dashboard.server';
+import { BullQueue } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const BullParams = z.object({
   queue: z.nativeEnum(BullQueue),
@@ -101,6 +107,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   await match(result.data)
     .with('duplicate', async () => {
       const queue = QueueFromName[job.queueName as BullQueue];
+
       return queue.add(job.name, job.data);
     })
     .with('promote', async () => {
@@ -137,15 +144,14 @@ async function getJobFromParams(params: object) {
 
 export default function JobPage() {
   const { data, general, options } = useLoaderData<typeof loader>();
-
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
+  const { queue } = useParams();
 
   return (
-    <Modal onClose={onClose}>
+    <Modal
+      onCloseTo={generatePath(Route['/bull/:queue/jobs'], {
+        queue: queue as string,
+      })}
+    >
       <Modal.Header>
         <Modal.Title>Job Details</Modal.Title>
         <Modal.CloseButton />

@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -12,14 +12,17 @@ import {
 
 import { Button, Form, Modal } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { deleteWorkExperience, getWorkExperience } from '../shared/core.server';
+import {
+  deleteWorkExperience,
+  getWorkExperience,
+} from '@/member-profile.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -70,16 +73,12 @@ export default function DeleteWorkExperiencePage() {
 
   const navigate = useNavigate();
 
-  function onClose() {
-    navigate(Route['/profile/work']);
-  }
-
   function onBack() {
     navigate(-1);
   }
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/work']}>
       <Modal.Header>
         <Modal.Title>Delete Work Experience</Modal.Title>
         <Modal.CloseButton />

@@ -3,8 +3,8 @@ import { ChevronLeft, ChevronRight } from 'react-feather';
 
 import { iife } from '@oyster/utils';
 
-import { cx } from '../utils/cx';
 import { Text } from './text';
+import { cx } from '../utils/cx';
 
 type PaginationValue = number | '...';
 

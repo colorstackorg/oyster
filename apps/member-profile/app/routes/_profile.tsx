@@ -1,26 +1,19 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet, useLoaderData } from '@remix-run/react';
-import { Award, Book, Calendar, Folder, Home, User } from 'react-feather';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { Outlet } from '@remix-run/react';
+import { Award, Calendar, Folder, Home, User } from 'react-feather';
 
 import { Dashboard } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { isFeatureFlagEnabled } from '../shared/core.server';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { Route } from '@/shared/constants';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const isCensusEnabled = await isFeatureFlagEnabled('census_2024');
-
-  return json({
-    isCensusEnabled,
-  });
+  return json({});
 }
 
 export default function ProfileLayout() {
-  const { isCensusEnabled } = useLoaderData<typeof loader>();
-
   return (
     <Dashboard>
       <Dashboard.Sidebar>
@@ -34,15 +27,8 @@ export default function ProfileLayout() {
             <Dashboard.NavigationLink
               icon={<Home />}
               label="Home"
-              pathname={Route.HOME}
+              pathname={Route['/home']}
             />
-            {isCensusEnabled && (
-              <Dashboard.NavigationLink
-                icon={<Book />}
-                label="Census '24"
-                pathname={Route['/census']}
-              />
-            )}
             <Dashboard.NavigationLink
               icon={<Folder />}
               label="Directory"
@@ -51,7 +37,7 @@ export default function ProfileLayout() {
             <Dashboard.NavigationLink
               icon={<Award />}
               label="Points"
-              pathname={Route.POINTS}
+              pathname={Route['/points']}
             />
             <Dashboard.NavigationLink
               icon={<Calendar />}

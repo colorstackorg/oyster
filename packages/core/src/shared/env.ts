@@ -1,6 +1,6 @@
 import { config } from 'dotenv';
 
-import { Environment } from './types';
+import { type Environment } from './types';
 
 // Loads the .env file into `process.env`. Note that if the config was already
 // loaded (for example, in tests), this will not overwrite any existing values.
@@ -41,5 +41,6 @@ export const ENV = {
 // Everything else above should be colocated with its respective module.
 
 export const ENVIRONMENT = process.env.ENVIRONMENT as Environment;
+export const IS_DEVELOPMENT = ENVIRONMENT === 'development';
 export const IS_PRODUCTION = ENVIRONMENT === 'production';
 export const IS_TEST = ENVIRONMENT === 'test';

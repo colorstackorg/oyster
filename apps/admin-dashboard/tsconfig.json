@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["../../packages/core/src/*"]
+      "@/*": ["./app/*", "../../packages/core/src/*"]
     },
     "types": ["@remix-run/node", "vite/client"]
   },

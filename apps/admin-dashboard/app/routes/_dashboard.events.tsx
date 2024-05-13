@@ -1,11 +1,15 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { Menu, Plus, Upload } from 'react-feather';
+import { Menu, Plus, RefreshCw, Upload } from 'react-feather';
 import { generatePath } from 'react-router';
 
-import { Event } from '@oyster/types';
+import { type Event } from '@oyster/types';
 import {
   Dashboard,
   Dropdown,
@@ -13,16 +17,16 @@ import {
   Pagination,
   Pill,
   Table,
-  TableColumnProps,
+  type TableColumnProps,
   useSearchParams,
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { listEvents } from '../shared/core.server';
-import { ListSearchParams } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { listEvents } from '@/admin-dashboard.server';
+import { ListSearchParams } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -112,8 +116,13 @@ function EventsMenuDropdown() {
         <Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={Route.CREATE_EVENT}>
+              <Link to={Route['/events/create']}>
                 <Plus /> Create Event
+              </Link>
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <Link to={Route['/events/sync-airmeet-event']}>
+                <RefreshCw /> Sync Airmeet Event
               </Link>
             </Dropdown.Item>
           </Dropdown.List>
@@ -208,8 +217,15 @@ function EventDropdown({ id }: EventInView) {
         <Table.Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={generatePath(Route.IMPORT_EVENT_ATTENDEES, { id })}>
+              <Link to={generatePath(Route['/events/:id/import'], { id })}>
                 <Upload /> Import Attendees
+              </Link>
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <Link
+                to={generatePath(Route['/events/:id/add-recording'], { id })}
+              >
+                <Upload /> Add Recording
               </Link>
             </Dropdown.Item>
           </Dropdown.List>

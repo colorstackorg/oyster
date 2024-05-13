@@ -3,7 +3,7 @@ import { sql } from 'kysely';
 import { id } from '@oyster/utils';
 
 import { db } from '@/infrastructure/database';
-import { UploadJobOfferInput } from '../employment.types';
+import { type UploadJobOfferInput } from '../employment.types';
 
 export async function uploadJobOffer({
   baseSalary,

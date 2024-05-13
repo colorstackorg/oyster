@@ -1,22 +1,26 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import { Edit, Menu, Plus, Trash } from 'react-feather';
 import { generatePath } from 'react-router';
 
+import { db } from '@oyster/db';
 import {
   Dashboard,
   Dropdown,
   IconButton,
   Pill,
   Table,
-  TableColumnProps,
+  type TableColumnProps,
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { db } from '../shared/core.server';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { Route } from '@/shared/constants';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -78,7 +82,7 @@ function ActivitiesDropdown() {
         <Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={Route.ADD_ACTIVITY}>
+              <Link to={Route['/gamification/activities/add']}>
                 <Plus /> Add Activity
               </Link>
             </Dropdown.Item>
@@ -152,13 +156,22 @@ function ActivitiesTableDropdown({ id }: ActivityInView) {
         <Table.Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={generatePath(Route.EDIT_ACTIVITY, { id })}>
+              <Link
+                to={generatePath(Route['/gamification/activities/:id/edit'], {
+                  id,
+                })}
+              >
                 <Edit /> Edit Activity
               </Link>
             </Dropdown.Item>
 
             <Dropdown.Item>
-              <Link to={generatePath(Route.ARCHIVE_ACTIVITY, { id })}>
+              <Link
+                to={generatePath(
+                  Route['/gamification/activities/:id/archive'],
+                  { id }
+                )}
+              >
                 <Trash /> Archive Activity
               </Link>
             </Dropdown.Item>

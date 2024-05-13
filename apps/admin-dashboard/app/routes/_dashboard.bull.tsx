@@ -1,16 +1,17 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { NavLink, Outlet } from '@remix-run/react';
 import { generatePath } from 'react-router';
 
 import { Dashboard } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { BullQueue } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { BullQueue } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
+
   return json({});
 }
 
@@ -30,7 +31,7 @@ export default function BullPage() {
               <li key={queue}>
                 <NavLink
                   className="link text-black [&.active]:text-primary"
-                  to={generatePath(Route.BULL_QUEUE, { queue })}
+                  to={generatePath(Route['/bull/:queue'], { queue })}
                 >
                   {toTitleCase(queue)}
                 </NavLink>

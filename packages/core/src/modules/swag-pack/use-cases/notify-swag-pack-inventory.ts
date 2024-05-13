@@ -1,22 +1,14 @@
-import { GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { getSwagPackInventory } from '../swag-pack.service';
 
 export async function notifySwagPackInventory(
   _: GetBullJobData<'swag_pack.inventory.notify'>
 ) {
-  const [bottleInventory, hatInventory] = await Promise.all([
-    getSwagPackInventory('bottle'),
-    getSwagPackInventory('hat'),
-  ]);
-
-  const message =
-    'Our current *SwagUp inventory* is:\n' +
-    `• Swag Pack w/ Bottle: ${bottleInventory}\n` +
-    `• Swag Pack w/ Hat: ${hatInventory}`;
+  const inventory = await getSwagPackInventory();
 
   job('notification.slack.send', {
-    message,
+    message: `Our current SwagUp inventory is: *${inventory}*`,
     workspace: 'internal',
   });
 }

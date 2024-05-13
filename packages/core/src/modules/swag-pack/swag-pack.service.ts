@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-import { Address, SwagPackType } from '@oyster/types';
+import { type Address } from '@oyster/types';
 
-import { redis, RedisKey } from '@/infrastructure/redis';
+import { redis } from '@/infrastructure/redis';
 import {
   OAuthTokenResponse,
-  OAuthTokens,
+  type OAuthTokens,
 } from '@/modules/authentication/oauth.service';
 import { ENV, IS_PRODUCTION } from '@/shared/env';
 import { ErrorWithContext } from '@/shared/errors';
@@ -25,7 +25,6 @@ const SWAG_UP_API_URL = 'https://api.swagup.com/api/v1';
 // Core
 
 type OrderSwagPackInput = {
-  type: SwagPackType;
   contact: {
     address: Address;
     email: string;
@@ -71,7 +70,7 @@ export async function orderSwagPack(input: OrderSwagPackInput) {
 
   const { accessToken } = await retrieveTokens();
 
-  const { productId, sizeId } = await getProductInformation(input.type);
+  const { productId, sizeId } = await getProductInformation();
 
   const body: SwagUpSendRequestBody = {
     employee: {
@@ -137,8 +136,8 @@ const SwagProduct = z.object({
   stock: z.object({ quantity: z.coerce.number() }).array(),
 });
 
-export async function getSwagPackInventory(type: SwagPackType) {
-  const { productId } = await getProductInformation(type);
+export async function getSwagPackInventory() {
+  const { productId } = await getProductInformation();
 
   const { accessToken } = await retrieveTokens();
 
@@ -152,10 +151,7 @@ export async function getSwagPackInventory(type: SwagPackType) {
   );
 
   if (!response.ok) {
-    throw new SwagUpApiError().withContext({
-      productId,
-      type,
-    });
+    throw new SwagUpApiError().withContext({ productId });
   }
 
   const product = validate(SwagProduct, await response.json());
@@ -165,22 +161,15 @@ export async function getSwagPackInventory(type: SwagPackType) {
   return inventory;
 }
 
-const SwagProductRedisKey: Record<SwagPackType, RedisKey> = {
-  bottle: 'swag_up:bottle_product_id',
-  hat: 'swag_up:hat_product_id',
-};
-
 const SwagProductInformation = z.object({
-  productId: z.string().transform((value) => Number(value)),
-  sizeId: z.string().transform((value) => Number(value)),
+  productId: z.coerce.number(),
+  sizeId: z.coerce.number(),
 });
 
-type SwagProductInformation = z.infer<typeof SwagProductInformation>;
-
-async function getProductInformation(type: SwagPackType) {
+async function getProductInformation() {
   const [productId, sizeId] = await Promise.all([
-    redis.get(SwagProductRedisKey[type]),
-    redis.get(RedisKey.SWAG_UP_SIZE_ID),
+    redis.get('swag_up:product_id'),
+    redis.get('swag_up:size_id'),
   ]);
 
   const result = SwagProductInformation.safeParse({
@@ -190,7 +179,7 @@ async function getProductInformation(type: SwagPackType) {
 
   if (!result.success) {
     throw new Error(
-      'SwagUp Product/Size ID were either not found or misformatted in Redis.'
+      'SwagUp information was either not found or misformatted in Redis.'
     );
   }
 
@@ -201,8 +190,8 @@ async function getProductInformation(type: SwagPackType) {
 
 async function retrieveTokens(): Promise<OAuthTokens> {
   const [accessToken = '', refreshToken = ''] = await Promise.all([
-    redis.get(RedisKey.SWAG_UP_ACCESS_TOKEN),
-    redis.get(RedisKey.SWAG_UP_REFRESH_TOKEN),
+    redis.get('swag_up:access_token'),
+    redis.get('swag_up:refresh_token'),
   ]);
 
   if (!accessToken || !refreshToken) {
@@ -233,8 +222,8 @@ async function retrieveTokens(): Promise<OAuthTokens> {
     await refreshAuthentication(refreshToken);
 
   await Promise.all([
-    redis.set(RedisKey.SWAG_UP_ACCESS_TOKEN, newAccessToken),
-    redis.set(RedisKey.SWAG_UP_REFRESH_TOKEN, newRefreshToken),
+    redis.set('swag_up:access_token', newAccessToken),
+    redis.set('swag_up:refresh_token', newRefreshToken),
   ]);
 
   return {

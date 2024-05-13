@@ -1,15 +1,13 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
-  useNavigation,
 } from '@remix-run/react';
 import { sql } from 'kysely';
 
@@ -24,14 +22,14 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { createSurvey, listEvents } from '../shared/core.server';
-import { CreateSurveyInput } from '../shared/core.ui';
+import { createSurvey, listEvents } from '@/admin-dashboard.server';
+import { CreateSurveyInput } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -75,7 +73,7 @@ export async function action({ request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.SURVEYS, {
+  return redirect(Route['/surveys'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -83,14 +81,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function CreateSurveyPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/surveys']}>
       <Modal.Header>
         <Modal.Title>Create Survey</Modal.Title>
         <Modal.CloseButton />
@@ -106,8 +98,6 @@ const keys = CreateSurveyInput.keyof().enum;
 function CreateSurveyForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
   const { events } = useLoaderData<typeof loader>();
-
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <RemixForm className="form" method="post">
@@ -147,9 +137,7 @@ function CreateSurveyForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Create
-        </Button>
+        <Button.Submit>Create</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

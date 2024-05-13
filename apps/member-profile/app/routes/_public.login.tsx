@@ -1,10 +1,10 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { Login, Public, Text } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
+import { Route } from '@/shared/constants';
 
 export const LoginSearchParams = z.object({
   context: z.enum(['claim-swag-pack']).nullish().catch(null),
@@ -25,7 +25,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // We're only going to show the description for the Claim Swag Pack flow
   // in the initial login page, and not any subsequent OTP (or other) pages.
   const isFirstLoginPage: boolean =
-    new URL(request.url).pathname === Route.LOGIN;
+    new URL(request.url).pathname === Route['/login'];
 
   const description: string | null =
     context === 'claim-swag-pack' && isFirstLoginPage

@@ -1,11 +1,16 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import { Outlet, Link as RemixLink, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { PropsWithChildren, PropsWithoutRef } from 'react';
+import { type PropsWithChildren, type PropsWithoutRef } from 'react';
 import {
   CheckCircle,
   ExternalLink,
-  Icon,
+  GitHub,
+  type Icon,
   Instagram,
   Linkedin,
   Twitter,
@@ -14,8 +19,9 @@ import {
 } from 'react-feather';
 import { match } from 'ts-pattern';
 
+import { db } from '@oyster/db';
 import {
-  ActivationRequirement,
+  type ActivationRequirement,
   StudentActiveStatus,
   Timezone,
 } from '@oyster/types';
@@ -30,19 +36,18 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { Card } from '../shared/components/card';
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
 import {
+  countEventAttendees,
   countMessagesSent,
-  db,
   getActiveStreakLeaderboard,
   getActiveStreakLeaderboardPosition,
-  getEventsAttendedCount,
   getIpAddress,
-} from '../shared/core.server';
-import { setMixpanelProfile, track } from '../shared/mixpanel.server';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+} from '@/member-profile.server';
+import { Card } from '@/shared/components/card';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { setMixpanelProfile, track } from '@/shared/mixpanel.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 const RECENT_WEEKS = 16;
 
@@ -64,7 +69,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   ] = await Promise.all([
     getActiveStreakLeaderboard(),
     getStudent(id),
-    getEventsAttendedCount(id),
+    countEventAttendees({
+      where: { studentId: id },
+    }),
     countMessagesSent(id),
     getRecentActiveStatuses(id, timezone),
     getThisWeekActiveStatus(id, timezone),
@@ -375,7 +382,7 @@ function ClaimSwagPackCard() {
 
       <Button.Group>
         <RemixLink
-          to={Route.CLAIM_SWAG_PACK}
+          to={Route['/home/claim-swag-pack']}
           className={getButtonCn({ variant: 'primary' })}
         >
           Claim Swag Pack
@@ -632,13 +639,6 @@ function ImportantResourcesCard() {
         </ResourceItem>
 
         <ResourceItem
-          description="A space for 1:1 coaching. Ask any career questions from resume help to negotiating your offer."
-          href="https://calendly.com/catalystcreation/color-stack-decoded-1-1-coaching-sessions-"
-        >
-          Career Coaching w/ Cataliña
-        </ResourceItem>
-
-        <ResourceItem
           description="A collection of our past event recordings. Don't miss a beat!"
           href="https://youtube.com/@colorstackinc.2266"
         >
@@ -703,6 +703,8 @@ function SocialsCard() {
         />
 
         <SocialItem Icon={Twitter} href="https://twitter.com/colorstackorg" />
+
+        <SocialItem Icon={GitHub} href="https://github.com/colorstackorg" />
 
         <SocialItem
           Icon={Youtube}

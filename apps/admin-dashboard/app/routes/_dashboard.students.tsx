@@ -1,4 +1,8 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
@@ -15,21 +19,21 @@ import {
 } from 'react-feather';
 import { generatePath } from 'react-router';
 
+import { db } from '@oyster/db';
 import {
   Dashboard,
   Dropdown,
   IconButton,
   Pagination,
   Table,
-  TableColumnProps,
+  type TableColumnProps,
   useSearchParams,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { db } from '../shared/core.server';
-import { ListSearchParams } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { ListSearchParams } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -153,19 +157,19 @@ function StudentsUploadDropdown() {
         <Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={Route.STUDENTS_IMPORT_RESOURCES}>
+              <Link to={Route['/students/import/resources']}>
                 <Hash /> Import Resource Users
               </Link>
             </Dropdown.Item>
 
             <Dropdown.Item>
-              <Link to={Route.STUDENTS_IMPORT_PROGRAMS}>
+              <Link to={Route['/students/import/programs']}>
                 <Users /> Import Program Participants
               </Link>
             </Dropdown.Item>
 
             <Dropdown.Item>
-              <Link to={Route.STUDENTS_IMPORT_SCHOLARSHIPS}>
+              <Link to={Route['/students/import/scholarships']}>
                 <DollarSign /> Import Scholarship Recipients
               </Link>
             </Dropdown.Item>
@@ -252,26 +256,30 @@ function StudentDropdown({ activatedAt, id }: StudentInView) {
           <Dropdown.List>
             {!activatedAt && (
               <Dropdown.Item>
-                <Link to={generatePath(Route.ACTIVATE_STUDENT, { id })}>
+                <Link
+                  to={generatePath(Route['/students/:id/activate'], { id })}
+                >
                   <Zap /> Activate Member
                 </Link>
               </Dropdown.Item>
             )}
 
             <Dropdown.Item>
-              <Link to={generatePath(Route.GRANT_POINTS, { id })}>
+              <Link
+                to={generatePath(Route['/students/:id/points/grant'], { id })}
+              >
                 <Gift /> Grant Points
               </Link>
             </Dropdown.Item>
 
             <Dropdown.Item>
-              <Link to={generatePath(Route.UPDATE_STUDENT_EMAIL, { id })}>
+              <Link to={generatePath(Route['/students/:id/email'], { id })}>
                 <Edit /> Update Email
               </Link>
             </Dropdown.Item>
 
             <Dropdown.Item>
-              <Link to={generatePath(Route.REMOVE_STUDENT, { id })}>
+              <Link to={generatePath(Route['/students/:id/remove'], { id })}>
                 <Trash /> Delete Member
               </Link>
             </Dropdown.Item>

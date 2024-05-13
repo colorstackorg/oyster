@@ -1,23 +1,32 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
-import {
-  generatePath,
-  Link,
-  useLoaderData,
-  useNavigate,
-} from '@remix-run/react';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { generatePath, Link, useLoaderData } from '@remix-run/react';
 
-import { Student } from '@oyster/types';
+import { type Student } from '@oyster/types';
 import { Modal, ProfilePicture } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { db } from '../shared/core.server';
+import {
+  countEventAttendees,
+  listEventAttendees,
+} from '@/member-profile.server';
+import { Route } from '@/shared/constants';
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const eventId = params.id as string;
 
   const [attendees, attendeesCount] = await Promise.all([
-    getEventAttendees(eventId),
-    getEventAttendeesCount(eventId),
+    listEventAttendees({
+      select: [
+        'students.firstName',
+        'students.id',
+        'students.lastName',
+        'students.preferredName',
+        'students.profilePicture',
+      ],
+      where: { eventId },
+    }),
+    countEventAttendees({
+      where: { eventId },
+    }),
   ]);
 
   return json({
@@ -26,46 +35,11 @@ export async function loader({ params }: LoaderFunctionArgs) {
   });
 }
 
-async function getEventAttendees(eventId: string) {
-  const attendees = await db
-    .selectFrom('eventAttendees')
-    .leftJoin('students', 'students.id', 'eventAttendees.studentId')
-    .select([
-      'students.firstName',
-      'students.id',
-      'students.lastName',
-      'students.preferredName',
-      'students.profilePicture',
-    ])
-    .where('eventAttendees.eventId', '=', eventId)
-    .where('eventAttendees.studentId', 'is not', null)
-    .orderBy('eventAttendees.createdAt', 'asc')
-    .execute();
-
-  return attendees;
-}
-
-async function getEventAttendeesCount(eventId: string) {
-  const { count } = await db
-    .selectFrom('eventAttendees')
-    .select([(eb) => eb.fn.countAll<string>().as('count')])
-    .where('eventId', '=', eventId)
-    .executeTakeFirstOrThrow();
-
-  return count;
-}
-
 export default function EventAttendeesPage() {
   const { attendees, attendeesCount } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/events/past']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/events/past']}>
       <Modal.Header>
         <Modal.Title>Attendees List ({attendeesCount})</Modal.Title>
         <Modal.CloseButton />

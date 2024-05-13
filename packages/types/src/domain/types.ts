@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ExtractValue } from '../shared/types';
+import { type ExtractValue } from '../shared/types';
 
 // Core
 
@@ -133,10 +133,3 @@ export const FORMATTED_RACE: Record<Race, string> = {
   other: 'Other',
   white: 'White (Non-Hispanic/Latinx)',
 };
-
-export const SwagPackType = {
-  BOTTLE: 'bottle',
-  HAT: 'hat',
-} as const;
-
-export type SwagPackType = ExtractValue<typeof SwagPackType>;

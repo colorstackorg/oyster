@@ -6,16 +6,16 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxPopover,
-  InputProps,
+  type InputProps,
   MultiCombobox,
   MultiComboboxDisplay,
   MultiComboboxItem,
-  MultiComboboxProps,
+  type MultiComboboxProps,
   MultiComboboxSearch,
   MultiComboboxValues,
 } from '@oyster/ui';
 
-import type { SearchCountriesResult } from '../../routes/countries.search';
+import type { SearchCountriesResult } from '@/routes/countries.search';
 
 type EthnicityComboboxProps = Pick<InputProps, 'name' | 'required'>;
 

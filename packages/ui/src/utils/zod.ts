@@ -1,5 +1,5 @@
 import { match } from 'ts-pattern';
-import { z } from 'zod';
+import { type z } from 'zod';
 
 const NAN: string = 'nan';
 const NULL: string = 'null';

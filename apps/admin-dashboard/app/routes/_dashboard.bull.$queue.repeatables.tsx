@@ -1,8 +1,8 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
-  SerializeFrom,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
 } from '@remix-run/node';
 import {
   generatePath,
@@ -16,17 +16,22 @@ import { useState } from 'react';
 import { Plus, Trash } from 'react-feather';
 import { z } from 'zod';
 
-import { Dropdown, getIconButtonCn, Table, TableColumnProps } from '@oyster/ui';
+import {
+  Dropdown,
+  getIconButtonCn,
+  Table,
+  type TableColumnProps,
+} from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { QueueFromName } from '../shared/core.server';
-import { BullQueue } from '../shared/core.ui';
+import { QueueFromName } from '@/admin-dashboard.server';
+import { BullQueue } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 const BullParams = z.object({
   queue: z.nativeEnum(BullQueue),
@@ -66,8 +71,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const { id } = Object.fromEntries(form);
 
   const { queue: queueName } = BullParams.parse(params);
-
   const queue = QueueFromName[queueName];
+
   await queue.removeRepeatableByKey(id as string);
 
   toast(session, {
@@ -98,7 +103,7 @@ export default function RepeatablesPage() {
               backgroundColorOnHover: 'gray-200',
               shape: 'square',
             })}
-            to={generatePath(Route.ADD_BULL_REPEATABLE, { queue })}
+            to={generatePath(Route['/bull/:queue/repeatables/add'], { queue })}
           >
             <Plus />
           </Link>

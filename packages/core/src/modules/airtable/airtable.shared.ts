@@ -1,11 +1,16 @@
-import Airtable from 'airtable';
-
 import { RateLimiter } from '@/shared/utils/rate-limiter';
 
 // Environment Variables
 
-const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY as string;
-const AIRTABLE_FAMILY_BASE_ID = process.env.AIRTABLE_FAMILY_BASE_ID as string;
+const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
+
+export const AIRTABLE_FAMILY_BASE_ID = process.env.AIRTABLE_FAMILY_BASE_ID;
+
+// Constants
+
+export const AIRTABLE_API_URI = 'https://api.airtable.com/v0';
+export const AIRTABLE_MEMBERS_TABLE = 'Members';
+export const AIRTABLE_MEMBERS_URI = `${AIRTABLE_API_URI}/${AIRTABLE_FAMILY_BASE_ID}/${AIRTABLE_MEMBERS_TABLE}`;
 
 // Rate Limiter
 
@@ -17,39 +22,15 @@ export const airtableRateLimiter = new RateLimiter('airtable:connections', {
   rateLimitWindow: 1,
 });
 
-// Helpers
+// Functions
 
-export async function getAirtableRecord(email: string) {
-  const table = getMembersAirtable();
-
-  await airtableRateLimiter.process();
-
-  const [record] = await table
-    .select({
-      fields: [],
-      filterByFormula: `({Email} = "${email}")`,
-      maxRecords: 1,
-    })
-    .firstPage();
-
-  return record;
-}
-
-export function getMembersAirtable() {
-  const airtable = getAirtableInstance();
-  const base = airtable.base(AIRTABLE_FAMILY_BASE_ID);
-  const table = base('Members');
-  return table;
-}
-
-export function getAirtableInstance() {
-  if (!AIRTABLE_API_KEY) {
-    throw new Error(
-      '"AIRTABLE_API_KEY" is not set, so Airtable integration is disabled.'
-    );
-  }
-
-  return new Airtable({
-    apiKey: AIRTABLE_API_KEY,
-  });
+export function getAirtableHeaders(
+  options: { includeContentType: boolean } = { includeContentType: false }
+) {
+  return {
+    Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+    ...(options.includeContentType && {
+      'Content-Type': 'application/json',
+    }),
+  };
 }

@@ -1,7 +1,7 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
@@ -24,20 +24,20 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { editWorkExperience, getWorkExperience } from '../shared/core.server';
+import { editWorkExperience, getWorkExperience } from '@/member-profile.server';
 import {
   EditWorkExperienceInput,
-  EmploymentType,
-  LocationType,
+  type EmploymentType,
+  type LocationType,
   WorkForm,
-} from '../shared/core.ui';
+} from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -146,20 +146,16 @@ export default function EditWorkExperiencePage() {
 
   const submitting = useNavigation().state === 'submitting';
 
-  function onClose() {
-    navigate(Route['/profile/work']);
-  }
-
   function onDelete() {
     navigate(
-      generatePath(Route.DELETE_WORK_EXPERIENCE, {
+      generatePath(Route['/profile/work/:id/delete'], {
         id: workExperience.id,
       })
     );
   }
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/work']}>
       <Modal.Header>
         <Modal.Title>Edit Work Experience</Modal.Title>
         <Modal.CloseButton />
@@ -244,14 +240,12 @@ export default function EditWorkExperiencePage() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group flexDirection="row-reverse" spacing="between">
-          <Button loading={submitting} type="submit">
-            Update
-          </Button>
+          <Button.Submit>Update</Button.Submit>
 
           <Button
             color="error"
-            loading={submitting}
             onClick={onDelete}
+            submitting={submitting}
             type="button"
             variant="secondary"
           >

@@ -1,9 +1,18 @@
-import { FORMATTED_GENDER, Gender } from '@oyster/types';
-import { Checkbox, DatePicker, FieldProps, Form, Select } from '@oyster/ui';
+import { FORMATTED_GENDER, type Gender } from '@oyster/types';
+import {
+  Checkbox,
+  DatePicker,
+  type FieldProps,
+  Form,
+  Select,
+} from '@oyster/ui';
 
-import { Country } from '../core.ui';
-import { CityCombobox, CityComboboxProps } from './city-combobox';
-import { EthnicityMultiCombobox } from './ethnicity-combobox';
+import { type Country } from '@/member-profile.ui';
+import {
+  CityCombobox,
+  type CityComboboxProps,
+} from '@/shared/components/city-combobox';
+import { EthnicityMultiCombobox } from '@/shared/components/ethnicity-combobox';
 
 export function BirthdateNotificationField({
   defaultValue,
@@ -44,6 +53,7 @@ export function BirthdateField({
     </Form.Field>
   );
 }
+
 export function EthnicityField({
   defaultValue = [],
   error,

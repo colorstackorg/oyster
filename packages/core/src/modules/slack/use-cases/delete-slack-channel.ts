@@ -1,4 +1,4 @@
-import { GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { db } from '@/infrastructure/database';
 
 export async function deleteSlackChannel({

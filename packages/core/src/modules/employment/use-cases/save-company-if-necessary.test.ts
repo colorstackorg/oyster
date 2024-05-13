@@ -1,8 +1,8 @@
 import { company1, company4 } from '@oyster/db/test/constants';
 
 import { db } from '@/infrastructure/database';
-import * as module from '../queries/get-crunchbase-organization';
 import { saveCompanyIfNecessary } from './save-company-if-necessary';
+import * as module from '../queries/get-crunchbase-organization';
 
 describe(saveCompanyIfNecessary.name, () => {
   test('If the `crunchbaseId` is empty, should return null', async () => {

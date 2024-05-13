@@ -1,31 +1,26 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
+import { uploadOnboardingSession } from '@/admin-dashboard.server';
+import { OnboardingSession } from '@/admin-dashboard.ui';
 import {
   OnboardingSessionAttendeesField,
   OnboardingSessionForm,
-} from '../shared/components/onboarding-session-form';
-import { Route } from '../shared/constants';
-import { uploadOnboardingSession } from '../shared/core.server';
-import { OnboardingSession } from '../shared/core.ui';
+} from '@/shared/components/onboarding-session-form';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
@@ -76,7 +71,7 @@ export async function action({ request }: ActionFunctionArgs) {
       type: 'success',
     });
 
-    return redirect(Route.ONBOARDING_SESSIONS, {
+    return redirect(Route['/onboarding-sessions'], {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
@@ -89,39 +84,29 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-const { attendees, date } = UploadOnboardingSessionInput.keyof().enum;
+const keys = UploadOnboardingSessionInput.keyof().enum;
 
 export default function UploadOnboardingSessionPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.ONBOARDING_SESSIONS);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/onboarding-sessions']}>
       <Modal.Header>
         <Modal.Title>Upload Onboarding Session</Modal.Title>
         <Modal.CloseButton />
       </Modal.Header>
 
       <RemixForm className="form" method="post">
-        <OnboardingSessionForm.DateField error={errors.date} name={date} />
+        <OnboardingSessionForm.DateField error={errors.date} name={keys.date} />
         <OnboardingSessionAttendeesField
           error={errors.attendees}
-          name={attendees}
+          name={keys.attendees}
         />
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Upload
-          </Button>
+          <Button.Submit>Upload</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { ExtractValue } from '../shared/types';
 import { Student } from './student';
 import { Demographic, OtherDemographic } from './types';
+import { type ExtractValue } from '../shared/types';
 
 // Enums
 
@@ -41,7 +41,12 @@ export const Application = Student.pick({
       .min(1)
       .email()
       .refine((value) => {
-        return value.endsWith('.edu') || value.endsWith('.ca');
+        return (
+          value.endsWith('.edu') ||
+          value.endsWith('.ca') ||
+          value.endsWith('mymdc.net') ||
+          value.endsWith('@colorstack.org')
+        );
       }, 'Must be a valid .edu email.')
       .transform((value) => {
         return value.toLowerCase();

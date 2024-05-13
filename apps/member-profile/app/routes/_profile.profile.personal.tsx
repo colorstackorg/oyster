@@ -1,9 +1,12 @@
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 import { sql } from 'kysely';
 import { z } from 'zod';
@@ -17,30 +20,26 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { updateMember } from '@/member-profile.server';
 import {
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
-} from '../shared/components/profile';
+} from '@/shared/components/profile';
 import {
   BirthdateField,
   BirthdateNotificationField,
   EthnicityField,
   GenderField,
   HometownField,
-} from '../shared/components/profile.personal';
-import { db } from '../shared/core.server';
-import {
-  getMember,
-  getMemberEthnicities,
-  updatePersonalInformation,
-} from '../shared/queries';
+} from '@/shared/components/profile.personal';
+import { getMember, getMemberEthnicities } from '@/shared/queries';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -104,16 +103,9 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  await db.transaction().execute(async (trx) => {
-    await updatePersonalInformation(trx, user(session), {
-      birthdate: data.birthdate,
-      birthdateNotification: data.birthdateNotification,
-      ethnicities: data.ethnicities || [],
-      gender: data.gender,
-      genderPronouns: data.genderPronouns,
-      hometown: data.hometown,
-      hometownCoordinates: sql`point(${data.hometownLongitude}, ${data.hometownLatitude})`,
-    });
+  await updateMember({
+    data: { ...data, ethnicities: data.ethnicities || [] },
+    where: { id: user(session) },
   });
 
   toast(session, {
@@ -134,22 +126,11 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 }
 
-const {
-  birthdate,
-  birthdateNotification,
-  ethnicities: ethnicitiesKey,
-  hometown,
-  hometownLatitude,
-  hometownLongitude,
-  gender,
-  genderPronouns,
-} = UpdatePersonalInformation.keyof().enum;
+const keys = UpdatePersonalInformation.keyof().enum;
 
 export default function UpdatePersonalInformationForm() {
   const { ethnicities, student } = useLoaderData<typeof loader>();
   const { errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <ProfileSection>
@@ -161,13 +142,13 @@ export default function UpdatePersonalInformationForm() {
         <GenderField
           defaultValue={student.gender}
           error={errors.gender}
-          name={gender}
+          name={keys.gender}
         />
         <InputField
           defaultValue={student.genderPronouns || undefined}
           description="Let others know how to refer to you."
           error={errors.genderPronouns}
-          name={genderPronouns}
+          name={keys.genderPronouns}
           label="Pronouns"
           placeholder="ex: she/her/hers"
         />
@@ -177,12 +158,12 @@ export default function UpdatePersonalInformationForm() {
         <BirthdateField
           defaultValue={student.birthdate || undefined}
           error={errors.birthdate}
-          name={birthdate}
+          name={keys.birthdate}
         />
         <BirthdateNotificationField
           defaultValue={student.birthdateNotification}
           error={errors.birthdateNotification}
-          name={birthdateNotification}
+          name={keys.birthdateNotification}
         />
 
         <Divider />
@@ -192,9 +173,9 @@ export default function UpdatePersonalInformationForm() {
           defaultLongitude={student.hometownCoordinates?.x}
           defaultValue={student.hometown || undefined}
           error={errors.hometown}
-          name={hometown}
-          latitudeName={hometownLatitude}
-          longitudeName={hometownLongitude}
+          name={keys.hometown}
+          latitudeName={keys.hometownLatitude}
+          longitudeName={keys.hometownLongitude}
         />
 
         <Divider />
@@ -202,13 +183,11 @@ export default function UpdatePersonalInformationForm() {
         <EthnicityField
           defaultValue={ethnicities}
           error={errors.ethnicities}
-          name={ethnicitiesKey}
+          name={keys.ethnicities}
         />
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Save
-          </Button>
+          <Button.Submit>Save</Button.Submit>
         </Button.Group>
       </RemixForm>
     </ProfileSection>

@@ -1,10 +1,10 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   unstable_composeUploadHandlers as composeUploadHandlers,
   unstable_createFileUploadHandler as createFileUploadHandler,
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
@@ -13,11 +13,10 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
-  useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import { Email, Program, ProgramParticipant } from '@oyster/types';
 import {
   Button,
@@ -26,20 +25,20 @@ import {
   Modal,
   Select,
   Text,
-  TextProps,
+  type TextProps,
   validateForm,
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { db, parseCsv } from '../shared/core.server';
-import { findStudentByEmail } from '../shared/queries/student';
+import { parseCsv } from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
+import { findStudentByEmail } from '@/shared/queries/student';
 import {
   commitSession,
   ensureUserAuthenticated,
   getSession,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -92,6 +91,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   try {
     const result = await importProgramParticipants(data);
+
     count = result.count;
   } catch (e) {
     return json({
@@ -107,7 +107,7 @@ export async function action({ request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.STUDENTS, {
+  return redirect(Route['/students'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -173,14 +173,8 @@ async function importProgramParticipants(
 }
 
 export default function ImportProgramsPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.STUDENTS);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>Import Program Participants</Modal.Title>
         <Modal.CloseButton />
@@ -191,13 +185,11 @@ export default function ImportProgramsPage() {
   );
 }
 
-const { file, program } = ImportProgramParticipantsInput.keyof().enum;
+const keys = ImportProgramParticipantsInput.keyof().enum;
 
 function ImportProgramsForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
   const { programs } = useLoaderData<typeof loader>();
-
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
@@ -205,10 +197,10 @@ function ImportProgramsForm() {
         description={<ProgramFieldDescription />}
         error={errors.program}
         label="Program"
-        labelFor={program}
+        labelFor={keys.program}
         required
       >
-        <Select id={program} name={program} required>
+        <Select id={keys.program} name={keys.program} required>
           {programs.map((program) => {
             return (
               <option key={program.id} value={program.id}>
@@ -223,25 +215,29 @@ function ImportProgramsForm() {
         description="Please upload a .csv file."
         error={errors.file}
         label="File"
-        labelFor={file}
+        labelFor={keys.file}
         required
       >
-        <input accept=".csv" id={file} name={file} required type="file" />
+        <input
+          accept=".csv"
+          id={keys.file}
+          name={keys.file}
+          required
+          type="file"
+        />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Import
-        </Button>
+        <Button.Submit>Import</Button.Submit>
       </Button.Group>
     </RemixForm>
   );
 }
 
 function ProgramFieldDescription(props: Pick<TextProps, 'className'>) {
-  const to = `${Route.PROGRAMS_CREATE}?redirect=${Route.STUDENTS_IMPORT_PROGRAMS}`;
+  const to = `${Route['/programs/create']}?redirect=${Route['/students/import/programs']}`;
 
   return (
     <Text {...props}>

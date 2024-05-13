@@ -1,9 +1,9 @@
 import TextareaAutosize, {
-  TextareaAutosizeProps,
+  type TextareaAutosizeProps,
 } from 'react-textarea-autosize';
 
-import { cx } from '../utils/cx';
 import { getInputCn } from './input';
+import { cx } from '../utils/cx';
 
 type TextareaProps = Pick<
   TextareaAutosizeProps,

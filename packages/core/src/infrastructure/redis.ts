@@ -1,7 +1,7 @@
 import { Redis } from 'ioredis';
-import { z } from 'zod';
+import { type z } from 'zod';
 
-import { ExtractValue } from '@oyster/types';
+import { type ExtractValue } from '@oyster/types';
 
 import { ENV } from '@/shared/env';
 
@@ -21,13 +21,6 @@ export const RedisKey = {
   SLACK_GET_MESSAGE_CONNECTIONS: 'slack:connections:get_message',
   SLACK_INVITE_USER_CONNECTIONS: 'slack:connections:invite_user',
   SLACK_JOIN_CHANNEL_CONNECTIONS: 'slack:connections:join_channel',
-  SLACK_LEGACY_COOKIE: 'slack:legacy_cookie',
-  SLACK_LEGACY_TOKEN: 'slack:legacy_token',
-  SWAG_UP_ACCESS_TOKEN: 'swag_up:access_token',
-  SWAG_UP_BOTTLE_PRODUCT_ID: 'swag_up:bottle_product_id',
-  SWAG_UP_HAT_PRODUCT_ID: 'swag_up:hat_product_id',
-  SWAG_UP_REFRESH_TOKEN: 'swag_up:refresh_token',
-  SWAG_UP_SIZE_ID: 'swag_up:size_id',
 } as const;
 
 export type RedisKey = ExtractValue<typeof RedisKey>;

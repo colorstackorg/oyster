@@ -1,7 +1,5 @@
 import { z } from 'zod';
 
-import { ExtractValue } from '../shared/types';
-import { NullishString } from '../shared/zod';
 import {
   Address,
   Demographic,
@@ -12,6 +10,8 @@ import {
   Major,
   Race,
 } from './types';
+import { type ExtractValue } from '../shared/types';
+import { NullishString } from '../shared/zod';
 
 // Enums
 
@@ -22,6 +22,11 @@ export const ActivationRequirement = {
   REPLY_TO_ANNOUNCEMENT_MESSAGE: 'reply_to_announcement_message',
   REPLY_TO_OTHER_MESSAGES: 'reply_to_other_messages',
   SEND_INTRODUCTION_MESSAGE: 'send_introduction_message',
+} as const;
+
+export const MemberType = {
+  ALUMNI: 'alumni',
+  STUDENT: 'student',
 } as const;
 
 // Schemas
@@ -178,6 +183,7 @@ export const Student = Entity.merge(StudentSocialLinks)
 
     slackId: z.string().optional(),
     swagUpOrderId: z.string().min(1).optional(),
+    type: z.nativeEnum(MemberType),
   });
 
 export const StudentEmail = Entity.omit({

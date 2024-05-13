@@ -1,15 +1,10 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { Event, EventType } from '@oyster/types';
@@ -26,16 +21,17 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { createEvent } from '../shared/core.server';
+import { createEvent } from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
+
   return json({});
 }
 
@@ -91,7 +87,7 @@ export async function action({ request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.EVENTS, {
+  return redirect(Route['/events'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -99,14 +95,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function CreateEventPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/events']}>
       <Modal.Header>
         <Modal.Title>Create Event</Modal.Title>
         <Modal.CloseButton />
@@ -117,24 +107,31 @@ export default function CreateEventPage() {
   );
 }
 
-const { description, endTime, name, startTime, timezone, type } =
-  CreateEventFormData.keyof().enum;
+const keys = CreateEventFormData.keyof().enum;
 
 const EVENT_TYPES = Object.values(EventType);
 
 function CreateEventForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post">
-      <Form.Field error={errors.name} label="Name" labelFor={name} required>
-        <Input id={name} name={name} required />
+      <Form.Field
+        error={errors.name}
+        label="Name"
+        labelFor={keys.name}
+        required
+      >
+        <Input id={keys.name} name={keys.name} required />
       </Form.Field>
 
-      <Form.Field error={errors.type} label="Type" labelFor={type} required>
-        <Select id={type} name={type} required>
+      <Form.Field
+        error={errors.type}
+        label="Type"
+        labelFor={keys.type}
+        required
+      >
+        <Select id={keys.type} name={keys.type} required>
           {EVENT_TYPES.map((type) => {
             return (
               <option key={type} value={type}>
@@ -148,20 +145,20 @@ function CreateEventForm() {
       <Form.Field
         error={errors.description}
         label="Description"
-        labelFor={description}
+        labelFor={keys.description}
       >
-        <Textarea id={description} minRows={2} name={description} />
+        <Textarea id={keys.description} minRows={2} name={keys.description} />
       </Form.Field>
 
       <Form.Field
         error={errors.startTime}
         label="Start Date/Time"
-        labelFor={startTime}
+        labelFor={keys.startTime}
         required
       >
         <DatePicker
-          id={startTime}
-          name={startTime}
+          id={keys.startTime}
+          name={keys.startTime}
           type="datetime-local"
           required
         />
@@ -170,19 +167,19 @@ function CreateEventForm() {
       <Form.Field
         error={errors.endTime}
         label="End Date/Time"
-        labelFor={endTime}
+        labelFor={keys.endTime}
         required
       >
         <DatePicker
-          id={endTime}
-          name={endTime}
+          id={keys.endTime}
+          name={keys.endTime}
           type="datetime-local"
           required
         />
       </Form.Field>
 
       <input
-        name={timezone}
+        name={keys.timezone}
         type="hidden"
         value={new window.Intl.DateTimeFormat().resolvedOptions().timeZone}
       />
@@ -190,9 +187,7 @@ function CreateEventForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Create
-        </Button>
+        <Button.Submit>Create</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

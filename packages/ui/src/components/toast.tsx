@@ -3,10 +3,10 @@ import { createPortal } from 'react-dom';
 import { AlertCircle, CheckCircle, X, XCircle } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { useHydrated } from '../hooks/use-hydrated';
-import { cx } from '../utils/cx';
 import { IconButton } from './icon-button';
 import { Text } from './text';
+import { useHydrated } from '../hooks/use-hydrated';
+import { cx } from '../utils/cx';
 
 export type ToastProps = {
   message: string;

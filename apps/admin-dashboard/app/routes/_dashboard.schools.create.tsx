@@ -1,15 +1,10 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 
 import {
   Button,
@@ -20,17 +15,18 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { createSchool } from '../shared/core.server';
-import { CreateSchoolInput } from '../shared/core.ui';
+import { createSchool } from '@/admin-dashboard.server';
+import { CreateSchoolInput } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
+
   return json({});
 }
 
@@ -63,7 +59,7 @@ export async function action({ request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.SCHOOLS, {
+  return redirect(Route['/schools'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -71,14 +67,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function CreateSchoolPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/schools']}>
       <Modal.Header>
         <Modal.Title>Create School</Modal.Title>
         <Modal.CloseButton />
@@ -93,8 +83,6 @@ const keys = CreateSchoolInput.keyof().enum;
 
 function CreateSchoolForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <RemixForm className="form" method="post">
@@ -158,9 +146,7 @@ function CreateSchoolForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Create
-        </Button>
+        <Button.Submit>Create</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

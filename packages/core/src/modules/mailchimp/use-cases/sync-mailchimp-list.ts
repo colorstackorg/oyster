@@ -1,6 +1,6 @@
-import mailchimp, { Mailchimp } from '@mailchimp/mailchimp_marketing';
+import mailchimp, { type Mailchimp } from '@mailchimp/mailchimp_marketing';
 
-import { EmailCampaign, EmailList } from '@oyster/types';
+import { type EmailCampaign, type EmailList } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
@@ -58,6 +58,7 @@ export async function syncMailchimpList(input: SyncEmailListInput) {
 async function getMailchimpList(id: string) {
   try {
     const list = await mailchimp.lists.getList(id);
+
     return toList(list);
   } catch (e) {
     return null;

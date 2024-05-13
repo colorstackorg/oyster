@@ -1,37 +1,31 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
-import { sql } from 'kysely';
 import { z } from 'zod';
 
 import { nullableField, Student } from '@oyster/types';
 import { Button, Divider, getActionErrors, validateForm } from '@oyster/ui';
 
-import {
-  EthnicityField,
-  HometownField,
-} from '../shared/components/profile.personal';
-import { Route } from '../shared/constants';
-import { db } from '../shared/core.server';
-import {
-  getMember,
-  getMemberEthnicities,
-  updatePersonalInformation,
-} from '../shared/queries';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+import { updateMember } from '@/member-profile.server';
 import {
   JoinDirectoryBackButton,
   JoinDirectoryNextButton,
-} from './_profile.directory.join';
+} from '@/routes/_profile.directory.join';
+import {
+  EthnicityField,
+  HometownField,
+} from '@/shared/components/profile.personal';
+import { Route } from '@/shared/constants';
+import { getMember, getMemberEthnicities } from '@/shared/queries';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -83,29 +77,19 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  await db.transaction().execute(async (trx) => {
-    await updatePersonalInformation(trx, user(session), {
-      ethnicities: data.ethnicities || [],
-      hometown: data.hometown,
-      hometownCoordinates: sql`point(${data.hometownLongitude}, ${data.hometownLatitude})`,
-    });
+  await updateMember({
+    data: { ...data, ethnicities: data.ethnicities || [] },
+    where: { id: user(session) },
   });
 
   return redirect(Route['/directory/join/3']);
 }
 
-const {
-  ethnicities: ethnicitiesKey,
-  hometown,
-  hometownLatitude,
-  hometownLongitude,
-} = UpdatePersonalInformation.keyof().enum;
+const keys = UpdatePersonalInformation.keyof().enum;
 
 export default function UpdatePersonalInformationForm() {
   const { ethnicities, student } = useLoaderData<typeof loader>();
   const { errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <RemixForm className="form" method="post">
@@ -114,9 +98,9 @@ export default function UpdatePersonalInformationForm() {
         defaultLongitude={student.hometownCoordinates?.x}
         defaultValue={student.hometown || undefined}
         error={errors.hometown}
-        name={hometown}
-        latitudeName={hometownLatitude}
-        longitudeName={hometownLongitude}
+        name={keys.hometown}
+        latitudeName={keys.hometownLatitude}
+        longitudeName={keys.hometownLongitude}
       />
 
       <Divider />
@@ -124,12 +108,12 @@ export default function UpdatePersonalInformationForm() {
       <EthnicityField
         defaultValue={ethnicities}
         error={errors.ethnicities}
-        name={ethnicitiesKey}
+        name={keys.ethnicities}
       />
 
       <Button.Group spacing="between">
         <JoinDirectoryBackButton to={Route['/directory/join/1']} />
-        <JoinDirectoryNextButton submitting={submitting} />
+        <JoinDirectoryNextButton />
       </Button.Group>
     </RemixForm>
   );

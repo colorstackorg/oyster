@@ -1,10 +1,10 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   unstable_composeUploadHandlers as composeUploadHandlers,
   unstable_createFileUploadHandler as createFileUploadHandler,
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
@@ -12,20 +12,19 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
-  useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { db, importSurveyResponses } from '../shared/core.server';
+import { importSurveyResponses } from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -78,6 +77,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   try {
     const csvString = await data.file.text();
     const result = await importSurveyResponses(params.id as string, csvString);
+
     count = result.count;
   } catch (e) {
     return json({
@@ -91,7 +91,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route.SURVEYS, {
+  return redirect(Route['/surveys'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -101,14 +101,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
 export default function ImportSurveyResponsesPage() {
   const { survey } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.SURVEYS);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/surveys']}>
       <Modal.Header>
         <Modal.Title>Import Survey Responses</Modal.Title>
         <Modal.CloseButton />
@@ -128,8 +122,6 @@ const keys = ImportSurveyResponsesInput.keyof().enum;
 function ImportSurveyResponsesForm() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
       <Form.Field error={errors.file} labelFor={keys.file} required>
@@ -145,9 +137,7 @@ function ImportSurveyResponsesForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Import
-        </Button>
+        <Button.Submit>Import</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

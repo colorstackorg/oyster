@@ -6,13 +6,13 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxPopover,
-  ComboboxProps,
-  InputProps,
+  type ComboboxProps,
+  type InputProps,
   useDelayedValue,
 } from '@oyster/ui';
 
-import type { CityDetailsResult } from '../../routes/cities.$id';
-import type { SearchCitiesResult } from '../../routes/cities.autocomplete';
+import type { CityDetailsResult } from '@/routes/cities.$id';
+import type { SearchCitiesResult } from '@/routes/cities.autocomplete';
 
 export type CityComboboxProps = Pick<ComboboxProps, 'defaultValue'> &
   Pick<InputProps, 'required'> & {

@@ -1,20 +1,20 @@
 import React, {
   createRef,
-  PropsWithChildren,
+  type PropsWithChildren,
   useContext,
   useRef,
   useState,
 } from 'react';
 import { X } from 'react-feather';
 
-import { cx } from '../utils/cx';
 import {
   ComboboxPopoverProvider,
   useComboboxPopover,
 } from './combobox-popover';
 import { Divider } from './divider';
-import { getInputCn, InputProps } from './input';
+import { getInputCn, type InputProps } from './input';
 import { getPillCn } from './pill';
+import { cx } from '../utils/cx';
 
 type ComboboxValue = {
   label: string;

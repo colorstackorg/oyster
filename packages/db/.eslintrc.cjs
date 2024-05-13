@@ -1,6 +1,7 @@
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
   extends: ['@oyster/eslint-config/base'],
+  ignorePatterns: ['*.js'],
   overrides: [
     {
       files: ['./src/migrations/*'],
@@ -9,4 +10,7 @@ module.exports = {
       },
     },
   ],
+  parserOptions: {
+    tsconfigRootDir: __dirname,
+  },
 };

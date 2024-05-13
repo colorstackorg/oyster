@@ -1,15 +1,12 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 
+import { db } from '@oyster/db';
 import {
   Address,
   Button,
@@ -20,10 +17,10 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { claimSwagPack, db, reportError } from '../shared/core.server';
-import { ClaimSwagPackInput } from '../shared/core.ui';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+import { claimSwagPack, reportException } from '@/member-profile.server';
+import { ClaimSwagPackInput } from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -79,9 +76,9 @@ export async function action({ request }: ActionFunctionArgs) {
       studentId: user(session),
     });
 
-    return redirect(Route.CLAIM_SWAG_PACK_CONFIRMATION);
+    return redirect(Route['/home/claim-swag-pack/confirmation']);
   } catch (e) {
-    reportError(e);
+    reportException(e);
 
     return json({
       error: `Something went wrong. Please double check that you have a valid address. If you are still having trouble, reach out to membership@colorstack.org for further assistance.`,
@@ -94,8 +91,6 @@ const keys = ClaimSwagPackFormData.keyof().enum;
 
 export default function ClaimSwagPack() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <>
@@ -174,9 +169,7 @@ export default function ClaimSwagPack() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Claim Swag Pack
-          </Button>
+          <Button.Submit>Claim Swag Pack</Button.Submit>
         </Button.Group>
       </RemixForm>
     </>

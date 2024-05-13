@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 
 type OnClickOutsideRef<T> = React.MutableRefObject<T | null>;
 

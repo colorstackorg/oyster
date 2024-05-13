@@ -1,3 +1,7 @@
+// Importing this file ensures that our application has all of the environment
+// variables necessary to run. If any are missing, this file will throw an error
+// and crash the application.
+
 import { config } from 'dotenv';
 import { z } from 'zod';
 
@@ -37,7 +41,6 @@ const BaseEnvironmentConfig = z.object({
   SLACK_CLIENT_SECRET: EnvironmentVariable,
   SLACK_INTRODUCTIONS_CHANNEL_ID: EnvironmentVariable,
   SLACK_SIGNING_SECRET: EnvironmentVariable,
-  STATSIG_SECRET_KEY: EnvironmentVariable,
   STUDENT_PROFILE_URL: EnvironmentVariable,
   SWAG_UP_CLIENT_ID: EnvironmentVariable,
   SWAG_UP_CLIENT_SECRET: EnvironmentVariable,
@@ -67,7 +70,6 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     SLACK_CLIENT_SECRET: true,
     SLACK_INTRODUCTIONS_CHANNEL_ID: true,
     SLACK_SIGNING_SECRET: true,
-    STATSIG_SECRET_KEY: true,
     SWAG_UP_CLIENT_ID: true,
     SWAG_UP_CLIENT_SECRET: true,
   }).extend({

@@ -1,4 +1,8 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import {
   Form as RemixForm,
   Link as RemixLink,
@@ -7,13 +11,13 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { sql } from 'kysely';
-import { PropsWithoutRef } from 'react';
+import { type PropsWithoutRef } from 'react';
 import { Award, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { CompletedActivity, Student } from '@oyster/types';
+import { db } from '@oyster/db';
+import { type CompletedActivity } from '@oyster/types';
 import {
   Button,
   cx,
@@ -26,16 +30,20 @@ import {
   useSearchParams,
 } from '@oyster/ui';
 
-import { Card } from '../shared/components/card';
+import {
+  getPointsLeaderboard,
+  getTotalPoints,
+  listActivities,
+} from '@/member-profile.server';
+import { Card } from '@/shared/components/card';
 import {
   EmptyState,
   EmptyStateContainer,
-} from '../shared/components/empty-state';
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { db, getTotalPoints } from '../shared/core.server';
-import { track } from '../shared/mixpanel.server';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+} from '@/shared/components/empty-state';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { track } from '@/shared/mixpanel.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 const TIMEFRAME = {
   ALL_TIME: 'all_time',
@@ -53,8 +61,6 @@ const PointsSearchParams = z.object({
 
 type PointsSearchParams = z.infer<typeof PointsSearchParams>;
 
-const PointsSearchParam = PointsSearchParams.keyof().enum;
-
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
@@ -64,6 +70,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ...Object.fromEntries(url.searchParams),
     timezone: getTimezone(request),
   });
+
+  const occurredAfter = getTimeframeDate(
+    searchParams.timeframe,
+    searchParams.timezone
+  );
 
   const id = user(session);
 
@@ -80,7 +91,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
         searchParams.timezone
       ),
     }),
-    getPointsLeaderboard(id, searchParams),
+    getPointsLeaderboard({
+      limit: searchParams.leaderboardLimit,
+      where: {
+        memberId: id,
+        occurredAfter,
+      },
+    }),
     listActivities(),
   ]);
 
@@ -96,55 +113,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     student: { id },
     totalActivitiesCompleted,
   });
-}
-
-const LeaderboardPosition = Student.pick({
-  firstName: true,
-  id: true,
-  lastName: true,
-  profilePicture: true,
-}).extend({
-  me: z.coerce.boolean(),
-  points: z.coerce.number().min(0),
-  rank: z.coerce.number().min(1),
-});
-
-async function getPointsLeaderboard(
-  id: string,
-  { leaderboardLimit, timeframe, timezone }: PointsSearchParams
-) {
-  const occurredAfter = getTimeframeDate(timeframe, timezone);
-
-  const rows = await db
-    .with('positions', (db) => {
-      return db
-        .selectFrom('completedActivities')
-        .select([(eb) => eb.fn.sum<string>('points').as('points'), 'studentId'])
-        .$if(!!occurredAfter, (eb) => {
-          return eb.where('occurredAt', '>=', occurredAfter);
-        })
-        .groupBy('studentId')
-        .orderBy('points', 'desc')
-        .limit(leaderboardLimit);
-    })
-    .selectFrom('positions')
-    .leftJoin('students', 'students.id', 'positions.studentId')
-    .select([
-      'positions.points',
-      'students.id',
-      'students.firstName',
-      'students.lastName',
-      'students.profilePicture',
-      sql<boolean>`students.id = ${id}`.as('me'),
-      sql<string>`rank() over (order by positions.points desc)`.as('rank'),
-    ])
-    .orderBy('points', 'desc')
-    .orderBy('createdAt', 'desc')
-    .execute();
-
-  const leaderboard = LeaderboardPosition.array().parse(rows);
-
-  return leaderboard;
 }
 
 async function getActivityHistory(
@@ -181,6 +149,7 @@ async function getActivityHistory(
       )
       .select([
         'activities.name',
+        'completedActivities.censusYear',
         'completedActivities.description',
         'completedActivities.id',
         'completedActivities.occurredAt',
@@ -238,17 +207,6 @@ function getTimeframeDate(
   }
 }
 
-async function listActivities() {
-  const activities = await db
-    .selectFrom('activities')
-    .select(['description', 'id', 'name', 'period', 'points', 'type'])
-    .where('deletedAt', 'is', null)
-    .orderBy('points', 'asc')
-    .execute();
-
-  return activities;
-}
-
 export default function PointsPage() {
   return (
     <>
@@ -278,6 +236,8 @@ export default function PointsPage() {
   );
 }
 
+const keys = PointsSearchParams.keyof().enum;
+
 function TimeframeForm() {
   const [searchParams] = useSearchParams(PointsSearchParams);
 
@@ -291,8 +251,8 @@ function TimeframeForm() {
     >
       <Select
         defaultValue={searchParams.timeframe}
-        name={PointsSearchParam.timeframe}
-        id={PointsSearchParam.timeframe}
+        name={keys.timeframe}
+        id={keys.timeframe}
         placeholder="Timeframe"
         required
       >
@@ -303,8 +263,8 @@ function TimeframeForm() {
       </Select>
 
       <input
-        name={PointsSearchParam.leaderboardLimit}
-        id={PointsSearchParam.leaderboardLimit}
+        name={keys.leaderboardLimit}
+        id={keys.leaderboardLimit}
         type="hidden"
         value={searchParams.leaderboardLimit}
       />
@@ -333,8 +293,8 @@ function PointsLeaderboard({
         >
           <Select
             defaultValue={searchParams.leaderboardLimit}
-            name={PointsSearchParam.leaderboardLimit}
-            id={PointsSearchParam.leaderboardLimit}
+            name={keys.leaderboardLimit}
+            id={keys.leaderboardLimit}
             required
           >
             <option value="10">Top 10</option>
@@ -344,8 +304,8 @@ function PointsLeaderboard({
           </Select>
 
           <input
-            name={PointsSearchParam.timeframe}
-            id={PointsSearchParam.timeframe}
+            name={keys.timeframe}
+            id={keys.timeframe}
             type="hidden"
             value={searchParams.timeframe}
           />
@@ -494,14 +454,14 @@ function ActivityHistory() {
 
                   <Button.Group>
                     <RemixLink
-                      to={Route.ADD_EDUCATION}
+                      to={Route['/profile/education/add']}
                       className={getButtonCn({ variant: 'secondary' })}
                     >
                       <Plus /> Add Education
                     </RemixLink>
 
                     <RemixLink
-                      to={Route.ADD_WORK_EXPERIENCE}
+                      to={Route['/profile/work/add']}
                       className={getButtonCn({ variant: 'secondary' })}
                     >
                       <Plus /> Add Work Experience
@@ -634,6 +594,11 @@ function ActivityHistoryItemDescription({
     })
     .with('respond_to_survey', () => {
       return <p>You responded to a survey: "{activity.surveyRespondedTo}"</p>;
+    })
+    .with('submit_census_response', () => {
+      return (
+        <p>You submitted a response to the Census ({activity.censusYear}).</p>
+      );
     })
     .with('update_education_history', () => {
       return <p>You added an education experience.</p>;

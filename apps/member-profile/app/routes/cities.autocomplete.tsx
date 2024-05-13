@@ -1,8 +1,12 @@
-import { json, LoaderFunctionArgs, SerializeFrom } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 import { z } from 'zod';
 
-import { getAutocompletedCities } from '../shared/core.server';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { getAutocompletedCities } from '@/member-profile.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const CitiesSearchParams = z.object({
   search: z.string().trim().min(1).catch(''),

@@ -1,22 +1,23 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
-  useNavigation,
+  useLoaderData,
 } from '@remix-run/react';
 
 import { Button, Form, getActionErrors, validateForm } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { oneTimeCodeIdCookie } from '../shared/cookies.server';
-import { verifyOneTimeCode } from '../shared/core.server';
-import { OneTimeCodeForm, VerifyOneTimeCodeInput } from '../shared/core.ui';
-import { commitSession, getSession, SESSION } from '../shared/session.server';
+import { verifyOneTimeCode } from '@/admin-dashboard.server';
+import { OneTimeCodeForm, VerifyOneTimeCodeInput } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { ENV } from '@/shared/constants.server';
+import { oneTimeCodeIdCookie } from '@/shared/cookies.server';
+import { commitSession, getSession, SESSION } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const oneTimeCodeId = await oneTimeCodeIdCookie.parse(
@@ -27,7 +28,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect(Route['/login/otp/send']);
   }
 
-  return json({});
+  const description =
+    ENV.ENVIRONMENT === 'development'
+      ? 'In the development environment, you can any input any 6-digit code!'
+      : undefined;
+
+  return json({
+    description,
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -66,7 +74,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     session.set(SESSION.USER_ID, userId);
 
-    const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route.HOME;
+    const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route['/'];
 
     return redirect(redirectUrl, {
       headers: {
@@ -84,19 +92,20 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = VerifyOneTimeCodeInput.keyof().enum;
 
 export default function VerifyOneTimeCodePage() {
+  const { description } = useLoaderData<typeof loader>();
   const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <RemixForm className="form" method="post">
-      <OneTimeCodeForm.CodeField error={errors.value} name={keys.value} />
+      <OneTimeCodeForm.CodeField
+        description={description}
+        error={errors.value}
+        name={keys.value}
+      />
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
-      <Button fill loading={submitting} type="submit">
-        Verify Code
-      </Button>
+      <Button.Submit fill>Verify Code</Button.Submit>
     </RemixForm>
   );
 }

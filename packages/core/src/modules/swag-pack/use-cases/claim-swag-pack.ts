@@ -1,6 +1,6 @@
 import { db } from '@/infrastructure/database';
-import { getSwagPackInventory, orderSwagPack } from '../swag-pack.service';
-import { ClaimSwagPackInput } from '../swag-pack.types';
+import { orderSwagPack } from '../swag-pack.service';
+import { type ClaimSwagPackInput } from '../swag-pack.types';
 
 export async function claimSwagPack({
   addressCity,
@@ -16,8 +16,6 @@ export async function claimSwagPack({
     .where('id', '=', studentId)
     .executeTakeFirstOrThrow();
 
-  const swagPackType = await getSwagPackType();
-
   const swagPackOrderId = await orderSwagPack({
     contact: {
       address: {
@@ -31,7 +29,6 @@ export async function claimSwagPack({
       firstName: student.firstName,
       lastName: student.lastName,
     },
-    type: swagPackType,
   });
 
   await db
@@ -47,19 +44,4 @@ export async function claimSwagPack({
     })
     .where('id', '=', studentId)
     .execute();
-}
-
-/**
- * Returns the type of swag pack to order based on the current inventory. We'll
- * choose the `bottle` type until it runs out, then we'll switch to `hat`.
- *
- * Eventually, we'll just have 1 type of swag pack and we won't need to worry
- * about supporting multiple types.
- *
- * NOTE: THIS IS TEMPORARY AND MEANT TO BE DELETED AS SOON AS THE BOTTLE
- * INVENTORY RUNS OUT.
- */
-async function getSwagPackType() {
-  const bottleInventory = await getSwagPackInventory('bottle');
-  return bottleInventory > 0 ? 'bottle' : 'hat';
 }

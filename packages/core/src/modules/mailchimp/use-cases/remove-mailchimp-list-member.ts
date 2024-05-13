@@ -1,6 +1,6 @@
 import mailchimp from '@mailchimp/mailchimp_marketing';
 
-import { GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { ENV, IS_PRODUCTION } from '@/shared/env';
 import { ErrorWithContext } from '@/shared/errors';
 import {

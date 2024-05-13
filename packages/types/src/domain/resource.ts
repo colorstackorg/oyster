@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { ExtractValue } from '../shared/types';
 import { Student } from './student';
 import { Entity } from './types';
+import { type ExtractValue } from '../shared/types';
 
 // Enums
 

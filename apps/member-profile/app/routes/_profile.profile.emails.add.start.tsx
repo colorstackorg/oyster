@@ -1,17 +1,13 @@
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   json,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
-import { z } from 'zod';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { type z } from 'zod';
 
+import { db } from '@oyster/db';
 import {
   Button,
   Form,
@@ -22,15 +18,15 @@ import {
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { addEmailCookie } from '../shared/cookies.server';
-import { db, job } from '../shared/core.server';
-import { OneTimeCode, OneTimeCodePurpose } from '../shared/core.ui';
+import { job } from '@/member-profile.server';
+import { OneTimeCode, OneTimeCodePurpose } from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
+import { addEmailCookie } from '@/shared/cookies.server';
 import {
   commitSession,
   ensureUserAuthenticated,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -132,21 +128,13 @@ async function sendEmailCode(studentId: string, input: SendEmailCodeInput) {
   });
 }
 
-const { email } = SendEmailCodeInput.keyof().enum;
+const keys = SendEmailCodeInput.keyof().enum;
 
 export default function AddEmailPage() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const submitting = useNavigation().state === 'submitting';
-
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/profile/emails']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/emails']}>
       <Modal.Header>
         <Modal.Title>Add Email Address</Modal.Title>
         <Modal.CloseButton />
@@ -161,13 +149,13 @@ export default function AddEmailPage() {
         <Form.Field
           error={errors.email}
           label="Email"
-          labelFor={email}
+          labelFor={keys.email}
           required
         >
           <Input
             autoFocus
-            id={email}
-            name={email}
+            id={keys.email}
+            name={keys.email}
             placeholder="me@gmail.com"
             required
           />
@@ -176,9 +164,7 @@ export default function AddEmailPage() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Send Code
-          </Button>
+          <Button.Submit>Send Code</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

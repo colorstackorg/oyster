@@ -1,12 +1,12 @@
-import { LoaderFunctionArgs, redirect } from '@remix-run/node';
+import { type LoaderFunctionArgs, redirect } from '@remix-run/node';
 import jwt from 'jsonwebtoken';
 
 import { toTitleCase } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { ENV } from '../shared/constants.server';
-import { trackWithoutRequest } from '../shared/mixpanel.server';
-import { commitSession, getSession, SESSION } from '../shared/session.server';
+import { Route } from '@/shared/constants';
+import { ENV } from '@/shared/constants.server';
+import { trackWithoutRequest } from '@/shared/mixpanel.server';
+import { commitSession, getSession, SESSION } from '@/shared/session.server';
 
 // TODO: Add Zod validation here.
 
@@ -22,7 +22,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!token) {
     session.flash('error', error);
 
-    return redirect(Route.LOGIN, {
+    return redirect(Route['/login'], {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
@@ -35,9 +35,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // order to get the user ID.
   try {
     const data = jwt.verify(token, ENV.JWT_SECRET) as { id: string };
+
     id = data.id;
   } catch {
-    return redirect(Route.LOGIN);
+    return redirect(Route['/login']);
   }
 
   session.set(SESSION.USER_ID, id);
@@ -46,7 +47,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     Method: toTitleCase(method) as 'Google' | 'Slack',
   });
 
-  const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route.HOME;
+  const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route['/home'];
 
   return redirect(redirectUrl, {
     headers: {
