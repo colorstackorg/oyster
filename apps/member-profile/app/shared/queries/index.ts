@@ -106,18 +106,3 @@ export function getMember(id: string, options: GetMemberOptions = {}) {
         });
     });
 }
-
-// "check membership of github user"
-
-export async function checkGitHubIdExists(gitHubId: number) {
-  try {
-    const rows = await db
-      .selectFrom('students')
-      .where('students.githubId', '=', gitHubId)
-      .execute();
-
-    return rows.length > 0; // Return true if the GitHub ID exists, false otherwise
-  } catch (error) {
-    return false; // Return false in case of any error
-  }
-}
