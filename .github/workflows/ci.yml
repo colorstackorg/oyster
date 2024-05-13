@@ -70,10 +70,8 @@ jobs:
 
       - name: Check if user exists in PostgreSQL
         run: |
-          # Replace 'your_table' with the actual table name where user information is stored
-          # Replace 'github_id_column' with the actual column name that stores GitHub IDs
           github_id=$(echo "${{ github.event.pull_request.user.id }}")
-          exists=$(psql "$DATABASE_URL" -tAc "SELECT EXISTS (SELECT 1 FROM students WHERE github_id = '$github_id');")
+          exists=$(psql postgres://oyster:oyster@localhost:5432/oyster -tAc "SELECT EXISTS (SELECT 1 FROM students WHERE github_id = '$github_id');")
           if [ "$exists" != "t" ]; then
             echo "::warning::It doesn't seem like you are a ColorStack member. This codebase is primarily meant to benefit our students so that they can gain experience contributing to a codebase, so unfortunately your contribution will not be prioritized.\n\nIf you are a ColorStack member, then be sure to connect your GitHub account in your Member Profile!"
           fi
