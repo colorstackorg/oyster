@@ -68,6 +68,16 @@ jobs:
       - name: Run database migrations and generate types
         run: yarn db:migrate
 
+      - name: Check if user exists in PostgreSQL
+        run: |
+          # Replace 'your_table' with the actual table name where user information is stored
+          # Replace 'github_id_column' with the actual column name that stores GitHub IDs
+          github_id=$(echo "${{ github.event.pull_request.user.id }}")
+          exists=$(psql "$DATABASE_URL" -tAc "SELECT EXISTS (SELECT 1 FROM students WHERE github_id = '$github_id');")
+          if [ "$exists" != "t" ]; then
+            echo "::warning::It doesn't seem like you are a ColorStack member. This codebase is primarily meant to benefit our students so that they can gain experience contributing to a codebase, so unfortunately your contribution will not be prioritized.\n\nIf you are a ColorStack member, then be sure to connect your GitHub account in your Member Profile!"
+          fi
+
       - name: Lint
         run: yarn lint --filter=[$BASE_SHA]
 
@@ -79,24 +89,3 @@ jobs:
 
       - name: Run tests
         run: yarn test --filter=[$BASE_SHA]
-
-      - name: Get GitHub ID of pull request opener
-        id: get_github_id
-        run: echo "::set-output name=githubId::${{ github.event.pull_request.user.id }}"
-      
-      - name: Call checkGitHubIdExists function
-        id: check_id
-        run: |
-          const { checkGitHubIdExists } = require('../apps/member-profile/app/shared/queries/index.ts');
-          const result = await checkGitHubIdExists(${ { steps.get_github_id.outputs.githubId } }); // Using the GitHub ID retrieved from the previous step
-          echo "::set-output name=githubIdExists::${result}";
-      
-      - name: Display message based on result
-        if: steps.check_id.outputs.githubIdExists == 'true'
-        run: |
-          echo "GitHub ID exists in the database."
-          # Add additional actions based on the result...
-        else
-        run: |
-          echo "GitHub ID does not exist in the database."
-          # Add additional actions based on the result...
