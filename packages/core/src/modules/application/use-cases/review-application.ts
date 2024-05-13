@@ -24,6 +24,7 @@ export async function reviewApplication({
       'applications.schoolId',
     ])
     .where('id', '=', applicationId)
+    .where('status', '=', ApplicationStatus.PENDING)
     .executeTakeFirstOrThrow();
 
   const reject = await shouldReject(application as ApplicationForDecision);
