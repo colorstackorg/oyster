@@ -1,0 +1,21 @@
+{
+  "name": "@oyster/infrastructure",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.576.0"
+  },
+  "devDependencies": {
+    "@oyster/eslint-config": "*",
+    "@oyster/tsconfig": "*"
+  }
+}

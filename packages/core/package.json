@@ -22,10 +22,10 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.576.0",
     "@mailchimp/mailchimp_marketing": "^3.0.78",
     "@oyster/db": "*",
     "@oyster/email-templates": "*",
+    "@oyster/infrastructure": "*",
     "@oyster/types": "*",
     "@oyster/utils": "*",
     "@react-email/render": "^0.0.6",

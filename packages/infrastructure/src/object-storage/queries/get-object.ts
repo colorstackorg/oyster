@@ -1,9 +1,6 @@
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 
-import {
-  R2_BUCKET_NAME,
-  s3,
-} from '@/modules/object-storage/object-storage.shared';
+import { R2_BUCKET_NAME, s3 } from '@/object-storage/object-storage.shared';
 
 type GetObjectInput = {
   bucket?: string;

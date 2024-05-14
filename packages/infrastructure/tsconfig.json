@@ -1,0 +1,12 @@
+{
+  "extends": "@oyster/tsconfig/base.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
