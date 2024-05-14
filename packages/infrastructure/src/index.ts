@@ -1,1 +1,1 @@
-export { getObject } from '@/object-storage';
+export { getObject } from './object-storage';
