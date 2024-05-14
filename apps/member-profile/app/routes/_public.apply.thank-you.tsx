@@ -3,16 +3,21 @@ import { useLoaderData } from '@remix-run/react';
 
 import { Text } from '@oyster/ui';
 
-import { getSession } from '@/shared/session.server';
+import { commitSession, getSession } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);
 
   const email = session.get('email');
 
-  return json({
-    email,
-  });
+  return json(
+    { email },
+    {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    }
+  );
 }
 
 export default function ThankYou() {
