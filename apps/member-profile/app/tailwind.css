@@ -16,3 +16,8 @@ button:focus-visible {
   outline-style: solid;
   outline-width: 1px;
 }
+
+/* Prevents scrollbar appearances on Windows */
+.overflow-scroll {
+  overflow: auto;
+}
