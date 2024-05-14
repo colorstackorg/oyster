@@ -1,24 +1,34 @@
-import { json } from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { useLoaderData } from '@remix-run/react';
 
-import { Link, Text } from '@oyster/ui';
+import { Text } from '@oyster/ui';
 
-export async function loader() {
-  return json({});
+import { getSession } from '@/shared/session.server';
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const session = await getSession(request);
+
+  const email = session.get('email');
+
+  return json({
+    email,
+  });
 }
 
 export default function ThankYou() {
-  return (
-    <>
-      <Text>Thank you for applying to ColorStack!</Text>
+  const { email } = useLoaderData<typeof loader>();
 
-      <Text>
-        If you don't immediately receive an email from us confirming the receipt
-        of your application, please email{' '}
-        <Link href="mailto:membership@colorstack.org">
-          membership@colorstack.org
-        </Link>
-        .
-      </Text>
-    </>
+  return email ? (
+    <Text>
+      Thank you for applying to ColorStack! You should receive a confirmation
+      email at <span className="font-bold">{email}</span> shortly. We typically
+      review applications within a few days, but it may take 1-2 weeks to hear
+      back.
+    </Text>
+  ) : (
+    <Text>
+      Thank you for applying to ColorStack! We typically review applications
+      within a few days, but it may take 1-2 weeks to hear back.
+    </Text>
   );
 }
