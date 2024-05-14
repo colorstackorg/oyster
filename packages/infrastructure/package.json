@@ -4,17 +4,23 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    "./object-storage": "./src/object-storage.ts"
   },
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@aws-sdk/client-s3": "^3.576.0"
   },
+  "peerDependenciesMeta": {
+    "@aws-sdk/client-s3": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@aws-sdk/client-s3": "^3.576.0",
     "@oyster/eslint-config": "*",
     "@oyster/tsconfig": "*"
   }
