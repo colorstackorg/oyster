@@ -22,6 +22,7 @@ import {
 import { apply } from '@/member-profile.server';
 import { Application } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
+import { commitSession, getSession } from '@/shared/session.server';
 import { formatUrl } from '@/shared/url.utils';
 
 export const meta: MetaFunction = () => {
@@ -64,6 +65,7 @@ const ApplyFormData = ApplyInput.extend({
 type ApplyFormData = z.infer<typeof ApplyFormData>;
 
 export async function action({ request }: ActionFunctionArgs) {
+  const session = await getSession(request);
   const form = await request.formData();
 
   const { data, errors } = validateForm(ApplyFormData, {
@@ -82,7 +84,13 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     await apply(data);
 
-    return redirect(Route['/apply/thank-you']);
+    session.flash('email', data.email);
+
+    return redirect(Route['/apply/thank-you'], {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
   } catch (e) {
     return json({
       error: (e as Error).message,
