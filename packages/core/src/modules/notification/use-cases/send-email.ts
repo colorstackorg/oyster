@@ -13,6 +13,7 @@ import {
   StudentRemovedEmail,
 } from '@oyster/email-templates';
 
+import { getObject } from '@/modules/object-storage/queries/get-object';
 import { ENVIRONMENT } from '@/shared/env';
 import {
   getNodemailerTransporter,
@@ -71,7 +72,17 @@ async function sendEmailWithPostmark(input: EmailTemplate) {
     .with('student-removed', () => FROM_NOTIFICATIONS)
     .exhaustive();
 
+  const attachments = await getAttachments(input);
+
   await postmark.sendEmail({
+    Attachments: attachments?.map((attachment) => {
+      return {
+        Content: attachment.content,
+        ContentID: null,
+        ContentType: attachment.contentType,
+        Name: attachment.name,
+      };
+    }),
     From: from,
     HtmlBody: getHtml(input),
     ReplyTo: 'membership@colorstack.org',
@@ -85,9 +96,18 @@ async function sendEmailWithPostmark(input: EmailTemplate) {
 async function sendEmailWithNodemailer(input: EmailTemplate) {
   const transporter = getNodemailerTransporter();
 
+  const attachments = await getAttachments(input);
+
   // Note: We don't need to specify the `from` field here because it'll
   // automatically default to the `SMTP_USERNAME` variable that we set.
   await transporter.sendMail({
+    attachments: attachments?.map((attachment) => {
+      return {
+        content: attachment.content,
+        contentType: attachment.contentType,
+        filename: attachment.name,
+      };
+    }),
     html: getHtml(input),
     subject: getSubject(input),
     to: input.to,
@@ -163,4 +183,42 @@ function getSubject(input: EmailTemplate): string {
     .exhaustive();
 
   return subjectWithEnvironment;
+}
+
+type EmailAttachment = {
+  content: string;
+  contentType: 'application/pdf';
+  name: string;
+};
+
+async function getAttachments(
+  input: EmailTemplate
+): Promise<EmailAttachment[] | undefined> {
+  const attachments = await match(input)
+    .with(
+      { name: 'application-accepted' },
+      { name: 'application-created' },
+      { name: 'application-rejected' },
+      { name: 'one-time-code-sent' },
+      { name: 'primary-email-changed' },
+      { name: 'student-activated' },
+      { name: 'student-removed' },
+      () => {
+        return undefined;
+      }
+    )
+    .with({ name: 'student-attended-onboarding' }, async () => {
+      const file = await getObject({ key: 'onboarding-deck.pdf' });
+
+      return [
+        {
+          content: file.base64,
+          contentType: 'application/pdf',
+          name: 'ColorStack Onboarding Deck.pdf',
+        } as EmailAttachment,
+      ];
+    })
+    .exhaustive();
+
+  return attachments;
 }
