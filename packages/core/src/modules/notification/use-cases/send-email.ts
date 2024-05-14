@@ -105,6 +105,7 @@ async function sendEmailWithNodemailer(input: EmailTemplate) {
       return {
         content: attachment.content,
         contentType: attachment.contentType,
+        encoding: 'base64',
         filename: attachment.name,
       };
     }),
