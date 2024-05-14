@@ -16,3 +16,7 @@ button:focus-visible {
   outline-style: solid;
   outline-width: 1px;
 }
+
+.overflow-scroll {
+  overflow: auto;
+}
