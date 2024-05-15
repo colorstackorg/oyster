@@ -6,6 +6,8 @@ const EnvironmentVariable = z.string().trim().min(1);
 
 const BaseEnvironmentConfig = z.object({
   ADMIN_DASHBOARD_URL: EnvironmentVariable,
+  AIRTABLE_FAMILY_BASE_ID: EnvironmentVariable,
+  AIRTABLE_MEMBERS_TABLE_ID: EnvironmentVariable,
   API_URL: EnvironmentVariable,
   DATABASE_URL: EnvironmentVariable,
   ENVIRONMENT: z.nativeEnum(Environment),
@@ -18,6 +20,8 @@ const BaseEnvironmentConfig = z.object({
 
 const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
   BaseEnvironmentConfig.partial({
+    AIRTABLE_FAMILY_BASE_ID: true,
+    AIRTABLE_MEMBERS_TABLE_ID: true,
     GOOGLE_CLIENT_ID: true,
     SENTRY_DSN: true,
   }).extend({
