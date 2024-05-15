@@ -11,7 +11,7 @@ import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { db } from '@/infrastructure/database';
 import {
   AIRTABLE_FAMILY_BASE_ID,
-  AIRTABLE_MEMBERS_TABLE,
+  AIRTABLE_MEMBERS_TABLE_ID,
 } from '@/modules/airtable/airtable.shared';
 import { createAirtableRecord } from '@/modules/airtable/use-cases/create-airtable-record';
 import { IS_PRODUCTION } from '@/shared/env';
@@ -32,7 +32,11 @@ type AirtableMemberRecord = z.infer<typeof AirtableMemberRecord>;
 export async function createAirtableMemberRecord({
   studentId,
 }: GetBullJobData<'airtable.record.create.member'>) {
-  if (!IS_PRODUCTION || !AIRTABLE_FAMILY_BASE_ID) {
+  if (
+    !IS_PRODUCTION ||
+    !AIRTABLE_FAMILY_BASE_ID ||
+    !AIRTABLE_MEMBERS_TABLE_ID
+  ) {
     return;
   }
 
@@ -67,7 +71,7 @@ export async function createAirtableMemberRecord({
         return FORMATTED_DEMOGRAPHICS[demographic];
       }),
     },
-    tableName: AIRTABLE_MEMBERS_TABLE,
+    tableName: AIRTABLE_MEMBERS_TABLE_ID,
   });
 
   await db.transaction().execute(async (trx) => {
