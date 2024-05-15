@@ -62,7 +62,7 @@ export async function createAirtableMemberRecord({
           .as('school');
       },
     ])
-    .where('id', '=', studentId)
+    .where('students.id', '=', studentId)
     .executeTakeFirstOrThrow();
 
   const record = AirtableMemberRecord.parse(member);
