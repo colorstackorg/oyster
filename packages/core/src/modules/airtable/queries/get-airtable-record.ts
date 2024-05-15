@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import {
   AIRTABLE_MEMBERS_URI,
+  airtableRateLimiter,
   getAirtableHeaders,
 } from '@/modules/airtable/airtable.shared';
 
@@ -13,6 +14,8 @@ export async function getAirtableRecord(email: string) {
 
   url.searchParams.set('filterByFormula', `({Email} = "${email}")`);
   url.searchParams.set('maxRecords', '1');
+
+  await airtableRateLimiter.process();
 
   const response = await fetch(url.toString(), {
     headers: getAirtableHeaders(),
