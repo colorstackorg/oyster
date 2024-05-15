@@ -1,3 +1,4 @@
+import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
 import { DegreeType, type EducationLevel } from '../education.types';
 
@@ -31,12 +32,14 @@ export async function checkMostRecentEducation(studentId: string) {
     return;
   }
 
+  const graduationYear = education.endDate.getFullYear().toString();
+
   await db
     .updateTable('students')
     .set({
       educationLevel:
         EducationLevelFromDegreeType[education.degreeType as DegreeType],
-      graduationYear: education.endDate.getFullYear().toString(),
+      graduationYear,
       major: education.major,
       otherMajor: education.otherMajor,
       otherSchool: education.otherSchool,
@@ -44,4 +47,26 @@ export async function checkMostRecentEducation(studentId: string) {
     })
     .where('id', '=', studentId)
     .execute();
+
+  const member = await db
+    .selectFrom('students')
+    .leftJoin('schools', 'schools.id', 'students.schoolId')
+    .select([
+      'airtableId',
+      (eb) => {
+        return eb.fn
+          .coalesce('schools.name', 'students.otherSchool')
+          .as('school');
+      },
+    ])
+    .where('id', '=', studentId)
+    .executeTakeFirstOrThrow();
+
+  job('airtable.record.update', {
+    airtableId: member.airtableId as string,
+    data: {
+      graduationYear,
+      school: member.school as string,
+    },
+  });
 }
