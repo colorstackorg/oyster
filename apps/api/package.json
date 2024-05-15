@@ -11,6 +11,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.576.0",
     "@oyster/core": "*",
     "@oyster/types": "*",
     "@oyster/utils": "*",
