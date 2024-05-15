@@ -40,7 +40,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const student = await db
     .deleteFrom('students')
-    .returning(['email', 'slackId'])
+    .returning(['airtableId', 'email', 'slackId'])
     .where('id', '=', params.id as string)
     .executeTakeFirst();
 
@@ -49,6 +49,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   }
 
   job('student.removed', {
+    airtableId: student.airtableId as string,
     email: student.email,
     slackId: student.slackId,
   });

@@ -2,11 +2,12 @@ import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 
 export async function onMemberRemoved({
+  airtableId,
   email,
   slackId,
 }: GetBullJobData<'student.removed'>) {
   job('airtable.record.delete', {
-    email,
+    airtableId,
   });
 
   job('email_marketing.remove', {
