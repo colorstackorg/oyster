@@ -1,5 +1,6 @@
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { IS_PRODUCTION } from '@/shared/env';
+import { ErrorWithContext } from '@/shared/errors';
 import {
   AIRTABLE_API_URI,
   airtableRateLimiter,
@@ -20,7 +21,7 @@ export async function createAirtableRecord({
 
   await airtableRateLimiter.process();
 
-  await fetch(`${AIRTABLE_API_URI}/${baseId}/${tableName}`, {
+  const response = await fetch(`${AIRTABLE_API_URI}/${baseId}/${tableName}`, {
     body: JSON.stringify({
       fields: data,
 
@@ -33,8 +34,18 @@ export async function createAirtableRecord({
     method: 'post',
   });
 
+  if (!response.ok) {
+    throw new ErrorWithContext('Failed to create Airtable record.').withContext(
+      data
+    );
+  }
+
   console.log({
     code: 'airtable_record_created',
     message: 'Airtable record was created.',
   });
+
+  const json = await response.json();
+
+  return json.id as string;
 }

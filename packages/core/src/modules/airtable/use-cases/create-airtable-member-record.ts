@@ -53,8 +53,8 @@ export async function createAirtableMemberRecord({
 
   const record = AirtableMemberRecord.parse(member);
 
-  await createAirtableRecord({
-    baseId: AIRTABLE_FAMILY_BASE_ID,
+  const id = await createAirtableRecord({
+    baseId: AIRTABLE_FAMILY_BASE_ID!,
     data: {
       Email: record.email,
       'First Name': record.firstName,
@@ -68,5 +68,13 @@ export async function createAirtableMemberRecord({
       }),
     },
     tableName: AIRTABLE_MEMBERS_TABLE,
+  });
+
+  await db.transaction().execute(async (trx) => {
+    await trx
+      .updateTable('students')
+      .set({ airtableId: id })
+      .where('id', '=', studentId)
+      .execute();
   });
 }
