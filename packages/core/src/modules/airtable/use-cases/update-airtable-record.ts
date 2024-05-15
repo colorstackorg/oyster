@@ -24,7 +24,7 @@ export async function updateAirtableRecord({
       fields: { Email: email },
     }),
     headers: getAirtableHeaders({ includeContentType: true }),
-    method: 'patch',
+    method: 'PATCH',
   });
 
   console.log({
