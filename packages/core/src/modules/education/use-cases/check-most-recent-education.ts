@@ -59,7 +59,7 @@ export async function checkMostRecentEducation(studentId: string) {
           .as('school');
       },
     ])
-    .where('id', '=', studentId)
+    .where('students.id', '=', studentId)
     .executeTakeFirstOrThrow();
 
   job('airtable.record.update', {
