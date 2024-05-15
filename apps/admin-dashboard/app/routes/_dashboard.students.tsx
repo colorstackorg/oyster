@@ -288,17 +288,11 @@ function StudentDropdown({ activatedAt, airtableUri, id }: StudentInView) {
               </Link>
             </Dropdown.Item>
 
-            {airtableUri && (
-              <Dropdown.Item>
-                <Link
-                  target="_blank"
-                  to={airtableUri}
-                  rel="noopener noreferrer"
-                >
-                  <ExternalLink /> View Airtable Record
-                </Link>
-              </Dropdown.Item>
-            )}
+            <Dropdown.Item>
+              <Link target="_blank" to={airtableUri} rel="noopener noreferrer">
+                <ExternalLink /> View Airtable Record
+              </Link>
+            </Dropdown.Item>
           </Dropdown.List>
         </Table.Dropdown>
       )}
