@@ -54,7 +54,7 @@ export async function createAirtableMemberRecord({
   const record = AirtableMemberRecord.parse(member);
 
   const id = await createAirtableRecord({
-    baseId: AIRTABLE_FAMILY_BASE_ID!,
+    baseId: AIRTABLE_FAMILY_BASE_ID,
     data: {
       Email: record.email,
       'First Name': record.firstName,
