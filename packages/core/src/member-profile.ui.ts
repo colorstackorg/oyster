@@ -39,6 +39,7 @@ export {
 } from './modules/icebreaker/icebreaker.types';
 export { Country } from './modules/location/location.types';
 export {
+  AddEmailInput,
   ChangePrimaryEmailInput,
   ListMembersInDirectoryWhere,
 } from './modules/member/member.types';

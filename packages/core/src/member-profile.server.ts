@@ -40,6 +40,7 @@ export { getCityDetails } from './modules/location/queries/get-city-details';
 export { searchCountries } from './modules/location/queries/search-countries';
 export { listEmails } from './modules/member/queries/list-emails';
 export { listMembersInDirectory } from './modules/member/queries/list-members-in-directory';
+export { addEmail } from './modules/member/use-cases/add-email';
 export { changePrimaryEmail } from './modules/member/use-cases/change-primary-email';
 export { joinMemberDirectory } from './modules/member/use-cases/join-member-directory';
 export { updateAllowEmailShare } from './modules/member/use-cases/update-allow-email-share';

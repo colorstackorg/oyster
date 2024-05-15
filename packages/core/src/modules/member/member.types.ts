@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
-import { Student } from '@oyster/types';
+import { Student, StudentEmail } from '@oyster/types';
 
+import { OneTimeCode } from '@/modules/authentication/authentication.types';
 import { Company } from '@/modules/employment/employment.types';
 import { Country } from '@/modules/location/location.types';
 import { ListSearchParams } from '@/shared/types';
@@ -28,6 +29,15 @@ export type ListMembersInDirectoryWhere = z.infer<
 >;
 
 // Use Cases
+
+export const AddEmailInput = StudentEmail.pick({
+  email: true,
+  studentId: true,
+})
+  .extend({ code: OneTimeCode.shape.value })
+  .required();
+
+export type AddEmailInput = z.infer<typeof AddEmailInput>;
 
 export const ChangePrimaryEmailInput = Student.pick({
   email: true,
