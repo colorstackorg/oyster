@@ -50,12 +50,12 @@ export async function createAirtableMemberRecord({
       'email',
       'firstName',
       'gender',
-      'id',
       'lastName',
       'linkedInUrl',
       'graduationYear',
       'otherDemographics',
       'race',
+      'students.id',
       (eb) => {
         return eb.fn
           .coalesce('schools.name', 'students.otherSchool')
