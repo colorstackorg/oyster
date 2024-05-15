@@ -71,7 +71,13 @@ export const AirtableBullJob = z.discriminatedUnion('name', [
     name: z.literal('airtable.record.update'),
     data: z.object({
       airtableId: z.string().trim().min(1),
-      email: Student.shape.email,
+      data: z
+        .object({
+          email: Student.shape.email,
+          graduationYear: z.string().trim().min(1),
+          school: z.string().trim().min(1),
+        })
+        .partial(),
     }),
   }),
 ]);

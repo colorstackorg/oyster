@@ -11,7 +11,7 @@ import {
  */
 export async function updateAirtableRecord({
   airtableId,
-  email,
+  data,
 }: GetBullJobData<'airtable.record.update'>) {
   if (!IS_PRODUCTION) {
     return;
@@ -21,7 +21,13 @@ export async function updateAirtableRecord({
 
   await fetch(`${AIRTABLE_MEMBERS_URI}/${airtableId}`, {
     body: JSON.stringify({
-      fields: { Email: email },
+      fields: {
+        ...(data.email && { Email: data.email }),
+        ...(data.graduationYear && {
+          'Expected Graduation Year': data.graduationYear,
+        }),
+        ...(data.school && { School: data.school }),
+      },
     }),
     headers: getAirtableHeaders({ includeContentType: true }),
     method: 'PATCH',
@@ -32,7 +38,7 @@ export async function updateAirtableRecord({
     message: 'Airtable record was updated.',
     data: {
       airtableId,
-      email,
+      data,
     },
   });
 }
