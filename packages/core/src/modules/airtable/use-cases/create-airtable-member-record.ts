@@ -1,4 +1,4 @@
-import { type z } from 'zod';
+import { z } from 'zod';
 
 import {
   FORMATTED_DEMOGRAPHICS,
@@ -22,9 +22,12 @@ const AirtableMemberRecord = Student.pick({
   gender: true,
   id: true,
   lastName: true,
+  linkedInUrl: true,
   graduationYear: true,
   otherDemographics: true,
   race: true,
+}).extend({
+  school: z.string().optional(),
 });
 
 type AirtableMemberRecord = z.infer<typeof AirtableMemberRecord>;
@@ -42,15 +45,22 @@ export async function createAirtableMemberRecord({
 
   const member = await db
     .selectFrom('students')
+    .leftJoin('schools', 'schools.id', 'students.schoolId')
     .select([
       'email',
       'firstName',
       'gender',
       'id',
       'lastName',
+      'linkedInUrl',
       'graduationYear',
       'otherDemographics',
       'race',
+      (eb) => {
+        return eb.fn
+          .coalesce('schools.name', 'students.otherSchool')
+          .as('school');
+      },
     ])
     .where('id', '=', studentId)
     .executeTakeFirstOrThrow();
@@ -60,16 +70,19 @@ export async function createAirtableMemberRecord({
   const id = await createAirtableRecord({
     baseId: AIRTABLE_FAMILY_BASE_ID,
     data: {
+      'ColorStack ID': studentId,
       Email: record.email,
+      'Expected Graduation Year': record.graduationYear.toString(),
       'First Name': record.firstName,
       'Last Name': record.lastName,
-      'Expected Graduation Year': record.graduationYear.toString(),
+      'LinkedIn Profile/URL': record.linkedInUrl,
       'Race & Ethnicity': record.race.map((race) => FORMATTED_RACE[race]),
       Gender: FORMATTED_GENDER[record.gender],
       'Member Type': 'Full Member',
       'Quality of Life': record.otherDemographics.map((demographic) => {
         return FORMATTED_DEMOGRAPHICS[demographic];
       }),
+      School: record.school,
     },
     tableName: AIRTABLE_MEMBERS_TABLE_ID,
   });
