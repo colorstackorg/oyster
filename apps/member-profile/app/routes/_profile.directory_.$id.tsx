@@ -187,7 +187,7 @@ function CoreSection({ children }: PropsWithChildren) {
 function MemberHeader() {
   const { member } = useLoaderData<typeof loader>();
 
-  const tracker = useMixpanelTracker();
+  const { trackFromClient } = useMixpanelTracker();
 
   return (
     <header className="flex items-center justify-between gap-[inherit]">
@@ -206,7 +206,7 @@ function MemberHeader() {
           )}
           href={member.slackUrl}
           onClick={() => {
-            tracker.track({
+            trackFromClient({
               event: 'Directory - CTA Clicked',
               properties: { CTA: 'Slack' },
             });
@@ -267,14 +267,14 @@ function MemberPronouns({ className }: { className: string }) {
 function MemberSocials() {
   const { member } = useLoaderData<typeof loader>();
 
-  const tracker = useMixpanelTracker();
+  const { trackFromClient } = useMixpanelTracker();
 
   const className = 'h-5 w-5';
 
   function trackSocialClick(
     social: MixpanelEvent['Directory - CTA Clicked']['CTA']
   ) {
-    tracker.track({
+    trackFromClient({
       event: 'Directory - CTA Clicked',
       properties: { CTA: social },
     });

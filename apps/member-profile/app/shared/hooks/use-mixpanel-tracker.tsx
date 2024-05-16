@@ -8,7 +8,7 @@ import {
 export function useMixpanelTracker() {
   const fetcher = useFetcher();
 
-  function track<Event extends keyof MixpanelEvent>({
+  function trackFromClient<Event extends keyof MixpanelEvent>({
     event,
     properties,
   }: Omit<TrackInput<Event>, 'request' | 'user'>) {
@@ -26,6 +26,6 @@ export function useMixpanelTracker() {
   }
 
   return {
-    track,
+    trackFromClient,
   };
 }

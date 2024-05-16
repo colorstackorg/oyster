@@ -403,14 +403,14 @@ function MembersGrid() {
 type MemberInView = SerializeFrom<typeof loader>['members'][number];
 
 function MemberItem({ member }: { member: MemberInView }) {
-  const tracker = useMixpanelTracker();
+  const { trackFromClient } = useMixpanelTracker();
 
   return (
     <li>
       <Link
         className="grid grid-cols-[3rem,1fr] items-center gap-4 rounded-2xl p-2 hover:bg-gray-100 sm:grid-cols-[4rem,1fr]"
         onClick={() => {
-          tracker.track({
+          trackFromClient({
             event: 'Directory - Profile Clicked',
             properties: undefined,
           });
