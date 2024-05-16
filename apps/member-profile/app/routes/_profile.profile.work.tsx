@@ -23,7 +23,6 @@ import {
   ProfileTitle,
 } from '@/shared/components/profile';
 import { Route } from '@/shared/constants';
-import { track } from '@/shared/mixpanel.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -32,10 +31,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const id = user(session);
 
   const workExperiences = await listWorkExperiences(id);
-
-  track(request, 'Page Viewed', {
-    Page: 'Profile - Work History',
-  });
 
   return json({
     workExperiences,

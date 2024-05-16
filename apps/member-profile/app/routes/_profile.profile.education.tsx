@@ -17,7 +17,6 @@ import {
   ProfileTitle,
 } from '@/shared/components/profile';
 import { Route } from '@/shared/constants';
-import { track } from '@/shared/mixpanel.server';
 import { getEducationExperiences } from '@/shared/queries';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -27,10 +26,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const id = user(session);
 
   const educationExperiences = await getEducationExperiences(id);
-
-  track(request, 'Page Viewed', {
-    Page: 'Profile - Education History',
-  });
 
   return json({
     educationExperiences,
