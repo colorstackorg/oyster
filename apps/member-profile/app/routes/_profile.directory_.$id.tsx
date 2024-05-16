@@ -267,119 +267,92 @@ function MemberPronouns({ className }: { className: string }) {
 function MemberSocials() {
   const { member } = useLoaderData<typeof loader>();
 
-  const { trackFromClient } = useMixpanelTracker();
-
-  const className = 'h-5 w-5';
-
-  function trackSocialClick(
-    social: MixpanelEvent['Directory - CTA Clicked']['CTA']
-  ) {
-    trackFromClient({
-      event: 'Directory - CTA Clicked',
-      properties: { CTA: social },
-    });
-  }
-
   return (
     <section>
       <ul className="mb-1 flex items-center gap-2">
         {!!member.linkedInUrl && (
-          <li>
-            <a
-              href={member.linkedInUrl}
-              onClick={() => trackSocialClick('LinkedIn')}
-              target="_blank"
-            >
-              <img
-                alt="LinkedIn Logo"
-                className={className}
-                src="/images/linkedin.png"
-              />
-            </a>
-          </li>
+          <MemberSocialItem
+            href={member.linkedInUrl}
+            logo="/images/linkedin.png"
+            social="LinkedIn"
+          />
         )}
 
         {!!member.instagramHandle && (
-          <li>
-            <a
+          <MemberSocialItem
+            href={
               // The Instagram URL cannot have the @ symbol in it, so we remove it.
-              href={`https://instagram.com/${member.instagramHandle.replace(
-                '@',
-                ''
-              )}`}
-              onClick={() => trackSocialClick('Instagram')}
-              target="_blank"
-            >
-              <img
-                alt="Instagram Logo"
-                className={className}
-                src="/images/instagram.svg"
-              />
-            </a>
-          </li>
+              'https://instagram.com/' + member.instagramHandle.replace('@', '')
+            }
+            logo="/images/instagram.svg"
+            social="Instagram"
+          />
         )}
 
         {!!member.twitterHandle && (
-          <li>
-            <a
-              href={`https://twitter.com/${member.twitterHandle}`}
-              onClick={() => trackSocialClick('Twitter')}
-              target="_blank"
-            >
-              <img
-                alt="Twitter Logo"
-                className={className}
-                src="/images/x.png"
-              />
-            </a>
-          </li>
+          <MemberSocialItem
+            href={`https://twitter.com/${member.twitterHandle}`}
+            logo="/images/x.png"
+            social="Twitter"
+          />
         )}
 
         {!!member.githubUrl && (
-          <li>
-            <a
-              href={member.githubUrl}
-              onClick={() => trackSocialClick('GitHub')}
-              target="_blank"
-            >
-              <img
-                alt="GitHub Logo"
-                className={className}
-                src="/images/github.svg"
-              />
-            </a>
-          </li>
+          <MemberSocialItem
+            href={member.githubUrl}
+            logo="/images/github.svg"
+            social="GitHub"
+          />
         )}
 
         {!!member.calendlyUrl && (
-          <li>
-            <a
-              href={member.calendlyUrl}
-              onClick={() => trackSocialClick('Calendly')}
-              target="_blank"
-            >
-              <img
-                alt="Calendly Logo"
-                className={className}
-                src="/images/calendly.svg"
-              />
-            </a>
-          </li>
+          <MemberSocialItem
+            href={member.calendlyUrl}
+            logo="/images/calendly.svg"
+            social="Calendly"
+          />
         )}
 
         {!!member.personalWebsiteUrl && (
-          <li>
-            <a
-              href={member.personalWebsiteUrl}
-              onClick={() => trackSocialClick('Personal Website')}
-              target="_blank"
-            >
-              <Link className={className} />
-            </a>
-          </li>
+          <MemberSocialItem
+            href={member.personalWebsiteUrl}
+            logo={<Link className="h-5 w-5" />}
+            social="Personal Website"
+          />
         )}
       </ul>
     </section>
+  );
+}
+
+type MemberSocialItemProps = {
+  href: string;
+  logo: string | React.ReactNode;
+  social: MixpanelEvent['Directory - CTA Clicked']['CTA'];
+};
+
+function MemberSocialItem({ href, logo, social }: MemberSocialItemProps) {
+  const { trackFromClient } = useMixpanelTracker();
+
+  return (
+    <li>
+      <a
+        href={href}
+        onClick={() => {
+          trackFromClient({
+            event: 'Directory - CTA Clicked',
+            properties: { CTA: social },
+          });
+        }}
+        target="_blank"
+      >
+        {typeof logo === 'string' ? (
+          <img alt={social + 'Logo'} className="h-5 w-5" src={logo} />
+        ) : (
+          logo
+        )}
+      </a>
+    </li>
   );
 }
 
