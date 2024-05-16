@@ -17,6 +17,7 @@ import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
+import { track } from '@oyster/infrastructure/mixpanel';
 import { type CompletedActivity } from '@oyster/types';
 import {
   Button,
@@ -42,7 +43,6 @@ import {
 } from '@/shared/components/empty-state';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
-import { track } from '@/shared/mixpanel.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 const TIMEFRAME = {
@@ -101,8 +101,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     listActivities(),
   ]);
 
-  track(request, 'Page Viewed', {
-    Page: 'Points',
+  track({
+    event: 'Page Viewed',
+    properties: { Page: 'Points' },
+    request,
+    user: id,
   });
 
   return json({

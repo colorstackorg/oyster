@@ -7,6 +7,7 @@ import {
 } from '@remix-run/react';
 import { Briefcase, Plus } from 'react-feather';
 
+import { track } from '@oyster/infrastructure/mixpanel';
 import { Button } from '@oyster/ui';
 
 import { listWorkExperiences } from '@/member-profile.server';
@@ -23,7 +24,6 @@ import {
   ProfileTitle,
 } from '@/shared/components/profile';
 import { Route } from '@/shared/constants';
-import { track } from '@/shared/mixpanel.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -33,8 +33,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const workExperiences = await listWorkExperiences(id);
 
-  track(request, 'Page Viewed', {
-    Page: 'Profile - Work History',
+  track({
+    event: 'Page Viewed',
+    properties: { Page: 'Profile - Work History' },
+    request,
+    user: id,
   });
 
   return json({

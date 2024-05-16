@@ -20,6 +20,7 @@ import {
 import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
+import { setMixpanelProfile, track } from '@oyster/infrastructure/mixpanel';
 import {
   type ActivationRequirement,
   StudentActiveStatus,
@@ -35,18 +36,17 @@ import {
   Text,
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
+import { getIpAddress } from '@oyster/utils/get-ip-address';
 
 import {
   countEventAttendees,
   countMessagesSent,
   getActiveStreakLeaderboard,
   getActiveStreakLeaderboardPosition,
-  getIpAddress,
 } from '@/member-profile.server';
 import { Card } from '@/shared/components/card';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
-import { setMixpanelProfile, track } from '@/shared/mixpanel.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 const RECENT_WEEKS = 16;
@@ -95,8 +95,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ip: getIpAddress(request),
   });
 
-  track(request, 'Page Viewed', {
-    Page: 'Home',
+  track({
+    event: 'Page Viewed',
+    properties: { Page: 'Home' },
+    request,
+    user: id,
   });
 
   return json({

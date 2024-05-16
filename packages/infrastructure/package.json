@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./mixpanel": "./src/mixpanel.ts",
     "./object-storage": "./src/object-storage.ts"
   },
   "scripts": {
@@ -11,13 +12,11 @@
     "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit"
   },
-  "peerDependencies": {
-    "@aws-sdk/client-s3": "^3.576.0"
+  "dependencies": {
+    "@oyster/utils": "*"
   },
-  "peerDependenciesMeta": {
-    "@aws-sdk/client-s3": {
-      "optional": true
-    }
+  "optionalDependencies": {
+    "@aws-sdk/client-s3": "^3.576.0"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.576.0",

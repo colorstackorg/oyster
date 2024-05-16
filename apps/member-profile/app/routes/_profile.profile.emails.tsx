@@ -15,6 +15,7 @@ import { Edit, Plus } from 'react-feather';
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
+import { track } from '@oyster/infrastructure/mixpanel';
 import {
   Button,
   Checkbox,
@@ -33,7 +34,6 @@ import {
   ProfileTitle,
 } from '@/shared/components/profile';
 import { Route } from '@/shared/constants';
-import { track } from '@/shared/mixpanel.server';
 import { getMember } from '@/shared/queries';
 import {
   commitSession,
@@ -52,8 +52,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     getMember(id).select('allowEmailShare').executeTakeFirstOrThrow(),
   ]);
 
-  track(request, 'Page Viewed', {
-    Page: 'Profile - Email Addresses',
+  track({
+    event: 'Page Viewed',
+    properties: { Page: 'Profile - Email Addresses' },
+    request,
+    user: id,
   });
 
   return json({

@@ -2,6 +2,7 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData, useNavigate } from '@remix-run/react';
 import { BookOpen, Plus } from 'react-feather';
 
+import { track } from '@oyster/infrastructure/mixpanel';
 import { Button } from '@oyster/ui';
 
 import { EducationExperienceItem } from '@/shared/components/education-experience';
@@ -17,7 +18,6 @@ import {
   ProfileTitle,
 } from '@/shared/components/profile';
 import { Route } from '@/shared/constants';
-import { track } from '@/shared/mixpanel.server';
 import { getEducationExperiences } from '@/shared/queries';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -28,8 +28,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const educationExperiences = await getEducationExperiences(id);
 
-  track(request, 'Page Viewed', {
-    Page: 'Profile - Education History',
+  track({
+    event: 'Page Viewed',
+    properties: { Page: 'Profile - Education History' },
+    request,
+    user: id,
   });
 
   return json({

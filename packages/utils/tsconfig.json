@@ -2,6 +2,8 @@
   "extends": "@oyster/tsconfig/base.json",
   "include": ["src"],
   "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "types": ["vitest/globals"]
   }
 }

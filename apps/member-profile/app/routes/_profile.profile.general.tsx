@@ -10,6 +10,7 @@ import {
 } from '@remix-run/react';
 import { type z } from 'zod';
 
+import { track } from '@oyster/infrastructure/mixpanel';
 import { Student } from '@oyster/types';
 import {
   Button,
@@ -29,7 +30,6 @@ import {
   CurrentLocationField,
   PreferredNameField,
 } from '@/shared/components/profile.general';
-import { track } from '@/shared/mixpanel.server';
 import { getMember } from '@/shared/queries/index';
 import {
   commitSession,
@@ -56,8 +56,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ])
     .executeTakeFirstOrThrow();
 
-  track(request, 'Page Viewed', {
-    Page: 'Profile - General',
+  track({
+    event: 'Page Viewed',
+    properties: { Page: 'Profile - General' },
+    request,
+    user: id,
   });
 
   return json({

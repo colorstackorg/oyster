@@ -4,6 +4,7 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "module": "ESNext"
+    "module": "ESNext",
+    "moduleResolution": "Bundler"
   }
 }

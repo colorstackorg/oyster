@@ -16,6 +16,7 @@
   "dependencies": {
     "@oyster/core": "*",
     "@oyster/db": "*",
+    "@oyster/infrastructure": "*",
     "@oyster/types": "*",
     "@oyster/ui": "*",
     "@oyster/utils": "*",

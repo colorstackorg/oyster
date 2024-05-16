@@ -10,6 +10,7 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 
+import { track } from '@oyster/infrastructure/mixpanel';
 import { Button, Form, getActionErrors, validateForm } from '@oyster/ui';
 
 import { verifyOneTimeCode } from '@/member-profile.server';
@@ -17,7 +18,6 @@ import { OneTimeCodeForm, VerifyOneTimeCodeInput } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
 import { oneTimeCodeIdCookie } from '@/shared/cookies.server';
-import { trackWithoutRequest } from '@/shared/mixpanel.server';
 import { commitSession, getSession, SESSION } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -75,8 +75,10 @@ export async function action({ request }: ActionFunctionArgs) {
 
     session.set(SESSION.USER_ID, userId);
 
-    trackWithoutRequest(userId, 'Logged In', {
-      Method: 'OTP',
+    track({
+      event: 'Logged In',
+      properties: { Method: 'OTP' },
+      user: userId,
     });
 
     const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route['/home'];
