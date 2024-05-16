@@ -12,11 +12,9 @@
     "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit"
   },
-  "dependencies": {
-    "@oyster/utils": "*"
-  },
   "optionalDependencies": {
     "@aws-sdk/client-s3": "^3.576.0",
+    "is-ip": "^5.0.1",
     "mixpanel": "^0.18.0",
     "ua-parser-js": "^1.0.36"
   },
@@ -24,6 +22,7 @@
     "@aws-sdk/client-s3": "^3.576.0",
     "@oyster/eslint-config": "*",
     "@oyster/tsconfig": "*",
+    "is-ip": "^5.0.1",
     "mixpanel": "^0.18.0",
     "ua-parser-js": "^1.0.36"
   }

@@ -20,7 +20,11 @@ import {
 import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
-import { setMixpanelProfile, track } from '@oyster/infrastructure/mixpanel';
+import {
+  getIpAddress,
+  setMixpanelProfile,
+  track,
+} from '@oyster/infrastructure/mixpanel';
 import {
   type ActivationRequirement,
   StudentActiveStatus,
@@ -35,7 +39,6 @@ import {
   Text,
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
-import { getIpAddress } from '@oyster/utils/get-ip-address';
 
 import {
   countEventAttendees,
