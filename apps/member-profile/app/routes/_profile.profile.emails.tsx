@@ -15,7 +15,6 @@ import { Edit, Plus } from 'react-feather';
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
-import { track } from '@oyster/infrastructure/mixpanel';
 import {
   Button,
   Checkbox,
@@ -51,13 +50,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     listEmails(id),
     getMember(id).select('allowEmailShare').executeTakeFirstOrThrow(),
   ]);
-
-  track({
-    event: 'Page Viewed',
-    properties: { Page: 'Profile - Email Addresses' },
-    request,
-    user: id,
-  });
 
   return json({
     emails,

@@ -40,6 +40,7 @@ import { CityCombobox } from '@/shared/components/city-combobox';
 import { CompanyCombobox } from '@/shared/components/company-combobox';
 import { EthnicityCombobox } from '@/shared/components/ethnicity-combobox';
 import { Route } from '@/shared/constants';
+import { useMixpanelTracker } from '@/shared/hooks/use-mixpanel-tracker';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 import { formatName } from '@/shared/utils/format.utils';
 
@@ -402,10 +403,18 @@ function MembersGrid() {
 type MemberInView = SerializeFrom<typeof loader>['members'][number];
 
 function MemberItem({ member }: { member: MemberInView }) {
+  const tracker = useMixpanelTracker();
+
   return (
     <li>
       <Link
         className="grid grid-cols-[3rem,1fr] items-center gap-4 rounded-2xl p-2 hover:bg-gray-100 sm:grid-cols-[4rem,1fr]"
+        onClick={() => {
+          tracker.track({
+            event: 'Directory - Profile Clicked',
+            properties: undefined,
+          });
+        }}
         to={generatePath(Route['/directory/:id'], { id: member.id })}
       >
         <ProfilePicture

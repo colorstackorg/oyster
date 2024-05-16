@@ -3,7 +3,7 @@ import {
   type LoaderFunctionArgs,
   type SerializeFrom,
 } from '@remix-run/node';
-import { Outlet, Link as RemixLink, useLoaderData } from '@remix-run/react';
+import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren, type PropsWithoutRef } from 'react';
 import {
@@ -31,7 +31,6 @@ import {
   cx,
   Divider,
   getButtonCn,
-  Link,
   ProfilePicture,
   Text,
 } from '@oyster/ui';
@@ -384,12 +383,12 @@ function ClaimSwagPackCard() {
       </Card.Description>
 
       <Button.Group>
-        <RemixLink
-          to={Route['/home/claim-swag-pack']}
+        <Link
           className={getButtonCn({ variant: 'primary' })}
+          to={Route['/home/claim-swag-pack']}
         >
           Claim Swag Pack
-        </RemixLink>
+        </Link>
       </Button.Group>
     </Card>
   );
@@ -675,7 +674,7 @@ function ResourceItem({
 >) {
   return (
     <li>
-      <Link href={href} target="_blank">
+      <Link className="link" to={href} target="_blank">
         {children}
       </Link>
 

@@ -58,7 +58,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   track({
     event: 'Page Viewed',
-    properties: { Page: 'Profile - General' },
+    properties: { Page: 'Profile' },
     request,
     user: id,
   });

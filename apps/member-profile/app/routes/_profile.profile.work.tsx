@@ -7,7 +7,6 @@ import {
 } from '@remix-run/react';
 import { Briefcase, Plus } from 'react-feather';
 
-import { track } from '@oyster/infrastructure/mixpanel';
 import { Button } from '@oyster/ui';
 
 import { listWorkExperiences } from '@/member-profile.server';
@@ -32,13 +31,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const id = user(session);
 
   const workExperiences = await listWorkExperiences(id);
-
-  track({
-    event: 'Page Viewed',
-    properties: { Page: 'Profile - Work History' },
-    request,
-    user: id,
-  });
 
   return json({
     workExperiences,

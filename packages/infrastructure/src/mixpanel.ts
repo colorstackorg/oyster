@@ -19,32 +19,34 @@ if (MIXPANEL_TOKEN) {
 
 // Core
 
-type MixpanelEvent = {
-  'Education History Updated': undefined;
+const defaultProperties = {
+  Application: 'Member Profile',
+};
+
+export type MixpanelEvent = {
+  'Directory - CTA Clicked': {
+    CTA:
+      | 'Calendly'
+      | 'GitHub'
+      | 'Instagram'
+      | 'LinkedIn'
+      | 'Personal Website'
+      | 'Slack'
+      | 'Twitter';
+  };
+
+  'Directory - Profile Clicked': undefined;
 
   'Logged In': {
     Method: 'Google' | 'OTP' | 'Slack';
   };
 
   'Page Viewed': {
-    Page:
-      | 'Home'
-      | 'Points'
-      | 'Profile - Education History'
-      | 'Profile - Email Addresses'
-      | 'Profile - General'
-      | 'Profile - Member Directory'
-      | 'Profile - Work History';
+    Page: 'Directory' | 'Events' | 'Home' | 'Points' | 'Profile';
   };
-
-  'Work History Updated': undefined;
 };
 
-const defaultProperties = {
-  Application: 'Member Profile',
-};
-
-type TrackInput<Event extends keyof MixpanelEvent> = {
+export type TrackInput<Event extends keyof MixpanelEvent> = {
   event: Event;
   properties: MixpanelEvent[Event];
   request?: Request;

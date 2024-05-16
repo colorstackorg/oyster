@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import React, { type PropsWithChildren } from 'react';
 import { BookOpen, Calendar, Globe, Home, Link, MapPin } from 'react-feather';
 
+import { type MixpanelEvent } from '@oyster/infrastructure/mixpanel';
 import {
   cx,
   getButtonCn,
@@ -26,6 +27,7 @@ import { Card } from '@/shared/components/card';
 import { EducationExperienceItem } from '@/shared/components/education-experience';
 import { ExperienceList } from '@/shared/components/profile';
 import { ENV } from '@/shared/constants.server';
+import { useMixpanelTracker } from '@/shared/hooks/use-mixpanel-tracker';
 import {
   getEducationExperiences,
   getMember,
@@ -185,6 +187,8 @@ function CoreSection({ children }: PropsWithChildren) {
 function MemberHeader() {
   const { member } = useLoaderData<typeof loader>();
 
+  const tracker = useMixpanelTracker();
+
   return (
     <header className="flex items-center justify-between gap-[inherit]">
       <ProfilePicture
@@ -201,6 +205,12 @@ function MemberHeader() {
             'border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200'
           )}
           href={member.slackUrl}
+          onClick={() => {
+            tracker.track({
+              event: 'Directory - CTA Clicked',
+              properties: { CTA: 'Slack' },
+            });
+          }}
         >
           <img alt="Slack Logo" className="h-5 w-5" src="/images/slack.svg" />{' '}
           DM on Slack
@@ -257,14 +267,29 @@ function MemberPronouns({ className }: { className: string }) {
 function MemberSocials() {
   const { member } = useLoaderData<typeof loader>();
 
+  const tracker = useMixpanelTracker();
+
   const className = 'h-5 w-5';
+
+  function trackSocialClick(
+    social: MixpanelEvent['Directory - CTA Clicked']['CTA']
+  ) {
+    tracker.track({
+      event: 'Directory - CTA Clicked',
+      properties: { CTA: social },
+    });
+  }
 
   return (
     <section>
       <ul className="mb-1 flex items-center gap-2">
         {!!member.linkedInUrl && (
           <li>
-            <a href={member.linkedInUrl} target="_blank">
+            <a
+              href={member.linkedInUrl}
+              onClick={() => trackSocialClick('LinkedIn')}
+              target="_blank"
+            >
               <img
                 alt="LinkedIn Logo"
                 className={className}
@@ -282,6 +307,7 @@ function MemberSocials() {
                 '@',
                 ''
               )}`}
+              onClick={() => trackSocialClick('Instagram')}
               target="_blank"
             >
               <img
@@ -297,6 +323,7 @@ function MemberSocials() {
           <li>
             <a
               href={`https://twitter.com/${member.twitterHandle}`}
+              onClick={() => trackSocialClick('Twitter')}
               target="_blank"
             >
               <img
@@ -310,7 +337,11 @@ function MemberSocials() {
 
         {!!member.githubUrl && (
           <li>
-            <a href={member.githubUrl} target="_blank">
+            <a
+              href={member.githubUrl}
+              onClick={() => trackSocialClick('GitHub')}
+              target="_blank"
+            >
               <img
                 alt="GitHub Logo"
                 className={className}
@@ -322,7 +353,11 @@ function MemberSocials() {
 
         {!!member.calendlyUrl && (
           <li>
-            <a href={member.calendlyUrl} target="_blank">
+            <a
+              href={member.calendlyUrl}
+              onClick={() => trackSocialClick('Calendly')}
+              target="_blank"
+            >
               <img
                 alt="Calendly Logo"
                 className={className}
@@ -334,7 +369,11 @@ function MemberSocials() {
 
         {!!member.personalWebsiteUrl && (
           <li>
-            <a href={member.personalWebsiteUrl} target="_blank">
+            <a
+              href={member.personalWebsiteUrl}
+              onClick={() => trackSocialClick('Personal Website')}
+              target="_blank"
+            >
               <Link className={className} />
             </a>
           </li>
