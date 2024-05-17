@@ -106,6 +106,7 @@ async function listOnboardingSessions({
     return {
       ...row,
       date: dayjs(row.date).format('MM/DD/YY'),
+      ambassadorName: row.ambassadorName || '',
     };
   });
 
