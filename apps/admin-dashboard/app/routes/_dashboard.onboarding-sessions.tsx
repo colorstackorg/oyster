@@ -75,6 +75,10 @@ async function listOnboardingSessions({
     )
   `.as('attendees');
 
+  const ambassadorNameAggregation = sql<string>`
+    admins.first_name || ' ' || admins.last_name
+  `.as('ambassadorName');
+
   const rows = await db
     .selectFrom('onboardingSessions')
     .leftJoin(
@@ -83,10 +87,12 @@ async function listOnboardingSessions({
       'onboardingSessions.id'
     )
     .leftJoin('students', 'students.id', 'onboardingSessionAttendees.studentId')
+    .leftJoin('admins', 'admins.id', 'onboardingSessions.ambassadorId')
     .select([
       'onboardingSessions.date',
       'onboardingSessions.group',
       'onboardingSessions.id',
+      ambassadorNameAggregation,
       attendeesAggregation,
     ])
     .groupBy('onboardingSessions.id')
@@ -164,6 +170,11 @@ function OnboardingSessionsTable() {
     {
       displayName: 'Attendees',
       render: (session) => session.attendees,
+      size: null,
+    },
+    {
+      displayName: 'Uploaded By',
+      render: (session) => session.ambassadorName,
       size: null,
     },
   ];
