@@ -7,13 +7,11 @@ import { getSession, user } from '@/shared/session.server';
 export async function action({ request }: ActionFunctionArgs) {
   const session = await getSession(request);
 
-  const form = await request.formData();
-  const values = Object.fromEntries(form);
+  const data = await request.json();
 
   track({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    event: values.event as any,
-    properties: values.properties,
+    event: data.event,
+    properties: data.properties,
     request,
     user: user(session),
   });
