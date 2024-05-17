@@ -142,7 +142,7 @@ Dashboard.Page = function Page({ children }: PropsWithChildren) {
   return (
     <section
       className={cx(
-        'box-border flex w-full flex-col gap-4 overflow-scroll p-4 pb-24 @container',
+        'box-border flex w-full flex-col gap-4 overflow-auto p-4 pb-24 @container',
         'md:p-6 md:pb-16'
       )}
     >
@@ -194,7 +194,7 @@ Dashboard.Sidebar = function Sidebar({ children }: PropsWithChildren) {
   return (
     <aside
       className={cx(
-        'min-h-screen w-[270px] min-w-[270px] flex-col items-start gap-4 overflow-scroll border-r border-r-gray-200 p-6',
+        'min-h-screen w-[270px] min-w-[270px] flex-col items-start gap-4 overflow-auto border-r border-r-gray-200 p-6',
         'md:flex',
         open
           ? 'fixed left-0 z-10 flex w-[calc(100%-4rem)] animate-[slide-from-left_300ms] bg-white md:hidden'

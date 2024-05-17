@@ -42,7 +42,7 @@ export const Modal = ({
       >
         <aside
           className={cx(
-            'relative z-10 flex max-h-[calc(100vh-5rem)] w-full max-w-[600px] flex-col gap-4 overflow-scroll bg-white p-4',
+            'relative z-10 flex max-h-[calc(100vh-5rem)] w-full max-w-[600px] flex-col gap-4 overflow-auto bg-white p-4',
             'animate-[modal-animation-mobile_250ms] rounded-t-lg',
             'sm:animate-[modal-animation_250ms] sm:rounded-lg'
           )}

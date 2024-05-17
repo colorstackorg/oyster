@@ -29,7 +29,7 @@ export const Dropdown = ({
     <DropdownContext.Provider value={{ _initialized: true }}>
       <div
         className={cx(
-          'absolute z-20 mt-2 max-h-[300px] w-max min-w-[240px] overflow-scroll rounded-lg border border-gray-200 bg-white',
+          'absolute z-20 mt-2 max-h-[300px] w-max min-w-[240px] overflow-auto rounded-lg border border-gray-200 bg-white',
           align === 'left' ? 'left-0' : 'right-0',
           className
         )}
