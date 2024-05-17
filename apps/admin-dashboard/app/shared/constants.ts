@@ -32,6 +32,8 @@ const ROUTES = [
   '/onboarding-sessions/:id/add-attendees',
   '/programs/create',
   '/resources/create',
+  '/resume-books',
+  '/resume-books/create',
   '/schools',
   '/schools/create',
   '/schools/:id/edit',

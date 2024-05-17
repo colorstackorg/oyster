@@ -12,8 +12,8 @@ export async function up(db: Kysely<any>) {
     .addColumn('created_at', 'timestamptz', (column) => {
       return column.notNull().defaultTo(sql`now()`);
     })
-    .addColumn('enabled', 'boolean', (column) => {
-      return column.notNull().defaultTo(false);
+    .addColumn('end_date', 'timestamptz', (column) => {
+      return column.notNull();
     })
     .addColumn('id', 'text', (column) => {
       return column.primaryKey();
@@ -21,7 +21,7 @@ export async function up(db: Kysely<any>) {
     .addColumn('name', 'text', (column) => {
       return column.notNull().unique();
     })
-    .addColumn('start_date', 'date', (column) => {
+    .addColumn('start_date', 'timestamptz', (column) => {
       return column.notNull();
     })
     .execute();
