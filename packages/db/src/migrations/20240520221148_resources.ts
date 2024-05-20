@@ -9,12 +9,13 @@ export async function up(db: Kysely<any>) {
     .addColumn('id', 'text', (column) => {
       return column.primaryKey();
     })
-    .addColumn('last_updated_at', 'timestamptz', (column) => {
-      return column.notNull().defaultTo(sql`now()`);
-    })
+    .addColumn('last_updated_at', 'timestamptz')
     .addColumn('link', 'text')
     .addColumn('posted_at', 'timestamptz', (column) => {
       return column.notNull().defaultTo(sql`now()`);
+    })
+    .addColumn('posted_by', 'text', (column) => {
+      return column.notNull().references('students.id');
     })
     .addColumn('title', 'text', (column) => {
       return column.notNull();
@@ -47,9 +48,27 @@ export async function up(db: Kysely<any>) {
     })
     .addPrimaryKeyConstraint('resource_tags_pkey', ['resource_id', 'tag_id'])
     .execute();
+
+  await db.schema
+    .createTable('resource_upvotes')
+    .addColumn('created_at', 'timestamptz', (column) => {
+      return column.notNull().defaultTo(sql`now()`);
+    })
+    .addColumn('resource_id', 'text', (column) => {
+      return column.notNull().references('resources.id');
+    })
+    .addColumn('student_id', 'text', (column) => {
+      return column.notNull().references('students.id');
+    })
+    .addPrimaryKeyConstraint('resource_upvotes_pkey', [
+      'resource_id',
+      'student_id',
+    ])
+    .execute();
 }
 
 export async function down(db: Kysely<any>) {
+  await db.schema.dropTable('resource_upvotes').execute();
   await db.schema.dropTable('resource_tags').execute();
   await db.schema.dropTable('tags').execute();
   await db.schema.dropTable('resources').execute();

@@ -1,0 +1,21 @@
+import { db } from '@oyster/db';
+import { id } from '@oyster/utils';
+
+import { type CreateTagInput } from '@/modules/resource/resource.types';
+
+export async function createTag(input: CreateTagInput) {
+  const result = await db.transaction().execute(async (trx) => {
+    const tag = await trx
+      .insertInto('tags')
+      .values({
+        id: id(),
+        name: input.name,
+      })
+      .returning(['id'])
+      .executeTakeFirstOrThrow();
+
+    return tag;
+  });
+
+  return result;
+}
