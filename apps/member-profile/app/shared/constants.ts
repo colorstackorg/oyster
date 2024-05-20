@@ -40,6 +40,9 @@ const ROUTES = [
   '/profile/work/add',
   '/profile/work/:id/delete',
   '/profile/work/:id/edit',
+  '/resources',
+  '/resources/add',
+  '/resources/:id',
 ] as const;
 
 export type Route = (typeof ROUTES)[number];

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { ListSearchParams } from '@/shared/types';
+
 // Domain
 
 const Resource = z.object({
@@ -23,6 +25,16 @@ const Tag = z.object({
   id: z.string().trim().min(1),
   name: z.string().trim().min(1),
 });
+
+// Querie(s)
+
+export const ListResourcesWhere = ListSearchParams.pick({
+  search: true,
+}).extend({
+  tags: Tag.shape.id.array().catch([]),
+});
+
+export type ListResourcesWhere = z.infer<typeof ListResourcesWhere>;
 
 // Use Case(s)
 
