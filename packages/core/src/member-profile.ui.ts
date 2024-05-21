@@ -42,6 +42,10 @@ export {
   ChangePrimaryEmailInput,
   ListMembersInDirectoryWhere,
 } from './modules/member/member.types';
+export {
+  AddResourceInput,
+  ResourceType,
+} from './modules/resource/resource.types';
 export { CreateResumeBookInput } from './modules/resume-book/resume-book.types';
 export { ClaimSwagPackInput } from './modules/swag-pack/swag-pack.types';
 export { Environment, ListSearchParams } from './shared/types';

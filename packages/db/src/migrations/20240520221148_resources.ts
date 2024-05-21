@@ -20,6 +20,9 @@ export async function up(db: Kysely<any>) {
     .addColumn('title', 'text', (column) => {
       return column.notNull();
     })
+    .addColumn('type', 'text', (column) => {
+      return column.notNull();
+    })
     .execute();
 
   await db.schema

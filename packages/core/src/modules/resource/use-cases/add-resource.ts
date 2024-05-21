@@ -13,6 +13,7 @@ export async function addResource(input: AddResourceInput) {
         link: input.link,
         postedBy: input.postedBy,
         title: input.title,
+        type: input.type,
       })
       .returning(['id'])
       .executeTakeFirstOrThrow();

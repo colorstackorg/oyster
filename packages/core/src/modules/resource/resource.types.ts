@@ -1,6 +1,17 @@
 import { z } from 'zod';
 
+import { type ExtractValue } from '@oyster/types';
+
 import { ListSearchParams } from '@/shared/types';
+
+// Types
+
+export const ResourceType = {
+  ATTACHMENT: 'attachment',
+  URL: 'url',
+} as const;
+
+export type ResourceType = ExtractValue<typeof ResourceType>;
 
 // Domain
 
@@ -8,10 +19,18 @@ const Resource = z.object({
   description: z.string().trim().min(1),
   id: z.string().trim().min(1),
   lastUpdatedAt: z.coerce.date().optional(),
-  link: z.string().url().optional(),
+  link: z
+    .string()
+    .trim()
+    .startsWith('http', 'URL must start with "http://".')
+    .url()
+    .transform((value) => value.toLowerCase())
+    .optional(),
+
   postedAt: z.coerce.date().optional(),
   postedBy: z.string().trim().min(1),
   title: z.string().trim().min(1),
+  type: z.nativeEnum(ResourceType),
 });
 
 const ResourceTag = z.object({
@@ -43,6 +62,7 @@ export const AddResourceInput = Resource.pick({
   link: true,
   postedBy: true,
   title: true,
+  type: true,
 }).extend({
   tags: Tag.shape.id.array().min(1),
 });
