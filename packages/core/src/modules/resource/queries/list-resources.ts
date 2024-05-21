@@ -14,7 +14,7 @@ type ListResourcesOptions<Selection> = {
 export async function listResources<
   Selection extends SelectExpression<DB, 'resources'>,
 >({ limit, page, select, where }: ListResourcesOptions<Selection>) {
-  await db
+  const resources = await db
     .selectFrom('resources')
     .select(select)
     .$if(!!where.search, (qb) => {
@@ -36,4 +36,6 @@ export async function listResources<
     .limit(limit)
     .offset((page - 1) * limit)
     .execute();
+
+  return resources;
 }

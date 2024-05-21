@@ -2,6 +2,7 @@ import {
   type ActionFunctionArgs,
   json,
   type LoaderFunctionArgs,
+  redirect,
 } from '@remix-run/node';
 import { Form as RemixForm, useActionData, useFetcher } from '@remix-run/react';
 import { useState } from 'react';
@@ -31,7 +32,12 @@ import { addResource } from '@/member-profile.server';
 import { AddResourceInput, ResourceType } from '@/member-profile.ui';
 import { type SearchTagsResult } from '@/routes/api.tags.search';
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated, user } from '@/shared/session.server';
+import {
+  commitSession,
+  ensureUserAuthenticated,
+  toast,
+  user,
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -65,9 +71,15 @@ export async function action({ request }: ActionFunctionArgs) {
     type: data.type,
   });
 
-  return json({
-    error: '',
-    errors,
+  toast(session, {
+    message: 'Added resource!',
+    type: 'success',
+  });
+
+  return redirect(Route['/resources'], {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
   });
 }
 
