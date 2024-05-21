@@ -64,7 +64,11 @@ export const AddResourceInput = Resource.pick({
   title: true,
   type: true,
 }).extend({
-  tags: Tag.shape.id.array().min(1),
+  tags: z
+    .string()
+    .trim()
+    .min(1)
+    .transform((value) => value.split(',')),
 });
 
 export const CreateTagInput = Tag.pick({

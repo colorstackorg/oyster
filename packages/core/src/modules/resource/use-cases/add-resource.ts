@@ -18,7 +18,7 @@ export async function addResource(input: AddResourceInput) {
       .returning(['id'])
       .executeTakeFirstOrThrow();
 
-    for (const tag in input.tags) {
+    for (const tag of input.tags) {
       await trx
         .insertInto('resourceTags')
         .values({

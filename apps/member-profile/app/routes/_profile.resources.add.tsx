@@ -5,7 +5,7 @@ import {
   redirect,
 } from '@remix-run/node';
 import { Form as RemixForm, useActionData, useFetcher } from '@remix-run/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   Button,
@@ -160,6 +160,7 @@ export default function AddResourceModal() {
 
         <Form.Field
           description="To categorize and help others find this resource."
+          error={errors.tags}
           label="Tags"
           labelFor={keys.tags}
           required
@@ -183,6 +184,10 @@ function TagsCombobox({ name }: Pick<InputProps, 'name'>) {
 
   const [newTagId, setNewTagId] = useState<string>(id());
   const [search, setSearch] = useState<string>('');
+
+  useEffect(() => {
+    listFetcher.load('/api/tags/search');
+  }, []);
 
   const tags = listFetcher.data?.tags || [];
 
