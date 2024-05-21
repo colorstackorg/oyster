@@ -22,6 +22,7 @@ export async function listTags<Selection extends SelectExpression<DB, 'tags'>>({
       // TODO: Add functionality to search by title, description, and tags...
       return qb;
     })
+    .orderBy('name', 'asc')
     .limit(limit)
     .offset((page - 1) * limit)
     .execute();

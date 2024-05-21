@@ -5,23 +5,33 @@ import {
 } from '@remix-run/node';
 import { Form as RemixForm, useActionData, useFetcher } from '@remix-run/react';
 import { useState } from 'react';
-import { z } from 'zod';
 
 import {
   Button,
+  ComboboxPopover,
   Divider,
   Form,
   getActionErrors,
   Input,
+  type InputProps,
   Modal,
+  MultiCombobox,
+  MultiComboboxDisplay,
+  MultiComboboxItem,
+  MultiComboboxSearch,
+  MultiComboboxValues,
+  Pill,
   Select,
   Textarea,
   validateForm,
 } from '@oyster/ui';
+import { id } from '@oyster/utils';
 
+import { addResource } from '@/member-profile.server';
 import { AddResourceInput, ResourceType } from '@/member-profile.ui';
+import { type SearchTagsResult } from '@/routes/api.tags.search';
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -30,7 +40,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
   const form = await request.formData();
 
@@ -38,6 +48,22 @@ export async function action({ request }: ActionFunctionArgs) {
     AddResourceInput.omit({ postedBy: true }),
     Object.fromEntries(form)
   );
+
+  if (!data) {
+    return json({
+      error: '',
+      errors,
+    });
+  }
+
+  await addResource({
+    description: data.description,
+    link: data.link,
+    tags: data.tags,
+    postedBy: user(session),
+    title: data.title,
+    type: data.type,
+  });
 
   return json({
     error: '',
@@ -126,7 +152,7 @@ export default function AddResourceModal() {
           labelFor={keys.tags}
           required
         >
-          <Input id={keys.tags} name={keys.tags} required />
+          <TagsCombobox name={keys.tags} />
         </Form.Field>
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
@@ -139,14 +165,78 @@ export default function AddResourceModal() {
   );
 }
 
-function TagsInput() {
-  const fetcher = useFetcher();
+function TagsCombobox({ name }: Pick<InputProps, 'name'>) {
+  const createFetcher = useFetcher<unknown>();
+  const listFetcher = useFetcher<SearchTagsResult>();
+
+  const [newTagId, setNewTagId] = useState<string>(id());
+  const [search, setSearch] = useState<string>('');
+
+  const tags = listFetcher.data?.tags || [];
+
+  function reset() {
+    setNewTagId(id());
+    setSearch('');
+  }
 
   return (
-    <div>
-      <button className="" type="button">
-        + Add Tag
-      </button>
-    </div>
+    <MultiCombobox>
+      <MultiComboboxDisplay>
+        <MultiComboboxValues name={name} />
+        <MultiComboboxSearch
+          id={name}
+          onChange={(e) => {
+            setSearch(e.currentTarget.value);
+
+            listFetcher.submit(
+              { search: e.currentTarget.value },
+              {
+                action: '/api/tags/search',
+                method: 'get',
+              }
+            );
+          }}
+        />
+      </MultiComboboxDisplay>
+
+      {(!!tags.length || !!search.length) && (
+        <ComboboxPopover>
+          <ul>
+            {tags.map((tag) => {
+              return (
+                <MultiComboboxItem
+                  key={tag.id}
+                  label={tag.name}
+                  onSelect={reset}
+                  value={tag.id}
+                >
+                  <Pill color="pink-100">{tag.name}</Pill>
+                </MultiComboboxItem>
+              );
+            })}
+
+            {!!search.length && (
+              <MultiComboboxItem
+                label={search}
+                onSelect={(e) => {
+                  createFetcher.submit(
+                    { id: e.currentTarget.value, name: search },
+                    {
+                      action: '/api/tags/add',
+                      method: 'post',
+                    }
+                  );
+
+                  reset();
+                }}
+                value={newTagId}
+              >
+                Create <Pill color="pink-100">{search}</Pill>
+              </MultiComboboxItem>
+            )}
+          </ul>
+        </ComboboxPopover>
+      )}
+    </MultiCombobox>
   );
 }

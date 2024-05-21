@@ -108,8 +108,12 @@ export function MultiComboboxItem({
 
           if (!alreadySelected) {
             setValues([...values, { label, value }]);
-            searchRef.current!.focus();
           }
+
+          // After an item is selected, we should reset the search value
+          // and focus the search input.
+          searchRef.current!.value = '';
+          searchRef.current!.focus();
         }}
         type="button"
         value={value}

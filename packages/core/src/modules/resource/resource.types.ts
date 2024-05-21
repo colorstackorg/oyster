@@ -68,6 +68,7 @@ export const AddResourceInput = Resource.pick({
 });
 
 export const CreateTagInput = Tag.pick({
+  id: true,
   name: true,
 });
 

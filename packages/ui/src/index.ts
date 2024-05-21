@@ -30,7 +30,7 @@ export {
 } from './components/multi-combobox';
 export type { MultiComboboxProps } from './components/multi-combobox';
 export { Pagination } from './components/pagination';
-export { Pill } from './components/pill';
+export { Pill, getPillCn } from './components/pill';
 export type { PillProps } from './components/pill';
 export { ProfilePicture } from './components/profile-picture';
 export { Public } from './components/public';

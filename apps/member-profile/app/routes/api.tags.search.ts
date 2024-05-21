@@ -1,4 +1,8 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from '@remix-run/node';
 
 import { track } from '@oyster/infrastructure/mixpanel';
 
@@ -9,7 +13,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const tags = await listTags({
     limit: 10,
     page: 1,
-    select: ['name'],
+    select: ['id', 'name'],
     where: { search: '' },
   });
 
@@ -17,3 +21,5 @@ export async function loader({ request }: LoaderFunctionArgs) {
     tags,
   });
 }
+
+export type SearchTagsResult = SerializeFrom<typeof loader>;

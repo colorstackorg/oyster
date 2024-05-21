@@ -44,7 +44,12 @@ export {
 } from './modules/member/member.types';
 export {
   AddResourceInput,
+  CreateTagInput,
+  DownvoteResourceInput,
+  ListResourcesWhere,
   ResourceType,
+  UpdateResourceInput,
+  UpvoteResourceInput,
 } from './modules/resource/resource.types';
 export { CreateResumeBookInput } from './modules/resume-book/resume-book.types';
 export { ClaimSwagPackInput } from './modules/swag-pack/swag-pack.types';

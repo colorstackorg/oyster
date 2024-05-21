@@ -3,7 +3,7 @@ import React, { type PropsWithChildren } from 'react';
 import { X } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { Text } from './text';
+import { getTextCn, Text } from './text';
 import { cx } from '../utils/cx';
 
 export type PillProps = Pick<React.HTMLProps<HTMLElement>, 'children'> & {
@@ -26,14 +26,19 @@ export type PillProps = Pick<React.HTMLProps<HTMLElement>, 'children'> & {
 
 export const Pill = ({ children, color, onCloseHref }: PillProps) => {
   return (
-    <Text className={getPillCn({ color, onCloseHref })} variant="sm">
+    <span
+      className={cx(
+        getTextCn({ variant: 'sm' }),
+        getPillCn({ color, onCloseHref })
+      )}
+    >
       {children}{' '}
       {onCloseHref && (
         <Link className="rounded-full hover:bg-gray-100" to={onCloseHref}>
           <X size={16} />
         </Link>
       )}
-    </Text>
+    </span>
   );
 };
 
