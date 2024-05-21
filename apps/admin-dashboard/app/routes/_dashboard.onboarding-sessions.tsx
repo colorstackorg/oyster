@@ -67,7 +67,7 @@ async function listOnboardingSessions({
 }: OnboardingSessionsSearchParams) {
   const attendeesAggregation = sql<string>`
     string_agg(
-      students.first_name || ' ' || last_name,
+      students.first_name || ' ' || students.last_name,
       ', ' 
       ORDER BY 
         students.first_name,
@@ -76,7 +76,7 @@ async function listOnboardingSessions({
   `.as('attendees');
 
   const ambassadorNameAggregation = sql<string>`
-    admins.first_name || ' ' || admins.last_name
+    max(admins.first_name || ' ' || admins.last_name)
   `.as('ambassadorName');
 
   const rows = await db
@@ -87,7 +87,7 @@ async function listOnboardingSessions({
       'onboardingSessions.id'
     )
     .leftJoin('students', 'students.id', 'onboardingSessionAttendees.studentId')
-    .leftJoin('admins', 'admins.id', 'onboardingSessions.ambassadorId')
+    .leftJoin('admins', 'admins.id', 'onboardingSessions.uploadedById')
     .select([
       'onboardingSessions.date',
       'onboardingSessions.group',
