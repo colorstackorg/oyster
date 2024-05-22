@@ -28,7 +28,7 @@ import {
   Text,
 } from '@oyster/ui';
 
-import { listResources } from '@/member-profile.server';
+import { listResources, listTags } from '@/member-profile.server';
 import { ListSearchParams, type ResourceType } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { useToast } from '@/shared/hooks/use-toast';
@@ -99,9 +99,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     )
   );
 
+  const tags = searchParams.tags.length
+    ? await listTags({
+        limit: 100,
+        page: 1,
+        select: ['tags.id', 'tags.name'],
+        where: { ids: searchParams.tags },
+      })
+    : [];
+
   return json({
     resources,
-    tags: searchParams.tags,
+    tags,
   });
 }
 
@@ -124,17 +133,17 @@ export default function ResourcesPage() {
         <div className="ml-auto flex items-center gap-2"></div>
       </Dashboard.Subheader>
 
-      {!!tags?.length && (
+      {!!tags.length && (
         <ul className="flex flex-wrap items-center gap-2">
           {tags.map((tag) => {
             return (
               <li>
                 <Pill
-                  key={tag}
+                  key={tag.id}
                   color="pink-100"
                   onCloseHref={Route['/resources']}
                 >
-                  {tag}
+                  {tag.name}
                 </Pill>
               </li>
             );

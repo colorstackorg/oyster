@@ -6,7 +6,10 @@ type ListTagsOptions<Selection> = {
   limit: number;
   page: number;
   select: Selection[];
-  where: { search: string };
+  where: {
+    ids?: string[];
+    search?: string;
+  };
 };
 
 export async function listTags<Selection extends SelectExpression<DB, 'tags'>>({
@@ -18,6 +21,9 @@ export async function listTags<Selection extends SelectExpression<DB, 'tags'>>({
   return db
     .selectFrom('tags')
     .select(select)
+    .$if(!!where.ids, (qb) => {
+      return qb.where('tags.id', 'in', where.ids!);
+    })
     .$if(!!where.search, (qb) => {
       return qb.where('name', 'ilike', `%${where.search}%`);
     })
