@@ -40,7 +40,7 @@ export { Select } from './components/select';
 export { Spinner } from './components/spinner';
 export { Table } from './components/table';
 export type { TableColumnProps } from './components/table';
-export { Text } from './components/text';
+export { getTextCn, Text } from './components/text';
 export type { TextProps } from './components/text';
 export { Textarea } from './components/textarea';
 export { Toast } from './components/toast';

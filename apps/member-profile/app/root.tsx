@@ -10,7 +10,9 @@ import {
 } from '@remix-run/react';
 import { withSentry } from '@sentry/remix';
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import timezone from 'dayjs/plugin/timezone.js';
+import updateLocale from 'dayjs/plugin/updateLocale';
 import utc from 'dayjs/plugin/utc.js';
 
 import { Toast } from '@oyster/ui';
@@ -21,7 +23,23 @@ import { commitSession, getSession, SESSION } from '@/shared/session.server';
 import tailwindStylesheet from '@/tailwind.css?url';
 
 dayjs.extend(utc);
+dayjs.extend(relativeTime);
 dayjs.extend(timezone);
+dayjs.extend(updateLocale);
+
+dayjs.updateLocale('en', {
+  relativeTime: {
+    past: '%s',
+    s: '%ds',
+    m: '1m',
+    mm: '%dm',
+    h: '1h',
+    hh: '%dh',
+    d: '1d',
+    dd: '%dd',
+    M: '1mo',
+  },
+});
 
 export const links: LinksFunction = () => {
   return [

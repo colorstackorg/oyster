@@ -10,6 +10,7 @@ export async function upvoteResource(id: string, input: UpvoteResourceInput) {
         resourceId: id,
         studentId: input.memberId,
       })
+      .onConflict((oc) => oc.doNothing())
       .execute();
   });
 

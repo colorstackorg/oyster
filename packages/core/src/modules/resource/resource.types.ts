@@ -50,6 +50,7 @@ const Tag = z.object({
 export const ListResourcesWhere = ListSearchParams.pick({
   search: true,
 }).extend({
+  memberId: z.string().trim().min(1),
   tags: Tag.shape.id.array().catch([]),
 });
 

@@ -19,8 +19,7 @@ export async function listTags<Selection extends SelectExpression<DB, 'tags'>>({
     .selectFrom('tags')
     .select(select)
     .$if(!!where.search, (qb) => {
-      // TODO: Add functionality to search by title, description, and tags...
-      return qb;
+      return qb.where('name', 'ilike', `%${where.search}%`);
     })
     .orderBy('name', 'asc')
     .limit(limit)
