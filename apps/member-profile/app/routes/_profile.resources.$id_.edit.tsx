@@ -88,8 +88,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
     });
   }
 
-  console.log(data);
-
   await updateResource(params.id as string, {
     description: data.description,
     link: data.link,
