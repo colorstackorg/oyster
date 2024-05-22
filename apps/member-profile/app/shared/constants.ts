@@ -42,7 +42,6 @@ const ROUTES = [
   '/profile/work/:id/edit',
   '/resources',
   '/resources/add',
-  '/resources/:id',
   '/resources/:id/edit',
 ] as const;
 

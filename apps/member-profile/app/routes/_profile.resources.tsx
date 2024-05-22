@@ -12,9 +12,8 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { ArrowUp, Clipboard, Edit, ExternalLink, Plus } from 'react-feather';
+import { ArrowUp, Edit, Plus, Share } from 'react-feather';
 import { match } from 'ts-pattern';
-import { z } from 'zod';
 
 import { getObjectPresignedUri } from '@oyster/infrastructure/object-storage';
 import {
@@ -27,9 +26,14 @@ import {
   ProfilePicture,
   Text,
 } from '@oyster/ui';
+import { iife } from '@oyster/utils';
 
 import { listResources, listTags } from '@/member-profile.server';
-import { ListSearchParams, type ResourceType } from '@/member-profile.ui';
+import {
+  ListResourcesWhere,
+  ListSearchParams,
+  type ResourceType,
+} from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { useToast } from '@/shared/hooks/use-toast';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -37,10 +41,7 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 const ResourcesSearchParams = ListSearchParams.pick({
   limit: true,
   page: true,
-  search: true,
-}).extend({
-  tags: z.string().trim().array().catch([]),
-});
+}).merge(ListResourcesWhere);
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -54,6 +55,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const records = await listResources({
     limit: searchParams.limit,
+    memberId: user(session),
     page: searchParams.page,
     select: [
       'resources.description',
@@ -68,11 +70,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
       'students.profilePicture as authorProfilePicture',
     ],
     where: {
-      memberId: user(session),
+      id: searchParams.id,
       search: searchParams.search,
       tags: searchParams.tags,
     },
   });
+
+  const baseResourcePath = `${url.protocol}://${url.host}/resources`;
 
   const resources = await Promise.all(
     records.map(
@@ -92,6 +96,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           ),
           editable: record.authorId === user(session),
           postedAt: dayjs().to(postedAt),
+          shareableUri: `${baseResourcePath}?id=${record.id}`,
           upvotes: Number(upvotes),
           upvoted: Boolean(upvoted),
         };
@@ -99,14 +104,27 @@ export async function loader({ request }: LoaderFunctionArgs) {
     )
   );
 
-  const tags = searchParams.tags.length
-    ? await listTags({
+  const tags = await iife(async () => {
+    if (searchParams.id && resources[0]) {
+      return [
+        {
+          id: searchParams.id,
+          name: resources[0].title,
+        },
+      ];
+    }
+
+    if (searchParams.tags.length) {
+      return listTags({
         limit: 100,
         page: 1,
         select: ['tags.id', 'tags.name'],
         where: { ids: searchParams.tags },
-      })
-    : [];
+      });
+    }
+
+    return [];
+  });
 
   return json({
     resources,
@@ -192,7 +210,8 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
             getTextCn({ variant: 'xl' }),
             'hover:text-primary hover:underline'
           )}
-          to={generatePath(Route['/resources/:id'], { id: resource.id })}
+          target="_blank"
+          to={resource.link || resource.attachments?.[0]}
         >
           {resource.title}
         </Link>
@@ -270,53 +289,21 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
         </div>
 
         <ul className="flex items-center gap-1">
-          {!!resource.link && (
-            <>
-              <li>
-                <button
-                  className={getIconButtonCn({
-                    backgroundColor: 'gray-100',
-                    backgroundColorOnHover: 'gray-200',
-                  })}
-                  onClick={() => {
-                    navigator.clipboard.writeText(resource.link!);
-                    toast({ message: 'Copied URL to clipboard!' });
-                  }}
-                  type="button"
-                >
-                  <Clipboard />
-                </button>
-              </li>
-
-              <li>
-                <Link
-                  className={getIconButtonCn({
-                    backgroundColor: 'gray-100',
-                    backgroundColorOnHover: 'gray-200',
-                  })}
-                  target="_blank"
-                  to={resource.link}
-                >
-                  <ExternalLink />
-                </Link>
-              </li>
-            </>
-          )}
-
-          {!!resource.attachments?.length && (
-            <li>
-              <Link
-                className={getIconButtonCn({
-                  backgroundColor: 'gray-100',
-                  backgroundColorOnHover: 'gray-200',
-                })}
-                target="_blank"
-                to={resource.attachments[0] as string}
-              >
-                <ExternalLink />
-              </Link>
-            </li>
-          )}
+          <li>
+            <button
+              className={getIconButtonCn({
+                backgroundColor: 'gray-100',
+                backgroundColorOnHover: 'gray-200',
+              })}
+              onClick={() => {
+                navigator.clipboard.writeText(resource.shareableUri);
+                toast({ message: 'Copied URL to clipboard!' });
+              }}
+              type="button"
+            >
+              <Share />
+            </button>
+          </li>
 
           {!!resource.editable && (
             <li>

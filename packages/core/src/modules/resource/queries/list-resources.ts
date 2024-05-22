@@ -6,6 +6,7 @@ import { type ListResourcesWhere } from '@/modules/resource/resource.types';
 
 type ListResourcesOptions<Selection> = {
   limit: number;
+  memberId: string;
   page: number;
   select: Selection[];
   where: ListResourcesWhere;
@@ -13,12 +14,15 @@ type ListResourcesOptions<Selection> = {
 
 export async function listResources<
   Selection extends SelectExpression<DB, 'resources' | 'students'>,
->({ limit, page, select, where }: ListResourcesOptions<Selection>) {
+>({ limit, memberId, page, select, where }: ListResourcesOptions<Selection>) {
   const resources = await db
     .with('a', (qb) => {
       return qb
         .selectFrom('resources')
         .select(['resources.id'])
+        .$if(!!where.id, (qb) => {
+          return qb.where('resources.id', '=', where.id!);
+        })
         .$if(!!where.search, (qb) => {
           const { search } = where;
 
@@ -94,7 +98,7 @@ export async function listResources<
             eb
               .selectFrom('resourceUpvotes')
               .whereRef('resourceUpvotes.resourceId', '=', 'resources.id')
-              .where('resourceUpvotes.studentId', '=', where.memberId)
+              .where('resourceUpvotes.studentId', '=', memberId)
           )
           .as('upvoted');
       },

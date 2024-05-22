@@ -2,12 +2,10 @@ import { type SelectExpression, sql } from 'kysely';
 
 import { db, type DB } from '@oyster/db';
 
-import { type GetResourceWhere } from '@/modules/resource/resource.types';
-
 type GetResourceOptions<Selection> = {
   memberId: string;
   select: Selection[];
-  where: GetResourceWhere;
+  where: { id: string };
 };
 
 export async function getResource<
