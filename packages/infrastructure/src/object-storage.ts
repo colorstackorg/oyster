@@ -1,4 +1,9 @@
-import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 // Environment Variables
 
@@ -41,6 +46,56 @@ export async function getObject(
   };
 
   return result;
+}
+
+type GetObjectPresignedUriInput = {
+  bucket?: string;
+  key: string;
+};
+
+type GetObjectPresignedUriResult = string;
+
+export async function getObjectPresignedUri(
+  input: GetObjectPresignedUriInput
+): Promise<GetObjectPresignedUriResult> {
+  const command = new GetObjectCommand({
+    Bucket: input.bucket || R2_BUCKET_NAME,
+    Key: input.key,
+  });
+
+  const client = getClient();
+
+  const url = await getSignedUrl(client, command);
+
+  return url;
+}
+
+type PutObjectInput = {
+  bucket?: string;
+  content: Buffer;
+  contentType: string;
+  key: string;
+};
+
+type PutObjectResult = void;
+
+/**
+ * Uploads the object to the specified bucket. If no bucket is specified, the
+ * default bucket is used.
+ *
+ * @param input - Specifies the object to upload and the location to upload to.
+ */
+export async function putObject(
+  input: PutObjectInput
+): Promise<PutObjectResult> {
+  const command = new PutObjectCommand({
+    Bucket: input.bucket || R2_BUCKET_NAME,
+    Body: input.content,
+    ContentType: input.contentType,
+    Key: input.key,
+  });
+
+  await getClient().send(command);
 }
 
 // Helpers

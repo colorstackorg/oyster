@@ -1,7 +1,11 @@
 import {
   type ActionFunctionArgs,
+  unstable_composeUploadHandlers as composeUploadHandlers,
+  unstable_createFileUploadHandler as createFileUploadHandler,
+  unstable_createMemoryUploadHandler as createMemoryUploadHandler,
   json,
   type LoaderFunctionArgs,
+  unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
 import { Form as RemixForm, useActionData, useFetcher } from '@remix-run/react';
@@ -48,11 +52,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
+  const uploadHandler = composeUploadHandlers(
+    createFileUploadHandler({ maxPartSize: 1_000_000 * 25 }),
+    createMemoryUploadHandler()
+  );
+
+  const form = await parseMultipartFormData(request, uploadHandler);
+
+  const values = Object.fromEntries(form);
 
   const { data, errors } = validateForm(
     AddResourceInput.omit({ postedBy: true }),
-    Object.fromEntries(form)
+    values
   );
 
   if (!data) {
@@ -63,6 +74,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   await addResource({
+    attachments: data.attachments,
     description: data.description,
     link: data.link,
     tags: data.tags,
@@ -97,7 +109,7 @@ export default function AddResourceModal() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <RemixForm className="form" method="post" encType="multipart/form-data">
         <Form.Field
           error={errors.title}
           label="Title"
@@ -154,7 +166,23 @@ export default function AddResourceModal() {
           </Select>
         </Form.Field>
 
-        {type === 'attachment' && <></>}
+        {type === 'attachment' && (
+          <Form.Field
+            description="Please choose the file you'd like to upload."
+            error={errors.attachments}
+            label="Attachment"
+            labelFor={keys.attachments}
+            required
+          >
+            <input
+              accept=".pdf"
+              id={keys.attachments}
+              name={keys.attachments}
+              required
+              type="file"
+            />
+          </Form.Field>
+        )}
 
         {type === 'url' && (
           <Form.Field
@@ -192,8 +220,8 @@ function TagsCombobox({ name }: Pick<InputProps, 'name'>) {
   const tags = listFetcher.data?.tags || [];
 
   function reset() {
-    setNewTagId(id());
     setSearch('');
+    setNewTagId(id());
   }
 
   return (

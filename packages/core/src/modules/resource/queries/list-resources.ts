@@ -39,6 +39,13 @@ export async function listResources<
         .offset((page - 1) * limit);
     })
     .with('b', (qb) => {
+      const attachmentsAggregation = sql<{ s3Key: string }[]>`
+        json_agg(
+          json_build_object('s3Key', resource_attachments.s3_key)
+          order by resource_attachments.created_at asc
+        )
+      `.as('attachments');
+
       const tagsAggregation = sql<{ id: string; name: string }[]>`
         json_agg(
           json_build_object('id', tags.id, 'name', tags.name)
@@ -48,9 +55,14 @@ export async function listResources<
 
       return qb
         .selectFrom('a')
+        .leftJoin(
+          'resourceAttachments',
+          'resourceAttachments.resourceId',
+          'a.id'
+        )
         .leftJoin('resourceTags', 'resourceTags.resourceId', 'a.id')
         .leftJoin('tags', 'tags.id', 'resourceTags.tagId')
-        .select(['a.id', tagsAggregation])
+        .select(['a.id', attachmentsAggregation, tagsAggregation])
         .groupBy('a.id');
     })
     .selectFrom('b')
@@ -58,6 +70,7 @@ export async function listResources<
     .leftJoin('students', 'students.id', 'resources.postedBy')
     .select([
       ...select,
+      'b.attachments',
       'b.tags',
       (eb) => {
         return eb

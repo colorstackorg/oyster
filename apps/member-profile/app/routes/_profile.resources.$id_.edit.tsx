@@ -195,7 +195,23 @@ export default function EditResourceModal() {
           </Select>
         </Form.Field>
 
-        {type === 'attachment' && <></>}
+        {type === 'attachment' && (
+          <Form.Field
+            description="Please choose the file you'd like to upload."
+            error={errors.attachments}
+            label="Attachment"
+            labelFor={keys.attachments}
+            required
+          >
+            <input
+              accept=".pdf"
+              id={keys.attachments}
+              name={keys.attachments}
+              required
+              type="file"
+            />
+          </Form.Field>
+        )}
 
         {type === 'url' && (
           <Form.Field

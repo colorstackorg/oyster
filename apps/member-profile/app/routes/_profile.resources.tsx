@@ -11,9 +11,17 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { ArrowUp, Clipboard, Edit, ExternalLink, Plus } from 'react-feather';
+import {
+  ArrowUp,
+  Clipboard,
+  DownloadCloud,
+  Edit,
+  ExternalLink,
+  Plus,
+} from 'react-feather';
 import { match } from 'ts-pattern';
 
+import { getObjectPresignedUri } from '@oyster/infrastructure/object-storage';
 import {
   cx,
   getButtonCn,
@@ -55,15 +63,26 @@ export async function loader({ request }: LoaderFunctionArgs) {
     },
   });
 
-  const resources = records.map(({ postedAt, upvotes, upvoted, ...record }) => {
-    return {
-      ...record,
-      editable: record.authorId === user(session),
-      postedAt: dayjs().to(postedAt),
-      upvotes: Number(upvotes),
-      upvoted: Boolean(upvoted),
-    };
-  });
+  const resources = await Promise.all(
+    records.map(
+      async ({ attachments, postedAt, upvotes, upvoted, ...record }) => {
+        return {
+          ...record,
+          attachments: await Promise.all(
+            attachments.map((attachment) => {
+              return getObjectPresignedUri({
+                key: attachment.s3Key,
+              });
+            })
+          ),
+          editable: record.authorId === user(session),
+          postedAt: dayjs().to(postedAt),
+          upvotes: Number(upvotes),
+          upvoted: Boolean(upvoted),
+        };
+      }
+    )
+  );
 
   return json({
     resources,
@@ -227,6 +246,21 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
                 </Link>
               </li>
             </>
+          )}
+
+          {!!resource.attachments.length && (
+            <li>
+              <Link
+                className={getIconButtonCn({
+                  backgroundColor: 'gray-100',
+                  backgroundColorOnHover: 'gray-200',
+                })}
+                download
+                to={resource.attachments[0] as string}
+              >
+                <DownloadCloud />
+              </Link>
+            </li>
           )}
 
           {!!resource.editable && (

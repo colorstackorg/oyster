@@ -1,15 +1,18 @@
 import { db } from '@oyster/db';
+import { putObject } from '@oyster/infrastructure/object-storage';
 import { id } from '@oyster/utils';
 
 import { type AddResourceInput } from '@/modules/resource/resource.types';
 
 export async function addResource(input: AddResourceInput) {
   const result = await db.transaction().execute(async (trx) => {
+    const resourceId = id();
+
     const resource = await trx
       .insertInto('resources')
       .values({
         description: input.description,
-        id: id(),
+        id: resourceId,
         link: input.link,
         postedBy: input.postedBy,
         title: input.title,
@@ -24,6 +27,29 @@ export async function addResource(input: AddResourceInput) {
         .values({
           resourceId: resource.id,
           tagId: tag,
+        })
+        .execute();
+    }
+
+    for (const attachment of input.attachments) {
+      const arrayBuffer = await attachment.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      const attachmentId = id();
+      const attachmentKey = `resources/${resourceId}/${attachmentId}`;
+
+      await putObject({
+        content: buffer,
+        contentType: attachment.type,
+        key: attachmentKey,
+      });
+
+      await trx
+        .insertInto('resourceAttachments')
+        .values({
+          id: attachmentId,
+          resourceId: resource.id,
+          s3Key: attachmentKey,
         })
         .execute();
     }

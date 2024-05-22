@@ -68,9 +68,26 @@ export async function up(db: Kysely<any>) {
       'student_id',
     ])
     .execute();
+
+  await db.schema
+    .createTable('resource_attachments')
+    .addColumn('created_at', 'timestamptz', (column) => {
+      return column.notNull().defaultTo(sql`now()`);
+    })
+    .addColumn('id', 'text', (column) => {
+      return column.primaryKey();
+    })
+    .addColumn('resource_id', 'text', (column) => {
+      return column.notNull().references('resources.id');
+    })
+    .addColumn('s3_key', 'text', (column) => {
+      return column.notNull().unique();
+    })
+    .execute();
 }
 
 export async function down(db: Kysely<any>) {
+  await db.schema.dropTable('resource_attachments').execute();
   await db.schema.dropTable('resource_upvotes').execute();
   await db.schema.dropTable('resource_tags').execute();
   await db.schema.dropTable('tags').execute();

@@ -16,6 +16,18 @@ export type ResourceType = ExtractValue<typeof ResourceType>;
 // Domain
 
 const Resource = z.object({
+  attachments: z.unknown().transform((value) => {
+    if (!value) {
+      return [] as File[];
+    }
+
+    if (Array.isArray(value)) {
+      return value as File[];
+    }
+
+    return [value] as File[];
+  }),
+
   description: z.string().trim().min(1),
   id: z.string().trim().min(1),
   lastUpdatedAt: z.coerce.date().optional(),
@@ -64,6 +76,7 @@ export type ListResourcesWhere = z.infer<typeof ListResourcesWhere>;
 // Use Case(s)
 
 export const AddResourceInput = Resource.pick({
+  attachments: true,
   description: true,
   link: true,
   postedBy: true,
