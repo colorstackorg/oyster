@@ -47,7 +47,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export default function ResourcePage() {
-  return <Modal onCloseTo={Route['/resources']}></Modal>;
+  return (
+    <Modal onCloseTo={Route['/resources']}>
+      <ResourceItem />
+    </Modal>
+  );
 }
 
 function ResourceItem() {
@@ -56,7 +60,7 @@ function ResourceItem() {
   const fetcher = useFetcher();
 
   return (
-    <li className="flex flex-col gap-3 rounded-3xl border border-gray-200 p-4">
+    <div className="flex flex-col gap-3">
       <header className="flex justify-between gap-2">
         <Text variant="xl">{resource.title}</Text>
 
@@ -122,6 +126,6 @@ function ResourceItem() {
           {resource.postedAt}
         </Text>
       </div>
-    </li>
+    </div>
   );
 }
