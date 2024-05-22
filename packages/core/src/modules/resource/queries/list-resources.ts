@@ -32,13 +32,12 @@ export async function listResources<
         .$if(!!where.tags.length, (qb) => {
           return qb
             .leftJoin('resourceTags', 'resourceTags.resourceId', 'resources.id')
-            .where((eb) => {
-              return eb.or(
-                where.tags.map((tag) => {
-                  return eb('resourceTags.tagId', '=', tag);
-                })
-              );
-            });
+            .groupBy('resources.id')
+            .having(
+              sql`array_agg(resource_tags.tag_id)`,
+              '@>',
+              sql<string[]>`${where.tags}`
+            );
         })
         .orderBy('resources.postedAt', 'desc')
         .limit(limit)

@@ -333,10 +333,12 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
 function TagPill({ id, name }: ResourceInView['tags'][number]) {
   const [searchParams] = useSearchParams();
 
-  searchParams.append('tags', id);
+  if (!searchParams.getAll('tags').includes(id)) {
+    searchParams.append('tags', id);
+  }
 
   return (
-    <Pill color="pink-100" key={id} to={{ search: searchParams.toString() }}>
+    <Pill color="pink-100" to={{ search: searchParams.toString() }}>
       {name}
     </Pill>
   );
