@@ -11,12 +11,13 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { ArrowUp, Plus } from 'react-feather';
+import { ArrowUp, Clipboard, ExternalLink, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import {
   cx,
   getButtonCn,
+  getIconButtonCn,
   getTextCn,
   Pill,
   ProfilePicture,
@@ -26,6 +27,7 @@ import {
 import { listResources } from '@/member-profile.server';
 import { type ResourceType } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
+import { useToast } from '@/shared/hooks/use-toast';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -37,6 +39,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     select: [
       'resources.description',
       'resources.id',
+      'resources.link',
       'resources.postedAt',
       'resources.title',
       'resources.type',
@@ -100,6 +103,7 @@ type ResourceInView = SerializeFrom<typeof loader>['resources'][number];
 
 function ResourceItem({ resource }: { resource: ResourceInView }) {
   const fetcher = useFetcher();
+  const toast = useToast();
 
   return (
     <li className="flex flex-col gap-3 rounded-3xl border border-gray-200 p-4">
@@ -157,32 +161,71 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
         })}
       </ul>
 
-      <div className="mt-auto flex items-center gap-1">
-        <Link
-          className="flex w-fit items-center gap-2"
-          to={generatePath(Route['/directory/:id'], { id: resource.authorId })}
-        >
-          <ProfilePicture
-            initials={
-              resource.authorFirstName![0] + resource.authorLastName![0]
-            }
-            size="32"
-            src={resource.authorProfilePicture || undefined}
-          />
+      <section className="mt-auto flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1">
+          <Link
+            className="flex w-fit items-center gap-2"
+            to={generatePath(Route['/directory/:id'], {
+              id: resource.authorId,
+            })}
+          >
+            <ProfilePicture
+              initials={
+                resource.authorFirstName![0] + resource.authorLastName![0]
+              }
+              size="32"
+              src={resource.authorProfilePicture || undefined}
+            />
 
-          <Text className="line-clamp-2" color="gray-500" variant="sm">
-            {resource.authorFirstName} {resource.authorLastName}
+            <Text className="line-clamp-2" color="gray-500" variant="sm">
+              {resource.authorFirstName} {resource.authorLastName}
+            </Text>
+          </Link>
+
+          <Text color="gray-500" variant="sm">
+            &bull;
           </Text>
-        </Link>
 
-        <Text color="gray-500" variant="sm">
-          &bull;
-        </Text>
+          <Text color="gray-500" variant="sm">
+            {resource.postedAt}
+          </Text>
+        </div>
 
-        <Text color="gray-500" variant="sm">
-          {resource.postedAt}
-        </Text>
-      </div>
+        <ul className="flex items-center gap-1">
+          {!!resource.link && (
+            <>
+              <li>
+                <button
+                  className={getIconButtonCn({
+                    backgroundColor: 'gray-100',
+                    backgroundColorOnHover: 'gray-200',
+                  })}
+                  onClick={() => {
+                    navigator.clipboard.writeText(resource.link!);
+                    toast({ message: 'Copied URL to clipboard!' });
+                  }}
+                  type="button"
+                >
+                  <Clipboard />
+                </button>
+              </li>
+
+              <li>
+                <Link
+                  className={getIconButtonCn({
+                    backgroundColor: 'gray-100',
+                    backgroundColorOnHover: 'gray-200',
+                  })}
+                  target="_blank"
+                  to={resource.link}
+                >
+                  <ExternalLink />
+                </Link>
+              </li>
+            </>
+          )}
+        </ul>
+      </section>
     </li>
   );
 }

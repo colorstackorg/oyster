@@ -7,10 +7,12 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { ArrowUp } from 'react-feather';
+import { match } from 'ts-pattern';
 
 import { cx, getTextCn, Modal, Pill, ProfilePicture, Text } from '@oyster/ui';
 
 import { getResource } from '@/member-profile.server';
+import { type ResourceType } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -22,8 +24,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     select: [
       'resources.description',
       'resources.id',
+      'resources.link',
       'resources.postedAt',
       'resources.title',
+      'resources.type',
       'students.firstName as authorFirstName',
       'students.id as authorId',
       'students.lastName as authorLastName',
@@ -91,6 +95,13 @@ function ResourceItem() {
       </Text>
 
       <ul className="mb-2 flex flex-wrap items-center gap-1">
+        <Pill color="orange-100">
+          {match(resource.type as ResourceType)
+            .with('attachment', () => 'Attachment')
+            .with('url', () => 'URL')
+            .exhaustive()}
+        </Pill>
+
         {resource.tags.map((resource) => {
           return (
             <Pill color="pink-100" key={resource.id}>
