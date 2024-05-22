@@ -47,6 +47,10 @@ const Tag = z.object({
 
 // Querie(s)
 
+export const GetResourceWhere = Resource.pick({
+  id: true,
+});
+
 export const ListResourcesWhere = ListSearchParams.pick({
   search: true,
 }).extend({
@@ -54,6 +58,7 @@ export const ListResourcesWhere = ListSearchParams.pick({
   tags: Tag.shape.id.array().catch([]),
 });
 
+export type GetResourceWhere = z.infer<typeof GetResourceWhere>;
 export type ListResourcesWhere = z.infer<typeof ListResourcesWhere>;
 
 // Use Case(s)

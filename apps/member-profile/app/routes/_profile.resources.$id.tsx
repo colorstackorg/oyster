@@ -1,118 +1,64 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import {
   generatePath,
   Link,
-  Outlet,
   useFetcher,
   useLoaderData,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { ArrowUp, Plus } from 'react-feather';
-import { match } from 'ts-pattern';
+import { ArrowUp } from 'react-feather';
 
-import {
-  cx,
-  getButtonCn,
-  getTextCn,
-  Pill,
-  ProfilePicture,
-  Text,
-} from '@oyster/ui';
+import { cx, getTextCn, Modal, Pill, ProfilePicture, Text } from '@oyster/ui';
 
-import { listResources } from '@/member-profile.server';
-import { type ResourceType } from '@/member-profile.ui';
+import { getResource } from '@/member-profile.server';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const records = await listResources({
-    limit: 100,
-    page: 1,
+  const record = await getResource({
+    memberId: user(session),
     select: [
       'resources.description',
       'resources.id',
       'resources.postedAt',
       'resources.title',
-      'resources.type',
       'students.firstName as authorFirstName',
       'students.id as authorId',
       'students.lastName as authorLastName',
       'students.profilePicture as authorProfilePicture',
     ],
     where: {
-      memberId: user(session),
-      search: '',
-      tags: [],
+      id: params.id as string,
     },
   });
 
-  const resources = records.map(({ postedAt, upvotes, upvoted, ...record }) => {
-    return {
-      ...record,
-      postedAt: dayjs().to(postedAt),
-      upvotes: Number(upvotes),
-      upvoted: Boolean(upvoted),
-    };
-  });
+  const resource = {
+    ...record,
+    postedAt: dayjs().to(record.postedAt),
+    upvotes: Number(record.upvotes),
+    upvoted: Boolean(record.upvoted),
+  };
 
   return json({
-    resources,
+    resource,
   });
 }
 
-export default function ResourcesPage() {
-  return (
-    <>
-      <header className="flex items-center justify-between gap-4">
-        <Text variant="2xl">Resources 📚</Text>
-
-        <Link className={getButtonCn({})} to={Route['/resources/add']}>
-          <Plus size={16} /> Add Resource
-        </Link>
-      </header>
-
-      <ResourcesList />
-
-      <Outlet />
-    </>
-  );
+export default function ResourcePage() {
+  return <Modal onCloseTo={Route['/resources']}></Modal>;
 }
 
-function ResourcesList() {
-  const { resources } = useLoaderData<typeof loader>();
+function ResourceItem() {
+  const { resource } = useLoaderData<typeof loader>();
 
-  return (
-    <ul className="grid grid-cols-1 gap-2 overflow-scroll @[800px]:grid-cols-2 @[1200px]:grid-cols-3 @[1600px]:grid-cols-4">
-      {resources.map((resource) => {
-        return <ResourceItem key={resource.id} resource={resource} />;
-      })}
-    </ul>
-  );
-}
-
-type ResourceInView = SerializeFrom<typeof loader>['resources'][number];
-
-function ResourceItem({ resource }: { resource: ResourceInView }) {
   const fetcher = useFetcher();
 
   return (
     <li className="flex flex-col gap-3 rounded-3xl border border-gray-200 p-4">
       <header className="flex justify-between gap-2">
-        <Link
-          className={cx(
-            getTextCn({ variant: 'xl' }),
-            'hover:text-primary hover:underline'
-          )}
-          to={generatePath(Route['/resources/:id'], { id: resource.id })}
-        >
-          {resource.title}
-        </Link>
+        <Text variant="xl">{resource.title}</Text>
 
         <fetcher.Form
           action={
@@ -141,13 +87,6 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
       </Text>
 
       <ul className="mb-2 flex flex-wrap items-center gap-1">
-        <Pill color="orange-100">
-          {match(resource.type as ResourceType)
-            .with('attachment', () => 'Attachment')
-            .with('url', () => 'URL')
-            .exhaustive()}
-        </Pill>
-
         {resource.tags.map((resource) => {
           return (
             <Pill color="pink-100" key={resource.id}>
