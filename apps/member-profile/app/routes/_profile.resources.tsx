@@ -163,12 +163,7 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
 
       <section className="mt-auto flex items-center justify-between gap-2">
         <div className="flex items-center gap-1">
-          <Link
-            className="flex w-fit items-center gap-2"
-            to={generatePath(Route['/directory/:id'], {
-              id: resource.authorId,
-            })}
-          >
+          <div className="flex w-fit items-center gap-2">
             <ProfilePicture
               initials={
                 resource.authorFirstName![0] + resource.authorLastName![0]
@@ -177,10 +172,18 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
               src={resource.authorProfilePicture || undefined}
             />
 
-            <Text className="line-clamp-2" color="gray-500" variant="sm">
+            <Link
+              className={cx(
+                getTextCn({ color: 'gray-500', variant: 'sm' }),
+                'hover:underline'
+              )}
+              to={generatePath(Route['/directory/:id'], {
+                id: resource.authorId,
+              })}
+            >
               {resource.authorFirstName} {resource.authorLastName}
-            </Text>
-          </Link>
+            </Link>
+          </div>
 
           <Text color="gray-500" variant="sm">
             &bull;
