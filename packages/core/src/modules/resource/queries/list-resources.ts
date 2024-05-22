@@ -20,8 +20,14 @@ export async function listResources<
         .selectFrom('resources')
         .select(['resources.id'])
         .$if(!!where.search, (qb) => {
-          // TODO: Add functionality to search by title, description, and tags...
-          return qb;
+          const { search } = where;
+
+          return qb.where((eb) => {
+            return eb.or([
+              eb('title', 'ilike', `%${search}%`),
+              eb(sql`word_similarity(title, ${search})`, '>', 0.25),
+            ]);
+          });
         })
         .$if(!!where.tags.length, (qb) => {
           return qb
@@ -41,7 +47,11 @@ export async function listResources<
     .with('b', (qb) => {
       const attachmentsAggregation = sql<{ s3Key: string }[]>`
         json_agg(
-          json_build_object('s3Key', resource_attachments.s3_key)
+          json_strip_nulls(
+            json_build_object(
+              's3Key', resource_attachments.s3_key
+            )
+          )
           order by resource_attachments.created_at asc
         )
       `.as('attachments');

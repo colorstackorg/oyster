@@ -9,14 +9,17 @@ import {
   Outlet,
   useFetcher,
   useLoaderData,
+  useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { ArrowUp, Clipboard, Edit, ExternalLink, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
+import { z } from 'zod';
 
 import { getObjectPresignedUri } from '@oyster/infrastructure/object-storage';
 import {
   cx,
+  Dashboard,
   getButtonCn,
   getIconButtonCn,
   getTextCn,
@@ -26,17 +29,32 @@ import {
 } from '@oyster/ui';
 
 import { listResources } from '@/member-profile.server';
-import { type ResourceType } from '@/member-profile.ui';
+import { ListSearchParams, type ResourceType } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { useToast } from '@/shared/hooks/use-toast';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
+const ResourcesSearchParams = ListSearchParams.pick({
+  limit: true,
+  page: true,
+  search: true,
+}).extend({
+  tags: z.string().trim().array().catch([]),
+});
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
+  const url = new URL(request.url);
+
+  const searchParams = ResourcesSearchParams.parse({
+    ...Object.fromEntries(url.searchParams),
+    tags: url.searchParams.getAll('tags'),
+  });
+
   const records = await listResources({
-    limit: 100,
-    page: 1,
+    limit: searchParams.limit,
+    page: searchParams.page,
     select: [
       'resources.description',
       'resources.id',
@@ -51,22 +69,26 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ],
     where: {
       memberId: user(session),
-      search: '',
-      tags: [],
+      search: searchParams.search,
+      tags: searchParams.tags,
     },
   });
 
   const resources = await Promise.all(
     records.map(
-      async ({ attachments, postedAt, upvotes, upvoted, ...record }) => {
+      async ({ attachments = [], postedAt, upvotes, upvoted, ...record }) => {
         return {
           ...record,
           attachments: await Promise.all(
-            attachments.map((attachment) => {
-              return getObjectPresignedUri({
-                key: attachment.s3Key,
-              });
-            })
+            attachments
+              .filter((attachment) => {
+                return !!attachment.s3Key;
+              })
+              .map((attachment) => {
+                return getObjectPresignedUri({
+                  key: attachment.s3Key,
+                });
+              })
           ),
           editable: record.authorId === user(session),
           postedAt: dayjs().to(postedAt),
@@ -79,10 +101,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return json({
     resources,
+    tags: searchParams.tags,
   });
 }
 
 export default function ResourcesPage() {
+  const { tags } = useLoaderData<typeof loader>();
+
   return (
     <>
       <header className="flex items-center justify-between gap-4">
@@ -93,6 +118,30 @@ export default function ResourcesPage() {
         </Link>
       </header>
 
+      <Dashboard.Subheader>
+        <Dashboard.SearchForm placeholder="Search by title..." />
+
+        <div className="ml-auto flex items-center gap-2"></div>
+      </Dashboard.Subheader>
+
+      {!!tags?.length && (
+        <ul className="flex flex-wrap items-center gap-2">
+          {tags.map((tag) => {
+            return (
+              <li>
+                <Pill
+                  key={tag}
+                  color="pink-100"
+                  onCloseHref={Route['/resources']}
+                >
+                  {tag}
+                </Pill>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
       <ResourcesList />
 
       <Outlet />
@@ -102,6 +151,14 @@ export default function ResourcesPage() {
 
 function ResourcesList() {
   const { resources } = useLoaderData<typeof loader>();
+
+  if (!resources.length) {
+    return (
+      <div className="mt-4">
+        <Text color="gray-500">There were no resources found.</Text>
+      </div>
+    );
+  }
 
   return (
     <ul className="grid grid-cols-1 gap-2 overflow-scroll @[800px]:grid-cols-2 @[1200px]:grid-cols-3 @[1600px]:grid-cols-4">
@@ -165,12 +222,8 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
             .exhaustive()}
         </Pill>
 
-        {resource.tags.map((resource) => {
-          return (
-            <Pill color="pink-100" key={resource.id}>
-              {resource.name}
-            </Pill>
-          );
+        {resource.tags.map((tag) => {
+          return <TagPill key={tag.id} id={tag.id} name={tag.name} />;
         })}
       </ul>
 
@@ -241,7 +294,7 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
             </>
           )}
 
-          {!!resource.attachments.length && (
+          {!!resource.attachments?.length && (
             <li>
               <Link
                 className={getIconButtonCn({
@@ -274,5 +327,17 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
         </ul>
       </section>
     </li>
+  );
+}
+
+function TagPill({ id, name }: ResourceInView['tags'][number]) {
+  const [searchParams] = useSearchParams();
+
+  searchParams.append('tags', id);
+
+  return (
+    <Pill color="pink-100" key={id} to={{ search: searchParams.toString() }}>
+      {name}
+    </Pill>
   );
 }

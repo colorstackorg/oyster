@@ -1,9 +1,9 @@
-import { Link } from '@remix-run/react';
+import { Link, type LinkProps } from '@remix-run/react';
 import React, { type PropsWithChildren } from 'react';
 import { X } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { getTextCn, Text } from './text';
+import { getTextCn } from './text';
 import { cx } from '../utils/cx';
 
 export type PillProps = Pick<React.HTMLProps<HTMLElement>, 'children'> & {
@@ -22,10 +22,12 @@ export type PillProps = Pick<React.HTMLProps<HTMLElement>, 'children'> & {
     | 'success';
 
   onCloseHref?: string;
+
+  to?: LinkProps['to'];
 };
 
-export const Pill = ({ children, color, onCloseHref }: PillProps) => {
-  return (
+export const Pill = ({ children, color, onCloseHref, to }: PillProps) => {
+  const body = (
     <span
       className={cx(
         getTextCn({ variant: 'sm' }),
@@ -40,6 +42,16 @@ export const Pill = ({ children, color, onCloseHref }: PillProps) => {
       )}
     </span>
   );
+
+  if (to) {
+    return (
+      <Link className="hover:underline" to={to}>
+        {body}
+      </Link>
+    );
+  }
+
+  return body;
 };
 
 export function getPillCn({ color, onCloseHref }: Omit<PillProps, 'children'>) {
