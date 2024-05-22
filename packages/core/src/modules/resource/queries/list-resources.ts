@@ -77,6 +77,7 @@ export async function listResources<
           .as('upvoted');
       },
     ])
+    .orderBy('resources.postedAt', 'desc')
     .execute();
 
   return resources;

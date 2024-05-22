@@ -43,6 +43,7 @@ const ROUTES = [
   '/resources',
   '/resources/add',
   '/resources/:id',
+  '/resources/:id/edit',
 ] as const;
 
 export type Route = (typeof ROUTES)[number];

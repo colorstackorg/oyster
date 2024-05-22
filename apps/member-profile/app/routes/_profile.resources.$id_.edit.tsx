@@ -4,21 +4,27 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData, useFetcher } from '@remix-run/react';
+import {
+  Form as RemixForm,
+  useActionData,
+  useFetcher,
+  useLoaderData,
+} from '@remix-run/react';
 import { useEffect, useState } from 'react';
 
 import {
   Button,
   ComboboxPopover,
   Divider,
+  type FieldProps,
   Form,
   getActionErrors,
   Input,
-  type InputProps,
   Modal,
   MultiCombobox,
   MultiComboboxDisplay,
   MultiComboboxItem,
+  type MultiComboboxProps,
   MultiComboboxSearch,
   MultiComboboxValues,
   Pill,
@@ -28,8 +34,8 @@ import {
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import { addResource } from '@/member-profile.server';
-import { AddResourceInput, ResourceType } from '@/member-profile.ui';
+import { getResource, updateResource } from '@/member-profile.server';
+import { ResourceType, UpdateResourceInput } from '@/member-profile.ui';
 import { type SearchTagsResult } from '@/routes/api.tags.search';
 import { Route } from '@/shared/constants';
 import {
@@ -39,19 +45,39 @@ import {
   user,
 } from '@/shared/session.server';
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+export async function loader({ params, request }: LoaderFunctionArgs) {
+  const session = await ensureUserAuthenticated(request);
 
-  return json({});
+  const record = await getResource({
+    memberId: user(session),
+    select: [
+      'resources.description',
+      'resources.link',
+      'resources.title',
+      'resources.type',
+    ],
+    where: {
+      id: params.id as string,
+    },
+  });
+
+  const resource = {
+    ...record,
+    type: record.type as ResourceType,
+  };
+
+  return json({
+    resource,
+  });
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const form = await request.formData();
 
   const { data, errors } = validateForm(
-    AddResourceInput.omit({ postedBy: true }),
+    UpdateResourceInput,
     Object.fromEntries(form)
   );
 
@@ -62,17 +88,18 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  await addResource({
+  console.log(data);
+
+  await updateResource(params.id as string, {
     description: data.description,
     link: data.link,
     tags: data.tags,
-    postedBy: user(session),
     title: data.title,
     type: data.type,
   });
 
   toast(session, {
-    message: 'Added resource!',
+    message: 'Edited resource!',
     type: 'success',
   });
 
@@ -83,17 +110,18 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 }
 
-const keys = AddResourceInput.keyof().enum;
+const keys = UpdateResourceInput.keyof().enum;
 
-export default function AddResourceModal() {
+export default function EditResourceModal() {
+  const { resource } = useLoaderData<typeof loader>();
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const [type, setType] = useState<ResourceType | null>(null);
+  const [type, setType] = useState<ResourceType | null>(resource.type || null);
 
   return (
     <Modal onCloseTo={Route['/resources']}>
       <Modal.Header>
-        <Modal.Title>Add Resource</Modal.Title>
+        <Modal.Title>Edit Resource</Modal.Title>
         <Modal.CloseButton />
       </Modal.Header>
 
@@ -104,7 +132,12 @@ export default function AddResourceModal() {
           labelFor={keys.title}
           required
         >
-          <Input id={keys.title} name={keys.title} required />
+          <Input
+            defaultValue={resource.title || undefined}
+            id={keys.title}
+            name={keys.title}
+            required
+          />
         </Form.Field>
 
         <Form.Field
@@ -114,6 +147,7 @@ export default function AddResourceModal() {
           required
         >
           <Textarea
+            defaultValue={resource.description || undefined}
             id={keys.description}
             minRows={2}
             name={keys.description}
@@ -128,7 +162,15 @@ export default function AddResourceModal() {
           labelFor={keys.tags}
           required
         >
-          <TagsCombobox name={keys.tags} />
+          <TagsCombobox
+            defaultValue={resource.tags.map((tag) => {
+              return {
+                label: tag.name,
+                value: tag.id,
+              };
+            })}
+            name={keys.tags}
+          />
         </Form.Field>
 
         <Divider />
@@ -140,6 +182,7 @@ export default function AddResourceModal() {
           required
         >
           <Select
+            defaultValue={resource.type || undefined}
             id={keys.type}
             name={keys.type}
             onChange={(e) => {
@@ -164,7 +207,12 @@ export default function AddResourceModal() {
             labelFor={keys.link}
             required
           >
-            <Input id={keys.link} name={keys.link} required />
+            <Input
+              defaultValue={resource.link || undefined}
+              id={keys.link}
+              name={keys.link}
+              required
+            />
           </Form.Field>
         )}
 
@@ -178,7 +226,13 @@ export default function AddResourceModal() {
   );
 }
 
-function TagsCombobox({ name }: Pick<InputProps, 'name'>) {
+function TagsCombobox({
+  defaultValue,
+  name,
+}: Pick<
+  FieldProps<MultiComboboxProps['defaultValues']>,
+  'defaultValue' | 'name'
+>) {
   const createFetcher = useFetcher<unknown>();
   const listFetcher = useFetcher<SearchTagsResult>();
 
@@ -197,7 +251,7 @@ function TagsCombobox({ name }: Pick<InputProps, 'name'>) {
   }
 
   return (
-    <MultiCombobox>
+    <MultiCombobox defaultValues={defaultValue}>
       <MultiComboboxDisplay>
         <MultiComboboxValues name={name} />
         <MultiComboboxSearch

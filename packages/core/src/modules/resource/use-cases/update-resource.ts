@@ -17,13 +17,14 @@ export async function updateResource(id: string, input: UpdateResourceInput) {
 
     await trx.deleteFrom('resourceTags').where('resourceId', '=', id).execute();
 
-    for (const tag in input.tags) {
+    for (const tag of input.tags || []) {
       await trx
         .insertInto('resourceTags')
         .values({
           resourceId: id,
           tagId: tag,
         })
+        .onConflict((oc) => oc.doNothing())
         .execute();
     }
 

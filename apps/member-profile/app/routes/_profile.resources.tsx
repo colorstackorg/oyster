@@ -11,7 +11,7 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { ArrowUp, Clipboard, ExternalLink, Plus } from 'react-feather';
+import { ArrowUp, Clipboard, Edit, ExternalLink, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import {
@@ -58,6 +58,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const resources = records.map(({ postedAt, upvotes, upvoted, ...record }) => {
     return {
       ...record,
+      editable: record.authorId === user(session),
       postedAt: dayjs().to(postedAt),
       upvotes: Number(upvotes),
       upvoted: Boolean(upvoted),
@@ -226,6 +227,22 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
                 </Link>
               </li>
             </>
+          )}
+
+          {!!resource.editable && (
+            <li>
+              <Link
+                className={getIconButtonCn({
+                  backgroundColor: 'gray-100',
+                  backgroundColorOnHover: 'gray-200',
+                })}
+                to={generatePath(Route['/resources/:id/edit'], {
+                  id: resource.id,
+                })}
+              >
+                <Edit />
+              </Link>
+            </li>
           )}
         </ul>
       </section>
