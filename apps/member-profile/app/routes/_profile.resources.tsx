@@ -11,14 +11,7 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import {
-  ArrowUp,
-  Clipboard,
-  DownloadCloud,
-  Edit,
-  ExternalLink,
-  Plus,
-} from 'react-feather';
+import { ArrowUp, Clipboard, Edit, ExternalLink, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import { getObjectPresignedUri } from '@oyster/infrastructure/object-storage';
@@ -255,10 +248,10 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
                   backgroundColor: 'gray-100',
                   backgroundColorOnHover: 'gray-200',
                 })}
-                download
+                target="_blank"
                 to={resource.attachments[0] as string}
               >
-                <DownloadCloud />
+                <ExternalLink />
               </Link>
             </li>
           )}
