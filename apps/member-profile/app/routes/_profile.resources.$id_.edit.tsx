@@ -25,7 +25,6 @@ import {
   DescriptionField,
   ResourceFormProvider,
   ResourceLinkField,
-  ResourceTypeField,
   TagsField,
   TitleField,
 } from '@/shared/components/resource-form';
@@ -85,7 +84,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
     link: data.link,
     tags: data.tags,
     title: data.title,
-    type: data.type,
   });
 
   toast(session, {
@@ -132,23 +130,21 @@ export default function EditResourceModal() {
                 value: tag.id,
               };
             })}
-            error={errors.description}
-            name={keys.description}
+            error={errors.tags}
+            name={keys.tags}
           />
 
-          <Divider />
+          {resource.link && (
+            <>
+              <Divider />
 
-          <ResourceTypeField
-            defaultValue={resource.type || undefined}
-            error={errors.type}
-            name={keys.type}
-          />
-
-          <ResourceLinkField
-            defaultValue={resource.link || undefined}
-            error={errors.link}
-            name={keys.link}
-          />
+              <ResourceLinkField
+                defaultValue={resource.link || undefined}
+                error={errors.link}
+                name={keys.link}
+              />
+            </>
+          )}
         </ResourceFormProvider>
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>

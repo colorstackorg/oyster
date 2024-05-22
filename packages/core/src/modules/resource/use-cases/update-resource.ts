@@ -17,7 +17,7 @@ export async function updateResource(id: string, input: UpdateResourceInput) {
 
     await trx.deleteFrom('resourceTags').where('resourceId', '=', id).execute();
 
-    for (const tag of input.tags || []) {
+    for (const tag of input.tags) {
       await trx
         .insertInto('resourceTags')
         .values({

@@ -100,8 +100,10 @@ export const DownvoteResourceInput = z.object({
 });
 
 export const UpdateResourceInput = AddResourceInput.omit({
+  attachments: true,
   postedBy: true,
-}).partial();
+  type: true,
+});
 
 export const UpvoteResourceInput = z.object({
   memberId: z.string().trim().min(1),
