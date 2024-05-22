@@ -8,33 +8,28 @@ import {
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData, useFetcher } from '@remix-run/react';
-import { useEffect, useState } from 'react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 
 import {
   Button,
-  ComboboxPopover,
   Divider,
   Form,
   getActionErrors,
-  Input,
-  type InputProps,
   Modal,
-  MultiCombobox,
-  MultiComboboxDisplay,
-  MultiComboboxItem,
-  MultiComboboxSearch,
-  MultiComboboxValues,
-  Pill,
-  Select,
-  Textarea,
   validateForm,
 } from '@oyster/ui';
-import { id } from '@oyster/utils';
 
 import { addResource } from '@/member-profile.server';
-import { AddResourceInput, ResourceType } from '@/member-profile.ui';
-import { type SearchTagsResult } from '@/routes/api.tags.search';
+import { AddResourceInput } from '@/member-profile.ui';
+import {
+  DescriptionField,
+  ResourceAttachmentField,
+  ResourceFormProvider,
+  ResourceLinkField,
+  ResourceTypeField,
+  TagsField,
+  TitleField,
+} from '@/shared/components/resource-form';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -100,8 +95,6 @@ const keys = AddResourceInput.keyof().enum;
 export default function AddResourceModal() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
 
-  const [type, setType] = useState<ResourceType | null>(null);
-
   return (
     <Modal onCloseTo={Route['/resources']}>
       <Modal.Header>
@@ -110,91 +103,21 @@ export default function AddResourceModal() {
       </Modal.Header>
 
       <RemixForm className="form" method="post" encType="multipart/form-data">
-        <Form.Field
-          error={errors.title}
-          label="Title"
-          labelFor={keys.title}
-          required
-        >
-          <Input id={keys.title} name={keys.title} required />
-        </Form.Field>
-
-        <Form.Field
-          error={errors.description}
-          label="Description"
-          labelFor={keys.description}
-          required
-        >
-          <Textarea
-            id={keys.description}
-            minRows={2}
+        <ResourceFormProvider>
+          <TitleField error={errors.title} name={keys.title} />
+          <DescriptionField
+            error={errors.description}
             name={keys.description}
-            required
           />
-        </Form.Field>
-
-        <Form.Field
-          description="To categorize and help others find this resource."
-          error={errors.tags}
-          label="Tags"
-          labelFor={keys.tags}
-          required
-        >
-          <TagsCombobox name={keys.tags} />
-        </Form.Field>
-
-        <Divider />
-
-        <Form.Field
-          description="What kind of type is this resource?"
-          label="Type"
-          labelFor={keys.type}
-          required
-        >
-          <Select
-            id={keys.type}
-            name={keys.type}
-            onChange={(e) => {
-              setType(e.currentTarget.value as ResourceType);
-            }}
-            required
-          >
-            <option value={ResourceType.URL}>URL</option>
-            <option value={ResourceType.ATTACHMENT}>
-              Attachment (ie: PDF, PNG)
-            </option>
-          </Select>
-        </Form.Field>
-
-        {type === 'attachment' && (
-          <Form.Field
-            description="Please choose the file you'd like to upload."
+          <TagsField error={errors.tags} name={keys.tags} />
+          <Divider />
+          <ResourceTypeField error={errors.type} name={keys.type} />
+          <ResourceAttachmentField
             error={errors.attachments}
-            label="Attachment"
-            labelFor={keys.attachments}
-            required
-          >
-            <input
-              accept=".pdf"
-              id={keys.attachments}
-              name={keys.attachments}
-              required
-              type="file"
-            />
-          </Form.Field>
-        )}
-
-        {type === 'url' && (
-          <Form.Field
-            description="Please include the full URL."
-            error={errors.link}
-            label="URL"
-            labelFor={keys.link}
-            required
-          >
-            <Input id={keys.link} name={keys.link} required />
-          </Form.Field>
-        )}
+            name={keys.attachments}
+          />
+          <ResourceLinkField error={errors.link} name={keys.link} />
+        </ResourceFormProvider>
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
@@ -203,85 +126,5 @@ export default function AddResourceModal() {
         </Button.Group>
       </RemixForm>
     </Modal>
-  );
-}
-
-function TagsCombobox({ name }: Pick<InputProps, 'name'>) {
-  const createFetcher = useFetcher<unknown>();
-  const listFetcher = useFetcher<SearchTagsResult>();
-
-  const [newTagId, setNewTagId] = useState<string>(id());
-  const [search, setSearch] = useState<string>('');
-
-  useEffect(() => {
-    listFetcher.load('/api/tags/search');
-  }, []);
-
-  const tags = listFetcher.data?.tags || [];
-
-  function reset() {
-    setSearch('');
-    setNewTagId(id());
-  }
-
-  return (
-    <MultiCombobox>
-      <MultiComboboxDisplay>
-        <MultiComboboxValues name={name} />
-        <MultiComboboxSearch
-          id={name}
-          onChange={(e) => {
-            setSearch(e.currentTarget.value);
-
-            listFetcher.submit(
-              { search: e.currentTarget.value },
-              {
-                action: '/api/tags/search',
-                method: 'get',
-              }
-            );
-          }}
-        />
-      </MultiComboboxDisplay>
-
-      {(!!tags.length || !!search.length) && (
-        <ComboboxPopover>
-          <ul>
-            {tags.map((tag) => {
-              return (
-                <MultiComboboxItem
-                  key={tag.id}
-                  label={tag.name}
-                  onSelect={reset}
-                  value={tag.id}
-                >
-                  <Pill color="pink-100">{tag.name}</Pill>
-                </MultiComboboxItem>
-              );
-            })}
-
-            {!!search.length && (
-              <MultiComboboxItem
-                label={search}
-                onSelect={(e) => {
-                  createFetcher.submit(
-                    { id: e.currentTarget.value, name: search },
-                    {
-                      action: '/api/tags/add',
-                      method: 'post',
-                    }
-                  );
-
-                  reset();
-                }}
-                value={newTagId}
-              >
-                Create <Pill color="pink-100">{search}</Pill>
-              </MultiComboboxItem>
-            )}
-          </ul>
-        </ComboboxPopover>
-      )}
-    </MultiCombobox>
   );
 }
