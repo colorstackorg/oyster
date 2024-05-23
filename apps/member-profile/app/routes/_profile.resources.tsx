@@ -86,10 +86,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     },
   });
 
-  const baseResourcePath = `${url.protocol}://${url.host}/resources`;
-
-  console.log(records[0]);
-
   const resources = await Promise.all(
     records.map(
       async ({ attachments, postedAt, tags, upvotes, upvoted, ...record }) => {
@@ -108,7 +104,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           ),
           editable: record.authorId === user(session),
           postedAt: dayjs().to(postedAt),
-          shareableUri: `${baseResourcePath}?id=${record.id}`,
+          shareableUri: `${url.protocol}://${url.host}/resources?id=${record.id}`,
           tags: tags!,
           upvotes: Number(upvotes),
           upvoted: Boolean(upvoted),
