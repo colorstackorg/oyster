@@ -14,19 +14,23 @@ export type SelectProps = Pick<
   | 'placeholder'
   | 'readOnly'
   | 'required'
->;
+> & {
+  width?: 'fit';
+};
 
 export function Select({
   children,
   defaultValue = '',
   placeholder = 'Select...',
   required,
+  width,
   ...rest
 }: SelectProps) {
   return (
     <select
       className={cx(
         getInputCn(),
+        width === 'fit' && 'w-fit',
         'appearance-none bg-[length:1rem] bg-[position:center_right_0.5rem] bg-no-repeat',
         'focus-visible:outline-none',
         'required:invalid:text-gray-400',

@@ -212,6 +212,7 @@ function SortResourcesForm() {
         id={keys.orderBy}
         placeholder="Sort By..."
         required
+        width="fit"
       >
         <option value={sortKeys.newest}>Newest</option>
         <option value={sortKeys.most_upvotes}>Most Upvotes</option>
