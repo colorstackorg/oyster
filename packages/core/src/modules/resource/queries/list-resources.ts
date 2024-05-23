@@ -116,6 +116,13 @@ export async function listResources<
       },
       (eb) => {
         return eb
+          .selectFrom('resourceViews')
+          .select(eb.fn.countAll<string>().as('count'))
+          .whereRef('resourceViews.resourceId', '=', 'resources.id')
+          .as('views');
+      },
+      (eb) => {
+        return eb
           .exists((eb) => {
             return eb
               .selectFrom('resourceUpvotes')

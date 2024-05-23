@@ -109,8 +109,13 @@ export const UpvoteResourceInput = z.object({
   memberId: z.string().trim().min(1),
 });
 
+export const ViewResourceInput = z.object({
+  memberId: z.string().trim().min(1),
+});
+
 export type AddResourceInput = z.infer<typeof AddResourceInput>;
 export type CreateTagInput = z.infer<typeof CreateTagInput>;
 export type DownvoteResourceInput = z.infer<typeof DownvoteResourceInput>;
 export type UpdateResourceInput = z.infer<typeof UpdateResourceInput>;
 export type UpvoteResourceInput = z.infer<typeof UpvoteResourceInput>;
+export type ViewResourceInput = z.infer<typeof ViewResourceInput>;

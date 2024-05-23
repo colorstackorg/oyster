@@ -14,7 +14,7 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { ArrowUp, Edit, Plus, Share } from 'react-feather';
+import { ArrowUp, BarChart2, Edit, Plus, Share } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import { getObjectPresignedUri } from '@oyster/infrastructure/object-storage';
@@ -94,7 +94,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const resources = await Promise.all(
     records.map(
-      async ({ attachments, postedAt, tags, upvotes, upvoted, ...record }) => {
+      async ({
+        attachments,
+        postedAt,
+        tags,
+        upvotes,
+        upvoted,
+        views,
+        ...record
+      }) => {
         return {
           ...record,
           attachments: await Promise.all(
@@ -115,6 +123,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           tags: tags!,
           upvotes: Number(upvotes),
           upvoted: Boolean(upvoted),
+          views: Number(views),
         };
       }
     )
@@ -284,6 +293,7 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
       <header className="flex justify-between gap-2">
         <ResourceTitle
           attachments={resource.attachments}
+          id={resource.id}
           link={resource.link}
           title={resource.title}
           type={resource.type}
@@ -317,6 +327,19 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
           <Text color="gray-500" variant="sm">
             {resource.postedAt}
           </Text>
+
+          <Text color="gray-500" variant="sm">
+            &bull;
+          </Text>
+
+          <Text
+            className="flex items-center gap-1"
+            color="gray-500"
+            variant="sm"
+          >
+            <BarChart2 size="16" />
+            <span>{resource.views}</span>
+          </Text>
         </div>
 
         <ResourceActionGroup
@@ -331,10 +354,13 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
 
 function ResourceTitle({
   attachments,
+  id,
   link,
   title,
   type,
-}: Pick<ResourceInView, 'attachments' | 'link' | 'title' | 'type'>) {
+}: Pick<ResourceInView, 'attachments' | 'id' | 'link' | 'title' | 'type'>) {
+  const fetcher = useFetcher();
+
   const [attachment] = attachments;
 
   const formattedType = match(type as ResourceType)
@@ -353,6 +379,12 @@ function ResourceTitle({
           getTextCn({ variant: 'xl' }),
           'hover:text-primary hover:underline'
         )}
+        onClick={() => {
+          fetcher.submit(null, {
+            action: `/api/resources/${id}/view`,
+            method: 'post',
+          });
+        }}
         target="_blank"
         to={type === ResourceType.URL ? link! : attachment.uri}
       >

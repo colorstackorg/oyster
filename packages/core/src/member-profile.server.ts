@@ -53,6 +53,7 @@ export { createTag } from './modules/resource/use-cases/create-tag';
 export { downvoteResource } from './modules/resource/use-cases/downvote-resource';
 export { updateResource } from './modules/resource/use-cases/update-resource';
 export { upvoteResource } from './modules/resource/use-cases/upvote-resource';
+export { viewResource } from './modules/resource/use-cases/view-resource';
 export { reportException } from './modules/sentry/use-cases/report-exception';
 export { countMessagesSent } from './modules/slack/queries/count-messages-sent';
 export { claimSwagPack } from './modules/swag-pack/use-cases/claim-swag-pack';
