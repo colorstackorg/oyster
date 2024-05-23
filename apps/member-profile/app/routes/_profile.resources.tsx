@@ -40,7 +40,6 @@ import { iife } from '@oyster/utils';
 
 import { listResources, listTags } from '@/member-profile.server';
 import {
-  FORMATTED_RESOURCE_TYPE,
   ListResourcesOrderBy,
   ListResourcesWhere,
   ListSearchParams,
@@ -103,10 +102,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
               .filter((attachment) => {
                 return !!attachment.s3Key;
               })
-              .map((attachment) => {
-                return getObjectPresignedUri({
-                  key: attachment.s3Key,
-                });
+              .map(async (attachment) => {
+                return {
+                  mimeType: attachment.mimeType,
+                  uri: await getObjectPresignedUri({ key: attachment.s3Key }),
+                };
               })
           ),
           editable: record.authorId === user(session),
@@ -335,6 +335,17 @@ function ResourceTitle({
   title,
   type,
 }: Pick<ResourceInView, 'attachments' | 'link' | 'title' | 'type'>) {
+  const [attachment] = attachments;
+
+  const formattedType = match(type as ResourceType)
+    .with('file', () => {
+      return attachment.mimeType.slice(
+        attachment.mimeType.lastIndexOf('/') + 1
+      );
+    })
+    .with('url', () => 'URL')
+    .exhaustive();
+
   return (
     <div>
       <Link
@@ -343,7 +354,7 @@ function ResourceTitle({
           'hover:text-primary hover:underline'
         )}
         target="_blank"
-        to={type === ResourceType.URL ? link! : attachments?.[0]}
+        to={type === ResourceType.URL ? link! : attachment.uri}
       >
         {title}
       </Link>
@@ -356,7 +367,7 @@ function ResourceTitle({
           weight: '600',
         })}
       >
-        {FORMATTED_RESOURCE_TYPE[type as ResourceType]}
+        {formattedType}
       </span>
     </div>
   );

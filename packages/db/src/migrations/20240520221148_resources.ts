@@ -77,6 +77,9 @@ export async function up(db: Kysely<any>) {
     .addColumn('id', 'text', (column) => {
       return column.primaryKey();
     })
+    .addColumn('mime_type', 'text', (column) => {
+      return column.notNull();
+    })
     .addColumn('resource_id', 'text', (column) => {
       return column.notNull().references('resources.id');
     })

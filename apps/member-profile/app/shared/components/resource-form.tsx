@@ -176,19 +176,25 @@ export function ResourceAttachmentField({
 }: FieldProps<ResourceType>) {
   const { type } = useContext(ResourceFormContext);
 
-  if (type !== 'attachment') {
+  if (type !== 'file') {
     return null;
   }
 
   return (
     <Form.Field
-      description="Please choose the file you'd like to upload."
+      description="Must be one of the following file types: PNG, JPG, or PDF."
       error={error}
       label="Attachment"
       labelFor={name}
       required
     >
-      <input accept=".pdf" id={name} name={name} required type="file" />
+      <input
+        accept="image/png,, image/jpeg, .pdf"
+        id={name}
+        name={name}
+        required
+        type="file"
+      />
     </Form.Field>
   );
 }
@@ -241,10 +247,8 @@ export function ResourceTypeField({
         }}
         required
       >
+        <option value={ResourceType.FILE}>File</option>
         <option value={ResourceType.URL}>URL</option>
-        <option value={ResourceType.ATTACHMENT}>
-          Attachment (ie: PDF, PNG)
-        </option>
       </Select>
     </Form.Field>
   );

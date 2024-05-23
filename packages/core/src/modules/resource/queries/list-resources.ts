@@ -43,14 +43,19 @@ export async function listResources<
       });
     })
     .$if(!!where.tags.length, (qb) => {
-      return qb
-        .leftJoin('resourceTags', 'resourceTags.resourceId', 'resources.id')
-        .groupBy('resources.id')
-        .having(
-          sql`array_agg(resource_tags.tag_id)`,
-          '@>',
-          sql<string[]>`${where.tags}`
-        );
+      return qb.where((eb) => {
+        return eb.exists((eb) => {
+          return eb
+            .selectFrom('resourceTags')
+            .whereRef('resourceTags.resourceId', '=', 'resources.id')
+            .groupBy('resources.id')
+            .having(
+              sql`array_agg(resource_tags.tag_id)`,
+              '@>',
+              sql<string[]>`${where.tags}`
+            );
+        });
+      });
     });
 
   const countQuery = baseQuery.select((eb) =>
@@ -67,6 +72,7 @@ export async function listResources<
           .whereRef('resourceAttachments.resourceId', '=', 'resources.id')
           .select(({ fn, ref }) => {
             const object = jsonBuildObject({
+              mimeType: ref('resourceAttachments.mimeType'),
               s3Key: ref('resourceAttachments.s3Key'),
             });
 
@@ -77,7 +83,7 @@ export async function listResources<
                   .filterWhere('s3Key', 'is not', null),
                 sql`'[]'`
               )
-              .$castTo<{ s3Key: string }[]>()
+              .$castTo<{ mimeType: string; s3Key: string }[]>()
               .as('attachments');
           })
           .as('attachments');
@@ -110,12 +116,12 @@ export async function listResources<
       },
       (eb) => {
         return eb
-          .exists(
-            eb
+          .exists((eb) => {
+            return eb
               .selectFrom('resourceUpvotes')
               .whereRef('resourceUpvotes.resourceId', '=', 'resources.id')
-              .where('resourceUpvotes.studentId', '=', memberId)
-          )
+              .where('resourceUpvotes.studentId', '=', memberId);
+          })
           .as('upvoted');
       },
     ])

@@ -48,6 +48,7 @@ export async function addResource(input: AddResourceInput) {
         .insertInto('resourceAttachments')
         .values({
           id: attachmentId,
+          mimeType: attachment.type,
           resourceId: resource.id,
           s3Key: attachmentKey,
         })
