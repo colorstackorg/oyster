@@ -43,6 +43,8 @@ const ResourcesSearchParams = ListSearchParams.pick({
   page: true,
 }).merge(ListResourcesWhere);
 
+const keys = ResourcesSearchParams.keyof().enum;
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
@@ -105,25 +107,33 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
 
   const tags = await iife(async () => {
+    const result: { id: string; name: string; param: string }[] = [];
+
     if (searchParams.id && resources[0]) {
-      return [
-        {
-          id: searchParams.id,
-          name: resources[0].title,
-        },
-      ];
+      result.push({
+        id: searchParams.id,
+        name: resources[0].title as string,
+        param: keys.id,
+      });
     }
 
     if (searchParams.tags.length) {
-      return listTags({
+      const tags = await listTags({
         limit: 100,
         page: 1,
         select: ['tags.id', 'tags.name'],
         where: { ids: searchParams.tags },
       });
+
+      tags.forEach((tag) => {
+        result.push({
+          ...tag,
+          param: keys.tags,
+        });
+      });
     }
 
-    return [];
+    return result;
   });
 
   return json({
@@ -133,8 +143,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function ResourcesPage() {
-  const { tags } = useLoaderData<typeof loader>();
-
   return (
     <>
       <header className="flex items-center justify-between gap-4">
@@ -151,28 +159,40 @@ export default function ResourcesPage() {
         <div className="ml-auto flex items-center gap-2"></div>
       </Dashboard.Subheader>
 
-      {!!tags.length && (
-        <ul className="flex flex-wrap items-center gap-2">
-          {tags.map((tag) => {
-            return (
-              <li>
-                <Pill
-                  key={tag.id}
-                  color="pink-100"
-                  onCloseHref={Route['/resources']}
-                >
-                  {tag.name}
-                </Pill>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
+      <AppliedTagsList />
       <ResourcesList />
-
       <Outlet />
     </>
+  );
+}
+
+function AppliedTagsList() {
+  const { tags } = useLoaderData<typeof loader>();
+  const [_searchParams] = useSearchParams();
+
+  if (!tags.length) {
+    return null;
+  }
+
+  return (
+    <ul className="flex flex-wrap items-center gap-2">
+      {tags.map((tag) => {
+        const searchParams = new URLSearchParams(_searchParams);
+
+        searchParams.delete(tag.param, tag.id);
+
+        return (
+          <li key={tag.id}>
+            <Pill
+              color="pink-100"
+              onCloseHref={{ search: searchParams.toString() }}
+            >
+              {tag.name}
+            </Pill>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -289,22 +309,6 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
         </div>
 
         <ul className="flex items-center gap-1">
-          <li>
-            <button
-              className={getIconButtonCn({
-                backgroundColor: 'gray-100',
-                backgroundColorOnHover: 'gray-200',
-              })}
-              onClick={() => {
-                navigator.clipboard.writeText(resource.shareableUri);
-                toast({ message: 'Copied URL to clipboard!' });
-              }}
-              type="button"
-            >
-              <Share />
-            </button>
-          </li>
-
           {!!resource.editable && (
             <li>
               <Link
@@ -320,6 +324,22 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
               </Link>
             </li>
           )}
+
+          <li>
+            <button
+              className={getIconButtonCn({
+                backgroundColor: 'gray-100',
+                backgroundColorOnHover: 'gray-200',
+              })}
+              onClick={() => {
+                navigator.clipboard.writeText(resource.shareableUri);
+                toast({ message: 'Copied URL to clipboard!' });
+              }}
+              type="button"
+            >
+              <Share />
+            </button>
+          </li>
         </ul>
       </section>
     </li>

@@ -21,7 +21,7 @@ export type PillProps = Pick<React.HTMLProps<HTMLElement>, 'children'> & {
     | 'red-100'
     | 'success';
 
-  onCloseHref?: string;
+  onCloseHref?: LinkProps['to'];
 
   to?: LinkProps['to'];
 };
