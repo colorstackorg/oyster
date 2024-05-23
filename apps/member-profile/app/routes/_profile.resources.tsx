@@ -22,6 +22,7 @@ import {
   getButtonCn,
   getIconButtonCn,
   getTextCn,
+  Pagination,
   Pill,
   ProfilePicture,
   Text,
@@ -55,7 +56,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     tags: url.searchParams.getAll('tags'),
   });
 
-  const records = await listResources({
+  const { resources: records, totalCount } = await listResources({
     limit: searchParams.limit,
     memberId: user(session),
     page: searchParams.page,
@@ -137,8 +138,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 
   return json({
+    limit: searchParams.limit,
+    page: searchParams.page,
     resources,
     tags,
+    totalCount,
   });
 }
 
@@ -161,8 +165,22 @@ export default function ResourcesPage() {
 
       <AppliedTagsList />
       <ResourcesList />
+      <ResourcesPagination />
       <Outlet />
     </>
+  );
+}
+
+function ResourcesPagination() {
+  const { limit, resources, page, totalCount } = useLoaderData<typeof loader>();
+
+  return (
+    <Pagination
+      dataLength={resources.length}
+      page={page}
+      pageSize={limit}
+      totalCount={totalCount}
+    />
   );
 }
 
@@ -208,7 +226,7 @@ function ResourcesList() {
   }
 
   return (
-    <ul className="grid grid-cols-1 gap-2 overflow-scroll @[800px]:grid-cols-2 @[1200px]:grid-cols-3 @[1600px]:grid-cols-4">
+    <ul className="grid grid-cols-1 gap-2 @[800px]:grid-cols-2 @[1200px]:grid-cols-3 @[1600px]:grid-cols-4">
       {resources.map((resource) => {
         return <ResourceItem key={resource.id} resource={resource} />;
       })}

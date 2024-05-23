@@ -15,7 +15,34 @@ type ListResourcesOptions<Selection> = {
 export async function listResources<
   Selection extends SelectExpression<DB, 'resources' | 'students'>,
 >({ limit, memberId, page, select, where }: ListResourcesOptions<Selection>) {
-  const resources = await db
+  const countQuery = db
+    .selectFrom('resources')
+    .$if(!!where.id, (qb) => {
+      return qb.where('resources.id', '=', where.id!);
+    })
+    .$if(!!where.search, (qb) => {
+      const { search } = where;
+
+      return qb.where((eb) => {
+        return eb.or([
+          eb('title', 'ilike', `%${search}%`),
+          eb(sql`word_similarity(title, ${search})`, '>', 0.25),
+        ]);
+      });
+    })
+    .$if(!!where.tags.length, (qb) => {
+      return qb
+        .leftJoin('resourceTags', 'resourceTags.resourceId', 'resources.id')
+        .groupBy('resources.id')
+        .having(
+          sql`array_agg(resource_tags.tag_id)`,
+          '@>',
+          sql<string[]>`${where.tags}`
+        );
+    })
+    .select((eb) => eb.fn.countAll<string>().as('count'));
+
+  const recordsQuery = db
     .with('a', (qb) => {
       return qb
         .selectFrom('resources')
@@ -103,8 +130,15 @@ export async function listResources<
           .as('upvoted');
       },
     ])
-    .orderBy('resources.postedAt', 'desc')
-    .execute();
+    .orderBy('resources.postedAt', 'desc');
 
-  return resources;
+  const [resources, { count }] = await Promise.all([
+    recordsQuery.execute(),
+    countQuery.executeTakeFirstOrThrow(),
+  ]);
+
+  return {
+    resources,
+    totalCount: Number(count),
+  };
 }
