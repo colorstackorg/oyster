@@ -7,9 +7,14 @@ import { ListSearchParams } from '@/shared/types';
 // Types
 
 export const ResourceType = {
-  ATTACHMENT: 'attachment',
+  PDF: 'pdf',
   URL: 'url',
 } as const;
+
+export const FORMATTED_RESOURCE_TYPE: Record<ResourceType, string> = {
+  pdf: 'PDF',
+  url: 'URL',
+};
 
 export type ResourceType = ExtractValue<typeof ResourceType>;
 

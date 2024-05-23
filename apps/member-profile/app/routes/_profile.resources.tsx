@@ -30,14 +30,21 @@ import {
   Select,
   Text,
 } from '@oyster/ui';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipText,
+  TooltipTrigger,
+} from '@oyster/ui/tooltip';
 import { iife } from '@oyster/utils';
 
 import { listResources, listTags } from '@/member-profile.server';
 import {
+  FORMATTED_RESOURCE_TYPE,
   ListResourcesOrderBy,
   ListResourcesWhere,
   ListSearchParams,
-  type ResourceType,
+  ResourceType,
 } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { useToast } from '@/shared/hooks/use-toast';
@@ -169,7 +176,7 @@ export default function ResourcesPage() {
         <SortResourcesForm />
       </section>
 
-      <AppliedTagsList />
+      <CurrentTagsList />
       <ResourcesList />
       <ResourcesPagination />
       <Outlet />
@@ -204,20 +211,7 @@ function SortResourcesForm() {
   );
 }
 
-function ResourcesPagination() {
-  const { limit, resources, page, totalCount } = useLoaderData<typeof loader>();
-
-  return (
-    <Pagination
-      dataLength={resources.length}
-      page={page}
-      pageSize={limit}
-      totalCount={totalCount}
-    />
-  );
-}
-
-function AppliedTagsList() {
+function CurrentTagsList() {
   const { tags } = useLoaderData<typeof loader>();
   const [_searchParams] = useSearchParams();
 
@@ -247,6 +241,21 @@ function AppliedTagsList() {
   );
 }
 
+function ResourcesPagination() {
+  const { limit, resources, page, totalCount } = useLoaderData<typeof loader>();
+
+  return (
+    <Pagination
+      dataLength={resources.length}
+      page={page}
+      pageSize={limit}
+      totalCount={totalCount}
+    />
+  );
+}
+
+// List
+
 function ResourcesList() {
   const { resources } = useLoaderData<typeof loader>();
 
@@ -270,85 +279,36 @@ function ResourcesList() {
 type ResourceInView = SerializeFrom<typeof loader>['resources'][number];
 
 function ResourceItem({ resource }: { resource: ResourceInView }) {
-  const fetcher = useFetcher();
-  const toast = useToast();
-
   return (
     <li className="flex flex-col gap-3 rounded-3xl border border-gray-200 p-4">
       <header className="flex justify-between gap-2">
-        <Link
-          className={cx(
-            getTextCn({ variant: 'xl' }),
-            'hover:text-primary hover:underline'
-          )}
-          target="_blank"
-          to={resource.link || resource.attachments?.[0]}
-        >
-          {resource.title}
-        </Link>
-
-        <fetcher.Form
-          action={
-            resource.upvoted
-              ? `/api/resources/${resource.id}/downvote`
-              : `/api/resources/${resource.id}/upvote`
-          }
-          method="post"
-        >
-          <button
-            className={cx(
-              getTextCn({ color: 'gray-500', variant: 'sm' }),
-              'flex h-fit items-center gap-1 rounded-full border border-gray-200 px-2 py-0.5',
-              resource.upvoted && 'border-primary bg-primary text-white',
-              !resource.upvoted && 'hover:border-primary hover:text-primary'
-            )}
-            type="submit"
-          >
-            <ArrowUp size="16" /> <span>{resource.upvotes}</span>
-          </button>
-        </fetcher.Form>
+        <ResourceTitle
+          attachments={resource.attachments}
+          link={resource.link}
+          title={resource.title}
+          type={resource.type}
+        />
+        <UpvoteResourceButton
+          id={resource.id}
+          upvoted={resource.upvoted}
+          upvotes={resource.upvotes}
+        />
       </header>
 
       <Text className="line-clamp-2" color="gray-500" variant="sm">
         {resource.description}
       </Text>
 
-      <ul className="mb-2 flex flex-wrap items-center gap-1">
-        <Pill color="orange-100">
-          {match(resource.type as ResourceType)
-            .with('attachment', () => 'Attachment')
-            .with('url', () => 'URL')
-            .exhaustive()}
-        </Pill>
+      <ResourceTagList tags={resource.tags} />
 
-        {resource.tags.map((tag) => {
-          return <TagPill key={tag.id} id={tag.id} name={tag.name} />;
-        })}
-      </ul>
-
-      <section className="mt-auto flex items-center justify-between gap-2">
+      <footer className="mt-auto flex items-center justify-between gap-2">
         <div className="flex items-center gap-1">
-          <div className="flex w-fit items-center gap-2">
-            <ProfilePicture
-              initials={
-                resource.authorFirstName![0] + resource.authorLastName![0]
-              }
-              size="32"
-              src={resource.authorProfilePicture || undefined}
-            />
-
-            <Link
-              className={cx(
-                getTextCn({ color: 'gray-500', variant: 'sm' }),
-                'hover:underline'
-              )}
-              to={generatePath(Route['/directory/:id'], {
-                id: resource.authorId,
-              })}
-            >
-              {resource.authorFirstName} {resource.authorLastName}
-            </Link>
-          </div>
+          <ResourceAuthor
+            authorFirstName={resource.authorFirstName}
+            authorId={resource.authorId}
+            authorLastName={resource.authorLastName}
+            authorProfilePicture={resource.authorProfilePicture}
+          />
 
           <Text color="gray-500" variant="sm">
             &bull;
@@ -359,54 +319,185 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
           </Text>
         </div>
 
-        <ul className="flex items-center gap-1">
-          {!!resource.editable && (
-            <li>
+        <ResourceActionGroup
+          editable={resource.editable}
+          id={resource.id}
+          shareableUri={resource.shareableUri}
+        />
+      </footer>
+    </li>
+  );
+}
+
+function ResourceTitle({
+  attachments,
+  link,
+  title,
+  type,
+}: Pick<ResourceInView, 'attachments' | 'link' | 'title' | 'type'>) {
+  return (
+    <div>
+      <Link
+        className={cx(
+          getTextCn({ variant: 'xl' }),
+          'hover:text-primary hover:underline'
+        )}
+        target="_blank"
+        to={type === ResourceType.URL ? link! : attachments?.[0]}
+      >
+        {title}
+      </Link>
+
+      <span
+        className={getTextCn({
+          className: 'ml-2 uppercase',
+          color: 'gray-500',
+          variant: 'xs',
+          weight: '600',
+        })}
+      >
+        {FORMATTED_RESOURCE_TYPE[type as ResourceType]}
+      </span>
+    </div>
+  );
+}
+
+function UpvoteResourceButton({
+  id,
+  upvoted,
+  upvotes,
+}: Pick<ResourceInView, 'id' | 'upvoted' | 'upvotes'>) {
+  const fetcher = useFetcher();
+
+  const action = upvoted
+    ? `/api/resources/${id}/downvote`
+    : `/api/resources/${id}/upvote`;
+
+  return (
+    <fetcher.Form action={action} method="post">
+      <button
+        className={cx(
+          getTextCn({ color: 'gray-500', variant: 'sm' }),
+          'flex h-fit items-center gap-1 rounded-full border border-gray-200 px-2 py-0.5',
+          upvoted
+            ? 'border-primary bg-primary text-white'
+            : 'hover:border-primary hover:text-primary'
+        )}
+        type="submit"
+      >
+        <ArrowUp size="16" /> <span>{upvotes}</span>
+      </button>
+    </fetcher.Form>
+  );
+}
+
+function ResourceTagList({ tags }: Pick<ResourceInView, 'tags'>) {
+  const [_searchParams] = useSearchParams();
+
+  return (
+    <ul className="mb-2 flex flex-wrap items-center gap-1">
+      {tags.map((tag) => {
+        const searchParams = new URLSearchParams(_searchParams);
+
+        if (!searchParams.getAll('tags').includes(tag.id)) {
+          searchParams.append('tags', tag.id);
+        }
+
+        return (
+          <Pill
+            color="pink-100"
+            key={tag.id}
+            to={{ search: searchParams.toString() }}
+          >
+            {tag.name}
+          </Pill>
+        );
+      })}
+    </ul>
+  );
+}
+
+function ResourceAuthor({
+  authorFirstName: firstName,
+  authorId: id,
+  authorLastName: lastName,
+  authorProfilePicture: profilePicture,
+}: Pick<
+  ResourceInView,
+  'authorFirstName' | 'authorId' | 'authorLastName' | 'authorProfilePicture'
+>) {
+  return (
+    <div className="flex w-fit items-center gap-2">
+      <ProfilePicture
+        initials={firstName![0] + lastName![0]}
+        size="32"
+        src={profilePicture || undefined}
+      />
+
+      <Link
+        className={cx(
+          getTextCn({ color: 'gray-500', variant: 'sm' }),
+          'hover:underline'
+        )}
+        to={generatePath(Route['/directory/:id'], { id })}
+      >
+        {firstName} {lastName}
+      </Link>
+    </div>
+  );
+}
+
+function ResourceActionGroup({
+  editable,
+  id,
+  shareableUri,
+}: Pick<ResourceInView, 'editable' | 'id' | 'shareableUri'>) {
+  const toast = useToast();
+
+  const buttonClassName = getIconButtonCn({
+    backgroundColor: 'gray-100',
+    backgroundColorOnHover: 'gray-200',
+  });
+
+  return (
+    <ul className="flex items-center gap-1">
+      {!!editable && (
+        <li>
+          <Tooltip>
+            <TooltipTrigger asChild>
               <Link
-                className={getIconButtonCn({
-                  backgroundColor: 'gray-100',
-                  backgroundColorOnHover: 'gray-200',
-                })}
-                to={generatePath(Route['/resources/:id/edit'], {
-                  id: resource.id,
-                })}
+                className={buttonClassName}
+                to={generatePath(Route['/resources/:id/edit'], { id })}
               >
                 <Edit />
               </Link>
-            </li>
-          )}
+            </TooltipTrigger>
+            <TooltipContent>
+              <TooltipText>Edit Resource</TooltipText>
+            </TooltipContent>
+          </Tooltip>
+        </li>
+      )}
 
-          <li>
+      <li>
+        <Tooltip>
+          <TooltipTrigger asChild>
             <button
-              className={getIconButtonCn({
-                backgroundColor: 'gray-100',
-                backgroundColorOnHover: 'gray-200',
-              })}
+              className={buttonClassName}
               onClick={() => {
-                navigator.clipboard.writeText(resource.shareableUri);
+                navigator.clipboard.writeText(shareableUri);
                 toast({ message: 'Copied URL to clipboard!' });
               }}
               type="button"
             >
               <Share />
             </button>
-          </li>
-        </ul>
-      </section>
-    </li>
-  );
-}
-
-function TagPill({ id, name }: ResourceInView['tags'][number]) {
-  const [searchParams] = useSearchParams();
-
-  if (!searchParams.getAll('tags').includes(id)) {
-    searchParams.append('tags', id);
-  }
-
-  return (
-    <Pill color="pink-100" to={{ search: searchParams.toString() }}>
-      {name}
-    </Pill>
+          </TooltipTrigger>
+          <TooltipContent>
+            <TooltipText>Copy Resource Link</TooltipText>
+          </TooltipContent>
+        </Tooltip>
+      </li>
+    </ul>
   );
 }

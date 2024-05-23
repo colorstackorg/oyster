@@ -46,6 +46,7 @@ export {
   AddResourceInput,
   CreateTagInput,
   DownvoteResourceInput,
+  FORMATTED_RESOURCE_TYPE,
   ListResourcesOrderBy,
   ListResourcesWhere,
   ResourceType,
