@@ -7,9 +7,11 @@ import {
   generatePath,
   Link,
   Outlet,
+  Form as RemixForm,
   useFetcher,
   useLoaderData,
   useSearchParams,
+  useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { ArrowUp, Edit, Plus, Share } from 'react-feather';
@@ -25,12 +27,14 @@ import {
   Pagination,
   Pill,
   ProfilePicture,
+  Select,
   Text,
 } from '@oyster/ui';
 import { iife } from '@oyster/utils';
 
 import { listResources, listTags } from '@/member-profile.server';
 import {
+  ListResourcesOrderBy,
   ListResourcesWhere,
   ListSearchParams,
   type ResourceType,
@@ -42,7 +46,9 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 const ResourcesSearchParams = ListSearchParams.pick({
   limit: true,
   page: true,
-}).merge(ListResourcesWhere);
+})
+  .merge(ListResourcesWhere)
+  .extend({ orderBy: ListResourcesOrderBy });
 
 const keys = ResourcesSearchParams.keyof().enum;
 
@@ -60,6 +66,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     limit: searchParams.limit,
     memberId: user(session),
     page: searchParams.page,
+    orderBy: searchParams.orderBy,
     select: [
       'resources.description',
       'resources.id',
@@ -81,13 +88,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const baseResourcePath = `${url.protocol}://${url.host}/resources`;
 
+  console.log(records[0]);
+
   const resources = await Promise.all(
     records.map(
-      async ({ attachments = [], postedAt, upvotes, upvoted, ...record }) => {
+      async ({ attachments, postedAt, tags, upvotes, upvoted, ...record }) => {
         return {
           ...record,
           attachments: await Promise.all(
-            attachments
+            (attachments || [])
               .filter((attachment) => {
                 return !!attachment.s3Key;
               })
@@ -100,6 +109,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           editable: record.authorId === user(session),
           postedAt: dayjs().to(postedAt),
           shareableUri: `${baseResourcePath}?id=${record.id}`,
+          tags: tags!,
           upvotes: Number(upvotes),
           upvoted: Boolean(upvoted),
         };
@@ -139,6 +149,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return json({
     limit: searchParams.limit,
+    orderBy: searchParams.orderBy,
     page: searchParams.page,
     resources,
     tags,
@@ -157,17 +168,43 @@ export default function ResourcesPage() {
         </Link>
       </header>
 
-      <Dashboard.Subheader>
+      <section className="flex gap-4">
         <Dashboard.SearchForm placeholder="Search by title..." />
-
-        <div className="ml-auto flex items-center gap-2"></div>
-      </Dashboard.Subheader>
+        <SortResourcesForm />
+      </section>
 
       <AppliedTagsList />
       <ResourcesList />
       <ResourcesPagination />
       <Outlet />
     </>
+  );
+}
+
+function SortResourcesForm() {
+  const { orderBy } = useLoaderData<typeof loader>();
+
+  const submit = useSubmit();
+
+  const sortKeys = ListResourcesOrderBy._def.innerType.enum;
+
+  return (
+    <RemixForm
+      className="flex min-w-[12rem] items-center gap-4"
+      method="get"
+      onChange={(e) => submit(e.currentTarget)}
+    >
+      <Select
+        defaultValue={orderBy}
+        name={keys.orderBy}
+        id={keys.orderBy}
+        placeholder="Sort By..."
+        required
+      >
+        <option value={sortKeys.newest}>Newest</option>
+        <option value={sortKeys.most_upvotes}>Most Upvotes</option>
+      </Select>
+    </RemixForm>
   );
 }
 

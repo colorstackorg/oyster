@@ -59,6 +59,10 @@ const Tag = z.object({
 
 // Querie(s)
 
+export const ListResourcesOrderBy = z
+  .enum(['newest', 'most_upvotes'])
+  .catch('newest');
+
 export const ListResourcesWhere = ListSearchParams.pick({
   search: true,
 }).extend({
@@ -66,6 +70,7 @@ export const ListResourcesWhere = ListSearchParams.pick({
   tags: z.string().trim().array().catch([]),
 });
 
+export type ListResourcesOrderBy = z.infer<typeof ListResourcesOrderBy>;
 export type ListResourcesWhere = z.infer<typeof ListResourcesWhere>;
 
 // Use Case(s)
