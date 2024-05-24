@@ -87,6 +87,8 @@ export async function action({ request }: ActionFunctionArgs) {
     type: 'success',
   });
 
+  // TODO: Include query params...
+
   return redirect(Route['/resources'], {
     headers: {
       'Set-Cookie': await commitSession(session),
