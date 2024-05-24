@@ -2,8 +2,10 @@ import { type SelectExpression } from 'kysely';
 
 import { db, type DB } from '@oyster/db';
 
+import { type ListSearchParams } from '@/shared/types';
+
 type ListTagsOptions<Selection> = {
-  pagination: { limit: number; page: number };
+  pagination: Pick<ListSearchParams, 'limit' | 'page'>;
   select: Selection[];
   where: { ids?: string[]; search?: string };
 };

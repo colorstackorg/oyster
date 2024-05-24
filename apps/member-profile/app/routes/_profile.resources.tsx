@@ -23,7 +23,7 @@ import {
   ResourceType,
 } from '@oyster/core/resources';
 import { listResources, listTags } from '@oyster/core/resources.server';
-import { getObjectPresignedUri } from '@oyster/infrastructure/object-storage';
+import { getPresignedURL } from '@oyster/infrastructure/object-storage';
 import {
   cx,
   Dashboard,
@@ -57,7 +57,7 @@ const ResourcesSearchParams = ListSearchParams.pick({
   .merge(ListResourcesWhere)
   .extend({ orderBy: ListResourcesOrderBy });
 
-const keys = ResourcesSearchParams.keyof().enum;
+const searchKeys = ResourcesSearchParams.keyof().enum;
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -108,21 +108,36 @@ export async function loader({ request }: LoaderFunctionArgs) {
       }) => {
         return {
           ...record,
+
+          // If there are any attachments, we need to generate a presigned URL
+          // to the object in the Cloudflare R2 bucket.
           attachments: await Promise.all(
-            (attachments || [])
-              .filter((attachment) => {
-                return !!attachment.s3Key;
-              })
-              .map(async (attachment) => {
-                return {
-                  mimeType: attachment.mimeType,
-                  uri: await getObjectPresignedUri({ key: attachment.s3Key }),
-                };
-              })
+            (attachments || []).map(async (attachment) => {
+              return {
+                mimeType: attachment.mimeType,
+                uri: await getPresignedURL({
+                  expiresIn: 60 * 60, // 1 hour
+                  key: attachment.s3Key,
+                }),
+              };
+            })
           ),
+
+          // If the logged-in member is the poster of the resource, they should
+          // be able to edit the resource.
           editable: record.posterId === user(session),
+
+          // This is a relative time of when the resource was posted.
+          // TODO: We should also send a formatted "absolute" time that shows
+          // the exact date and time the resource was posted upon hovering
+          // over the relative time.
           postedAt: dayjs().to(postedAt),
+
+          // This is the URL that can be shared with others to view the
+          // resource. Note: This is a URL to our application, not the _actual_
+          // resource URL (which has permissions via the presigned URL).
           shareableUri: `${url.protocol}://${url.host}/resources?id=${record.id}`,
+
           tags: tags!,
           upvotes: Number(upvotes),
           upvoted: Boolean(upvoted),
@@ -135,17 +150,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const tags = await iife(async () => {
     const result: { id: string; name: string; param: string }[] = [];
 
+    // If there is an ID in the search params, we want to show a tag for it
+    // to make it clear that the search is for a specific resource.
     if (searchParams.id && resources[0]) {
       result.push({
         id: searchParams.id,
         name: resources[0].title as string,
-        param: keys.id,
+        param: searchKeys.id,
       });
     }
 
+    // To show tags for the search, we need to fetch the tag names.
     if (searchParams.tags.length) {
       const tags = await listTags({
-        pagination: { limit: 100, page: 1 },
+        pagination: { limit: 10, page: 1 },
         select: ['tags.id', 'tags.name'],
         where: { ids: searchParams.tags },
       });
@@ -153,7 +171,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       tags.forEach((tag) => {
         result.push({
           ...tag,
-          param: keys.tags,
+          param: searchKeys.tags,
         });
       });
     }
@@ -224,8 +242,8 @@ function SortResourcesForm() {
     >
       <Select
         defaultValue={orderBy}
-        name={keys.orderBy}
-        id={keys.orderBy}
+        name={searchKeys.orderBy}
+        id={searchKeys.orderBy}
         placeholder="Sort By..."
         required
         width="fit"
@@ -252,6 +270,8 @@ function CurrentTagsList() {
       {tags.map((tag) => {
         const searchParams = new URLSearchParams(_searchParams);
 
+        // Since there could be multiple tags, we need to specify the value
+        // along with the key.
         searchParams.delete(tag.param, tag.id);
 
         return (

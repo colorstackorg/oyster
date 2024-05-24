@@ -14,6 +14,8 @@ const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || '';
 
 // Queries + Use Cases
 
+// "Get Object"
+
 type GetObjectInput = {
   bucket?: string;
   key: string;
@@ -48,16 +50,31 @@ export async function getObject(
   return result;
 }
 
-type GetObjectPresignedUriInput = {
+// "Get Presigned URL"
+
+type GetPresignedURLInput = {
   bucket?: string;
+
+  /**
+   * The number of seconds the presigned URL should be valid for. If not
+   * specified, the default is 600 seconds (10 minutes).
+   */
+  expiresIn?: number;
+
   key: string;
 };
 
-type GetObjectPresignedUriResult = string;
+type GetPresignedURLResult = string;
 
-export async function getObjectPresignedUri(
-  input: GetObjectPresignedUriInput
-): Promise<GetObjectPresignedUriResult> {
+/**
+ * Returns a presigned URL that can be used to access the object stored in the
+ * S3-compatible bucket. If no bucket is specified, the default bucket is used.
+ *
+ * @param input - Specifies the object to get a presigned URL for.
+ */
+export async function getPresignedURL(
+  input: GetPresignedURLInput
+): Promise<GetPresignedURLResult> {
   const command = new GetObjectCommand({
     Bucket: input.bucket || R2_BUCKET_NAME,
     Key: input.key,
@@ -65,10 +82,14 @@ export async function getObjectPresignedUri(
 
   const client = getClient();
 
-  const url = await getSignedUrl(client, command);
+  const url = await getSignedUrl(client, command, {
+    expiresIn: input.expiresIn || 600,
+  });
 
   return url;
 }
+
+// "Put Object"
 
 type PutObjectInput = {
   bucket?: string;

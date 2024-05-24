@@ -8,11 +8,12 @@ import {
   type ListResourcesWhere,
 } from '@/modules/resource/resource.types';
 import { buildTagsField } from '@/modules/resource/shared';
+import { type ListSearchParams } from '@/shared/types';
 
 type ListResourcesOptions<Selection> = {
   memberId: string;
   orderBy: ListResourcesOrderBy;
-  pagination: { limit: number; page: number };
+  pagination: Pick<ListSearchParams, 'limit' | 'page'>;
   select: Selection[];
   where: ListResourcesWhere;
 };
