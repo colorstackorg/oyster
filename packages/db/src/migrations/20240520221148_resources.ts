@@ -104,9 +104,40 @@ export async function up(db: Kysely<any>) {
       'student_id',
     ])
     .execute();
+
+  await db.schema
+    .alterTable('completed_activities')
+    .addColumn('resource_id', 'text', (column) => {
+      return column.references('resources.id');
+    })
+    .execute();
+
+  await db.schema
+    .createIndex('completed_activities_resource_id_student_id_post_idx')
+    .unique()
+    .on('completed_activities')
+    .columns(['resource_id', 'student_id', 'type'])
+    .where('type', '=', 'post_resource')
+    .execute();
+
+  await db.schema
+    .createIndex('completed_activities_resource_id_student_id_upvote_idx')
+    .unique()
+    .on('completed_activities')
+    .columns(['resource_id', 'student_id', 'type'])
+    .where('type', '=', 'upvote_resource')
+    .execute();
 }
 
 export async function down(db: Kysely<any>) {
+  await db.schema
+    .dropIndex('completed_activities_resource_id_student_id_upvote_idx')
+    .execute();
+
+  await db.schema
+    .dropIndex('completed_activities_resource_id_student_id_post_idx')
+    .execute();
+
   await db.schema.dropTable('resource_views').execute();
   await db.schema.dropTable('resource_attachments').execute();
   await db.schema.dropTable('resource_upvotes').execute();

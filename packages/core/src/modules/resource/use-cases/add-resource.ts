@@ -2,6 +2,7 @@ import { db } from '@oyster/db';
 import { putObject } from '@oyster/infrastructure/object-storage';
 import { id } from '@oyster/utils';
 
+import { job } from '@/infrastructure/bull/use-cases/job';
 import { type AddResourceInput } from '@/modules/resource/resource.types';
 
 export async function addResource(input: AddResourceInput) {
@@ -56,6 +57,12 @@ export async function addResource(input: AddResourceInput) {
     }
 
     return resource;
+  });
+
+  job('gamification.activity.completed', {
+    resourceId: result.id,
+    studentId: input.postedBy,
+    type: 'post_resource',
   });
 
   return result;

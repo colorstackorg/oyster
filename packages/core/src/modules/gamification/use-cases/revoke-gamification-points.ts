@@ -105,5 +105,8 @@ export async function revokeGamificationPoints(
 
       await deleteQuery.execute();
     })
+    .with({ type: 'upvote_resource' }, async (input) => {
+      await deleteQuery.where('resourceId', '=', input.resourceId).execute();
+    })
     .exhaustive();
 }
