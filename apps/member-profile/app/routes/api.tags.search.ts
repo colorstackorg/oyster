@@ -4,10 +4,7 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 
-import { track } from '@oyster/infrastructure/mixpanel';
-
-import { listTags } from '@/member-profile.server';
-import { getSession, user } from '@/shared/session.server';
+import { listTags } from '@oyster/core/resources.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const search = new URL(request.url).searchParams.get('search') || '';

@@ -44,16 +44,7 @@ export { changePrimaryEmail } from './modules/member/use-cases/change-primary-em
 export { joinMemberDirectory } from './modules/member/use-cases/join-member-directory';
 export { updateAllowEmailShare } from './modules/member/use-cases/update-allow-email-share';
 export { updateMember } from './modules/member/use-cases/update-member';
-export { getResource } from './modules/resource/queries/get-resource';
-export { listResources } from './modules/resource/queries/list-resources';
-export { listTags } from './modules/resource/queries/list-tags';
 export { createResumeBook } from './modules/resume-book/use-cases/create-resume-book';
-export { addResource } from './modules/resource/use-cases/add-resource';
-export { createTag } from './modules/resource/use-cases/create-tag';
-export { downvoteResource } from './modules/resource/use-cases/downvote-resource';
-export { updateResource } from './modules/resource/use-cases/update-resource';
-export { upvoteResource } from './modules/resource/use-cases/upvote-resource';
-export { viewResource } from './modules/resource/use-cases/view-resource';
 export { reportException } from './modules/sentry/use-cases/report-exception';
 export { countMessagesSent } from './modules/slack/queries/count-messages-sent';
 export { claimSwagPack } from './modules/swag-pack/use-cases/claim-swag-pack';

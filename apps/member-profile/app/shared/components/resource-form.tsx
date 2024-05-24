@@ -6,6 +6,7 @@ import React, {
   useState,
 } from 'react';
 
+import { ResourceType } from '@oyster/core/resources.client';
 import {
   type FieldProps,
   Form,
@@ -25,7 +26,6 @@ import {
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import { ResourceType } from '@/member-profile.ui';
 import { type SearchTagsResult } from '@/routes/api.tags.search';
 
 type ResourceFormContext = {

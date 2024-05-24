@@ -1,6 +1,7 @@
 import { type ActionFunctionArgs, json } from '@remix-run/node';
 
-import { upvoteResource } from '@/member-profile.server';
+import { upvoteResource } from '@oyster/core/resources.server';
+
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function action({ params, request }: ActionFunctionArgs) {

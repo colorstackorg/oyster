@@ -11,6 +11,11 @@ import {
 } from '@remix-run/react';
 
 import {
+  type ResourceType,
+  UpdateResourceInput,
+} from '@oyster/core/resources.client';
+import { getResource, updateResource } from '@oyster/core/resources.server';
+import {
   Button,
   Divider,
   Form,
@@ -19,8 +24,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { getResource, updateResource } from '@/member-profile.server';
-import { type ResourceType, UpdateResourceInput } from '@/member-profile.ui';
 import {
   DescriptionField,
   ResourceFormProvider,

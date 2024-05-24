@@ -17,6 +17,12 @@ import dayjs from 'dayjs';
 import { ArrowUp, BarChart2, Edit, Plus, Share } from 'react-feather';
 import { match } from 'ts-pattern';
 
+import {
+  ListResourcesOrderBy,
+  ListResourcesWhere,
+  ResourceType,
+} from '@oyster/core/resources.client';
+import { listResources, listTags } from '@oyster/core/resources.server';
 import { getObjectPresignedUri } from '@oyster/infrastructure/object-storage';
 import {
   cx,
@@ -38,13 +44,7 @@ import {
 } from '@oyster/ui/tooltip';
 import { iife } from '@oyster/utils';
 
-import { listResources, listTags } from '@/member-profile.server';
-import {
-  ListResourcesOrderBy,
-  ListResourcesWhere,
-  ListSearchParams,
-  ResourceType,
-} from '@/member-profile.ui';
+import { ListSearchParams } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { useToast } from '@/shared/hooks/use-toast';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';

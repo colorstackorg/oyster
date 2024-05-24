@@ -1,6 +1,7 @@
 import { type ActionFunctionArgs, json } from '@remix-run/node';
 
-import { createTag } from '@/member-profile.server';
+import { createTag } from '@oyster/core/resources.server';
+
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function action({ request }: ActionFunctionArgs) {

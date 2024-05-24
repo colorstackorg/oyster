@@ -10,6 +10,8 @@ import {
 } from '@remix-run/node';
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 
+import { AddResourceInput } from '@oyster/core/resources.client';
+import { addResource } from '@oyster/core/resources.server';
 import {
   Button,
   Divider,
@@ -19,8 +21,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { addResource } from '@/member-profile.server';
-import { AddResourceInput } from '@/member-profile.ui';
 import {
   DescriptionField,
   ResourceAttachmentField,
