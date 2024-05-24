@@ -34,8 +34,8 @@ const Resource = z.object({
     .min(1)
     .max(80, 'Description must be 80 characters or less.'),
 
-  id: z.string().trim().min(1),
-  lastUpdatedAt: z.coerce.date().optional(),
+  id: z.string().min(1),
+
   link: z
     .string()
     .trim()
@@ -45,14 +45,14 @@ const Resource = z.object({
     .optional(),
 
   postedAt: z.coerce.date().optional(),
-  postedBy: z.string().trim().min(1),
-  title: z.string().trim().min(1),
+  postedBy: z.string().min(1),
+  title: z.string().min(1),
   type: z.nativeEnum(ResourceType),
 });
 
 const Tag = z.object({
   createdAt: z.coerce.date(),
-  id: z.string().trim().min(1),
+  id: z.string().min(1),
   name: z.string().trim().min(1),
 });
 
@@ -65,7 +65,7 @@ export const ListResourcesOrderBy = z
 export const ListResourcesWhere = z.object({
   id: z.string().min(1).optional().catch(undefined),
   search: ListSearchParams.shape.search,
-  tags: z.string().trim().array().catch([]),
+  tags: z.string().min(1).array().catch([]),
 });
 
 export type ListResourcesOrderBy = z.infer<typeof ListResourcesOrderBy>;
@@ -94,7 +94,7 @@ export const CreateTagInput = Tag.pick({
 });
 
 export const DownvoteResourceInput = z.object({
-  memberId: z.string().trim().min(1),
+  memberId: z.string().min(1),
 });
 
 export const UpdateResourceInput = AddResourceInput.omit({
@@ -104,11 +104,11 @@ export const UpdateResourceInput = AddResourceInput.omit({
 });
 
 export const UpvoteResourceInput = z.object({
-  memberId: z.string().trim().min(1),
+  memberId: z.string().min(1),
 });
 
 export const ViewResourceInput = z.object({
-  memberId: z.string().trim().min(1),
+  memberId: z.string().min(1),
 });
 
 export type AddResourceInput = z.infer<typeof AddResourceInput>;

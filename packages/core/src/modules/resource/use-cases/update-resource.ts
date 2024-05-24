@@ -8,7 +8,6 @@ export async function updateResource(id: string, input: UpdateResourceInput) {
       .updateTable('resources')
       .set({
         description: input.description,
-        lastUpdatedAt: new Date(),
         link: input.link,
         title: input.title,
       })

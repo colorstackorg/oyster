@@ -9,7 +9,6 @@ export async function up(db: Kysely<any>) {
     .addColumn('id', 'text', (column) => {
       return column.primaryKey();
     })
-    .addColumn('last_updated_at', 'timestamptz')
     .addColumn('link', 'text')
     .addColumn('posted_at', 'timestamptz', (column) => {
       return column.notNull().defaultTo(sql`now()`);
