@@ -28,7 +28,12 @@ const Resource = z.object({
     return [value] as File[];
   }),
 
-  description: z.string().trim().min(1),
+  description: z
+    .string()
+    .trim()
+    .min(1)
+    .max(80, 'Description must be 80 characters or less.'),
+
   id: z.string().trim().min(1),
   lastUpdatedAt: z.coerce.date().optional(),
   link: z

@@ -57,10 +57,17 @@ export function DescriptionField({
   name,
 }: FieldProps<string>) {
   return (
-    <Form.Field error={error} label="Description" labelFor={name} required>
+    <Form.Field
+      description="Must be no longer than 80 characters."
+      error={error}
+      label="Description"
+      labelFor={name}
+      required
+    >
       <Textarea
         defaultValue={defaultValue}
         id={name}
+        maxLength={80}
         minRows={2}
         name={name}
         required
