@@ -15,9 +15,9 @@ export type TextProps = Pick<
 export function Text({
   children,
   className,
-  color = 'black',
-  variant = 'md',
-  weight = '400',
+  color,
+  variant,
+  weight,
 }: TextProps) {
   return (
     <p
