@@ -8,6 +8,7 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
+  useSearchParams,
 } from '@remix-run/react';
 
 import { type ResourceType, UpdateResourceInput } from '@oyster/core/resources';
@@ -103,9 +104,15 @@ const keys = UpdateResourceInput.keyof().enum;
 export default function EditResourceModal() {
   const { resource } = useLoaderData<typeof loader>();
   const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const [searchParams] = useSearchParams();
 
   return (
-    <Modal onCloseTo={Route['/resources']}>
+    <Modal
+      onCloseTo={{
+        pathname: Route['/resources'],
+        search: searchParams.toString(),
+      }}
+    >
       <Modal.Header>
         <Modal.Title>Edit Resource</Modal.Title>
         <Modal.CloseButton />

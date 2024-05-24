@@ -175,10 +175,7 @@ export default function ResourcesPage() {
     <>
       <header className="flex items-center justify-between gap-4">
         <Text variant="2xl">Resources 📚</Text>
-
-        <Link className={getButtonCn({})} to={Route['/resources/add']}>
-          <Plus size={16} /> Add Resource
-        </Link>
+        <AddResourceLink />
       </header>
 
       <section className="flex gap-4">
@@ -191,6 +188,22 @@ export default function ResourcesPage() {
       <ResourcesPagination />
       <Outlet />
     </>
+  );
+}
+
+function AddResourceLink() {
+  const [searchParams] = useSearchParams();
+
+  return (
+    <Link
+      className={getButtonCn({})}
+      to={{
+        pathname: Route['/resources/add'],
+        search: searchParams.toString(),
+      }}
+    >
+      <Plus size={16} /> Add Resource
+    </Link>
   );
 }
 
@@ -497,6 +510,7 @@ function ResourceActionGroup({
   id,
   shareableUri,
 }: Pick<ResourceInView, 'editable' | 'id' | 'shareableUri'>) {
+  const [searchParams] = useSearchParams();
   const toast = useToast();
 
   const buttonClassName = getIconButtonCn({
@@ -512,7 +526,10 @@ function ResourceActionGroup({
             <TooltipTrigger asChild>
               <Link
                 className={buttonClassName}
-                to={generatePath(Route['/resources/:id/edit'], { id })}
+                to={{
+                  pathname: generatePath(Route['/resources/:id/edit'], { id }),
+                  search: searchParams.toString(),
+                }}
               >
                 <Edit />
               </Link>

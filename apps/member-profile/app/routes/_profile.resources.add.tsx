@@ -8,7 +8,11 @@ import {
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import {
+  Form as RemixForm,
+  useActionData,
+  useSearchParams,
+} from '@remix-run/react';
 
 import { AddResourceInput } from '@oyster/core/resources';
 import { addResource } from '@oyster/core/resources.server';
@@ -94,9 +98,15 @@ const keys = AddResourceInput.keyof().enum;
 
 export default function AddResourceModal() {
   const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const [searchParams] = useSearchParams();
 
   return (
-    <Modal onCloseTo={Route['/resources']}>
+    <Modal
+      onCloseTo={{
+        pathname: Route['/resources'],
+        search: searchParams.toString(),
+      }}
+    >
       <Modal.Header>
         <Modal.Title>Add Resource</Modal.Title>
         <Modal.CloseButton />
