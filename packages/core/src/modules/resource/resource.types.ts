@@ -56,16 +56,15 @@ const Tag = z.object({
   name: z.string().trim().min(1),
 });
 
-// Querie(s)
+// Queries
 
 export const ListResourcesOrderBy = z
   .enum(['newest', 'most_upvotes'])
   .catch('newest');
 
-export const ListResourcesWhere = ListSearchParams.pick({
-  search: true,
-}).extend({
+export const ListResourcesWhere = z.object({
   id: z.string().min(1).optional().catch(undefined),
+  search: ListSearchParams.shape.search,
   tags: z.string().trim().array().catch([]),
 });
 

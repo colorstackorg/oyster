@@ -33,24 +33,24 @@ import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-  user,
 } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  const session = await ensureUserAuthenticated(request);
+  await ensureUserAuthenticated(request);
 
   const record = await getResource({
-    memberId: user(session),
     select: [
       'resources.description',
       'resources.link',
       'resources.title',
       'resources.type',
     ],
-    where: {
-      id: params.id as string,
-    },
+    where: { id: params.id as string },
   });
+
+  if (!record) {
+    throw new Response(null, { status: 404 });
+  }
 
   const resource = {
     ...record,
@@ -124,7 +124,7 @@ export default function EditResourceModal() {
             name={keys.description}
           />
           <TagsField
-            defaultValue={resource.tags.map((tag) => {
+            defaultValue={(resource.tags || []).map((tag) => {
               return {
                 label: tag.name,
                 value: tag.id,

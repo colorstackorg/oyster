@@ -3,18 +3,13 @@ import { type SelectExpression } from 'kysely';
 import { db, type DB } from '@oyster/db';
 
 type ListTagsOptions<Selection> = {
-  limit: number;
-  page: number;
+  pagination: { limit: number; page: number };
   select: Selection[];
-  where: {
-    ids?: string[];
-    search?: string;
-  };
+  where: { ids?: string[]; search?: string };
 };
 
 export async function listTags<Selection extends SelectExpression<DB, 'tags'>>({
-  limit,
-  page,
+  pagination,
   select,
   where,
 }: ListTagsOptions<Selection>) {
@@ -28,7 +23,7 @@ export async function listTags<Selection extends SelectExpression<DB, 'tags'>>({
       return qb.where('name', 'ilike', `%${where.search}%`);
     })
     .orderBy('name', 'asc')
-    .limit(limit)
-    .offset((page - 1) * limit)
+    .limit(pagination.limit)
+    .offset((pagination.page - 1) * pagination.limit)
     .execute();
 }

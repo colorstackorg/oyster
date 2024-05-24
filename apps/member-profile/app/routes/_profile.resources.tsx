@@ -69,9 +69,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 
   const { resources: records, totalCount } = await listResources({
-    limit: searchParams.limit,
     memberId: user(session),
-    page: searchParams.page,
+    pagination: {
+      limit: searchParams.limit,
+      page: searchParams.page,
+    },
     orderBy: searchParams.orderBy,
     select: [
       'resources.description',
@@ -80,10 +82,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       'resources.postedAt',
       'resources.title',
       'resources.type',
-      'students.firstName as authorFirstName',
-      'students.id as authorId',
-      'students.lastName as authorLastName',
-      'students.profilePicture as authorProfilePicture',
+      'students.firstName as posterFirstName',
+      'students.id as posterId',
+      'students.lastName as posterLastName',
+      'students.profilePicture as posterProfilePicture',
     ],
     where: {
       id: searchParams.id,
@@ -117,7 +119,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
                 };
               })
           ),
-          editable: record.authorId === user(session),
+          editable: record.posterId === user(session),
           postedAt: dayjs().to(postedAt),
           shareableUri: `${url.protocol}://${url.host}/resources?id=${record.id}`,
           tags: tags!,
@@ -142,8 +144,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     if (searchParams.tags.length) {
       const tags = await listTags({
-        limit: 100,
-        page: 1,
+        pagination: { limit: 100, page: 1 },
         select: ['tags.id', 'tags.name'],
         where: { ids: searchParams.tags },
       });
@@ -314,11 +315,11 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
 
       <footer className="mt-auto flex items-center justify-between gap-2">
         <div className="flex items-center gap-1">
-          <ResourceAuthor
-            authorFirstName={resource.authorFirstName}
-            authorId={resource.authorId}
-            authorLastName={resource.authorLastName}
-            authorProfilePicture={resource.authorProfilePicture}
+          <ResourcePoster
+            posterFirstName={resource.posterFirstName}
+            posterId={resource.posterId}
+            posterLastName={resource.posterLastName}
+            posterProfilePicture={resource.posterProfilePicture}
           />
 
           <Text color="gray-500" variant="sm">
@@ -461,14 +462,14 @@ function ResourceTagList({ tags }: Pick<ResourceInView, 'tags'>) {
   );
 }
 
-function ResourceAuthor({
-  authorFirstName: firstName,
-  authorId: id,
-  authorLastName: lastName,
-  authorProfilePicture: profilePicture,
+function ResourcePoster({
+  posterFirstName: firstName,
+  posterId: id,
+  posterLastName: lastName,
+  posterProfilePicture: profilePicture,
 }: Pick<
   ResourceInView,
-  'authorFirstName' | 'authorId' | 'authorLastName' | 'authorProfilePicture'
+  'posterFirstName' | 'posterId' | 'posterLastName' | 'posterProfilePicture'
 >) {
   return (
     <div className="flex w-fit items-center gap-2">

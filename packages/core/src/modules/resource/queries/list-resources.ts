@@ -7,26 +7,35 @@ import {
   type ListResourcesOrderBy,
   type ListResourcesWhere,
 } from '@/modules/resource/resource.types';
+import { buildTagsField } from '@/modules/resource/shared';
 
 type ListResourcesOptions<Selection> = {
-  limit: number;
   memberId: string;
   orderBy: ListResourcesOrderBy;
-  page: number;
+  pagination: { limit: number; page: number };
   select: Selection[];
   where: ListResourcesWhere;
 };
 
+/**
+ * This is the core query that powers the resource database - it allows
+ * resources to be filtered by tags, a search query, and more. It can
+ * be ordered by newest or by the number of upvotes. It will also populate
+ * the "attachments", "upvoted", "upvotes", and "views" fields, which are all
+ * derived from other tables.
+ */
 export async function listResources<
   Selection extends SelectExpression<DB, 'resources' | 'students'>,
 >({
-  limit,
   memberId,
   orderBy,
-  page,
+  pagination,
   select,
   where,
 }: ListResourcesOptions<Selection>) {
+  // The base query only includes the conditions necessary to fulfill the
+  // filters passed in - it does not include any of the fields that need to be
+  // selected.
   const baseQuery = db
     .selectFrom('resources')
     .$if(!!where.id, (qb) => {
@@ -38,7 +47,7 @@ export async function listResources<
       return qb.where((eb) => {
         return eb.or([
           eb('title', 'ilike', `%${search}%`),
-          eb(sql`word_similarity(title, ${search})`, '>', 0.25),
+          eb(sql`word_similarity(title, ${search})`, '>=', 0.25),
         ]);
       });
     })
@@ -58,14 +67,21 @@ export async function listResources<
       });
     });
 
-  const countQuery = baseQuery.select((eb) =>
-    eb.fn.countAll<string>().as('count')
-  );
+  // Now that we have the filtered resources, we can count the total number
+  // of resources that match the filters (for pagination).
+  const countQuery = baseQuery.select([
+    (eb) => eb.fn.countAll<string>().as('count'),
+  ]);
 
   const fullQuery = baseQuery
     .leftJoin('students', 'students.id', 'resources.postedBy')
     .select([
       ...select,
+      buildTagsField,
+
+      // The "attachments" field is a JSON array of objects, each containing
+      // the "mimeType" and "s3Key" of an attachment associated with the
+      // resource.
       (eb) => {
         return eb
           .selectFrom('resourceAttachments')
@@ -77,50 +93,16 @@ export async function listResources<
             });
 
             return fn
-              .coalesce(
-                fn
-                  .jsonAgg(sql`${object} order by ${ref('createdAt')} asc`)
-                  .filterWhere('s3Key', 'is not', null),
-                sql`'[]'`
-              )
+              .jsonAgg(sql`${object} order by ${ref('createdAt')} asc`)
+              .filterWhere('s3Key', 'is not', null)
               .$castTo<{ mimeType: string; s3Key: string }[]>()
               .as('attachments');
           })
           .as('attachments');
       },
-      (eb) => {
-        return eb
-          .selectFrom('resourceTags')
-          .leftJoin('tags', 'tags.id', 'resourceTags.tagId')
-          .select(({ fn, ref }) => {
-            const object = jsonBuildObject({
-              id: ref('tags.id'),
-              name: ref('tags.name'),
-            });
 
-            return fn
-              .jsonAgg(sql`${object} order by ${ref('tags.name')} asc`)
-              .filterWhere('tags.id', 'is not', null)
-              .$castTo<{ id: string; name: string }[]>()
-              .as('tags');
-          })
-          .whereRef('resourceTags.resourceId', '=', 'resources.id')
-          .as('tags');
-      },
-      (eb) => {
-        return eb
-          .selectFrom('resourceUpvotes')
-          .select(eb.fn.countAll<string>().as('count'))
-          .whereRef('resourceUpvotes.resourceId', '=', 'resources.id')
-          .as('upvotes');
-      },
-      (eb) => {
-        return eb
-          .selectFrom('resourceViews')
-          .select(eb.fn.countAll<string>().as('count'))
-          .whereRef('resourceViews.resourceId', '=', 'resources.id')
-          .as('views');
-      },
+      // The "upvoted" field is a boolean indicating whether the current
+      // member has upvoted the resource or not.
       (eb) => {
         return eb
           .exists((eb) => {
@@ -131,25 +113,37 @@ export async function listResources<
           })
           .as('upvoted');
       },
+
+      // The "upvotes" field is the total number of upvotes the resource has
+      // received.
+      (eb) => {
+        return eb
+          .selectFrom('resourceUpvotes')
+          .select(eb.fn.countAll<string>().as('count'))
+          .whereRef('resourceUpvotes.resourceId', '=', 'resources.id')
+          .as('upvotes');
+      },
+
+      // The "views" field is the total number of views the resource has
+      // received.
+      (eb) => {
+        return eb
+          .selectFrom('resourceViews')
+          .select(eb.fn.countAll<string>().as('count'))
+          .whereRef('resourceViews.resourceId', '=', 'resources.id')
+          .as('views');
+      },
     ])
     .$if(orderBy === 'newest', (qb) => {
       return qb.orderBy('resources.postedAt', 'desc');
     })
     .$if(orderBy === 'most_upvotes', (qb) => {
-      return qb
-        .select([
-          (eb) => {
-            return eb
-              .selectFrom('resourceUpvotes')
-              .select(eb.fn.countAll<string>().as('count'))
-              .whereRef('resourceUpvotes.resourceId', '=', 'resources.id')
-              .as('upvotes');
-          },
-        ])
-        .orderBy('upvotes', 'desc');
+      // @ts-expect-error b/c we already have the "upvotes" field selected
+      // above. For some reason Kysely isn't recognizing it though.
+      return qb.orderBy('upvotes', 'desc');
     })
-    .limit(limit)
-    .offset((page - 1) * limit);
+    .limit(pagination.limit)
+    .offset((pagination.page - 1) * pagination.limit);
 
   const [resources, { count }] = await Promise.all([
     fullQuery.execute(),
