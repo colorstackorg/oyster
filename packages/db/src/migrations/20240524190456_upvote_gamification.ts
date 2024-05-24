@@ -16,7 +16,7 @@ export async function up(db: Kysely<any>) {
     .createIndex('completed_activities_resource_id_student_id_upvote_idx')
     .unique()
     .on('completed_activities')
-    .columns(['resource_id', 'resource_upvoted_by', 'student_id', 'type'])
+    .columns(['resource_id', 'resource_upvoted_by', 'type'])
     .where('type', '=', 'get_resource_upvote')
     .execute();
 }
