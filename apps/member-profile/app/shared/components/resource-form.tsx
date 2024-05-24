@@ -8,21 +8,19 @@ import React, {
 
 import { ResourceType } from '@oyster/core/resources';
 import {
+  ComboboxPopover,
   type FieldProps,
   Form,
   Input,
-  type MultiComboboxProps,
-  Select,
-  Textarea,
-} from '@oyster/ui';
-import {
-  ComboboxPopover,
   MultiCombobox,
   MultiComboboxDisplay,
   MultiComboboxItem,
+  type MultiComboboxProps,
   MultiComboboxSearch,
   MultiComboboxValues,
   Pill,
+  Select,
+  Textarea,
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
@@ -51,7 +49,37 @@ export function ResourceFormProvider({
   );
 }
 
-export function DescriptionField({
+export function ResourceAttachmentField({
+  defaultValue: _,
+  error,
+  name,
+}: FieldProps<ResourceType>) {
+  const { type } = useContext(ResourceFormContext);
+
+  if (type !== 'file') {
+    return null;
+  }
+
+  return (
+    <Form.Field
+      description="Must be one of the following file types: PNG, JPG, or PDF."
+      error={error}
+      label="Attachment"
+      labelFor={name}
+      required
+    >
+      <input
+        accept="image/png,, image/jpeg, .pdf"
+        id={name}
+        name={name}
+        required
+        type="file"
+      />
+    </Form.Field>
+  );
+}
+
+export function ResourceDescriptionField({
   defaultValue,
   error,
   name,
@@ -76,7 +104,31 @@ export function DescriptionField({
   );
 }
 
-export function TagsField({
+export function ResourceLinkField({
+  defaultValue,
+  error,
+  name,
+}: FieldProps<string>) {
+  const { type } = useContext(ResourceFormContext);
+
+  if (type !== 'url') {
+    return null;
+  }
+
+  return (
+    <Form.Field
+      description="Please include the full URL."
+      error={error}
+      label="URL"
+      labelFor={name}
+      required
+    >
+      <Input defaultValue={defaultValue} id={name} name={name} required />
+    </Form.Field>
+  );
+}
+
+export function ResourceTagsField({
   defaultValue,
   error,
   name,
@@ -168,63 +220,13 @@ export function TagsField({
   );
 }
 
-export function TitleField({ defaultValue, error, name }: FieldProps<string>) {
-  return (
-    <Form.Field error={error} label="Title" labelFor={name} required>
-      <Input defaultValue={defaultValue} id={name} name={name} required />
-    </Form.Field>
-  );
-}
-
-export function ResourceAttachmentField({
-  defaultValue: _,
-  error,
-  name,
-}: FieldProps<ResourceType>) {
-  const { type } = useContext(ResourceFormContext);
-
-  if (type !== 'file') {
-    return null;
-  }
-
-  return (
-    <Form.Field
-      description="Must be one of the following file types: PNG, JPG, or PDF."
-      error={error}
-      label="Attachment"
-      labelFor={name}
-      required
-    >
-      <input
-        accept="image/png,, image/jpeg, .pdf"
-        id={name}
-        name={name}
-        required
-        type="file"
-      />
-    </Form.Field>
-  );
-}
-
-export function ResourceLinkField({
+export function ResourceTitleField({
   defaultValue,
   error,
   name,
 }: FieldProps<string>) {
-  const { type } = useContext(ResourceFormContext);
-
-  if (type !== 'url') {
-    return null;
-  }
-
   return (
-    <Form.Field
-      description="Please include the full URL."
-      error={error}
-      label="URL"
-      labelFor={name}
-      required
-    >
+    <Form.Field error={error} label="Title" labelFor={name} required>
       <Input defaultValue={defaultValue} id={name} name={name} required />
     </Form.Field>
   );

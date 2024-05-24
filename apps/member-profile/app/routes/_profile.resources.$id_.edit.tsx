@@ -22,11 +22,11 @@ import {
 } from '@oyster/ui';
 
 import {
-  DescriptionField,
+  ResourceDescriptionField,
   ResourceFormProvider,
   ResourceLinkField,
-  TagsField,
-  TitleField,
+  ResourceTagsField,
+  ResourceTitleField,
 } from '@/shared/components/resource-form';
 import { Route } from '@/shared/constants';
 import {
@@ -113,17 +113,17 @@ export default function EditResourceModal() {
 
       <RemixForm className="form" method="post">
         <ResourceFormProvider type={resource.type}>
-          <TitleField
+          <ResourceTitleField
             defaultValue={resource.title || undefined}
             error={errors.title}
             name={keys.title}
           />
-          <DescriptionField
+          <ResourceDescriptionField
             defaultValue={resource.description || undefined}
             error={errors.description}
             name={keys.description}
           />
-          <TagsField
+          <ResourceTagsField
             defaultValue={(resource.tags || []).map((tag) => {
               return {
                 label: tag.name,
