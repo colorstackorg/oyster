@@ -21,7 +21,7 @@ import {
   ListResourcesOrderBy,
   ListResourcesWhere,
   ResourceType,
-} from '@oyster/core/resources.client';
+} from '@oyster/core/resources';
 import { listResources, listTags } from '@oyster/core/resources.server';
 import { getObjectPresignedUri } from '@oyster/infrastructure/object-storage';
 import {

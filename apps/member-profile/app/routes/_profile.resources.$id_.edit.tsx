@@ -10,10 +10,7 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 
-import {
-  type ResourceType,
-  UpdateResourceInput,
-} from '@oyster/core/resources.client';
+import { type ResourceType, UpdateResourceInput } from '@oyster/core/resources';
 import { getResource, updateResource } from '@oyster/core/resources.server';
 import {
   Button,

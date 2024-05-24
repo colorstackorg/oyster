@@ -10,7 +10,7 @@ import {
 } from '@remix-run/node';
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 
-import { AddResourceInput } from '@oyster/core/resources.client';
+import { AddResourceInput } from '@oyster/core/resources';
 import { addResource } from '@oyster/core/resources.server';
 import {
   Button,

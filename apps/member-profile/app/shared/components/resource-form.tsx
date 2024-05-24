@@ -6,7 +6,7 @@ import React, {
   useState,
 } from 'react';
 
-import { ResourceType } from '@oyster/core/resources.client';
+import { ResourceType } from '@oyster/core/resources';
 import {
   type FieldProps,
   Form,
