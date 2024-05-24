@@ -51,6 +51,7 @@ function TextareaWithCounter({
     <>
       <TextareaAutosize
         className={cx(getInputCn(), 'resize-none')}
+        defaultValue={defaultValue}
         maxLength={maxLength}
         minRows={minRows}
         onChange={(e) => setValue(e.target.value)}

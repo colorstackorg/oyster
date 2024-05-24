@@ -22,13 +22,13 @@ import {
 } from '@oyster/ui';
 
 import {
-  DescriptionField,
   ResourceAttachmentField,
-  ResourceFormProvider,
+  ResourceDescriptionField,
   ResourceLinkField,
+  ResourceProvider,
+  ResourceTagsField,
+  ResourceTitleField,
   ResourceTypeField,
-  TagsField,
-  TitleField,
 } from '@/shared/components/resource-form';
 import { Route } from '@/shared/constants';
 import {
@@ -48,7 +48,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const uploadHandler = composeUploadHandlers(
-    createFileUploadHandler({ maxPartSize: 1_000_000 * 25 }),
+    createFileUploadHandler({ maxPartSize: 1_000_000 * 20 }),
     createMemoryUploadHandler()
   );
 
@@ -72,8 +72,8 @@ export async function action({ request }: ActionFunctionArgs) {
     attachments: data.attachments,
     description: data.description,
     link: data.link,
-    tags: data.tags,
     postedBy: user(session),
+    tags: data.tags,
     title: data.title,
     type: data.type,
   });
@@ -103,13 +103,13 @@ export default function AddResourceModal() {
       </Modal.Header>
 
       <RemixForm className="form" method="post" encType="multipart/form-data">
-        <ResourceFormProvider>
-          <TitleField error={errors.title} name={keys.title} />
-          <DescriptionField
+        <ResourceProvider>
+          <ResourceTitleField error={errors.title} name={keys.title} />
+          <ResourceDescriptionField
             error={errors.description}
             name={keys.description}
           />
-          <TagsField error={errors.tags} name={keys.tags} />
+          <ResourceTagsField error={errors.tags} name={keys.tags} />
           <Divider />
           <ResourceTypeField error={errors.type} name={keys.type} />
           <ResourceAttachmentField
@@ -117,7 +117,7 @@ export default function AddResourceModal() {
             name={keys.attachments}
           />
           <ResourceLinkField error={errors.link} name={keys.link} />
-        </ResourceFormProvider>
+        </ResourceProvider>
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

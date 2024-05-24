@@ -32,7 +32,7 @@ const Resource = z.object({
     .string()
     .trim()
     .min(1)
-    .max(80, 'Description must be 80 characters or less.'),
+    .max(160, 'Description must be 160 characters or less.'),
 
   id: z.string().min(1),
 

@@ -307,7 +307,7 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
         />
       </header>
 
-      <Text className="line-clamp-2" color="gray-500" variant="sm">
+      <Text color="gray-500" variant="sm">
         {resource.description}
       </Text>
 

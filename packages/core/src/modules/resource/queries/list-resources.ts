@@ -142,6 +142,7 @@ export async function listResources<
       // above. For some reason Kysely isn't recognizing it though.
       return qb.orderBy('upvotes', 'desc');
     })
+    .orderBy('resources.postedAt', 'desc')
     .limit(pagination.limit)
     .offset((pagination.page - 1) * pagination.limit);
 

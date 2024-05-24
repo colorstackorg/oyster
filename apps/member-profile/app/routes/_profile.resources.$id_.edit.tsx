@@ -23,8 +23,8 @@ import {
 
 import {
   ResourceDescriptionField,
-  ResourceFormProvider,
   ResourceLinkField,
+  ResourceProvider,
   ResourceTagsField,
   ResourceTitleField,
 } from '@/shared/components/resource-form';
@@ -112,7 +112,7 @@ export default function EditResourceModal() {
       </Modal.Header>
 
       <RemixForm className="form" method="post">
-        <ResourceFormProvider type={resource.type}>
+        <ResourceProvider type={resource.type}>
           <ResourceTitleField
             defaultValue={resource.title || undefined}
             error={errors.title}
@@ -145,7 +145,7 @@ export default function EditResourceModal() {
               />
             </>
           )}
-        </ResourceFormProvider>
+        </ResourceProvider>
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

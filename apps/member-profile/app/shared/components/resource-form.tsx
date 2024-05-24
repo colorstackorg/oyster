@@ -36,7 +36,7 @@ const ResourceFormContext = React.createContext<ResourceFormContext>({
   type: null,
 });
 
-export function ResourceFormProvider({
+export function ResourceProvider({
   children,
   type: initialType = null,
 }: PropsWithChildren<{ type?: ResourceFormContext['type'] }>) {
@@ -86,7 +86,7 @@ export function ResourceDescriptionField({
 }: FieldProps<string>) {
   return (
     <Form.Field
-      description="Must be no longer than 80 characters."
+      description="Must be less than 160 characters."
       error={error}
       label="Description"
       labelFor={name}
@@ -95,7 +95,7 @@ export function ResourceDescriptionField({
       <Textarea
         defaultValue={defaultValue}
         id={name}
-        maxLength={80}
+        maxLength={160}
         minRows={2}
         name={name}
         required
