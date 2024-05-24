@@ -27,6 +27,7 @@ import { getObjectPresignedUri } from '@oyster/infrastructure/object-storage';
 import {
   cx,
   Dashboard,
+  ExistingSearchParams,
   getButtonCn,
   getIconButtonCn,
   getTextCn,
@@ -179,7 +180,9 @@ export default function ResourcesPage() {
       </header>
 
       <section className="flex gap-4">
-        <Dashboard.SearchForm placeholder="Search by title..." />
+        <Dashboard.SearchForm placeholder="Search by title...">
+          <ExistingSearchParams exclude={['page']} />
+        </Dashboard.SearchForm>
         <SortResourcesForm />
       </section>
 
@@ -209,7 +212,6 @@ function AddResourceLink() {
 
 function SortResourcesForm() {
   const { orderBy } = useLoaderData<typeof loader>();
-
   const submit = useSubmit();
 
   const sortKeys = ListResourcesOrderBy._def.innerType.enum;
@@ -231,6 +233,8 @@ function SortResourcesForm() {
         <option value={sortKeys.newest}>Newest</option>
         <option value={sortKeys.most_upvotes}>Most Upvotes</option>
       </Select>
+
+      <ExistingSearchParams />
     </RemixForm>
   );
 }

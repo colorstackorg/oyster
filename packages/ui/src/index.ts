@@ -8,6 +8,7 @@ export { Dashboard } from './components/dashboard';
 export { DatePicker } from './components/date-picker';
 export { Divider } from './components/divider';
 export { Dropdown } from './components/dropdown';
+export { ExistingSearchParams } from './components/existing-search-params';
 export {
   Form,
   InputField,
