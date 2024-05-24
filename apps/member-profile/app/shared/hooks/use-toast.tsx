@@ -2,6 +2,10 @@ import { useFetcher } from '@remix-run/react';
 
 import { type ToastProps } from '@oyster/ui';
 
+/**
+ * This hook is a utility that allows us to show a toast message from anywhere
+ * in the UI.
+ */
 export function useToast() {
   const fetcher = useFetcher();
 
