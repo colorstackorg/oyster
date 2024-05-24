@@ -41,7 +41,6 @@ const Resource = z.object({
     .trim()
     .startsWith('http', 'URL must start with "http://".')
     .url()
-    .transform((value) => value.toLowerCase())
     .optional(),
 
   postedAt: z.coerce.date().optional(),
