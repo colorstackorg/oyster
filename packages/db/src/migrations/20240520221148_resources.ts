@@ -137,6 +137,11 @@ export async function down(db: Kysely<any>) {
     .dropIndex('completed_activities_resource_id_student_id_post_idx')
     .execute();
 
+  await db.schema
+    .alterTable('completed_activities')
+    .dropColumn('resource_id')
+    .execute();
+
   await db.schema.dropTable('resource_views').execute();
   await db.schema.dropTable('resource_attachments').execute();
   await db.schema.dropTable('resource_upvotes').execute();
