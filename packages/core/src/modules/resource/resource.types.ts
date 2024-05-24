@@ -45,12 +45,6 @@ const Resource = z.object({
   type: z.nativeEnum(ResourceType),
 });
 
-const ResourceTag = z.object({
-  createdAt: z.coerce.date(),
-  resourceId: z.string().trim().min(1),
-  tagId: z.string().trim().min(1),
-});
-
 const Tag = z.object({
   createdAt: z.coerce.date(),
   id: z.string().trim().min(1),
