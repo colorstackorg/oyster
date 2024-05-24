@@ -197,7 +197,7 @@ export default function ResourcesPage() {
         <AddResourceLink />
       </header>
 
-      <section className="flex gap-4">
+      <section className="flex flex-wrap gap-4">
         <Dashboard.SearchForm placeholder="Search by title...">
           <ExistingSearchParams exclude={['page']} />
         </Dashboard.SearchForm>
