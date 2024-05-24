@@ -135,9 +135,6 @@ export async function listResources<
           .as('views');
       },
     ])
-    .$if(orderBy === 'newest', (qb) => {
-      return qb.orderBy('resources.postedAt', 'desc');
-    })
     .$if(orderBy === 'most_upvotes', (qb) => {
       // @ts-expect-error b/c we already have the "upvotes" field selected
       // above. For some reason Kysely isn't recognizing it though.
