@@ -14,12 +14,14 @@
   },
   "optionalDependencies": {
     "@aws-sdk/client-s3": "^3.576.0",
+    "@aws-sdk/s3-request-presigner": "^3.577.0",
     "is-ip": "^5.0.1",
     "mixpanel": "^0.18.0",
     "ua-parser-js": "^1.0.36"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.576.0",
+    "@aws-sdk/s3-request-presigner": "^3.577.0",
     "@oyster/eslint-config": "*",
     "@oyster/tsconfig": "*",
     "is-ip": "^5.0.1",

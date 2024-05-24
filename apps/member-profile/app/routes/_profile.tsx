@@ -1,19 +1,27 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet } from '@remix-run/react';
-import { Award, Calendar, Folder, Home, User } from 'react-feather';
+import { Outlet, useLoaderData } from '@remix-run/react';
+import { Award, BookOpen, Calendar, Folder, Home, User } from 'react-feather';
 
 import { Dashboard } from '@oyster/ui';
 
+import { isFeatureFlagEnabled } from '@/member-profile.server';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  const isResourceDatabaseEnabled =
+    await isFeatureFlagEnabled('resource_database');
+
+  return json({
+    isResourceDatabaseEnabled,
+  });
 }
 
 export default function ProfileLayout() {
+  const { isResourceDatabaseEnabled } = useLoaderData<typeof loader>();
+
   return (
     <Dashboard>
       <Dashboard.Sidebar>
@@ -34,6 +42,13 @@ export default function ProfileLayout() {
               label="Directory"
               pathname={Route['/directory']}
             />
+            {isResourceDatabaseEnabled && (
+              <Dashboard.NavigationLink
+                icon={<BookOpen />}
+                label="Resources"
+                pathname={Route['/resources']}
+              />
+            )}
             <Dashboard.NavigationLink
               icon={<Award />}
               label="Points"

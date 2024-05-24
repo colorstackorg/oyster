@@ -157,6 +157,7 @@ async function getActivityHistory(
         'completedActivities.id',
         'completedActivities.occurredAt',
         'completedActivities.points',
+        'completedActivities.resourceId',
         'completedActivities.type',
         'events.name as eventAttended',
         'messagesReactedTo.channelId as messageReactedToChannelId',
@@ -541,6 +542,25 @@ function ActivityHistoryItemDescription({
             <Text color="gray-500">{activity.description}</Text>
           </div>
         </div>
+      );
+    })
+    .with('post_resource', 'upvote_resource', (type) => {
+      const verb = type === 'post_resource' ? 'posted' : 'upvoted';
+
+      return (
+        <p>
+          You {verb} a{' '}
+          <RemixLink
+            className="link"
+            to={{
+              pathname: Route['/resources'],
+              search: `id=${activity.resourceId}`,
+            }}
+          >
+            resource
+          </RemixLink>
+          .
+        </p>
       );
     })
     .with('react_to_message', () => {

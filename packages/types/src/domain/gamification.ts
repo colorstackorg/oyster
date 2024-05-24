@@ -6,10 +6,13 @@ import { type ExtractValue } from '../shared/types';
 
 // Enums
 
+// NOTE: If any of these values are changed, the unique indicies in the
+// database also need to be updated.
 export const ActivityType = {
   ATTEND_EVENT: 'attend_event',
   GET_ACTIVATED: 'get_activated',
   JOIN_MEMBER_DIRECTORY: 'join_member_directory',
+  POST_RESOURCE: 'post_resource',
   REACT_TO_MESSAGE: 'react_to_message',
   REPLY_TO_THREAD: 'reply_to_thread',
   RESPOND_TO_SURVEY: 'respond_to_survey',
@@ -17,6 +20,7 @@ export const ActivityType = {
   UPDATE_EDUCATION_HISTORY: 'update_education_history',
   UPDATE_WORK_HISTORY: 'update_work_history',
   UPLOAD_PROFILE_PICTURE: 'upload_profile_picture',
+  UPVOTE_RESOURCE: 'upvote_resource',
 } as const;
 
 export const ActivityPeriod = {

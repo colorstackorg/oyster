@@ -14,19 +14,27 @@ export type SelectProps = Pick<
   | 'placeholder'
   | 'readOnly'
   | 'required'
->;
+> & {
+  width?: 'fit';
+};
 
 export function Select({
   children,
   defaultValue = '',
   placeholder = 'Select...',
   required,
+  width,
   ...rest
 }: SelectProps) {
   return (
     <select
       className={cx(
         getInputCn(),
+
+        // If the width is set to 'fit', we'll add some padding to the right
+        // to allow room for the arrow icon to fit in the "background-image".
+        width === 'fit' && 'w-fit pr-8',
+
         'appearance-none bg-[length:1rem] bg-[position:center_right_0.5rem] bg-no-repeat',
         'focus-visible:outline-none',
         'required:invalid:text-gray-400',

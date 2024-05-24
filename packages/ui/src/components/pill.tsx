@@ -1,9 +1,9 @@
-import { Link } from '@remix-run/react';
+import { Link, type LinkProps } from '@remix-run/react';
 import React, { type PropsWithChildren } from 'react';
 import { X } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { Text } from './text';
+import { getTextCn } from './text';
 import { cx } from '../utils/cx';
 
 export type PillProps = Pick<React.HTMLProps<HTMLElement>, 'children'> & {
@@ -21,20 +21,37 @@ export type PillProps = Pick<React.HTMLProps<HTMLElement>, 'children'> & {
     | 'red-100'
     | 'success';
 
-  onCloseHref?: string;
+  onCloseHref?: LinkProps['to'];
+
+  to?: LinkProps['to'];
 };
 
-export const Pill = ({ children, color, onCloseHref }: PillProps) => {
-  return (
-    <Text className={getPillCn({ color, onCloseHref })} variant="sm">
+export const Pill = ({ children, color, onCloseHref, to }: PillProps) => {
+  const body = (
+    <span
+      className={cx(
+        getTextCn({ variant: 'sm' }),
+        getPillCn({ color, onCloseHref })
+      )}
+    >
       {children}{' '}
       {onCloseHref && (
         <Link className="rounded-full hover:bg-gray-100" to={onCloseHref}>
           <X size={16} />
         </Link>
       )}
-    </Text>
+    </span>
   );
+
+  if (to) {
+    return (
+      <Link className="hover:underline" to={to}>
+        {body}
+      </Link>
+    );
+  }
+
+  return body;
 };
 
 export function getPillCn({ color, onCloseHref }: Omit<PillProps, 'children'>) {

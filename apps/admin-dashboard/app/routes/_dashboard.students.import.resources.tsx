@@ -57,7 +57,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 async function listResources() {
   const rows = await db
-    .selectFrom('resources')
+    .selectFrom('internalResources')
     .select(['id', 'name'])
     .execute();
 
@@ -181,7 +181,7 @@ async function importResourceUsers(input: ImportResourceUsersInput) {
   );
 
   await db
-    .insertInto('resourceUsers')
+    .insertInto('internalResourceUsers')
     .values(resourceUsers)
     .onConflict((oc) => oc.doNothing())
     .execute();
