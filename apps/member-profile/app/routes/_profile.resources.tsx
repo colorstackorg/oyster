@@ -136,7 +136,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           // This is the URL that can be shared with others to view the
           // resource. Note: This is a URL to our application, not the _actual_
           // resource URL (which has permissions via the presigned URL).
-          shareableUri: `${url.protocol}://${url.host}/resources?id=${record.id}`,
+          shareableUri: `${url.protocol}//${url.host}/resources?id=${record.id}`,
 
           tags: tags!,
           upvotes: Number(upvotes),
