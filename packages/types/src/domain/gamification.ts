@@ -11,6 +11,7 @@ import { type ExtractValue } from '../shared/types';
 export const ActivityType = {
   ATTEND_EVENT: 'attend_event',
   GET_ACTIVATED: 'get_activated',
+  GET_RESOURCE_UPVOTE: 'get_resource_upvote',
   JOIN_MEMBER_DIRECTORY: 'join_member_directory',
   POST_RESOURCE: 'post_resource',
   REACT_TO_MESSAGE: 'react_to_message',
@@ -20,7 +21,6 @@ export const ActivityType = {
   UPDATE_EDUCATION_HISTORY: 'update_education_history',
   UPDATE_WORK_HISTORY: 'update_work_history',
   UPLOAD_PROFILE_PICTURE: 'upload_profile_picture',
-  UPVOTE_RESOURCE: 'upvote_resource',
 } as const;
 
 export const ActivityPeriod = {

@@ -15,10 +15,17 @@ export async function downvoteResource(
       .execute();
   });
 
+  const { postedBy } = await db
+    .selectFrom('resources')
+    .select(['postedBy'])
+    .where('id', '=', id)
+    .executeTakeFirstOrThrow();
+
   job('gamification.activity.completed.undo', {
     resourceId: id,
-    studentId: input.memberId,
-    type: 'upvote_resource',
+    studentId: postedBy,
+    type: 'get_resource_upvote',
+    upvotedBy: input.memberId,
   });
 
   return result;
