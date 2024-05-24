@@ -14,6 +14,7 @@ export function buildTagsField(eb: ExpressionBuilder<DB, 'resources'>) {
   return eb
     .selectFrom('resourceTags')
     .leftJoin('tags', 'tags.id', 'resourceTags.tagId')
+    .whereRef('resourceTags.resourceId', '=', 'resources.id')
     .select(({ fn, ref }) => {
       const object = jsonBuildObject({
         id: ref('tags.id'),
@@ -26,6 +27,5 @@ export function buildTagsField(eb: ExpressionBuilder<DB, 'resources'>) {
         .$castTo<{ id: string; name: string }[]>()
         .as('tags');
     })
-    .whereRef('resourceTags.resourceId', '=', 'resources.id')
     .as('tags');
 }
