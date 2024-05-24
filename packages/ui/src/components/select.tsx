@@ -30,7 +30,11 @@ export function Select({
     <select
       className={cx(
         getInputCn(),
-        width === 'fit' && 'w-fit',
+
+        // If the width is set to 'fit', we'll add some padding to the right
+        // to allow room for the arrow icon to fit in the "background-image".
+        width === 'fit' && 'w-fit pr-8',
+
         'appearance-none bg-[length:1rem] bg-[position:center_right_0.5rem] bg-no-repeat',
         'focus-visible:outline-none',
         'required:invalid:text-gray-400',
