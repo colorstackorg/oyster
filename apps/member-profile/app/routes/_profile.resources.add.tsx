@@ -56,7 +56,18 @@ export async function action({ request }: ActionFunctionArgs) {
     createMemoryUploadHandler()
   );
 
-  const form = await parseMultipartFormData(request, uploadHandler);
+  let form: FormData;
+
+  try {
+    form = await parseMultipartFormData(request, uploadHandler);
+  } catch (e) {
+    return json({
+      error: '',
+      errors: {
+        attachments: 'Attachment is too big. Must be less than 20 MB in size.',
+      } as Record<keyof AddResourceInput, string>,
+    });
+  }
 
   const values = Object.fromEntries(form);
 

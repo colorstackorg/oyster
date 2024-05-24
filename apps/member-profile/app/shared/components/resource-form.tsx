@@ -62,14 +62,14 @@ export function ResourceAttachmentField({
 
   return (
     <Form.Field
-      description="Must be one of the following file types: PNG, JPG, or PDF."
+      description="Must be less than 20 MB and one of the following file types: PNG, JPG, or PDF."
       error={error}
       label="Attachment"
       labelFor={name}
       required
     >
       <input
-        accept="image/png,, image/jpeg, .pdf"
+        accept="image/png, image/jpeg, .pdf"
         id={name}
         name={name}
         required
