@@ -298,7 +298,7 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
       z.object({
         resourceId: z.string().trim().min(1),
         studentId: CompletedActivity.shape.studentId,
-        type: z.literal('upvote_resource'),
+        type: z.literal(ActivityType.UPVOTE_RESOURCE),
       }),
     ]),
   }),
