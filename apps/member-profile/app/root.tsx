@@ -27,6 +27,9 @@ dayjs.extend(relativeTime);
 dayjs.extend(timezone);
 dayjs.extend(updateLocale);
 
+// To use relative times in Day.js, we need to extend some of the above plugins,
+// and now we'll update the format of the relative time to be more concise.
+// https://day.js.org/docs/en/customization/relative-time
 dayjs.updateLocale('en', {
   relativeTime: {
     past: '%s',
