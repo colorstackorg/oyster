@@ -23,6 +23,7 @@ import {
   ResourceType,
 } from '@oyster/core/resources';
 import { listResources, listTags } from '@oyster/core/resources.server';
+import { track } from '@oyster/infrastructure/mixpanel';
 import { getPresignedURL } from '@oyster/infrastructure/object-storage';
 import {
   cx,
@@ -47,6 +48,7 @@ import { iife } from '@oyster/utils';
 
 import { ListSearchParams } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
+import { useMixpanelTracker } from '@/shared/hooks/use-mixpanel-tracker';
 import { useToast } from '@/shared/hooks/use-toast';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -177,6 +179,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     return result;
+  });
+
+  track({
+    event: 'Page Viewed',
+    properties: { Page: 'Resources' },
+    request,
+    user: user(session),
   });
 
   return json({
@@ -536,6 +545,7 @@ function ResourceActionGroup({
 }: Pick<ResourceInView, 'editable' | 'id' | 'shareableUri'>) {
   const [searchParams] = useSearchParams();
   const toast = useToast();
+  const { trackFromClient } = useMixpanelTracker();
 
   const buttonClassName = getIconButtonCn({
     backgroundColor: 'gray-100',
@@ -573,6 +583,10 @@ function ResourceActionGroup({
               onClick={() => {
                 navigator.clipboard.writeText(shareableUri);
                 toast({ message: 'Copied URL to clipboard!' });
+                trackFromClient({
+                  event: 'Resource Link Copied',
+                  properties: undefined,
+                });
               }}
               type="button"
             >
