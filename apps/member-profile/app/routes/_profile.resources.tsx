@@ -48,6 +48,7 @@ import { iife } from '@oyster/utils';
 
 import { ListSearchParams } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
 import { useMixpanelTracker } from '@/shared/hooks/use-mixpanel-tracker';
 import { useToast } from '@/shared/hooks/use-toast';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -129,11 +130,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
           // be able to edit the resource.
           editable: record.posterId === user(session),
 
-          // This is a relative time of when the resource was posted.
-          // TODO: We should also send a formatted "absolute" time that shows
-          // the exact date and time the resource was posted upon hovering
-          // over the relative time.
+          // This is a relative time of when the resource was posted,
+          // ie: "2d" (2 days ago).
           postedAt: dayjs().to(postedAt),
+
+          postedAtExpanded: dayjs(postedAt)
+            .tz(getTimezone(request))
+            .format('MMM DD, YYYY • h:mm A'),
 
           // This is the URL that can be shared with others to view the
           // resource. Note: This is a URL to our application, not the _actual_
@@ -372,9 +375,20 @@ function ResourceItem({ resource }: { resource: ResourceInView }) {
             &bull;
           </Text>
 
-          <Text color="gray-500" variant="sm">
-            {resource.postedAt}
-          </Text>
+          <Tooltip>
+            <TooltipTrigger
+              className={getTextCn({
+                className: 'cursor-auto',
+                color: 'gray-500',
+                variant: 'sm',
+              })}
+            >
+              {resource.postedAt}
+            </TooltipTrigger>
+            <TooltipContent>
+              <TooltipText>{resource.postedAtExpanded}</TooltipText>
+            </TooltipContent>
+          </Tooltip>
 
           <Text color="gray-500" variant="sm">
             &bull;
