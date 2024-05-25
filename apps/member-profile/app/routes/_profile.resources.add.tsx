@@ -16,6 +16,7 @@ import {
 
 import { AddResourceInput } from '@oyster/core/resources';
 import { addResource } from '@oyster/core/resources.server';
+import { track } from '@oyster/infrastructure/mixpanel';
 import {
   Button,
   Divider,
@@ -91,6 +92,13 @@ export async function action({ request }: ActionFunctionArgs) {
     tags: data.tags,
     title: data.title,
     type: data.type,
+  });
+
+  track({
+    event: 'Resource Added',
+    properties: undefined,
+    request,
+    user: user(session),
   });
 
   toast(session, {

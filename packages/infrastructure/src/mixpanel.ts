@@ -41,8 +41,14 @@ export type MixpanelEvent = {
   };
 
   'Page Viewed': {
-    Page: 'Directory' | 'Events' | 'Home' | 'Points' | 'Profile';
+    Page: 'Directory' | 'Events' | 'Home' | 'Points' | 'Profile' | 'Resources';
   };
+
+  'Resource Added': undefined;
+  'Resource Link Copied': undefined;
+  'Resource Tag Added': undefined;
+  'Resource Upvoted': undefined;
+  'Resource Viewed': undefined;
 };
 
 export type TrackInput<Event extends keyof MixpanelEvent> = {
