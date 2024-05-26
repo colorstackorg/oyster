@@ -261,7 +261,7 @@ function SortResourcesForm() {
         <option value={sortKeys.most_upvotes}>Most Upvotes</option>
       </Select>
 
-      <ExistingSearchParams />
+      <ExistingSearchParams exclude={['orderBy']} />
     </RemixForm>
   );
 }
