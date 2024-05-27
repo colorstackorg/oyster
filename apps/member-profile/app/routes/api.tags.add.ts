@@ -1,20 +1,26 @@
 import { type ActionFunctionArgs, json } from '@remix-run/node';
 
+import { CreateTagInput } from '@oyster/core/resources';
 import { createTag } from '@oyster/core/resources.server';
 import { track } from '@oyster/infrastructure/mixpanel';
+import { validateForm } from '@oyster/ui';
 
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const data = await request.formData();
+  const form = await request.formData();
 
-  const { id, name } = Object.fromEntries(data);
+  const { data } = validateForm(CreateTagInput, Object.fromEntries(form));
+
+  if (!data) {
+    return json({}, { status: 400 });
+  }
 
   await createTag({
-    id: id as string,
-    name: name as string,
+    id: data.id,
+    name: data.name,
   });
 
   track({
