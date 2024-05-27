@@ -65,6 +65,11 @@ export default function DashboardLayout() {
                 />
                 <Dashboard.NavigationLink
                   icon={<User />}
+                  label="Admins"
+                  pathname={Route['/admins']}
+                />
+                <Dashboard.NavigationLink
+                  icon={<User />}
                   label="Students"
                   pathname={Route['/students']}
                 />
@@ -98,7 +103,6 @@ export default function DashboardLayout() {
                   label="Schools"
                   pathname={Route['/schools']}
                 />
-
                 <div className="my-2">
                   <Divider />
                 </div>

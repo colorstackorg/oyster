@@ -4,6 +4,7 @@ const ROUTES = [
   '/applications/:id',
   '/applications/:id/accept',
   '/applications/:id/email',
+  '/admins',
   '/bull',
   '/bull/:queue',
   '/bull/:queue/jobs',
