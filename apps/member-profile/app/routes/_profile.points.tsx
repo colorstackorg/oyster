@@ -330,7 +330,7 @@ function PointsLeaderboard({
         and role models!
       </Card.Description>
 
-      <ul className="flex max-h-[800px] flex-col gap-4 overflow-scroll">
+      <ul className="flex max-h-[800px] flex-col gap-4 overflow-auto">
         {pointsLeaderboard.map((position, i) => {
           return (
             <LeaderboardPositionItem

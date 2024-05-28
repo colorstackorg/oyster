@@ -65,6 +65,11 @@ export default function DashboardLayout() {
                 />
                 <Dashboard.NavigationLink
                   icon={<User />}
+                  label="Admins"
+                  pathname={Route['/admins']}
+                />
+                <Dashboard.NavigationLink
+                  icon={<User />}
                   label="Students"
                   pathname={Route['/students']}
                 />
