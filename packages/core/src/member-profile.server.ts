@@ -44,7 +44,7 @@ export { changePrimaryEmail } from './modules/member/use-cases/change-primary-em
 export { joinMemberDirectory } from './modules/member/use-cases/join-member-directory';
 export { updateAllowEmailShare } from './modules/member/use-cases/update-allow-email-share';
 export { updateMember } from './modules/member/use-cases/update-member';
+export { createResumeBook } from './modules/resume-book/use-cases/create-resume-book';
 export { reportException } from './modules/sentry/use-cases/report-exception';
 export { countMessagesSent } from './modules/slack/queries/count-messages-sent';
 export { claimSwagPack } from './modules/swag-pack/use-cases/claim-swag-pack';
-export { getIpAddress } from './shared/utils/ip.utils';

@@ -10,6 +10,7 @@ import { useState } from 'react';
 import {
   DollarSign,
   Edit,
+  ExternalLink,
   Gift,
   Hash,
   Trash,
@@ -32,6 +33,7 @@ import {
 
 import { ListSearchParams } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
+import { ENV } from '@/shared/constants.server';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -77,6 +79,7 @@ async function listStudents({
       .leftJoin('schools', 'schools.id', 'students.schoolId')
       .select([
         'students.activatedAt',
+        'students.airtableId',
         'students.email',
         'students.firstName',
         'students.id',
@@ -102,6 +105,7 @@ async function listStudents({
   const students = rows.map((row) => {
     return {
       ...row,
+      airtableUri: `https://airtable.com/${ENV.AIRTABLE_FAMILY_BASE_ID}/${ENV.AIRTABLE_MEMBERS_TABLE_ID}/${row.airtableId}`,
       joinedAt: dayjs(row.joinedAt).tz(timezone).format('MM/DD/YY @ h:mm A'),
     };
   });
@@ -238,7 +242,7 @@ function StudentsPagination() {
   );
 }
 
-function StudentDropdown({ activatedAt, id }: StudentInView) {
+function StudentDropdown({ activatedAt, airtableUri, id }: StudentInView) {
   const [open, setOpen] = useState<boolean>(false);
 
   function onClose() {
@@ -281,6 +285,12 @@ function StudentDropdown({ activatedAt, id }: StudentInView) {
             <Dropdown.Item>
               <Link to={generatePath(Route['/students/:id/remove'], { id })}>
                 <Trash /> Delete Member
+              </Link>
+            </Dropdown.Item>
+
+            <Dropdown.Item>
+              <Link target="_blank" to={airtableUri} rel="noopener noreferrer">
+                <ExternalLink /> View Airtable Record
               </Link>
             </Dropdown.Item>
           </Dropdown.List>

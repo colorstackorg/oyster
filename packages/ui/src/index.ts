@@ -8,6 +8,7 @@ export { Dashboard } from './components/dashboard';
 export { DatePicker } from './components/date-picker';
 export { Divider } from './components/divider';
 export { Dropdown } from './components/dropdown';
+export { ExistingSearchParams } from './components/existing-search-params';
 export {
   Form,
   InputField,
@@ -30,7 +31,7 @@ export {
 } from './components/multi-combobox';
 export type { MultiComboboxProps } from './components/multi-combobox';
 export { Pagination } from './components/pagination';
-export { Pill } from './components/pill';
+export { Pill, getPillCn } from './components/pill';
 export type { PillProps } from './components/pill';
 export { ProfilePicture } from './components/profile-picture';
 export { Public } from './components/public';
@@ -40,7 +41,7 @@ export { Select } from './components/select';
 export { Spinner } from './components/spinner';
 export { Table } from './components/table';
 export type { TableColumnProps } from './components/table';
-export { Text } from './components/text';
+export { getTextCn, Text } from './components/text';
 export type { TextProps } from './components/text';
 export { Textarea } from './components/textarea';
 export { Toast } from './components/toast';

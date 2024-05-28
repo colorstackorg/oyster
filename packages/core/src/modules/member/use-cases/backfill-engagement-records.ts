@@ -72,7 +72,7 @@ export async function backfillEngagementRecords(
       .execute(),
 
     db
-      .selectFrom('resourceUsers')
+      .selectFrom('internalResourceUsers')
       .select(['id'])
       .where('studentId', 'is', null)
       .where('email', 'ilike', email)
@@ -137,7 +137,7 @@ export async function backfillEngagementRecords(
 
       ...resourceUsers.map(async (resourceUser) => {
         await trx
-          .updateTable('resourceUsers')
+          .updateTable('internalResourceUsers')
           .set({ studentId: student.id })
           .where('id', '=', resourceUser.id)
           .execute();

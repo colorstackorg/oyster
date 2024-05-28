@@ -1,8 +1,21 @@
-import { Outlet } from '@remix-run/react';
+import { json } from '@remix-run/node';
+import { Outlet, useLoaderData } from '@remix-run/react';
 
 import { Public, Text } from '@oyster/ui';
 
+import { isFeatureFlagEnabled } from '@/member-profile.server';
+
+export async function loader() {
+  const isApplicationOpen = await isFeatureFlagEnabled('family_application');
+
+  return json({
+    isApplicationOpen,
+  });
+}
+
 export default function ApplicationLayout() {
+  const { isApplicationOpen } = useLoaderData<typeof loader>();
+
   return (
     <Public.Content layout="lg">
       <img
@@ -16,7 +29,15 @@ export default function ApplicationLayout() {
         The ColorStack Family Application
       </Text>
 
-      <Outlet />
+      {isApplicationOpen ? (
+        <Outlet />
+      ) : (
+        <Text>
+          Unfortunately, our application is temporarily closed as we review
+          exising applications. Please check back in the upcoming days/weeks for
+          the opportunity to apply to ColorStack!
+        </Text>
+      )}
     </Public.Content>
   );
 }

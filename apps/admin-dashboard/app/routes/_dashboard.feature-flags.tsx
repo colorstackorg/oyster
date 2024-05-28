@@ -69,7 +69,7 @@ function FeatureFlagsTable() {
     },
     {
       displayName: 'Name',
-      size: '160',
+      size: '200',
       render: (flag) => {
         return (
           // TODO: Move styling to design system.

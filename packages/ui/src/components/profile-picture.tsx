@@ -28,7 +28,7 @@ export function ProfilePicture({
       .with('32', () => 'h-6 w-6 sm:h-8 sm:w-8')
       .with('48', () => 'h-10 w-10 sm:h-12 sm:w-12')
       .with('64', () => 'h-12 w-12 sm:h-16 sm:w-16')
-      .with('96', () => 'h-20 w-20 text-lg sm:h-24 sm:w-24 sm:text-xl')
+      .with('96', () => 'h-20 w-20 sm:h-24 sm:w-24')
       .exhaustive()
   );
 
@@ -42,6 +42,11 @@ export function ProfilePicture({
         className,
         'flex items-center justify-center bg-primary text-white'
       )}
+      variant={match(size)
+        .with('32', () => 'xs' as const)
+        .with('48', '64', () => 'md' as const)
+        .with('96', () => 'lg' as const)
+        .exhaustive()}
     >
       {initials.toUpperCase()}
     </Text>

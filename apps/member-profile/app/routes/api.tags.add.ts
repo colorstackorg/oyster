@@ -1,0 +1,34 @@
+import { type ActionFunctionArgs, json } from '@remix-run/node';
+
+import { CreateTagInput } from '@oyster/core/resources';
+import { createTag } from '@oyster/core/resources.server';
+import { track } from '@oyster/infrastructure/mixpanel';
+import { validateForm } from '@oyster/ui';
+
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
+
+export async function action({ request }: ActionFunctionArgs) {
+  const session = await ensureUserAuthenticated(request);
+
+  const form = await request.formData();
+
+  const { data } = validateForm(CreateTagInput, Object.fromEntries(form));
+
+  if (!data) {
+    return json({}, { status: 400 });
+  }
+
+  await createTag({
+    id: data.id,
+    name: data.name,
+  });
+
+  track({
+    event: 'Resource Tag Added',
+    properties: undefined,
+    request,
+    user: user(session),
+  });
+
+  return json({});
+}
