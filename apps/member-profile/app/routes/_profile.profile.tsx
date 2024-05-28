@@ -81,7 +81,7 @@ function ProfileHeader() {
   const { student } = useLoaderData<typeof loader>();
 
   return (
-    <header className="mb-12 flex items-start justify-start gap-4 lg:items-center">
+    <header className="mb-12 flex items-start gap-4 lg:items-center">
       <Link to={generatePath(Route['/directory/:id'], { id: student.id })}>
         <ProfilePicture
           initials={student.initials}
@@ -90,7 +90,7 @@ function ProfileHeader() {
         />
       </Link>
 
-      <div className="break-words">
+      <div>
         <Text variant="2xl">{student.name}</Text>
         <Text color="gray-500">{student.headline}</Text>
       </div>
