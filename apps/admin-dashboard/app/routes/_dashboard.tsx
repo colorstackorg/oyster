@@ -103,6 +103,7 @@ export default function DashboardLayout() {
                   label="Schools"
                   pathname={Route['/schools']}
                 />
+
                 <div className="my-2">
                   <Divider />
                 </div>
