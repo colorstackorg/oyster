@@ -25,7 +25,11 @@ export async function reviewApplication({
     ])
     .where('id', '=', applicationId)
     .where('status', '=', ApplicationStatus.PENDING)
-    .executeTakeFirstOrThrow();
+    .executeTakeFirst();
+
+  if (!application) {
+    return;
+  }
 
   const reject = await shouldReject(application as ApplicationForDecision);
 
