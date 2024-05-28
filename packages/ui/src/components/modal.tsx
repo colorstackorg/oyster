@@ -1,16 +1,16 @@
-import { Link, useNavigate } from '@remix-run/react';
+import { Link, type LinkProps } from '@remix-run/react';
 import React, { type PropsWithChildren, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'react-feather';
 
-import { IconButton } from './icon-button';
+import { getIconButtonCn } from './icon-button';
 import { Text } from './text';
 import { useHydrated } from '../hooks/use-hydrated';
 import { cx } from '../utils/cx';
 
 const ModalContext = React.createContext({
   _initialized: false,
-  onCloseTo: '',
+  onCloseTo: '' as LinkProps['to'],
 });
 
 export function useIsModalParent() {
@@ -20,7 +20,7 @@ export function useIsModalParent() {
 }
 
 type ModalProps = PropsWithChildren<{
-  onCloseTo: string;
+  onCloseTo: LinkProps['to'];
 }>;
 
 export const Modal = ({
@@ -67,15 +67,17 @@ export const Modal = ({
 
 Modal.CloseButton = function ModalCloseButton() {
   const { onCloseTo } = useContext(ModalContext);
-  const navigate = useNavigate();
 
   return (
-    <IconButton
-      backgroundColor="gray-100"
-      backgroundColorOnHover="gray-200"
-      icon={<X />}
-      onClick={() => navigate(onCloseTo)}
-    />
+    <Link
+      className={getIconButtonCn({
+        backgroundColor: 'gray-100',
+        backgroundColorOnHover: 'gray-200',
+      })}
+      to={onCloseTo}
+    >
+      <X />
+    </Link>
   );
 };
 

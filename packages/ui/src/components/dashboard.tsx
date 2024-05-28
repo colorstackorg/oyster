@@ -155,11 +155,10 @@ const DashboardSearchParams = z.object({
   search: z.string().optional().catch(''),
 });
 
-type DashboardSearchFormProps = Pick<SearchBarProps, 'placeholder'>;
-
 Dashboard.SearchForm = function SearchForm({
+  children,
   ...rest
-}: DashboardSearchFormProps) {
+}: PropsWithChildren<Pick<SearchBarProps, 'placeholder'>>) {
   const [searchParams] = useSearchParams(DashboardSearchParams);
 
   const [search, setSearch] = useState<string | undefined>(undefined);
@@ -184,6 +183,7 @@ Dashboard.SearchForm = function SearchForm({
         onChange={(e) => setSearch(e.currentTarget.value)}
         {...rest}
       />
+      {children}
     </RemixForm>
   );
 };

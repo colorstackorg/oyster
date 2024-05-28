@@ -31,6 +31,12 @@ export async function revokeGamificationPoints(
     .where('studentId', '=', data.studentId);
 
   await match(data)
+    .with({ type: 'get_resource_upvote' }, async (input) => {
+      await deleteQuery
+        .where('resourceId', '=', input.resourceId)
+        .where('resourceUpvotedBy', '=', input.upvotedBy)
+        .execute();
+    })
     .with({ type: 'react_to_message' }, async (input) => {
       const { count } = await db
         .selectFrom('slackReactions')
