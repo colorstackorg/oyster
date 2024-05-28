@@ -2,6 +2,7 @@ import colors from 'tailwindcss/colors';
 
 /** @type {import('tailwindcss').Config} */
 export const tailwindConfig = {
+  blocklist: ['overflow-scroll'],
   content: [
     '../apps/admin-dashboard/app/**/*.{ts,tsx}',
     '../apps/member-profile/app/**/*.{ts,tsx}',
