@@ -65,13 +65,13 @@ export default function DashboardLayout() {
                 />
                 <Dashboard.NavigationLink
                   icon={<User />}
-                  label="Admins"
-                  pathname={Route['/admins']}
+                  label="Students"
+                  pathname={Route['/students']}
                 />
                 <Dashboard.NavigationLink
                   icon={<User />}
-                  label="Students"
-                  pathname={Route['/students']}
+                  label="Admins"
+                  pathname={Route['/admins']}
                 />
                 <Dashboard.NavigationLink
                   icon={<Gift />}

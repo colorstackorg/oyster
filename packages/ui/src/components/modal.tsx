@@ -37,12 +37,14 @@ export const Modal = ({
     <ModalContext.Provider value={{ _initialized: true, onCloseTo }}>
       <div
         className={cx(
-          'flex h-screen w-screen items-end justify-center sm:items-center'
+          'fixed flex h-screen w-screen justify-center',
+          'bottom-0 items-end', // Mobile
+          'sm:top-0 sm:items-center' // > Mobile
         )}
       >
         <aside
           className={cx(
-            'relative z-10 flex max-h-[calc(100vh-5rem)] w-full max-w-[600px] flex-col gap-4 overflow-auto bg-white p-4',
+            'lock-scroll relative z-10 flex max-h-[calc(100vh-5rem)] w-full max-w-[600px] flex-col gap-4 overflow-auto bg-white p-4',
             'animate-[modal-animation-mobile_250ms] rounded-t-lg',
             'sm:animate-[modal-animation_250ms] sm:rounded-lg'
           )}
@@ -51,15 +53,15 @@ export const Modal = ({
         >
           {children}
         </aside>
-      </div>
 
-      <Link
-        className={cx(
-          'fixed left-0 top-0 h-screen w-screen cursor-default bg-black',
-          'animate-[modal-shader-animation_250ms_forwards]'
-        )}
-        to={onCloseTo}
-      />
+        <Link
+          className={cx(
+            'absolute inset-0 cursor-default bg-black',
+            'animate-[modal-shader-animation_250ms_forwards]'
+          )}
+          to={onCloseTo}
+        />
+      </div>
     </ModalContext.Provider>,
     document.body
   );
