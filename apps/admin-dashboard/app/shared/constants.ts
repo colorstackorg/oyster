@@ -1,5 +1,6 @@
 const ROUTES = [
   '/',
+  '/admins',
   '/applications',
   '/applications/:id',
   '/applications/:id/accept',
