@@ -392,7 +392,7 @@ function MembersGrid() {
   }
 
   return (
-    <ul className="grid grid-cols-1 gap-2 overflow-scroll @[800px]:grid-cols-2 @[1200px]:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-2 overflow-auto @[800px]:grid-cols-2 @[1200px]:grid-cols-3">
       {members.map((member) => {
         return <MemberItem key={member.id} member={member} />;
       })}
