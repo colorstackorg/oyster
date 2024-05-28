@@ -37,7 +37,7 @@ export const Modal = ({
     <ModalContext.Provider value={{ _initialized: true, onCloseTo }}>
       <div
         className={cx(
-          'fixed flex h-screen w-screen justify-center overflow-hidden',
+          'fixed flex h-screen w-screen justify-center',
           'bottom-0 items-end', // Mobile
           'sm:top-0 sm:items-center' // > Mobile
         )}
