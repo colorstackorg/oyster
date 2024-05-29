@@ -56,7 +56,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   await db
-    .insertInto('resources')
+    .insertInto('internalResources')
     .values({
       id: id(),
       name: data.name,

@@ -69,6 +69,11 @@ export default function DashboardLayout() {
                   pathname={Route['/students']}
                 />
                 <Dashboard.NavigationLink
+                  icon={<User />}
+                  label="Admins"
+                  pathname={Route['/admins']}
+                />
+                <Dashboard.NavigationLink
                   icon={<Gift />}
                   label="Gamification"
                   pathname={Route['/gamification/activities']}

@@ -4,6 +4,7 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import {
+  generatePath,
   Form as RemixForm,
   Link as RemixLink,
   useLoaderData,
@@ -150,6 +151,11 @@ async function getActivityHistory(
         'messagesReactedTo.id',
         'completedActivities.messageReactedTo'
       )
+      .leftJoin(
+        'students as resourceUpvoters',
+        'resourceUpvoters.id',
+        'completedActivities.resourceUpvotedBy'
+      )
       .select([
         'activities.name',
         'completedActivities.censusYear',
@@ -157,11 +163,15 @@ async function getActivityHistory(
         'completedActivities.id',
         'completedActivities.occurredAt',
         'completedActivities.points',
+        'completedActivities.resourceId',
         'completedActivities.type',
         'events.name as eventAttended',
         'messagesReactedTo.channelId as messageReactedToChannelId',
         'messagesReactedTo.id as messageReactedToId',
         'messagesReactedTo.text as messageReactedToText',
+        'resourceUpvoters.firstName as resourceUpvoterFirstName',
+        'resourceUpvoters.id as resourceUpvoterId',
+        'resourceUpvoters.lastName as resourceUpvoterLastName',
         'surveys.title as surveyRespondedTo',
         'threads.channelId as threadRepliedToChannelId',
         'threads.id as threadRepliedToId',
@@ -320,7 +330,7 @@ function PointsLeaderboard({
         and role models!
       </Card.Description>
 
-      <ul className="flex max-h-[800px] flex-col gap-4 overflow-scroll">
+      <ul className="flex max-h-[800px] flex-col gap-4 overflow-auto">
         {pointsLeaderboard.map((position, i) => {
           return (
             <LeaderboardPositionItem
@@ -528,6 +538,32 @@ function ActivityHistoryItemDescription({
     .with('get_activated', () => {
       return <p>You became activated.</p>;
     })
+    .with('get_resource_upvote', () => {
+      return (
+        <p>
+          <RemixLink
+            className="link"
+            to={generatePath(Route['/directory/:id'], {
+              id: activity.resourceUpvoterId,
+            })}
+          >
+            {activity.resourceUpvoterFirstName}{' '}
+            {activity.resourceUpvoterLastName}
+          </RemixLink>{' '}
+          upvoted a{' '}
+          <RemixLink
+            className="link"
+            to={{
+              pathname: Route['/resources'],
+              search: `id=${activity.resourceId}`,
+            }}
+          >
+            resource
+          </RemixLink>{' '}
+          you posted.
+        </p>
+      );
+    })
     .with('join_member_directory', () => {
       return <p>You joined the Member Directory.</p>;
     })
@@ -541,6 +577,23 @@ function ActivityHistoryItemDescription({
             <Text color="gray-500">{activity.description}</Text>
           </div>
         </div>
+      );
+    })
+    .with('post_resource', () => {
+      return (
+        <p>
+          You posted a{' '}
+          <RemixLink
+            className="link"
+            to={{
+              pathname: Route['/resources'],
+              search: `id=${activity.resourceId}`,
+            }}
+          >
+            resource
+          </RemixLink>
+          .
+        </p>
       );
     })
     .with('react_to_message', () => {

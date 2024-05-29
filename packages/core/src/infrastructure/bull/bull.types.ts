@@ -217,6 +217,12 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         type: z.literal('get_activated'),
       }),
       z.object({
+        resourceId: z.string().trim().min(1),
+        studentId: CompletedActivity.shape.studentId,
+        type: z.literal(ActivityType.GET_RESOURCE_UPVOTE),
+        upvotedBy: z.string().trim().min(1),
+      }),
+      z.object({
         studentId: CompletedActivity.shape.studentId,
         type: z.literal(ActivityType.JOIN_MEMBER_DIRECTORY),
       }),
@@ -225,6 +231,11 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         points: CompletedActivity.shape.points,
         studentId: CompletedActivity.shape.studentId,
         type: z.literal('one_off'),
+      }),
+      z.object({
+        resourceId: z.string().trim().min(1),
+        studentId: CompletedActivity.shape.studentId,
+        type: z.literal(ActivityType.POST_RESOURCE),
       }),
       z.object({
         channelId: SlackMessage.shape.channelId,
@@ -265,6 +276,12 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('gamification.activity.completed.undo'),
     data: z.discriminatedUnion('type', [
+      z.object({
+        resourceId: z.string().trim().min(1),
+        studentId: CompletedActivity.shape.studentId,
+        type: z.literal(ActivityType.GET_RESOURCE_UPVOTE),
+        upvotedBy: z.string().trim().min(1),
+      }),
       z.object({
         channelId: SlackMessage.shape.channelId,
         messageReactedTo: SlackMessage.shape.id,

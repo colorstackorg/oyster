@@ -40,7 +40,7 @@ export default function BullPage() {
           })}
         </ul>
 
-        <div className="flex flex-col gap-[inherit] overflow-scroll @container">
+        <div className="flex flex-col gap-[inherit] overflow-auto @container">
           <Outlet />
         </div>
       </div>
