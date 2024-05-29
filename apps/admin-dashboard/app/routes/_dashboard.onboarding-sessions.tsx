@@ -75,10 +75,6 @@ async function listOnboardingSessions({
     )
   `.as('attendees');
 
-  const ambassadorNameAggregation = sql<string>`
-    max(admins.first_name || ' ' || admins.last_name)
-  `.as('ambassadorName');
-
   const rows = await db
     .selectFrom('onboardingSessions')
     .leftJoin(
@@ -92,10 +88,11 @@ async function listOnboardingSessions({
       'onboardingSessions.date',
       'onboardingSessions.group',
       'onboardingSessions.id',
-      ambassadorNameAggregation,
+      'admins.firstName as ambassadorFirstName',
+      'admins.lastName as ambassadorLastName',
       attendeesAggregation,
     ])
-    .groupBy('onboardingSessions.id')
+    .groupBy(['onboardingSessions.id', 'admins.firstName', 'admins.lastName'])
     .orderBy('onboardingSessions.date', 'desc')
     .orderBy('onboardingSessions.group', 'desc')
     .limit(limit)
@@ -106,7 +103,7 @@ async function listOnboardingSessions({
     return {
       ...row,
       date: dayjs(row.date).format('MM/DD/YY'),
-      ambassadorName: row.ambassadorName || '',
+      ambassadorName: `${row.ambassadorFirstName} ${row.ambassadorLastName}`,
     };
   });
 

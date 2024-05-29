@@ -3,18 +3,9 @@ import { type Kysely } from 'kysely';
 export async function up(db: Kysely<any>) {
   await db.schema
     .alterTable('onboarding_sessions')
-    .addColumn('uploaded_by_id', 'text')
-    .execute();
-
-  await db.schema
-    .alterTable('onboarding_sessions')
-    .addForeignKeyConstraint(
-      'fk_uploaded_by_id_admins_id',
-      ['uploaded_by_id'],
-      'admins',
-      ['id']
-    )
-    .onDelete('set null')
+    .addColumn('uploaded_by_id', 'text', (column) => {
+      return column.references('admins.id').onDelete('set null');
+    })
     .execute();
 }
 
