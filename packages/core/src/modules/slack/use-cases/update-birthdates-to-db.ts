@@ -5,7 +5,7 @@ import { RateLimiter } from '@/shared/utils/rate-limiter';
 const getBirthdatesRateLimiter = new RateLimiter(
   'slack:connections:get_birthdates',
   {
-    rateLimit: 20,
+    rateLimit: 100,
     rateLimitWindow: 60,
   }
 );
