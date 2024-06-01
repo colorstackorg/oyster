@@ -1,5 +1,14 @@
 import { db } from '@/infrastructure/database';
 import { slack } from '@/modules/slack/instances';
+import { RateLimiter } from '@/shared/utils/rate-limiter';
+
+const getBirthdatesRateLimiter = new RateLimiter(
+  'slack:connections:get_birthdates',
+  {
+    rateLimit: 20,
+    rateLimitWindow: 60,
+  }
+);
 
 export async function updateBirthdatesfromSlack() {
   const members = await db
@@ -14,6 +23,8 @@ export async function updateBirthdatesfromSlack() {
 }
 
 async function updateBirthdatebySlackId(slackId: string) {
+  await getBirthdatesRateLimiter.process();
+
   const user = await slack.users.profile.get({ user: slackId });
 
   const birthdateFieldId = '[placeholder for the birthdate id]';

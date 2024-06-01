@@ -19,6 +19,7 @@ export const RedisKey = {
   MAILCHIMP_CONNECTIONS: 'mailchimp:connections',
   SLACK_DEACTIVATE_CONNECTIONS: 'slack:connections:deactivate',
   SLACK_GET_MESSAGE_CONNECTIONS: 'slack:connections:get_message',
+  SLACK_GET_BIRTHDATES_CONNECTIONS: 'slack:connections:get_birthdates',
   SLACK_INVITE_USER_CONNECTIONS: 'slack:connections:invite_user',
   SLACK_JOIN_CHANNEL_CONNECTIONS: 'slack:connections:join_channel',
 } as const;
