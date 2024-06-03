@@ -409,7 +409,7 @@ function OnboardingSessionCard() {
 
       <Button.Group>
         <a
-          href="https://calendly.com/onboarding-ambassador/onboarding"
+          href="https://calendly.com/colorstack-onboarding-ambassador/onboarding"
           target="_blank"
           className={getButtonCn({ variant: 'primary' })}
         >
