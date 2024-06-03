@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { Email } from './components/email';
 import { type EmailTemplateData } from '../src/types';
 
