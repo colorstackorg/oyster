@@ -7,7 +7,8 @@ import {
 import { Form as RemixForm, useLoaderData } from '@remix-run/react';
 
 import { db } from '@oyster/db';
-import { Button, Modal } from '@oyster/ui';
+import { BooleanInput } from '@oyster/types';
+import { Button, Checkbox, Modal } from '@oyster/ui';
 
 import { job } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
@@ -48,9 +49,14 @@ export async function action({ params, request }: ActionFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
+  const form = await request.formData();
+
+  const sendViolationEmail = BooleanInput.parse(form.get('sendViolationEmail'));
+
   job('student.removed', {
     airtableId: student.airtableId as string,
     email: student.email,
+    sendViolationEmail,
     slackId: student.slackId,
   });
 
@@ -85,6 +91,15 @@ export default function RemoveMemberPage() {
       </Modal.Description>
 
       <RemixForm className="form" method="post">
+        <Checkbox
+          color="amber-100"
+          defaultChecked={true}
+          label="Send a Code of Conduct violation email."
+          id="sendViolationEmail"
+          name="sendViolationEmail"
+          value="1"
+        />
+
         <Button.Group>
           <Button color="error" type="submit">
             Remove
