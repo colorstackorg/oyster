@@ -12,11 +12,6 @@ export async function up(db: Kysely<any>) {
 export async function down(db: Kysely<any>) {
   await db.schema
     .alterTable('onboarding_sessions')
-    .dropConstraint('fk_uploaded_by_id_admins_id')
-    .execute();
-
-  await db.schema
-    .alterTable('onboarding_sessions')
     .dropColumn('uploaded_by_id')
     .execute();
 }
