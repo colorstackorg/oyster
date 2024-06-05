@@ -58,7 +58,9 @@ function AdminsTable() {
       displayName: 'Status',
       size: null,
       render: (admin) => {
-        return admin.isAmbassador ? (
+        return admin.isArchived ? (
+          <Pill color="gray-100">Archived</Pill>
+        ) : admin.isAmbassador ? (
           <Pill color="lime-100">Ambassador</Pill>
         ) : (
           <Pill color="blue-100">Full</Pill>
