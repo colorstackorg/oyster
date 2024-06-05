@@ -67,7 +67,7 @@ async function listOnboardingSessions({
 }: OnboardingSessionsSearchParams) {
   const attendeesAggregation = sql<string>`
     string_agg(
-      students.first_name || ' ' || last_name,
+      students.first_name || ' ' || students.last_name,
       ', ' 
       ORDER BY 
         students.first_name,
@@ -83,13 +83,16 @@ async function listOnboardingSessions({
       'onboardingSessions.id'
     )
     .leftJoin('students', 'students.id', 'onboardingSessionAttendees.studentId')
+    .leftJoin('admins', 'admins.id', 'onboardingSessions.uploadedById')
     .select([
       'onboardingSessions.date',
       'onboardingSessions.group',
       'onboardingSessions.id',
+      'admins.firstName as ambassadorFirstName',
+      'admins.lastName as ambassadorLastName',
       attendeesAggregation,
     ])
-    .groupBy('onboardingSessions.id')
+    .groupBy(['onboardingSessions.id', 'admins.firstName', 'admins.lastName'])
     .orderBy('onboardingSessions.date', 'desc')
     .orderBy('onboardingSessions.group', 'desc')
     .limit(limit)
@@ -100,6 +103,7 @@ async function listOnboardingSessions({
     return {
       ...row,
       date: dayjs(row.date).format('MM/DD/YY'),
+      ambassadorName: `${row.ambassadorFirstName} ${row.ambassadorLastName}`,
     };
   });
 
@@ -164,6 +168,11 @@ function OnboardingSessionsTable() {
     {
       displayName: 'Attendees',
       render: (session) => session.attendees,
+      size: null,
+    },
+    {
+      displayName: 'Uploaded By',
+      render: (session) => session.ambassadorName,
       size: null,
     },
   ];
