@@ -78,10 +78,10 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!ok) {
-    return json({
-      error: 'Please fix the issues above.',
-      errors,
-    });
+    return json(
+      { error: 'Please fix the issues above.', errors },
+      { status: 400 }
+    );
   }
 
   try {
@@ -95,7 +95,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({ error: (e as Error).message }, { status: 500 });
+    return json({ error: (e as Error).message, errors }, { status: 500 });
   }
 }
 
