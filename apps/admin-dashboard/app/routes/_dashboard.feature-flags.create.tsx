@@ -10,7 +10,7 @@ import {
   Button,
   Checkbox,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   Textarea,
@@ -35,18 +35,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    CreateFeatureFlagInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    CreateFeatureFlagInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await createFeatureFlag({
@@ -58,7 +53,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Created feature flag.',
-    type: 'success',
   });
 
   return redirect(Route['/feature-flags'], {
@@ -71,7 +65,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = CreateFeatureFlagInput.keyof().enum;
 
 export default function CreateFeatureFlagModal() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Modal onCloseTo={Route['/feature-flags']}>

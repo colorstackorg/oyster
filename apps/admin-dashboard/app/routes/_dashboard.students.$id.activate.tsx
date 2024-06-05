@@ -55,7 +55,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Activated student.',
-      type: 'success',
     });
 
     return redirect(Route['/students'], {
@@ -64,9 +63,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 

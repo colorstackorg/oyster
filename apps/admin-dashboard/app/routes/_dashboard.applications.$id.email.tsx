@@ -15,7 +15,7 @@ import { Application } from '@oyster/types';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
@@ -62,18 +62,13 @@ export async function action({ params, request }: ActionFunctionArgs) {
     allowAmbassador: true,
   });
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpdateApplicationEmailInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    UpdateApplicationEmailInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   const result = updateEmailApplication({
@@ -90,7 +85,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Updated application email.',
-    type: 'success',
   });
 
   const url = new URL(request.url);
@@ -128,7 +122,7 @@ export default function UpdateApplicationEmailPage() {
 const keys = UpdateApplicationEmailInput.keyof().enum;
 
 function UpdateApplicationEmailForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

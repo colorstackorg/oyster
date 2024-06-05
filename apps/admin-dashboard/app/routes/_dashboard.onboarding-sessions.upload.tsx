@@ -7,7 +7,7 @@ import {
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { uploadOnboardingSession } from '@/admin-dashboard.server';
 import { OnboardingSession } from '@/admin-dashboard.ui';
@@ -17,10 +17,10 @@ import {
 } from '@/shared/components/onboarding-session-form';
 import { Route } from '@/shared/constants';
 import {
+  admin,
   commitSession,
   ensureUserAuthenticated,
   toast,
-  user,
 } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -51,22 +51,17 @@ export async function action({ request }: ActionFunctionArgs) {
     allowAmbassador: true,
   });
 
-  const adminId = user(session);
-
   const form = await request.formData();
 
-  form.set('uploadedById', adminId);
+  form.set('uploadedById', admin(session));
 
-  const { data, errors } = validateForm(
-    UploadOnboardingSessionInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    form,
+    UploadOnboardingSessionInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   try {
@@ -74,7 +69,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Uploaded onboarding session.',
-      type: 'success',
     });
 
     return redirect(Route['/onboarding-sessions'], {
@@ -83,17 +77,14 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
 const keys = UploadOnboardingSessionInput.keyof().enum;
 
 export default function UploadOnboardingSessionPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Modal onCloseTo={Route['/onboarding-sessions']}>

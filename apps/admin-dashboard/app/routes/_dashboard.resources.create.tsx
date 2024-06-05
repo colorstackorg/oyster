@@ -12,7 +12,7 @@ import { Resource, ResourceStatus } from '@oyster/types';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
@@ -41,18 +41,10 @@ type CreateResourceInput = z.infer<typeof CreateResourceInput>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
+  const { data, errors, ok } = await validateForm(request, CreateResourceInput);
 
-  const { data, errors } = validateForm(
-    CreateResourceInput,
-    Object.fromEntries(form)
-  );
-
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await db
@@ -66,7 +58,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: `Created ${data.name}.`,
-    type: 'success',
   });
 
   const url = new URL(request.url);
@@ -96,7 +87,7 @@ export default function CreateResourcePage() {
 const keys = CreateResourceInput.keyof().enum;
 
 function CreateResourceForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

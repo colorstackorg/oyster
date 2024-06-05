@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs, json, redirect } from '@remix-run/node';
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 
-import { Button, Form, getActionErrors, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, validateForm } from '@oyster/ui';
 
 import { sendOneTimeCode } from '@/member-profile.server';
 import { OneTimeCodeForm, SendOneTimeCodeInput } from '@/member-profile.ui';
@@ -9,18 +9,13 @@ import { Route } from '@/shared/constants';
 import { oneTimeCodeIdCookie } from '@/shared/cookies.server';
 
 export async function action({ request }: ActionFunctionArgs) {
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    SendOneTimeCodeInput.omit({ purpose: true }),
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    SendOneTimeCodeInput.omit({ purpose: true })
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   try {
@@ -35,17 +30,14 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
 const keys = SendOneTimeCodeInput.keyof().enum;
 
 export default function SendOneTimeCodePage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

@@ -11,7 +11,7 @@ import {
   Button,
   Checkbox,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
@@ -35,23 +35,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
+  const { data, errors, ok } = await validateForm(
+    request,
     AddAdminInput.extend({
       isAmbassador: z.preprocess(
         (value) => value === '1',
         AddAdminInput.shape.isAmbassador
       ),
-    }),
-    Object.fromEntries(form)
+    })
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   const result = await addAdmin(data);
@@ -59,13 +54,11 @@ export async function action({ request }: ActionFunctionArgs) {
   if (result instanceof Error) {
     return json({
       error: result.message,
-      errors,
     });
   }
 
   toast(session, {
     message: 'Added admin.',
-    type: 'success',
   });
 
   return redirect(Route['/admins'], {
@@ -91,7 +84,7 @@ export default function AddAdminPage() {
 const keys = AddAdminInput.keyof().enum;
 
 function AddAdminForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

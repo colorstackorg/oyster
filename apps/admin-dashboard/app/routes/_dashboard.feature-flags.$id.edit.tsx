@@ -14,7 +14,7 @@ import {
   Button,
   Checkbox,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   Textarea,
@@ -50,18 +50,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    EditFeatureFlagInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    EditFeatureFlagInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await editFeatureFlag(params.id as string, {
@@ -72,7 +67,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Edited feature flag.',
-    type: 'success',
   });
 
   return redirect(Route['/feature-flags'], {
@@ -86,7 +80,7 @@ const keys = EditFeatureFlagInput.keyof().enum;
 
 export default function EditFeatureFlagModal() {
   const { flag } = useLoaderData<typeof loader>();
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Modal onCloseTo={Route['/feature-flags']}>

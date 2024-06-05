@@ -8,7 +8,7 @@ import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { addOnboardingSessionAttendees } from '@/admin-dashboard.server';
 import { OnboardingSessionAttendeesField } from '@/shared/components/onboarding-session-form';
@@ -53,25 +53,19 @@ export async function action({ params, request }: ActionFunctionArgs) {
     allowAmbassador: true,
   });
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    AddOnboardingSessionAttendeesInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    AddOnboardingSessionAttendeesInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await addOnboardingSessionAttendees(params.id as string, data);
 
   toast(session, {
     message: `Added ${data.attendees.length} attendees.`,
-    type: 'success',
   });
 
   return redirect(Route['/onboarding-sessions'], {
@@ -84,7 +78,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 const keys = AddOnboardingSessionAttendeesInput.keyof().enum;
 
 export default function AddOnboardingSessionAttendeesPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Modal onCloseTo={Route['/onboarding-sessions']}>

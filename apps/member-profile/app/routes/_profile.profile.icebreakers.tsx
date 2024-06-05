@@ -15,7 +15,7 @@ import { db } from '@oyster/db';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Select,
   Textarea,
   validateForm,
@@ -80,18 +80,13 @@ type UpsertIcebreakerResponsesInput = z.infer<
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpsertIcebreakerResponsesInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    UpsertIcebreakerResponsesInput
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   const memberId = user(session);
@@ -121,7 +116,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Updated!',
-    type: 'success',
   });
 
   return json(
@@ -171,7 +165,7 @@ function IcebreakerGroup({ number }: IcebreakerGroupProps) {
   const { icebreakerPrompts, icebreakerResponses } =
     useLoaderData<typeof loader>();
 
-  const { errors } = getActionErrors(useActionData<typeof action>());
+  const { errors } = getErrors(useActionData<typeof action>());
 
   const { promptIds, setPromptId } = useIcebreakerContext();
 

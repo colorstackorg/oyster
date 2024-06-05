@@ -12,13 +12,7 @@ import {
 import { z } from 'zod';
 
 import { nullableField, Student } from '@oyster/types';
-import {
-  Button,
-  getActionErrors,
-  InputField,
-  Text,
-  validateForm,
-} from '@oyster/ui';
+import { Button, getErrors, InputField, Text, validateForm } from '@oyster/ui';
 
 import { updateMember } from '@/member-profile.server';
 import {
@@ -70,18 +64,13 @@ type UpdateSocialsInformation = z.infer<typeof UpdateSocialsInformation>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpdateSocialsInformation,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    UpdateSocialsInformation
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await updateMember({
@@ -91,7 +80,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Updated!',
-    type: 'success',
   });
 
   return json(
@@ -111,7 +99,7 @@ const keys = UpdateSocialsInformation.keyof().enum;
 
 export default function UpdateSocialsInformationForm() {
   const { student } = useLoaderData<typeof loader>();
-  const { errors } = getActionErrors(useActionData<typeof action>());
+  const { errors } = getErrors(useActionData<typeof action>());
 
   return (
     <ProfileSection>

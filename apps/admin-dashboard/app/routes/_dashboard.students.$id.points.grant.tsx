@@ -16,7 +16,7 @@ import { CompletedActivity } from '@oyster/types';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   Textarea,
@@ -61,18 +61,10 @@ type GrantPointsInput = z.infer<typeof GrantPointsInput>;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
+  const { data, errors, ok } = await validateForm(request, GrantPointsInput);
 
-  const { data, errors } = validateForm(
-    GrantPointsInput,
-    Object.fromEntries(form)
-  );
-
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   job('gamification.activity.completed', {
@@ -84,7 +76,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Points granted successfully.',
-    type: 'success',
   });
 
   return redirect(Route['/students'], {
@@ -115,7 +106,7 @@ export default function GrantPointsPage() {
 const keys = GrantPointsInput.keyof().enum;
 
 function GrantPointsForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

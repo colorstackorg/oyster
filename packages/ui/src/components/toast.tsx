@@ -8,20 +8,25 @@ import { Text } from './text';
 import { useHydrated } from '../hooks/use-hydrated';
 import { cx } from '../utils/cx';
 
+type ToastType = 'error' | 'success' | 'warning';
+
 export type ToastProps = {
   message: string;
-  type: 'error' | 'success' | 'warning';
+  type?: ToastType;
 };
 
 const iconClassName = 'h-4 w-4 text-white';
 
-const Icon: Record<ToastProps['type'], JSX.Element> = {
+const Icon: Record<ToastType, JSX.Element> = {
   error: <XCircle className={iconClassName} />,
   success: <CheckCircle className={iconClassName} />,
   warning: <AlertCircle className={iconClassName} />,
 };
 
-export function Toast({ message, type }: ToastProps): JSX.Element | null {
+export function Toast({
+  message,
+  type = 'success',
+}: ToastProps): JSX.Element | null {
   const [show, setShow] = useState<boolean>(true);
 
   const hydrated = useHydrated();

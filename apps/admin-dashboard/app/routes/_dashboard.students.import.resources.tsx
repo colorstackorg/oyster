@@ -22,7 +22,7 @@ import { Email, Resource, ResourceUser } from '@oyster/types';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Modal,
   Select,
   Text,
@@ -85,16 +85,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors } = validateForm(
-    ImportResourceUsersInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    form,
+    ImportResourceUsersInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   let count = 0;
@@ -104,15 +101,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
     count = result.count;
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 
   toast(session, {
     message: `Imported ${count} resource users.`,
-    type: 'success',
   });
 
   return redirect(Route['/students'], {
@@ -207,7 +200,7 @@ export default function ImportResourcesPage() {
 const keys = ImportResourceUsersInput.keyof().enum;
 
 function ImportResourcesForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const { resources } = useLoaderData<typeof loader>();
 
   return (

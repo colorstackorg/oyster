@@ -63,85 +63,6 @@ Form.Field = function FormField({
   );
 };
 
-// Validation Utilities
-
-type GetActionErrorsInput<T> =
-  | {
-      error: string | undefined;
-      errors: T | undefined;
-    }
-  | undefined;
-
-type ActionErrors<T> = {
-  error: string;
-  errors: T;
-};
-
-export function getActionErrors<T>(
-  input: GetActionErrorsInput<T>
-): ActionErrors<T> {
-  return {
-    error: input?.error || '',
-    errors: input?.errors || ({} as T),
-  };
-}
-
-type ValidateResult<Data> = {
-  data: Data | undefined;
-  errors: Record<keyof Data, string>;
-};
-
-export function validateForm<T extends z.AnyZodObject>(
-  schema: T,
-  data: unknown
-): ValidateResult<z.infer<T>> {
-  const result = schema.safeParse(data, {
-    errorMap: zodErrorMap,
-  });
-
-  const errors = {} as ValidateResult<T>['errors'];
-
-  const keys = schema.keyof().enum;
-
-  type Key = keyof z.infer<T>;
-
-  Object.keys(keys).forEach((_key) => {
-    const key = _key as Key;
-
-    errors[key] = '';
-  });
-
-  if (result.success) {
-    return {
-      data: result.data,
-      errors,
-    };
-  }
-
-  const { fieldErrors } = result.error.formErrors;
-
-  Object.entries(fieldErrors).forEach(([_key, fieldErrors]) => {
-    const key = _key as Key;
-
-    if (fieldErrors) {
-      errors[key] = fieldErrors[0] || '';
-    }
-  });
-
-  return {
-    data: undefined,
-    errors,
-  };
-}
-
-// Type Utilities
-
-export type FieldProps<T> = {
-  defaultValue?: T;
-  error?: string;
-  name: string;
-};
-
 // Common Fields
 
 type InputFieldProps = FieldProps<string> &
@@ -177,3 +98,90 @@ export function InputField({
     </Form.Field>
   );
 }
+
+// Validation Utilities
+
+type GetErrorsInput<T> =
+  | {
+      error?: string | undefined;
+      errors?: T | undefined;
+    }
+  | undefined;
+
+export function getErrors<T>(input: GetErrorsInput<T>) {
+  return {
+    error: input?.error || undefined,
+    errors: input?.errors || ({} as T),
+  };
+}
+
+type ValidateResult<Data> =
+  | {
+      data: Data;
+      errors: undefined;
+      ok: true;
+    }
+  | {
+      data: undefined;
+      errors: Partial<Record<keyof Data, string>>;
+      ok: false;
+    };
+
+type ValidateFormInput =
+  | Request
+  | FormData
+  | Record<string, FormDataEntryValue | FormDataEntryValue[]>;
+
+/**
+ * Validates a form against a Zod schema.
+ *
+ * The input is flexible and can either be a `Request`, `FormData`, or a plain
+ * object. Ultimately, the input is converted to a plain object before being
+ * validated.
+ *
+ * The `ok` property in the result indicates whether the form is valid or not.
+ */
+export async function validateForm<T extends z.AnyZodObject>(
+  input: ValidateFormInput,
+  schema: T
+): Promise<ValidateResult<z.infer<T>>> {
+  if (input instanceof Request) {
+    input = await input.formData();
+  }
+
+  const data = input instanceof FormData ? Object.fromEntries(input) : input;
+
+  const result = schema.safeParse(data, {
+    errorMap: zodErrorMap,
+  });
+
+  if (result.success) {
+    return {
+      data: result.data,
+      errors: undefined,
+      ok: true,
+    };
+  }
+
+  const errors: ValidateResult<T>['errors'] = {};
+
+  const { fieldErrors } = result.error.formErrors;
+
+  Object.entries(fieldErrors).forEach(([key, fieldErrors]) => {
+    errors[key as keyof z.infer<T>] = fieldErrors?.[0];
+  });
+
+  return {
+    data: undefined,
+    errors,
+    ok: false,
+  };
+}
+
+// Type Utilities
+
+export type FieldProps<T> = {
+  defaultValue?: T;
+  error?: string;
+  name: string;
+};

@@ -10,7 +10,7 @@ import {
   Button,
   DatePicker,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
@@ -34,18 +34,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    CreateResumeBookInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    CreateResumeBookInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await createResumeBook({
@@ -71,7 +66,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = CreateResumeBookInput.keyof().enum;
 
 export default function CreateResumeBookModal() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Modal onCloseTo={Route['/resume-books']}>

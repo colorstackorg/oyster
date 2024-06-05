@@ -20,7 +20,7 @@ import {
   Checkbox,
   cx,
   Form,
-  getActionErrors,
+  getErrors,
   Text,
   validateForm,
 } from '@oyster/ui';
@@ -66,18 +66,13 @@ type UpdateAllowEmailShare = z.infer<typeof UpdateAllowEmailShare>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpdateAllowEmailShare,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    UpdateAllowEmailShare
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await db.transaction().execute(async (trx) => {
@@ -86,7 +81,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Updated!',
-    type: 'success',
   });
 
   return json(
@@ -115,7 +109,7 @@ export default function EmailsPage() {
 
 function EmailAddressSection() {
   const { emails, student } = useLoaderData<typeof loader>();
-  const { errors } = getActionErrors(useActionData<typeof action>());
+  const { errors } = getErrors(useActionData<typeof action>());
 
   const submit = useSubmit();
 

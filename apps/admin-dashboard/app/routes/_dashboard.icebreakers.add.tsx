@@ -9,7 +9,7 @@ import { Form as RemixForm, useActionData } from '@remix-run/react';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
@@ -33,25 +33,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    AddIcebreakerPromptInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    AddIcebreakerPromptInput
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await addIcebreakerPrompt(data);
 
   toast(session, {
     message: 'Added icebreaker prompt.',
-    type: 'success',
   });
 
   return redirect('/icebreakers/add', {
@@ -77,7 +71,7 @@ export default function AddIcebreakerPromptPage() {
 const keys = AddIcebreakerPromptInput.keyof().enum;
 
 function AddIcebreakerPromptForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

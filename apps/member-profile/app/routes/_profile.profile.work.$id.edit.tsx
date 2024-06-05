@@ -19,7 +19,7 @@ import {
   Address,
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Modal,
   validateForm,
 } from '@oyster/ui';
@@ -90,18 +90,13 @@ const EditWorkExperienceFormData = EditWorkExperienceInput.omit({
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    EditWorkExperienceFormData,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    EditWorkExperienceFormData
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   if (data.startDate && data.endDate && data.startDate > data.endDate) {
@@ -120,7 +115,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Edited work experience.',
-      type: 'success',
     });
 
     return redirect(Route['/profile/work'], {
@@ -129,17 +123,14 @@ export async function action({ params, request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
 const keys = EditWorkExperienceFormData.keyof().enum;
 
 export default function EditWorkExperiencePage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const { workExperience } = useLoaderData<typeof loader>();
 
   const navigate = useNavigate();

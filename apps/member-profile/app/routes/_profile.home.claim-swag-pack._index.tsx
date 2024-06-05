@@ -18,7 +18,7 @@ import {
   Address,
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Modal,
   Spinner,
   Text,
@@ -61,18 +61,13 @@ const ClaimSwagPackFormData = ClaimSwagPackInput.omit({
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    ClaimSwagPackFormData,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    ClaimSwagPackFormData
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the issues above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   if (data.addressState === 'PR') {
@@ -147,7 +142,7 @@ function LoadingState() {
 }
 
 function ClaimSwagPackForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

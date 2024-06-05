@@ -15,7 +15,7 @@ import { ISO8601Date, nullableField, Student } from '@oyster/types';
 import {
   Button,
   Divider,
-  getActionErrors,
+  getErrors,
   InputField,
   validateForm,
 } from '@oyster/ui';
@@ -89,18 +89,13 @@ type UpdatePersonalInformation = z.infer<typeof UpdatePersonalInformation>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpdatePersonalInformation,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    UpdatePersonalInformation
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await updateMember({
@@ -110,7 +105,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Updated!',
-    type: 'success',
   });
 
   return json(
@@ -130,7 +124,7 @@ const keys = UpdatePersonalInformation.keyof().enum;
 
 export default function UpdatePersonalInformationForm() {
   const { ethnicities, student } = useLoaderData<typeof loader>();
-  const { errors } = getActionErrors(useActionData<typeof action>());
+  const { errors } = getErrors(useActionData<typeof action>());
 
   return (
     <ProfileSection>

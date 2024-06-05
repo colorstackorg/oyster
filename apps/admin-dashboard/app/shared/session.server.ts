@@ -68,7 +68,7 @@ function isUserAuthenticated(
   session: Session,
   options: EnsureUserAuthenticatedOptions = {}
 ) {
-  if (!user(session)) {
+  if (!admin(session)) {
     return false;
   }
 
@@ -81,6 +81,10 @@ function isUserAuthenticated(
 
 // Session Helpers
 
+export function admin(session: Session) {
+  return session.get(SESSION.USER_ID) as string;
+}
+
 export function isAmbassador(session: Session) {
   return session.get(SESSION.IS_AMBASSADOR) as boolean;
 }
@@ -91,8 +95,4 @@ export function toast(session: Session, toast: ToastProps) {
     message: toast.message,
     type: toast.type,
   });
-}
-
-export function user(session: Session) {
-  return session.get(SESSION.USER_ID) as string;
 }

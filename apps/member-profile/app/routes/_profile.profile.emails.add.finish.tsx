@@ -16,7 +16,7 @@ import { StudentEmail } from '@oyster/types';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
@@ -65,18 +65,10 @@ type AddEmailFormData = z.infer<typeof AddEmailFormData>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
+  const { data, errors, ok } = await validateForm(request, AddEmailFormData);
 
-  const { data, errors } = validateForm(
-    AddEmailFormData,
-    Object.fromEntries(form)
-  );
-
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   const email = await addEmailCookie.parse(request.headers.get('Cookie'));
@@ -97,7 +89,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Added email address to your profile.',
-      type: 'success',
     });
 
     return redirect(Route['/profile/emails'], {
@@ -106,10 +97,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
@@ -165,7 +153,7 @@ async function addEmail(input: AddEmailInput) {
 const keys = AddEmailFormData.keyof().enum;
 
 export default function AddEmailPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const { email } = useLoaderData<typeof loader>();
 
   return (

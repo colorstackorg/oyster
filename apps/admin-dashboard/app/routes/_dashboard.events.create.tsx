@@ -12,7 +12,7 @@ import {
   Button,
   DatePicker,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   Select,
@@ -52,16 +52,10 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await request.formData();
 
-  const { data, errors } = validateForm(
-    CreateEventFormData,
-    Object.fromEntries(form)
-  );
+  const { data, errors, ok } = await validateForm(form, CreateEventFormData);
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   const values = Object.fromEntries(form);
@@ -84,7 +78,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: `Created ${data.name}.`,
-    type: 'success',
   });
 
   return redirect(Route['/events'], {
@@ -112,7 +105,7 @@ const keys = CreateEventFormData.keyof().enum;
 const EVENT_TYPES = Object.values(EventType);
 
 function CreateEventForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

@@ -15,7 +15,7 @@ import { Student } from '@oyster/types';
 import {
   Button,
   Divider,
-  getActionErrors,
+  getErrors,
   InputField,
   validateForm,
 } from '@oyster/ui';
@@ -84,18 +84,13 @@ type UpdateGeneralInformation = z.infer<typeof UpdateGeneralInformation>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpdateGeneralInformation,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    UpdateGeneralInformation
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await updateMember({
@@ -105,7 +100,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Updated!',
-    type: 'success',
   });
 
   return json(
@@ -124,7 +118,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = UpdateGeneralInformation.keyof().enum;
 
 export default function UpdateGeneralInformationSection() {
-  const { errors } = getActionErrors(useActionData<typeof action>());
+  const { errors } = getErrors(useActionData<typeof action>());
   const { student } = useLoaderData<typeof loader>();
 
   return (

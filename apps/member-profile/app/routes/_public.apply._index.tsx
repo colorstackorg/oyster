@@ -12,7 +12,7 @@ import {
   Button,
   Checkbox,
   Form,
-  getActionErrors,
+  getErrors,
   Link,
   Text,
   type TextProps,
@@ -68,17 +68,20 @@ export async function action({ request }: ActionFunctionArgs) {
   const session = await getSession(request);
   const form = await request.formData();
 
-  const { data, errors } = validateForm(ApplyFormData, {
-    ...Object.fromEntries(form),
-    otherDemographics: form.getAll('otherDemographics'),
-    race: form.getAll('race'),
-  });
+  const { data, errors, ok } = await validateForm(
+    {
+      ...Object.fromEntries(form),
+      otherDemographics: form.getAll('otherDemographics'),
+      race: form.getAll('race'),
+    },
+    ApplyFormData
+  );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the issues above.',
-      errors,
-    });
+  if (!ok) {
+    return json(
+      { error: 'Please fix the issues above.', errors },
+      { status: 400 }
+    );
   }
 
   try {
@@ -92,17 +95,14 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message, errors }, { status: 500 });
   }
 }
 
 const keys = ApplyFormData.keyof().enum;
 
 export default function ApplicationPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <>
