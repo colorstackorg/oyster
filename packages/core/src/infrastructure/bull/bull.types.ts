@@ -372,6 +372,10 @@ export const ProfileBullJob = z.discriminatedUnion('name', [
 
 export const SlackBullJob = z.discriminatedUnion('name', [
   z.object({
+    name: z.literal('slack.birthdates.update'),
+    data: z.object({}),
+  }),
+  z.object({
     name: z.literal('slack.channel.archive'),
     data: SlackChannel.pick({
       id: true,
