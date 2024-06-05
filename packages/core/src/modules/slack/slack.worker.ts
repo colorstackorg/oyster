@@ -3,6 +3,7 @@ import { match } from 'ts-pattern';
 import { SlackBullJob } from '@/infrastructure/bull/bull.types';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { onSlackUserInvited } from '@/modules/slack/events/slack-user-invited';
+import { updateBirthdatesFromSlack } from '@/modules/slack/use-cases/update-birthdates-from-slack';
 import { onSlackMessageAdded } from './events/slack-message-added';
 import { onSlackProfilePictureChanged } from './events/slack-profile-picture-changed';
 import { onSlackWorkspaceJoined } from './events/slack-workspace-joined';
@@ -24,6 +25,9 @@ export const slackWorker = registerWorker(
   SlackBullJob,
   async (job) => {
     return match(job)
+      .with({ name: 'slack.birthdates.update' }, async () => {
+        return updateBirthdatesFromSlack();
+      })
       .with({ name: 'slack.channel.archive' }, async ({ data }) => {
         return archiveSlackChannel(data);
       })

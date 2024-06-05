@@ -5,12 +5,12 @@ import { RateLimiter } from '@/shared/utils/rate-limiter';
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 
 export const AIRTABLE_FAMILY_BASE_ID = process.env.AIRTABLE_FAMILY_BASE_ID;
+export const AIRTABLE_MEMBERS_TABLE_ID = process.env.AIRTABLE_MEMBERS_TABLE_ID;
 
 // Constants
 
 export const AIRTABLE_API_URI = 'https://api.airtable.com/v0';
-export const AIRTABLE_MEMBERS_TABLE = 'Members';
-export const AIRTABLE_MEMBERS_URI = `${AIRTABLE_API_URI}/${AIRTABLE_FAMILY_BASE_ID}/${AIRTABLE_MEMBERS_TABLE}`;
+export const AIRTABLE_MEMBERS_URI = `${AIRTABLE_API_URI}/${AIRTABLE_FAMILY_BASE_ID}/${AIRTABLE_MEMBERS_TABLE_ID}`;
 
 // Rate Limiter
 

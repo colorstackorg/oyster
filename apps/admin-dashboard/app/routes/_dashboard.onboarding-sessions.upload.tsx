@@ -17,6 +17,7 @@ import {
 } from '@/shared/components/onboarding-session-form';
 import { Route } from '@/shared/constants';
 import {
+  admin,
   commitSession,
   ensureUserAuthenticated,
   toast,
@@ -38,6 +39,7 @@ const UploadOnboardingSessionInput = OnboardingSession.pick({
     .trim()
     .min(1, { message: 'Please select at least one attendee.' })
     .transform((value) => value.split(',')),
+  uploadedById: z.string().trim().min(1),
 });
 
 type UploadOnboardingSessionInput = z.infer<
@@ -49,8 +51,14 @@ export async function action({ request }: ActionFunctionArgs) {
     allowAmbassador: true,
   });
 
+  const adminId = admin(session);
+
+  const form = await request.formData();
+
+  form.set('uploadedById', adminId);
+
   const { data, errors, ok } = await validateForm(
-    request,
+    form,
     UploadOnboardingSessionInput
   );
 

@@ -1,6 +1,6 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
-import { Award, Book, Calendar, Folder, Home, User } from 'react-feather';
+import { Award, BookOpen, Calendar, Folder, Home, User } from 'react-feather';
 
 import { Dashboard } from '@oyster/ui';
 
@@ -11,15 +11,16 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const isCensusEnabled = await isFeatureFlagEnabled('census_2024');
+  const isResourceDatabaseEnabled =
+    await isFeatureFlagEnabled('resource_database');
 
   return json({
-    isCensusEnabled,
+    isResourceDatabaseEnabled,
   });
 }
 
 export default function ProfileLayout() {
-  const { isCensusEnabled } = useLoaderData<typeof loader>();
+  const { isResourceDatabaseEnabled } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -35,28 +36,33 @@ export default function ProfileLayout() {
               icon={<Home />}
               label="Home"
               pathname={Route['/home']}
+              prefetch="intent"
             />
-            {isCensusEnabled && (
-              <Dashboard.NavigationLink
-                icon={<Book />}
-                label="Census '24"
-                pathname={Route['/census']}
-              />
-            )}
             <Dashboard.NavigationLink
               icon={<Folder />}
               label="Directory"
               pathname={Route['/directory']}
+              prefetch="intent"
             />
+            {isResourceDatabaseEnabled && (
+              <Dashboard.NavigationLink
+                icon={<BookOpen />}
+                label="Resources"
+                pathname={Route['/resources']}
+                prefetch="intent"
+              />
+            )}
             <Dashboard.NavigationLink
               icon={<Award />}
               label="Points"
               pathname={Route['/points']}
+              prefetch="intent"
             />
             <Dashboard.NavigationLink
               icon={<Calendar />}
               label="Events"
               pathname={Route['/events']}
+              prefetch="intent"
             />
             <Dashboard.NavigationLink
               icon={<User />}

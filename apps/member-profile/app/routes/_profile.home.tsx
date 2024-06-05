@@ -3,7 +3,7 @@ import {
   type LoaderFunctionArgs,
   type SerializeFrom,
 } from '@remix-run/node';
-import { Outlet, Link as RemixLink, useLoaderData } from '@remix-run/react';
+import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren, type PropsWithoutRef } from 'react';
 import {
@@ -21,6 +21,11 @@ import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
 import {
+  getIpAddress,
+  setMixpanelProfile,
+  track,
+} from '@oyster/infrastructure/mixpanel';
+import {
   type ActivationRequirement,
   StudentActiveStatus,
   Timezone,
@@ -30,7 +35,6 @@ import {
   cx,
   Divider,
   getButtonCn,
-  Link,
   ProfilePicture,
   Text,
 } from '@oyster/ui';
@@ -41,12 +45,10 @@ import {
   countMessagesSent,
   getActiveStreakLeaderboard,
   getActiveStreakLeaderboardPosition,
-  getIpAddress,
 } from '@/member-profile.server';
 import { Card } from '@/shared/components/card';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
-import { setMixpanelProfile, track } from '@/shared/mixpanel.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 const RECENT_WEEKS = 16;
@@ -95,8 +97,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ip: getIpAddress(request),
   });
 
-  track(request, 'Page Viewed', {
-    Page: 'Home',
+  track({
+    event: 'Page Viewed',
+    properties: { Page: 'Home' },
+    request,
+    user: id,
   });
 
   return json({
@@ -381,12 +386,12 @@ function ClaimSwagPackCard() {
       </Card.Description>
 
       <Button.Group>
-        <RemixLink
-          to={Route['/home/claim-swag-pack']}
+        <Link
           className={getButtonCn({ variant: 'primary' })}
+          to={Route['/home/claim-swag-pack']}
         >
           Claim Swag Pack
-        </RemixLink>
+        </Link>
       </Button.Group>
     </Card>
   );
@@ -404,7 +409,7 @@ function OnboardingSessionCard() {
 
       <Button.Group>
         <a
-          href="https://calendly.com/colorstack-ambassador/onboarding"
+          href="https://calendly.com/colorstack-onboarding-ambassador/onboarding"
           target="_blank"
           className={getButtonCn({ variant: 'primary' })}
         >
@@ -672,7 +677,7 @@ function ResourceItem({
 >) {
   return (
     <li>
-      <Link href={href} target="_blank">
+      <Link className="link" to={href} target="_blank">
         {children}
       </Link>
 

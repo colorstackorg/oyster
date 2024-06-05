@@ -1,5 +1,9 @@
 /* Elements */
 
+body:has(.lock-scroll) {
+  overflow: hidden;
+}
+
 button,
 input,
 textarea {

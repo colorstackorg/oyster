@@ -33,7 +33,6 @@ import {
   ProfileTitle,
 } from '@/shared/components/profile';
 import { Route } from '@/shared/constants';
-import { track } from '@/shared/mixpanel.server';
 import { getMember } from '@/shared/queries';
 import {
   commitSession,
@@ -51,10 +50,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     listEmails(id),
     getMember(id).select('allowEmailShare').executeTakeFirstOrThrow(),
   ]);
-
-  track(request, 'Page Viewed', {
-    Page: 'Profile - Email Addresses',
-  });
 
   return json({
     emails,

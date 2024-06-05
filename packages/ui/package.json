@@ -6,13 +6,17 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./index.css": "./src/index.css"
+    "./index.css": "./src/index.css",
+    "./tooltip": "./src/components/tooltip.tsx"
   },
   "license": "MIT",
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@radix-ui/react-tooltip": "^1.0.7"
   },
   "devDependencies": {
     "@oyster/eslint-config": "*",

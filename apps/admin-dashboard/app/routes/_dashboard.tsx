@@ -1,6 +1,7 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
 import {
+  BookOpen,
   Calendar,
   Gift,
   HelpCircle,
@@ -68,6 +69,11 @@ export default function DashboardLayout() {
                   pathname={Route['/students']}
                 />
                 <Dashboard.NavigationLink
+                  icon={<User />}
+                  label="Admins"
+                  pathname={Route['/admins']}
+                />
+                <Dashboard.NavigationLink
                   icon={<Gift />}
                   label="Gamification"
                   pathname={Route['/gamification/activities']}
@@ -81,6 +87,11 @@ export default function DashboardLayout() {
                   icon={<Calendar />}
                   label="Events"
                   pathname={Route['/events']}
+                />
+                <Dashboard.NavigationLink
+                  icon={<BookOpen />}
+                  label="Resume Books"
+                  pathname={Route['/resume-books']}
                 />
                 <Dashboard.NavigationLink
                   icon={<HelpCircle />}
@@ -115,7 +126,7 @@ export default function DashboardLayout() {
         <Dashboard.LogoutForm />
       </Dashboard.Sidebar>
 
-      <Dashboard.Page>
+      <Dashboard.Page className="max-h-screen overflow-auto">
         <Dashboard.MenuButton />
         <Outlet />
       </Dashboard.Page>

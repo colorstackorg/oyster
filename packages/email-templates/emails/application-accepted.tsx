@@ -53,7 +53,7 @@ export function ApplicationAcceptedEmail({
 
           <li>
             <Email.Text>
-              <Email.Link href="https://calendly.com/colorstack-ambassador/onboarding">
+              <Email.Link href="https://calendly.com/colorstack-onboarding-ambassador/onboarding">
                 Book your group onboarding call
               </Email.Link>{' '}
               to learn more about our programming, how to best use the Slack,

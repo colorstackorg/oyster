@@ -77,7 +77,7 @@ export const Table = ({
   emptyMessage,
 }: TableProps) => {
   return (
-    <div className="overflow-scroll rounded-lg border border-gray-200">
+    <div className="overflow-auto rounded-lg border border-gray-200">
       {!data.length ? (
         <div className="box-border flex w-full flex-col items-center justify-center gap-4 p-12">
           <Text>{emptyMessage}</Text>
@@ -181,7 +181,7 @@ function TableBody({
 
 Table.Dropdown = function TableDropdown({ children }: PropsWithChildren) {
   return (
-    <Dropdown className="fixed right-[unset] mt-[unset] translate-x-[calc(-100%-0.5rem)]">
+    <Dropdown className="fixed right-16 mt-[unset] md:right-20">
       {children}
     </Dropdown>
   );

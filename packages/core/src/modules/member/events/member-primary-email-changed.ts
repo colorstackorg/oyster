@@ -26,7 +26,7 @@ export async function onPrimaryEmailChanged({
 }: GetBullJobData<'member_email.primary.changed'>) {
   const student = await db
     .selectFrom('students')
-    .select(['email as newEmail', 'firstName', 'slackId'])
+    .select(['airtableId', 'email as newEmail', 'firstName', 'slackId'])
     .where('id', '=', studentId)
     .executeTakeFirst();
 
@@ -50,8 +50,8 @@ export async function onPrimaryEmailChanged({
   ]);
 
   job('airtable.record.update', {
-    newEmail: student.newEmail,
-    previousEmail,
+    airtableId: student.airtableId!,
+    data: { email: student.newEmail },
   });
 
   const data = {

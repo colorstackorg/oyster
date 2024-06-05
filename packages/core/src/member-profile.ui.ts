@@ -9,10 +9,6 @@ export {
 } from './modules/authentication/authentication.types';
 export { OneTimeCodeForm } from './modules/authentication/ui/one-time-code-form';
 export {
-  BaseCensusResponse,
-  SubmitCensusResponseData,
-} from './modules/census/census.types';
-export {
   AddEducationInput,
   DegreeType,
   Education,
@@ -26,6 +22,7 @@ export {
   EmploymentType,
   FORMATTED_EMPLOYMENT_TYPE,
   FORMATTED_LOCATION_TYPE,
+  ListJobOffersWhere,
   LocationType,
   WorkExperience,
 } from './modules/employment/employment.types';
@@ -45,5 +42,6 @@ export {
   ChangePrimaryEmailInput,
   ListMembersInDirectoryWhere,
 } from './modules/member/member.types';
+export { CreateResumeBookInput } from './modules/resume-book/resume-book.types';
 export { ClaimSwagPackInput } from './modules/swag-pack/swag-pack.types';
 export { Environment, ListSearchParams } from './shared/types';

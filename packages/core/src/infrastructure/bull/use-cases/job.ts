@@ -61,6 +61,7 @@ const QueueNameFromJobName: Record<BullJob['name'], BullQueue> = {
   'onboarding_session.attended': 'onboarding_session',
   'one_time_code.expire': 'one_time_code',
   'profile.views.notification.monthly': 'profile',
+  'slack.birthdates.update': 'slack',
   'slack.channel.archive': 'slack',
   'slack.channel.create': 'slack',
   'slack.channel.delete': 'slack',
