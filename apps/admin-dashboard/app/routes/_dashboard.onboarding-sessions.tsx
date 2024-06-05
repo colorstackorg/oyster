@@ -176,7 +176,7 @@ function OnboardingSessionsTable() {
     {
       displayName: 'Uploaded By',
       render: (session) => session.ambassadorName,
-      size: null,
+      size: '200',
     },
   ];
 
