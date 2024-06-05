@@ -8,8 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useLocation,
-  useNavigate,
 } from '@remix-run/react';
 
 import { Button, Form, Modal } from '@oyster/ui';
@@ -67,15 +65,9 @@ export async function action({ params, request }: ActionFunctionArgs) {
 export default function AcceptApplicationPage() {
   const { application } = useLoaderData<typeof loader>();
   const { error } = useActionData<typeof action>() || {};
-  const { search } = useLocation();
-  const navigate = useNavigate();
-
-  function onBack() {
-    navigate(-1);
-  }
 
   return (
-    <Modal onCloseTo={Route['/applications'] + search}>
+    <>
       <Modal.Header>
         <Modal.Title>Accept Application</Modal.Title>
         <Modal.CloseButton />
@@ -90,14 +82,10 @@ export default function AcceptApplicationPage() {
       <RemixForm className="form" method="post">
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
-        <Button.Group flexDirection="row-reverse">
-          <Button type="submit">Confirm</Button>
-
-          <Button onClick={onBack} type="button" variant="secondary">
-            Back
-          </Button>
+        <Button.Group>
+          <Button type="submit">Accept</Button>
         </Button.Group>
       </RemixForm>
-    </Modal>
+    </>
   );
 }
