@@ -1,4 +1,10 @@
-import { Link, NavLink, Form as RemixForm, useSubmit } from '@remix-run/react';
+import {
+  Link,
+  type LinkProps,
+  NavLink,
+  Form as RemixForm,
+  useSubmit,
+} from '@remix-run/react';
 import React, {
   type PropsWithChildren,
   useContext,
@@ -110,12 +116,14 @@ type DashboardNavigationLinkProps = {
   icon: JSX.Element;
   label: string;
   pathname: string;
+  prefetch?: LinkProps['prefetch'];
 };
 
 Dashboard.NavigationLink = function NavigationLink({
   icon,
   label,
   pathname,
+  prefetch,
 }: DashboardNavigationLinkProps) {
   const { setOpen } = useContext(DashboardContext);
 
@@ -125,7 +133,12 @@ Dashboard.NavigationLink = function NavigationLink({
 
   return (
     <li>
-      <NavLink className={itemClassName} onClick={onClick} to={pathname}>
+      <NavLink
+        className={itemClassName}
+        onClick={onClick}
+        prefetch={prefetch}
+        to={pathname}
+      >
         {icon} {label}
       </NavLink>
     </li>

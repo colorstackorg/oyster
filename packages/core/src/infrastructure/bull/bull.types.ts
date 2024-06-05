@@ -538,6 +538,7 @@ export const StudentBullJob = z.discriminatedUnion('name', [
     data: z.object({
       airtableId: z.string().trim().min(1),
       email: Student.shape.email,
+      sendViolationEmail: z.boolean(),
       slackId: Student.shape.slackId.nullable(),
     }),
   }),

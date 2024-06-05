@@ -8,6 +8,7 @@ import { db } from '@/infrastructure/database';
 type UploadOnboardingSessionInput = {
   attendees: string[];
   date: string;
+  uploadedById: string;
 };
 
 export async function uploadOnboardingSession(
@@ -21,6 +22,7 @@ export async function uploadOnboardingSession(
       .values({
         date: input.date,
         id: onboardingSessionId,
+        uploadedById: input.uploadedById,
       })
       .execute();
 

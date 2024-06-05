@@ -68,7 +68,7 @@ export async function action({ request }: ActionFunctionArgs) {
     type: 'success',
   });
 
-  return redirect(Route['/'], {
+  return redirect(Route['/admins'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },

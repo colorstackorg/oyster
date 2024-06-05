@@ -36,28 +36,33 @@ export default function ProfileLayout() {
               icon={<Home />}
               label="Home"
               pathname={Route['/home']}
+              prefetch="intent"
             />
             <Dashboard.NavigationLink
               icon={<Folder />}
               label="Directory"
               pathname={Route['/directory']}
+              prefetch="intent"
             />
             {isResourceDatabaseEnabled && (
               <Dashboard.NavigationLink
                 icon={<BookOpen />}
                 label="Resources"
                 pathname={Route['/resources']}
+                prefetch="intent"
               />
             )}
             <Dashboard.NavigationLink
               icon={<Award />}
               label="Points"
               pathname={Route['/points']}
+              prefetch="intent"
             />
             <Dashboard.NavigationLink
               icon={<Calendar />}
               label="Events"
               pathname={Route['/events']}
+              prefetch="intent"
             />
             <Dashboard.NavigationLink
               icon={<User />}
