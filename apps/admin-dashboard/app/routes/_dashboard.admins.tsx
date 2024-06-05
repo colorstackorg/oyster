@@ -3,7 +3,7 @@ import {
   type LoaderFunctionArgs,
   type SerializeFrom,
 } from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
+import { Outlet, useLoaderData } from '@remix-run/react';
 
 import { Dashboard, Pill, Table, type TableColumnProps } from '@oyster/ui';
 
@@ -11,9 +11,7 @@ import { listAdmins } from '@/admin-dashboard.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request, {
-    allowAmbassador: true,
-  });
+  await ensureUserAuthenticated(request);
 
   const admins = await listAdmins();
 
@@ -53,12 +51,12 @@ function AdminsTable() {
     },
     {
       displayName: 'Email',
-      size: null,
+      size: '320',
       render: (admin) => admin.email,
     },
     {
       displayName: 'Status',
-      size: '200',
+      size: null,
       render: (admin) => {
         return admin.isAmbassador ? (
           <Pill color="lime-100">Ambassador</Pill>

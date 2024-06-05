@@ -1,5 +1,6 @@
 export { QueueFromName } from './infrastructure/bull/bull';
 export { job } from './infrastructure/bull/use-cases/job';
+export { listAdmins } from './modules/admin/queries/list-admins';
 export { addAdmin } from './modules/admin/use-cases/add-admin';
 export { countPendingApplications } from './modules/application/queries/count-pending-applications';
 export { getApplication } from './modules/application/queries/get-application';
@@ -30,4 +31,3 @@ export { uploadOnboardingSession } from './modules/onboarding-session/use-cases/
 export { createSurvey } from './modules/survey/use-cases/create-survey';
 export { importSurveyResponses } from './modules/survey/use-cases/import-survey-responses';
 export { parseCsv } from './shared/utils/csv.utils';
-export { listAdmins } from './modules/admin/queries/list-admins';
