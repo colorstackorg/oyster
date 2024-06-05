@@ -51,11 +51,9 @@ export async function action({ request }: ActionFunctionArgs) {
     allowAmbassador: true,
   });
 
-  const adminId = admin(session);
-
   const form = await request.formData();
 
-  form.set('uploadedById', adminId);
+  form.set('uploadedById', admin(session));
 
   const { data, errors, ok } = await validateForm(
     form,
