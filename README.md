@@ -107,7 +107,7 @@ list on what we can configure, see
 
 Please see our [contributing guide](./CONTRIBUTING.md)! 👋
 
-Special thanks to our contributing ColorStack members! 🙏
+A heartfelt thanks to our ColorStack members for their contributions! 🙏
 
 <a href="https://github.com/colorstackorg/oyster/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=colorstackorg/oyster" />
