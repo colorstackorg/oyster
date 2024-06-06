@@ -6,6 +6,7 @@ import {
 import { Link, Outlet, useLoaderData, useSearchParams } from '@remix-run/react';
 import { Plus } from 'react-feather';
 
+import { ListCompaniesWhere } from '@oyster/core/employment';
 import { listCompanies } from '@oyster/core/employment.server';
 import { track } from '@oyster/infrastructure/mixpanel';
 import {
@@ -16,15 +17,11 @@ import {
   Text,
 } from '@oyster/ui';
 
-import { ListSearchParams } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
+import { PaginationSearchParams } from '@/shared/types';
 
-const CompaniesSearchParams = ListSearchParams.pick({
-  limit: true,
-  page: true,
-  search: true,
-});
+const CompaniesSearchParams = PaginationSearchParams.merge(ListCompaniesWhere);
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

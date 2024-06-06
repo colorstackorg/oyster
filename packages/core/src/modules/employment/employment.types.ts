@@ -8,6 +8,8 @@ import {
   Student,
 } from '@oyster/types';
 
+import { ListSearchParams } from '@/shared/types';
+
 // Enums
 
 export const EmploymentType = {
@@ -101,6 +103,12 @@ export const WorkExperience = Entity.extend({
 export type WorkExperience = z.infer<typeof WorkExperience>;
 
 // Queries
+
+export const ListCompaniesWhere = z.object({
+  search: ListSearchParams.shape.search,
+});
+
+export type ListCompaniesWhere = z.infer<typeof ListCompaniesWhere>;
 
 export const ListJobOffersWhere = z.object({
   company: Company.shape.id.nullable().catch(null),
