@@ -62,7 +62,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Removed member.',
-    type: 'success',
   });
 
   return redirect(Route['/students'], {

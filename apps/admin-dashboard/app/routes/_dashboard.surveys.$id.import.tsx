@@ -16,7 +16,7 @@ import {
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { importSurveyResponses } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
@@ -60,16 +60,13 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors } = validateForm(
-    ImportSurveyResponsesInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    form,
+    ImportSurveyResponsesInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   let count = 0;
@@ -80,15 +77,11 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     count = result.count;
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 
   toast(session, {
     message: `Imported ${count} survey responses.`,
-    type: 'success',
   });
 
   return redirect(Route['/surveys'], {
@@ -120,7 +113,7 @@ export default function ImportSurveyResponsesPage() {
 const keys = ImportSurveyResponsesInput.keyof().enum;
 
 function ImportSurveyResponsesForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">

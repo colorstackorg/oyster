@@ -77,7 +77,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Removed repeatable.',
-    type: 'success',
   });
 
   return json(

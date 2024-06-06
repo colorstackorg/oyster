@@ -10,11 +10,9 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
+  const { data, ok } = await validateForm(request, CreateTagInput);
 
-  const { data } = validateForm(CreateTagInput, Object.fromEntries(form));
-
-  if (!data) {
+  if (!ok) {
     return json({}, { status: 400 });
   }
 

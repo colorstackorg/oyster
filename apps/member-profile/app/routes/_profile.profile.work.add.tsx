@@ -12,7 +12,7 @@ import {
   Address,
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Modal,
   validateForm,
 } from '@oyster/ui';
@@ -52,17 +52,13 @@ type AddWorkExperienceFormData = z.infer<typeof AddWorkExperienceFormData>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
+  const { data, errors, ok } = await validateForm(
+    request,
+    AddWorkExperienceFormData
+  );
 
-  const values = Object.fromEntries(form);
-
-  const { data, errors } = validateForm(AddWorkExperienceFormData, values);
-
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   if (data.endDate && data.startDate > data.endDate) {
@@ -79,7 +75,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Added work experience.',
-    type: 'success',
   });
 
   return redirect(Route['/profile/work'], {
@@ -92,7 +87,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = AddWorkExperienceFormData.keyof().enum;
 
 export default function AddWorkExperiencePage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Modal onCloseTo={Route['/profile/work']}>

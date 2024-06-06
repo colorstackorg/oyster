@@ -16,7 +16,7 @@ import { type z } from 'zod';
 
 import { db } from '@oyster/db';
 import { type Major } from '@oyster/types';
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { editEducation } from '@/member-profile.server';
 import { type DegreeType, Education, type School } from '@/member-profile.ui';
@@ -99,21 +99,16 @@ type EditEducationFormData = z.infer<typeof EditEducationFormData>;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    EditEducationFormData,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    EditEducationFormData
   );
 
-  try {
-    if (!data) {
-      return json({
-        error: 'Please fix the above errors.',
-        errors,
-      });
-    }
+  if (!ok) {
+    return json({ errors }, { status: 400 });
+  }
 
+  try {
     if (data.startDate && data.endDate && data.startDate > data.endDate) {
       return json({
         error: 'End date must be after the start date.',
@@ -129,7 +124,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Edited education.',
-      type: 'success',
     });
 
     return redirect(Route['/profile/education'], {
@@ -138,17 +132,14 @@ export async function action({ params, request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
 const keys = EditEducationFormData.keyof().enum;
 
 export default function EditEducationPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const { education } = useLoaderData<typeof loader>();
 
   const navigate = useNavigate();

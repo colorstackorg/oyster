@@ -11,7 +11,7 @@ import {
 } from '@remix-run/react';
 
 import { track } from '@oyster/infrastructure/mixpanel';
-import { Button, Form, getActionErrors, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, validateForm } from '@oyster/ui';
 
 import { verifyOneTimeCode } from '@/member-profile.server';
 import { OneTimeCodeForm, VerifyOneTimeCodeInput } from '@/member-profile.ui';
@@ -40,18 +40,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    VerifyOneTimeCodeInput.pick({ value: true }),
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    VerifyOneTimeCodeInput.pick({ value: true })
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   const oneTimeCodeId = await oneTimeCodeIdCookie.parse(
@@ -89,10 +84,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
@@ -100,7 +92,7 @@ const keys = VerifyOneTimeCodeInput.keyof().enum;
 
 export default function VerifyOneTimeCodePage() {
   const { description } = useLoaderData<typeof loader>();
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

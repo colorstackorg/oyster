@@ -8,8 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useLocation,
-  useNavigate,
 } from '@remix-run/react';
 
 import { Button, Form, Modal } from '@oyster/ui';
@@ -17,10 +15,10 @@ import { Button, Form, Modal } from '@oyster/ui';
 import { acceptApplication, getApplication } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
+  admin,
   commitSession,
   ensureUserAuthenticated,
   toast,
-  user,
 } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -47,14 +45,11 @@ export async function action({ params, request }: ActionFunctionArgs) {
     allowAmbassador: true,
   });
 
-  const adminId = user(session);
-
   try {
-    await acceptApplication(params.id as string, adminId);
+    await acceptApplication(params.id as string, admin(session));
 
     toast(session, {
       message: 'Application has been accepted.',
-      type: 'success',
     });
 
     return redirect(Route['/applications'], {
@@ -63,24 +58,16 @@ export async function action({ params, request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
 export default function AcceptApplicationPage() {
   const { application } = useLoaderData<typeof loader>();
   const { error } = useActionData<typeof action>() || {};
-  const { search } = useLocation();
-  const navigate = useNavigate();
-
-  function onBack() {
-    navigate(-1);
-  }
 
   return (
-    <Modal onCloseTo={Route['/applications'] + search}>
+    <>
       <Modal.Header>
         <Modal.Title>Accept Application</Modal.Title>
         <Modal.CloseButton />
@@ -95,14 +82,10 @@ export default function AcceptApplicationPage() {
       <RemixForm className="form" method="post">
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
-        <Button.Group flexDirection="row-reverse">
-          <Button type="submit">Confirm</Button>
-
-          <Button onClick={onBack} type="button" variant="secondary">
-            Back
-          </Button>
+        <Button.Group>
+          <Button type="submit">Accept</Button>
         </Button.Group>
       </RemixForm>
-    </Modal>
+    </>
   );
 }

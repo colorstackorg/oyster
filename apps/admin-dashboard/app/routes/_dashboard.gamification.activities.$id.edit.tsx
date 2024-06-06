@@ -13,7 +13,7 @@ import { type z } from 'zod';
 
 import { db } from '@oyster/db';
 import { Activity, type ActivityPeriod } from '@oyster/types';
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { editActivity } from '@/admin-dashboard.server';
 import { ActivityForm } from '@/shared/components/activity-form';
@@ -61,18 +61,10 @@ type EditActivityInput = z.infer<typeof EditActivityInput>;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
+  const { data, errors, ok } = await validateForm(request, EditActivityInput);
 
-  const { data, errors } = validateForm(
-    EditActivityInput,
-    Object.fromEntries(form)
-  );
-
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await editActivity({
@@ -86,7 +78,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Edited activity.',
-    type: 'success',
   });
 
   return redirect(Route['/gamification/activities'], {
@@ -100,7 +91,7 @@ const keys = EditActivityInput.keyof().enum;
 
 export default function EditActivityPage() {
   const { activity } = useLoaderData<typeof loader>();
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Modal onCloseTo={Route['/gamification/activities']}>

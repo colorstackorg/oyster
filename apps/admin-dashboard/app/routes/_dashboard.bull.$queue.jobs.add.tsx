@@ -15,7 +15,7 @@ import { z } from 'zod';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   Textarea,
@@ -65,16 +65,10 @@ type AddJobInput = z.infer<typeof AddJobInput>;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-  const values = Object.fromEntries(form);
+  const { data, errors, ok } = await validateForm(request, AddJobInput);
 
-  const { data, errors } = validateForm(AddJobInput, values);
-
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   const { queue: queueName } = BullParams.parse(params);
@@ -85,7 +79,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Added job.',
-    type: 'success',
   });
 
   return redirect(
@@ -120,7 +113,7 @@ export default function AddJobPage() {
 const keys = AddJobInput.keyof().enum;
 
 function AddJobForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

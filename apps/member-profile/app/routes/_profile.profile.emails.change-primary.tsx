@@ -13,7 +13,7 @@ import {
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Modal,
   Select,
   validateForm,
@@ -42,18 +42,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    ChangePrimaryEmailInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    ChangePrimaryEmailInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   try {
@@ -61,7 +56,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Your primary email address was updated.',
-      type: 'success',
     });
 
     return redirect(Route['/profile/emails'], {
@@ -70,17 +64,14 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
 const keys = ChangePrimaryEmailInput.keyof().enum;
 
 export default function ChangePrimaryEmailPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const { emails } = useLoaderData<typeof loader>();
 
   return (

@@ -17,7 +17,7 @@ import {
   Button,
   Divider,
   Form,
-  getActionErrors,
+  getErrors,
   Modal,
   validateForm,
 } from '@oyster/ui';
@@ -66,18 +66,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
+  const { data, errors, ok } = await validateForm(request, UpdateResourceInput);
 
-  const { data, errors } = validateForm(
-    UpdateResourceInput,
-    Object.fromEntries(form)
-  );
-
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await updateResource(params.id as string, {
@@ -105,7 +97,7 @@ const keys = UpdateResourceInput.keyof().enum;
 
 export default function EditResourceModal() {
   const { resource } = useLoaderData<typeof loader>();
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const [searchParams] = useSearchParams();
 
   return (

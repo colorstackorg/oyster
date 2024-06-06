@@ -12,7 +12,7 @@ import {
 import { z } from 'zod';
 
 import { nullableField, Student } from '@oyster/types';
-import { Button, Divider, getActionErrors, validateForm } from '@oyster/ui';
+import { Button, Divider, getErrors, validateForm } from '@oyster/ui';
 
 import { updateMember } from '@/member-profile.server';
 import {
@@ -63,18 +63,13 @@ type UpdatePersonalInformation = z.infer<typeof UpdatePersonalInformation>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpdatePersonalInformation,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    UpdatePersonalInformation
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await updateMember({
@@ -89,7 +84,7 @@ const keys = UpdatePersonalInformation.keyof().enum;
 
 export default function UpdatePersonalInformationForm() {
   const { ethnicities, student } = useLoaderData<typeof loader>();
-  const { errors } = getActionErrors(useActionData<typeof action>());
+  const { errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

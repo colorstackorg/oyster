@@ -18,7 +18,7 @@ import {
   ScholarshipRecipient,
   type ScholarshipType,
 } from '@oyster/types';
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
 import { parseCsv } from '@/admin-dashboard.server';
@@ -54,16 +54,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors } = validateForm(
-    ImportScholarshipRecipientsInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    form,
+    ImportScholarshipRecipientsInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   let count = 0;
@@ -73,15 +70,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
     count = result.count;
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 
   toast(session, {
     message: `Imported ${count} scholarship recipients.`,
-    type: 'success',
   });
 
   return redirect(Route['/students'], {
@@ -198,7 +191,7 @@ export default function ImportScholarshipsPage() {
 const keys = ImportScholarshipRecipientsInput.keyof().enum;
 
 function ImportScholarshipsForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">

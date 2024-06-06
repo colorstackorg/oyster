@@ -9,7 +9,7 @@ import { Form as RemixForm, useActionData } from '@remix-run/react';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
@@ -33,18 +33,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
+  const { data, errors, ok } = await validateForm(request, CreateSchoolInput);
 
-  const { data, errors } = validateForm(
-    CreateSchoolInput,
-    Object.fromEntries(form)
-  );
-
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await createSchool({
@@ -56,7 +48,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: `Created ${data.name}.`,
-    type: 'success',
   });
 
   return redirect(Route['/schools'], {
@@ -82,7 +73,7 @@ export default function CreateSchoolPage() {
 const keys = CreateSchoolInput.keyof().enum;
 
 function CreateSchoolForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

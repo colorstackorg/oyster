@@ -10,7 +10,7 @@ import { z } from 'zod';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
@@ -37,14 +37,12 @@ const SyncAirmeetEventFormData = z.object({
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    SyncAirmeetEventFormData,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    SyncAirmeetEventFormData
   );
 
-  if (!data) {
+  if (!ok) {
     return json({
       error: '',
       errors,
@@ -57,7 +55,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Event is being synced. Check back soon.',
-    type: 'success',
   });
 
   return redirect(Route['/events'], {
@@ -83,7 +80,7 @@ export default function SyncAirmeetEventPage() {
 const keys = SyncAirmeetEventFormData.keyof().enum;
 
 function SyncAirmeetEventForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">

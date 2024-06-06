@@ -5,7 +5,7 @@ import { type FieldProps, Form, Input, Text } from '@oyster/ui';
 import {
   CityCombobox,
   type CityComboboxProps,
-} from '@/shared//components/city-combobox';
+} from '@/shared/components/city-combobox';
 
 export function CurrentLocationField({
   defaultValue,

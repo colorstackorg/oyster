@@ -21,7 +21,7 @@ import {
   Button,
   Divider,
   Form,
-  getActionErrors,
+  getErrors,
   Modal,
   validateForm,
 } from '@oyster/ui';
@@ -63,32 +63,25 @@ export async function action({ request }: ActionFunctionArgs) {
     form = await parseMultipartFormData(request, uploadHandler);
   } catch (e) {
     return json({
-      error: '',
       errors: {
         attachments: 'Attachment is too big. Must be less than 20 MB in size.',
       } as Record<keyof AddResourceInput, string>,
     });
   }
 
-  const values = Object.fromEntries(form);
+  form.set('postedBy', user(session));
 
-  const { data, errors } = validateForm(
-    AddResourceInput.omit({ postedBy: true }),
-    values
-  );
+  const { data, errors, ok } = await validateForm(form, AddResourceInput);
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await addResource({
     attachments: data.attachments,
     description: data.description,
     link: data.link,
-    postedBy: user(session),
+    postedBy: data.postedBy,
     tags: data.tags,
     title: data.title,
     type: data.type,
@@ -118,7 +111,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = AddResourceInput.keyof().enum;
 
 export default function AddResourceModal() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const [searchParams] = useSearchParams();
 
   return (
