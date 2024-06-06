@@ -14,7 +14,6 @@ type ListCompaniesOptions<Selection> = {
 export async function listCompanies<
   Selection extends SelectExpression<DB, 'companies'>,
 >({ pagination, select, where }: ListCompaniesOptions<Selection>) {
-  console.log(where);
   const query = db.selectFrom('companies').$if(!!where.search, (qb) => {
     const { search } = where;
 
@@ -28,7 +27,22 @@ export async function listCompanies<
 
   const [companies, { count }] = await Promise.all([
     query
-      .select(select)
+      .select([
+        ...select,
+        (eb) => {
+          return eb
+            .selectFrom('workExperiences')
+            .select(eb.fn.countAll<string>().as('count'))
+            .whereRef('workExperiences.companyId', '=', 'companies.id')
+            .where((eb) => {
+              return eb.or([
+                eb('workExperiences.endDate', 'is', null),
+                eb('workExperiences.endDate', '>', new Date()),
+              ]);
+            })
+            .as('currentEmployees');
+        },
+      ])
       .$if(!!where.search, (qb) => {
         // If we have a search term, we want to order by the similarity of the
         // company name to the search term.

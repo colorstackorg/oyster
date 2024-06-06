@@ -3,19 +3,33 @@ import {
   type LoaderFunctionArgs,
   type SerializeFrom,
 } from '@remix-run/node';
-import { Link, Outlet, useLoaderData, useSearchParams } from '@remix-run/react';
-import { Plus } from 'react-feather';
+import {
+  generatePath,
+  Link,
+  Outlet,
+  useLoaderData,
+  useSearchParams,
+} from '@remix-run/react';
+import { Plus, Users } from 'react-feather';
 
 import { ListCompaniesWhere } from '@oyster/core/employment';
 import { listCompanies } from '@oyster/core/employment.server';
 import { track } from '@oyster/infrastructure/mixpanel';
 import {
+  cx,
   Dashboard,
   ExistingSearchParams,
   getButtonCn,
+  getTextCn,
   Pagination,
   Text,
 } from '@oyster/ui';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipText,
+  TooltipTrigger,
+} from '@oyster/ui/tooltip';
 
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -37,7 +51,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
       limit: searchParams.limit,
       page: searchParams.page,
     },
-    select: ['companies.id'],
+    select: [
+      'companies.description',
+      'companies.id',
+      'companies.imageUrl',
+      'companies.name',
+    ],
     where: { search: searchParams.search },
   });
 
@@ -131,5 +150,55 @@ function CompaniesList() {
 type CompanyInView = SerializeFrom<typeof loader>['companies'][number];
 
 function CompanyItem({ company }: { company: CompanyInView }) {
-  return null;
+  return (
+    <li className="flex flex-col gap-3 rounded-3xl border border-gray-200 p-4">
+      <header className="flex items-center gap-2">
+        <div className="h-10 w-10 rounded-lg border border-gray-200 p-1">
+          <img
+            className="aspect-square h-full w-full rounded-md"
+            src={company.imageUrl as string}
+          />
+        </div>
+
+        <Link
+          className={cx(
+            getTextCn({ variant: 'lg' }),
+            'hover:text-primary hover:underline'
+          )}
+          to={generatePath(Route['/companies/:id'], { id: company.id })}
+        >
+          {company.name}
+        </Link>
+      </header>
+
+      <Text color="gray-500" variant="sm">
+        {company.description}
+      </Text>
+
+      <div className="flex items-center gap-4">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link
+              className={cx(
+                getTextCn({ color: 'gray-500', variant: 'sm' }),
+                'flex items-center gap-1',
+                'hover:text-primary hover:underline'
+              )}
+              to={generatePath(Route['/companies/:id/employees'], {
+                id: company.id,
+              })}
+            >
+              <Users size="16" />
+              <span>{company.currentEmployees}</span>
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent>
+            <TooltipText>
+              {company.currentEmployees} members work here
+            </TooltipText>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </li>
+  );
 }
