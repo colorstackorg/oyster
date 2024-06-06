@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 
 import { db } from '@/infrastructure/database';
 
+// TODO: Refactor this...
 export async function listWorkExperiences(memberId: string) {
   const rows = await db
     .selectFrom('workExperiences')

@@ -3,14 +3,8 @@ import { type Kysely, sql } from 'kysely';
 export async function up(db: Kysely<any>) {
   await db.schema
     .createTable('company_reviews')
-    .addColumn('company_id', 'text', (column) => {
-      return column.notNull().references('companies.id');
-    })
     .addColumn('created_at', 'timestamptz', (column) => {
       return column.notNull().defaultTo(sql`now()`);
-    })
-    .addColumn('employment_type', 'text', (column) => {
-      return column.notNull();
     })
     .addColumn('id', 'text', (column) => {
       return column.primaryKey();
@@ -21,8 +15,14 @@ export async function up(db: Kysely<any>) {
     .addColumn('recommend', 'boolean', (column) => {
       return column.notNull();
     })
+    .addColumn('student_id', 'text', (column) => {
+      return column.notNull().references('students.id');
+    })
     .addColumn('text', 'text', (column) => {
       return column.notNull();
+    })
+    .addColumn('work_experience_id', 'text', (column) => {
+      return column.notNull().references('work_experiences.id');
     })
     .execute();
 }

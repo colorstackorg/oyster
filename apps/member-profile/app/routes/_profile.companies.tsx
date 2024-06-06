@@ -10,7 +10,7 @@ import {
   useLoaderData,
   useSearchParams,
 } from '@remix-run/react';
-import { Plus, Users } from 'react-feather';
+import { FileText, Plus, Star, Users } from 'react-feather';
 
 import { ListCompaniesWhere } from '@oyster/core/employment';
 import { listCompanies } from '@oyster/core/employment.server';
@@ -198,6 +198,38 @@ function CompanyItem({ company }: { company: CompanyInView }) {
             </TooltipText>
           </TooltipContent>
         </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link
+              className={cx(
+                getTextCn({ color: 'gray-500', variant: 'sm' }),
+                'flex items-center gap-1',
+                'hover:text-primary hover:underline'
+              )}
+              to={generatePath(Route['/companies/:id/reviews'], {
+                id: company.id,
+              })}
+            >
+              <FileText size="16" />
+              <span>{company.reviews}</span>
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent>
+            <TooltipText>{company.reviews} review(s)</TooltipText>
+          </TooltipContent>
+        </Tooltip>
+
+        {!!company.averageRating && (
+          <Text
+            className="ml-auto flex items-center gap-1"
+            color="gray-500"
+            variant="sm"
+          >
+            <span>{company.averageRating}</span>{' '}
+            <Star className="fill-gray-50" size="16" />
+          </Text>
+        )}
       </div>
     </li>
   );

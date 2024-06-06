@@ -1,1 +1,5 @@
-export { ListCompaniesWhere } from './employment.types';
+export {
+  AddCompanyReviewInput,
+  EmploymentType,
+  ListCompaniesWhere,
+} from './employment.types';

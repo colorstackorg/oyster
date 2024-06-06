@@ -29,6 +29,7 @@ export async function listCompanies<
     query
       .select([
         ...select,
+
         (eb) => {
           return eb
             .selectFrom('workExperiences')
@@ -41,6 +42,36 @@ export async function listCompanies<
               ]);
             })
             .as('currentEmployees');
+        },
+
+        (eb) => {
+          return eb
+            .selectFrom('companyReviews')
+            .leftJoin(
+              'workExperiences',
+              'workExperiences.id',
+              'companyReviews.workExperienceId'
+            )
+            .select((eb) => {
+              return eb
+                .fn<string>('round', [eb.fn.avg('rating'), sql.lit(1)])
+                .as('rating');
+            })
+            .whereRef('workExperiences.companyId', '=', 'companies.id')
+            .as('averageRating');
+        },
+
+        (eb) => {
+          return eb
+            .selectFrom('companyReviews')
+            .leftJoin(
+              'workExperiences',
+              'workExperiences.id',
+              'companyReviews.workExperienceId'
+            )
+            .select(eb.fn.countAll<string>().as('count'))
+            .whereRef('workExperiences.companyId', '=', 'companies.id')
+            .as('reviews');
         },
       ])
       .$if(!!where.search, (qb) => {

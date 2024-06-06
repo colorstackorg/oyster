@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import {
+  BooleanInput,
   Entity,
   type ExtractValue,
   ISO8601Date,
@@ -69,6 +70,14 @@ export const Company = Entity.merge(BaseCompany);
 
 export type Company = z.infer<typeof Company>;
 
+const CompanyReview = z.object({
+  rating: z.coerce.number().int().min(0).max(10),
+  recommend: BooleanInput,
+  studentId: Student.shape.id,
+  text: z.string().trim().min(1000),
+  workExperienceId: z.string().trim().min(1),
+});
+
 export const JobOffer = Entity.omit({ deletedAt: true }).extend({
   baseSalary: z.number().optional(),
   bonus: z.number().optional(),
@@ -121,6 +130,10 @@ export const ListJobOffersWhere = z.object({
 export type ListJobOffersWhere = z.infer<typeof ListJobOffersWhere>;
 
 // Use Case(s)
+
+export const AddCompanyReviewInput = CompanyReview;
+
+export type AddCompanyReviewInput = z.infer<typeof AddCompanyReviewInput>;
 
 export const AddWorkExperienceInput = WorkExperience.pick({
   companyName: true,
