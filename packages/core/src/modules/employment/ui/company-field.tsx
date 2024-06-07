@@ -82,7 +82,7 @@ export function CompanyCombobox({
     fetcher.submit(
       { search: delayedSearch },
       {
-        action: '/companies',
+        action: '/api/companies',
         method: 'get',
       }
     );
