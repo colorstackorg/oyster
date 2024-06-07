@@ -36,7 +36,7 @@ export default function CompanyOverviewPage() {
         <Card>
           <Card.Title>Rating</Card.Title>
           <Text variant="4xl">
-            {company.averageRating}
+            {company.averageRating || 'N/A'}
             <span className="text-base">/10</span>
           </Text>
         </Card>

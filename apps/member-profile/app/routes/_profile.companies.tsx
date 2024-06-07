@@ -84,7 +84,7 @@ export default function CompaniesPage() {
       </header>
 
       <section className="flex flex-wrap gap-4">
-        <Dashboard.SearchForm placeholder="Search by title...">
+        <Dashboard.SearchForm>
           <ExistingSearchParams exclude={['page']} />
         </Dashboard.SearchForm>
       </section>
