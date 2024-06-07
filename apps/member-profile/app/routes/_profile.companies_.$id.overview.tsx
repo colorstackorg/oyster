@@ -11,7 +11,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
   const company = await getCompany({
-    include: ['averageRating'],
+    include: ['averageRating', 'currentEmployees'],
     select: ['companies.description'],
     where: { id: params.id as string },
   });
@@ -41,11 +41,8 @@ export default function CompanyOverviewPage() {
           </Text>
         </Card>
         <Card>
-          <Card.Title>Rating</Card.Title>
-          <Text variant="4xl">
-            {company.averageRating || 'N/A'}
-            <span className="text-base">/10</span>
-          </Text>
+          <Card.Title>Employees (ColorStack)</Card.Title>
+          <Text variant="4xl">{company.currentEmployees}</Text>
         </Card>
       </div>
     </>

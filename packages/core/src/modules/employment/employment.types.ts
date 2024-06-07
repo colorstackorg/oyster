@@ -117,6 +117,10 @@ export const GetCompanyWhere = z.object({
   id: Company.shape.id,
 });
 
+export const ListCompanyReviewsWhere = z.object({
+  companyId: Company.shape.id,
+});
+
 export const ListCompaniesWhere = z.object({
   search: ListSearchParams.shape.search,
 });
@@ -131,6 +135,7 @@ export const ListJobOffersWhere = z.object({
 
 export type GetCompanyWhere = z.infer<typeof GetCompanyWhere>;
 export type ListCompaniesWhere = z.infer<typeof ListCompaniesWhere>;
+export type ListCompanyReviewsWhere = z.infer<typeof ListCompanyReviewsWhere>;
 export type ListJobOffersWhere = z.infer<typeof ListJobOffersWhere>;
 
 // Use Case(s)
