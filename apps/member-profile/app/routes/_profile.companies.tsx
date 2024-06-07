@@ -165,13 +165,15 @@ function CompanyItem({ company }: { company: CompanyInView }) {
             getTextCn({ variant: 'lg' }),
             'hover:text-primary hover:underline'
           )}
-          to={generatePath(Route['/companies/:id'], { id: company.id })}
+          to={generatePath(Route['/companies/:id/overview'], {
+            id: company.id,
+          })}
         >
           {company.name}
         </Link>
       </header>
 
-      <Text color="gray-500" variant="sm">
+      <Text className="line-clamp-2" color="gray-500" variant="sm">
         {company.description}
       </Text>
 
