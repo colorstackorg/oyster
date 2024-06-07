@@ -1,5 +1,6 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, NavLink, Outlet, useLoaderData } from '@remix-run/react';
+import { type PropsWithChildren } from 'react';
 import { ExternalLink } from 'react-feather';
 
 import { getCompany } from '@oyster/core/employment.server';
@@ -12,6 +13,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
   const company = await getCompany({
+    include: ['currentEmployees', 'reviews'],
     select: [
       'companies.description',
       'companies.domain',
@@ -63,55 +65,53 @@ export default function CompanyLayout() {
 
       <nav>
         <ul className="flex items-center gap-4">
-          <li>
-            <NavLink
-              className={({ isActive }) => {
-                return cx(
-                  'underline hover:text-primary',
-                  isActive && 'text-primary underline'
-                );
-              }}
-              to={generatePath(Route['/companies/:id/overview'], {
-                id: company.id,
-              })}
-            >
-              Overview
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              className={({ isActive }) => {
-                return cx(
-                  'underline hover:text-primary',
-                  isActive && 'text-primary underline'
-                );
-              }}
-              to={generatePath(Route['/companies/:id/reviews'], {
-                id: company.id,
-              })}
-            >
-              Reviews
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              className={({ isActive }) => {
-                return cx(
-                  'underline hover:text-primary',
-                  isActive && 'text-primary underline'
-                );
-              }}
-              to={generatePath(Route['/companies/:id/employees'], {
-                id: company.id,
-              })}
-            >
-              Employees
-            </NavLink>
-          </li>
+          <CompanyNavigationItem
+            to={generatePath(Route['/companies/:id/overview'], {
+              id: company.id,
+            })}
+          >
+            Overview
+          </CompanyNavigationItem>
+          <CompanyNavigationItem
+            to={generatePath(Route['/companies/:id/reviews'], {
+              id: company.id,
+            })}
+          >
+            Reviews ({company.reviews})
+          </CompanyNavigationItem>
+          <CompanyNavigationItem
+            to={generatePath(Route['/companies/:id/employees'], {
+              id: company.id,
+            })}
+          >
+            Employees ({company.currentEmployees})
+          </CompanyNavigationItem>
         </ul>
       </nav>
 
       <Outlet />
     </section>
+  );
+}
+
+type CompanyNavigationItemProps = PropsWithChildren<{
+  to: string;
+}>;
+
+function CompanyNavigationItem({ children, to }: CompanyNavigationItemProps) {
+  return (
+    <li>
+      <NavLink
+        className={({ isActive }) => {
+          return cx(
+            'underline hover:text-primary',
+            isActive && 'text-primary underline'
+          );
+        }}
+        to={to}
+      >
+        {children}
+      </NavLink>
+    </li>
   );
 }
