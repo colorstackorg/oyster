@@ -3,7 +3,6 @@ import { db } from '@oyster/db';
 type ListCompanyEmployeesOptions = {
   where: {
     companyId: string;
-    when?: 'current' | 'past';
   };
 };
 
@@ -34,12 +33,6 @@ export async function listCompanyEmployees({
     ])
     .distinctOn('studentId')
     .where('companyId', '=', where.companyId)
-    .$if(where.when === 'current', (qb) => {
-      return qb.where('endDate', 'is', null);
-    })
-    .$if(where.when === 'past', (qb) => {
-      return qb.where('endDate', '<', new Date());
-    })
     .orderBy('studentId')
     .orderBy('endDate', 'desc')
     .execute();

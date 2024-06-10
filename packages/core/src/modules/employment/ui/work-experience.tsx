@@ -56,33 +56,36 @@ export function WorkExperienceItem({
               {experience.title}
             </Text>
 
-            <Tooltip>
-              <TooltipTrigger>
-                <Check
-                  className="text-gray-300 data-[reviewed=true]:text-success"
-                  data-reviewed={!!rest.showOptions && !!rest.hasReviewed}
-                  size="20"
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                {!!rest.showOptions && !!rest.hasReviewed ? (
-                  <TooltipText>
-                    You reviewed this work experience. 🎉
-                  </TooltipText>
-                ) : (
-                  <TooltipText>
-                    You haven't reviewed this work experience yet. Add a review{' '}
-                    <Link
-                      className="underline"
-                      to={rest.showOptions ? rest.reviewTo : ''}
-                    >
-                      here
-                    </Link>
-                    .
-                  </TooltipText>
-                )}
-              </TooltipContent>
-            </Tooltip>
+            {!!rest.showOptions && (
+              <Tooltip>
+                <TooltipTrigger>
+                  <Check
+                    className="text-gray-300 data-[reviewed=true]:text-success"
+                    data-reviewed={!!rest.hasReviewed}
+                    size="20"
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  {rest.hasReviewed ? (
+                    <TooltipText>
+                      You reviewed this work experience. 🎉
+                    </TooltipText>
+                  ) : (
+                    <TooltipText>
+                      You haven't reviewed this work experience yet. Add a
+                      review{' '}
+                      <Link
+                        className="underline"
+                        to={rest.showOptions ? rest.reviewTo : ''}
+                      >
+                        here
+                      </Link>
+                      .
+                    </TooltipText>
+                  )}
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
 
           <Text>{experience.companyName}</Text>

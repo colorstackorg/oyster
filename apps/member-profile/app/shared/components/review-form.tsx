@@ -108,8 +108,6 @@ function ExperienceField({ defaultValue, error, name }: FieldProps<string>) {
 
   const experiences = fetcher.data?.experiences || [];
 
-  // TODO: Need to know if experience was already reviewed or not...
-
   return (
     <Form.Field
       description={

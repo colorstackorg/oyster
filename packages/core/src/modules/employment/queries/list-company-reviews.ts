@@ -15,7 +15,7 @@ export async function listCompanyReviews<
     'companyReviews' | 'students' | 'workExperiences'
   >,
 >({ select, where }: ListCompanyReviewsOptions<Selection>) {
-  const companies = await db
+  const reviews = await db
     .selectFrom('companyReviews')
     .leftJoin(
       'workExperiences',
@@ -27,5 +27,5 @@ export async function listCompanyReviews<
     .where('workExperiences.companyId', '=', where.companyId)
     .execute();
 
-  return companies;
+  return reviews;
 }
