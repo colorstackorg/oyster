@@ -7,12 +7,17 @@ import {
   generatePath,
   Link,
   Outlet,
+  Form as RemixForm,
   useLoaderData,
   useSearchParams,
+  useSubmit,
 } from '@remix-run/react';
 import { FileText, Plus, Star, Users } from 'react-feather';
 
-import { ListCompaniesWhere } from '@oyster/core/employment';
+import {
+  ListCompaniesOrderBy,
+  ListCompaniesWhere,
+} from '@oyster/core/employment';
 import { listCompanies } from '@oyster/core/employment.server';
 import { track } from '@oyster/infrastructure/mixpanel';
 import {
@@ -22,6 +27,7 @@ import {
   getButtonCn,
   getTextCn,
   Pagination,
+  Select,
   Text,
 } from '@oyster/ui';
 import {
@@ -35,7 +41,9 @@ import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 import { PaginationSearchParams } from '@/shared/types';
 
-const CompaniesSearchParams = PaginationSearchParams.merge(ListCompaniesWhere);
+const CompaniesSearchParams = PaginationSearchParams.merge(
+  ListCompaniesWhere
+).extend({ orderBy: ListCompaniesOrderBy });
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -47,6 +55,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
 
   const { companies, totalCount } = await listCompanies({
+    orderBy: searchParams.orderBy,
     pagination: {
       limit: searchParams.limit,
       page: searchParams.page,
@@ -70,6 +79,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     companies,
     limit: searchParams.limit,
+    orderBy: searchParams.orderBy,
     page: searchParams.page,
     totalCount,
   });
@@ -87,6 +97,7 @@ export default function CompaniesPage() {
         <Dashboard.SearchForm>
           <ExistingSearchParams exclude={['page']} />
         </Dashboard.SearchForm>
+        <SortCompaniesForm />
       </section>
 
       <CompaniesList />
@@ -109,6 +120,36 @@ function AddReviewLink() {
     >
       <Plus size={16} /> Add Review
     </Link>
+  );
+}
+
+function SortCompaniesForm() {
+  const { orderBy } = useLoaderData<typeof loader>();
+  const submit = useSubmit();
+
+  const sortKeys = ListCompaniesOrderBy._def.innerType.enum;
+
+  return (
+    <RemixForm
+      className="flex min-w-[12rem] items-center gap-4"
+      method="get"
+      onChange={(e) => submit(e.currentTarget)}
+    >
+      <Select
+        defaultValue={orderBy}
+        name="orderBy"
+        id="orderBy"
+        placeholder="Sort By..."
+        required
+        width="fit"
+      >
+        <option value={sortKeys.most_employees}>Most Employees</option>
+        <option value={sortKeys.most_reviews}>Most Reviews</option>
+        <option value={sortKeys.highest_rated}>Highest Rated</option>
+      </Select>
+
+      <ExistingSearchParams exclude={['orderBy']} />
+    </RemixForm>
   );
 }
 

@@ -121,6 +121,10 @@ export const ListCompanyReviewsWhere = z.object({
   companyId: Company.shape.id,
 });
 
+export const ListCompaniesOrderBy = z
+  .enum(['most_employees', 'most_reviews', 'highest_rated'])
+  .catch('most_employees');
+
 export const ListCompaniesWhere = z.object({
   search: ListSearchParams.shape.search,
 });
@@ -134,6 +138,7 @@ export const ListJobOffersWhere = z.object({
 });
 
 export type GetCompanyWhere = z.infer<typeof GetCompanyWhere>;
+export type ListCompaniesOrderBy = z.infer<typeof ListCompaniesOrderBy>;
 export type ListCompaniesWhere = z.infer<typeof ListCompaniesWhere>;
 export type ListCompanyReviewsWhere = z.infer<typeof ListCompanyReviewsWhere>;
 export type ListJobOffersWhere = z.infer<typeof ListJobOffersWhere>;

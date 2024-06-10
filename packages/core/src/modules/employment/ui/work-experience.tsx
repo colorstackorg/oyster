@@ -111,11 +111,11 @@ function WorkExperienceDropdown({
               <Link to={reviewTo}>
                 {hasReviewed ? (
                   <>
-                    <Edit /> Edit Company Review
+                    <Edit /> Edit Review
                   </>
                 ) : (
                   <>
-                    <Plus /> Add Company Review
+                    <Plus /> Add Review
                   </>
                 )}
               </Link>
