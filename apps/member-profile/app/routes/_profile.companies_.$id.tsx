@@ -37,7 +37,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const id = params.id as string;
 
-  const [company, employees, _reviews] = await Promise.all([
+  const [company, _employees, _reviews] = await Promise.all([
     getCompany({
       include: ['averageRating', 'employees', 'reviews'],
       select: [
@@ -80,6 +80,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   if (!company) {
     throw new Response(null, { status: 404 });
   }
+
+  const employees = _employees.map(
+    ({ locationCity, locationState, ...employee }) => {
+      return {
+        ...employee,
+        ...(locationCity &&
+          locationState && {
+            location: `${locationCity}, ${locationState}`,
+          }),
+      };
+    }
+  );
 
   const currentEmployees = employees.filter((employee) => {
     return employee.status === 'current';
@@ -252,7 +264,7 @@ function PastEmployees() {
 type EmployeeInView = SerializeFrom<typeof loader>['currentEmployees'][number];
 
 function EmployeeItem({ employee }: { employee: EmployeeInView }) {
-  const { firstName, id, lastName, profilePicture } = employee;
+  const { firstName, id, lastName, location, profilePicture, title } = employee;
 
   return (
     <li className="line-clamp-1 grid grid-cols-[3rem_1fr] items-start gap-2 rounded-2xl p-2 hover:bg-gray-100">
@@ -271,10 +283,13 @@ function EmployeeItem({ employee }: { employee: EmployeeInView }) {
         </Link>
 
         <Text color="gray-500" variant="sm">
-          {employee.title} &bull;{' '}
-          {employee.locationType === LocationType.REMOTE
-            ? 'Remote'
-            : `${employee.locationCity}, ${employee.locationState}`}
+          {location ? (
+            <>
+              {title} &bull; {location}
+            </>
+          ) : (
+            <>{title}</>
+          )}
         </Text>
       </div>
     </li>

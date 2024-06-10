@@ -230,7 +230,7 @@ function TextField({ defaultValue, error, name }: FieldProps<string>) {
     <Form.Field
       description={
         <div>
-          Should be at least 1,000 characters. Feel free to use these guiding
+          Should be at least 750 characters. Feel free to use these guiding
           questions:
           <ul className="mt-2 list-disc ps-8">
             <li>What was the company culture like?</li>
@@ -248,7 +248,7 @@ function TextField({ defaultValue, error, name }: FieldProps<string>) {
       <Textarea
         defaultValue={defaultValue}
         id={name}
-        minLength={1000}
+        minLength={750}
         minRows={10}
         name={name}
         required
