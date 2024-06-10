@@ -130,7 +130,11 @@ function ExperienceField({ defaultValue, error, name }: FieldProps<string>) {
       <Select defaultValue={defaultValue} id={name} name={name} required>
         {experiences.map((experience) => {
           return (
-            <option key={experience.id} value={experience.id}>
+            <option
+              disabled={experience.hasReviewed}
+              key={experience.id}
+              value={experience.id}
+            >
               {experience.title}, {experience.company}
             </option>
           );
@@ -186,7 +190,7 @@ function RatingField({ defaultValue, error, name }: FieldProps<number>) {
         })}
       </div>
 
-      <input name={name} type="hidden" value={selectedRating || undefined} />
+      <input name={name} type="hidden" value={selectedRating || ''} />
     </Form.Field>
   );
 }
