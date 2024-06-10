@@ -3,9 +3,9 @@ import { z } from 'zod';
 import { BooleanInput, Entity } from '@oyster/types';
 
 export type FeatureFlagName =
+  | 'companies'
   | 'family_application'
-  | 'resume_books'
-  | 'resource_database';
+  | 'resume_books';
 
 // Domain
 

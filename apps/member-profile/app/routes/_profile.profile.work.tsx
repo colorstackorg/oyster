@@ -30,7 +30,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const id = user(session);
 
-  const workExperiences = await listWorkExperiences(id);
+  const workExperiences = await listWorkExperiences(id, {
+    include: ['hasReviewed'],
+  });
 
   return json({
     workExperiences,
@@ -71,17 +73,22 @@ function WorkHistorySection() {
         <>
           <ExperienceList>
             {workExperiences.map((experience) => {
+              const id = experience.id;
+              const hasReviewed = !!experience.hasReviewed;
+
               return (
                 <WorkExperienceItem
                   key={experience.id}
+                  editTo={generatePath(Route['/profile/work/:id/edit'], { id })}
+                  hasReviewed={hasReviewed}
                   experience={experience}
-                  onClickEdit={() => {
-                    navigate(
-                      generatePath(Route['/profile/work/:id/edit'], {
-                        id: experience.id,
-                      })
-                    );
-                  }}
+                  reviewTo={generatePath(
+                    hasReviewed
+                      ? Route['/profile/work/:id/review/edit']
+                      : Route['/profile/work/:id/review/add'],
+                    { id }
+                  )}
+                  showOptions={true}
                 />
               );
             })}

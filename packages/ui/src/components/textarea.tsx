@@ -13,6 +13,7 @@ type TextareaProps = Pick<
   | 'defaultValue'
   | 'id'
   | 'maxLength'
+  | 'minLength'
   | 'minRows'
   | 'name'
   | 'onBlur'

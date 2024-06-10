@@ -1,6 +1,9 @@
 const ROUTES = [
   '/apply',
   '/apply/thank-you',
+  '/companies',
+  '/companies/reviews/add',
+  '/companies/:id',
   '/directory',
   '/directory/join',
   '/directory/join/1',
@@ -40,6 +43,8 @@ const ROUTES = [
   '/profile/work/add',
   '/profile/work/:id/delete',
   '/profile/work/:id/edit',
+  '/profile/work/:id/review/add',
+  '/profile/work/:id/review/edit',
   '/resources',
   '/resources/add',
   '/resources/:id/edit',

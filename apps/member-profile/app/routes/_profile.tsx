@@ -1,6 +1,14 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
-import { Award, BookOpen, Calendar, Folder, Home, User } from 'react-feather';
+import {
+  Award,
+  BookOpen,
+  Briefcase,
+  Calendar,
+  Folder,
+  Home,
+  User,
+} from 'react-feather';
 
 import { Dashboard } from '@oyster/ui';
 
@@ -11,16 +19,15 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const isResourceDatabaseEnabled =
-    await isFeatureFlagEnabled('resource_database');
+  const isCompaniesEnabled = await isFeatureFlagEnabled('companies');
 
   return json({
-    isResourceDatabaseEnabled,
+    isCompaniesEnabled,
   });
 }
 
 export default function ProfileLayout() {
-  const { isResourceDatabaseEnabled } = useLoaderData<typeof loader>();
+  const { isCompaniesEnabled } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -44,11 +51,17 @@ export default function ProfileLayout() {
               pathname={Route['/directory']}
               prefetch="intent"
             />
-            {isResourceDatabaseEnabled && (
+            <Dashboard.NavigationLink
+              icon={<BookOpen />}
+              label="Resources"
+              pathname={Route['/resources']}
+              prefetch="intent"
+            />
+            {isCompaniesEnabled && (
               <Dashboard.NavigationLink
-                icon={<BookOpen />}
-                label="Resources"
-                pathname={Route['/resources']}
+                icon={<Briefcase />}
+                label="Companies"
+                pathname={Route['/companies']}
                 prefetch="intent"
               />
             )}

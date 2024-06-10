@@ -41,7 +41,14 @@ export type MixpanelEvent = {
   };
 
   'Page Viewed': {
-    Page: 'Directory' | 'Events' | 'Home' | 'Points' | 'Profile' | 'Resources';
+    Page:
+      | 'Companies'
+      | 'Directory'
+      | 'Events'
+      | 'Home'
+      | 'Points'
+      | 'Profile'
+      | 'Resources';
   };
 
   'Resource Added': undefined;
