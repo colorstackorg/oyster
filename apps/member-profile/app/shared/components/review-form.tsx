@@ -181,7 +181,7 @@ function RecommendField({ defaultValue, error, name }: FieldProps<boolean>) {
         <Radio
           color="red-100"
           defaultChecked={defaultValue === false}
-          id={name + '1'}
+          id={name + '0'}
           label="No"
           name={name}
           required
