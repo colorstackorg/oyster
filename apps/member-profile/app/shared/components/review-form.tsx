@@ -1,6 +1,7 @@
 import { Form as RemixForm } from '@remix-run/react';
 import { Link, useFetcher } from '@remix-run/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Star } from 'react-feather';
 
 import {
   AddCompanyReviewInput,
@@ -8,6 +9,7 @@ import {
 } from '@oyster/core/employment';
 import {
   Button,
+  cx,
   Divider,
   type FieldProps,
   Form,
@@ -16,7 +18,6 @@ import {
   Text,
   Textarea,
 } from '@oyster/ui';
-import { Slider } from '@oyster/ui/slider';
 
 import { type GetWorkExperiencesResult } from '@/routes/api.me.work-experiences';
 import { Route } from '@/shared/constants';
@@ -140,6 +141,12 @@ function ExperienceField({ defaultValue, error, name }: FieldProps<string>) {
 }
 
 function RatingField({ defaultValue, error, name }: FieldProps<number>) {
+  const [hoveredRating, setHoveredRating] = useState<number | null>(null);
+
+  const [selectedRating, setSelectedRating] = useState<number | null>(
+    defaultValue || null
+  );
+
   return (
     <Form.Field
       error={error}
@@ -147,15 +154,39 @@ function RatingField({ defaultValue, error, name }: FieldProps<number>) {
       labelFor={name}
       required
     >
-      <Slider
-        aria-required="true"
-        defaultValue={defaultValue ? [defaultValue] : undefined}
-        id={name}
-        min={1}
-        max={10}
-        name={name}
-        step={1}
-      />
+      <div className="flex">
+        {Array.from({ length: 10 }).map((_, index) => {
+          const value = index + 1;
+
+          return (
+            <button
+              key={index}
+              onClick={() => setSelectedRating(value)}
+              onMouseOver={() => setHoveredRating(value)}
+              onMouseOut={() => setHoveredRating(null)}
+              type="button"
+            >
+              <Star
+                className={cx(
+                  'fill-gray-300 text-gray-300 transition-colors',
+
+                  !!hoveredRating &&
+                    hoveredRating >= value &&
+                    'fill-yellow-500 text-yellow-500',
+
+                  !hoveredRating &&
+                    !!selectedRating &&
+                    selectedRating >= value &&
+                    'fill-yellow-500 text-yellow-500'
+                )}
+                size="24"
+              />
+            </button>
+          );
+        })}
+      </div>
+
+      <input name={name} type="hidden" value={selectedRating || undefined} />
     </Form.Field>
   );
 }
