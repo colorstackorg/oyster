@@ -45,6 +45,8 @@ const ROUTES = [
   '/profile/work/add',
   '/profile/work/:id/delete',
   '/profile/work/:id/edit',
+  '/profile/work/:id/review/add',
+  '/profile/work/:id/review/edit',
   '/resources',
   '/resources/add',
   '/resources/:id/edit',

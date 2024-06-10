@@ -71,17 +71,24 @@ function WorkHistorySection() {
         <>
           <ExperienceList>
             {workExperiences.map((experience) => {
+              const id = experience.id;
+
+              // TODO: ...
+              const hasReviewed = true;
+
               return (
                 <WorkExperienceItem
                   key={experience.id}
+                  editTo={generatePath(Route['/profile/work/:id/edit'], { id })}
+                  hasReviewed={hasReviewed}
                   experience={experience}
-                  onClickEdit={() => {
-                    navigate(
-                      generatePath(Route['/profile/work/:id/edit'], {
-                        id: experience.id,
-                      })
-                    );
-                  }}
+                  reviewTo={generatePath(
+                    hasReviewed
+                      ? Route['/profile/work/:id/review/add']
+                      : Route['/profile/work/:id/review/edit'],
+                    { id }
+                  )}
+                  showOptions={true}
                 />
               );
             })}
