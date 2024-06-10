@@ -17,6 +17,7 @@ export const ActivityType = {
   REACT_TO_MESSAGE: 'react_to_message',
   REPLY_TO_THREAD: 'reply_to_thread',
   RESPOND_TO_SURVEY: 'respond_to_survey',
+  REVIEW_COMPANY: 'review_company',
   SUBMIT_CENSUS_RESPONSE: 'submit_census_response',
   UPDATE_EDUCATION_HISTORY: 'update_education_history',
   UPDATE_WORK_HISTORY: 'update_work_history',

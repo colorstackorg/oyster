@@ -1,5 +1,6 @@
 import { id } from '@oyster/utils';
 
+import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
 import { type AddCompanyReviewInput } from '../employment.types';
 
@@ -23,6 +24,12 @@ export async function addCompanyReview({
       })
       .returning(['id'])
       .executeTakeFirstOrThrow();
+  });
+
+  job('gamification.activity.completed', {
+    studentId,
+    type: 'review_company',
+    workExperienceId,
   });
 
   return review;

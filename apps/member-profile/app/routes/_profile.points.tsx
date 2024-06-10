@@ -651,6 +651,9 @@ function ActivityHistoryItemDescription({
     .with('respond_to_survey', () => {
       return <p>You responded to a survey: "{activity.surveyRespondedTo}"</p>;
     })
+    .with('review_company', () => {
+      return <p>You reviewed a work experience.</p>;
+    })
     .with('submit_census_response', () => {
       return (
         <p>You submitted a response to the Census ({activity.censusYear}).</p>

@@ -256,6 +256,11 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
       }),
       z.object({
         studentId: CompletedActivity.shape.studentId,
+        type: z.literal(ActivityType.REVIEW_COMPANY),
+        workExperienceId: z.string().trim().min(1),
+      }),
+      z.object({
+        studentId: CompletedActivity.shape.studentId,
         type: z.literal('submit_census_response'),
         year: z.number().int().min(2024),
       }),
