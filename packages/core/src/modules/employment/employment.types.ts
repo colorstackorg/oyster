@@ -122,7 +122,12 @@ export const ListCompanyReviewsWhere = z.object({
 });
 
 export const ListCompaniesOrderBy = z
-  .enum(['most_employees', 'most_reviews', 'highest_rated'])
+  .enum([
+    'most_employees',
+    'most_recently_reviewed',
+    'most_reviews',
+    'highest_rated',
+  ])
   .catch('most_employees');
 
 export const ListCompaniesWhere = z.object({

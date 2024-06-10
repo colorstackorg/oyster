@@ -100,6 +100,24 @@ export async function listCompanies<
             // But, for some reason Kysely isn't recognizing it.
             return qb.orderBy('reviews', 'desc');
           })
+          .with('most_recently_reviewed', () => {
+            return qb
+              .select((eb) => {
+                return eb
+                  .selectFrom('companyReviews')
+                  .leftJoin(
+                    'workExperiences',
+                    'workExperiences.id',
+                    'companyReviews.workExperienceId'
+                  )
+                  .select('companyReviews.createdAt')
+                  .whereRef('workExperiences.companyId', '=', 'companies.id')
+                  .orderBy('companyReviews.createdAt', 'desc')
+                  .limit(1)
+                  .as('lastReviewedAt');
+              })
+              .orderBy('lastReviewedAt', sql`desc nulls last`);
+          })
           .exhaustive();
       })
       .limit(pagination.limit)
