@@ -191,13 +191,11 @@ function CompanyItem({ company }: { company: CompanyInView }) {
               })}
             >
               <Users size="16" />
-              <span>{company.currentEmployees}</span>
+              <span>{company.employees}</span>
             </Link>
           </TooltipTrigger>
           <TooltipContent>
-            <TooltipText>
-              {company.currentEmployees} member(s) work here
-            </TooltipText>
+            <TooltipText>{company.employees} member(s) work here</TooltipText>
           </TooltipContent>
         </Tooltip>
 

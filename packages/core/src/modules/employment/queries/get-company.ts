@@ -5,7 +5,7 @@ import { db, type DB } from '@oyster/db';
 import { type GetCompanyWhere } from '@/modules/employment/employment.types';
 
 type GetCompanyOptions<Selection> = {
-  include?: ('averageRating' | 'currentEmployees' | 'reviews')[];
+  include?: ('averageRating' | 'employees' | 'reviews')[];
   select: Selection[];
   where: GetCompanyWhere;
 };
@@ -34,19 +34,18 @@ export async function getCompany<
           .as('averageRating');
       });
     })
-    .$if(!!include.includes('currentEmployees'), (qb) => {
+    .$if(!!include.includes('employees'), (qb) => {
       return qb.select((eb) => {
         return eb
           .selectFrom('workExperiences')
-          .select(eb.fn.countAll<string>().as('count'))
-          .whereRef('workExperiences.companyId', '=', 'companies.id')
-          .where((eb) => {
-            return eb.or([
-              eb('workExperiences.endDate', 'is', null),
-              eb('workExperiences.endDate', '>', new Date()),
-            ]);
+          .select((eb) => {
+            return eb.fn
+              .count<string>('workExperiences.studentId')
+              .distinct()
+              .as('count');
           })
-          .as('currentEmployees');
+          .whereRef('workExperiences.companyId', '=', 'companies.id')
+          .as('employees');
       });
     })
     .$if(!!include.includes('reviews'), (qb) => {

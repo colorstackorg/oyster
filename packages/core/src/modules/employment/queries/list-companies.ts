@@ -33,15 +33,14 @@ export async function listCompanies<
         (eb) => {
           return eb
             .selectFrom('workExperiences')
-            .select(eb.fn.countAll<string>().as('count'))
-            .whereRef('workExperiences.companyId', '=', 'companies.id')
-            .where((eb) => {
-              return eb.or([
-                eb('workExperiences.endDate', 'is', null),
-                eb('workExperiences.endDate', '>', new Date()),
-              ]);
+            .select((eb) => {
+              return eb.fn
+                .count<string>('workExperiences.studentId')
+                .distinct()
+                .as('count');
             })
-            .as('currentEmployees');
+            .whereRef('workExperiences.companyId', '=', 'companies.id')
+            .as('employees');
         },
 
         (eb) => {

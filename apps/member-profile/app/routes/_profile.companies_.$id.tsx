@@ -13,7 +13,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
   const company = await getCompany({
-    include: ['currentEmployees', 'reviews'],
+    include: ['employees', 'reviews'],
     select: [
       'companies.description',
       'companies.domain',
@@ -84,7 +84,7 @@ export default function CompanyLayout() {
               id: company.id,
             })}
           >
-            Employees ({company.currentEmployees})
+            Employees ({company.employees})
           </CompanyNavigationItem>
         </ul>
       </nav>
