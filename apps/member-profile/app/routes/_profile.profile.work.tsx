@@ -74,7 +74,7 @@ function WorkHistorySection() {
               const id = experience.id;
 
               // TODO: ...
-              const hasReviewed = true;
+              const hasReviewed = false;
 
               return (
                 <WorkExperienceItem
@@ -84,8 +84,8 @@ function WorkHistorySection() {
                   experience={experience}
                   reviewTo={generatePath(
                     hasReviewed
-                      ? Route['/profile/work/:id/review/add']
-                      : Route['/profile/work/:id/review/edit'],
+                      ? Route['/profile/work/:id/review/edit']
+                      : Route['/profile/work/:id/review/add'],
                     { id }
                   )}
                   showOptions={true}

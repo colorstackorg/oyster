@@ -142,8 +142,6 @@ export type ListJobOffersWhere = z.infer<typeof ListJobOffersWhere>;
 
 export const AddCompanyReviewInput = CompanyReview;
 
-export type AddCompanyReviewInput = z.infer<typeof AddCompanyReviewInput>;
-
 export const AddWorkExperienceInput = WorkExperience.pick({
   companyName: true,
   employmentType: true,
@@ -158,22 +156,18 @@ export const AddWorkExperienceInput = WorkExperience.pick({
   companyCrunchbaseId: Company.shape.crunchbaseId,
 });
 
-export type AddWorkExperienceInput = z.infer<typeof AddWorkExperienceInput>;
-
 export const DeleteWorkExperienceInput = WorkExperience.pick({
   id: true,
   studentId: true,
 });
 
-export type DeleteWorkExperienceInput = z.infer<
-  typeof DeleteWorkExperienceInput
->;
+export const EditCompanyReviewInput = AddCompanyReviewInput.omit({
+  studentId: true,
+});
 
 export const EditWorkExperienceInput = AddWorkExperienceInput.extend({
   id: WorkExperience.shape.id,
 });
-
-export type EditWorkExperienceInput = z.infer<typeof EditWorkExperienceInput>;
 
 export const UploadJobOfferInput = JobOffer.omit({
   createdAt: true,
@@ -181,4 +175,11 @@ export const UploadJobOfferInput = JobOffer.omit({
   updatedAt: true,
 });
 
+export type AddCompanyReviewInput = z.infer<typeof AddCompanyReviewInput>;
+export type AddWorkExperienceInput = z.infer<typeof AddWorkExperienceInput>;
+export type DeleteWorkExperienceInput = z.infer<
+  typeof DeleteWorkExperienceInput
+>;
+export type EditCompanyReviewInput = z.infer<typeof EditCompanyReviewInput>;
+export type EditWorkExperienceInput = z.infer<typeof EditWorkExperienceInput>;
 export type UploadJobOfferInput = z.infer<typeof UploadJobOfferInput>;

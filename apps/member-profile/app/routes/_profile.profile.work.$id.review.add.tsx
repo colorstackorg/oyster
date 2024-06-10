@@ -4,12 +4,12 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { useActionData, useSearchParams } from '@remix-run/react';
+import { useActionData } from '@remix-run/react';
 
 import { AddCompanyReviewInput } from '@oyster/core/employment';
+import { addCompanyReview } from '@oyster/core/employment.server';
 import { getErrors, Modal, validateForm } from '@oyster/ui';
 
-import { addCompanyReview } from '@/modules/employment/index.server';
 import { AddReviewForm } from '@/shared/components/review-form';
 import { Route } from '@/shared/constants';
 import {
@@ -25,12 +25,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({});
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const form = await request.formData();
 
   form.set('studentId', user(session));
+  form.set('workExperienceId', params.id as string);
 
   const { data, errors, ok } = await validateForm(form, AddCompanyReviewInput);
 
@@ -50,7 +51,7 @@ export async function action({ request }: ActionFunctionArgs) {
     message: 'Your review has been added! 🎉',
   });
 
-  return redirect(Route['/companies'], {
+  return redirect(Route['/profile/work'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -59,21 +60,15 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function AddReviewModal() {
   const { error, errors } = getErrors(useActionData<typeof action>());
-  const [searchParams] = useSearchParams();
 
   return (
-    <Modal
-      onCloseTo={{
-        pathname: Route['/companies'],
-        search: searchParams.toString(),
-      }}
-    >
+    <Modal onCloseTo={Route['/profile/work']}>
       <Modal.Header>
         <Modal.Title>Add Company Review</Modal.Title>
         <Modal.CloseButton />
       </Modal.Header>
 
-      <AddReviewForm error={error} errors={errors} showExperienceField />
+      <AddReviewForm error={error} errors={errors} />
     </Modal>
   );
 }

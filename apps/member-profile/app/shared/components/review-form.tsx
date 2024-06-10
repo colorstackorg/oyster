@@ -1,7 +1,14 @@
+import { Form as RemixForm } from '@remix-run/react';
 import { Link, useFetcher } from '@remix-run/react';
 import { useEffect } from 'react';
 
 import {
+  AddCompanyReviewInput,
+  type EditCompanyReviewInput,
+} from '@oyster/core/employment';
+import {
+  Button,
+  Divider,
   type FieldProps,
   Form,
   Radio,
@@ -14,11 +21,84 @@ import { Slider } from '@oyster/ui/slider';
 import { type GetWorkExperiencesResult } from '@/routes/api.me.work-experiences';
 import { Route } from '@/shared/constants';
 
-export function ReviewExperienceField({
-  defaultValue,
+const keys = AddCompanyReviewInput.keyof().enum;
+
+// Forms
+
+type AddReviewFormProps = {
+  error?: string;
+  errors: Partial<Record<keyof AddCompanyReviewInput, string>>;
+  showExperienceField?: boolean;
+};
+
+export function AddReviewForm({
   error,
-  name,
-}: FieldProps<string>) {
+  errors,
+  showExperienceField,
+}: AddReviewFormProps) {
+  return (
+    <RemixForm className="form" method="post">
+      {showExperienceField && (
+        <ExperienceField
+          error={errors.workExperienceId}
+          name={keys.workExperienceId}
+        />
+      )}
+
+      <TextField error={errors.text} name={keys.text} />
+
+      <Divider />
+
+      <RatingField error={errors.rating} name={keys.rating} />
+      <RecommendField error={errors.recommend} name={keys.recommend} />
+
+      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+
+      <Button.Group>
+        <Button.Submit>Save</Button.Submit>
+      </Button.Group>
+    </RemixForm>
+  );
+}
+
+type EditReviewFormProps = Omit<AddReviewFormProps, 'showExperienceField'> & {
+  review: Pick<EditCompanyReviewInput, 'rating' | 'recommend' | 'text'>;
+};
+
+export function EditReviewForm({ error, errors, review }: EditReviewFormProps) {
+  return (
+    <RemixForm className="form" method="post">
+      <TextField
+        defaultValue={review.text}
+        error={errors.text}
+        name={keys.text}
+      />
+
+      <Divider />
+
+      <RatingField
+        defaultValue={review.rating}
+        error={errors.rating}
+        name={keys.rating}
+      />
+      <RecommendField
+        defaultValue={review.recommend}
+        error={errors.recommend}
+        name={keys.recommend}
+      />
+
+      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+
+      <Button.Group>
+        <Button.Submit>Save</Button.Submit>
+      </Button.Group>
+    </RemixForm>
+  );
+}
+
+// Fields
+
+function ExperienceField({ defaultValue, error, name }: FieldProps<string>) {
   const fetcher = useFetcher<GetWorkExperiencesResult>();
 
   useEffect(() => {
@@ -59,11 +139,7 @@ export function ReviewExperienceField({
   );
 }
 
-export function ReviewRatingField({
-  defaultValue,
-  error,
-  name,
-}: FieldProps<number>) {
+function RatingField({ defaultValue, error, name }: FieldProps<number>) {
   return (
     <Form.Field
       error={error}
@@ -84,11 +160,7 @@ export function ReviewRatingField({
   );
 }
 
-export function ReviewRecommendField({
-  defaultValue,
-  error,
-  name,
-}: FieldProps<boolean>) {
+function RecommendField({ defaultValue, error, name }: FieldProps<boolean>) {
   return (
     <Form.Field
       error={error}
@@ -120,11 +192,7 @@ export function ReviewRecommendField({
   );
 }
 
-export function ReviewTextField({
-  defaultValue,
-  error,
-  name,
-}: FieldProps<string>) {
+function TextField({ defaultValue, error, name }: FieldProps<string>) {
   return (
     <Form.Field
       description={
