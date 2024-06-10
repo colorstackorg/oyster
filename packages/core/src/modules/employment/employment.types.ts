@@ -74,7 +74,7 @@ const CompanyReview = z.object({
   rating: z.coerce.number().int().min(0).max(10),
   recommend: BooleanInput,
   studentId: Student.shape.id,
-  text: z.string().trim().min(1000),
+  text: z.string().trim().min(750),
   workExperienceId: z.string().trim().min(1),
 });
 
