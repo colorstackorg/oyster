@@ -208,9 +208,7 @@ function CompanyItem({ company }: { company: CompanyInView }) {
             getTextCn({ variant: 'lg' }),
             'hover:text-primary hover:underline'
           )}
-          to={generatePath(Route['/companies/:id/overview'], {
-            id: company.id,
-          })}
+          to={generatePath(Route['/companies/:id'], { id: company.id })}
         >
           {company.name}
         </Link>
@@ -222,44 +220,42 @@ function CompanyItem({ company }: { company: CompanyInView }) {
 
       <div className="flex items-center gap-4">
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
-              className={cx(
-                getTextCn({ color: 'gray-500', variant: 'sm' }),
-                'flex items-center gap-1',
-                'hover:text-primary hover:underline'
-              )}
-              to={generatePath(Route['/companies/:id/employees'], {
-                id: company.id,
-              })}
+          <TooltipTrigger>
+            <Text
+              className="flex items-center gap-1"
+              color="gray-500"
+              variant="sm"
             >
               <Users size="16" />
               <span>{company.employees}</span>
-            </Link>
+            </Text>
           </TooltipTrigger>
           <TooltipContent>
-            <TooltipText>{company.employees} member(s) work here</TooltipText>
+            <TooltipText>
+              {company.employees === '1'
+                ? `${company.employees} member has worked here`
+                : `${company.employees} members have worked here`}
+            </TooltipText>
           </TooltipContent>
         </Tooltip>
 
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
-              className={cx(
-                getTextCn({ color: 'gray-500', variant: 'sm' }),
-                'flex items-center gap-1',
-                'hover:text-primary hover:underline'
-              )}
-              to={generatePath(Route['/companies/:id/reviews'], {
-                id: company.id,
-              })}
+          <TooltipTrigger>
+            <Text
+              className="flex items-center gap-1"
+              color="gray-500"
+              variant="sm"
             >
               <FileText size="16" />
               <span>{company.reviews}</span>
-            </Link>
+            </Text>
           </TooltipTrigger>
           <TooltipContent>
-            <TooltipText>{company.reviews} review(s)</TooltipText>
+            <TooltipText>
+              {company.reviews === '1'
+                ? `${company.reviews} review`
+                : `${company.reviews} reviews`}
+            </TooltipText>
           </TooltipContent>
         </Tooltip>
 
