@@ -75,7 +75,7 @@ export default function CompanyReviewsPage() {
   }
 
   return (
-    <ul>
+    <ul className="flex flex-col gap-4">
       {reviews.map((review) => {
         return <CompanyReviewItem key={review.id} review={review} />;
       })}

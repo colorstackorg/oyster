@@ -57,21 +57,19 @@ function CompanyReviewItem({ employee }: { employee: EmployeeInView }) {
   const { firstName, id, lastName, profilePicture } = employee;
 
   return (
-    <li>
-      <div className="flex w-fit items-center gap-2">
-        <ProfilePicture
-          initials={firstName![0] + lastName![0]}
-          size="48"
-          src={profilePicture || undefined}
-        />
+    <li className="line-clamp-1 grid grid-cols-[3rem_1fr] items-center gap-2 rounded-2xl p-2 hover:bg-gray-100">
+      <ProfilePicture
+        initials={firstName![0] + lastName![0]}
+        size="48"
+        src={profilePicture || undefined}
+      />
 
-        <Link
-          className={cx(getTextCn({}), 'hover:underline')}
-          to={generatePath(Route['/directory/:id'], { id })}
-        >
-          {firstName} {lastName}
-        </Link>
-      </div>
+      <Link
+        className={cx(getTextCn({}), 'hover:underline')}
+        to={generatePath(Route['/directory/:id'], { id })}
+      >
+        {firstName} {lastName}
+      </Link>
     </li>
   );
 }

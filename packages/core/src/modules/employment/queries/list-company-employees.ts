@@ -21,6 +21,7 @@ export async function listCompanyEmployees<
       'workExperiences.studentId'
     )
     .select(select)
+    .distinctOn('workExperiences.studentId')
     .where('workExperiences.companyId', '=', where.companyId)
     .execute();
 
