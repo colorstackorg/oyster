@@ -30,7 +30,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const id = user(session);
 
-  const workExperiences = await listWorkExperiences(id);
+  const workExperiences = await listWorkExperiences(id, {
+    include: ['hasReviewed'],
+  });
 
   return json({
     workExperiences,
@@ -72,9 +74,7 @@ function WorkHistorySection() {
           <ExperienceList>
             {workExperiences.map((experience) => {
               const id = experience.id;
-
-              // TODO: ...
-              const hasReviewed = false;
+              const hasReviewed = !!experience.hasReviewed;
 
               return (
                 <WorkExperienceItem

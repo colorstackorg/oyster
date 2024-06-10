@@ -2,8 +2,15 @@ import dayjs from 'dayjs';
 
 import { db } from '@/infrastructure/database';
 
+type ListWorkExperiencesOptions = {
+  include?: 'hasReviewed'[];
+};
+
 // TODO: Refactor this...
-export async function listWorkExperiences(memberId: string) {
+export async function listWorkExperiences(
+  memberId: string,
+  options: ListWorkExperiencesOptions = {}
+) {
   const rows = await db
     .selectFrom('workExperiences')
     .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
@@ -22,7 +29,24 @@ export async function listWorkExperiences(memberId: string) {
           .as('companyName');
       },
     ])
-    .where('studentId', '=', memberId)
+    .$if(!!options.include?.includes('hasReviewed'), (qb) => {
+      return qb
+        .leftJoin(
+          'companyReviews',
+          'companyReviews.workExperienceId',
+          'workExperiences.id'
+        )
+        .select((eb) => {
+          return eb
+            .case()
+            .when('companyReviews.id', 'is not', null)
+            .then(true)
+            .else(false)
+            .end()
+            .as('hasReviewed');
+        });
+    })
+    .where('workExperiences.studentId', '=', memberId)
     .orderBy('workExperiences.startDate', 'desc')
     .orderBy('workExperiences.endDate', 'desc')
     .execute();
