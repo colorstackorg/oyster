@@ -1,4 +1,5 @@
-import { db } from '@/infrastructure/database';
+import { db } from '@oyster/db';
+
 import { type EditCompanyReviewInput } from '../employment.types';
 
 export async function editCompanyReview({
