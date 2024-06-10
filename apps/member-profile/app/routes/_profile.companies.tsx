@@ -143,7 +143,9 @@ function SortCompaniesForm() {
         required
         width="fit"
       >
-        <option value={sortKeys.most_employees}>Most Employees</option>
+        <option value={sortKeys.most_employees}>
+          Most ColorStack Employees
+        </option>
         <option value={sortKeys.most_reviews}>Most Reviews</option>
         <option value={sortKeys.highest_rated}>Highest Rated</option>
       </Select>

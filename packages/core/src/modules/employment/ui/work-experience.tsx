@@ -1,8 +1,14 @@
 import { Link } from '@remix-run/react';
 import { useState } from 'react';
-import { Edit, MoreVertical, Plus } from 'react-feather';
+import { Check, Edit, MoreVertical, Plus } from 'react-feather';
 
 import { Dropdown, IconButton, Text } from '@oyster/ui';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipText,
+  TooltipTrigger,
+} from '@oyster/ui/tooltip';
 import { toTitleCase } from '@oyster/utils';
 
 type WorkExperienceMenuProps = {
@@ -45,9 +51,39 @@ export function WorkExperienceItem({
         )}
 
         <div>
-          <Text variant="lg" weight="500">
-            {experience.title}
-          </Text>
+          <div className="flex items-center gap-1">
+            <Text variant="lg" weight="500">
+              {experience.title}
+            </Text>
+
+            <Tooltip>
+              <TooltipTrigger>
+                <Check
+                  className="text-gray-300 data-[reviewed=true]:text-success"
+                  data-reviewed={!!rest.showOptions && !!rest.hasReviewed}
+                  size="20"
+                />
+              </TooltipTrigger>
+              <TooltipContent>
+                {!!rest.showOptions && !!rest.hasReviewed ? (
+                  <TooltipText>
+                    You reviewed this work experience. 🎉
+                  </TooltipText>
+                ) : (
+                  <TooltipText>
+                    You haven't reviewed this work experience yet. Add a review{' '}
+                    <Link
+                      className="underline"
+                      to={rest.showOptions ? rest.reviewTo : ''}
+                    >
+                      here
+                    </Link>
+                    .
+                  </TooltipText>
+                )}
+              </TooltipContent>
+            </Tooltip>
+          </div>
 
           <Text>{experience.companyName}</Text>
           <Text color="gray-500">{experience.date}</Text>
