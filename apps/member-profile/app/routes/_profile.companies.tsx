@@ -199,80 +199,108 @@ function CompanyItem({ company }: { company: CompanyInView }) {
   return (
     <li className="flex flex-col gap-3 rounded-3xl border border-gray-200 p-4">
       <header className="flex items-center gap-2">
-        <div className="h-10 w-10 rounded-lg border border-gray-200 p-1">
-          <img
-            className="aspect-square h-full w-full rounded-md"
-            src={company.imageUrl as string}
-          />
-        </div>
-
-        <Link
-          className={cx(
-            getTextCn({ variant: 'lg' }),
-            'hover:text-primary hover:underline'
-          )}
-          to={generatePath(Route['/companies/:id'], { id: company.id })}
-        >
-          {company.name}
-        </Link>
+        <CompanyLogo imageUrl={company.imageUrl} />
+        <CompanyTitle id={company.id} name={company.name} />
       </header>
 
-      <Text className="line-clamp-2" color="gray-500" variant="sm">
-        {company.description}
-      </Text>
+      <CompanyDescription description={company.description} />
 
       <div className="flex items-center gap-4">
-        <Tooltip>
-          <TooltipTrigger>
-            <Text
-              className="flex items-center gap-1"
-              color="gray-500"
-              variant="sm"
-            >
-              <Users size="16" />
-              <span>{company.employees}</span>
-            </Text>
-          </TooltipTrigger>
-          <TooltipContent>
-            <TooltipText>
-              {company.employees === '1'
-                ? `${company.employees} member has worked here`
-                : `${company.employees} members have worked here`}
-            </TooltipText>
-          </TooltipContent>
-        </Tooltip>
-
-        <Tooltip>
-          <TooltipTrigger>
-            <Text
-              className="flex items-center gap-1"
-              color="gray-500"
-              variant="sm"
-            >
-              <FileText size="16" />
-              <span>{company.reviews}</span>
-            </Text>
-          </TooltipTrigger>
-          <TooltipContent>
-            <TooltipText>
-              {company.reviews === '1'
-                ? `${company.reviews} review`
-                : `${company.reviews} reviews`}
-            </TooltipText>
-          </TooltipContent>
-        </Tooltip>
-
-        {!!company.averageRating && (
-          <Text
-            className="ml-auto flex items-center gap-1"
-            color="gray-500"
-            variant="sm"
-          >
-            <span>{company.averageRating}</span>{' '}
-            <Star className="fill-gray-50" size="16" />
-          </Text>
-        )}
+        <EmployeeCount employees={company.employees} />
+        <ReviewCount reviews={company.reviews} />
+        <AverageRating averageRating={company.averageRating} />
       </div>
     </li>
+  );
+}
+
+function CompanyLogo({ imageUrl }: Pick<CompanyInView, 'imageUrl'>) {
+  return (
+    <div className="h-10 w-10 rounded-lg border border-gray-200 p-1">
+      <img
+        className="aspect-square h-full w-full rounded-md"
+        src={imageUrl as string}
+      />
+    </div>
+  );
+}
+
+function CompanyTitle({ id, name }: Pick<CompanyInView, 'id' | 'name'>) {
+  return (
+    <Link
+      className={cx(
+        getTextCn({ variant: 'lg' }),
+        'hover:text-primary hover:underline'
+      )}
+      to={generatePath(Route['/companies/:id'], { id })}
+    >
+      {name}
+    </Link>
+  );
+}
+
+function CompanyDescription({
+  description,
+}: Pick<CompanyInView, 'description'>) {
+  return (
+    <Text className="line-clamp-2" color="gray-500" variant="sm">
+      {description}
+    </Text>
+  );
+}
+
+function EmployeeCount({ employees }: Pick<CompanyInView, 'employees'>) {
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        <Text className="flex items-center gap-1" color="gray-500" variant="sm">
+          <Users size="16" />
+          <span>{employees}</span>
+        </Text>
+      </TooltipTrigger>
+      <TooltipContent>
+        <TooltipText>
+          {employees === '1'
+            ? `${employees} member has worked here`
+            : `${employees} members have worked here`}
+        </TooltipText>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+function ReviewCount({ reviews }: Pick<CompanyInView, 'reviews'>) {
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        <Text className="flex items-center gap-1" color="gray-500" variant="sm">
+          <FileText size="16" />
+          <span>{reviews}</span>
+        </Text>
+      </TooltipTrigger>
+      <TooltipContent>
+        <TooltipText>
+          {reviews === '1' ? `${reviews} review` : `${reviews} reviews`}
+        </TooltipText>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+function AverageRating({
+  averageRating,
+}: Pick<CompanyInView, 'averageRating'>) {
+  if (!averageRating) {
+    return null;
+  }
+
+  return (
+    <Text
+      className="ml-auto flex items-center gap-1"
+      color="gray-500"
+      variant="sm"
+    >
+      <span>{averageRating}</span> <Star className="fill-gray-50" size="16" />
+    </Text>
   );
 }

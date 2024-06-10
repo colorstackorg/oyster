@@ -16,24 +16,26 @@ import {
 } from 'react-feather';
 
 import {
+  type EmploymentType,
+  FORMATTED_EMPLOYMENT_TYPE,
+  FORMATTED_LOCATION_TYPE,
+  LocationType,
+} from '@oyster/core/employment';
+import {
   getCompany,
   listCompanyEmployees,
   listCompanyReviews,
 } from '@oyster/core/employment.server';
 import { cx, Divider, getTextCn, Pill, ProfilePicture, Text } from '@oyster/ui';
 
-import {
-  type EmploymentType,
-  FORMATTED_EMPLOYMENT_TYPE,
-  FORMATTED_LOCATION_TYPE,
-  LocationType,
-} from '@/member-profile.ui';
 import { Card } from '@/shared/components/card';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
+
+  const id = params.id as string;
 
   const [company, employees, _reviews] = await Promise.all([
     getCompany({
@@ -45,11 +47,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'companies.imageUrl',
         'companies.name',
       ],
-      where: { id: params.id as string },
+      where: { id },
     }),
 
     listCompanyEmployees({
-      where: { companyId: params.id as string },
+      where: { companyId: id },
     }),
 
     listCompanyReviews({
@@ -71,7 +73,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'workExperiences.startDate',
         'workExperiences.title',
       ],
-      where: { companyId: params.id as string },
+      where: { companyId: id },
     }),
   ]);
 
@@ -111,9 +113,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 }
 
-export default function CompanyLayout() {
-  const { company, currentEmployees, pastEmployees, reviews } =
-    useLoaderData<typeof loader>();
+export default function CompanyPage() {
+  const { company } = useLoaderData<typeof loader>();
 
   return (
     <section className="mx-auto flex w-full max-w-[36rem] flex-col gap-[inherit]">
@@ -130,82 +131,121 @@ export default function CompanyLayout() {
             {company.name}
           </Text>
 
-          {company.domain && (
-            <a
-              className="flex items-center gap-1 text-sm text-gray-500 hover:underline"
-              href={'https://' + company.domain}
-              target="_blank"
-            >
-              {company.domain} <ExternalLink size="16" />
-            </a>
-          )}
+          <DomainLink domain={company.domain} />
         </div>
 
-        {company.averageRating && (
-          <div className="ml-auto mt-auto">
-            <Text>
-              <span className="text-2xl">{company.averageRating}</span>/10
-            </Text>
-          </div>
-        )}
+        <AverageRating averageRating={company.averageRating} />
       </header>
 
       <Text color="gray-500">{company.description}</Text>
-
-      {!!reviews.length && (
-        <>
-          <section className="flex flex-col gap-[inherit]">
-            <Text weight="500" variant="lg">
-              Reviews ({reviews.length})
-            </Text>
-
-            {reviews.length ? (
-              <ul className="flex flex-col gap-4">
-                {reviews.map((review) => {
-                  return <CompanyReviewItem key={review.id} review={review} />;
-                })}
-              </ul>
-            ) : (
-              <Text color="gray-500">No reviews found.</Text>
-            )}
-          </section>
-
-          <Divider my="4" />
-        </>
-      )}
-
-      <Card>
-        <Card.Title>Current Employees ({currentEmployees.length})</Card.Title>
-
-        {currentEmployees.length ? (
-          <ul>
-            {currentEmployees.map((employee) => {
-              return <EmployeeItem key={employee.id} employee={employee} />;
-            })}
-          </ul>
-        ) : (
-          <Text color="gray-500">
-            There are no current employees from ColorStack.
-          </Text>
-        )}
-      </Card>
-
-      <Card>
-        <Card.Title>Past Employees ({pastEmployees.length})</Card.Title>
-
-        {pastEmployees.length ? (
-          <ul>
-            {pastEmployees.map((employee) => {
-              return <EmployeeItem key={employee.id} employee={employee} />;
-            })}
-          </ul>
-        ) : (
-          <Text color="gray-500">
-            There are no past employees from ColorStack.
-          </Text>
-        )}
-      </Card>
+      <ReviewsList />
+      <CurrentEmployees />
+      <PastEmployees />
     </section>
+  );
+}
+
+type CompanyInView = SerializeFrom<typeof loader>['company'];
+
+function DomainLink({ domain }: Pick<CompanyInView, 'domain'>) {
+  if (!domain) {
+    return null;
+  }
+
+  return (
+    <a
+      className="flex items-center gap-1 text-sm text-gray-500 hover:underline"
+      href={'https://' + domain}
+      target="_blank"
+    >
+      {domain} <ExternalLink size="16" />
+    </a>
+  );
+}
+
+function AverageRating({
+  averageRating,
+}: Pick<CompanyInView, 'averageRating'>) {
+  if (!averageRating) {
+    return null;
+  }
+
+  return (
+    <div className="ml-auto mt-auto">
+      <Text>
+        <span className="text-2xl">{averageRating}</span>/10
+      </Text>
+    </div>
+  );
+}
+
+function ReviewsList() {
+  const { reviews } = useLoaderData<typeof loader>();
+
+  if (!reviews.length) {
+    return null;
+  }
+
+  return (
+    <>
+      <section className="flex flex-col gap-[inherit]">
+        <Text weight="500" variant="lg">
+          Reviews ({reviews.length})
+        </Text>
+
+        <ul className="flex flex-col gap-4">
+          {reviews.map((review) => {
+            return <CompanyReviewItem key={review.id} review={review} />;
+          })}
+        </ul>
+      </section>
+
+      <Divider my="4" />
+    </>
+  );
+}
+
+function CurrentEmployees() {
+  const { currentEmployees } = useLoaderData<typeof loader>();
+
+  return (
+    <Card>
+      <Card.Title>Current Employees ({currentEmployees.length})</Card.Title>
+
+      {currentEmployees.length ? (
+        <ul>
+          {currentEmployees.map((employee) => {
+            return <EmployeeItem key={employee.id} employee={employee} />;
+          })}
+        </ul>
+      ) : (
+        <Text color="gray-500">
+          There are no current employees from ColorStack.
+        </Text>
+      )}
+    </Card>
+  );
+}
+
+function PastEmployees() {
+  const { pastEmployees } = useLoaderData<typeof loader>();
+
+  return (
+    <Card>
+      <Card.Title>Past Employees ({pastEmployees.length})</Card.Title>
+
+      {pastEmployees.length ? (
+        <ul>
+          {pastEmployees.map((employee) => {
+            return <EmployeeItem key={employee.id} employee={employee} />;
+          })}
+        </ul>
+      ) : (
+        <Text color="gray-500">
+          There are no past employees from ColorStack.
+        </Text>
+      )}
+    </Card>
   );
 }
 

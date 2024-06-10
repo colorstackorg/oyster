@@ -7,9 +7,9 @@ import {
 import { useActionData, useSearchParams } from '@remix-run/react';
 
 import { AddCompanyReviewInput } from '@oyster/core/employment';
+import { addCompanyReview } from '@oyster/core/employment.server';
 import { getErrors, Modal, validateForm } from '@oyster/ui';
 
-import { addCompanyReview } from '@/modules/employment/index.server';
 import { AddReviewForm } from '@/shared/components/review-form';
 import { Route } from '@/shared/constants';
 import {
