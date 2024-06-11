@@ -141,16 +141,24 @@ async function getActivityHistory(
         'surveys.id',
         'completedActivities.surveyRespondedTo'
       )
-      .leftJoin(
-        'slackMessages as threads',
-        'threads.id',
-        'completedActivities.threadRepliedTo'
-      )
-      .leftJoin(
-        'slackMessages as messagesReactedTo',
-        'messagesReactedTo.id',
-        'completedActivities.messageReactedTo'
-      )
+      .leftJoin('slackMessages as threads', (join) => {
+        return join
+          .onRef('threads.id', '=', 'completedActivities.threadRepliedTo')
+          .onRef('threads.channelId', '=', 'completedActivities.channelId');
+      })
+      .leftJoin('slackMessages as messagesReactedTo', (join) => {
+        return join
+          .onRef(
+            'messagesReactedTo.id',
+            '=',
+            'completedActivities.messageReactedTo'
+          )
+          .onRef(
+            'messagesReactedTo.channelId',
+            '=',
+            'completedActivities.channelId'
+          );
+      })
       .leftJoin(
         'students as resourceUpvoters',
         'resourceUpvoters.id',
