@@ -44,7 +44,6 @@ import {
   countEventAttendees,
   countMessagesSent,
   getActiveStreakLeaderboard,
-  getActiveStreakLeaderboardPosition,
 } from '@/member-profile.server';
 import { Card } from '@/shared/components/card';
 import { Route } from '@/shared/constants';
@@ -80,14 +79,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     getTotalStudentsCount(),
   ]);
 
-  let leaderboardPosition = null;
-
-  // If there are no statuses for the student, then they won't have a position
-  // on the leaderboard so we won't send that query.
-  if (_statuses.length) {
-    leaderboardPosition = await getActiveStreakLeaderboardPosition(id);
-  }
-
   const statuses = fillRecentStatuses(_statuses, timezone);
 
   setMixpanelProfile(id, {
@@ -107,7 +98,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     eventsAttendedCount,
     leaderboard,
-    leaderboardPosition,
     messagesSentCount,
     statuses,
     student,
@@ -531,13 +521,7 @@ function TotalCommunityMemberCard() {
 function LeaderboardCard({
   className,
 }: PropsWithoutRef<{ className?: string }>) {
-  const { leaderboard, leaderboardPosition } = useLoaderData<typeof loader>();
-
-  const isAlreadyInLeaderboard =
-    leaderboardPosition &&
-    leaderboard.some((position) => {
-      return position.id === leaderboardPosition.id;
-    });
+  const { leaderboard } = useLoaderData<typeof loader>();
 
   return (
     <Card className={cx('flex-1', className)}>
@@ -548,23 +532,12 @@ function LeaderboardCard({
         message or reacted to a Slack message, in that week.
       </Card.Description>
 
-      {!leaderboardPosition && (
-        <Card.Description>
-          You will be eligible for the leaderboard after you have been in
-          ColorStack for a full calendar week.
-        </Card.Description>
-      )}
-
       <ul className="flex flex-col gap-4">
         {leaderboard.map((position) => {
           return (
             <LeaderboardPositionItem key={position.id} position={position} />
           );
         })}
-
-        {leaderboardPosition && !isAlreadyInLeaderboard && (
-          <LeaderboardPositionItem position={leaderboardPosition} />
-        )}
       </ul>
     </Card>
   );
