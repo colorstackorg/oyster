@@ -5,6 +5,9 @@ type LinkProps = Pick<
   'children' | 'href' | 'target'
 >;
 
+/**
+ * @deprecated b/c we should use the `Link` component from Remix instead.
+ */
 export function Link({ children, ...rest }: LinkProps) {
   return (
     <a className="text-primary underline" {...rest}>

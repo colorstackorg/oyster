@@ -35,5 +35,5 @@ export function TooltipText(props: TextProps) {
 }
 
 export function TooltipTrigger(props: TooltipTriggerProps) {
-  return <Trigger {...props} />;
+  return <Trigger className="cursor-default" {...props} />;
 }

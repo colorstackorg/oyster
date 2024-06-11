@@ -157,6 +157,16 @@ export async function grantGamificationPoints(
         .onConflict((oc) => oc.doNothing())
         .execute();
     })
+    .with({ type: 'review_company' }, async (input) => {
+      await db
+        .insertInto('completedActivities')
+        .values({
+          ...activityCompleted,
+          workExperienceId: input.workExperienceId,
+        })
+        .onConflict((oc) => oc.doNothing())
+        .execute();
+    })
     .with({ type: 'submit_census_response' }, async (input) => {
       await db
         .insertInto('completedActivities')
