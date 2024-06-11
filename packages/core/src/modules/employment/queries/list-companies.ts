@@ -19,16 +19,27 @@ type ListCompaniesOptions<Selection> = {
 export async function listCompanies<
   Selection extends SelectExpression<DB, 'companies'>,
 >({ orderBy, pagination, select, where }: ListCompaniesOptions<Selection>) {
-  const query = db.selectFrom('companies').$if(!!where.search, (qb) => {
-    const { search } = where;
+  const query = db
+    .selectFrom('companies')
+    .where((eb) => {
+      // We only want to return companies that have at least one employee (past
+      // or present).
+      return eb.exists(
+        eb
+          .selectFrom('workExperiences')
+          .whereRef('workExperiences.companyId', '=', 'companies.id')
+      );
+    })
+    .$if(!!where.search, (qb) => {
+      const { search } = where;
 
-    return qb.where((eb) => {
-      return eb.or([
-        eb('name', 'ilike', `%${search}%`),
-        eb(sql`word_similarity(${eb.ref('name')}, ${search})`, '>=', 0.5),
-      ]);
+      return qb.where((eb) => {
+        return eb.or([
+          eb('name', 'ilike', `%${search}%`),
+          eb(sql`word_similarity(${eb.ref('name')}, ${search})`, '>=', 0.5),
+        ]);
+      });
     });
-  });
 
   const [companies, { count }] = await Promise.all([
     query
