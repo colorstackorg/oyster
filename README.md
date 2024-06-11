@@ -106,3 +106,11 @@ list on what we can configure, see
 ## Contributing
 
 Please see our [contributing guide](./CONTRIBUTING.md)! 👋
+
+A heartfelt thanks to our ColorStack members for their contributions! 🙏
+
+<a href="https://github.com/colorstackorg/oyster/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=colorstackorg/oyster" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
