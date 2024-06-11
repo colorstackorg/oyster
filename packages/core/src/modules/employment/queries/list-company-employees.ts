@@ -35,6 +35,7 @@ export async function listCompanyEmployees({
     .where('companyId', '=', where.companyId)
     .orderBy('studentId')
     .orderBy('endDate', 'desc')
+    .orderBy('startDate', 'desc')
     .execute();
 
   return employees;

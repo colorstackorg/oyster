@@ -25,6 +25,7 @@ export async function listCompanyReviews<
     .leftJoin('students', 'students.id', 'workExperiences.studentId')
     .select(select)
     .where('workExperiences.companyId', '=', where.companyId)
+    .orderBy('companyReviews.createdAt', 'desc')
     .execute();
 
   return reviews;
