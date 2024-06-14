@@ -7,7 +7,6 @@ import {
 import { type ToastProps } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import { listAdmins } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
 
