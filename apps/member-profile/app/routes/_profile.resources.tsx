@@ -14,6 +14,7 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
+import { sql } from 'kysely';
 import { ArrowUp, BarChart2, Edit, Plus, Share } from 'react-feather';
 import { match } from 'ts-pattern';
 
@@ -23,6 +24,7 @@ import {
   ResourceType,
 } from '@oyster/core/resources';
 import { listResources, listTags } from '@oyster/core/resources.server';
+import { db } from '@oyster/db';
 import { track } from '@oyster/infrastructure/mixpanel';
 import { getPresignedURL } from '@oyster/infrastructure/object-storage';
 import {
@@ -64,6 +66,17 @@ const searchKeys = ResourcesSearchParams.keyof().enum;
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
+
+  //Query admin table using raw SQL to see if current user is in admins table
+  const isAdminQuery = sql<{ exists: boolean }>`SELECT EXISTS (
+      SELECT 1
+      FROM admins
+      WHERE member_id = ${user(session)}
+    ) 
+  `.execute(db);
+
+  //output of the query is [{ exists: boolean }]
+  const isAdmin = (await isAdminQuery).rows[0].exists;
 
   const url = new URL(request.url);
 
@@ -128,7 +141,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
           // If the logged-in member is the poster of the resource, they should
           // be able to edit the resource.
-          editable: record.posterId === user(session),
+          editable: record.posterId === user(session) || isAdmin,
 
           // This is a relative time of when the resource was posted,
           // ie: "2d" (2 days ago).
