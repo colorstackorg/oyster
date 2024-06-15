@@ -136,8 +136,8 @@ export function ResourceTagsField({
   const createFetcher = useFetcher<unknown>();
   const listFetcher = useFetcher<SearchTagsResult>();
 
-  const [newTagId, setNewTagId] = useState<string>(id());
   const [search, setSearch] = useState<string>('');
+  const [selectedTags, setSelectedTags] = useState<Record<string, unknown>>({});
 
   useEffect(() => {
     listFetcher.load('/api/tags/search');
@@ -145,10 +145,65 @@ export function ResourceTagsField({
 
   const tags = listFetcher.data?.tags || [];
 
-  function reset() {
+  function onTagCreated(newTag: unknown) {
+    createFetcher.submit(
+      { id: newTag.id, name: newTag.label },
+      {
+        action: '/api/tags/add',
+        method: 'post',
+      }
+    );
     setSearch('');
-    setNewTagId(id());
+    setSelectedTags({ ...selectedTags, [newTag.id]: newTag });
+    listFetcher.load('/api/tags/search');
   }
+
+  const onTagSelected = (tag: unknown) => {
+    setSelectedTags({ ...selectedTags, [tag.id]: tag });
+  };
+
+  const onValueSelected = (tag: unknown) => {
+    setSelectedTags((prevSelectedTags) => {
+      const newSelectedTags = { ...prevSelectedTags };
+
+      delete newSelectedTags[tag.value];
+
+      return newSelectedTags;
+    });
+  };
+
+  const getTagsForDisplay = () => {
+    const tagsForDisplay = tags
+      .filter((tag) => !Object.keys(selectedTags).includes(tag.id))
+      .map((tag) => (
+        <MultiComboboxItem
+          key={tag.id}
+          label={tag.name}
+          onSelect={() => onTagSelected(tag)}
+          value={tag.id}
+        >
+          <Pill color="pink-100">{tag.name}</Pill>
+        </MultiComboboxItem>
+      ));
+
+    if (search.length > 0) {
+      const newId = id();
+      const searchTag = (
+        <MultiComboboxItem
+          key={newId}
+          label={search}
+          onSelect={() => onTagCreated({ id: newId, label: search })}
+          value={newId}
+        >
+          Create <Pill color="pink-100">{search}</Pill>
+        </MultiComboboxItem>
+      );
+
+      tagsForDisplay.unshift(searchTag);
+    }
+
+    return tagsForDisplay;
+  };
 
   return (
     <Form.Field
@@ -160,7 +215,7 @@ export function ResourceTagsField({
     >
       <MultiCombobox defaultValues={defaultValue}>
         <MultiComboboxDisplay>
-          <MultiComboboxValues name={name} />
+          <MultiComboboxValues name={name} onSelect={onValueSelected} />
           <MultiComboboxSearch
             id={name}
             onChange={(e) => {
@@ -179,40 +234,7 @@ export function ResourceTagsField({
 
         {(!!tags.length || !!search.length) && (
           <ComboboxPopover>
-            <ul>
-              {tags.map((tag) => {
-                return (
-                  <MultiComboboxItem
-                    key={tag.id}
-                    label={tag.name}
-                    onSelect={reset}
-                    value={tag.id}
-                  >
-                    <Pill color="pink-100">{tag.name}</Pill>
-                  </MultiComboboxItem>
-                );
-              })}
-
-              {!!search.length && (
-                <MultiComboboxItem
-                  label={search}
-                  onSelect={(e) => {
-                    createFetcher.submit(
-                      { id: e.currentTarget.value, name: search },
-                      {
-                        action: '/api/tags/add',
-                        method: 'post',
-                      }
-                    );
-
-                    reset();
-                  }}
-                  value={newTagId}
-                >
-                  Create <Pill color="pink-100">{search}</Pill>
-                </MultiComboboxItem>
-              )}
-            </ul>
+            <ul>{getTagsForDisplay()}</ul>
           </ComboboxPopover>
         )}
       </MultiCombobox>

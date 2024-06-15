@@ -124,7 +124,10 @@ export function MultiComboboxItem({
   );
 }
 
-export function MultiComboboxValues({ name }: Pick<InputProps, 'name'>) {
+export function MultiComboboxValues({
+  name,
+  onSelect,
+}: Pick<InputProps, 'name'>) {
   const { setValues, values } = useContext(MultiComboboxContext);
 
   if (!values.length) {
@@ -153,6 +156,7 @@ export function MultiComboboxValues({ name }: Pick<InputProps, 'name'>) {
 
               <button
                 onClick={(e) => {
+                  onSelect?.(value);
                   e.stopPropagation();
                   setValues(
                     values.filter((element) => {
