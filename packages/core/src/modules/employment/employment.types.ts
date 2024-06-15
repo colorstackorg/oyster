@@ -117,9 +117,13 @@ export const GetCompanyWhere = z.object({
   id: Company.shape.id,
 });
 
-export const ListCompanyReviewsWhere = z.object({
-  companyId: Company.shape.id,
-});
+export const ListCompanyReviewsWhere = z
+  .object({
+    companyId: Company.shape.id,
+    postedAfter: z.date(),
+    postedBefore: z.date(),
+  })
+  .partial();
 
 export const ListCompaniesOrderBy = z
   .enum([

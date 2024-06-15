@@ -24,7 +24,15 @@ export async function listCompanyReviews<
     )
     .leftJoin('students', 'students.id', 'workExperiences.studentId')
     .select(select)
-    .where('workExperiences.companyId', '=', where.companyId)
+    .$if(!!where.companyId, (qb) => {
+      return qb.where('workExperiences.companyId', '=', where.companyId!);
+    })
+    .$if(!!where.postedAfter, (qb) => {
+      return qb.where('companyReviews.createdAt', '>=', where.postedAfter!);
+    })
+    .$if(!!where.postedBefore, (qb) => {
+      return qb.where('companyReviews.createdAt', '<=', where.postedBefore!);
+    })
     .orderBy('companyReviews.createdAt', 'desc')
     .execute();
 

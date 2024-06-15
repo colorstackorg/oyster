@@ -53,14 +53,17 @@ import { useMixpanelTracker } from '@/shared/hooks/use-mixpanel-tracker';
 import { useToast } from '@/shared/hooks/use-toast';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
+const whereKeys = ListResourcesWhere.keyof().enum;
+
 const ResourcesSearchParams = ListSearchParams.pick({
   limit: true,
   page: true,
-})
-  .merge(ListResourcesWhere)
-  .extend({ orderBy: ListResourcesOrderBy });
-
-const searchKeys = ResourcesSearchParams.keyof().enum;
+}).extend({
+  [whereKeys.id]: ListResourcesWhere.shape.id.catch(undefined),
+  [whereKeys.search]: ListResourcesWhere.shape.search,
+  [whereKeys.tags]: ListResourcesWhere.shape.tags.catch([]),
+  orderBy: ListResourcesOrderBy,
+});
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -161,7 +164,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       result.push({
         id: searchParams.id,
         name: resources[0].title as string,
-        param: searchKeys.id,
+        param: whereKeys.id,
       });
     }
 
@@ -176,7 +179,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       tags.forEach((tag) => {
         result.push({
           ...tag,
-          param: searchKeys.tags,
+          param: whereKeys.tags,
         });
       });
     }
@@ -254,8 +257,8 @@ function SortResourcesForm() {
     >
       <Select
         defaultValue={orderBy}
-        name={searchKeys.orderBy}
-        id={searchKeys.orderBy}
+        name="orderBy"
+        id="orderBy"
         placeholder="Sort By..."
         required
         width="fit"

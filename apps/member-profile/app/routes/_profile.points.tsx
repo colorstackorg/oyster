@@ -97,6 +97,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       where: {
         memberId: id,
         occurredAfter,
+        occurredBefore: null,
       },
     }),
     listActivities(),
