@@ -124,10 +124,15 @@ export function MultiComboboxItem({
   );
 }
 
+type MultiComboboxValuesProps = PropsWithChildren<{
+  name: string;
+  onSelect?(value: ComboboxValue): void;
+}>;
+
 export function MultiComboboxValues({
   name,
   onSelect,
-}: Pick<InputProps, 'name'>) {
+}: MultiComboboxValuesProps) {
   const { setValues, values } = useContext(MultiComboboxContext);
 
   if (!values.length) {
