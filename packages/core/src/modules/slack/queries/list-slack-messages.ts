@@ -33,27 +33,27 @@ export async function listSlackMessages<
   const messages = await db
     .selectFrom('slackMessages as messages')
     .select(select)
-    .$if(include.includes('reactions'), (qb) => {
-      return qb.select((eb) => {
-        return eb
-          .selectFrom('slackReactions as reactions')
-          .whereRef('reactions.channelId', '=', 'messages.channelId')
-          .whereRef('reactions.messageId', '=', 'messages.id')
-          .select(({ fn, ref }) => {
-            const object = jsonBuildObject({
-              count: fn.countAll<string>().as('count').expression,
-              reaction: ref('reactions.reaction'),
-            });
+    // .$if(include.includes('reactions'), (qb) => {
+    //   return qb.select((eb) => {
+    //     return eb
+    //       .selectFrom('slackReactions as reactions')
+    //       .whereRef('reactions.channelId', '=', 'messages.channelId')
+    //       .whereRef('reactions.messageId', '=', 'messages.id')
+    //       .select(({ fn, ref }) => {
+    //         const object = jsonBuildObject({
+    //           count: fn.countAll<string>().as('count').expression,
+    //           reaction: ref('reactions.reaction'),
+    //         });
 
-            return fn
-              .jsonAgg(sql`${object} order by count desc`)
-              .$castTo<{ count: string; reaction: string }[]>()
-              .as('reactions');
-          })
-          .groupBy('reactions.reaction')
-          .as('reactions');
-      });
-    })
+    //         return fn
+    //           .jsonAgg(sql`${object} order by count desc`)
+    //           .$castTo<{ count: string; reaction: string }[]>()
+    //           .as('reactions');
+    //       })
+    //       .groupBy('reactions.reaction')
+    //       .as('reactions');
+    //   });
+    // })
     .$if(!!where.channelId, (qb) => {
       return qb.where('messages.channelId', '=', where.channelId!);
     })

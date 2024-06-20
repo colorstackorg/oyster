@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren, type PropsWithoutRef } from 'react';
@@ -30,14 +26,7 @@ import {
   StudentActiveStatus,
   Timezone,
 } from '@oyster/types';
-import {
-  Button,
-  cx,
-  Divider,
-  getButtonCn,
-  ProfilePicture,
-  Text,
-} from '@oyster/ui';
+import { Button, cx, Divider, getButtonCn, Text } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import {
@@ -46,6 +35,10 @@ import {
   getActiveStreakLeaderboard,
 } from '@/member-profile.server';
 import { Card } from '@/shared/components/card';
+import {
+  Leaderboard,
+  type LeaderboardProps,
+} from '@/shared/components/leaderboard';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -518,13 +511,11 @@ function TotalCommunityMemberCard() {
   );
 }
 
-function LeaderboardCard({
-  className,
-}: PropsWithoutRef<{ className?: string }>) {
-  const { leaderboard } = useLoaderData<typeof loader>();
+function LeaderboardCard({ className }: LeaderboardProps) {
+  const { leaderboard, student } = useLoaderData<typeof loader>();
 
   return (
-    <Card className={cx('flex-1', className)}>
+    <Card className={cx('h-fit', className)}>
       <Card.Title>Active Streak Leaderboard</Card.Title>
 
       <Card.Description>
@@ -532,60 +523,32 @@ function LeaderboardCard({
         message or reacted to a Slack message, in that week.
       </Card.Description>
 
-      <ul className="flex flex-col gap-4">
+      <Leaderboard.List>
         {leaderboard.map((position) => {
           return (
-            <LeaderboardPositionItem key={position.id} position={position} />
+            <Leaderboard.Item
+              key={position.id}
+              firstName={position.firstName}
+              label={<LeaderboardItemLabel weeks={position.value} />}
+              lastName={position.lastName}
+              me={position.id === student.id}
+              position={position.position}
+              profilePicture={position.profilePicture || undefined}
+            />
           );
         })}
-      </ul>
+      </Leaderboard.List>
     </Card>
   );
 }
 
-type LeaderboardPositionItemProps = {
-  position: SerializeFrom<typeof loader>['leaderboard'][number];
-};
-
-function LeaderboardPositionItem({ position }: LeaderboardPositionItemProps) {
-  const { student } = useLoaderData<typeof loader>();
-
-  const isMe = position.id === student.id;
-
-  const formattedPosition = Intl.NumberFormat('en-US', {
-    maximumFractionDigits: 1,
-    notation: 'compact',
-  }).format(position.position);
-
+function LeaderboardItemLabel({ weeks }: { weeks: number }) {
   return (
-    <li
-      className="grid grid-cols-[3rem_4fr_1fr] items-center"
-      key={position.id}
-    >
-      <Text className="ml-auto mr-4" color="gray-500" weight="500">
-        {formattedPosition}
-      </Text>
-
-      <div className="flex items-center gap-2">
-        <ProfilePicture
-          initials={position.firstName[0] + position.lastName[0]}
-          src={position.profilePicture || undefined}
-        />
-
-        <Text {...(isMe && { weight: '600' })}>
-          {position.firstName}{' '}
-          <span className="hidden sm:inline">{position.lastName}</span>
-          <span className="inline sm:hidden">{position.lastName[0]}.</span>{' '}
-          {isMe && '(You)'}
-        </Text>
-      </div>
-
-      <Text>
-        {position.value}
-        <span className="hidden text-sm sm:inline"> Weeks</span>
-        <span className="inline text-sm sm:hidden">w</span>
-      </Text>
-    </li>
+    <Leaderboard.ItemLabel>
+      {weeks}
+      <span className="hidden text-sm sm:inline"> Weeks</span>
+      <span className="inline text-sm sm:hidden">w</span>
+    </Leaderboard.ItemLabel>
   );
 }
 

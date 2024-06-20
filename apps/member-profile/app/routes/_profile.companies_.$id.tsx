@@ -29,6 +29,7 @@ import {
 import { cx, Divider, getTextCn, Pill, ProfilePicture, Text } from '@oyster/ui';
 
 import { Card } from '@/shared/components/card';
+import { CompanyReview } from '@/shared/components/company-review';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -205,11 +206,11 @@ function ReviewsList() {
           Reviews ({reviews.length})
         </Text>
 
-        <ul className="flex flex-col gap-4">
+        <CompanyReview.List>
           {reviews.map((review) => {
             return <CompanyReviewItem key={review.id} review={review} />;
           })}
-        </ul>
+        </CompanyReview.List>
       </section>
 
       <Divider my="4" />

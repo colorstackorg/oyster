@@ -12,7 +12,6 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { type PropsWithoutRef } from 'react';
 import { Award, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
@@ -26,7 +25,6 @@ import {
   getButtonCn,
   Link,
   Pill,
-  ProfilePicture,
   Select,
   Text,
   useSearchParams,
@@ -42,6 +40,10 @@ import {
   EmptyState,
   EmptyStateContainer,
 } from '@/shared/components/empty-state';
+import {
+  Leaderboard,
+  type LeaderboardProps,
+} from '@/shared/components/leaderboard';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -294,9 +296,7 @@ function TimeframeForm() {
   );
 }
 
-function PointsLeaderboard({
-  className,
-}: PropsWithoutRef<{ className?: string }>) {
+function PointsLeaderboard({ className }: LeaderboardProps) {
   const { pointsLeaderboard } = useLoaderData<typeof loader>();
 
   const [searchParams] = useSearchParams(PointsSearchParams);
@@ -304,9 +304,9 @@ function PointsLeaderboard({
   const submit = useSubmit();
 
   return (
-    <Card className={cx('h-fit', className)}>
-      <div className="flex justify-between gap-4">
-        <Card.Title>Points Leaderboard</Card.Title>
+    <Leaderboard className={className}>
+      <Leaderboard.Header>
+        <Leaderboard.Title>Points Leaderboard</Leaderboard.Title>
 
         <RemixForm
           className="flex min-w-[8rem]"
@@ -332,68 +332,39 @@ function PointsLeaderboard({
             value={searchParams.timeframe}
           />
         </RemixForm>
-      </div>
+      </Leaderboard.Header>
 
-      <Card.Description>
+      <Leaderboard.Description>
         The top point earners in the ColorStack Family. Our community leaders
         and role models!
-      </Card.Description>
+      </Leaderboard.Description>
 
-      <ul className="flex max-h-[800px] flex-col gap-4 overflow-auto">
-        {pointsLeaderboard.map((position, i) => {
+      <Leaderboard.List scroll>
+        {pointsLeaderboard.map((position) => {
           return (
-            <LeaderboardPositionItem
+            <Leaderboard.Item
               key={position.id}
-              i={i}
-              position={position}
+              firstName={position.firstName}
+              label={<LeaderboardItemLabel points={position.points} />}
+              lastName={position.lastName}
+              me={position.me}
+              position={position.rank}
+              profilePicture={position.profilePicture || undefined}
             />
           );
         })}
-      </ul>
-    </Card>
+      </Leaderboard.List>
+    </Leaderboard>
   );
 }
 
-type LeaderboardPositionItemProps = {
-  i?: number;
-  position: SerializeFrom<typeof loader>['pointsLeaderboard'][number];
-};
-
-function LeaderboardPositionItem({ position }: LeaderboardPositionItemProps) {
-  const formattedPoints = Intl.NumberFormat('en-US').format(position.points);
-
-  const formattedPosition = Intl.NumberFormat('en-US', {
-    maximumFractionDigits: 1,
-    notation: 'compact',
-  }).format(position.rank);
+function LeaderboardItemLabel({ points }: { points: number }) {
+  const formatter = Intl.NumberFormat('en-US');
 
   return (
-    <li
-      className="grid grid-cols-[3rem_4fr_2fr] items-center"
-      key={position.id}
-    >
-      <Text className="ml-auto mr-4" color="gray-500" weight="500">
-        {formattedPosition}
-      </Text>
-
-      <div className="flex items-center gap-2">
-        <ProfilePicture
-          initials={position.firstName[0] + position.lastName[0]}
-          src={position.profilePicture || undefined}
-        />
-
-        <Text className="line-clamp-1" weight={position.me ? '600' : undefined}>
-          {position.firstName}{' '}
-          <span className="hidden sm:inline">{position.lastName}</span>
-          <span className="inline sm:hidden">{position.lastName[0]}.</span>{' '}
-          {position.me && '(You)'}
-        </Text>
-      </div>
-
-      <Text className="text-right">
-        {formattedPoints} <span className="text-sm"> Points</span>
-      </Text>
-    </li>
+    <Leaderboard.ItemLabel>
+      {formatter.format(points)} <span className="text-sm"> Points</span>
+    </Leaderboard.ItemLabel>
   );
 }
 
