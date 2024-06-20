@@ -305,8 +305,8 @@ function PointsLeaderboard({ className }: LeaderboardProps) {
 
   return (
     <Leaderboard className={className}>
-      <Leaderboard.Header>
-        <Leaderboard.Title>Points Leaderboard</Leaderboard.Title>
+      <Card.Header>
+        <Card.Title>Points Leaderboard</Card.Title>
 
         <RemixForm
           className="flex min-w-[8rem]"
@@ -332,12 +332,12 @@ function PointsLeaderboard({ className }: LeaderboardProps) {
             value={searchParams.timeframe}
           />
         </RemixForm>
-      </Leaderboard.Header>
+      </Card.Header>
 
-      <Leaderboard.Description>
+      <Card.Description>
         The top point earners in the ColorStack Family. Our community leaders
         and role models!
-      </Leaderboard.Description>
+      </Card.Description>
 
       <Leaderboard.List scroll>
         {pointsLeaderboard.map((position) => {

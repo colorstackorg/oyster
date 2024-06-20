@@ -15,6 +15,7 @@ import { Card } from '@/shared/components/card';
 import { CompanyReview } from '@/shared/components/company-review';
 import { Leaderboard } from '@/shared/components/leaderboard';
 import { Resource } from '@/shared/components/resource';
+import { SlackMessage } from '@/shared/components/slack-message';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -201,8 +202,52 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     )
   );
 
+  const fakeAnnouncementMessages: {
+    id: string;
+    text: string | null;
+    // totalReactions?: string | null | undefined;
+  }[] = [
+    {
+      id: '1',
+      text: `<!channel> Hey fam.
+
+As promised, I wanted to address yesterday’s events regarding ColorStack and the termination of a now former employee.
+
+Yesterday, we had to make the difficult decision to part ways with one of our team members. I believe in handling these matters confidentially, but unfortunately, they chose to share details of a private conversation, including an audio recording, on LinkedIn.
+
+I want to reassure you that while this situation is unfortunate, it does not reflect any change in our team’s focus. Every decision that I’ve made up until this point has been with you all in mind, to build the team that will help us fulfill our mission effectively. We remain fully dedicated to this.
+
+We are addressing this matter internally, but rest assured there will be no disruptions to any of our programs and upcoming events. We have a coverage plan in place to continue to attract and retain corporate partners that want to hire you all until we backfill the role.
+
+Building a company is hard. There is always a lesson to be learned or an area for growth. This will only make us better as an organization moving forward.
+
+Thank you for your understanding and continued trust in ColorStack.
+
+-Jehron`,
+    },
+    {
+      id: '2',
+      text: ` <!channel> Hey Y'all! Happy Friday!! Keeping this one short and sweet!
+
+ *Father's Day Celebration!* :green_heart: :fist::skin-tone-4:
+ :sparkles: With Dad's Day this Sunday, we wondered if we have any Dads in our ColorStack Family?!
+ We want to celebrate you!
+ :arrow_right: *<https://docs.google.com/forms/d/e/1FAIpQLSc4kcMfg2YWhkC701iJQpEWBzeVHiTkfGNqJTEkhufhEnKncw/viewform|Fill out this short form >*to share how ColorStack has impacted your journey as a student/young professional and a father!
+
+ *Member Profile New Releases!* :colorstack_logo:
+ :sparkles: If you are wondering if other ColorStack'ers work at or have had a good experience with a company you're interested in, check out our:
+ :arrow_right: <https://app.colorstack.io/companies|Companies Feature>
+
+ :sparkles: Don't forget about our <https://app.colorstack.io/resources|Resource Database>! There is so much useful information, tools, and resources to guide and support you on your journeys in ColorStack, at your workplaces, during your job search, or in your classroom endeavors!
+ :arrow_right: <https://app.colorstack.io/resources|Resource Database>
+
+ *QOTD: Where do you dream of living after graduating college?*- <@U0730BL4HQE>
+ Itching to ask the ColorStack Community something? <https://forms.gle/mVFZoWo2XW8z39HYA|Submit a QOTD here>`,
+    },
+  ];
+
   return json({
-    announcementMessages,
+    announcementMessages: fakeAnnouncementMessages,
     dateRange: getDateRange(params.date as string),
     leaderboard,
     resources,
@@ -228,15 +273,15 @@ export default function WeekInReviewPage() {
   const { dateRange } = useLoaderData<typeof loader>();
 
   return (
-    <section className="mx-auto flex w-full max-w-[36rem] flex-col gap-[inherit] @container">
+    <section className="mx-auto flex w-full max-w-[36rem] flex-col gap-4 @container">
       <header>
         <Text variant="2xl">Last Week in ColorStack</Text>
         <Text color="gray-500">{dateRange}</Text>
       </header>
 
+      <PointsLeaderboard />
       <AnnouncementMessages />
       <TopMessages />
-      <PointsLeaderboard />
       <Resources />
       <CompanyReviews />
     </section>
@@ -246,17 +291,29 @@ export default function WeekInReviewPage() {
 function AnnouncementMessages() {
   const { announcementMessages } = useLoaderData<typeof loader>();
 
-  return null;
+  return (
+    <Card>
+      <Card.Title>Announcements ({announcementMessages.length})</Card.Title>
+
+      <Card.Description>
+        Announcements from the ColorStack team this week in #announcements.
+      </Card.Description>
+
+      <ul className="flex flex-col gap-4">
+        {announcementMessages.map((message) => {
+          return <SlackMessage key={message.id}>{message.text}</SlackMessage>;
+        })}
+      </ul>
+    </Card>
+  );
 }
 
 function PointsLeaderboard() {
   const { leaderboard } = useLoaderData<typeof loader>();
 
   return (
-    <Card className="flex-1">
-      <Card.Header>
-        <Card.Title>Points Leaderboard 🏆</Card.Title>
-      </Card.Header>
+    <Card>
+      <Card.Title>Points Leaderboard 🏆</Card.Title>
 
       <Card.Description>
         The top point earners in the ColorStack Family this week.
