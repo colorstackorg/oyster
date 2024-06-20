@@ -5,7 +5,7 @@ import { cx } from '../utils/cx';
 
 export type TextProps = Pick<
   React.HTMLProps<HTMLElement>,
-  'className' | 'children'
+  'className' | 'children' | 'dangerouslySetInnerHTML'
 > & {
   color?: 'black' | 'error' | 'gray-500' | 'success' | 'white';
   variant?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';
@@ -18,6 +18,7 @@ export function Text({
   color,
   variant,
   weight,
+  ...rest
 }: TextProps) {
   return (
     <p
@@ -27,6 +28,7 @@ export function Text({
         variant,
         weight,
       })}
+      {...rest}
     >
       {children}
     </p>
