@@ -10,6 +10,7 @@ type ListSlackMessagesOptions = {
   pagination: Pick<ListSearchParams, 'limit' | 'page'>;
   where: {
     channelId?: string;
+    threadId?: null;
     sentAfter?: Date;
     sentBefore?: Date;
   };
@@ -46,6 +47,9 @@ export async function listSlackMessages({
     })
     .$if(!!where.sentBefore, (qb) => {
       return qb.where('messages.createdAt', '<=', where.sentBefore!);
+    })
+    .$if(where.threadId === null, (qb) => {
+      return qb.where('messages.threadId', 'is', null);
     })
     .$if(orderBy === 'most_reactions', (qb) => {
       return qb

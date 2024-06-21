@@ -70,7 +70,7 @@ export const Resource = ({
   views,
 }: ResourceProps) => {
   return (
-    <li className="flex flex-col gap-3 rounded-3xl border border-gray-200 p-4 py-2">
+    <li className="flex flex-col gap-3 rounded-3xl border border-gray-200 p-4">
       <header className="flex justify-between gap-2">
         <ResourceTitle
           attachments={attachments}

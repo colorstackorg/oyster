@@ -51,6 +51,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       pagination: { page: 1, limit: 10 },
       where: {
         channelId: ENV.SLACK_ANNOUNCEMENTS_CHANNEL_ID,
+        threadId: null,
         sentAfter: startOfWeek,
         sentBefore: endOfWeek,
       },
