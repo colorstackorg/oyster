@@ -15,6 +15,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const { endOfWeek, startOfWeek } = getDateRange(params.date);
 
   const _reviews = await listCompanyReviews({
+    includeCompanies: true,
     select: [
       'companyReviews.createdAt',
       'companyReviews.id',
@@ -73,6 +74,11 @@ export default function ReviewsInWeek() {
           return (
             <CompanyReview
               key={review.id}
+              company={{
+                id: review.companyId || '',
+                image: review.companyImage || '',
+                name: review.companyName || '',
+              }}
               date={review.date}
               employmentType={review.employmentType as EmploymentType}
               locationCity={review.locationCity}

@@ -15,6 +15,11 @@ import { Route } from '@/shared/constants';
 
 type CompanyReviewProps = {
   date: string;
+  company?: {
+    id: string;
+    image: string;
+    name: string;
+  };
   employmentType: EmploymentType;
   locationCity: string | null;
   locationState: string | null;
@@ -31,6 +36,7 @@ type CompanyReviewProps = {
 };
 
 export const CompanyReview = ({
+  company,
   date,
   employmentType,
   locationCity,
@@ -70,31 +76,46 @@ export const CompanyReview = ({
         <CompanyReviewRecommend recommend={recommend} />
       </div>
 
-      <div>
-        <Text weight="500">{title}</Text>
-        <Text color="gray-500" variant="sm">
-          {date}
-        </Text>
-
-        {locationType !== 'remote' && locationCity && locationState && (
-          <Text color="gray-500" variant="sm">
-            {locationCity}, {locationState}
-          </Text>
+      <div className="flex items-start gap-4">
+        {company?.id && (
+          <div className="h-10 w-10 rounded-lg border border-gray-200 p-1">
+            <img
+              alt={company.name}
+              className="aspect-square h-full w-full rounded-md"
+              src={company.image}
+            />
+          </div>
         )}
 
-        <ul className="mt-2 flex flex-wrap gap-1">
-          <li>
-            <Pill color="blue-100">
-              {FORMATTED_EMPLOYMENT_TYPE[employmentType]}
-            </Pill>
-          </li>
+        <div>
+          <Text weight="500">{title}</Text>
 
-          <li>
-            <Pill color="lime-100">
-              {FORMATTED_LOCATION_TYPE[locationType]}
-            </Pill>
-          </li>
-        </ul>
+          {company?.name && <Text variant="sm">{company.name}</Text>}
+
+          <Text color="gray-500" variant="sm">
+            {date}
+          </Text>
+
+          {locationType !== 'remote' && locationCity && locationState && (
+            <Text color="gray-500" variant="sm">
+              {locationCity}, {locationState}
+            </Text>
+          )}
+
+          <ul className="mt-2 flex flex-wrap gap-1">
+            <li>
+              <Pill color="blue-100">
+                {FORMATTED_EMPLOYMENT_TYPE[employmentType]}
+              </Pill>
+            </li>
+
+            <li>
+              <Pill color="lime-100">
+                {FORMATTED_LOCATION_TYPE[locationType]}
+              </Pill>
+            </li>
+          </ul>
+        </div>
       </div>
 
       <CompanyReviewText text={text} />
