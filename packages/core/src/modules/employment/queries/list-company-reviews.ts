@@ -10,16 +10,12 @@ type ListCompanyReviewsOptions<Selection> = {
   where: ListCompanyReviewsWhere;
 };
 
-type LimitedSelection = SelectExpression<
-  DB,
-  'companyReviews' | 'students' | 'workExperiences'
->;
-
-export async function listCompanyReviews<Selection extends LimitedSelection>({
-  includeCompanies,
-  select,
-  where,
-}: ListCompanyReviewsOptions<Selection>) {
+export async function listCompanyReviews<
+  Selection extends SelectExpression<
+    DB,
+    'companyReviews' | 'students' | 'workExperiences'
+  >,
+>({ includeCompanies, select, where }: ListCompanyReviewsOptions<Selection>) {
   const reviews = await db
     .selectFrom('companyReviews')
     .leftJoin(
