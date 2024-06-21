@@ -13,6 +13,7 @@ import { type PropsWithChildren } from 'react';
 import { listCompanyReviews } from '@oyster/core/employment.server';
 import { listResources } from '@oyster/core/resources.server';
 import { listSlackMessages } from '@oyster/core/slack.server';
+import { track } from '@oyster/infrastructure/mixpanel';
 import { Divider, Text } from '@oyster/ui';
 import { iife } from '@oyster/utils';
 
@@ -20,10 +21,10 @@ import { listMembersInDirectory } from '@/member-profile.server';
 import { NavigationItem } from '@/shared/components/navigation';
 import { type Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
   const dayObject = dayjs(params.date);
 
@@ -106,6 +107,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const endRange = dayObject.endOf('week').format(format);
 
     return `${startRange} - ${endRange}`;
+  });
+
+  track({
+    event: 'Page Viewed',
+    properties: { Page: 'Last Week in ColorStack' },
+    request,
+    user: user(session),
   });
 
   return json({
