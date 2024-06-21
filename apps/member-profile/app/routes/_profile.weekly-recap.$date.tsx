@@ -1,9 +1,11 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import {
   generatePath,
+  isRouteErrorResponse,
   Outlet,
   useLoaderData,
   useParams,
+  useRouteError,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren } from 'react';
@@ -35,6 +37,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   if (!dayObject.isValid()) {
     throw new Response('Not a valid date.', { status: 400 });
+  }
+
+  if (dayObject.isAfter(dayjs().subtract(1, 'week').endOf('week'))) {
+    throw new Response('Must be a week in the past.', { status: 400 });
+  }
+
+  if (dayObject.isBefore(dayjs().subtract(1, 'year'))) {
+    throw new Response('Must be a week in the last year.', { status: 400 });
   }
 
   const { endOfWeek, startOfWeek } = getDateRange(params.date);
@@ -190,4 +200,18 @@ export function RecapPage({ children, description, title }: RecapSectionProps) {
       {children}
     </section>
   );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return (
+      <Text>
+        {error.status}: {error.data}
+      </Text>
+    );
+  }
+
+  return null;
 }
