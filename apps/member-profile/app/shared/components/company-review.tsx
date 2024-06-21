@@ -14,7 +14,6 @@ import { Card } from '@/shared/components/card';
 import { Route } from '@/shared/constants';
 
 type CompanyReviewProps = {
-  border?: boolean;
   date: string;
   employmentType: EmploymentType;
   locationCity: string | null;
@@ -32,7 +31,6 @@ type CompanyReviewProps = {
 };
 
 export const CompanyReview = ({
-  border,
   date,
   employmentType,
   locationCity,
@@ -49,7 +47,7 @@ export const CompanyReview = ({
   title,
 }: CompanyReviewProps) => {
   return (
-    <Card border={border}>
+    <Card>
       <header className="flex items-center gap-1">
         <CompanyReviewer
           reviewerFirstName={reviewerFirstName}

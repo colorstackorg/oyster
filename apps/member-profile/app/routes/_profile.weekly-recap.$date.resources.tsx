@@ -118,7 +118,6 @@ export default function ResourcesInWeek() {
             <Resource
               key={resource.id}
               attachments={resource.attachments}
-              // border={false}
               description={resource.description}
               editable={resource.editable}
               id={resource.id}

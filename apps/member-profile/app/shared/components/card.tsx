@@ -3,21 +3,14 @@ import { type PropsWithChildren } from 'react';
 import { cx, Text } from '@oyster/ui';
 
 type CardProps = PropsWithChildren<{
-  border?: boolean;
   className?: string;
 }>;
 
-export const Card = ({
-  border = true,
-  children,
-  className,
-  ...rest
-}: CardProps) => {
+export const Card = ({ children, className, ...rest }: CardProps) => {
   return (
     <div
       className={cx(
-        'flex flex-col gap-4',
-        border && 'rounded-3xl border border-gray-200 p-4',
+        'flex flex-col gap-4 rounded-3xl border border-gray-200 p-4',
         className
       )}
       {...rest}
