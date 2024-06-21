@@ -1,6 +1,7 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
+import { emojify } from 'node-emoji';
 
 import { listSlackMessages } from '@oyster/core/slack.server';
 
@@ -24,10 +25,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     },
   });
 
-  const announcements = messages.map(({ createdAt, ...message }) => {
+  const announcements = messages.map(({ createdAt, text, ...message }) => {
     return {
       ...message,
       postedAt: dayjs().to(createdAt),
+      text: emojify(text || '', { fallback: '' }),
     };
   });
 

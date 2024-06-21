@@ -1,5 +1,4 @@
 import { Link } from '@remix-run/react';
-import { get as getEmoji } from 'node-emoji';
 import React from 'react';
 import parseSlackMessage, { type Node, NodeType } from 'slack-message-parser';
 import { match } from 'ts-pattern';
@@ -81,6 +80,7 @@ function toHTML(node: Node) {
   const result = match(node)
     .with(
       { type: NodeType.Code },
+      { type: NodeType.Emoji },
       { type: NodeType.PreText },
       { type: NodeType.Quote },
       { type: NodeType.Strike },
@@ -107,9 +107,6 @@ function toHTML(node: Node) {
           {label ? label.map(toHTML) : `@${name}`}
         </span>
       );
-    })
-    .with({ type: NodeType.Emoji }, ({ name }) => {
-      return <span>{getEmoji(name)}</span>;
     })
     .with({ type: NodeType.Italic }, ({ children }) => {
       return <span className="italic">{children.map(toHTML)}</span>;
