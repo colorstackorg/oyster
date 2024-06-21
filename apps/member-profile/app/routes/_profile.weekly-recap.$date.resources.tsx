@@ -6,7 +6,7 @@ import { type ResourceType } from '@oyster/core/resources';
 import { listResources } from '@oyster/core/resources.server';
 import { getPresignedURL } from '@oyster/infrastructure/object-storage';
 
-import { getDateRange, RecapPage } from '@/routes/_profile.weekly-recap.$date';
+import { getDateRange, Recap } from '@/routes/_profile.weekly-recap.$date';
 import { Resource } from '@/shared/components/resource';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -108,10 +108,14 @@ export default function ResourcesInWeek() {
   const { resources } = useLoaderData<typeof loader>();
 
   return (
-    <RecapPage
-      description="Helpful resources that were shared this week."
-      title={`Resources 📚 (${resources.length})`}
-    >
+    <Recap>
+      <Recap.Header>
+        <Recap.Title>Resources 📚 ({resources.length})</Recap.Title>
+        <Recap.Description>
+          Helpful resources that were shared this week.
+        </Recap.Description>
+      </Recap.Header>
+
       <Resource.List>
         {resources.map((resource) => {
           return (
@@ -139,6 +143,6 @@ export default function ResourcesInWeek() {
           );
         })}
       </Resource.List>
-    </RecapPage>
+    </Recap>
   );
 }

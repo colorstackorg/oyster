@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { listCompanyReviews } from '@oyster/core/employment.server';
 
 import { type EmploymentType, type LocationType } from '@/member-profile.ui';
-import { getDateRange, RecapPage } from '@/routes/_profile.weekly-recap.$date';
+import { getDateRange, Recap } from '@/routes/_profile.weekly-recap.$date';
 import { CompanyReview } from '@/shared/components/company-review';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -65,10 +65,14 @@ export default function ReviewsInWeek() {
   const { reviews } = useLoaderData<typeof loader>();
 
   return (
-    <RecapPage
-      description="See what your peers have to say about their recent work experiences!"
-      title={`Company Reviews 💼 (${reviews.length})`}
-    >
+    <Recap>
+      <Recap.Header>
+        <Recap.Title>Company Reviews 💼 (${reviews.length})</Recap.Title>
+        <Recap.Description>
+          See what your peers have to say about their recent work experiences!
+        </Recap.Description>
+      </Recap.Header>
+
       <CompanyReview.List>
         {reviews.map((review) => {
           return (
@@ -97,6 +101,6 @@ export default function ReviewsInWeek() {
           );
         })}
       </CompanyReview.List>
-    </RecapPage>
+    </Recap>
   );
 }

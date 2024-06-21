@@ -3,7 +3,7 @@ import { useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 
 import { listSlackMessages } from '@/modules/slack/index.server';
-import { getDateRange, RecapPage } from '@/routes/_profile.weekly-recap.$date';
+import { getDateRange, Recap } from '@/routes/_profile.weekly-recap.$date';
 import { SlackMessage } from '@/shared/components/slack-message';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -147,10 +147,15 @@ export default function AnnouncementsInWeek() {
   const { announcements } = useLoaderData<typeof loader>();
 
   return (
-    <RecapPage
-      description="Announcements from the ColorStack team this week in #announcements."
-      title={`Announcements 📣 (${announcements.length})`}
-    >
+    <Recap>
+      <Recap.Header>
+        <Recap.Title>Announcements 📣 ({announcements.length})</Recap.Title>
+
+        <Recap.Description>
+          Announcements from the ColorStack team this week in #announcements.
+        </Recap.Description>
+      </Recap.Header>
+
       <ul className="flex flex-col gap-4">
         {announcements.map((announcement) => {
           return (
@@ -168,6 +173,6 @@ export default function AnnouncementsInWeek() {
           );
         })}
       </ul>
-    </RecapPage>
+    </Recap>
   );
 }

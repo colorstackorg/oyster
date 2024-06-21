@@ -182,26 +182,6 @@ function RecapNavigationItem({
   );
 }
 
-// Shared
-
-type RecapSectionProps = PropsWithChildren<{
-  description: React.ReactNode;
-  title: React.ReactNode;
-}>;
-
-export function RecapPage({ children, description, title }: RecapSectionProps) {
-  return (
-    <section className="flex flex-col gap-[inherit]">
-      <header className="flex flex-col gap-1">
-        <Text variant="xl">{title}</Text>
-        <Text color="gray-500">{description}</Text>
-      </header>
-
-      {children}
-    </section>
-  );
-}
-
 export function ErrorBoundary() {
   const error = useRouteError();
 
@@ -215,3 +195,21 @@ export function ErrorBoundary() {
 
   return null;
 }
+
+// Shared
+
+export const Recap = ({ children }: PropsWithChildren) => {
+  return <section className="flex flex-col gap-[inherit]">{children}</section>;
+};
+
+Recap.Description = function Description({ children }: PropsWithChildren) {
+  return <Text color="gray-500">{children}</Text>;
+};
+
+Recap.Header = function Header({ children }: PropsWithChildren) {
+  return <header className="flex flex-col gap-1">{children}</header>;
+};
+
+Recap.Title = function Title({ children }: PropsWithChildren) {
+  return <Text variant="xl">{children}</Text>;
+};

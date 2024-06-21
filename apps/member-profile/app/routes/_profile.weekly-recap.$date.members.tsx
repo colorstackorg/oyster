@@ -4,7 +4,7 @@ import { generatePath, Link, useLoaderData } from '@remix-run/react';
 import { ProfilePicture, Text } from '@oyster/ui';
 
 import { listMembersInDirectory } from '@/member-profile.server';
-import { getDateRange, RecapPage } from '@/routes/_profile.weekly-recap.$date';
+import { getDateRange, Recap } from '@/routes/_profile.weekly-recap.$date';
 import { Route } from '@/shared/constants';
 import { useMixpanelTracker } from '@/shared/hooks/use-mixpanel-tracker';
 import { ensureUserAuthenticated } from '@/shared/session.server';
@@ -45,10 +45,14 @@ export default function MembersInWeek() {
   const { members } = useLoaderData<typeof loader>();
 
   return (
-    <RecapPage
-      description="Welcome all of the new members that joined the directory this week!"
-      title={`New Members 💼 (${members.length})`}
-    >
+    <Recap>
+      <Recap.Header>
+        <Recap.Title>New Members 💼 ({members.length})</Recap.Title>
+        <Recap.Description>
+          Welcome all of the new members that joined the directory this week!
+        </Recap.Description>
+      </Recap.Header>
+
       <ul className="grid grid-cols-1 gap-2 overflow-auto @[800px]:grid-cols-2 @[1200px]:grid-cols-3">
         {members.map((member) => {
           return (
@@ -87,6 +91,6 @@ export default function MembersInWeek() {
           );
         })}
       </ul>
-    </RecapPage>
+    </Recap>
   );
 }

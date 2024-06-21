@@ -2,7 +2,7 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 
 import { getPointsLeaderboard } from '@/member-profile.server';
-import { getDateRange, RecapPage } from '@/routes/_profile.weekly-recap.$date';
+import { getDateRange, Recap } from '@/routes/_profile.weekly-recap.$date';
 import { Leaderboard } from '@/shared/components/leaderboard';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -29,10 +29,14 @@ export default function WeekInReviewPage() {
   const { leaderboard } = useLoaderData<typeof loader>();
 
   return (
-    <RecapPage
-      description="The top point earners in the ColorStack Family this week."
-      title="Leaderboard 🏆"
-    >
+    <Recap>
+      <Recap.Header>
+        <Recap.Title>Leaderboard 🏆</Recap.Title>
+        <Recap.Description>
+          The top point earners in the ColorStack Family this week.
+        </Recap.Description>
+      </Recap.Header>
+
       <Leaderboard.List>
         {leaderboard.map((position) => {
           return (
@@ -48,7 +52,7 @@ export default function WeekInReviewPage() {
           );
         })}
       </Leaderboard.List>
-    </RecapPage>
+    </Recap>
   );
 }
 
