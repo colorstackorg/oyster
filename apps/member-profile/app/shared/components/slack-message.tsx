@@ -17,6 +17,8 @@ type SlackMessageProps = {
   text: string;
 };
 
+const SLACK_WORKSPACE_URL = 'https://colorstack-family.slack.com';
+
 export function SlackMessage({
   channelId,
   messageId,
@@ -28,8 +30,8 @@ export function SlackMessage({
 }: SlackMessageProps) {
   return (
     <Card>
-      {posterFirstName && posterLastName && posterProfilePicture && (
-        <header className="flex items-start justify-between gap-4">
+      <header className="flex items-start justify-between gap-4">
+        {posterFirstName && posterLastName && posterProfilePicture && (
           <div className="flex items-center gap-2">
             <ProfilePicture
               initials={posterFirstName[0] + posterLastName[1]}
@@ -47,25 +49,21 @@ export function SlackMessage({
               </Text>
             )}
           </div>
+        )}
 
-          {channelId && messageId && (
-            <Link
-              className={cx(
-                getButtonCn({ size: 'small', variant: 'secondary' }),
-                'border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200'
-              )}
-              to={`https://colorstack-family.slack.com/archives/${channelId}/p${messageId}`}
-            >
-              <img
-                alt="Slack Logo"
-                className="h-5 w-5"
-                src="/images/slack.svg"
-              />{' '}
-              View in Slack
-            </Link>
-          )}
-        </header>
-      )}
+        {channelId && messageId && (
+          <Link
+            className={cx(
+              getButtonCn({ size: 'small', variant: 'secondary' }),
+              'border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200'
+            )}
+            to={SLACK_WORKSPACE_URL + `/archives/${channelId}/p${messageId}`}
+          >
+            <img alt="Slack Logo" className="h-5 w-5" src="/images/slack.svg" />{' '}
+            View in Slack
+          </Link>
+        )}
+      </header>
 
       <Text className="whitespace-pre-wrap">
         {<>{toHTML(parseSlackMessage(text))}</>}
@@ -73,8 +71,6 @@ export function SlackMessage({
     </Card>
   );
 }
-
-const SLACK_WORKSPACE_URL = 'https://colorstack-family.slack.com';
 
 function toHTML(node: Node) {
   const result = match(node)
