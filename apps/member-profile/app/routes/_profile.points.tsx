@@ -35,15 +35,12 @@ import {
   getTotalPoints,
   listActivities,
 } from '@/member-profile.server';
-import { Card } from '@/shared/components/card';
+import { Card, type CardProps } from '@/shared/components/card';
 import {
   EmptyState,
   EmptyStateContainer,
 } from '@/shared/components/empty-state';
-import {
-  Leaderboard,
-  type LeaderboardProps,
-} from '@/shared/components/leaderboard';
+import { Leaderboard } from '@/shared/components/leaderboard';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -296,7 +293,7 @@ function TimeframeForm() {
   );
 }
 
-function PointsLeaderboard({ className }: LeaderboardProps) {
+function PointsLeaderboard({ className }: CardProps) {
   const { pointsLeaderboard } = useLoaderData<typeof loader>();
 
   const [searchParams] = useSearchParams(PointsSearchParams);
@@ -304,7 +301,7 @@ function PointsLeaderboard({ className }: LeaderboardProps) {
   const submit = useSubmit();
 
   return (
-    <Leaderboard className={className}>
+    <Card className={cx('h-fit', className)}>
       <Card.Header>
         <Card.Title>Points Leaderboard</Card.Title>
 
@@ -345,16 +342,16 @@ function PointsLeaderboard({ className }: LeaderboardProps) {
             <Leaderboard.Item
               key={position.id}
               firstName={position.firstName}
+              isMe={position.me}
               label={<LeaderboardItemLabel points={position.points} />}
               lastName={position.lastName}
-              me={position.me}
               position={position.rank}
               profilePicture={position.profilePicture || undefined}
             />
           );
         })}
       </Leaderboard.List>
-    </Leaderboard>
+    </Card>
   );
 }
 

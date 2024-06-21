@@ -2,33 +2,25 @@ import { type PropsWithChildren } from 'react';
 
 import { cx, ProfilePicture, Text } from '@oyster/ui';
 
-import { Card } from '@/shared/components/card';
+export const Leaderboard = () => {};
 
-export type LeaderboardProps = PropsWithChildren<{
-  className?: string;
-}>;
-
-export const Leaderboard = ({ children, className }: LeaderboardProps) => {
-  return <Card className={cx('h-fit flex-1', className)}>{children}</Card>;
-};
-
-type ItemProps = {
+type LeaderboardItemProps = {
   firstName: string;
+  isMe: boolean;
   label: React.ReactNode;
   lastName: string;
-  me: boolean;
   position: number;
   profilePicture?: string;
 };
 
 Leaderboard.Item = function Item({
   firstName,
+  isMe,
   label,
   lastName,
-  me,
   position,
   profilePicture,
-}: ItemProps) {
+}: LeaderboardItemProps) {
   const formatter = Intl.NumberFormat('en-US', {
     maximumFractionDigits: 1,
     notation: 'compact',
@@ -46,10 +38,10 @@ Leaderboard.Item = function Item({
           src={profilePicture || undefined}
         />
 
-        <Text className="line-clamp-1" weight={me ? '600' : undefined}>
+        <Text className="line-clamp-1" weight={isMe ? '600' : undefined}>
           {firstName} <span className="hidden sm:inline">{lastName}</span>
           <span className="inline sm:hidden">{lastName[0]}.</span>{' '}
-          {me && '(You)'}
+          {isMe && <span>(You)</span>}
         </Text>
       </div>
 

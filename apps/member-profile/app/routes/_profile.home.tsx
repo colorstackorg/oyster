@@ -34,11 +34,8 @@ import {
   countMessagesSent,
   getActiveStreakLeaderboard,
 } from '@/member-profile.server';
-import { Card } from '@/shared/components/card';
-import {
-  Leaderboard,
-  type LeaderboardProps,
-} from '@/shared/components/leaderboard';
+import { Card, type CardProps } from '@/shared/components/card';
+import { Leaderboard } from '@/shared/components/leaderboard';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -511,11 +508,11 @@ function TotalCommunityMemberCard() {
   );
 }
 
-function LeaderboardCard({ className }: LeaderboardProps) {
+function LeaderboardCard({ className }: CardProps) {
   const { leaderboard, student } = useLoaderData<typeof loader>();
 
   return (
-    <Card className={cx('h-fit', className)}>
+    <Card className={cx('flex-1', className)}>
       <Card.Title>Active Streak Leaderboard</Card.Title>
 
       <Card.Description>
@@ -529,9 +526,9 @@ function LeaderboardCard({ className }: LeaderboardProps) {
             <Leaderboard.Item
               key={position.id}
               firstName={position.firstName}
+              isMe={position.id === student.id}
               label={<LeaderboardItemLabel weeks={position.value} />}
               lastName={position.lastName}
-              me={position.id === student.id}
               position={position.position}
               profilePicture={position.profilePicture || undefined}
             />

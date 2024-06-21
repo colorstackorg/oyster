@@ -2,7 +2,7 @@ import { type PropsWithChildren } from 'react';
 
 import { cx, Text } from '@oyster/ui';
 
-type CardProps = PropsWithChildren<{
+export type CardProps = PropsWithChildren<{
   className?: string;
 }>;
 

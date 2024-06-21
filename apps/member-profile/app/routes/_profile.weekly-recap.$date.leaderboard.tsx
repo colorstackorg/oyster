@@ -43,9 +43,9 @@ export default function RecapLeaderboard() {
             <Leaderboard.Item
               key={position.id}
               firstName={position.firstName}
+              isMe={position.me}
               label={<LeaderboardItemLabel points={position.points} />}
               lastName={position.lastName}
-              me={position.me}
               position={position.rank}
               profilePicture={position.profilePicture || undefined}
             />
