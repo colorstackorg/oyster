@@ -19,16 +19,8 @@ import { iife } from '@oyster/utils';
 import { listMembersInDirectory } from '@/member-profile.server';
 import { NavigationItem } from '@/shared/components/navigation';
 import { type Route } from '@/shared/constants';
+import { ENV } from '@/shared/constants.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
-
-export function getDateRange(date: unknown) {
-  const dayObject = dayjs(date as string);
-
-  return {
-    startOfWeek: dayObject.startOf('week').toDate(),
-    endOfWeek: dayObject.endOf('week').toDate(),
-  };
-}
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -57,9 +49,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   ] = await Promise.all([
     listSlackMessages({
       pagination: { page: 1, limit: 10 },
-      select: ['messages.id'],
       where: {
-        channelId: '', // Announcements Channel ID
+        channelId: ENV.SLACK_ANNOUNCEMENTS_CHANNEL_ID,
         sentAfter: startOfWeek,
         sentBefore: endOfWeek,
       },
@@ -75,6 +66,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         hometown: null,
         hometownLatitude: null,
         hometownLongitude: null,
+        joinedDirectoryAfter: startOfWeek,
+        joinedDirectoryBefore: endOfWeek,
         location: null,
         locationLatitude: null,
         locationLongitude: null,
@@ -84,7 +77,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }),
 
     listCompanyReviews({
-      select: ['companyReviews.id'],
+      select: [],
       where: {
         postedAfter: startOfWeek,
         postedBefore: endOfWeek,
@@ -121,6 +114,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     totalResources,
     totalReviews: reviews.length,
   });
+}
+
+export function getDateRange(date: unknown) {
+  const dayObject = dayjs(date as string);
+
+  return {
+    startOfWeek: dayObject.startOf('week').toDate(),
+    endOfWeek: dayObject.endOf('week').toDate(),
+  };
 }
 
 export default function WeekInReviewLayout() {
@@ -181,6 +183,8 @@ function RecapNavigationItem({
     </NavigationItem>
   );
 }
+
+// Error Boundary
 
 export function ErrorBoundary() {
   const error = useRouteError();

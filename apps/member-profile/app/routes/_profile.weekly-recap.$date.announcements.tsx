@@ -42,9 +42,8 @@ export default function RecapAnnouncements() {
     <Recap>
       <Recap.Header>
         <Recap.Title>Announcements 📣 ({announcements.length})</Recap.Title>
-
         <Recap.Description>
-          Announcements from the ColorStack team this week in #announcements.
+          Announcements from the ColorStack team this week in Slack.
         </Recap.Description>
       </Recap.Header>
 
@@ -59,9 +58,8 @@ export default function RecapAnnouncements() {
               posterFirstName={announcement.posterFirstName || ''}
               posterLastName={announcement.posterLastName || ''}
               posterProfilePicture={announcement.posterProfilePicture || ''}
-            >
-              {announcement.text}
-            </SlackMessage>
+              text={announcement.text || ''}
+            />
           );
         })}
       </ul>

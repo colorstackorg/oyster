@@ -313,7 +313,7 @@ function ResourcesList() {
   }
 
   return (
-    <ul className="grid grid-cols-1 gap-2 @[800px]:grid-cols-2 @[1200px]:grid-cols-3 @[1600px]:grid-cols-4">
+    <Resource.List>
       {resources.map((resource) => {
         return (
           <Resource
@@ -339,6 +339,6 @@ function ResourcesList() {
           />
         );
       })}
-    </ul>
+    </Resource.List>
   );
 }

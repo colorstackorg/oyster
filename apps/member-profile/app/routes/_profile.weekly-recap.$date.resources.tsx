@@ -45,6 +45,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const url = new URL(request.url);
 
+  // TODO: Abstract this logic since it's the same as what's used in the
+  // "Resources" page.
+
   const resources = await Promise.all(
     _resources.map(
       async ({

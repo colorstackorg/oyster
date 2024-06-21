@@ -7,7 +7,7 @@ import { type ListMembersInDirectoryWhere } from '@/modules/member/member.types'
 type GetMembersOptions = {
   limit: number;
   page: number;
-  where: ListMembersInDirectoryWhere;
+  where: ListMembersInDirectoryWhere; // TODO: These should all be optional...
 };
 
 export async function listMembersInDirectory(options: GetMembersOptions) {

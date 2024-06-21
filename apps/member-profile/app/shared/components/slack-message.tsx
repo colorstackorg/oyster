@@ -1,6 +1,6 @@
 import { Link } from '@remix-run/react';
 import { get as getEmoji } from 'node-emoji';
-import React, { type PropsWithChildren } from 'react';
+import React from 'react';
 import parseSlackMessage, { type Node, NodeType } from 'slack-message-parser';
 import { match } from 'ts-pattern';
 
@@ -8,23 +8,24 @@ import { cx, getButtonCn, ProfilePicture, Text } from '@oyster/ui';
 
 import { Card } from '@/shared/components/card';
 
-type SlackMessageProps = PropsWithChildren<{
+type SlackMessageProps = {
   channelId?: string;
   messageId?: string;
   postedAt?: string;
   posterFirstName?: string;
   posterLastName?: string;
   posterProfilePicture?: string;
-}>;
+  text: string;
+};
 
 export function SlackMessage({
-  children,
   channelId,
   messageId,
   postedAt,
   posterFirstName,
   posterLastName,
   posterProfilePicture,
+  text,
 }: SlackMessageProps) {
   return (
     <Card>
@@ -68,7 +69,7 @@ export function SlackMessage({
       )}
 
       <Text className="whitespace-pre-wrap">
-        {<>{toHTML(parseSlackMessage(children as string))}</>}
+        {<>{toHTML(parseSlackMessage(text))}</>}
       </Text>
     </Card>
   );

@@ -6,7 +6,6 @@ import { ProfilePicture, Text } from '@oyster/ui';
 import { listMembersInDirectory } from '@/member-profile.server';
 import { getDateRange, Recap } from '@/routes/_profile.weekly-recap.$date';
 import { Route } from '@/shared/constants';
-import { useMixpanelTracker } from '@/shared/hooks/use-mixpanel-tracker';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 import { formatName } from '@/shared/utils/format.utils';
 
@@ -16,7 +15,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const { endOfWeek, startOfWeek } = getDateRange(params.date);
 
   const { members } = await listMembersInDirectory({
-    limit: 100,
+    limit: 1000,
     page: 1,
     where: {
       company: null,
@@ -41,7 +40,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export default function RecapMembers() {
-  const { trackFromClient } = useMixpanelTracker();
   const { members } = useLoaderData<typeof loader>();
 
   return (
@@ -53,18 +51,15 @@ export default function RecapMembers() {
         </Recap.Description>
       </Recap.Header>
 
-      <ul className="grid grid-cols-1 gap-2 overflow-auto @[800px]:grid-cols-2 @[1200px]:grid-cols-3">
+      <ul className="flex flex-col gap-2">
         {members.map((member) => {
+          // TODO: Abstract to shared component that is also used in the
+          // Member Directory.
+
           return (
             <li>
               <Link
                 className="grid grid-cols-[3rem,1fr] items-center gap-4 rounded-2xl p-2 hover:bg-gray-100 sm:grid-cols-[4rem,1fr]"
-                onClick={() => {
-                  trackFromClient({
-                    event: 'Directory - Profile Clicked',
-                    properties: undefined,
-                  });
-                }}
                 to={generatePath(Route['/directory/:id'], { id: member.id })}
               >
                 <ProfilePicture

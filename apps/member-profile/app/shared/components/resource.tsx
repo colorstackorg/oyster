@@ -30,7 +30,6 @@ import { useToast } from '@/shared/hooks/use-toast';
 
 type ResourceProps = {
   attachments: { mimeType: string; uri: string }[];
-  border?: boolean;
   description: string;
   editable: boolean;
   id: string;
@@ -52,7 +51,6 @@ type ResourceProps = {
 
 export const Resource = ({
   attachments,
-  border = true,
   description,
   editable,
   id,
@@ -72,12 +70,7 @@ export const Resource = ({
   views,
 }: ResourceProps) => {
   return (
-    <li
-      className={cx(
-        'flex flex-col gap-3 py-2',
-        border && 'rounded-3xl border border-gray-200 p-4'
-      )}
-    >
+    <li className="flex flex-col gap-3 rounded-3xl border border-gray-200 p-4 py-2">
       <header className="flex justify-between gap-2">
         <ResourceTitle
           attachments={attachments}
