@@ -14,6 +14,7 @@ import { listSlackMessages } from '@oyster/core/slack.server';
 import { Divider, Text } from '@oyster/ui';
 import { iife } from '@oyster/utils';
 
+import { listMembersInDirectory } from '@/member-profile.server';
 import { NavigationItem } from '@/shared/components/navigation';
 import { type Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
@@ -38,39 +39,61 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const { endOfWeek, startOfWeek } = getDateRange(params.date);
 
-  const [announcements, reviews, { totalCount: totalResources }] =
-    await Promise.all([
-      listSlackMessages({
-        pagination: { page: 1, limit: 10 },
-        select: ['messages.id'],
-        where: {
-          channelId: '', // Announcements Channel ID
-          sentAfter: startOfWeek,
-          sentBefore: endOfWeek,
-        },
-      }),
+  const [
+    announcements,
+    { totalCount: totalMembers },
+    reviews,
+    { totalCount: totalResources },
+  ] = await Promise.all([
+    listSlackMessages({
+      pagination: { page: 1, limit: 10 },
+      select: ['messages.id'],
+      where: {
+        channelId: '', // Announcements Channel ID
+        sentAfter: startOfWeek,
+        sentBefore: endOfWeek,
+      },
+    }),
 
-      listCompanyReviews({
-        select: ['companyReviews.id'],
-        where: {
-          postedAfter: startOfWeek,
-          postedBefore: endOfWeek,
-        },
-      }),
+    listMembersInDirectory({
+      limit: 1,
+      page: 1,
+      where: {
+        company: null,
+        ethnicity: null,
+        graduationYear: null,
+        hometown: null,
+        hometownLatitude: null,
+        hometownLongitude: null,
+        location: null,
+        locationLatitude: null,
+        locationLongitude: null,
+        school: null,
+        search: '',
+      },
+    }),
 
-      listResources({
-        memberId: '',
-        pagination: { limit: 1, page: 1 },
-        orderBy: 'newest',
-        select: [],
-        where: {
-          postedAfter: startOfWeek,
-          postedBefore: endOfWeek,
-          search: '',
-          tags: [],
-        },
-      }),
-    ]);
+    listCompanyReviews({
+      select: ['companyReviews.id'],
+      where: {
+        postedAfter: startOfWeek,
+        postedBefore: endOfWeek,
+      },
+    }),
+
+    listResources({
+      memberId: '',
+      pagination: { limit: 1, page: 1 },
+      orderBy: 'newest',
+      select: [],
+      where: {
+        postedAfter: startOfWeek,
+        postedBefore: endOfWeek,
+        search: '',
+        tags: [],
+      },
+    }),
+  ]);
 
   const dateRange = iife(() => {
     const format = 'dddd, MMMM D, YYYY';
@@ -84,14 +107,20 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   return json({
     dateRange,
     totalAnnouncements: announcements.length,
+    totalMembers,
     totalResources,
     totalReviews: reviews.length,
   });
 }
 
 export default function WeekInReviewLayout() {
-  const { dateRange, totalResources, totalReviews, totalAnnouncements } =
-    useLoaderData<typeof loader>();
+  const {
+    dateRange,
+    totalAnnouncements,
+    totalMembers,
+    totalResources,
+    totalReviews,
+  } = useLoaderData<typeof loader>();
 
   return (
     <section className="mx-auto flex w-full max-w-[36rem] flex-col gap-4 @container">
@@ -105,14 +134,21 @@ export default function WeekInReviewLayout() {
           <RecapNavigationItem to="/weekly-recap/:date/leaderboard">
             Leaderboard
           </RecapNavigationItem>
+
           <RecapNavigationItem to="/weekly-recap/:date/announcements">
             Announcements ({totalAnnouncements})
           </RecapNavigationItem>
+
           <RecapNavigationItem to="/weekly-recap/:date/resources">
             Resources ({totalResources})
           </RecapNavigationItem>
+
           <RecapNavigationItem to="/weekly-recap/:date/reviews">
             Company Reviews ({totalReviews})
+          </RecapNavigationItem>
+
+          <RecapNavigationItem to="/weekly-recap/:date/members">
+            Members ({totalMembers})
           </RecapNavigationItem>
         </ul>
       </nav>

@@ -17,6 +17,8 @@ export const ListMembersInDirectoryWhere = ListSearchParams.pick({
   hometown: z.string().trim().min(1).nullable().catch(null),
   hometownLatitude: z.coerce.number().nullable().catch(null),
   hometownLongitude: z.coerce.number().nullable().catch(null),
+  joinedDirectoryAfter: z.date().nullish(),
+  joinedDirectoryBefore: z.date().nullish(),
   location: z.string().trim().min(1).nullable().catch(null),
   locationLatitude: z.coerce.number().nullable().catch(null),
   locationLongitude: z.coerce.number().nullable().catch(null),

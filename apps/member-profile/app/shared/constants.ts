@@ -50,6 +50,7 @@ const ROUTES = [
   '/resources/:id/edit',
   '/weekly-recap/:date/announcements',
   '/weekly-recap/:date/leaderboard',
+  '/weekly-recap/:date/members',
   '/weekly-recap/:date/resources',
   '/weekly-recap/:date/reviews',
 ] as const;
