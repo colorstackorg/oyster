@@ -1,24 +1,82 @@
 import { Link } from '@remix-run/react';
 import { get as getEmoji } from 'node-emoji';
-import { type PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 import parseSlackMessage, { type Node, NodeType } from 'slack-message-parser';
 import { match } from 'ts-pattern';
 
-import { cx, Text } from '@oyster/ui';
+import { cx, getButtonCn, ProfilePicture, Text } from '@oyster/ui';
 
 import { Card } from '@/shared/components/card';
 
-type SlackMessageProsp = PropsWithChildren<{
-  border?: boolean;
+type SlackMessageProps = PropsWithChildren<{
+  channelId?: string;
+  messageId?: string;
+  postedAt?: string;
+  posterFirstName?: string;
+  posterLastName?: string;
+  posterProfilePicture?: string;
 }>;
 
-export function SlackMessage({ border = true, children }: SlackMessageProsp) {
-  return toHTML(parseSlackMessage(children as string), border);
+export function SlackMessage({
+  children,
+  channelId,
+  messageId,
+  postedAt,
+  posterFirstName,
+  posterLastName,
+  posterProfilePicture,
+}: SlackMessageProps) {
+  return (
+    <Card>
+      {posterFirstName && posterLastName && posterProfilePicture && (
+        <header className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <ProfilePicture
+              initials={posterFirstName[0] + posterLastName[1]}
+              size="48"
+              src={posterProfilePicture}
+            />
+
+            <Text weight="600">
+              {posterFirstName} {posterLastName}
+            </Text>
+
+            {postedAt && (
+              <Text color="gray-500" variant="sm">
+                {postedAt}
+              </Text>
+            )}
+          </div>
+
+          {channelId && messageId && (
+            <Link
+              className={cx(
+                getButtonCn({ size: 'small', variant: 'secondary' }),
+                'border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200'
+              )}
+              to={`https://colorstack-family.slack.com/archives/${channelId}/p${messageId}`}
+            >
+              <img
+                alt="Slack Logo"
+                className="h-5 w-5"
+                src="/images/slack.svg"
+              />{' '}
+              View in Slack
+            </Link>
+          )}
+        </header>
+      )}
+
+      <Text className="whitespace-pre-wrap">
+        {<>{toHTML(parseSlackMessage(children as string))}</>}
+      </Text>
+    </Card>
+  );
 }
 
 const SLACK_WORKSPACE_URL = 'https://colorstack-family.slack.com';
 
-function toHTML(node: Node, border: unknown = false) {
+function toHTML(node: Node) {
   const result = match(node)
     .with(
       { type: NodeType.Code },
@@ -56,11 +114,7 @@ function toHTML(node: Node, border: unknown = false) {
       return <span className="italic">{children.map(toHTML)}</span>;
     })
     .with({ type: NodeType.Root }, ({ children }) => {
-      const body = (
-        <Text className="whitespace-pre-wrap">{children.map(toHTML)}</Text>
-      );
-
-      return border ? <Card>{body}</Card> : body;
+      return <React.Fragment>{children.map(toHTML)}</React.Fragment>;
     })
     .with({ type: NodeType.Text }, ({ text }) => {
       return text;

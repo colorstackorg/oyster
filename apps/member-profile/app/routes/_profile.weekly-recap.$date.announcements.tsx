@@ -1,5 +1,6 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
+import dayjs from 'dayjs';
 
 import { listSlackMessages } from '@/modules/slack/index.server';
 import { getDateRange, RecapPage } from '@/routes/_profile.weekly-recap.$date';
@@ -8,10 +9,21 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const fakeAnnouncementMessages: {
   id: string;
+  channelId: string;
+  createdAt: Date;
+  posterFirstName: string;
+  posterLastName: string;
+  posterProfilePicture: string;
   text: string | null;
 }[] = [
   {
     id: '1',
+    channelId: 'C06PXL47X5L',
+    createdAt: new Date(),
+    posterFirstName: 'Jehron',
+    posterLastName: 'Bryant',
+    posterProfilePicture:
+      'https://avatars.slack-edge.com/2023-12-30/6408102035074_92a4a5448d92d1b4acb4_512.jpg',
     text: `<!channel> Hey fam.
 
 As promised, I wanted to address yesterday’s events regarding ColorStack and the termination of a now former employee.
@@ -30,6 +42,12 @@ Thank you for your understanding and continued trust in ColorStack.
   },
   {
     id: '2',
+    channelId: 'C06PXL47X5L',
+    createdAt: new Date(),
+    posterFirstName: 'Jehron',
+    posterLastName: 'Bryant',
+    posterProfilePicture:
+      'https://avatars.slack-edge.com/2023-12-30/6408102035074_92a4a5448d92d1b4acb4_512.jpg',
     text: ` <!channel> Hey Y'all! Happy Friday!! Keeping this one short and sweet!
 
 *Father's Day Celebration!* :green_heart: :fist::skin-tone-4:
@@ -49,6 +67,12 @@ Itching to ask the ColorStack Community something? <https://forms.gle/mVFZoWo2XW
   },
   {
     id: '3',
+    channelId: 'C06PXL47X5L',
+    createdAt: new Date(),
+    posterFirstName: 'Jehron',
+    posterLastName: 'Bryant',
+    posterProfilePicture:
+      'https://avatars.slack-edge.com/2023-12-30/6408102035074_92a4a5448d92d1b4acb4_512.jpg',
     text: `<!channel> Happy Fridayyy!! Happy first end of week to those who started your internships or full-time roles this week! :party_blob: :party_blob:
 This is a long one, but lots of *GOOD* info below!
 
@@ -85,13 +109,19 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const { endOfWeek, startOfWeek } = getDateRange(params.date);
 
-  const announcementMessages = await listSlackMessages({
-    include: ['reactions'],
+  const _announcements = await listSlackMessages({
+    includePoster: true,
+    includeReactions: true,
     pagination: {
       page: 1,
       limit: 10,
     },
-    select: ['messages.id', 'messages.text'],
+    select: [
+      'messages.channelId',
+      'messages.createdAt',
+      'messages.id',
+      'messages.text',
+    ],
     where: {
       channelId: '', // Announcements Channel ID
       sentAfter: startOfWeek,
@@ -99,22 +129,43 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     },
   });
 
+  const announcements = (fakeAnnouncementMessages || _announcements).map(
+    ({ createdAt, ...announcement }) => {
+      return {
+        ...announcement,
+        postedAt: dayjs().to(createdAt),
+      };
+    }
+  );
+
   return json({
-    announcementMessages: fakeAnnouncementMessages || announcementMessages,
+    announcements,
   });
 }
 
 export default function AnnouncementsInWeek() {
-  const { announcementMessages } = useLoaderData<typeof loader>();
+  const { announcements } = useLoaderData<typeof loader>();
 
   return (
     <RecapPage
       description="Announcements from the ColorStack team this week in #announcements."
-      title={`Announcements 📣 (${announcementMessages.length})`}
+      title={`Announcements 📣 (${announcements.length})`}
     >
       <ul className="flex flex-col gap-4">
-        {announcementMessages.map((message) => {
-          return <SlackMessage key={message.id}>{message.text}</SlackMessage>;
+        {announcements.map((announcement) => {
+          return (
+            <SlackMessage
+              key={announcement.id}
+              channelId={announcement.channelId}
+              messageId={announcement.id}
+              postedAt={announcement.postedAt}
+              posterFirstName={announcement.posterFirstName}
+              posterLastName={announcement.posterLastName}
+              posterProfilePicture={announcement.posterProfilePicture}
+            >
+              {announcement.text}
+            </SlackMessage>
+          );
         })}
       </ul>
     </RecapPage>

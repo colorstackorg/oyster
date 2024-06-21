@@ -1,5 +1,4 @@
-import { type SelectExpression, sql } from 'kysely';
-import { jsonBuildObject } from 'kysely/helpers/postgres';
+import { type SelectExpression } from 'kysely';
 
 import { type DB } from '@oyster/db';
 
@@ -7,7 +6,8 @@ import { db } from '@/infrastructure/database';
 import { type ListSearchParams } from '@/shared/types';
 
 type ListSlackMessagesOptions<Selection> = {
-  include?: 'reactions'[];
+  includePoster?: boolean;
+  includeReactions?: boolean;
   orderBy?: 'most_reactions';
   pagination: Pick<ListSearchParams, 'limit' | 'page'>;
   select: Selection[];
@@ -24,7 +24,8 @@ export async function listSlackMessages<
     'messages'
   >,
 >({
-  include = [],
+  includePoster = false,
+  includeReactions,
   orderBy,
   pagination,
   select,
@@ -54,6 +55,15 @@ export async function listSlackMessages<
     //       .as('reactions');
     //   });
     // })
+    .$if(includePoster, (qb) => {
+      return qb
+        .leftJoin('students', 'students.id', 'messages.studentId')
+        .select([
+          'students.firstName as posterFirstName',
+          'students.lastName as posterLastName',
+          'students.profilePicture as posterProfilePicture',
+        ]);
+    })
     .$if(!!where.channelId, (qb) => {
       return qb.where('messages.channelId', '=', where.channelId!);
     })
@@ -77,7 +87,7 @@ export async function listSlackMessages<
         })
         .orderBy('totalReactions', 'desc');
     })
-    .orderBy('createdAt', 'desc')
+    .orderBy('messages.createdAt', 'desc')
     .limit(pagination.limit)
     .offset((pagination.page - 1) * pagination.limit)
     .execute();
