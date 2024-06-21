@@ -137,7 +137,7 @@ export function ResourceTagsField({
   const listFetcher = useFetcher<SearchTagsResult>();
 
   const [search, setSearch] = useState<string>('');
-  const [selectedTags, setSelectedTags] = useState<Record<string, unknown>>({});
+  const [selectedTags, setSelectedTags] = useState<Record<string, Tag>>({});
 
   useEffect(() => {
     listFetcher.load('/api/tags/search');
@@ -145,7 +145,12 @@ export function ResourceTagsField({
 
   const tags = listFetcher.data?.tags || [];
 
-  function onTagCreated(newTag: unknown) {
+  interface Tag {
+    id: string;
+    name: string;
+  }
+
+  function onTagCreated(newTag: Tag) {
     createFetcher.submit(
       { id: newTag.id, name: newTag.label },
       {
@@ -158,11 +163,11 @@ export function ResourceTagsField({
     listFetcher.load('/api/tags/search');
   }
 
-  const onTagSelected = (tag: unknown) => {
+  const onTagSelected = (tag: Tag) => {
     setSelectedTags({ ...selectedTags, [tag.id]: tag });
   };
 
-  const onValueSelected = (tag: unknown) => {
+  const onValueSelected = (tag: Tag) => {
     setSelectedTags((prevSelectedTags) => {
       const newSelectedTags = { ...prevSelectedTags };
 
