@@ -25,7 +25,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 }
 
-export default function WeekInReviewPage() {
+export default function RecapLeaderboard() {
   const { leaderboard } = useLoaderData<typeof loader>();
 
   return (

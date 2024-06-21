@@ -5,7 +5,7 @@ import { cx } from '../utils/cx';
 
 export type TextProps = Pick<
   React.HTMLProps<HTMLElement>,
-  'className' | 'children' | 'dangerouslySetInnerHTML'
+  'className' | 'children'
 > & {
   color?: 'black' | 'error' | 'gray-500' | 'success' | 'white';
   variant?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';

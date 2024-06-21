@@ -40,7 +40,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 }
 
-export default function MembersInWeek() {
+export default function RecapMembers() {
   const { trackFromClient } = useMixpanelTracker();
   const { members } = useLoaderData<typeof loader>();
 

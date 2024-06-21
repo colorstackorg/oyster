@@ -61,7 +61,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 }
 
-export default function ReviewsInWeek() {
+export default function RecapReviews() {
   const { reviews } = useLoaderData<typeof loader>();
 
   return (

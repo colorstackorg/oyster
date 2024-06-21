@@ -104,7 +104,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 }
 
-export default function ResourcesInWeek() {
+export default function RecapResources() {
   const { resources } = useLoaderData<typeof loader>();
 
   return (
