@@ -18,7 +18,6 @@ export function Text({
   color,
   variant,
   weight,
-  ...rest
 }: TextProps) {
   return (
     <p
@@ -28,7 +27,6 @@ export function Text({
         variant,
         weight,
       })}
-      {...rest}
     >
       {children}
     </p>
