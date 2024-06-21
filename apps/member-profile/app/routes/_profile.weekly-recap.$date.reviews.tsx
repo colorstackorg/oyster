@@ -1,0 +1,96 @@
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { useLoaderData } from '@remix-run/react';
+import dayjs from 'dayjs';
+
+import { listCompanyReviews } from '@oyster/core/employment.server';
+
+import { type EmploymentType, type LocationType } from '@/member-profile.ui';
+import { getDateRange, RecapPage } from '@/routes/_profile.weekly-recap.$date';
+import { CompanyReview } from '@/shared/components/company-review';
+import { ensureUserAuthenticated } from '@/shared/session.server';
+
+export async function loader({ params, request }: LoaderFunctionArgs) {
+  await ensureUserAuthenticated(request);
+
+  const { endOfWeek, startOfWeek } = getDateRange(params.date);
+
+  const _reviews = await listCompanyReviews({
+    select: [
+      'companyReviews.createdAt',
+      'companyReviews.id',
+      'companyReviews.rating',
+      'companyReviews.recommend',
+      'companyReviews.text',
+      'students.id as reviewerId',
+      'students.firstName as reviewerFirstName',
+      'students.lastName as reviewerLastName',
+      'students.profilePicture as reviewerProfilePicture',
+      'workExperiences.employmentType',
+      'workExperiences.endDate',
+      'workExperiences.locationCity',
+      'workExperiences.locationState',
+      'workExperiences.locationType',
+      'workExperiences.startDate',
+      'workExperiences.title',
+    ],
+    where: {
+      postedAfter: startOfWeek,
+      postedBefore: endOfWeek,
+    },
+  });
+
+  const reviews = _reviews.map(
+    ({ createdAt, endDate, startDate, ...review }) => {
+      const startMonth = dayjs.utc(startDate).format('MMMM YYYY');
+
+      const endMonth = endDate
+        ? dayjs.utc(endDate).format('MMMM YYYY')
+        : 'Present';
+
+      return {
+        ...review,
+        date: `${startMonth} - ${endMonth}`,
+        reviewedAt: dayjs().to(createdAt),
+      };
+    }
+  );
+
+  return json({
+    reviews,
+  });
+}
+
+export default function ReviewsInWeek() {
+  const { reviews } = useLoaderData<typeof loader>();
+
+  return (
+    <RecapPage
+      description="See what your peers have to say about their recent work experiences!"
+      title={`Company Reviews 💼 (${reviews.length})`}
+    >
+      <CompanyReview.List>
+        {reviews.map((review) => {
+          return (
+            <CompanyReview
+              key={review.id}
+              date={review.date}
+              employmentType={review.employmentType as EmploymentType}
+              locationCity={review.locationCity}
+              locationState={review.locationState}
+              locationType={review.locationType as LocationType}
+              rating={review.rating}
+              recommend={review.recommend}
+              reviewedAt={review.reviewedAt}
+              reviewerFirstName={review.reviewerFirstName as string}
+              reviewerId={review.reviewerId as string}
+              reviewerLastName={review.reviewerLastName as string}
+              reviewerProfilePicture={review.reviewerProfilePicture}
+              text={review.text}
+              title={review.title as string}
+            />
+          );
+        })}
+      </CompanyReview.List>
+    </RecapPage>
+  );
+}

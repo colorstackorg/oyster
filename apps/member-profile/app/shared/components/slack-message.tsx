@@ -4,15 +4,21 @@ import { type PropsWithChildren } from 'react';
 import parseSlackMessage, { type Node, NodeType } from 'slack-message-parser';
 import { match } from 'ts-pattern';
 
-import { Text } from '@oyster/ui';
+import { cx, Text } from '@oyster/ui';
 
-export function SlackMessage({ children }: PropsWithChildren) {
-  return toHTML(parseSlackMessage(children as string));
+import { Card } from '@/shared/components/card';
+
+type SlackMessageProsp = PropsWithChildren<{
+  border?: boolean;
+}>;
+
+export function SlackMessage({ border = true, children }: SlackMessageProsp) {
+  return toHTML(parseSlackMessage(children as string), border);
 }
 
 const SLACK_WORKSPACE_URL = 'https://colorstack-family.slack.com';
 
-function toHTML(node: Node) {
+function toHTML(node: Node, border: unknown = false) {
   const result = match(node)
     .with(
       { type: NodeType.Code },
@@ -32,7 +38,7 @@ function toHTML(node: Node) {
           className="link"
           to={SLACK_WORKSPACE_URL + `/channels/${channelID}`}
         >
-          {label ? label.map(toHTML).join('') : channelID}
+          {label ? label.map(toHTML) : channelID}
         </Link>
       );
     })
@@ -50,9 +56,11 @@ function toHTML(node: Node) {
       return <span className="italic">{children.map(toHTML)}</span>;
     })
     .with({ type: NodeType.Root }, ({ children }) => {
-      return (
+      const body = (
         <Text className="whitespace-pre-wrap">{children.map(toHTML)}</Text>
       );
+
+      return border ? <Card>{body}</Card> : body;
     })
     .with({ type: NodeType.Text }, ({ text }) => {
       return text;
@@ -66,8 +74,15 @@ function toHTML(node: Node) {
     })
     .with({ type: NodeType.UserLink }, ({ label, userID }) => {
       return (
-        <Link className="link" to={SLACK_WORKSPACE_URL + `/team/${userID}`}>
-          {label ? label.map(toHTML) : userID}
+        <Link
+          className={cx(
+            'rounded bg-primary bg-opacity-10 p-0.5 font-normal text-primary',
+            'hover:bg-opacity-20',
+            'active:bg-opacity-30'
+          )}
+          to={SLACK_WORKSPACE_URL + `/team/${userID}`}
+        >
+          {label ? label.map(toHTML) : `@${userID}`}
         </Link>
       );
     })
