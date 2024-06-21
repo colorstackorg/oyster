@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { listCompanyReviews } from '@oyster/core/employment.server';
 
 import { type EmploymentType, type LocationType } from '@/member-profile.ui';
-import { getDateRange, Recap } from '@/routes/_profile.weekly-recap.$date';
+import { getDateRange, Recap } from '@/routes/_profile.recap.$date';
 import { CompanyReview } from '@/shared/components/company-review';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -67,7 +67,7 @@ export default function RecapReviews() {
   return (
     <Recap>
       <Recap.Header>
-        <Recap.Title>Company Reviews 💼 (${reviews.length})</Recap.Title>
+        <Recap.Title>Company Reviews 💼 ({reviews.length})</Recap.Title>
         <Recap.Description>
           See what your peers have to say about their recent work experiences!
         </Recap.Description>

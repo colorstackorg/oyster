@@ -5,7 +5,7 @@ import { Route } from '@/shared/constants';
 
 export async function loader({ params }: LoaderFunctionArgs) {
   return redirect(
-    generatePath(Route['/weekly-recap/:date/leaderboard'], {
+    generatePath(Route['/recap/:date/leaderboard'], {
       date: params.date as string,
     })
   );

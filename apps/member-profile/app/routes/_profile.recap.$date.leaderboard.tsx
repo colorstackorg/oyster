@@ -2,7 +2,7 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 
 import { getPointsLeaderboard } from '@/member-profile.server';
-import { getDateRange, Recap } from '@/routes/_profile.weekly-recap.$date';
+import { getDateRange, Recap } from '@/routes/_profile.recap.$date';
 import { Leaderboard } from '@/shared/components/leaderboard';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 

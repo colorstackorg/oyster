@@ -143,23 +143,23 @@ export default function WeekInReviewLayout() {
 
       <nav>
         <ul className="flex flex-wrap gap-x-4 gap-y-2">
-          <RecapNavigationItem to="/weekly-recap/:date/leaderboard">
+          <RecapNavigationItem to="/recap/:date/leaderboard">
             Leaderboard
           </RecapNavigationItem>
 
-          <RecapNavigationItem to="/weekly-recap/:date/announcements">
+          <RecapNavigationItem to="/recap/:date/announcements">
             Announcements ({totalAnnouncements})
           </RecapNavigationItem>
 
-          <RecapNavigationItem to="/weekly-recap/:date/resources">
+          <RecapNavigationItem to="/recap/:date/resources">
             Resources ({totalResources})
           </RecapNavigationItem>
 
-          <RecapNavigationItem to="/weekly-recap/:date/reviews">
+          <RecapNavigationItem to="/recap/:date/reviews">
             Company Reviews ({totalReviews})
           </RecapNavigationItem>
 
-          <RecapNavigationItem to="/weekly-recap/:date/members">
+          <RecapNavigationItem to="/recap/:date/members">
             Members ({totalMembers})
           </RecapNavigationItem>
         </ul>

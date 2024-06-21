@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 
 import { listSlackMessages } from '@oyster/core/slack.server';
 
-import { getDateRange, Recap } from '@/routes/_profile.weekly-recap.$date';
+import { getDateRange, Recap } from '@/routes/_profile.recap.$date';
 import { SlackMessage } from '@/shared/components/slack-message';
 import { ENV } from '@/shared/constants.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';

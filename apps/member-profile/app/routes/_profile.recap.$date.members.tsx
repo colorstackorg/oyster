@@ -4,7 +4,7 @@ import { generatePath, Link, useLoaderData } from '@remix-run/react';
 import { ProfilePicture, Text } from '@oyster/ui';
 
 import { listMembersInDirectory } from '@/member-profile.server';
-import { getDateRange, Recap } from '@/routes/_profile.weekly-recap.$date';
+import { getDateRange, Recap } from '@/routes/_profile.recap.$date';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 import { formatName } from '@/shared/utils/format.utils';
@@ -45,7 +45,7 @@ export default function RecapMembers() {
   return (
     <Recap>
       <Recap.Header>
-        <Recap.Title>New Members 💼 ({members.length})</Recap.Title>
+        <Recap.Title>New Members 👋 ({members.length})</Recap.Title>
         <Recap.Description>
           Welcome all of the new members that joined the directory this week!
         </Recap.Description>

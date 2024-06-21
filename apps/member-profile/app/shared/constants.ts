@@ -45,14 +45,14 @@ const ROUTES = [
   '/profile/work/:id/edit',
   '/profile/work/:id/review/add',
   '/profile/work/:id/review/edit',
+  '/recap/:date/announcements',
+  '/recap/:date/leaderboard',
+  '/recap/:date/members',
+  '/recap/:date/resources',
+  '/recap/:date/reviews',
   '/resources',
   '/resources/add',
   '/resources/:id/edit',
-  '/weekly-recap/:date/announcements',
-  '/weekly-recap/:date/leaderboard',
-  '/weekly-recap/:date/members',
-  '/weekly-recap/:date/resources',
-  '/weekly-recap/:date/reviews',
 ] as const;
 
 export type Route = (typeof ROUTES)[number];
