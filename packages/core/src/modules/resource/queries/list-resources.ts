@@ -42,6 +42,12 @@ export async function listResources<
     .$if(!!where.id, (qb) => {
       return qb.where('resources.id', '=', where.id!);
     })
+    .$if(!!where.postedAfter, (qb) => {
+      return qb.where('resources.postedAt', '>=', where.postedAfter!);
+    })
+    .$if(!!where.postedBefore, (qb) => {
+      return qb.where('resources.postedAt', '<=', where.postedBefore!);
+    })
     .$if(!!where.search, (qb) => {
       const { search } = where;
 
