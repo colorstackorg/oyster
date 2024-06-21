@@ -2,7 +2,8 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 
-import { listSlackMessages } from '@/modules/slack/index.server';
+import { listSlackMessages } from '@oyster/core/slack.server';
+
 import { getDateRange, Recap } from '@/routes/_profile.weekly-recap.$date';
 import { SlackMessage } from '@/shared/components/slack-message';
 import { ENV } from '@/shared/constants.server';
