@@ -23,33 +23,31 @@ export function SlackMessage({
   channelId,
   messageId,
   postedAt,
-  posterFirstName,
-  posterLastName,
+  posterFirstName = 'ColorStack',
+  posterLastName = 'Member',
   posterProfilePicture,
   text,
 }: SlackMessageProps) {
   return (
     <Card>
       <header className="flex items-start justify-between gap-4">
-        {posterFirstName && posterLastName && posterProfilePicture && (
-          <div className="flex items-center gap-2">
-            <ProfilePicture
-              initials={posterFirstName[0] + posterLastName[1]}
-              size="48"
-              src={posterProfilePicture}
-            />
+        <div className="flex items-center gap-2">
+          <ProfilePicture
+            initials={posterFirstName[0] + posterLastName[1]}
+            size="48"
+            src={posterProfilePicture}
+          />
 
-            <Text weight="600">
-              {posterFirstName} {posterLastName}
+          <Text weight="600">
+            {posterFirstName} {posterLastName}
+          </Text>
+
+          {postedAt && (
+            <Text color="gray-500" variant="sm">
+              {postedAt}
             </Text>
-
-            {postedAt && (
-              <Text color="gray-500" variant="sm">
-                {postedAt}
-              </Text>
-            )}
-          </div>
-        )}
+          )}
+        </div>
 
         {channelId && messageId && (
           <Link
