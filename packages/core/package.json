@@ -16,7 +16,8 @@
     "./employment": "./src/modules/employment/index.ts",
     "./employment.server": "./src/modules/employment/index.server.ts",
     "./resources": "./src/modules/resource/index.ts",
-    "./resources.server": "./src/modules/resource/index.server.ts"
+    "./resources.server": "./src/modules/resource/index.server.ts",
+    "./slack.server": "./src/modules/slack/index.server.ts"
   },
   "scripts": {
     "build": "tsup",
