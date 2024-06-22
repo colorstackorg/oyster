@@ -8,5 +8,8 @@ export async function up(db: Kysely<any>) {
 }
 
 export async function down(db: Kysely<any>) {
-  await db.schema.alterTable('companies').dropColumn('levels_fyi').execute();
+  await db.schema
+    .alterTable('companies')
+    .dropColumn('levels_fyi')
+    .execute();
 }
