@@ -46,6 +46,7 @@ export type MixpanelEvent = {
       | 'Directory'
       | 'Events'
       | 'Home'
+      | 'Last Week in ColorStack'
       | 'Points'
       | 'Profile'
       | 'Resources';

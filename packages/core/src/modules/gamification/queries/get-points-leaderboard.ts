@@ -9,6 +9,7 @@ type GetPointsLeaderboardOptions = {
   where: {
     memberId: string;
     occurredAfter: Date | null;
+    occurredBefore: Date | null;
   };
 };
 
@@ -27,7 +28,7 @@ export async function getPointsLeaderboard({
   limit,
   where,
 }: GetPointsLeaderboardOptions) {
-  const { memberId, occurredAfter } = where;
+  const { memberId, occurredAfter, occurredBefore } = where;
 
   const rows = await db
     .with('positions', (db) => {
@@ -36,6 +37,9 @@ export async function getPointsLeaderboard({
         .select([(eb) => eb.fn.sum<string>('points').as('points'), 'studentId'])
         .$if(!!occurredAfter, (eb) => {
           return eb.where('occurredAt', '>=', occurredAfter);
+        })
+        .$if(!!occurredBefore, (eb) => {
+          return eb.where('occurredAt', '<=', occurredBefore);
         })
         .groupBy('studentId')
         .orderBy('points', 'desc')

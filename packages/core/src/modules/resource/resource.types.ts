@@ -62,7 +62,9 @@ export const ListResourcesOrderBy = z
   .catch('newest');
 
 export const ListResourcesWhere = z.object({
-  id: z.string().min(1).optional().catch(undefined),
+  id: z.string().min(1).optional(),
+  postedAfter: z.date().optional(),
+  postedBefore: z.date().optional(),
   search: ListSearchParams.shape.search,
   tags: z.string().min(1).array().catch([]),
 });

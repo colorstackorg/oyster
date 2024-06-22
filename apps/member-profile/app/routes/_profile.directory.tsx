@@ -49,6 +49,8 @@ const DirectoryFilterKey = ListMembersInDirectoryWhere.omit({
   hometownLongitude: true,
   locationLatitude: true,
   locationLongitude: true,
+  joinedDirectoryAfter: true,
+  joinedDirectoryBefore: true,
   search: true,
 }).keyof().enum;
 
