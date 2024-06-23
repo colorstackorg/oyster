@@ -16,7 +16,7 @@ import { getInputCn, type InputProps } from './input';
 import { getPillCn } from './pill';
 import { cx } from '../utils/cx';
 
-type ComboboxValue = {
+export type ComboboxValue = {
   label: string;
   value: string;
 };
@@ -124,7 +124,15 @@ export function MultiComboboxItem({
   );
 }
 
-export function MultiComboboxValues({ name }: Pick<InputProps, 'name'>) {
+type MultiComboboxValuesProps = PropsWithChildren<{
+  name: string;
+  onSelect?(value: ComboboxValue): void;
+}>;
+
+export function MultiComboboxValues({
+  name,
+  onSelect,
+}: MultiComboboxValuesProps) {
   const { setValues, values } = useContext(MultiComboboxContext);
 
   if (!values.length) {
@@ -153,6 +161,7 @@ export function MultiComboboxValues({ name }: Pick<InputProps, 'name'>) {
 
               <button
                 onClick={(e) => {
+                  onSelect?.(value);
                   e.stopPropagation();
                   setValues(
                     values.filter((element) => {
