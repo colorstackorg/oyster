@@ -238,6 +238,16 @@ function TextField({ defaultValue, error, name }: FieldProps<string>) {
             <li>What did you work on?</li>
             <li>Were you able to develop any new skills?</li>
           </ul>
+          See a sample review{' '}
+          <a
+            className="link"
+            href="/images/company-sample-review.png"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            here
+          </a>
+          .
         </div>
       }
       error={error}
