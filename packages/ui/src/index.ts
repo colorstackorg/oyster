@@ -25,6 +25,7 @@ export {
   MultiComboboxValues,
 } from './components/multi-combobox';
 export type { MultiComboboxProps } from './components/multi-combobox';
+export type { ComboboxValue } from './components/multi-combobox';
 export { Pagination } from './components/pagination';
 export { Pill, getPillCn } from './components/pill';
 export type { PillProps } from './components/pill';

@@ -9,6 +9,7 @@ import React, {
 import { ResourceType } from '@oyster/core/resources';
 import {
   ComboboxPopover,
+  type ComboboxValue,
   type FieldProps,
   Form,
   Input,
@@ -128,6 +129,11 @@ export function ResourceLinkField({
   );
 }
 
+interface Tag {
+  id: string;
+  name: string;
+}
+
 export function ResourceTagsField({
   defaultValue,
   error,
@@ -145,14 +151,9 @@ export function ResourceTagsField({
 
   const tags = listFetcher.data?.tags || [];
 
-  interface Tag {
-    id: string;
-    name: string;
-  }
-
   function onTagCreated(newTag: Tag) {
     createFetcher.submit(
-      { id: newTag.id, name: newTag.label },
+      { id: newTag.id, name: newTag.name },
       {
         action: '/api/tags/add',
         method: 'post',
@@ -167,11 +168,11 @@ export function ResourceTagsField({
     setSelectedTags({ ...selectedTags, [tag.id]: tag });
   };
 
-  const onValueSelected = (tag: Tag) => {
+  const onValueSelected = (comboboxValue: ComboboxValue) => {
     setSelectedTags((prevSelectedTags) => {
       const newSelectedTags = { ...prevSelectedTags };
 
-      delete newSelectedTags[tag.value];
+      delete newSelectedTags[comboboxValue.value];
 
       return newSelectedTags;
     });
@@ -197,7 +198,7 @@ export function ResourceTagsField({
         <MultiComboboxItem
           key={newId}
           label={search}
-          onSelect={() => onTagCreated({ id: newId, label: search })}
+          onSelect={() => onTagCreated({ id: newId, name: search })}
           value={newId}
         >
           Create <Pill color="pink-100">{search}</Pill>

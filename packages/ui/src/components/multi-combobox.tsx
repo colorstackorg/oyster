@@ -16,7 +16,7 @@ import { getInputCn, type InputProps } from './input';
 import { getPillCn } from './pill';
 import { cx } from '../utils/cx';
 
-type ComboboxValue = {
+export type ComboboxValue = {
   label: string;
   value: string;
 };
