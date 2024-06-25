@@ -17,6 +17,12 @@ import {
   listCompanyReviews,
 } from '@oyster/core/employment.server';
 import { cx, Divider, getTextCn, ProfilePicture, Text } from '@oyster/ui';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipText,
+  TooltipTrigger,
+} from '@oyster/ui/tooltip';
 
 import { Card } from '@/shared/components/card';
 import { CompanyReview } from '@/shared/components/company-review';
@@ -37,6 +43,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'companies.id',
         'companies.imageUrl',
         'companies.name',
+        'companies.levelsFyi',
       ],
       where: { id },
     }),
@@ -135,6 +142,8 @@ export default function CompanyPage() {
           </Text>
 
           <DomainLink domain={company.domain} />
+
+          <CompanyLevelsFyiLink companyId={company.levelsFyi} />
         </div>
 
         <AverageRating averageRating={company.averageRating} />
@@ -307,5 +316,32 @@ function EmployeeItem({ employee }: { employee: EmployeeInView }) {
         </Text>
       </div>
     </li>
+  );
+}
+
+type CompanyLevelsFyiLinkProps = {
+  companyId: string;
+};
+
+function CompanyLevelsFyiLink({ companyId }: CompanyLevelsFyiLinkProps) {
+  if (!companyId) return null;
+
+  const LEVELS_FYI_URL = 'https://www.levels.fyi';
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Link to={`${LEVELS_FYI_URL}/companies/${companyId}/salaries.`}>
+          <img
+            alt="Levels.fyi Logo"
+            className="h-5 w-5"
+            src="/images/levels-fyi.png"
+          />
+        </Link>
+      </TooltipTrigger>
+      <TooltipContent>
+        <TooltipText>View Salary Information on Levels.fyi</TooltipText>
+      </TooltipContent>
+    </Tooltip>
   );
 }
