@@ -7,6 +7,16 @@ export async function up(db: Kysely<any>) {
       return column.references('students.id').onDelete('cascade');
     })
     .execute();
+
+  await db
+    .updateTable('admins')
+    .set({
+      member_id: db
+        .selectFrom('students')
+        .select(['id'])
+        .where('students.email', '=', 'admins.email'),
+    })
+    .execute();
 }
 
 export async function down(db: Kysely<any>) {
