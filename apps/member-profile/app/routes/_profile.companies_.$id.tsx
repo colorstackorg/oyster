@@ -222,8 +222,10 @@ function ReviewsList() {
                 reviewerId={review.reviewerId || ''}
                 reviewerLastName={review.reviewerLastName || ''}
                 reviewerProfilePicture={review.reviewerProfilePicture}
+                studentId={studentId}
                 text={review.text}
                 title={review.title || ''}
+                workExperiencesId={review.workExperiencesId!}
               />
             );
           })}
