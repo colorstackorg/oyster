@@ -21,10 +21,12 @@ import { cx, Divider, getTextCn, ProfilePicture, Text } from '@oyster/ui';
 import { Card } from '@/shared/components/card';
 import { CompanyReview } from '@/shared/components/company-review';
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
+
+  const studentId = user(session);
 
   const id = params.id as string;
 
@@ -63,6 +65,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'workExperiences.locationType',
         'workExperiences.startDate',
         'workExperiences.title',
+        'workExperiences.id as workExperiencesId',
       ],
       where: { companyId: id },
     }),
@@ -109,6 +112,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   );
 
   return json({
+    studentId,
     company,
     currentEmployees,
     pastEmployees,
@@ -183,7 +187,7 @@ function AverageRating({
 }
 
 function ReviewsList() {
-  const { reviews } = useLoaderData<typeof loader>();
+  const { reviews, studentId } = useLoaderData<typeof loader>();
 
   if (!reviews.length) {
     return null;
