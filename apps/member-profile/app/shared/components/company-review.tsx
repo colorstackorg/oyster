@@ -1,6 +1,6 @@
 import { generatePath, Link } from '@remix-run/react';
 import { type PropsWithChildren, useState } from 'react';
-import { Check, ChevronDown, ChevronUp, Star, X } from 'react-feather';
+import { Check, ChevronDown, ChevronUp, Edit, Star, X } from 'react-feather';
 
 import {
   type EmploymentType,
@@ -9,6 +9,12 @@ import {
   type LocationType,
 } from '@oyster/core/employment';
 import { cx, getTextCn, Pill, ProfilePicture, Text } from '@oyster/ui';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipText,
+  TooltipTrigger,
+} from '@oyster/ui/tooltip';
 
 import { Card } from '@/shared/components/card';
 import { Route } from '@/shared/constants';
@@ -31,8 +37,10 @@ type CompanyReviewProps = {
   reviewerId: string;
   reviewerProfilePicture: string | null;
   reviewedAt: string;
+  studentId?: string;
   text: string;
   title: string;
+  workExperiencesId?: string;
 };
 
 export const CompanyReview = ({
@@ -49,26 +57,45 @@ export const CompanyReview = ({
   reviewerLastName,
   reviewerProfilePicture,
   reviewedAt,
+  studentId,
   text,
   title,
+  workExperiencesId,
 }: CompanyReviewProps) => {
   return (
     <Card>
-      <header className="flex items-center gap-1">
-        <CompanyReviewer
-          reviewerFirstName={reviewerFirstName}
-          reviewerLastName={reviewerLastName}
-          reviewerId={reviewerId}
-          reviewerProfilePicture={reviewerProfilePicture}
-        />
+      <header className="space-between flex items-center">
+        <div className="flex items-center gap-1">
+          <CompanyReviewer
+            reviewerFirstName={reviewerFirstName}
+            reviewerLastName={reviewerLastName}
+            reviewerId={reviewerId}
+            reviewerProfilePicture={reviewerProfilePicture}
+          />
+          <Text color="gray-500" variant="sm">
+            &bull;
+          </Text>
+          <Text color="gray-500" variant="sm">
+            {reviewedAt}
+          </Text>
+        </div>
 
-        <Text color="gray-500" variant="sm">
-          &bull;
-        </Text>
-
-        <Text color="gray-500" variant="sm">
-          {reviewedAt}
-        </Text>
+        {studentId === reviewerId && (
+          <Tooltip>
+            <TooltipTrigger aria-label="Edit Review">
+              <Link
+                to={generatePath(Route['/profile/work/:id/review/edit'], {
+                  id: workExperiencesId!,
+                })}
+              >
+                <Edit />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              <TooltipText>Edit Review</TooltipText>
+            </TooltipContent>
+          </Tooltip>
+        )}
       </header>
 
       <div className="flex items-center gap-4">
