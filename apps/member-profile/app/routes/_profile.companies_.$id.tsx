@@ -225,7 +225,7 @@ function ReviewsList() {
                 userId={userId}
                 text={review.text}
                 title={review.title || ''}
-                workExperiencesId={review.workExperiencesId!}
+                workExperiencesId={review.workExperiencesId || ''}
               />
             );
           })}
