@@ -84,7 +84,7 @@ export const CompanyReview = ({
               <TooltipTrigger aria-label="Edit Review">
                 <Link
                   to={generatePath(Route['/profile/work/:id/review/edit'], {
-                    id: workExperiencesId!,
+                    id: workExperiencesId,
                   })}
                 >
                   <Edit />
