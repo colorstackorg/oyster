@@ -23,6 +23,7 @@ import {
 } from '@oyster/ui';
 
 import {
+  ResourceAttachmentField,
   ResourceDescriptionField,
   ResourceLinkField,
   ResourceProvider,
@@ -45,6 +46,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'resources.link',
       'resources.title',
       'resources.type',
+      // 'resources.attachments'
     ],
     where: { id: params.id as string },
   });
@@ -52,6 +54,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   if (!record) {
     throw new Response(null, { status: 404 });
   }
+
+  // console.log(record)
 
   const resource = {
     ...record,
@@ -77,6 +81,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     link: data.link,
     tags: data.tags,
     title: data.title,
+    attachments: data.attachments,
   });
 
   toast(session, {
@@ -143,6 +148,17 @@ export default function EditResourceModal() {
                 defaultValue={resource.link || undefined}
                 error={errors.link}
                 name={keys.link}
+              />
+            </>
+          )}
+
+          {resource.type == 'file' && (
+            <>
+              <Divider />
+
+              <ResourceAttachmentField
+                error={errors.attachments}
+                name={keys.attachments}
               />
             </>
           )}
