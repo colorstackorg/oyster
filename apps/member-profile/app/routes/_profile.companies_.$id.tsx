@@ -26,7 +26,7 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const studentId = user(session);
+  const userId = user(session);
 
   const id = params.id as string;
 
@@ -112,7 +112,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   );
 
   return json({
-    studentId,
+    userId,
     company,
     currentEmployees,
     pastEmployees,
@@ -187,7 +187,7 @@ function AverageRating({
 }
 
 function ReviewsList() {
-  const { reviews, studentId } = useLoaderData<typeof loader>();
+  const { reviews, userId } = useLoaderData<typeof loader>();
 
   if (!reviews.length) {
     return null;
@@ -222,7 +222,7 @@ function ReviewsList() {
                 reviewerId={review.reviewerId || ''}
                 reviewerLastName={review.reviewerLastName || ''}
                 reviewerProfilePicture={review.reviewerProfilePicture}
-                studentId={studentId}
+                userId={userId}
                 text={review.text}
                 title={review.title || ''}
                 workExperiencesId={review.workExperiencesId!}
