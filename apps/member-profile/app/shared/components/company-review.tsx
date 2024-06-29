@@ -64,21 +64,19 @@ export const CompanyReview = ({
 }: CompanyReviewProps) => {
   return (
     <Card>
-      <header className="space-between flex items-center">
-        <div className="flex items-center gap-1">
-          <CompanyReviewer
-            reviewerFirstName={reviewerFirstName}
-            reviewerLastName={reviewerLastName}
-            reviewerId={reviewerId}
-            reviewerProfilePicture={reviewerProfilePicture}
-          />
-          <Text color="gray-500" variant="sm">
-            &bull;
-          </Text>
-          <Text color="gray-500" variant="sm">
-            {reviewedAt}
-          </Text>
-        </div>
+      <header className="flex items-center gap-1">
+        <CompanyReviewer
+          reviewerFirstName={reviewerFirstName}
+          reviewerLastName={reviewerLastName}
+          reviewerId={reviewerId}
+          reviewerProfilePicture={reviewerProfilePicture}
+        />
+        <Text color="gray-500" variant="sm">
+          &bull;
+        </Text>
+        <Text color="gray-500" variant="sm">
+          {reviewedAt}
+        </Text>
 
         {studentId === reviewerId && (
           <div className="ml-auto">
