@@ -81,20 +81,22 @@ export const CompanyReview = ({
         </div>
 
         {studentId === reviewerId && (
-          <Tooltip>
-            <TooltipTrigger aria-label="Edit Review">
-              <Link
-                to={generatePath(Route['/profile/work/:id/review/edit'], {
-                  id: workExperiencesId!,
-                })}
-              >
-                <Edit />
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent>
-              <TooltipText>Edit Review</TooltipText>
-            </TooltipContent>
-          </Tooltip>
+          <div className="ml-auto">
+            <Tooltip>
+              <TooltipTrigger aria-label="Edit Review">
+                <Link
+                  to={generatePath(Route['/profile/work/:id/review/edit'], {
+                    id: workExperiencesId!,
+                  })}
+                >
+                  <Edit />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <TooltipText>Edit Review</TooltipText>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         )}
       </header>
 
