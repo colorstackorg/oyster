@@ -37,10 +37,10 @@ type CompanyReviewProps = {
   reviewerId: string;
   reviewerProfilePicture: string | null;
   reviewedAt: string;
-  studentId?: string;
+  userId: string;
   text: string;
   title: string;
-  workExperiencesId?: string;
+  workExperiencesId: string;
 };
 
 export const CompanyReview = ({
@@ -57,7 +57,7 @@ export const CompanyReview = ({
   reviewerLastName,
   reviewerProfilePicture,
   reviewedAt,
-  studentId,
+  userId,
   text,
   title,
   workExperiencesId,
@@ -78,7 +78,7 @@ export const CompanyReview = ({
           {reviewedAt}
         </Text>
 
-        {studentId === reviewerId && (
+        {userId === reviewerId && (
           <div className="ml-auto">
             <Tooltip>
               <TooltipTrigger aria-label="Edit Review">
