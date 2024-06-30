@@ -143,7 +143,7 @@ export default function CompanyPage() {
 
           <DomainLink domain={company.domain} />
 
-          <CompanyLevelsFyiLink companyId={company.levelsFyi} />
+          {company.levelsFyi && <LevelsFyiLink companyId={company.levelsFyi} />}
         </div>
 
         <AverageRating averageRating={company.averageRating} />
@@ -319,19 +319,15 @@ function EmployeeItem({ employee }: { employee: EmployeeInView }) {
   );
 }
 
-type CompanyLevelsFyiLinkProps = {
+type LevelsFyiLinkProps = {
   companyId: string;
 };
 
-function CompanyLevelsFyiLink({ companyId }: CompanyLevelsFyiLinkProps) {
-  if (!companyId) return null;
-
-  const LEVELS_FYI_URL = 'https://www.levels.fyi';
-
+function LevelsFyiLink({ companyId }: LevelsFyiLinkProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Link to={`${LEVELS_FYI_URL}/companies/${companyId}/salaries.`}>
+        <Link to={`https://www.levels.fyi/companies/${companyId}/salaries.`}>
           <img
             alt="Levels.fyi Logo"
             className="h-5 w-5"
