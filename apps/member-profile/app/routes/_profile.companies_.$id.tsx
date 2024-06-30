@@ -327,13 +327,17 @@ function LevelsFyiLink({ companyId }: LevelsFyiLinkProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Link to={`https://www.levels.fyi/companies/${companyId}/salaries.`}>
+        <a
+          href={`https://www.levels.fyi/companies/${companyId}/salaries`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <img
             alt="Levels.fyi Logo"
-            className="h-5 w-5"
+            className="h-5 w-5 cursor-pointer"
             src="/images/levels-fyi.png"
           />
-        </Link>
+        </a>
       </TooltipTrigger>
       <TooltipContent>
         <TooltipText>View Salary Information on Levels.fyi</TooltipText>
