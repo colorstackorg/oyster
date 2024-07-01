@@ -10,6 +10,7 @@ import { ResourceType } from '@oyster/core/resources';
 import {
   ComboboxPopover,
   type FieldProps,
+  FileUploader,
   Form,
   Input,
   MultiCombobox,
@@ -62,19 +63,13 @@ export function ResourceAttachmentField({
 
   return (
     <Form.Field
-      description="Must be less than 20 MB and one of the following file types: PNG, JPG, or PDF."
+      description="Supported formats: JPG, PNG, PDF (max file size: 20MB)"
       error={error}
       label="Attachment"
       labelFor={name}
       required
     >
-      <input
-        accept="image/png, image/jpeg, .pdf"
-        id={name}
-        name={name}
-        required
-        type="file"
-      />
+      <FileUploader name={name} />
     </Form.Field>
   );
 }
