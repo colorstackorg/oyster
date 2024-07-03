@@ -184,6 +184,23 @@ function ApplicationsTable() {
       size: '160',
     },
     {
+      displayName: 'Reviewed By',
+      size: '240',
+      render: (application) => {
+        if (
+          !application.reviewedByFirstName ||
+          !application.reviewedByLastName
+        ) {
+          return '-';
+        }
+
+        return (
+          `${application.reviewedByFirstName} ${application.reviewedByLastName}` ||
+          '-'
+        );
+      },
+    },
+    {
       displayName: 'School',
       size: '360',
       render: (application) => application.school || '-',
