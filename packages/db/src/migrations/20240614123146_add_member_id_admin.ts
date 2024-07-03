@@ -14,7 +14,7 @@ export async function up(db: Kysely<any>) {
       member_id: db
         .selectFrom('students')
         .select(['id'])
-        .where('students.email', '=', 'admins.email'),
+        .whereRef('students.email', '=', 'admins.email'),
     })
     .execute();
 }
