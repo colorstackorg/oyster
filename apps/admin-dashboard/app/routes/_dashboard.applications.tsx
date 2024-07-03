@@ -187,17 +187,13 @@ function ApplicationsTable() {
       displayName: 'Reviewed By',
       size: '240',
       render: (application) => {
-        if (
-          !application.reviewedByFirstName ||
-          !application.reviewedByLastName
-        ) {
+        const { reviewedByFirstName, reviewedByLastName } = application;
+
+        if (!reviewedByFirstName) {
           return '-';
         }
 
-        return (
-          `${application.reviewedByFirstName} ${application.reviewedByLastName}` ||
-          '-'
-        );
+        return `${reviewedByFirstName} ${reviewedByLastName}`;
       },
     },
     {
