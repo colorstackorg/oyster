@@ -12,7 +12,6 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { type PropsWithoutRef } from 'react';
 import { Award, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
@@ -26,7 +25,6 @@ import {
   getButtonCn,
   Link,
   Pill,
-  ProfilePicture,
   Select,
   Text,
   useSearchParams,
@@ -37,11 +35,12 @@ import {
   getTotalPoints,
   listActivities,
 } from '@/member-profile.server';
-import { Card } from '@/shared/components/card';
+import { Card, type CardProps } from '@/shared/components/card';
 import {
   EmptyState,
   EmptyStateContainer,
 } from '@/shared/components/empty-state';
+import { Leaderboard } from '@/shared/components/leaderboard';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -97,6 +96,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       where: {
         memberId: id,
         occurredAfter,
+        occurredBefore: null,
       },
     }),
     listActivities(),
@@ -293,9 +293,7 @@ function TimeframeForm() {
   );
 }
 
-function PointsLeaderboard({
-  className,
-}: PropsWithoutRef<{ className?: string }>) {
+function PointsLeaderboard({ className }: CardProps) {
   const { pointsLeaderboard } = useLoaderData<typeof loader>();
 
   const [searchParams] = useSearchParams(PointsSearchParams);
@@ -304,7 +302,7 @@ function PointsLeaderboard({
 
   return (
     <Card className={cx('h-fit', className)}>
-      <div className="flex justify-between gap-4">
+      <Card.Header>
         <Card.Title>Points Leaderboard</Card.Title>
 
         <RemixForm
@@ -331,68 +329,39 @@ function PointsLeaderboard({
             value={searchParams.timeframe}
           />
         </RemixForm>
-      </div>
+      </Card.Header>
 
       <Card.Description>
         The top point earners in the ColorStack Family. Our community leaders
         and role models!
       </Card.Description>
 
-      <ul className="flex max-h-[800px] flex-col gap-4 overflow-auto">
-        {pointsLeaderboard.map((position, i) => {
+      <Leaderboard.List scroll>
+        {pointsLeaderboard.map((position) => {
           return (
-            <LeaderboardPositionItem
+            <Leaderboard.Item
               key={position.id}
-              i={i}
-              position={position}
+              firstName={position.firstName}
+              isMe={position.me}
+              label={<LeaderboardItemLabel points={position.points} />}
+              lastName={position.lastName}
+              position={position.rank}
+              profilePicture={position.profilePicture || undefined}
             />
           );
         })}
-      </ul>
+      </Leaderboard.List>
     </Card>
   );
 }
 
-type LeaderboardPositionItemProps = {
-  i?: number;
-  position: SerializeFrom<typeof loader>['pointsLeaderboard'][number];
-};
-
-function LeaderboardPositionItem({ position }: LeaderboardPositionItemProps) {
-  const formattedPoints = Intl.NumberFormat('en-US').format(position.points);
-
-  const formattedPosition = Intl.NumberFormat('en-US', {
-    maximumFractionDigits: 1,
-    notation: 'compact',
-  }).format(position.rank);
+function LeaderboardItemLabel({ points }: { points: number }) {
+  const formatter = Intl.NumberFormat('en-US');
 
   return (
-    <li
-      className="grid grid-cols-[3rem_4fr_2fr] items-center"
-      key={position.id}
-    >
-      <Text className="ml-auto mr-4" color="gray-500" weight="500">
-        {formattedPosition}
-      </Text>
-
-      <div className="flex items-center gap-2">
-        <ProfilePicture
-          initials={position.firstName[0] + position.lastName[0]}
-          src={position.profilePicture || undefined}
-        />
-
-        <Text className="line-clamp-1" weight={position.me ? '600' : undefined}>
-          {position.firstName}{' '}
-          <span className="hidden sm:inline">{position.lastName}</span>
-          <span className="inline sm:hidden">{position.lastName[0]}.</span>{' '}
-          {position.me && '(You)'}
-        </Text>
-      </div>
-
-      <Text className="text-right">
-        {formattedPoints} <span className="text-sm"> Points</span>
-      </Text>
-    </li>
+    <Leaderboard.ItemLabel>
+      {formatter.format(points)} <span className="text-sm"> Points</span>
+    </Leaderboard.ItemLabel>
   );
 }
 
