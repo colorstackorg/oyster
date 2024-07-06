@@ -114,7 +114,7 @@ function AddReviewLink() {
     <Link
       className={getButtonCn({})}
       to={{
-        pathname: Route['/companies/reviews/add'],
+        pathname: Route['/companies/interview-reviews/add'], //for testing
         search: searchParams.toString(),
       }}
     >
