@@ -6,6 +6,7 @@ import {
 import { generatePath, Link, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { ExternalLink } from 'react-feather';
+import { useSearchParams } from 'react-router-dom';
 
 import {
   type EmploymentType,
@@ -15,6 +16,7 @@ import {
   getCompany,
   listCompanyEmployees,
   listCompanyReviews,
+  listInterviewReviews,
 } from '@oyster/core/employment.server';
 import { cx, Divider, getTextCn, ProfilePicture, Text } from '@oyster/ui';
 import {
@@ -26,6 +28,8 @@ import {
 
 import { Card } from '@/shared/components/card';
 import { CompanyReview } from '@/shared/components/company-review';
+import { InterviewReview } from '@/shared/components/interview-review';
+import { NavigationItem } from '@/shared/components/navigation';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -34,7 +38,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const id = params.id as string;
 
-  const [company, _employees, _reviews] = await Promise.all([
+  const [company, _employees, _reviews, _interviewReviews] = await Promise.all([
     getCompany({
       include: ['averageRating', 'employees', 'reviews'],
       select: [
@@ -71,6 +75,20 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'workExperiences.startDate',
         'workExperiences.title',
         'workExperiences.id as workExperienceId',
+      ],
+      where: { companyId: id },
+    }),
+
+    listInterviewReviews({
+      select: [
+        'interviewReviews.createdAt',
+        'interviewReviews.id',
+        'interviewReviews.text',
+        'interviewReviews.interviewPosition as title',
+        'students.id as reviewerId',
+        'students.firstName as reviewerFirstName',
+        'students.lastName as reviewerLastName',
+        'students.profilePicture as reviewerProfilePicture',
       ],
       where: { companyId: id },
     }),
@@ -117,16 +135,26 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
   );
 
+  const interviewReviews = _interviewReviews.map(({ createdAt, ...review }) => {
+    return {
+      ...review,
+      reviewedAt: dayjs().to(createdAt),
+    };
+  });
+
   return json({
     company,
     currentEmployees,
     pastEmployees,
     reviews,
+    interviewReviews,
   });
 }
 
 export default function CompanyPage() {
   const { company } = useLoaderData<typeof loader>();
+  const [searchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'employees';
 
   return (
     <section className="mx-auto flex w-full max-w-[36rem] flex-col gap-[inherit]">
@@ -156,9 +184,23 @@ export default function CompanyPage() {
       </header>
 
       <Text color="gray-500">{company.description}</Text>
-      <ReviewsList />
-      <CurrentEmployees />
-      <PastEmployees />
+      <nav>
+        <ul className="flex flex-wrap gap-x-4 gap-y-2">
+          <NavigationItem to="?tab=employees">Employees</NavigationItem>
+          <NavigationItem to="?tab=reviews">Company Reviews</NavigationItem>
+          <NavigationItem to="?tab=interview-reviews">
+            Interview Reviews
+          </NavigationItem>
+        </ul>
+      </nav>
+      <Divider my="4" />
+      {activeTab === 'employees' && (
+        <>
+          <Employees />
+        </>
+      )}
+      {activeTab === 'reviews' && <ReviewsList />}
+      {activeTab === 'interview-reviews' && <InterviewReviewsList />}
     </section>
   );
 }
@@ -236,7 +278,7 @@ function ReviewsList() {
     <>
       <section className="flex flex-col gap-[inherit]">
         <Text weight="500" variant="lg">
-          Reviews ({reviews.length})
+          Company Reviews ({reviews.length})
         </Text>
 
         <CompanyReview.List>
@@ -270,15 +312,70 @@ function ReviewsList() {
           })}
         </CompanyReview.List>
       </section>
-
-      <Divider my="4" />
     </>
   );
 }
 
-function CurrentEmployees() {
-  const { currentEmployees } = useLoaderData<typeof loader>();
+function InterviewReviewsList() {
+  const { interviewReviews } = useLoaderData<typeof loader>();
 
+  if (!interviewReviews.length) {
+    return null;
+  }
+
+  return (
+    <>
+      <section className="flex flex-col gap-[inherit]">
+        <Text weight="500" variant="lg">
+          Interview Reviews ({interviewReviews.length})
+        </Text>
+
+        <InterviewReview.List>
+          {interviewReviews.map((interviewReview) => {
+            return (
+              <InterviewReview
+                interviewReviewId={interviewReview.id}
+                key={interviewReview.id}
+                company={{
+                  id: interviewReview.companyId || '',
+                  image: interviewReview.companyImage || '',
+                  name: interviewReview.companyName || '',
+                }}
+                reviewedAt={interviewReview.reviewedAt}
+                reviewerFirstName={interviewReview.reviewerFirstName || ''}
+                reviewerId={interviewReview.reviewerId || ''}
+                reviewerLastName={interviewReview.reviewerLastName || ''}
+                reviewerProfilePicture={interviewReview.reviewerProfilePicture}
+                text={interviewReview.text}
+                title={interviewReview.title || ''}
+              />
+            );
+          })}
+        </InterviewReview.List>
+      </section>
+    </>
+  );
+}
+
+function Employees() {
+  const { currentEmployees, pastEmployees } = useLoaderData<typeof loader>();
+
+  return (
+    <>
+      <Text weight="500" variant="lg">
+        Employees ({currentEmployees.length + pastEmployees.length})
+      </Text>
+      <CurrentEmployees currentEmployees={currentEmployees} />
+      <PastEmployees pastEmployees={pastEmployees} />
+    </>
+  );
+}
+
+function CurrentEmployees({
+  currentEmployees,
+}: {
+  currentEmployees: EmployeeInView[];
+}) {
   return (
     <Card>
       <Card.Title>Current Employees ({currentEmployees.length})</Card.Title>
@@ -298,9 +395,7 @@ function CurrentEmployees() {
   );
 }
 
-function PastEmployees() {
-  const { pastEmployees } = useLoaderData<typeof loader>();
-
+function PastEmployees({ pastEmployees }: { pastEmployees: EmployeeInView[] }) {
   return (
     <Card>
       <Card.Title>Past Employees ({pastEmployees.length})</Card.Title>
