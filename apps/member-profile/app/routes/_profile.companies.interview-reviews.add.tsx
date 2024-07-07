@@ -42,7 +42,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   await addInterviewReview({
-    companyId: data.companyId,
+    companyCrunchbaseId: data.companyCrunchbaseId,
     interviewPosition: data.interviewPosition,
     text: data.text,
     studentId: data.studentId,
@@ -79,5 +79,3 @@ export default function AddInterviewReviewModal() {
     </Modal>
   );
 }
-
-//integrate crunchbase?? to be able to search for a field and add company

@@ -82,7 +82,7 @@ const InterviewReview = z.object({
   interviewPosition: z.string().trim().min(1),
   studentId: Student.shape.id,
   text: z.string().trim().min(1),
-  companyId: Company.shape.id,
+  companyCrunchbaseId: Company.shape.id,
 });
 
 export const JobOffer = Entity.omit({ deletedAt: true }).extend({

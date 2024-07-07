@@ -1,8 +1,6 @@
 export {
   AddCompanyReviewInput,
   AddInterviewReviewInput,
-  BaseCompany, //need for crunchbase
-  Company, //crunchbase
   EditCompanyReviewInput,
   EditInterviewReviewInput,
   EmploymentType,

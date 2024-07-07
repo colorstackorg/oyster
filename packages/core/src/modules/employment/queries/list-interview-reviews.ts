@@ -18,7 +18,11 @@ export async function listInterviewReviews<
 >({ includeCompanies, select, where }: ListCompanyReviewsOptions<Selection>) {
   const reviews = await db
     .selectFrom('interviewReviews')
-    .leftJoin('companies', 'companies.id', 'interviewReviews.companyId')
+    .leftJoin(
+      'companies',
+      'companies.crunchbaseId',
+      'interviewReviews.companyCrunchbaseId'
+    )
     .leftJoin('students', 'students.id', 'interviewReviews.studentId')
     .select(select)
     .$if(!!includeCompanies, (qb) => {
@@ -29,7 +33,11 @@ export async function listInterviewReviews<
       ]);
     })
     .$if(!!where.companyId, (qb) => {
-      return qb.where('interviewReviews.companyId', '=', where.companyId!);
+      return qb.where(
+        'interviewReviews.companyCrunchbaseId',
+        '=',
+        where.companyId!
+      );
     })
     .$if(!!where.postedAfter, (qb) => {
       return qb.where('interviewReviews.createdAt', '>=', where.postedAfter!);

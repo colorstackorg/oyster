@@ -8,14 +8,14 @@ export async function addInterviewReview({
   studentId,
   interviewPosition,
   text,
-  companyId,
+  companyCrunchbaseId,
 }: AddInterviewReviewInput) {
   const review = await db.transaction().execute(async (trx) => {
     return trx
       .insertInto('interviewReviews')
       .values({
         id: id(),
-        companyId,
+        companyCrunchbaseId,
         text,
         studentId,
         interviewPosition,

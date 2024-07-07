@@ -18,8 +18,8 @@ export async function up(db: Kysely<any>) {
     .addColumn('text', 'text', (column) => {
       return column.notNull();
     })
-    .addColumn('company_id', 'text', (column) => {
-      return column.notNull().references('companies.id');
+    .addColumn('company_crunchbase_id', 'text', (column) => {
+      return column.notNull().references('companies.crunchbase_id');
     })
     .execute();
 }

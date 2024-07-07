@@ -1,36 +1,13 @@
 import { Form as RemixForm } from '@remix-run/react';
-import { useFetcher } from '@remix-run/react';
-import React, { useContext, useEffect, useState } from 'react';
 
 import {
   AddInterviewReviewInput,
-  type BaseCompany,
-  type Company,
   type EditInterviewReviewInput,
 } from '@oyster/core/employment';
-import {
-  Combobox,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxPopover,
-  Form,
-  useDelayedValue,
-} from '@oyster/ui';
+import { Form } from '@oyster/ui';
 import { Button, Divider, type FieldProps, Textarea } from '@oyster/ui';
 
-type WorkFormState = {
-  isCurrentRole: boolean;
-  isOtherCompany: boolean;
-  setIsCurrentRole(value: boolean): void;
-  setIsOtherCompany(value: boolean): void;
-};
-
-const WorkFormContext = React.createContext<WorkFormState>({
-  isCurrentRole: false,
-  isOtherCompany: false,
-  setIsCurrentRole: (_: boolean) => {},
-  setIsOtherCompany: (_: boolean) => {},
-});
+import { CompanyCombobox, CompanyFieldProvider } from '@/member-profile.ui';
 
 const keys = AddInterviewReviewInput.keyof().enum;
 
@@ -47,7 +24,11 @@ export function AddInterviewReviewForm({
 }: AddInterviewReviewFormProps) {
   return (
     <RemixForm className="form" method="post">
-      <CompanyField error={errors.companyId} name="companyCrunchbaseId" />
+      <CompanyField
+        error={errors.companyCrunchbaseId}
+        name={keys.companyCrunchbaseId}
+      />
+
       <PositionField
         error={errors.interviewPosition}
         name={keys.interviewPosition}
@@ -63,6 +44,17 @@ export function AddInterviewReviewForm({
         <Button.Submit>Save</Button.Submit>
       </Button.Group>
     </RemixForm>
+  );
+}
+
+function CompanyField({ defaultValue, error, name }: FieldProps<string>) {
+  return (
+    <Form.Field error={error} label="Company" labelFor={name} required>
+      <CompanyFieldProvider allowFreeText={false}>
+        <CompanyCombobox defaultCrunchbaseId={defaultValue} name={name} />
+        {/* <FreeTextCompanyInput name={name} /> TODO: integrate reviews for freetext*/}
+      </CompanyFieldProvider>
+    </Form.Field>
   );
 }
 
@@ -154,69 +146,69 @@ export function EditInterviewReviewForm({
   );
 }
 
-type CompanyFieldProps = FieldProps<Pick<Company, 'crunchbaseId' | 'name'>>;
+// type CompanyFieldProps = FieldProps<Pick<Company, 'crunchbaseId' | 'name'>>;
 
-const CompanyField = ({
-  defaultValue = { crunchbaseId: '', name: '' },
-  error,
-  name,
-}: CompanyFieldProps) => {
-  const { setIsOtherCompany } = useContext(WorkFormContext);
-  const [search, setSearch] = useState<string>(defaultValue.name);
-  const delayedSearch = useDelayedValue(search, 250);
-  const fetcher = useFetcher<{ companies: BaseCompany[] }>();
+// const CompanyField = ({
+//   defaultValue = { crunchbaseId: '', name: '' },
+//   error,
+//   name,
+// }: CompanyFieldProps) => {
+//   const { setIsOtherCompany } = useContext(WorkFormContext);
+//   const [search, setSearch] = useState<string>(defaultValue.name);
+//   const delayedSearch = useDelayedValue(search, 250);
+//   const fetcher = useFetcher<{ companies: BaseCompany[] }>();
 
-  useEffect(() => {
-    fetcher.submit(
-      { search: delayedSearch },
-      {
-        action: '/api/companies',
-        method: 'get',
-      }
-    );
-  }, [delayedSearch]);
+//   useEffect(() => {
+//     fetcher.submit(
+//       { search: delayedSearch },
+//       {
+//         action: '/api/companies',
+//         method: 'get',
+//       }
+//     );
+//   }, [delayedSearch]);
 
-  const companies = fetcher.data?.companies || [];
+//   const companies = fetcher.data?.companies || [];
 
-  return (
-    <Form.Field error={error} label="Organization" labelFor={name} required>
-      <Combobox
-        defaultDisplayValue={defaultValue.name}
-        defaultValue={defaultValue.crunchbaseId}
-      >
-        <ComboboxInput
-          id={name}
-          name={name}
-          onChange={(e) => setSearch(e.currentTarget.value)}
-          required
-        />
-        <ComboboxPopover>
-          <ul>
-            {companies.map((company) => (
-              <ComboboxItem
-                className="whitespace-nowrap [&>button]:flex [&>button]:items-center"
-                displayValue={company.name}
-                key={company.crunchbaseId}
-                onSelect={() => setIsOtherCompany(false)}
-                value={company.crunchbaseId}
-              >
-                <img
-                  alt={company.name}
-                  className="mr-2 h-6 w-6 rounded"
-                  src={company.imageUrl}
-                />
-                {company.name}
-                <span className="ml-1 box-border max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-gray-400">
-                  - {company.description}
-                </span>
-              </ComboboxItem>
-            ))}
-            <ComboboxItem onSelect={() => setIsOtherCompany(true)} value="">
-              Other
-            </ComboboxItem>
-          </ul>
-        </ComboboxPopover>
-      </Combobox>
-    </Form.Field>
-  );
-};
+//   return (
+//     <Form.Field error={error} label="Organization" labelFor={name} required>
+//       <Combobox
+//         defaultDisplayValue={defaultValue.name}
+//         defaultValue={defaultValue.crunchbaseId}
+//       >
+//         <ComboboxInput
+//           id={name}
+//           name={name}
+//           onChange={(e) => setSearch(e.currentTarget.value)}
+//           required
+//         />
+//         <ComboboxPopover>
+//           <ul>
+//             {companies.map((company) => (
+//               <ComboboxItem
+//                 className="whitespace-nowrap [&>button]:flex [&>button]:items-center"
+//                 displayValue={company.name}
+//                 key={company.crunchbaseId}
+//                 onSelect={() => setIsOtherCompany(false)}
+//                 value={company.crunchbaseId}
+//               >
+//                 <img
+//                   alt={company.name}
+//                   className="mr-2 h-6 w-6 rounded"
+//                   src={company.imageUrl}
+//                 />
+//                 {company.name}
+//                 <span className="ml-1 box-border max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-gray-400">
+//                   - {company.description}
+//                 </span>
+//               </ComboboxItem>
+//             ))}
+//             <ComboboxItem onSelect={() => setIsOtherCompany(true)} value="">
+//               Other
+//             </ComboboxItem>
+//           </ul>
+//         </ComboboxPopover>
+//       </Combobox>
+//     </Form.Field>
+//   );
+// };
