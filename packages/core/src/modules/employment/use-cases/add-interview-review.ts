@@ -3,7 +3,15 @@ import { id } from '@oyster/utils';
 
 import { saveCompanyIfNecessary } from './save-company-if-necessary';
 import { type AddInterviewReviewInput } from '../employment.types';
-// import { job } from '@/infrastructure/bull/use-cases/job';
+
+/**
+ * If the company selected from Crunchbase did not previously exist in our
+ * database, we will simultaneously save it in the same transaction as the work
+ * experience.
+ *
+ *  * TODO: Add an interview review experience to the member's history, and emits a job to grant
+ * gamification points for updating their work history.
+ */
 
 export async function addInterviewReview({
   studentId,
