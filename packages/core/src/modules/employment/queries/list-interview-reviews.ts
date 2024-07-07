@@ -4,7 +4,7 @@ import { db, type DB } from '@oyster/db';
 
 import { type ListCompanyReviewsWhere } from '@/modules/employment/employment.types';
 
-type ListCompanyReviewsOptions<Selection> = {
+type ListInterviewReviewsOptions<Selection> = {
   includeCompanies?: boolean;
   select: Selection[];
   where: ListCompanyReviewsWhere;
@@ -15,7 +15,7 @@ export async function listInterviewReviews<
     DB,
     'interviewReviews' | 'students' | 'companies'
   >,
->({ includeCompanies, select, where }: ListCompanyReviewsOptions<Selection>) {
+>({ includeCompanies, select, where }: ListInterviewReviewsOptions<Selection>) {
   const reviews = await db
     .selectFrom('interviewReviews')
     .leftJoin(
@@ -33,12 +33,9 @@ export async function listInterviewReviews<
       ]);
     })
     .$if(!!where.companyId, (qb) => {
-      return qb.where(
-        'interviewReviews.companyCrunchbaseId',
-        '=',
-        where.companyId!
-      );
+      return qb.where('companies.id', '=', where.companyId!);
     })
+
     .$if(!!where.postedAfter, (qb) => {
       return qb.where('interviewReviews.createdAt', '>=', where.postedAfter!);
     })
