@@ -18,11 +18,7 @@ export async function listInterviewReviews<
 >({ includeCompanies, select, where }: ListInterviewReviewsOptions<Selection>) {
   const reviews = await db
     .selectFrom('interviewReviews')
-    .leftJoin(
-      'companies',
-      'companies.crunchbaseId',
-      'interviewReviews.companyCrunchbaseId'
-    )
+    .leftJoin('companies', 'companies.id', 'interviewReviews.companyId')
     .leftJoin('students', 'students.id', 'interviewReviews.studentId')
     .select(select)
     .$if(!!includeCompanies, (qb) => {
