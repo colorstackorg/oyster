@@ -64,7 +64,7 @@ export function FileUploader({ name }: FieldProps<ResourceType>) {
         }`}
       >
         <div className="flex flex-col items-center p-4">
-          <div className="bg- mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 p-3">
+          <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-green-50 p-3">
             <Image className="h-8 w-8 text-primary" />
           </div>
 
