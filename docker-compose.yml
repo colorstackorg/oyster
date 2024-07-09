@@ -17,6 +17,8 @@ services:
       POSTGRES_DB: oyster
       POSTGRES_PASSWORD: oyster
       POSTGRES_USER: oyster
+    networks:
+      - network1
 
   postgres-test:
     container_name: oyster-postgres-test
@@ -29,6 +31,22 @@ services:
       POSTGRES_PASSWORD: oyster
       POSTGRES_USER: oyster
 
+  pgadmin: # Must update the servers host name/address on every restart to postgres gateway ip
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-oyster@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-oyster}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    volumes:
+      - ./docker/pgAdmin/servers.json:/pgadmin4/servers.json
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - '${PGADMIN_PORT:-5050}:80'
+    networks:
+      - network1
+
   redis:
     container_name: oyster-redis
     image: redis:latest
@@ -40,3 +58,15 @@ services:
 volumes:
   pg_data:
   redis_data:
+  pgadmin:
+
+networks:
+  network1:
+    name: my-network
+    attachable: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.0.0/16
+          ip_range: 172.18.5.0/24
+          gateway: 172.18.0.1

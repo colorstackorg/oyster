@@ -1,0 +1,15 @@
+{
+	"Servers": {
+		"1": {
+			"Group": "Servers",
+			"Name": "Oyster-postgres",
+			"Host": "172.18.0.1",
+			"Port": 5433,
+			"MaintenanceDB": "postgres",
+			"Username": "oyster",
+			"Password": "oyster",
+			"SSLMode": "prefer",
+			"Favorite": true
+		}
+	}
+}
