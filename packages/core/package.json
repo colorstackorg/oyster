@@ -13,6 +13,7 @@
     "./admin-dashboard.ui": "./src/admin-dashboard.ui.ts",
     "./member-profile.server": "./src/member-profile.server.ts",
     "./member-profile.ui": "./src/member-profile.ui.ts",
+    "./admin.server": "./src/modules/admin/index.server.ts",
     "./employment": "./src/modules/employment/index.ts",
     "./employment.server": "./src/modules/employment/index.server.ts",
     "./resources": "./src/modules/resource/index.ts",
