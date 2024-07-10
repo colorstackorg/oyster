@@ -17,6 +17,12 @@ import {
   listCompanyReviews,
 } from '@oyster/core/employment.server';
 import { cx, Divider, getTextCn, ProfilePicture, Text } from '@oyster/ui';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipText,
+  TooltipTrigger,
+} from '@oyster/ui/tooltip';
 
 import { Card } from '@/shared/components/card';
 import { CompanyReview } from '@/shared/components/company-review';
@@ -37,6 +43,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'companies.id',
         'companies.imageUrl',
         'companies.name',
+        'companies.levelsFyiSlug',
       ],
       where: { id },
     }),
@@ -130,9 +137,15 @@ export default function CompanyPage() {
         </div>
 
         <div>
-          <Text variant="2xl" weight="500">
-            {company.name}
-          </Text>
+          <div className="flex items-center gap-2">
+            <Text variant="2xl" weight="500">
+              {company.name}
+            </Text>
+
+            {company.levelsFyiSlug && (
+              <LevelsFyiLink slug={company.levelsFyiSlug} />
+            )}
+          </div>
 
           <DomainLink domain={company.domain} />
         </div>
@@ -166,6 +179,34 @@ function DomainLink({ domain }: Pick<CompanyInView, 'domain'>) {
   );
 }
 
+type LevelsFyiLinkProps = {
+  slug: string;
+};
+
+function LevelsFyiLink({ slug }: LevelsFyiLinkProps) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <a
+          className="mt-1"
+          href={`https://www.levels.fyi/companies/${slug}/salaries`}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <img
+            alt="Levels.fyi Logo"
+            className="h-4 w-4 cursor-pointer rounded-sm hover:opacity-90"
+            src="/images/levels-fyi.png"
+          />
+        </a>
+      </TooltipTrigger>
+      <TooltipContent>
+        <TooltipText>View Salary Information on Levels.fyi</TooltipText>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 function AverageRating({
   averageRating,
 }: Pick<CompanyInView, 'averageRating'>) {
@@ -174,7 +215,7 @@ function AverageRating({
   }
 
   return (
-    <div className="ml-auto mt-auto">
+    <div className="ml-auto">
       <Text>
         <span className="text-2xl">{averageRating}</span>/10
       </Text>
