@@ -32,7 +32,7 @@ services:
       POSTGRES_USER: oyster
 
   pgadmin: # Must update the servers host name/address on every restart to postgres gateway ip
-    container_name: pgadmin_container
+    container_name: oyster_pgadmin
     image: dpage/pgadmin4
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-oyster@pgadmin.org}
