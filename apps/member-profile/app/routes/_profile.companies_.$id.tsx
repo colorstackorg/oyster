@@ -43,7 +43,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'companies.id',
         'companies.imageUrl',
         'companies.name',
-        'companies.levelsFyi',
+        'companies.levelsFyiSlug',
       ],
       where: { id },
     }),
@@ -137,13 +137,17 @@ export default function CompanyPage() {
         </div>
 
         <div>
-          <Text variant="2xl" weight="500">
-            {company.name}
-          </Text>
+          <div className="flex items-center gap-2">
+            <Text variant="2xl" weight="500">
+              {company.name}
+            </Text>
+
+            {company.levelsFyiSlug && (
+              <LevelsFyiLink slug={company.levelsFyiSlug} />
+            )}
+          </div>
 
           <DomainLink domain={company.domain} />
-
-          {company.levelsFyi && <LevelsFyiLink companyId={company.levelsFyi} />}
         </div>
 
         <AverageRating averageRating={company.averageRating} />
@@ -175,6 +179,34 @@ function DomainLink({ domain }: Pick<CompanyInView, 'domain'>) {
   );
 }
 
+type LevelsFyiLinkProps = {
+  slug: string;
+};
+
+function LevelsFyiLink({ slug }: LevelsFyiLinkProps) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <a
+          className="mt-1"
+          href={`https://www.levels.fyi/companies/${slug}/salaries`}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <img
+            alt="Levels.fyi Logo"
+            className="h-4 w-4 cursor-pointer rounded-sm hover:opacity-90"
+            src="/images/levels-fyi.png"
+          />
+        </a>
+      </TooltipTrigger>
+      <TooltipContent>
+        <TooltipText>View Salary Information on Levels.fyi</TooltipText>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 function AverageRating({
   averageRating,
 }: Pick<CompanyInView, 'averageRating'>) {
@@ -183,7 +215,7 @@ function AverageRating({
   }
 
   return (
-    <div className="ml-auto mt-auto">
+    <div className="ml-auto">
       <Text>
         <span className="text-2xl">{averageRating}</span>/10
       </Text>
@@ -316,32 +348,5 @@ function EmployeeItem({ employee }: { employee: EmployeeInView }) {
         </Text>
       </div>
     </li>
-  );
-}
-
-type LevelsFyiLinkProps = {
-  companyId: string;
-};
-
-function LevelsFyiLink({ companyId }: LevelsFyiLinkProps) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <a
-          href={`https://www.levels.fyi/companies/${companyId}/salaries`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            alt="Levels.fyi Logo"
-            className="h-5 w-5 cursor-pointer"
-            src="/images/levels-fyi.png"
-          />
-        </a>
-      </TooltipTrigger>
-      <TooltipContent>
-        <TooltipText>View Salary Information on Levels.fyi</TooltipText>
-      </TooltipContent>
-    </Tooltip>
   );
 }
