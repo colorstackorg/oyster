@@ -49,8 +49,8 @@ export async function listApplications({
         'applications.id',
         'applications.lastName',
         'applications.status',
-        'admins.firstName as reviewedByFirstName' || '',
-        'admins.lastName as reviewedByLastName' || '',
+        'admins.firstName as reviewedByFirstName',
+        'admins.lastName as reviewedByLastName',
         (eb) => {
           return eb.fn
             .coalesce('schools.name', 'applications.otherSchool')
