@@ -4,7 +4,7 @@ export async function up(db: Kysely<any>) {
   await db.schema
     .alterTable('admins')
     .addColumn('member_id', 'text', (column) => {
-      return column.references('students.id').onDelete('cascade');
+      return column.references('students.id').onDelete('set null');
     })
     .execute();
 
@@ -13,8 +13,9 @@ export async function up(db: Kysely<any>) {
     .set({
       member_id: db
         .selectFrom('students')
-        .select(['id'])
-        .whereRef('students.email', '=', 'admins.email'),
+        .select('id')
+        .whereRef('students.email', '=', 'admins.email')
+        .limit(1),
     })
     .execute();
 }

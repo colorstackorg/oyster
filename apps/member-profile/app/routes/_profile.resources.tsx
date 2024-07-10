@@ -8,16 +8,15 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { sql } from 'kysely';
 import { Plus } from 'react-feather';
 
+import { isMemberAdmin } from '@oyster/core/admin.server';
 import {
   ListResourcesOrderBy,
   ListResourcesWhere,
   type ResourceType,
 } from '@oyster/core/resources';
 import { listResources, listTags } from '@oyster/core/resources.server';
-import { db } from '@oyster/db';
 import { track } from '@oyster/infrastructure/mixpanel';
 import { getPresignedURL } from '@oyster/infrastructure/object-storage';
 import {
@@ -52,16 +51,7 @@ const ResourcesSearchParams = ListSearchParams.pick({
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  //Query admin table using raw SQL to see if current user is in admins table
-  const isAdminQuery = sql<{ exists: boolean }>`SELECT EXISTS (
-      SELECT 1
-      FROM admins
-      WHERE member_id = ${user(session)}
-    ) 
-  `.execute(db);
-
-  //output of the query is [{ exists: boolean }]
-  const isAdmin = (await isAdminQuery).rows[0].exists;
+  const isAdmin = await isMemberAdmin(user(session));
 
   const url = new URL(request.url);
 
