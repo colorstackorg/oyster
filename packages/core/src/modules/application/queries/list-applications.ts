@@ -41,6 +41,7 @@ export async function listApplications({
   const [rows, { count }] = await Promise.all([
     query
       .leftJoin('schools', 'schools.id', 'applications.schoolId')
+      .leftJoin('admins', 'admins.id', 'applications.reviewedById')
       .select([
         'applications.createdAt',
         'applications.email',
@@ -48,6 +49,8 @@ export async function listApplications({
         'applications.id',
         'applications.lastName',
         'applications.status',
+        'admins.firstName as reviewedByFirstName',
+        'admins.lastName as reviewedByLastName',
         (eb) => {
           return eb.fn
             .coalesce('schools.name', 'applications.otherSchool')
