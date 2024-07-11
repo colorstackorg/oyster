@@ -70,13 +70,6 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  if (data.addressState === 'PR') {
-    return json({
-      error: `Unfortunately, our swag pack provider, SwagUp, does not support shipments to Puerto Rico. Please reach out to membership@colorstack.org for further assistance.`,
-      errors,
-    });
-  }
-
   try {
     await claimSwagPack({
       addressCity: data.addressCity,
