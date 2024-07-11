@@ -136,7 +136,7 @@ function ApplicationsTable() {
 
   const columns: TableColumnProps<ApplicationInView>[] = [
     {
-      displayName: 'First Name',
+      displayName: 'Full Name',
       render: (application) => {
         return (
           <Link
@@ -148,16 +148,11 @@ function ApplicationsTable() {
               search,
             }}
           >
-            {application.firstName}
+            {application.firstName} {application.lastName}
           </Link>
         );
       },
-      size: '200',
-    },
-    {
-      displayName: 'Last Name',
-      size: '200',
-      render: (application) => application.lastName,
+      size: '280',
     },
     {
       displayName: 'Email',
@@ -184,8 +179,13 @@ function ApplicationsTable() {
       size: '160',
     },
     {
-      displayName: 'Reviewed By',
+      displayName: 'Applied On',
       size: '240',
+      render: (application) => application.createdAt,
+    },
+    {
+      displayName: 'Reviewed By',
+      size: null,
       render: (application) => {
         const { reviewedByFirstName, reviewedByLastName } = application;
 
@@ -195,16 +195,6 @@ function ApplicationsTable() {
 
         return `${reviewedByFirstName} ${reviewedByLastName}`;
       },
-    },
-    {
-      displayName: 'School',
-      size: '360',
-      render: (application) => application.school || '-',
-    },
-    {
-      displayName: 'Applied On',
-      size: '240',
-      render: (application) => application.createdAt,
     },
   ];
 
