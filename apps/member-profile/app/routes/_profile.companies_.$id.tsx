@@ -27,10 +27,10 @@ import {
 import { Card } from '@/shared/components/card';
 import { CompanyReview } from '@/shared/components/company-review';
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
   const id = params.id as string;
 
@@ -70,6 +70,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'workExperiences.locationType',
         'workExperiences.startDate',
         'workExperiences.title',
+        'workExperiences.id as workExperienceId',
       ],
       where: { companyId: id },
     }),
@@ -110,6 +111,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       return {
         ...review,
         date: `${startMonth} - ${endMonth}`,
+        editable: review.reviewerId === user(session),
         reviewedAt: dayjs().to(createdAt),
       };
     }
@@ -248,6 +250,7 @@ function ReviewsList() {
                   name: review.companyName || '',
                 }}
                 date={review.date}
+                editable={review.editable}
                 employmentType={review.employmentType as EmploymentType}
                 locationCity={review.locationCity}
                 locationState={review.locationState}
@@ -261,6 +264,7 @@ function ReviewsList() {
                 reviewerProfilePicture={review.reviewerProfilePicture}
                 text={review.text}
                 title={review.title || ''}
+                workExperienceId={review.workExperienceId || ''}
               />
             );
           })}
