@@ -26,8 +26,6 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const userId = user(session);
-
   const id = params.id as string;
 
   const [company, _employees, _reviews] = await Promise.all([
@@ -65,7 +63,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'workExperiences.locationType',
         'workExperiences.startDate',
         'workExperiences.title',
-        'workExperiences.id as workExperiencesId',
+        'workExperiences.id as workExperienceId',
       ],
       where: { companyId: id },
     }),
@@ -106,13 +104,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       return {
         ...review,
         date: `${startMonth} - ${endMonth}`,
+        editable: review.reviewerId === user(session),
         reviewedAt: dayjs().to(createdAt),
       };
     }
   );
 
   return json({
-    userId,
     company,
     currentEmployees,
     pastEmployees,
@@ -187,7 +185,7 @@ function AverageRating({
 }
 
 function ReviewsList() {
-  const { reviews, userId } = useLoaderData<typeof loader>();
+  const { reviews } = useLoaderData<typeof loader>();
 
   if (!reviews.length) {
     return null;
@@ -211,6 +209,7 @@ function ReviewsList() {
                   name: review.companyName || '',
                 }}
                 date={review.date}
+                editable={review.editable}
                 employmentType={review.employmentType as EmploymentType}
                 locationCity={review.locationCity}
                 locationState={review.locationState}
@@ -222,10 +221,9 @@ function ReviewsList() {
                 reviewerId={review.reviewerId || ''}
                 reviewerLastName={review.reviewerLastName || ''}
                 reviewerProfilePicture={review.reviewerProfilePicture}
-                userId={userId}
                 text={review.text}
                 title={review.title || ''}
-                workExperiencesId={review.workExperiencesId || ''}
+                workExperienceId={review.workExperienceId || ''}
               />
             );
           })}

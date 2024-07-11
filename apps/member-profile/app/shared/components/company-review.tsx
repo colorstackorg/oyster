@@ -8,7 +8,14 @@ import {
   FORMATTED_LOCATION_TYPE,
   type LocationType,
 } from '@oyster/core/employment';
-import { cx, getTextCn, Pill, ProfilePicture, Text } from '@oyster/ui';
+import {
+  cx,
+  getIconButtonCn,
+  getTextCn,
+  Pill,
+  ProfilePicture,
+  Text,
+} from '@oyster/ui';
 import {
   Tooltip,
   TooltipContent,
@@ -20,12 +27,13 @@ import { Card } from '@/shared/components/card';
 import { Route } from '@/shared/constants';
 
 type CompanyReviewProps = {
-  date: string;
   company?: {
     id: string;
     image: string;
     name: string;
   };
+  date: string;
+  editable?: boolean;
   employmentType: EmploymentType;
   locationCity: string | null;
   locationState: string | null;
@@ -37,15 +45,15 @@ type CompanyReviewProps = {
   reviewerId: string;
   reviewerProfilePicture: string | null;
   reviewedAt: string;
-  userId: string;
   text: string;
   title: string;
-  workExperiencesId: string;
+  workExperienceId?: string;
 };
 
 export const CompanyReview = ({
   company,
   date,
+  editable,
   employmentType,
   locationCity,
   locationState,
@@ -57,10 +65,9 @@ export const CompanyReview = ({
   reviewerLastName,
   reviewerProfilePicture,
   reviewedAt,
-  userId,
   text,
   title,
-  workExperiencesId,
+  workExperienceId,
 }: CompanyReviewProps) => {
   return (
     <Card>
@@ -78,13 +85,17 @@ export const CompanyReview = ({
           {reviewedAt}
         </Text>
 
-        {userId === reviewerId && (
+        {editable && workExperienceId && (
           <div className="ml-auto">
             <Tooltip>
-              <TooltipTrigger aria-label="Edit Review">
+              <TooltipTrigger asChild>
                 <Link
+                  className={getIconButtonCn({
+                    backgroundColor: 'gray-100',
+                    backgroundColorOnHover: 'gray-200',
+                  })}
                   to={generatePath(Route['/profile/work/:id/review/edit'], {
-                    id: workExperiencesId,
+                    id: workExperienceId,
                   })}
                 >
                   <Edit />
