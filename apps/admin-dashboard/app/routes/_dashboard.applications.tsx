@@ -185,7 +185,7 @@ function ApplicationsTable() {
     },
     {
       displayName: 'Reviewed By',
-      size: null,
+      size: '280',
       render: (application) => {
         const { reviewedByFirstName, reviewedByLastName } = application;
 
