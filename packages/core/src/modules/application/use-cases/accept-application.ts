@@ -44,8 +44,8 @@ export async function acceptApplication(
       .execute();
 
     // Some applicants apply multiple times to ColorStack (typically it's an
-    // accident) and historically we would _try_ to accept all of their,
-    // applications but we can't have multiple members with the same email
+    // accident) and historically we would _try_ to accept all of their
+    // applications, but we can't have multiple members with the same email
     // so it would cause issues. We'll scrap any other pending applications
     // from the same email address.
     await trx
