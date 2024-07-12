@@ -25,8 +25,6 @@ export async function submitResume({
     .where('id', '=', memberId)
     .executeTakeFirstOrThrow();
 
-  console.log(resume);
-
   const arrayBuffer = await resume.arrayBuffer();
 
   // ID of the resume book submission. Will be used for the Cloudflare storage
@@ -45,13 +43,15 @@ export async function submitResume({
     key: attachmentKey,
   });
 
-  await createAirtableRecord({
+  const airtableRecordId = await createAirtableRecord({
     baseId: resumeBook.airtableBaseId,
     data: {
-      Resume: {
-        filename: `${member.lastName}_${member.firstName}_${member.graduationYear}.pdf`,
-        url: resumeLink,
-      },
+      Resume: [
+        {
+          filename: `${member.lastName}_${member.firstName}_${member.graduationYear}.pdf`,
+          url: resumeLink,
+        },
+      ],
     },
     tableName: resumeBook.airtableTableId,
   });
