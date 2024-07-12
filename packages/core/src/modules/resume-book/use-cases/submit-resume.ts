@@ -3,7 +3,6 @@ import {
   getPresignedURL,
   putObject,
 } from '@oyster/infrastructure/object-storage';
-import { id } from '@oyster/utils';
 
 import { createAirtableRecord } from '@/modules/airtable/use-cases/create-airtable-record';
 import { type SubmitResumeInput } from '@/modules/resume-book/resume-book.types';
@@ -27,11 +26,7 @@ export async function submitResume({
 
   const arrayBuffer = await resume.arrayBuffer();
 
-  // ID of the resume book submission. Will be used for the Cloudflare storage
-  // as well as the database record itself.
-  const submissionId = id();
-
-  const attachmentKey = `resume-books/${resumeBookId}/${submissionId}`;
+  const attachmentKey = `resume-books/${resumeBookId}/${memberId}`;
 
   await putObject({
     content: Buffer.from(arrayBuffer),
@@ -43,16 +38,25 @@ export async function submitResume({
     key: attachmentKey,
   });
 
+  // In order to keep the resume file names consistent for the partners, we'll
+  // use the same naming convention based on the submitter.
+  const filename = `${member.lastName}_${member.firstName}_${member.graduationYear}.pdf`;
+
   const airtableRecordId = await createAirtableRecord({
     baseId: resumeBook.airtableBaseId,
     data: {
-      Resume: [
-        {
-          filename: `${member.lastName}_${member.firstName}_${member.graduationYear}.pdf`,
-          url: resumeLink,
-        },
-      ],
+      Resume: [{ filename, url: resumeLink }],
     },
     tableName: resumeBook.airtableTableId,
   });
+
+  await db
+    .insertInto('resumeBookSubmissions')
+    .values({
+      airtableRecordId: airtableRecordId as string,
+      memberId,
+      resumeBookId,
+      submittedAt: new Date(),
+    })
+    .execute();
 }
