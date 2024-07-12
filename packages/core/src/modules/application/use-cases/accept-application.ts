@@ -56,6 +56,12 @@ export async function acceptApplication(
       }
     );
 
+    await trx
+      .deleteFrom('applications')
+      .where('email', '=', application.email)
+      .where('id', '!=', application.id)
+      .execute();
+
     studentId = id();
 
     await trx
