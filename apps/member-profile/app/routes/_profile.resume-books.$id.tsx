@@ -8,13 +8,19 @@ import {
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
-import { generatePath, Form as RemixForm } from '@remix-run/react';
+import {
+  generatePath,
+  Link,
+  Form as RemixForm,
+  useLoaderData,
+} from '@remix-run/react';
 
 import { SubmitResumeInput } from '@oyster/core/resume-books';
 import { submitResume } from '@oyster/core/resume-books.server';
-import { Button, Form, validateForm } from '@oyster/ui';
+import { Button, Form, Input, Text, validateForm } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
+import { getMember } from '@/shared/queries';
 import {
   commitSession,
   ensureUserAuthenticated,
@@ -23,9 +29,30 @@ import {
 } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
-  return json({});
+  const member = await getMember(user(session))
+    .select([
+      'currentLocation',
+      'currentLocationCoordinates',
+      'educationLevel',
+      'email',
+      'firstName',
+      'graduationYear',
+      'hometown',
+      'hometownCoordinates',
+      'lastName',
+      'race',
+    ])
+    .executeTakeFirst();
+
+  if (!member) {
+    throw new Response(null, { status: 404 });
+  }
+
+  return json({
+    ...member,
+  });
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -87,22 +114,65 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
 export default function ResumeBook() {
   return (
-    <RemixForm className="form" method="post" encType="multipart/form-data">
-      <Form.Field
-        description="Must be a PDF less than 1 MB."
-        error=""
-        label="Resume"
-        labelFor="resume"
-        required
-      >
-        <input accept=".pdf" id="resume" name="resume" required type="file" />
-      </Form.Field>
+    <section className="mx-auto flex w-full max-w-[36rem] flex-col gap-[inherit]">
+      <div>
+        <Text color="gray-500">
+          Please ensure that everything in your profile is up to date before
+          submitting your resume. We'll be sending the following information to
+          partners:
+        </Text>
 
-      <Form.ErrorMessage></Form.ErrorMessage>
+        <ul className="my-2 list-disc ps-8 text-gray-500">
+          <li>
+            <Link className="link" to={Route['/profile/general']}>
+              First Name
+            </Link>
+          </li>
+          <li>
+            <Link className="link" to={Route['/profile/general']}>
+              Last Name
+            </Link>
+          </li>
+          <li>
+            <Link className="link" to={Route['/profile/emails']}>
+              Primary Email
+            </Link>
+          </li>
+          <li>
+            <Link className="link" to={Route['/profile/general']}>
+              Current Location
+            </Link>
+          </li>
+          <li>
+            <Link className="link" to={Route['/profile/personal']}>
+              Hometown
+            </Link>
+          </li>
+          <li>
+            <Link className="link" to={Route['/profile/socials']}>
+              LinkedIn URL
+            </Link>
+          </li>
+        </ul>
+      </div>
 
-      <Button.Group>
-        <Button.Submit>Submit</Button.Submit>
-      </Button.Group>
-    </RemixForm>
+      <RemixForm className="form" method="post" encType="multipart/form-data">
+        <Form.Field
+          description="Must be a PDF less than 1 MB."
+          error=""
+          label="Resume"
+          labelFor="resume"
+          required
+        >
+          <input accept=".pdf" id="resume" name="resume" required type="file" />
+        </Form.Field>
+
+        <Form.ErrorMessage></Form.ErrorMessage>
+
+        <Button.Group>
+          <Button.Submit>Submit</Button.Submit>
+        </Button.Group>
+      </RemixForm>
+    </section>
   );
 }
