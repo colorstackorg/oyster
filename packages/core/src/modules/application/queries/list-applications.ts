@@ -28,7 +28,11 @@ export async function listApplications({
           eb('applications.email', 'ilike', `%${search}%`),
           eb('applications.firstName', 'ilike', `%${search}%`),
           eb('applications.lastName', 'ilike', `%${search}%`),
-          eb(sql`first_name || ' ' || last_name`, 'ilike', `%${search}%`),
+          eb(
+            sql`applications.first_name || ' ' || applications.last_name`,
+            'ilike',
+            `%${search}%`
+          ),
         ])
       );
     })
