@@ -29,4 +29,11 @@ export const CreateResumeBookInput = ResumeBook.pick({
   startDate: true,
 });
 
+export const SubmitResumeInput = z.object({
+  memberId: z.string().trim().min(1),
+  resume: z.unknown().transform((value) => value as File),
+  resumeBookId: z.string().trim().min(1),
+});
+
 export type CreateResumeBookInput = z.infer<typeof CreateResumeBookInput>;
+export type SubmitResumeInput = z.infer<typeof SubmitResumeInput>;
