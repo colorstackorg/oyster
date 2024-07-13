@@ -120,7 +120,7 @@ You'll need to make sure that Postgres and Redis are running in the background.
 
 #### Postgres Setup
 
-To set up your Postgres databases, you can run:
+To set up your Postgres databases & GUI, you can run:
 
 ```
 yarn dx:up
@@ -155,6 +155,21 @@ recommended to take them down once you are done using them. Run:
 ```
 yarn dx:down
 ```
+
+### Open pgAdmin (DB GUI)
+
+Make sure the Docker containers are running via `yarn dx:up`
+
+Open pgAdmin GUI in browser
+
+[http://localhost:5050](http://localhost:5050)
+
+(_first time setup_ password: `oyster`)
+
+#### View Tables:
+
+In the Object Explorer panel open **Servers** -> **Oyster postgres** ->
+**Databases** -> **oyster** -> **Schemas** -> **Tables**
 
 ### Building the Project
 

@@ -31,7 +31,7 @@ services:
       POSTGRES_PASSWORD: oyster
       POSTGRES_USER: oyster
 
-  pgadmin: # Must update the servers host name/address on every restart to postgres gateway ip
+  pgadmin:
     container_name: oyster_pgadmin
     image: dpage/pgadmin4
     environment:
@@ -40,7 +40,7 @@ services:
       PGADMIN_CONFIG_SERVER_MODE: 'False'
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
     volumes:
-      - ./docker/pgAdmin/servers.json:/pgadmin4/servers.json
+      - ./pgAdmin/servers.json:/pgadmin4/servers.json
       - pgadmin:/var/lib/pgadmin
     ports:
       - '${PGADMIN_PORT:-5050}:80'
