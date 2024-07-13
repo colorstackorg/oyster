@@ -19,6 +19,8 @@
     "dx:nuke": "docker compose down --volumes --remove-orphans",
     "dx:up": "docker compose up -d",
     "env:setup": "yarn workspace @oyster/scripts env:setup",
+    "prisma:pull": "yarn prisma db pull schema=./prisma/",
+    "prisma:studio": "yarn prisma studio",
     "lint": "turbo run lint --cache-dir=.turbo",
     "lint:fix": "turbo run lint:fix --cache-dir=.turbo",
     "prepare": "husky install",
@@ -30,6 +32,7 @@
     "husky": "^8.0.0",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
+    "prisma": "^5.16.2",
     "turbo": "latest",
     "typescript": "^5.4.2"
   },

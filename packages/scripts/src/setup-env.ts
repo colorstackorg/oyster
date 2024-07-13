@@ -13,6 +13,7 @@ const exampleFiles = [
   path.join(monorepoRoot, 'apps/member-profile/.env.example'),
   path.join(monorepoRoot, 'packages/core/.env.test.example'),
   path.join(monorepoRoot, 'packages/db/.env.example'),
+  path.join(monorepoRoot, 'prisma/.env.example'),
 ];
 
 function setupEnvironmentFiles() {

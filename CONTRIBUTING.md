@@ -156,6 +156,21 @@ recommended to take them down once you are done using them. Run:
 yarn dx:down
 ```
 
+### Start Prisma Studio (DB GUI)
+
+Add Prisma models to your `schema.prisma` file that reflect the current database
+schema.
+
+```
+yarn prisma:pull
+```
+
+Interact with and manage data interactively with in the browser.
+
+```
+yarn prisma:studio
+```
+
 ### Building the Project
 
 You can build the project by running:
