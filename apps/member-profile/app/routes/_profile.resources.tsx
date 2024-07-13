@@ -10,6 +10,7 @@ import {
 import dayjs from 'dayjs';
 import { Plus } from 'react-feather';
 
+import { isMemberAdmin } from '@oyster/core/admin.server';
 import {
   ListResourcesOrderBy,
   ListResourcesWhere,
@@ -49,6 +50,8 @@ const ResourcesSearchParams = ListSearchParams.pick({
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
+
+  const isAdmin = await isMemberAdmin(user(session));
 
   const url = new URL(request.url);
 
@@ -113,7 +116,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
           // If the logged-in member is the poster of the resource, they should
           // be able to edit the resource.
-          editable: record.posterId === user(session),
+          editable: record.posterId === user(session) || isAdmin,
 
           // This is a relative time of when the resource was posted,
           // ie: "2d" (2 days ago).

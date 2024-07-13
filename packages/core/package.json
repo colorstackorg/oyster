@@ -13,10 +13,13 @@
     "./admin-dashboard.ui": "./src/admin-dashboard.ui.ts",
     "./member-profile.server": "./src/member-profile.server.ts",
     "./member-profile.ui": "./src/member-profile.ui.ts",
+    "./admin.server": "./src/modules/admin/index.server.ts",
     "./employment": "./src/modules/employment/index.ts",
     "./employment.server": "./src/modules/employment/index.server.ts",
     "./resources": "./src/modules/resource/index.ts",
     "./resources.server": "./src/modules/resource/index.server.ts",
+    "./resume-books": "./src/modules/resume-book/index.ts",
+    "./resume-books.server": "./src/modules/resume-book/index.server.ts",
     "./slack.server": "./src/modules/slack/index.server.ts"
   },
   "scripts": {

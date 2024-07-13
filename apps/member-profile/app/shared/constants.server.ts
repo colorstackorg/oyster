@@ -5,6 +5,7 @@ import { Environment } from '@/member-profile.ui';
 const EnvironmentVariable = z.string().trim().min(1);
 
 const BaseEnvironmentConfig = z.object({
+  AIRTABLE_API_KEY: EnvironmentVariable,
   API_URL: EnvironmentVariable,
   CRUNCHBASE_BASIC_API_KEY: EnvironmentVariable,
   DATABASE_URL: EnvironmentVariable,
@@ -32,6 +33,7 @@ const BaseEnvironmentConfig = z.object({
 
 const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
   BaseEnvironmentConfig.partial({
+    AIRTABLE_API_KEY: true,
     CRUNCHBASE_BASIC_API_KEY: true,
     GITHUB_OAUTH_CLIENT_ID: true,
     GITHUB_OAUTH_CLIENT_SECRET: true,
