@@ -21,10 +21,10 @@ import { cx, Divider, getTextCn, ProfilePicture, Text } from '@oyster/ui';
 import { Card } from '@/shared/components/card';
 import { CompanyReview } from '@/shared/components/company-review';
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
   const id = params.id as string;
 
@@ -64,7 +64,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'workExperiences.startDate',
         'workExperiences.title',
       ],
-      where: { companyId: id },
+      where: { companyId: id, memberId: user(session) },
     }),
   ]);
 
@@ -201,6 +201,7 @@ function ReviewsList() {
             return (
               <CompanyReview
                 key={review.id}
+                id={review.id}
                 company={{
                   id: review.companyId || '',
                   image: review.companyImage || '',
@@ -220,6 +221,8 @@ function ReviewsList() {
                 reviewerProfilePicture={review.reviewerProfilePicture}
                 text={review.text}
                 title={review.title || ''}
+                upvotes={review.upvotes}
+                upvoted={review.upvoted as boolean}
               />
             );
           })}

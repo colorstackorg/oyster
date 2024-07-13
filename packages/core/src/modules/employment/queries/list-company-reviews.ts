@@ -24,7 +24,34 @@ export async function listCompanyReviews<
       'companyReviews.workExperienceId'
     )
     .leftJoin('students', 'students.id', 'workExperiences.studentId')
-    .select(select)
+    .select([
+      ...select,
+      (eb) => {
+        return eb
+          .selectFrom('companyReviewsUpvotes')
+          .select(eb.fn.countAll<string>().as('count'))
+          .whereRef(
+            'companyReviewsUpvotes.companyReviewId',
+            '=',
+            'companyReviews.id'
+          )
+          .as('upvotes');
+      },
+      (eb) => {
+        return eb
+          .exists((eb) => {
+            return eb
+              .selectFrom('companyReviewsUpvotes')
+              .whereRef(
+                'companyReviewsUpvotes.companyReviewId',
+                '=',
+                'companyReviews.id'
+              )
+              .where('companyReviewsUpvotes.studentId', '=', where.memberId!);
+          })
+          .as('upvoted');
+      },
+    ])
     .$if(!!includeCompanies, (qb) => {
       return qb
         .leftJoin('companies', 'companies.id', 'workExperiences.companyId')

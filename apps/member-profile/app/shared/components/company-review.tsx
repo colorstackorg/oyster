@@ -1,4 +1,4 @@
-import { generatePath, Link } from '@remix-run/react';
+import { generatePath, Link, useFetcher } from '@remix-run/react';
 import { type PropsWithChildren, useState } from 'react';
 import { Check, ChevronDown, ChevronUp, Star, X } from 'react-feather';
 
@@ -14,6 +14,7 @@ import { Card } from '@/shared/components/card';
 import { Route } from '@/shared/constants';
 
 type CompanyReviewProps = {
+  id?: string;
   date: string;
   company?: {
     id: string;
@@ -33,9 +34,12 @@ type CompanyReviewProps = {
   reviewedAt: string;
   text: string;
   title: string;
+  upvotes?: string | null;
+  upvoted?: boolean | null;
 };
 
 export const CompanyReview = ({
+  id,
   company,
   date,
   employmentType,
@@ -51,6 +55,8 @@ export const CompanyReview = ({
   reviewedAt,
   text,
   title,
+  upvotes,
+  upvoted,
 }: CompanyReviewProps) => {
   return (
     <Card>
@@ -69,6 +75,11 @@ export const CompanyReview = ({
         <Text color="gray-500" variant="sm">
           {reviewedAt}
         </Text>
+        <UpvoteCompanyReviewButton
+          id={id}
+          upvoted={upvoted}
+          upvotes={upvotes}
+        />
       </header>
 
       <div className="flex items-center gap-4">
@@ -225,3 +236,32 @@ function CompanyReviewText({ text }: Pick<CompanyReviewProps, 'text'>) {
 CompanyReview.List = function List({ children }: PropsWithChildren) {
   return <ul className="flex flex-col gap-4">{children}</ul>;
 };
+
+function UpvoteCompanyReviewButton({
+  id,
+  upvoted,
+  upvotes,
+}: Pick<CompanyReviewProps, 'id' | 'upvoted' | 'upvotes'>) {
+  const fetcher = useFetcher();
+
+  const action = upvoted
+    ? `/api/company-review/${id}/downvote`
+    : `/api/company-review/${id}/upvote`;
+
+  return (
+    <fetcher.Form action={action} method="post" className="ml-auto">
+      <button
+        className={cx(
+          getTextCn({ color: 'gray-500', variant: 'sm' }),
+          'flex h-fit items-center gap-1 rounded-full border border-gray-200 px-2 py-0.5',
+          upvoted
+            ? 'border-primary bg-primary text-white'
+            : 'hover:border-primary hover:text-primary'
+        )}
+        type="submit"
+      >
+        This was helpful ({upvotes || 0})
+      </button>
+    </fetcher.Form>
+  );
+}
