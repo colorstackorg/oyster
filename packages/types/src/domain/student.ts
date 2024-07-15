@@ -99,6 +99,13 @@ const StudentLocation = z.object({
   hometownLongitude: z.coerce.number().nullable(),
 });
 
+export const WorkAuthorizationStatus = {
+  AUTHORIZED: 'authorized',
+  NEEDS_SPONSORSHIP: 'needs_sponsorship',
+  UNAUTHORIZED: 'unauthorized',
+  UNSURE: 'unsure',
+} as const;
+
 export const Student = Entity.merge(StudentSocialLinks)
   .merge(StudentLocation)
   .extend({
@@ -184,6 +191,13 @@ export const Student = Entity.merge(StudentSocialLinks)
     slackId: z.string().optional(),
     swagUpOrderId: z.string().min(1).optional(),
     type: z.nativeEnum(MemberType),
+
+    /**
+     * The status of the member's work authorization in the United States or
+     * Canada. This is important for partners to know if a student is able to
+     * work in the US or Canada.
+     */
+    workAuthorizationStatus: z.nativeEnum(WorkAuthorizationStatus).optional(),
   });
 
 export const StudentEmail = Entity.omit({

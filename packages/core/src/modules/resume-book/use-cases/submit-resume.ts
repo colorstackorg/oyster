@@ -1,4 +1,4 @@
-import { db } from '@oyster/db';
+import { db, point } from '@oyster/db';
 import {
   getPresignedURL,
   putObject,
@@ -8,9 +8,17 @@ import { createAirtableRecord } from '@/modules/airtable/use-cases/create-airtab
 import { type SubmitResumeInput } from '@/modules/resume-book/resume-book.types';
 
 export async function submitResume({
+  firstName,
+  hometown,
+  hometownLatitude,
+  hometownLongitude,
+  lastName,
+  linkedInUrl,
   memberId,
+  race,
   resume,
   resumeBookId,
+  workAuthorizationStatus,
 }: SubmitResumeInput) {
   const resumeBook = await db
     .selectFrom('resumeBooks')
@@ -20,7 +28,7 @@ export async function submitResume({
 
   const member = await db
     .selectFrom('students as members')
-    .select(['firstName', 'lastName', 'graduationYear'])
+    .select(['graduationYear'])
     .where('id', '=', memberId)
     .executeTakeFirstOrThrow();
 
@@ -40,7 +48,7 @@ export async function submitResume({
 
   // In order to keep the resume file names consistent for the partners, we'll
   // use the same naming convention based on the submitter.
-  const filename = `${member.lastName}_${member.firstName}_${member.graduationYear}.pdf`;
+  const filename = `${lastName}_${firstName}_${member.graduationYear}.pdf`;
 
   const airtableRecordId = await createAirtableRecord({
     baseId: resumeBook.airtableBaseId,
@@ -50,13 +58,32 @@ export async function submitResume({
     tableName: resumeBook.airtableTableId,
   });
 
-  await db
-    .insertInto('resumeBookSubmissions')
-    .values({
-      airtableRecordId: airtableRecordId as string,
-      memberId,
-      resumeBookId,
-      submittedAt: new Date(),
-    })
-    .execute();
+  await db.transaction().execute(async (trx) => {
+    await trx
+      .updateTable('students')
+      .set({
+        firstName,
+        hometown,
+        hometownCoordinates: point({
+          x: hometownLongitude,
+          y: hometownLatitude,
+        }),
+        lastName,
+        linkedInUrl,
+        race,
+        workAuthorizationStatus,
+      })
+      .where('id', '=', memberId)
+      .execute();
+
+    await trx
+      .insertInto('resumeBookSubmissions')
+      .values({
+        airtableRecordId: airtableRecordId as string,
+        memberId,
+        resumeBookId,
+        submittedAt: new Date(),
+      })
+      .execute();
+  });
 }

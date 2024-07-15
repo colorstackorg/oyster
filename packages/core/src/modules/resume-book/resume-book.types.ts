@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
-import { Entity } from '@oyster/types';
+import { Entity, Student } from '@oyster/types';
 
 // Domain
 
@@ -29,7 +29,19 @@ export const CreateResumeBookInput = ResumeBook.pick({
   startDate: true,
 });
 
-export const SubmitResumeInput = z.object({
+export const SubmitResumeInput = Student.pick({
+  firstName: true,
+  lastName: true,
+  linkedInUrl: true,
+  hometown: true,
+  hometownLatitude: true,
+  hometownLongitude: true,
+  race: true,
+  workAuthorizationStatus: true,
+}).extend({
+  hometown: Student.shape.hometown.unwrap(),
+  hometownLatitude: Student.shape.hometownLatitude.unwrap(),
+  hometownLongitude: Student.shape.hometownLongitude.unwrap(),
   memberId: z.string().trim().min(1),
   resume: z.unknown().transform((value) => value as File),
   resumeBookId: z.string().trim().min(1),
