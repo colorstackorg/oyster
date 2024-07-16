@@ -31,8 +31,8 @@ export async function onRegisteredForEvent({
   ]);
 
   job('airtable.record.create', {
-    baseId: process.env.AIRTABLE_EVENT_REGISTRATIONS_BASE_ID as string,
-    tableName: 'Registrations',
+    airtableBaseId: process.env.AIRTABLE_EVENT_REGISTRATIONS_BASE_ID as string,
+    airtableTableId: 'Registrations',
     data: {
       Email: student.email,
       Event: event.name,

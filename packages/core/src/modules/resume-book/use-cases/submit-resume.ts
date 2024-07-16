@@ -84,35 +84,39 @@ export async function submitResume({
   const graduationSeason =
     education.endDate.getMonth() <= 6 ? 'Spring' : 'Fall';
 
+  const airtableData = {
+    Email: member.email,
+    'First Name': firstName,
+    'Last Name': lastName,
+    Race: race,
+    'Education Level': education.degreeType,
+    'Graduation Season': graduationSeason,
+    'Graduation Year': graduationYear.toString(),
+    'University Location (City)': education.addressCity,
+    'University Location (State)': education.addressState,
+    Hometown: hometown,
+    'Role Interest': preferredRoles,
+    'Proficient Language(s)': codingLanguages,
+    'Employment Search Status': employmentSearchStatus,
+    'Sponsor Interest #1': preferredCompany1,
+    'Sponsor Interest #2': preferredCompany2,
+    'Sponsor Interest #3': preferredCompany3,
+    Resume: [{ filename, url: resumeLink }],
+    LinkedIn: linkedInUrl,
+    'Work Authorization Status': workAuthorizationStatus,
+  };
+
   const airtableRecordId = !submission
     ? await createAirtableRecord({
-        baseId: resumeBook.airtableBaseId,
-        data: {
-          Email: member.email,
-          'First Name': firstName,
-          'Last Name': lastName,
-          Race: race,
-          'Education Level': education.degreeType,
-          'Graduation Season': graduationSeason,
-          'Graduation Year': graduationYear.toString(),
-          'University Location (City)': education.addressCity,
-          'University Location (State)': education.addressState,
-          Hometown: hometown,
-          'Role Interest': preferredRoles,
-          'Proficient Language(s)': codingLanguages,
-          'Employment Search Status': employmentSearchStatus,
-          'Sponsor Interest #1': preferredCompany1,
-          'Sponsor Interest #2': preferredCompany2,
-          'Sponsor Interest #3': preferredCompany3,
-          Resume: [{ filename, url: resumeLink }],
-          LinkedIn: linkedInUrl,
-          'Work Authorization Status': workAuthorizationStatus,
-        },
-        tableName: resumeBook.airtableTableId,
+        airtableBaseId: resumeBook.airtableBaseId,
+        airtableTableId: resumeBook.airtableTableId,
+        data: airtableData,
       })
     : await updateAirtableRecord({
-        airtableId: submission.airtableRecordId,
-        data: {},
+        airtableBaseId: resumeBook.airtableBaseId,
+        airtableRecordId: submission.airtableRecordId,
+        airtableTableId: resumeBook.airtableTableId,
+        data: airtableData,
       });
 
   await db.transaction().execute(async (trx) => {

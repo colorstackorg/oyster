@@ -50,8 +50,12 @@ export async function onPrimaryEmailChanged({
   ]);
 
   job('airtable.record.update', {
-    airtableId: student.airtableId!,
-    data: { email: student.newEmail },
+    airtableBaseId: '',
+    airtableRecordId: student.airtableId!,
+    airtableTableId: '',
+    data: {
+      Email: student.newEmail,
+    },
   });
 
   const data = {

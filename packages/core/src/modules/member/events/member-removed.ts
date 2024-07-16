@@ -8,7 +8,9 @@ export async function onMemberRemoved({
   slackId,
 }: GetBullJobData<'student.removed'>) {
   job('airtable.record.delete', {
-    airtableId,
+    airtableBaseId: '',
+    airtableRecordId: airtableId,
+    airtableTableId: '',
   });
 
   job('email_marketing.remove', {

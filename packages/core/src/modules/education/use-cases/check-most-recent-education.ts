@@ -63,10 +63,12 @@ export async function checkMostRecentEducation(studentId: string) {
     .executeTakeFirstOrThrow();
 
   job('airtable.record.update', {
-    airtableId: member.airtableId as string,
+    airtableBaseId: '',
+    airtableRecordId: member.airtableId as string,
+    airtableTableId: '',
     data: {
-      graduationYear,
-      school: member.school as string,
+      'Expected Graduation Year': graduationYear,
+      School: member.school as string,
     },
   });
 }

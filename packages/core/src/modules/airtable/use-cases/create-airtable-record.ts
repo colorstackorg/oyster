@@ -11,28 +11,31 @@ import {
  * @see https://airtable.com/developers/web/api/create-records
  */
 export async function createAirtableRecord({
-  baseId,
+  airtableBaseId,
+  airtableTableId,
   data,
-  tableName,
 }: GetBullJobData<'airtable.record.create'>) {
-  if (!IS_PRODUCTION) {
-    return;
-  }
+  // if (!IS_PRODUCTION) {
+  //   return;
+  // }
 
   await airtableRateLimiter.process();
 
-  const response = await fetch(`${AIRTABLE_API_URI}/${baseId}/${tableName}`, {
-    body: JSON.stringify({
-      fields: data,
+  const response = await fetch(
+    `${AIRTABLE_API_URI}/${airtableBaseId}/${airtableTableId}`,
+    {
+      body: JSON.stringify({
+        fields: data,
 
-      // This means that if there is a select field (whether single or multi),
-      // if the value we send to Airtable is not already there, it should
-      // create that value instead of failing.
-      typecast: true,
-    }),
-    headers: getAirtableHeaders({ includeContentType: true }),
-    method: 'post',
-  });
+        // This means that if there is a select field (whether single or multi),
+        // if the value we send to Airtable is not already there, it should
+        // create that value instead of failing.
+        typecast: true,
+      }),
+      headers: getAirtableHeaders({ includeContentType: true }),
+      method: 'post',
+    }
+  );
 
   if (!response.ok) {
     throw new ErrorWithContext('Failed to create Airtable record.').withContext(
