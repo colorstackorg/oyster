@@ -172,7 +172,11 @@ export const Student = Entity.merge(StudentSocialLinks)
      */
     profilePicture: z.string().url().nullable(),
 
-    race: z.nativeEnum(Race).array().min(1),
+    race: z.preprocess((value) => {
+      // This ensures that we don't have to worry about the value being a string
+      // or an array of strings.
+      return typeof value === 'string' ? value.split(',') : value;
+    }, z.nativeEnum(Race).array().min(1)),
 
     /**
      * ID of the school record that the student is associated with.

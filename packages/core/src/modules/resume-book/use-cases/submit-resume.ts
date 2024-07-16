@@ -57,7 +57,7 @@ export async function submitResume({
         'schools.addressState',
         'schools.addressZip',
       ])
-      .where('id', '=', educationId)
+      .where('educations.id', '=', educationId)
       .executeTakeFirstOrThrow(),
   ]);
 
