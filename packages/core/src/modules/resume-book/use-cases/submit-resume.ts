@@ -8,7 +8,9 @@ import { createAirtableRecord } from '@/modules/airtable/use-cases/create-airtab
 import { type SubmitResumeInput } from '@/modules/resume-book/resume-book.types';
 
 export async function submitResume({
+  codingLanguages,
   educationId,
+  employmentSearchStatus,
   firstName,
   hometown,
   hometownLatitude,
@@ -19,6 +21,7 @@ export async function submitResume({
   preferredCompany1,
   preferredCompany2,
   preferredCompany3,
+  preferredRoles,
   race,
   resume,
   resumeBookId,
@@ -123,11 +126,14 @@ export async function submitResume({
       .insertInto('resumeBookSubmissions')
       .values({
         airtableRecordId: airtableRecordId as string,
+        codingLanguages,
         educationId,
+        employmentSearchStatus,
         memberId,
         preferredCompany1,
         preferredCompany2,
         preferredCompany3,
+        preferredRoles,
         resumeBookId,
         submittedAt: new Date(),
       })
