@@ -34,6 +34,7 @@ import {
   Form,
   getErrors,
   Input,
+  Radio,
   Select,
   Text,
   validateForm,
@@ -155,7 +156,9 @@ export async function action({ params, request }: ActionFunctionArgs) {
   }
 
   await submitResume({
+    codingLanguages: data.codingLanguages,
     educationId: data.educationId,
+    employmentSearchStatus: data.employmentSearchStatus,
     firstName: data.firstName,
     lastName: data.lastName,
     hometown: data.hometown,
@@ -166,6 +169,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     preferredCompany1: data.preferredCompany1,
     preferredCompany2: data.preferredCompany2,
     preferredCompany3: data.preferredCompany3,
+    preferredRoles: data.preferredRoles,
     race: data.race,
     resume: data.resume,
     resumeBookId: data.resumeBookId,
@@ -380,6 +384,108 @@ export default function ResumeBook() {
         </Form.Field>
 
         <Divider my="4" />
+
+        <Form.Field
+          error={errors.codingLanguages}
+          label="Which coding language(s) are you most proficient with?"
+          labelFor={keys.codingLanguages}
+          required
+        >
+          <Checkbox.Group>
+            {[
+              'C',
+              'C++',
+              'C#',
+              'Go',
+              'Java',
+              'JavaScript',
+              'Kotlin',
+              'Matlab',
+              'Objective-C',
+              'PHP',
+              'Python',
+              'Ruby',
+              'Rust',
+              'Scala',
+              'Solidity',
+              'SQL',
+              'Swift',
+              'TypeScript',
+            ].map((value) => {
+              return (
+                <Checkbox
+                  key={value}
+                  defaultChecked={false}
+                  id={keys.codingLanguages + value}
+                  label={value}
+                  name={keys.codingLanguages}
+                  value={value}
+                />
+              );
+            })}
+          </Checkbox.Group>
+        </Form.Field>
+
+        <Form.Field
+          error={errors.preferredRoles}
+          label="Which kind of roles are you interested in?"
+          labelFor={keys.preferredRoles}
+          required
+        >
+          <Checkbox.Group>
+            {[
+              'AI/Machine Learning',
+              'Android Developer',
+              'Cybersecurity Engineer/Analyst',
+              'Data Science',
+              'Developer Advocacy',
+              'iOS Developer',
+              'Network Architecture',
+              'Product Design (UI/UX)',
+              'Product Management',
+              'Software Engineering',
+              'Web Development',
+            ].map((value) => {
+              return (
+                <Checkbox
+                  key={value}
+                  defaultChecked={false}
+                  id={keys.preferredRoles + value}
+                  label={value}
+                  name={keys.preferredRoles}
+                  value={value}
+                />
+              );
+            })}
+          </Checkbox.Group>
+        </Form.Field>
+
+        <Form.Field
+          error={errors.employmentSearchStatus}
+          label="Which is the status of your employment search?"
+          labelFor={keys.employmentSearchStatus}
+          required
+        >
+          <Radio.Group>
+            {[
+              'I am actively searching for a position.',
+              'I have accepted an offer.',
+              'I am between offers, but still searching.',
+            ].map((value) => {
+              return (
+                <Radio
+                  key={value}
+                  defaultChecked={false}
+                  id={keys.employmentSearchStatus + value}
+                  label={value}
+                  name={keys.employmentSearchStatus}
+                  required
+                  value={value}
+                />
+              );
+            })}
+          </Radio.Group>
+        </Form.Field>
 
         <SponsorField
           defaultValue=""
