@@ -78,6 +78,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       getResumeBook(id),
 
       getResumeBookSubmission({
+        select: [],
         where: { memberId, resumeBookId: id },
       }),
 
@@ -134,7 +135,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     member,
     resumeBook,
     sponsors,
-    submission: {},
+    submission,
   });
 }
 

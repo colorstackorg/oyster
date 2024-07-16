@@ -3,7 +3,7 @@ import { type SelectExpression } from 'kysely';
 import { type DB, db } from '@oyster/db';
 
 type GetResumeBookSubmissionOptions<Selection> = {
-  select?: Selection[];
+  select: Selection[];
   where: {
     memberId: string;
     resumeBookId: string;
@@ -12,7 +12,7 @@ type GetResumeBookSubmissionOptions<Selection> = {
 
 export async function getResumeBookSubmission<
   Selection extends SelectExpression<DB, 'resumeBookSubmissions'>,
->({ select = [], where }: GetResumeBookSubmissionOptions<Selection>) {
+>({ select, where }: GetResumeBookSubmissionOptions<Selection>) {
   const submission = await db
     .selectFrom('resumeBookSubmissions')
     .select(select)
