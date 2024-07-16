@@ -16,10 +16,12 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
+import { useState } from 'react';
 
 import { SubmitResumeInput } from '@oyster/core/resume-books';
 import {
   getResumeBook,
+  getResumeBookSubmission,
   listResumeBookSponsors,
   submitResume,
 } from '@oyster/core/resume-books.server';
@@ -43,6 +45,7 @@ import {
 import { type DegreeType, FORMATTED_DEGREEE_TYPE } from '@/member-profile.ui';
 import { HometownField } from '@/shared/components/profile.personal';
 import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
 import { getMember } from '@/shared/queries';
 import {
   commitSession,
@@ -57,49 +60,65 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const id = params.id as string;
   const memberId = user(session);
 
-  const [member, resumeBook, sponsors, _educations] = await Promise.all([
-    getMember(memberId)
-      .select([
-        'email',
-        'firstName',
-        'hometown',
-        'hometownCoordinates',
-        'lastName',
-        'linkedInUrl',
-        'race',
-        'workAuthorizationStatus',
-      ])
-      .executeTakeFirst(),
+  const [member, _resumeBook, submission, sponsors, _educations] =
+    await Promise.all([
+      getMember(memberId)
+        .select([
+          'email',
+          'firstName',
+          'hometown',
+          'hometownCoordinates',
+          'lastName',
+          'linkedInUrl',
+          'race',
+          'workAuthorizationStatus',
+        ])
+        .executeTakeFirst(),
 
-    getResumeBook(id),
+      getResumeBook(id),
 
-    listResumeBookSponsors({
-      where: { resumeBookId: id },
-    }),
+      getResumeBookSubmission({
+        select: [],
+        where: { memberId, resumeBookId: id },
+      }),
 
-    await db
-      .selectFrom('educations')
-      .leftJoin('schools', 'schools.id', 'educations.schoolId')
-      .select([
-        'educations.degreeType',
-        'educations.endDate',
-        'educations.id',
-        'educations.startDate',
-        'schools.name as schoolName',
-      ])
-      .where('studentId', '=', memberId)
-      .orderBy('endDate', 'desc')
-      .orderBy('startDate', 'desc')
-      .execute(),
-  ]);
+      listResumeBookSponsors({
+        where: { resumeBookId: id },
+      }),
+
+      await db
+        .selectFrom('educations')
+        .leftJoin('schools', 'schools.id', 'educations.schoolId')
+        .select([
+          'educations.degreeType',
+          'educations.endDate',
+          'educations.id',
+          'educations.startDate',
+          'schools.name as schoolName',
+        ])
+        .where('studentId', '=', memberId)
+        .orderBy('endDate', 'desc')
+        .orderBy('startDate', 'desc')
+        .execute(),
+    ]);
 
   if (!member) {
     throw new Response(null, { status: 500 });
   }
 
-  if (!resumeBook) {
+  if (!_resumeBook) {
     throw new Response(null, { status: 404 });
   }
+
+  const timezone = getTimezone(request);
+
+  const resumeBook = {
+    ..._resumeBook,
+
+    endDate: dayjs(_resumeBook.endDate)
+      .tz(timezone)
+      .format('dddd, MMMM DD, YYYY @ h:mm A'),
+  };
 
   const educations = _educations.map(({ endDate, startDate, ...education }) => {
     return {
@@ -116,6 +135,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     member,
     resumeBook,
     sponsors,
+    submission,
   });
 }
 
@@ -194,337 +214,373 @@ export async function action({ params, request }: ActionFunctionArgs) {
 const keys = SubmitResumeInput.keyof().enum;
 
 export default function ResumeBook() {
-  const { educations, member, resumeBook } = useLoaderData<typeof loader>();
-  const { error, errors } = getErrors(useActionData<typeof action>());
+  const { resumeBook, submission } = useLoaderData<typeof loader>();
+
+  const [showEditButton, setShowEditButton] = useState<boolean>(!!submission);
 
   return (
     <section className="mx-auto flex w-full max-w-[36rem] flex-col gap-8">
       <div className="flex flex-col gap-1">
         <Text variant="2xl">Resume Book: {resumeBook.name}</Text>
 
-        <Text color="gray-500">
-          Before continuining, please ensure that your{' '}
-          <Link className="link" target="_blank" to={Route['/profile/emails']}>
-            primary email
-          </Link>{' '}
-          and{' '}
-          <Link
-            className="link"
-            target="_blank"
-            to={Route['/profile/education']}
-          >
-            education history
-          </Link>{' '}
-          is up to date.
-        </Text>
+        {!showEditButton && (
+          <Text color="gray-500">
+            Before continuining, please ensure that your{' '}
+            <Link
+              className="link"
+              target="_blank"
+              to={Route['/profile/emails']}
+            >
+              primary email
+            </Link>{' '}
+            and{' '}
+            <Link
+              className="link"
+              target="_blank"
+              to={Route['/profile/education']}
+            >
+              education history
+            </Link>{' '}
+            is up to date.
+          </Text>
+        )}
       </div>
 
-      <RemixForm
-        className="form"
-        data-gap="2rem"
-        method="post"
-        encType="multipart/form-data"
-      >
-        <Form.Field
-          error={errors.firstName}
-          label="First Name"
-          labelFor={keys.firstName}
-          required
-        >
-          <Input
-            defaultValue={member.firstName}
-            id={keys.firstName}
-            name={keys.firstName}
-            required
-          />
-        </Form.Field>
+      {showEditButton ? (
+        <div className="flex flex-col gap-8 rounded-xl border border-dashed border-green-700 bg-green-50 p-4">
+          <Text>
+            Thank you for submitting your resume to the {resumeBook.name} resume
+            book! You can edit your submission until the deadline:{' '}
+            {resumeBook.endDate}.
+          </Text>
 
-        <Form.Field
-          error={errors.lastName}
-          label="Last Name"
-          labelFor={keys.lastName}
-          required
-        >
-          <Input
-            defaultValue={member.lastName}
-            id={keys.lastName}
-            name={keys.lastName}
-            required
-          />
-        </Form.Field>
-
-        <Form.Field
-          description={
-            <Text>
-              If you would like to change your primary email, click{' '}
-              <Link
-                className="link"
-                target="_blank"
-                to={Route['/profile/emails']}
-              >
-                here
-              </Link>
-              .
-            </Text>
-          }
-          label="Email"
-          labelFor="email"
-          required
-        >
-          <Input
-            defaultValue={member.email}
-            disabled
-            id="email"
-            name="email"
-            required
-          />
-        </Form.Field>
-
-        <Form.Field
-          description="How do you identify?"
-          error={errors.race}
-          label="Race & Ethnicity"
-          labelFor={keys.race}
-          required
-        >
-          <Checkbox.Group>
-            {[
-              Race.BLACK,
-              Race.HISPANIC,
-              Race.NATIVE_AMERICAN,
-              Race.MIDDLE_EASTERN,
-              Race.WHITE,
-              Race.ASIAN,
-              Race.OTHER,
-            ].map((value) => {
-              return (
-                <Checkbox
-                  key={value}
-                  defaultChecked={member.race.includes(value)}
-                  id={keys.race + value}
-                  label={FORMATTED_RACE[value]}
-                  name={keys.race}
-                  value={value}
-                />
-              );
-            })}
-          </Checkbox.Group>
-        </Form.Field>
-
-        <Form.Field
-          error={error}
-          label="LinkedIn Profile/URL"
-          labelFor={keys.linkedInUrl}
-          required
-        >
-          <Input
-            defaultValue={member.linkedInUrl || undefined}
-            id={keys.linkedInUrl}
-            name={keys.linkedInUrl}
-            required
-          />
-        </Form.Field>
-
-        <Form.Field
-          description="For reference, US and Canadian citizens are always authorized, while non-US citizens may be authorized if their immigration status allows them to work."
-          error={errors.workAuthorizationStatus}
-          label="Are you authorized to work in the US or Canada?"
-          labelFor={keys.workAuthorizationStatus}
-          required
-        >
-          <Select
-            defaultValue={member.workAuthorizationStatus || undefined}
-            id={keys.workAuthorizationStatus}
-            name={keys.workAuthorizationStatus}
-            required
+          <button
+            className="link w-fit"
+            onClick={() => {
+              setShowEditButton(false);
+            }}
+            type="button"
           >
-            <option value={WorkAuthorizationStatus.AUTHORIZED}>Yes</option>
-            <option value={WorkAuthorizationStatus.NEEDS_SPONSORSHIP}>
-              Yes, with visa sponsorship
-            </option>
-            <option value={WorkAuthorizationStatus.UNAUTHORIZED}>No</option>
-            <option value={WorkAuthorizationStatus.UNSURE}>I'm not sure</option>
-          </Select>
-        </Form.Field>
-
-        <HometownField
-          defaultLatitude={member.hometownCoordinates?.y}
-          defaultLongitude={member.hometownCoordinates?.x}
-          defaultValue={member.hometown || undefined}
-          description="Where did you grow up/attend high school?"
-          error={errors.hometown}
-          latitudeName={keys.hometownLatitude}
-          longitudeName={keys.hometownLongitude}
-          name={keys.hometown}
-        />
-
-        <Form.Field
-          description="Companies will use this to determine your graduation year, education level, etc."
-          error={errors.educationId}
-          label="Select your current (or most recent) education experience."
-          labelFor={keys.educationId}
-          required
-        >
-          <Select
-            defaultValue=""
-            id={keys.educationId}
-            name={keys.educationId}
-            required
-          >
-            {educations.map((education) => {
-              return (
-                <option key={education.id} value={education.id}>
-                  {education.schoolName},{' '}
-                  {FORMATTED_DEGREEE_TYPE[education.degreeType as DegreeType]},{' '}
-                  {education.date}
-                </option>
-              );
-            })}
-          </Select>
-        </Form.Field>
-
-        <Divider my="4" />
-
-        <Form.Field
-          error={errors.codingLanguages}
-          label="Which coding language(s) are you most proficient with?"
-          labelFor={keys.codingLanguages}
-          required
-        >
-          <Checkbox.Group>
-            {[
-              'C',
-              'C++',
-              'C#',
-              'Go',
-              'Java',
-              'JavaScript',
-              'Kotlin',
-              'Matlab',
-              'Objective-C',
-              'PHP',
-              'Python',
-              'Ruby',
-              'Rust',
-              'Scala',
-              'Solidity',
-              'SQL',
-              'Swift',
-              'TypeScript',
-            ].map((value) => {
-              return (
-                <Checkbox
-                  key={value}
-                  defaultChecked={false}
-                  id={keys.codingLanguages + value}
-                  label={value}
-                  name={keys.codingLanguages}
-                  value={value}
-                />
-              );
-            })}
-          </Checkbox.Group>
-        </Form.Field>
-
-        <Form.Field
-          error={errors.preferredRoles}
-          label="Which kind of roles are you interested in?"
-          labelFor={keys.preferredRoles}
-          required
-        >
-          <Checkbox.Group>
-            {[
-              'AI/Machine Learning',
-              'Android Developer',
-              'Cybersecurity Engineer/Analyst',
-              'Data Science',
-              'Developer Advocacy',
-              'iOS Developer',
-              'Network Architecture',
-              'Product Design (UI/UX)',
-              'Product Management',
-              'Software Engineering',
-              'Web Development',
-            ].map((value) => {
-              return (
-                <Checkbox
-                  key={value}
-                  defaultChecked={false}
-                  id={keys.preferredRoles + value}
-                  label={value}
-                  name={keys.preferredRoles}
-                  value={value}
-                />
-              );
-            })}
-          </Checkbox.Group>
-        </Form.Field>
-
-        <Form.Field
-          error={errors.employmentSearchStatus}
-          label="Which is the status of your employment search?"
-          labelFor={keys.employmentSearchStatus}
-          required
-        >
-          <Radio.Group>
-            {[
-              'I am actively searching for a position.',
-              'I have accepted an offer.',
-              'I am between offers, but still searching.',
-            ].map((value) => {
-              return (
-                <Radio
-                  key={value}
-                  defaultChecked={false}
-                  id={keys.employmentSearchStatus + value}
-                  label={value}
-                  name={keys.employmentSearchStatus}
-                  required
-                  value={value}
-                />
-              );
-            })}
-          </Radio.Group>
-        </Form.Field>
-
-        <SponsorField
-          defaultValue=""
-          description="Which company would you accept an offer from right now?"
-          error={errors.preferredCompany1}
-          name={keys.preferredCompany1}
-        />
-
-        <SponsorField
-          defaultValue=""
-          description="Maybe not your #1, but which company is a close second?"
-          error={errors.preferredCompany2}
-          name={keys.preferredCompany2}
-        />
-
-        <SponsorField
-          defaultValue=""
-          description="Third?"
-          error={errors.preferredCompany3}
-          name={keys.preferredCompany3}
-        />
-
-        <Form.Field
-          description="Must be a PDF less than 1 MB."
-          error=""
-          label="Resume"
-          labelFor="resume"
-          required
-        >
-          <input accept=".pdf" id="resume" name="resume" required type="file" />
-        </Form.Field>
-
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
-
-        <Button.Group>
-          <Button.Submit>Submit</Button.Submit>
-        </Button.Group>
-      </RemixForm>
+            Edit Submission
+          </button>
+        </div>
+      ) : (
+        <ResumeBookForm />
+      )}
     </section>
+  );
+}
+
+function ResumeBookForm() {
+  const { educations, member } = useLoaderData<typeof loader>();
+  const { error, errors } = getErrors(useActionData<typeof action>());
+
+  return (
+    <RemixForm
+      className="form"
+      data-gap="2rem"
+      method="post"
+      encType="multipart/form-data"
+    >
+      <Form.Field
+        error={errors.firstName}
+        label="First Name"
+        labelFor={keys.firstName}
+        required
+      >
+        <Input
+          defaultValue={member.firstName}
+          id={keys.firstName}
+          name={keys.firstName}
+          required
+        />
+      </Form.Field>
+
+      <Form.Field
+        error={errors.lastName}
+        label="Last Name"
+        labelFor={keys.lastName}
+        required
+      >
+        <Input
+          defaultValue={member.lastName}
+          id={keys.lastName}
+          name={keys.lastName}
+          required
+        />
+      </Form.Field>
+
+      <Form.Field
+        description={
+          <Text>
+            If you would like to change your primary email, click{' '}
+            <Link
+              className="link"
+              target="_blank"
+              to={Route['/profile/emails']}
+            >
+              here
+            </Link>
+            .
+          </Text>
+        }
+        label="Email"
+        labelFor="email"
+        required
+      >
+        <Input
+          defaultValue={member.email}
+          disabled
+          id="email"
+          name="email"
+          required
+        />
+      </Form.Field>
+
+      <Form.Field
+        description="How do you identify?"
+        error={errors.race}
+        label="Race & Ethnicity"
+        labelFor={keys.race}
+        required
+      >
+        <Checkbox.Group>
+          {[
+            Race.BLACK,
+            Race.HISPANIC,
+            Race.NATIVE_AMERICAN,
+            Race.MIDDLE_EASTERN,
+            Race.WHITE,
+            Race.ASIAN,
+            Race.OTHER,
+          ].map((value) => {
+            return (
+              <Checkbox
+                key={value}
+                defaultChecked={member.race.includes(value)}
+                id={keys.race + value}
+                label={FORMATTED_RACE[value]}
+                name={keys.race}
+                value={value}
+              />
+            );
+          })}
+        </Checkbox.Group>
+      </Form.Field>
+
+      <Form.Field
+        error={error}
+        label="LinkedIn Profile/URL"
+        labelFor={keys.linkedInUrl}
+        required
+      >
+        <Input
+          defaultValue={member.linkedInUrl || undefined}
+          id={keys.linkedInUrl}
+          name={keys.linkedInUrl}
+          required
+        />
+      </Form.Field>
+
+      <Form.Field
+        description="For reference, US and Canadian citizens are always authorized, while non-US citizens may be authorized if their immigration status allows them to work."
+        error={errors.workAuthorizationStatus}
+        label="Are you authorized to work in the US or Canada?"
+        labelFor={keys.workAuthorizationStatus}
+        required
+      >
+        <Select
+          defaultValue={member.workAuthorizationStatus || undefined}
+          id={keys.workAuthorizationStatus}
+          name={keys.workAuthorizationStatus}
+          required
+        >
+          <option value={WorkAuthorizationStatus.AUTHORIZED}>Yes</option>
+          <option value={WorkAuthorizationStatus.NEEDS_SPONSORSHIP}>
+            Yes, with visa sponsorship
+          </option>
+          <option value={WorkAuthorizationStatus.UNAUTHORIZED}>No</option>
+          <option value={WorkAuthorizationStatus.UNSURE}>I'm not sure</option>
+        </Select>
+      </Form.Field>
+
+      <HometownField
+        defaultLatitude={member.hometownCoordinates?.y}
+        defaultLongitude={member.hometownCoordinates?.x}
+        defaultValue={member.hometown || undefined}
+        description="Where did you grow up/attend high school?"
+        error={errors.hometown}
+        latitudeName={keys.hometownLatitude}
+        longitudeName={keys.hometownLongitude}
+        name={keys.hometown}
+      />
+
+      <Form.Field
+        description="Companies will use this to determine your graduation year, education level, etc."
+        error={errors.educationId}
+        label="Select your current (or most recent) education experience."
+        labelFor={keys.educationId}
+        required
+      >
+        <Select
+          defaultValue=""
+          id={keys.educationId}
+          name={keys.educationId}
+          required
+        >
+          {educations.map((education) => {
+            return (
+              <option key={education.id} value={education.id}>
+                {education.schoolName},{' '}
+                {FORMATTED_DEGREEE_TYPE[education.degreeType as DegreeType]},{' '}
+                {education.date}
+              </option>
+            );
+          })}
+        </Select>
+      </Form.Field>
+
+      <Divider my="4" />
+
+      <Form.Field
+        error={errors.codingLanguages}
+        label="Which coding language(s) are you most proficient with?"
+        labelFor={keys.codingLanguages}
+        required
+      >
+        <Checkbox.Group>
+          {[
+            'C',
+            'C++',
+            'C#',
+            'Go',
+            'Java',
+            'JavaScript',
+            'Kotlin',
+            'Matlab',
+            'Objective-C',
+            'PHP',
+            'Python',
+            'Ruby',
+            'Rust',
+            'Scala',
+            'Solidity',
+            'SQL',
+            'Swift',
+            'TypeScript',
+          ].map((value) => {
+            return (
+              <Checkbox
+                key={value}
+                defaultChecked={false}
+                id={keys.codingLanguages + value}
+                label={value}
+                name={keys.codingLanguages}
+                value={value}
+              />
+            );
+          })}
+        </Checkbox.Group>
+      </Form.Field>
+
+      <Form.Field
+        error={errors.preferredRoles}
+        label="Which kind of roles are you interested in?"
+        labelFor={keys.preferredRoles}
+        required
+      >
+        <Checkbox.Group>
+          {[
+            'AI/Machine Learning',
+            'Android Developer',
+            'Cybersecurity Engineer/Analyst',
+            'Data Science',
+            'Developer Advocacy',
+            'iOS Developer',
+            'Network Architecture',
+            'Product Design (UI/UX)',
+            'Product Management',
+            'Software Engineering',
+            'Web Development',
+          ].map((value) => {
+            return (
+              <Checkbox
+                key={value}
+                defaultChecked={false}
+                id={keys.preferredRoles + value}
+                label={value}
+                name={keys.preferredRoles}
+                value={value}
+              />
+            );
+          })}
+        </Checkbox.Group>
+      </Form.Field>
+
+      <Form.Field
+        error={errors.employmentSearchStatus}
+        label="Which is the status of your employment search?"
+        labelFor={keys.employmentSearchStatus}
+        required
+      >
+        <Radio.Group>
+          {[
+            'I am actively searching for a position.',
+            'I have accepted an offer.',
+            'I am between offers, but still searching.',
+          ].map((value) => {
+            return (
+              <Radio
+                key={value}
+                defaultChecked={false}
+                id={keys.employmentSearchStatus + value}
+                label={value}
+                name={keys.employmentSearchStatus}
+                required
+                value={value}
+              />
+            );
+          })}
+        </Radio.Group>
+      </Form.Field>
+
+      <SponsorField
+        defaultValue=""
+        description="Which company would you accept an offer from right now?"
+        error={errors.preferredCompany1}
+        name={keys.preferredCompany1}
+      />
+
+      <SponsorField
+        defaultValue=""
+        description="Maybe not your #1, but which company is a close second?"
+        error={errors.preferredCompany2}
+        name={keys.preferredCompany2}
+      />
+
+      <SponsorField
+        defaultValue=""
+        description="Third?"
+        error={errors.preferredCompany3}
+        name={keys.preferredCompany3}
+      />
+
+      <Form.Field
+        description="Must be a PDF less than 1 MB."
+        error=""
+        label="Resume"
+        labelFor="resume"
+        required
+      >
+        <input accept=".pdf" id="resume" name="resume" required type="file" />
+      </Form.Field>
+
+      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+
+      <Button.Group>
+        <Button.Submit>Submit</Button.Submit>
+      </Button.Group>
+    </RemixForm>
   );
 }
 
