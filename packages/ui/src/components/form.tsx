@@ -180,6 +180,10 @@ export async function validateForm<T extends z.AnyZodObject>(
 
 // Type Utilities
 
+export type DescriptionProps = {
+  description?: string | React.ReactElement;
+};
+
 export type FieldProps<T> = {
   defaultValue?: T;
   error?: string;

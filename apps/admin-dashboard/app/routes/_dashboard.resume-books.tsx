@@ -6,9 +6,9 @@ import {
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { Menu, Plus } from 'react-feather';
+import { ExternalLink, Menu, Plus } from 'react-feather';
 
-import { db } from '@oyster/db';
+import { listResumeBooks } from '@oyster/core/resume-books.server';
 import {
   Dashboard,
   Dropdown,
@@ -26,20 +26,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const timezone = getTimezone(request);
 
-  const records = await db
-    .selectFrom('resumeBooks')
-    .select([
-      'airtableBaseId',
-      'airtableTableId',
-      'endDate',
-      'id',
-      'name',
-      'startDate',
-    ])
-    .orderBy('startDate', 'desc')
-    .execute();
+  const _resumeBooks = await listResumeBooks();
 
-  const resumeBooks = records.map(
+  const resumeBooks = _resumeBooks.map(
     ({ airtableBaseId, airtableTableId, endDate, startDate, ...record }) => {
       const format = 'MM/DD/YY @ h:mm A';
 
@@ -116,8 +105,13 @@ function ResumeBooksTable() {
   const columns: TableColumnProps<ResumeBookInView>[] = [
     {
       displayName: 'Name',
-      size: '160',
+      size: '200',
       render: (resumeBook) => resumeBook.name,
+    },
+    {
+      displayName: '# of Submissions',
+      size: '160',
+      render: (resumeBook) => Number(resumeBook.submissions),
     },
     {
       displayName: 'Start Date',
@@ -131,11 +125,15 @@ function ResumeBooksTable() {
     },
     {
       displayName: 'Airtable Link',
-      size: null,
+      size: '160',
       render: (resumeBook) => {
         return (
-          <Link className="link" to={resumeBook.airtableUri} target="_blank">
-            {resumeBook.airtableUri}
+          <Link
+            className="link flex items-center gap-1"
+            to={resumeBook.airtableUri}
+            target="_blank"
+          >
+            Airtable <ExternalLink size="16" />
           </Link>
         );
       },

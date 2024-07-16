@@ -4,20 +4,29 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form as RemixForm, useActionData, useFetcher } from '@remix-run/react';
+import { useEffect } from 'react';
 
 import {
   Button,
+  ComboboxPopover,
   DatePicker,
+  Divider,
   Form,
   getErrors,
   Input,
   Modal,
+  MultiCombobox,
+  MultiComboboxDisplay,
+  MultiComboboxItem,
+  MultiComboboxSearch,
+  MultiComboboxValues,
   validateForm,
 } from '@oyster/ui';
 
 import { createResumeBook } from '@/member-profile.server';
 import { CreateResumeBookInput } from '@/member-profile.ui';
+import { type SearchCompaniesResult } from '@/routes/api.companies.search';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -48,6 +57,7 @@ export async function action({ request }: ActionFunctionArgs) {
     airtableTableId: data.airtableTableId,
     endDate: data.endDate,
     name: data.name,
+    sponsors: data.sponsors,
     startDate: data.startDate,
   });
 
@@ -77,41 +87,13 @@ export default function CreateResumeBookModal() {
 
       <RemixForm className="form" method="post">
         <Form.Field
+          description="Example: Spring '24"
           error={errors.name}
           label="Name"
           labelFor={keys.name}
           required
         >
-          <Input
-            id={keys.name}
-            name={keys.name}
-            required
-            placeholder="Spring '24"
-          />
-        </Form.Field>
-
-        <Form.Field
-          description="This is the ID of the Airtable base that the resume book responses will be sent to."
-          error={errors.airtableBaseId}
-          label="Airtable Base ID"
-          labelFor={keys.airtableBaseId}
-          required
-        >
-          <Input id={keys.airtableBaseId} name={keys.airtableBaseId} required />
-        </Form.Field>
-
-        <Form.Field
-          description="This is the ID of the Airtable table that the resume book responses will be sent to."
-          error={errors.airtableTableId}
-          label="Airtable Table ID"
-          labelFor={keys.airtableTableId}
-          required
-        >
-          <Input
-            id={keys.airtableTableId}
-            name={keys.airtableTableId}
-            required
-          />
+          <Input id={keys.name} name={keys.name} required />
         </Form.Field>
 
         <Form.Field
@@ -144,6 +126,34 @@ export default function CreateResumeBookModal() {
           />
         </Form.Field>
 
+        <SponsorsField />
+
+        <Divider />
+
+        <Form.Field
+          description="This is the ID of the Airtable base that the resume book responses will be sent to."
+          error={errors.airtableBaseId}
+          label="Airtable Base ID"
+          labelFor={keys.airtableBaseId}
+          required
+        >
+          <Input id={keys.airtableBaseId} name={keys.airtableBaseId} required />
+        </Form.Field>
+
+        <Form.Field
+          description="This is the ID of the Airtable table that the resume book responses will be sent to."
+          error={errors.airtableTableId}
+          label="Airtable Table ID"
+          labelFor={keys.airtableTableId}
+          required
+        >
+          <Input
+            id={keys.airtableTableId}
+            name={keys.airtableTableId}
+            required
+          />
+        </Form.Field>
+
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
@@ -151,5 +161,60 @@ export default function CreateResumeBookModal() {
         </Button.Group>
       </RemixForm>
     </Modal>
+  );
+}
+
+function SponsorsField() {
+  const fetcher = useFetcher<SearchCompaniesResult>();
+  const { errors } = getErrors(useActionData<typeof action>());
+
+  useEffect(() => {
+    fetcher.load('/api/companies/search');
+  }, []);
+
+  const companies = fetcher.data?.companies || [];
+
+  return (
+    <Form.Field
+      description="Please choose all of the companies that are sponsoring this resume book."
+      error={errors.sponsors}
+      label="Sponsors"
+      labelFor={keys.sponsors}
+      required
+    >
+      <MultiCombobox>
+        <MultiComboboxDisplay>
+          <MultiComboboxValues name={keys.sponsors} />
+          <MultiComboboxSearch
+            id="search"
+            onChange={(e) => {
+              fetcher.submit(
+                { search: e.currentTarget.value },
+                {
+                  action: '/api/companies/search',
+                  method: 'get',
+                }
+              );
+            }}
+          />
+        </MultiComboboxDisplay>
+
+        <ComboboxPopover>
+          <ul>
+            {companies.map((company) => {
+              return (
+                <MultiComboboxItem
+                  key={company.id}
+                  label={company.name}
+                  value={company.id}
+                >
+                  {company.name}
+                </MultiComboboxItem>
+              );
+            })}
+          </ul>
+        </ComboboxPopover>
+      </MultiCombobox>
+    </Form.Field>
   );
 }

@@ -15,6 +15,9 @@ export async function submitResume({
   lastName,
   linkedInUrl,
   memberId,
+  preferredCompany1,
+  preferredCompany2,
+  preferredCompany3,
   race,
   resume,
   resumeBookId,
@@ -81,6 +84,9 @@ export async function submitResume({
       .values({
         airtableRecordId: airtableRecordId as string,
         memberId,
+        preferredCompany1,
+        preferredCompany2,
+        preferredCompany3,
         resumeBookId,
         submittedAt: new Date(),
       })

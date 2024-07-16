@@ -27,6 +27,12 @@ export const CreateResumeBookInput = ResumeBook.pick({
   endDate: true,
   name: true,
   startDate: true,
+}).extend({
+  sponsors: z
+    .string()
+    .trim()
+    .min(1)
+    .transform((value) => value.split(',')),
 });
 
 export const SubmitResumeInput = Student.pick({
@@ -43,6 +49,9 @@ export const SubmitResumeInput = Student.pick({
   hometownLatitude: Student.shape.hometownLatitude.unwrap(),
   hometownLongitude: Student.shape.hometownLongitude.unwrap(),
   memberId: z.string().trim().min(1),
+  preferredCompany1: z.string().trim().min(1),
+  preferredCompany2: z.string().trim().min(1),
+  preferredCompany3: z.string().trim().min(1),
   resume: z.unknown().transform((value) => value as File),
   resumeBookId: z.string().trim().min(1),
 });
