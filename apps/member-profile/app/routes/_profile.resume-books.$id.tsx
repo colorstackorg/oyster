@@ -17,12 +17,18 @@ import {
 } from '@remix-run/react';
 
 import { SubmitResumeInput } from '@oyster/core/resume-books';
-import { getResumeBook, submitResume } from '@oyster/core/resume-books.server';
+import {
+  getResumeBook,
+  listResumeBookSponsors,
+  submitResume,
+} from '@oyster/core/resume-books.server';
 import { FORMATTED_RACE, Race, WorkAuthorizationStatus } from '@oyster/types';
 import {
   Button,
   Checkbox,
+  type DescriptionProps,
   Divider,
+  type FieldProps,
   Form,
   getErrors,
   Input,
@@ -41,10 +47,12 @@ import {
   user,
 } from '@/shared/session.server';
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const [member, resumeBook] = await Promise.all([
+  const id = params.id as string;
+
+  const [member, resumeBook, sponsors] = await Promise.all([
     getMember(user(session))
       .select([
         'email',
@@ -58,7 +66,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ])
       .executeTakeFirst(),
 
-    getResumeBook(),
+    getResumeBook(id),
+
+    listResumeBookSponsors({
+      where: { resumeBookId: id },
+    }),
   ]);
 
   if (!member) {
@@ -72,6 +84,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     member,
     resumeBook,
+    sponsors,
   });
 }
 
@@ -119,6 +132,9 @@ export async function action({ params, request }: ActionFunctionArgs) {
     hometownLongitude: data.hometownLongitude,
     linkedInUrl: data.linkedInUrl,
     memberId: data.memberId,
+    preferredCompany1: data.preferredCompany1,
+    preferredCompany2: data.preferredCompany2,
+    preferredCompany3: data.preferredCompany3,
     race: data.race,
     resume: data.resume,
     resumeBookId: data.resumeBookId,
@@ -141,16 +157,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 const keys = SubmitResumeInput.keyof().enum;
-
-const RACES_IN_ORDER: Race[] = [
-  'black',
-  'hispanic',
-  'native_american',
-  'middle_eastern',
-  'white',
-  'asian',
-  'other',
-];
 
 export default function ResumeBook() {
   const { member, resumeBook } = useLoaderData<typeof loader>();
@@ -319,6 +325,27 @@ export default function ResumeBook() {
 
         <Divider my="4" />
 
+        <SponsorField
+          defaultValue=""
+          description="Which company would you accept an offer from right now?"
+          error={errors.preferredCompany1}
+          name={keys.preferredCompany1}
+        />
+
+        <SponsorField
+          defaultValue=""
+          description="Maybe not your #1, but which company is a close second?"
+          error={errors.preferredCompany2}
+          name={keys.preferredCompany2}
+        />
+
+        <SponsorField
+          defaultValue=""
+          description="Third?"
+          error={errors.preferredCompany3}
+          name={keys.preferredCompany3}
+        />
+
         <Form.Field
           description="Must be a PDF less than 1 MB."
           error=""
@@ -336,5 +363,34 @@ export default function ResumeBook() {
         </Button.Group>
       </RemixForm>
     </section>
+  );
+}
+
+function SponsorField({
+  defaultValue,
+  description,
+  error,
+  name,
+}: FieldProps<string> & DescriptionProps) {
+  const { sponsors } = useLoaderData<typeof loader>();
+
+  return (
+    <Form.Field
+      description={description}
+      error={error}
+      label="Of all the ColorStack sponsors, which company are you most interested in working for?"
+      labelFor={name}
+      required
+    >
+      <Select defaultValue={defaultValue} id={name} name={name} required>
+        {sponsors.map((sponsor) => {
+          return (
+            <option key={sponsor.id} value={sponsor.id!}>
+              {sponsor.name}
+            </option>
+          );
+        })}
+      </Select>
+    </Form.Field>
   );
 }
