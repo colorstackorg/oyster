@@ -15,16 +15,19 @@ export async function updateAirtableRecord({
   airtableTableId,
   data,
 }: GetBullJobData<'airtable.record.update'>) {
-  if (!IS_PRODUCTION) {
-    return;
-  }
+  // if (!IS_PRODUCTION) {
+  //   return;
+  // }
 
   await airtableRateLimiter.process();
 
-  await fetch(
+  const response = await fetch(
     `${AIRTABLE_API_URI}/${airtableBaseId}/${airtableTableId}/${airtableRecordId}`,
     {
-      body: JSON.stringify({ fields: data }),
+      body: JSON.stringify({
+        fields: data,
+        typecast: true,
+      }),
       headers: getAirtableHeaders({ includeContentType: true }),
       method: 'PATCH',
     }
@@ -40,4 +43,8 @@ export async function updateAirtableRecord({
       data,
     },
   });
+
+  const json = await response.json();
+
+  return json.id as string;
 }

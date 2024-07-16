@@ -177,7 +177,15 @@ export async function action({ params, request }: ActionFunctionArgs) {
   form.set('memberId', user(session));
   form.set('resumeBookId', resumeBookId);
 
-  const { data, errors, ok } = await validateForm(form, SubmitResumeInput);
+  const { data, errors, ok } = await validateForm(
+    {
+      ...Object.fromEntries(form),
+      codingLanguages: form.getAll('codingLanguages'),
+      preferredRoles: form.getAll('preferredRoles'),
+      race: form.getAll('race'),
+    },
+    SubmitResumeInput
+  );
 
   if (!ok) {
     return json({ errors }, { status: 400 });

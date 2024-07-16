@@ -45,11 +45,7 @@ export const SubmitResumeInput = Student.pick({
   race: true,
   workAuthorizationStatus: true,
 }).extend({
-  codingLanguages: z
-    .string()
-    .trim()
-    .min(1)
-    .transform((value) => value.split(',')),
+  codingLanguages: z.array(z.string().trim().min(1)),
   educationId: z.string().trim().min(1),
   employmentSearchStatus: z.string().trim().min(1),
   hometown: Student.shape.hometown.unwrap(),
@@ -59,11 +55,7 @@ export const SubmitResumeInput = Student.pick({
   preferredCompany1: z.string().trim().min(1),
   preferredCompany2: z.string().trim().min(1),
   preferredCompany3: z.string().trim().min(1),
-  preferredRoles: z
-    .string()
-    .trim()
-    .min(1)
-    .transform((value) => value.split(',')),
+  preferredRoles: z.array(z.string().trim().min(1)),
   resume: z.unknown().transform((value) => value as File),
   resumeBookId: z.string().trim().min(1),
 });
