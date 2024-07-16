@@ -45,6 +45,7 @@ export const SubmitResumeInput = Student.pick({
   race: true,
   workAuthorizationStatus: true,
 }).extend({
+  educationId: z.string().trim().min(1),
   hometown: Student.shape.hometown.unwrap(),
   hometownLatitude: Student.shape.hometownLatitude.unwrap(),
   hometownLongitude: Student.shape.hometownLongitude.unwrap(),

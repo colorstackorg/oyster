@@ -15,6 +15,7 @@ import {
   useActionData,
   useLoaderData,
 } from '@remix-run/react';
+import dayjs from 'dayjs';
 
 import { SubmitResumeInput } from '@oyster/core/resume-books';
 import {
@@ -22,6 +23,7 @@ import {
   listResumeBookSponsors,
   submitResume,
 } from '@oyster/core/resume-books.server';
+import { db } from '@oyster/db';
 import { FORMATTED_RACE, Race, WorkAuthorizationStatus } from '@oyster/types';
 import {
   Button,
@@ -37,6 +39,7 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { type DegreeType, FORMATTED_DEGREEE_TYPE } from '@/member-profile.ui';
 import { HometownField } from '@/shared/components/profile.personal';
 import { Route } from '@/shared/constants';
 import { getMember } from '@/shared/queries';
@@ -51,9 +54,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const id = params.id as string;
+  const memberId = user(session);
 
-  const [member, resumeBook, sponsors] = await Promise.all([
-    getMember(user(session))
+  const [member, resumeBook, sponsors, _educations] = await Promise.all([
+    getMember(memberId)
       .select([
         'email',
         'firstName',
@@ -71,6 +75,19 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     listResumeBookSponsors({
       where: { resumeBookId: id },
     }),
+
+    await db
+      .selectFrom('educations')
+      .leftJoin('schools', 'schools.id', 'educations.schoolId')
+      .select([
+        'educations.degreeType',
+        'educations.endDate',
+        'educations.id',
+        'educations.startDate',
+        'schools.name as schoolName',
+      ])
+      .where('studentId', '=', memberId)
+      .execute(),
   ]);
 
   if (!member) {
@@ -81,7 +98,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
+  const educations = _educations.map(({ endDate, startDate, ...education }) => {
+    return {
+      ...education,
+      date:
+        dayjs.utc(startDate).format('MMMM YYYY') +
+        ' - ' +
+        dayjs.utc(endDate).format('MMMM YYYY'),
+    };
+  });
+
   return json({
+    educations,
     member,
     resumeBook,
     sponsors,
@@ -125,6 +153,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   }
 
   await submitResume({
+    educationId: data.educationId,
     firstName: data.firstName,
     lastName: data.lastName,
     hometown: data.hometown,
@@ -159,7 +188,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 const keys = SubmitResumeInput.keyof().enum;
 
 export default function ResumeBook() {
-  const { member, resumeBook } = useLoaderData<typeof loader>();
+  const { educations, member, resumeBook } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
@@ -322,6 +351,31 @@ export default function ResumeBook() {
           longitudeName={keys.hometownLongitude}
           name={keys.hometown}
         />
+
+        <Form.Field
+          description="Companies will use this to determine your graduation year, education level, etc."
+          error={errors.educationId}
+          label="Select your current (or most recent) education experience."
+          labelFor={keys.educationId}
+          required
+        >
+          <Select
+            defaultValue=""
+            id={keys.educationId}
+            name={keys.educationId}
+            required
+          >
+            {educations.map((education) => {
+              return (
+                <option key={education.id} value={education.id}>
+                  {education.schoolName},{' '}
+                  {FORMATTED_DEGREEE_TYPE[education.degreeType as DegreeType]},{' '}
+                  {education.date}
+                </option>
+              );
+            })}
+          </Select>
+        </Form.Field>
 
         <Divider my="4" />
 
