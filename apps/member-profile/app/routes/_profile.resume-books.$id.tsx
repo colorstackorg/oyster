@@ -87,6 +87,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'schools.name as schoolName',
       ])
       .where('studentId', '=', memberId)
+      .orderBy('endDate', 'desc')
+      .orderBy('startDate', 'desc')
       .execute(),
   ]);
 
