@@ -1,18 +1,21 @@
-import { db } from '@oyster/db';
+import { type SelectExpression } from 'kysely';
 
-type GetResumeBookSubmissionOptions = {
+import { type DB, db } from '@oyster/db';
+
+type GetResumeBookSubmissionOptions<Selection> = {
+  select?: Selection[];
   where: {
     memberId: string;
     resumeBookId: string;
   };
 };
 
-export async function getResumeBookSubmission({
-  where,
-}: GetResumeBookSubmissionOptions) {
+export async function getResumeBookSubmission<
+  Selection extends SelectExpression<DB, 'resumeBookSubmissions'>,
+>({ select = [], where }: GetResumeBookSubmissionOptions<Selection>) {
   const submission = await db
     .selectFrom('resumeBookSubmissions')
-    .select([])
+    .select(select)
     .where('memberId', '=', where.memberId)
     .where('resumeBookId', '=', where.resumeBookId)
     .executeTakeFirst();

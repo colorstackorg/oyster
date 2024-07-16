@@ -5,6 +5,8 @@ import {
 } from '@oyster/infrastructure/object-storage';
 
 import { createAirtableRecord } from '@/modules/airtable/use-cases/create-airtable-record';
+import { updateAirtableRecord } from '@/modules/airtable/use-cases/update-airtable-record';
+import { getResumeBookSubmission } from '@/modules/resume-book/queries/get-resume-book-submission';
 import { type SubmitResumeInput } from '@/modules/resume-book/resume-book.types';
 
 export async function submitResume({
@@ -27,7 +29,12 @@ export async function submitResume({
   resumeBookId,
   workAuthorizationStatus,
 }: SubmitResumeInput) {
-  const [resumeBook, member, education] = await Promise.all([
+  const [submission, resumeBook, member, education] = await Promise.all([
+    getResumeBookSubmission({
+      select: ['airtableRecordId'],
+      where: { memberId, resumeBookId },
+    }),
+
     db
       .selectFrom('resumeBooks')
       .select(['airtableBaseId', 'airtableTableId'])
@@ -77,32 +84,37 @@ export async function submitResume({
   const graduationSeason =
     education.endDate.getMonth() <= 6 ? 'Spring' : 'Fall';
 
-  const airtableRecordId = await createAirtableRecord({
-    baseId: resumeBook.airtableBaseId,
-    data: {
-      'First Name': firstName,
-      'Last Name': lastName,
-      Email: member.email,
-      Race: race,
-      'Current Education Level': education.degreeType,
-      'Graduation Year': graduationYear,
-      'Graduation Season': graduationSeason,
-      'University Location (Short)': education.addressState,
-      'University Location (Full)': `${education.addressCity}, ${education.addressState} ${education.addressZip}`,
-      Hometown: hometown,
-      'Role Interest': [],
-      'Proficient Language(s)': [],
-      'Employment Search Status': '',
-      'Sponsor Interest #1': '',
-      'Sponsor Interest #2': '',
-      'Sponsor Interest #3': '',
-      Resume: [{ filename, url: resumeLink }],
-      LinkedIn: linkedInUrl,
-      'Are you authorized to work in the US or Canada?':
-        workAuthorizationStatus,
-    },
-    tableName: resumeBook.airtableTableId,
-  });
+  const airtableRecordId = !submission
+    ? await createAirtableRecord({
+        baseId: resumeBook.airtableBaseId,
+        data: {
+          'First Name': firstName,
+          'Last Name': lastName,
+          Email: member.email,
+          Race: race,
+          'Current Education Level': education.degreeType,
+          'Graduation Year': graduationYear,
+          'Graduation Season': graduationSeason,
+          'University Location (Short)': education.addressState,
+          'University Location (Full)': `${education.addressCity}, ${education.addressState} ${education.addressZip}`,
+          Hometown: hometown,
+          'Role Interest': [],
+          'Proficient Language(s)': [],
+          'Employment Search Status': '',
+          'Sponsor Interest #1': '',
+          'Sponsor Interest #2': '',
+          'Sponsor Interest #3': '',
+          Resume: [{ filename, url: resumeLink }],
+          LinkedIn: linkedInUrl,
+          'Are you authorized to work in the US or Canada?':
+            workAuthorizationStatus,
+        },
+        tableName: resumeBook.airtableTableId,
+      })
+    : await updateAirtableRecord({
+        airtableId: submission.airtableRecordId,
+        data: {},
+      });
 
   await db.transaction().execute(async (trx) => {
     await trx
@@ -136,6 +148,20 @@ export async function submitResume({
         preferredRoles,
         resumeBookId,
         submittedAt: new Date(),
+      })
+      .onConflict((oc) => {
+        return oc.columns(['memberId', 'resumeBookId']).doUpdateSet((eb) => {
+          return {
+            codingLanguages: eb.ref('excluded.codingLanguages'),
+            educationId: eb.ref('excluded.educationId'),
+            employmentSearchStatus: eb.ref('excluded.employmentSearchStatus'),
+            preferredCompany1: eb.ref('excluded.preferredCompany1'),
+            preferredCompany2: eb.ref('excluded.preferredCompany2'),
+            preferredCompany3: eb.ref('excluded.preferredCompany3'),
+            preferredRoles: eb.ref('excluded.preferredRoles'),
+            submittedAt: eb.ref('excluded.submittedAt'),
+          };
+        });
       })
       .execute();
   });
