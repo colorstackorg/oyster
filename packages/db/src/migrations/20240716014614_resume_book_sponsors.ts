@@ -31,7 +31,7 @@ export async function up(db: Kysely<any>) {
   await db.schema
     .alterTable('resume_book_submissions')
     .addForeignKeyConstraint(
-      'preferred_company_1_fkey',
+      'resume_book_submissions_preferred_company_1_fkey',
       ['preferred_company_1', 'resume_book_id'],
       'resume_book_sponsors',
       ['company_id', 'resume_book_id']
@@ -41,7 +41,7 @@ export async function up(db: Kysely<any>) {
   await db.schema
     .alterTable('resume_book_submissions')
     .addForeignKeyConstraint(
-      'preferred_company_2_fkey',
+      'resume_book_submissions_preferred_company_2_fkey',
       ['preferred_company_2', 'resume_book_id'],
       'resume_book_sponsors',
       ['company_id', 'resume_book_id']
@@ -51,7 +51,7 @@ export async function up(db: Kysely<any>) {
   await db.schema
     .alterTable('resume_book_submissions')
     .addForeignKeyConstraint(
-      'preferred_company_3_fkey',
+      'resume_book_submissions_preferred_company_3_fkey',
       ['preferred_company_3', 'resume_book_id'],
       'resume_book_sponsors',
       ['company_id', 'resume_book_id']
@@ -62,17 +62,17 @@ export async function up(db: Kysely<any>) {
 export async function down(db: Kysely<any>) {
   await db.schema
     .alterTable('resume_book_submissions')
-    .dropConstraint('preferred_company_3_fkey')
+    .dropConstraint('resume_book_submissions_preferred_company_3_fkey')
     .execute();
 
   await db.schema
     .alterTable('resume_book_submissions')
-    .dropConstraint('preferred_company_2_fkey')
+    .dropConstraint('resume_book_submissions_preferred_company_2_fkey')
     .execute();
 
   await db.schema
     .alterTable('resume_book_submissions')
-    .dropConstraint('preferred_company_1_fkey')
+    .dropConstraint('resume_book_submissions_preferred_company_1_fkey')
     .execute();
 
   await db.schema
