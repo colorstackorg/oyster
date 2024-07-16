@@ -27,6 +27,8 @@ export const CreateResumeBookInput = ResumeBook.pick({
   endDate: true,
   name: true,
   startDate: true,
+}).extend({
+  sponsors: z.string().trim().min(1).array().min(1),
 });
 
 export const SubmitResumeInput = Student.pick({
