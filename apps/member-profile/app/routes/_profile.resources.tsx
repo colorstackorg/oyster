@@ -108,7 +108,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
                 mimeType: attachment.mimeType,
                 uri: await getPresignedURL({
                   expiresIn: 60 * 60, // 1 hour
-                  key: attachment.s3Key,
+                  key: attachment.objectKey,
                 }),
               };
             })
