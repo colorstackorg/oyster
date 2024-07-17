@@ -1,6 +1,10 @@
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
+import {
+  AIRTABLE_FAMILY_BASE_ID,
+  AIRTABLE_MEMBERS_TABLE_ID,
+} from '@/modules/airtable/airtable.shared';
 import { updateMailchimpListMember } from '@/modules/mailchimp/use-cases/update-mailchimp-list-member';
 import { reportException } from '@/modules/sentry/use-cases/report-exception';
 import {
@@ -50,9 +54,9 @@ export async function onPrimaryEmailChanged({
   ]);
 
   job('airtable.record.update', {
-    airtableBaseId: '',
+    airtableBaseId: AIRTABLE_FAMILY_BASE_ID!,
     airtableRecordId: student.airtableId!,
-    airtableTableId: '',
+    airtableTableId: AIRTABLE_MEMBERS_TABLE_ID!,
     data: {
       Email: student.newEmail,
     },

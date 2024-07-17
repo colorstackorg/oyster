@@ -1,5 +1,9 @@
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
+import {
+  AIRTABLE_FAMILY_BASE_ID,
+  AIRTABLE_MEMBERS_TABLE_ID,
+} from '@/modules/airtable/airtable.shared';
 
 export async function onMemberRemoved({
   airtableId,
@@ -8,9 +12,9 @@ export async function onMemberRemoved({
   slackId,
 }: GetBullJobData<'student.removed'>) {
   job('airtable.record.delete', {
-    airtableBaseId: '',
+    airtableBaseId: AIRTABLE_FAMILY_BASE_ID!,
     airtableRecordId: airtableId,
-    airtableTableId: '',
+    airtableTableId: AIRTABLE_MEMBERS_TABLE_ID!,
   });
 
   job('email_marketing.remove', {
