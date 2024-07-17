@@ -19,7 +19,7 @@ export function createDatabaseConnection() {
 
   const db = new Kysely<DB>({
     dialect,
-    plugins: [new CamelCasePlugin({ underscoreBeforeDigits: true })],
+    plugins: [new CamelCasePlugin()],
   });
 
   return db;
