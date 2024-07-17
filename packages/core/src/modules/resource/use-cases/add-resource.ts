@@ -50,8 +50,8 @@ export async function addResource(input: AddResourceInput) {
         .values({
           id: attachmentId,
           mimeType: attachment.type,
+          objectKey: attachmentKey,
           resourceId: resource.id,
-          s3Key: attachmentKey,
         })
         .execute();
     }

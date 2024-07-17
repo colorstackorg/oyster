@@ -87,7 +87,7 @@ export async function listResources<
       buildTagsField,
 
       // The "attachments" field is a JSON array of objects, each containing
-      // the "mimeType" and "s3Key" of an attachment associated with the
+      // the "mimeType" and "objectKey" of an attachment associated with the
       // resource.
       (eb) => {
         return eb
@@ -96,13 +96,13 @@ export async function listResources<
           .select(({ fn, ref }) => {
             const object = jsonBuildObject({
               mimeType: ref('resourceAttachments.mimeType'),
-              s3Key: ref('resourceAttachments.s3Key'),
+              objectKey: ref('resourceAttachments.objectKey'),
             });
 
             return fn
               .jsonAgg(sql`${object} order by ${ref('createdAt')} asc`)
-              .filterWhere('s3Key', 'is not', null)
-              .$castTo<{ mimeType: string; s3Key: string }[]>()
+              .filterWhere('objectKey', 'is not', null)
+              .$castTo<{ mimeType: string; objectKey: string }[]>()
               .as('attachments');
           })
           .as('attachments');
