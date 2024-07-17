@@ -44,21 +44,23 @@ export const SubmitResumeInput = Student.pick({
   hometownLongitude: true,
   race: true,
   workAuthorizationStatus: true,
-}).extend({
-  codingLanguages: z.array(z.string().trim().min(1)),
-  educationId: z.string().trim().min(1),
-  employmentSearchStatus: z.string().trim().min(1),
-  hometown: Student.shape.hometown.unwrap(),
-  hometownLatitude: Student.shape.hometownLatitude.unwrap(),
-  hometownLongitude: Student.shape.hometownLongitude.unwrap(),
-  memberId: z.string().trim().min(1),
-  preferredCompany1: z.string().trim().min(1),
-  preferredCompany2: z.string().trim().min(1),
-  preferredCompany3: z.string().trim().min(1),
-  preferredRoles: z.array(z.string().trim().min(1)),
-  resume: z.unknown().transform((value) => value as File),
-  resumeBookId: z.string().trim().min(1),
-});
+})
+  .required({ workAuthorizationStatus: true })
+  .extend({
+    codingLanguages: z.array(z.string().trim().min(1)),
+    educationId: z.string().trim().min(1),
+    employmentSearchStatus: z.string().trim().min(1),
+    hometown: Student.shape.hometown.unwrap(),
+    hometownLatitude: Student.shape.hometownLatitude.unwrap(),
+    hometownLongitude: Student.shape.hometownLongitude.unwrap(),
+    memberId: z.string().trim().min(1),
+    preferredCompany1: z.string().trim().min(1),
+    preferredCompany2: z.string().trim().min(1),
+    preferredCompany3: z.string().trim().min(1),
+    preferredRoles: z.array(z.string().trim().min(1)),
+    resume: z.unknown().transform((value) => value as File),
+    resumeBookId: z.string().trim().min(1),
+  });
 
 export type CreateResumeBookInput = z.infer<typeof CreateResumeBookInput>;
 export type SubmitResumeInput = z.infer<typeof SubmitResumeInput>;
