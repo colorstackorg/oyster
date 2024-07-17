@@ -46,7 +46,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'resources.link',
       'resources.title',
       'resources.type',
-      // 'resources.attachments'
     ],
     where: { id: params.id as string },
   });
@@ -54,8 +53,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   if (!record) {
     throw new Response(null, { status: 404 });
   }
-
-  // console.log(record)
 
   const resource = {
     ...record,

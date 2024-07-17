@@ -12,7 +12,6 @@ export async function updateResource(id: string, input: UpdateResourceInput) {
         description: input.description,
         link: input.link,
         title: input.title,
-        // attachments: input.attachments
       })
       .where('id', '=', id)
       .executeTakeFirstOrThrow();
@@ -57,16 +56,6 @@ export async function updateResource(id: string, input: UpdateResourceInput) {
           s3Key: attachmentKey,
         })
         .execute();
-      // console.log("Attachments: ", attachment)
-      // await trx
-      //   .insertInto('resourceAttachments')
-      //   .values({
-      //     resourceId: id,
-      //     mime_type: attachment.mime_type,
-      //     resource_id: id,
-      //     s3_key: attachment.s3_key,
-      //   })
-      //   .execute();
     }
 
     return resource;
