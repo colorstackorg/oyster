@@ -289,4 +289,12 @@ export async function submitResume({
     name: 'resume-submitted',
     to: member.email,
   });
+
+  if (!submission) {
+    job('gamification.activity.completed', {
+      resumeBookId,
+      studentId: memberId,
+      type: 'submit_resume',
+    });
+  }
 }
