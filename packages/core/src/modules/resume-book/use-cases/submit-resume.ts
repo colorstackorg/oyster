@@ -94,26 +94,30 @@ export async function submitResume({
       .executeTakeFirstOrThrow(),
   ]);
 
+  const isFirstSubmission = !submission;
+
   // Upload the resume to object storage and get a presigned URL which allows
   // the resume to be accessed by Airtable, who will copy the file to their
   // own storage.
-  const resumeLink = await iife(async function uploadResume() {
-    const attachmentKey = `resume-books/${resumeBookId}/${memberId}`;
+  const resumeLink = resume
+    ? await iife(async function uploadResume() {
+        const attachmentKey = `resume-books/${resumeBookId}/${memberId}`;
 
-    const arrayBuffer = await resume.arrayBuffer();
+        const arrayBuffer = await resume.arrayBuffer();
 
-    await putObject({
-      content: Buffer.from(arrayBuffer),
-      contentType: resume.type,
-      key: attachmentKey,
-    });
+        await putObject({
+          content: Buffer.from(arrayBuffer),
+          contentType: resume.type,
+          key: attachmentKey,
+        });
 
-    const resumeLink = await getPresignedURL({
-      key: attachmentKey,
-    });
+        const link = await getPresignedURL({
+          key: attachmentKey,
+        });
 
-    return resumeLink;
-  });
+        return link;
+      })
+    : null;
 
   // We need to do a little massaging/formatting of the data before we sent it
   // over to Airtable.
@@ -189,15 +193,17 @@ export async function submitResume({
         return FORMATTED_RACE[value];
       }),
 
-      // See the following Airtable API documentation to understand the format
-      // for upload attachments/files:
-      // https://airtable.com/developers/web/api/field-model#multipleattachment
-      Resume: iife(() => {
-        // In order to keep the resume file names consistent for the partners,
-        // we'll use the same naming convention based on the submitter.
-        const filename = `${lastName}_${firstName}_${graduationYear}.pdf`;
+      ...(!!resumeLink && {
+        // See the following Airtable API documentation to understand the format
+        // for upload attachments/files:
+        // https://airtable.com/developers/web/api/field-model#multipleattachment
+        Resume: iife(() => {
+          // In order to keep the resume file names consistent for the partners,
+          // we'll use the same naming convention based on the submitter.
+          const filename = `${lastName}_${firstName}_${graduationYear}.pdf`;
 
-        return [{ filename, url: resumeLink }];
+          return [{ filename, url: resumeLink }];
+        }),
       }),
 
       'Role Interest': preferredRoles,
@@ -216,7 +222,7 @@ export async function submitResume({
     };
   });
 
-  const airtableRecordId = !submission
+  const airtableRecordId = isFirstSubmission
     ? await createAirtableRecord({
         airtableBaseId: resumeBook.airtableBaseId,
         airtableTableId: resumeBook.airtableTableId,
@@ -281,7 +287,7 @@ export async function submitResume({
 
   job('notification.email.send', {
     data: {
-      edited: !!submission,
+      edited: !isFirstSubmission,
       firstName,
       resumeBookName: resumeBook.name,
       resumeBookUri: `${process.env.STUDENT_PROFILE_URL}/resume-books/${resumeBookId}`,
@@ -290,7 +296,7 @@ export async function submitResume({
     to: member.email,
   });
 
-  if (!submission) {
+  if (isFirstSubmission) {
     job('gamification.activity.completed', {
       resumeBookId,
       studentId: memberId,

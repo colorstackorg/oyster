@@ -130,7 +130,7 @@ type ValidateResult<Data> =
 type ValidateFormInput =
   | Request
   | FormData
-  | Record<string, FormDataEntryValue | FormDataEntryValue[]>;
+  | Record<string, FormDataEntryValue | FormDataEntryValue[] | null>;
 
 /**
  * Validates a form against a Zod schema.

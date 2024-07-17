@@ -177,12 +177,15 @@ export async function action({ params, request }: ActionFunctionArgs) {
   form.set('memberId', user(session));
   form.set('resumeBookId', resumeBookId);
 
+  const resume = form.get('resume') as File;
+
   const { data, errors, ok } = await validateForm(
     {
       ...Object.fromEntries(form),
       codingLanguages: form.getAll('codingLanguages'),
       preferredRoles: form.getAll('preferredRoles'),
       race: form.getAll('race'),
+      resume: resume.size ? resume : null,
     },
     SubmitResumeInput
   );
@@ -582,13 +585,23 @@ function ResumeBookForm() {
       />
 
       <Form.Field
-        description="Must be a PDF less than 1 MB."
-        error=""
+        description={
+          !submission
+            ? 'Must be a PDF less than 1 MB.'
+            : 'Must be a PDF less than 1 MB. If you do not choose a new resume to resubmit, we will use the resume you currently have on file.'
+        }
+        error={errors.resume}
         label="Resume"
         labelFor="resume"
-        required
+        required={!submission}
       >
-        <input accept=".pdf" id="resume" name="resume" required type="file" />
+        <input
+          accept=".pdf"
+          id="resume"
+          name="resume"
+          required={!submission}
+          type="file"
+        />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
