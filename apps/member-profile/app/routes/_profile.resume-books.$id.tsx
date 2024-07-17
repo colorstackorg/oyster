@@ -294,7 +294,11 @@ export default function ResumeBook() {
             );
           })
           .with('past', () => {
-            return <Text color="gray-500">This resume book closed on .</Text>;
+            return (
+              <Text color="gray-500">
+                This resume book closed on {resumeBook.endDate}.
+              </Text>
+            );
           })
           .with('upcoming', () => {
             return (
