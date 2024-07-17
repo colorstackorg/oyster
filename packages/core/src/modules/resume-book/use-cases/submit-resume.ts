@@ -9,6 +9,7 @@ import {
 import { FORMATTED_RACE } from '@oyster/types';
 import { iife } from '@oyster/utils';
 
+import { job } from '@/infrastructure/bull/use-cases/job';
 import { createAirtableRecord } from '@/modules/airtable/use-cases/create-airtable-record';
 import { updateAirtableRecord } from '@/modules/airtable/use-cases/update-airtable-record';
 import { type DegreeType } from '@/modules/education/education.types';
@@ -51,7 +52,7 @@ export async function submitResume({
 
     db
       .selectFrom('resumeBooks')
-      .select(['airtableBaseId', 'airtableTableId'])
+      .select(['airtableBaseId', 'airtableTableId', 'name'])
       .where('id', '=', resumeBookId)
       .executeTakeFirstOrThrow(),
 
@@ -249,7 +250,7 @@ export async function submitResume({
     await trx
       .insertInto('resumeBookSubmissions')
       .values({
-        airtableRecordId: airtableRecordId as string,
+        airtableRecordId: airtableRecordId || '',
         codingLanguages,
         educationId,
         employmentSearchStatus,
@@ -276,5 +277,16 @@ export async function submitResume({
         });
       })
       .execute();
+  });
+
+  job('notification.email.send', {
+    data: {
+      edited: !!submission,
+      firstName,
+      resumeBookName: resumeBook.name,
+      resumeBookUri: `${process.env.STUDENT_PROFILE_URL}/resume-books/${resumeBookId}`,
+    },
+    name: 'resume-submitted',
+    to: member.email,
   });
 }

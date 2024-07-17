@@ -434,7 +434,7 @@ function ResumeBookForm() {
       <Form.Field
         description="Companies will use this to determine your graduation year, education level, etc."
         error={errors.educationId}
-        label="Select your current (or most recent) education experience."
+        label="Select your current, upcoming, or most recent education experience."
         labelFor={keys.educationId}
         required
       >
