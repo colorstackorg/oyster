@@ -149,7 +149,7 @@ function SurveysTable() {
     {
       displayName: 'Event',
       render: (survey) => survey.eventName,
-      size: null,
+      size: '400',
     },
   ];
 
