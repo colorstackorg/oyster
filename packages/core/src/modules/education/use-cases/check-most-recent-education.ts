@@ -1,5 +1,9 @@
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
+import {
+  AIRTABLE_FAMILY_BASE_ID,
+  AIRTABLE_MEMBERS_TABLE_ID,
+} from '@/modules/airtable/airtable.shared';
 import { DegreeType, type EducationLevel } from '../education.types';
 
 const EducationLevelFromDegreeType: Record<DegreeType, EducationLevel> = {
@@ -63,9 +67,9 @@ export async function checkMostRecentEducation(studentId: string) {
     .executeTakeFirstOrThrow();
 
   job('airtable.record.update', {
-    airtableBaseId: '',
+    airtableBaseId: AIRTABLE_FAMILY_BASE_ID!,
     airtableRecordId: member.airtableId as string,
-    airtableTableId: '',
+    airtableTableId: AIRTABLE_MEMBERS_TABLE_ID!,
     data: {
       'Expected Graduation Year': graduationYear,
       School: member.school as string,
