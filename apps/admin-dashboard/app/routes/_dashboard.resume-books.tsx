@@ -126,11 +126,6 @@ function ResumeBooksTable() {
       size: '240',
       render: (resumeBook) => resumeBook.endDate,
     },
-    {
-      displayName: '',
-      size: null,
-      render: (_) => '',
-    },
   ];
 
   return (

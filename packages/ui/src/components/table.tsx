@@ -34,7 +34,7 @@ export type TableColumnProps<T extends TableData> = {
     | '320'
     | '360'
     | '400'
-    | null;
+    | '800';
 };
 
 type TableDropdownProps<T extends TableData> = T & {
@@ -119,7 +119,7 @@ function TableHead({ columns }: Pick<TableProps, 'columns'>) {
                     .with('320', () => 'w-[320px]')
                     .with('360', () => 'w-[360px]')
                     .with('400', () => 'w-[400px]')
-                    .with(null, () => undefined)
+                    .with('800', () => 'w-[800px]')
                     .exhaustive()
                 )}
               >
@@ -128,6 +128,7 @@ function TableHead({ columns }: Pick<TableProps, 'columns'>) {
             );
           })}
 
+        <th className={headerCellCn}></th>
         <th className={cx(headerCellCn, 'right-0 w-12 px-0')} />
       </tr>
     </thead>

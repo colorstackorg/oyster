@@ -171,7 +171,7 @@ function EventsTable() {
     {
       displayName: 'Time',
       render: (event) => `${event.startTime} - ${event.endTime}`,
-      size: null,
+      size: '200',
     },
   ];
 
