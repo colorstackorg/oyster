@@ -14,9 +14,9 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
+  useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { useState } from 'react';
 import { match } from 'ts-pattern';
 
 import { SubmitResumeInput } from '@oyster/core/resume-books';
@@ -257,8 +257,10 @@ const keys = SubmitResumeInput.keyof().enum;
 
 export default function ResumeBook() {
   const { resumeBook, submission } = useLoaderData<typeof loader>();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [showEditButton, setShowEditButton] = useState<boolean>(!!submission);
+  const showEditButton =
+    !!submission && searchParams.get('state') !== 'editing';
 
   return (
     <section className="mx-auto flex w-full max-w-[36rem] flex-col gap-4">
@@ -322,7 +324,11 @@ export default function ResumeBook() {
             <button
               className="link w-fit"
               onClick={() => {
-                setShowEditButton(false);
+                setSearchParams((searchParams) => {
+                  searchParams.set('state', 'editing');
+
+                  return searchParams;
+                });
               }}
               type="button"
             >
