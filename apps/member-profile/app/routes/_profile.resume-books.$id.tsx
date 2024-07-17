@@ -78,7 +78,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       getResumeBook(id),
 
       getResumeBookSubmission({
-        select: [],
+        select: [
+          'codingLanguages',
+          'educationId',
+          'employmentSearchStatus',
+          'preferredCompany1',
+          'preferredCompany2',
+          'preferredCompany3',
+          'preferredRoles',
+        ],
         where: { memberId, resumeBookId: id },
       }),
 
@@ -169,7 +177,15 @@ export async function action({ params, request }: ActionFunctionArgs) {
   form.set('memberId', user(session));
   form.set('resumeBookId', resumeBookId);
 
-  const { data, errors, ok } = await validateForm(form, SubmitResumeInput);
+  const { data, errors, ok } = await validateForm(
+    {
+      ...Object.fromEntries(form),
+      codingLanguages: form.getAll('codingLanguages'),
+      preferredRoles: form.getAll('preferredRoles'),
+      race: form.getAll('race'),
+    },
+    SubmitResumeInput
+  );
 
   if (!ok) {
     return json({ errors }, { status: 400 });
@@ -272,7 +288,7 @@ export default function ResumeBook() {
 }
 
 function ResumeBookForm() {
-  const { educations, member } = useLoaderData<typeof loader>();
+  const { educations, member, submission } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
@@ -423,7 +439,7 @@ function ResumeBookForm() {
         required
       >
         <Select
-          defaultValue=""
+          defaultValue={submission?.educationId}
           id={keys.educationId}
           name={keys.educationId}
           required
@@ -472,7 +488,7 @@ function ResumeBookForm() {
             return (
               <Checkbox
                 key={value}
-                defaultChecked={false}
+                defaultChecked={submission?.codingLanguages.includes(value)}
                 id={keys.codingLanguages + value}
                 label={value}
                 name={keys.codingLanguages}
@@ -506,7 +522,7 @@ function ResumeBookForm() {
             return (
               <Checkbox
                 key={value}
-                defaultChecked={false}
+                defaultChecked={submission?.preferredRoles.includes(value)}
                 id={keys.preferredRoles + value}
                 label={value}
                 name={keys.preferredRoles}
@@ -532,7 +548,7 @@ function ResumeBookForm() {
             return (
               <Radio
                 key={value}
-                defaultChecked={false}
+                defaultChecked={submission?.employmentSearchStatus === value}
                 id={keys.employmentSearchStatus + value}
                 label={value}
                 name={keys.employmentSearchStatus}
@@ -545,21 +561,21 @@ function ResumeBookForm() {
       </Form.Field>
 
       <SponsorField
-        defaultValue=""
+        defaultValue={submission?.preferredCompany1}
         description="Which company would you accept an offer from right now?"
         error={errors.preferredCompany1}
         name={keys.preferredCompany1}
       />
 
       <SponsorField
-        defaultValue=""
+        defaultValue={submission?.preferredCompany2}
         description="Maybe not your #1, but which company is a close second?"
         error={errors.preferredCompany2}
         name={keys.preferredCompany2}
       />
 
       <SponsorField
-        defaultValue=""
+        defaultValue={submission?.preferredCompany3}
         description="Third?"
         error={errors.preferredCompany3}
         name={keys.preferredCompany3}

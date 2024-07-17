@@ -50,9 +50,9 @@ export const AirtableBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('airtable.record.create'),
     data: z.object({
-      baseId: z.string().trim().min(1),
+      airtableBaseId: z.string().trim().min(1),
+      airtableTableId: z.string().trim().min(1),
       data: z.any(),
-      tableName: z.string().trim().min(1),
     }),
   }),
   z.object({
@@ -64,20 +64,18 @@ export const AirtableBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('airtable.record.delete'),
     data: z.object({
-      airtableId: z.string().trim().min(1),
+      airtableBaseId: z.string().trim().min(1),
+      airtableRecordId: z.string().trim().min(1),
+      airtableTableId: z.string().trim().min(1),
     }),
   }),
   z.object({
     name: z.literal('airtable.record.update'),
     data: z.object({
-      airtableId: z.string().trim().min(1),
-      data: z
-        .object({
-          email: Student.shape.email,
-          graduationYear: z.string().trim().min(1),
-          school: z.string().trim().min(1),
-        })
-        .partial(),
+      airtableBaseId: z.string().trim().min(1),
+      airtableRecordId: z.string().trim().min(1),
+      airtableTableId: z.string().trim().min(1),
+      data: z.any(),
     }),
   }),
 ]);

@@ -68,7 +68,8 @@ export async function createAirtableMemberRecord({
   const record = AirtableMemberRecord.parse(member);
 
   const id = await createAirtableRecord({
-    baseId: AIRTABLE_FAMILY_BASE_ID,
+    airtableBaseId: AIRTABLE_FAMILY_BASE_ID,
+    airtableTableId: AIRTABLE_MEMBERS_TABLE_ID,
     data: {
       'ColorStack ID': studentId,
       Email: record.email,
@@ -84,7 +85,6 @@ export async function createAirtableMemberRecord({
       }),
       School: record.school,
     },
-    tableName: AIRTABLE_MEMBERS_TABLE_ID,
   });
 
   await db.transaction().execute(async (trx) => {
