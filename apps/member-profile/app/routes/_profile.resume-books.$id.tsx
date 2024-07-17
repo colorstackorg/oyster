@@ -17,6 +17,7 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { useState } from 'react';
+import { match } from 'ts-pattern';
 
 import { SubmitResumeInput } from '@oyster/core/resume-books';
 import {
@@ -41,6 +42,7 @@ import {
   Text,
   validateForm,
 } from '@oyster/ui';
+import { iife } from '@oyster/utils';
 
 import { type DegreeType, FORMATTED_DEGREEE_TYPE } from '@/member-profile.ui';
 import { HometownField } from '@/shared/components/profile.personal';
@@ -75,7 +77,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         ])
         .executeTakeFirst(),
 
-      getResumeBook(id),
+      getResumeBook({
+        select: ['endDate', 'id', 'name', 'startDate'],
+        where: { id },
+      }),
 
       getResumeBookSubmission({
         select: [
@@ -126,6 +131,24 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     endDate: dayjs(_resumeBook.endDate)
       .tz(timezone)
       .format('dddd, MMMM DD, YYYY @ h:mm A'),
+
+    startDate: dayjs(_resumeBook.startDate)
+      .tz(timezone)
+      .format('dddd, MMMM DD, YYYY @ h:mm A'),
+
+    status: iife(() => {
+      const now = dayjs();
+
+      if (now.isBefore(_resumeBook.startDate)) {
+        return 'upcoming' as const;
+      }
+
+      if (now.isAfter(_resumeBook.endDate)) {
+        return 'past' as const;
+      }
+
+      return 'active' as const;
+    }),
   };
 
   const educations = _educations.map(({ endDate, startDate, ...education }) => {
@@ -238,54 +261,77 @@ export default function ResumeBook() {
   const [showEditButton, setShowEditButton] = useState<boolean>(!!submission);
 
   return (
-    <section className="mx-auto flex w-full max-w-[36rem] flex-col gap-8">
+    <section className="mx-auto flex w-full max-w-[36rem] flex-col gap-4">
       <div className="flex flex-col gap-1">
         <Text variant="2xl">Resume Book: {resumeBook.name}</Text>
 
-        {!showEditButton && (
-          <Text color="gray-500">
-            Before continuining, please ensure that your{' '}
-            <Link
-              className="link"
-              target="_blank"
-              to={Route['/profile/emails']}
-            >
-              primary email
-            </Link>{' '}
-            and{' '}
-            <Link
-              className="link"
-              target="_blank"
-              to={Route['/profile/education']}
-            >
-              education history
-            </Link>{' '}
-            is up to date.
-          </Text>
-        )}
+        {match(resumeBook.status)
+          .with('active', () => {
+            if (showEditButton) {
+              return null;
+            }
+
+            return (
+              <Text color="gray-500">
+                Before continuining, please ensure that your{' '}
+                <Link
+                  className="link"
+                  target="_blank"
+                  to={Route['/profile/emails']}
+                >
+                  primary email
+                </Link>{' '}
+                and{' '}
+                <Link
+                  className="link"
+                  target="_blank"
+                  to={Route['/profile/education']}
+                >
+                  education history
+                </Link>{' '}
+                is up to date.
+              </Text>
+            );
+          })
+          .with('past', () => {
+            return (
+              <Text color="gray-500">
+                This resume book closed on {resumeBook.endDate}.
+              </Text>
+            );
+          })
+          .with('upcoming', () => {
+            return (
+              <Text color="gray-500">
+                This resume book opens on {resumeBook.startDate}.
+              </Text>
+            );
+          })
+          .exhaustive()}
       </div>
 
-      {showEditButton ? (
-        <div className="flex flex-col gap-8 rounded-xl border border-dashed border-green-700 bg-green-50 p-4">
-          <Text>
-            Thank you for submitting your resume to the {resumeBook.name} resume
-            book! You can edit your submission until the deadline:{' '}
-            {resumeBook.endDate}.
-          </Text>
+      {resumeBook.status === 'active' &&
+        (showEditButton ? (
+          <div className="flex flex-col gap-8 rounded-xl border border-dashed border-green-700 bg-green-50 p-4">
+            <Text>
+              Thank you for submitting your resume to the {resumeBook.name}{' '}
+              resume book! You can edit your submission until the deadline:{' '}
+              {resumeBook.endDate}.
+            </Text>
 
-          <button
-            className="link w-fit"
-            onClick={() => {
-              setShowEditButton(false);
-            }}
-            type="button"
-          >
-            Edit Submission
-          </button>
-        </div>
-      ) : (
-        <ResumeBookForm />
-      )}
+            <button
+              className="link w-fit"
+              onClick={() => {
+                setShowEditButton(false);
+              }}
+              type="button"
+            >
+              Edit Submission
+            </button>
+          </div>
+        ) : (
+          <ResumeBookForm />
+        ))}
     </section>
   );
 }
@@ -296,7 +342,7 @@ function ResumeBookForm() {
 
   return (
     <RemixForm
-      className="form"
+      className="form mt-4"
       data-gap="2rem"
       method="post"
       encType="multipart/form-data"
