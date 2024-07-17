@@ -487,9 +487,9 @@ function ResumeBookForm() {
       />
 
       <Form.Field
-        description="Companies will use this to determine your graduation date, education level, and university location so be sure it's accurate. If you already graduated and are an early career professional, choose your most recent education experience."
+        description="Companies will use this to determine your graduation date, education level, and university location so be sure it's updated."
         error={errors.educationId}
-        label="Select your current education experience."
+        label="Select your highest level of education."
         labelFor={keys.educationId}
         required
       >
@@ -511,7 +511,7 @@ function ResumeBookForm() {
         </Select>
       </Form.Field>
 
-      <Divider my="4" />
+      <Divider />
 
       <Form.Field
         error={errors.codingLanguages}
@@ -562,17 +562,17 @@ function ResumeBookForm() {
       >
         <Checkbox.Group>
           {[
-            'AI/Machine Learning',
-            'Android Developer',
-            'Cybersecurity Engineer/Analyst',
-            'Data Science',
-            'Developer Advocacy',
-            'iOS Developer',
-            'Network Architecture',
-            'Product Design (UI/UX)',
-            'Product Management',
             'Software Engineering',
+            'Data Science',
             'Web Development',
+            'AI/Machine Learning',
+            'iOS Developer',
+            'Android Developer',
+            'Product Management',
+            'Product Design (UI/UX)',
+            'Developer Advocacy',
+            'Network Architecture',
+            'Cybersecurity Engineer/Analyst',
           ].map((value) => {
             return (
               <Checkbox
