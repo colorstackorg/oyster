@@ -1,10 +1,19 @@
-import { db } from '@oyster/db';
+import { type SelectExpression } from 'kysely';
 
-export async function getResumeBook(id: string) {
+import { type DB, db } from '@oyster/db';
+
+type GetResumeBookOptions<Selection> = {
+  select: Selection[];
+  where: { id: string };
+};
+
+export async function getResumeBook<
+  Selection extends SelectExpression<DB, 'resumeBooks'>,
+>({ select, where }: GetResumeBookOptions<Selection>) {
   const resumeBook = await db
     .selectFrom('resumeBooks')
-    .select(['endDate', 'id', 'name'])
-    .where('id', '=', id)
+    .select(select)
+    .where('id', '=', where.id)
     .executeTakeFirst();
 
   return resumeBook;
