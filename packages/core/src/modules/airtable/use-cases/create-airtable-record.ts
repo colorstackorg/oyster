@@ -15,9 +15,9 @@ export async function createAirtableRecord({
   airtableTableId,
   data,
 }: GetBullJobData<'airtable.record.create'>) {
-  // if (!IS_PRODUCTION) {
-  //   return;
-  // }
+  if (!IS_PRODUCTION) {
+    return;
+  }
 
   await airtableRateLimiter.process();
 

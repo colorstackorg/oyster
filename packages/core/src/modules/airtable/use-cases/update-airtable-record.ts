@@ -15,9 +15,9 @@ export async function updateAirtableRecord({
   airtableTableId,
   data,
 }: GetBullJobData<'airtable.record.update'>) {
-  // if (!IS_PRODUCTION) {
-  //   return;
-  // }
+  if (!IS_PRODUCTION) {
+    return;
+  }
 
   await airtableRateLimiter.process();
 
