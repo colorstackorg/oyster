@@ -13,6 +13,7 @@ const BaseEnvironmentConfig = z.object({
   ENVIRONMENT: z.nativeEnum(Environment),
   GOOGLE_CLIENT_ID: EnvironmentVariable,
   JWT_SECRET: EnvironmentVariable,
+  MEMBER_PROFILE_URL: EnvironmentVariable,
   REDIS_URL: EnvironmentVariable,
   SENTRY_DSN: EnvironmentVariable,
   SESSION_SECRET: EnvironmentVariable,
@@ -23,6 +24,7 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     AIRTABLE_FAMILY_BASE_ID: true,
     AIRTABLE_MEMBERS_TABLE_ID: true,
     GOOGLE_CLIENT_ID: true,
+    MEMBER_PROFILE_URL: true,
     SENTRY_DSN: true,
   }).extend({
     ENVIRONMENT: z.literal(Environment.DEVELOPMENT),
