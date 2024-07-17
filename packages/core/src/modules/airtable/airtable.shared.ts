@@ -10,7 +10,6 @@ export const AIRTABLE_MEMBERS_TABLE_ID = process.env.AIRTABLE_MEMBERS_TABLE_ID;
 // Constants
 
 export const AIRTABLE_API_URI = 'https://api.airtable.com/v0';
-export const AIRTABLE_MEMBERS_URI = `${AIRTABLE_API_URI}/${AIRTABLE_FAMILY_BASE_ID}/${AIRTABLE_MEMBERS_TABLE_ID}`;
 
 // Rate Limiter
 

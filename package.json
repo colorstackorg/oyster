@@ -10,11 +10,12 @@
   "scripts": {
     "build": "turbo run build --cache-dir=.turbo",
     "db:migrate": "yarn workspace @oyster/db migrate",
+    "db:migrate:down": "yarn workspace @oyster/db migrate:down",
     "db:migration:create": "yarn workspace @oyster/db migration:create",
     "db:seed": "yarn workspace @oyster/db seed",
     "db:types": "yarn workspace @oyster/db types",
     "dev": "turbo run dev --cache-dir=.turbo",
-    "dev:apps": "yarn dev --filter='./apps/*'",
+    "dev:apps": "yarn dev --filter=./apps/*",
     "dx:down": "docker compose down",
     "dx:nuke": "docker compose down --volumes --remove-orphans",
     "dx:up": "docker compose up -d",
