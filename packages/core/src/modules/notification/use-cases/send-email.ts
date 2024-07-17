@@ -173,7 +173,7 @@ function getSubject(input: EmailTemplate): string {
       return 'Your Primary Email Was Changed';
     })
     .with({ name: 'resume-submitted' }, ({ data }) => {
-      return `You ${data.edited ? 'Resubmitted' : 'Submitted'} to the ${data.resumeBookName} Resume Book! ✅`;
+      return `Confirmation: ${data.resumeBookName} Resume Book! ✅`;
     })
     .with({ name: 'student-activated' }, () => {
       return 'Swag Pack 😜';
