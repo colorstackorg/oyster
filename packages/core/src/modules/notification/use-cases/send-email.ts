@@ -13,8 +13,8 @@ import {
   StudentAttendedOnboardingEmail,
   StudentRemovedEmail,
 } from '@oyster/email-templates';
-import { getObject } from '@oyster/infrastructure/object-storage';
 
+import { getObject } from '@/modules/object-storage/object-storage';
 import { ENVIRONMENT } from '@/shared/env';
 import {
   getNodemailerTransporter,

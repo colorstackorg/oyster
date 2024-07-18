@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import React, { type PropsWithChildren } from 'react';
 import { BookOpen, Calendar, Globe, Home, Link, MapPin } from 'react-feather';
 
-import { type MixpanelEvent } from '@oyster/infrastructure/mixpanel';
+import { type MixpanelEvent } from '@oyster/core/mixpanel';
 import {
   cx,
   getButtonCn,

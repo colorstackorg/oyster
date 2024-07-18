@@ -1,8 +1,8 @@
 import { db } from '@oyster/db';
-import { putObject } from '@oyster/infrastructure/object-storage';
 import { id } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
+import { putObject } from '@/modules/object-storage/object-storage';
 import { type AddResourceInput } from '@/modules/resource/resource.types';
 
 export async function addResource(input: AddResourceInput) {

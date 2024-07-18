@@ -2,10 +2,6 @@ import dayjs from 'dayjs';
 import { match } from 'ts-pattern';
 
 import { db, point } from '@oyster/db';
-import {
-  getPresignedURL,
-  putObject,
-} from '@oyster/infrastructure/object-storage';
 import { FORMATTED_RACE } from '@oyster/types';
 import { iife } from '@oyster/utils';
 
@@ -13,6 +9,10 @@ import { job } from '@/infrastructure/bull/use-cases/job';
 import { createAirtableRecord } from '@/modules/airtable/use-cases/create-airtable-record';
 import { updateAirtableRecord } from '@/modules/airtable/use-cases/update-airtable-record';
 import { type DegreeType } from '@/modules/education/education.types';
+import {
+  getPresignedURL,
+  putObject,
+} from '@/modules/object-storage/object-storage';
 import { getResumeBookSubmission } from '@/modules/resume-book/queries/get-resume-book-submission';
 import { type SubmitResumeInput } from '@/modules/resume-book/resume-book.types';
 

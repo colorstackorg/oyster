@@ -16,11 +16,7 @@ import {
 import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
-import {
-  getIpAddress,
-  setMixpanelProfile,
-  track,
-} from '@oyster/infrastructure/mixpanel';
+import { getIpAddress, setMixpanelProfile, track } from '@oyster/core/mixpanel';
 import {
   type ActivationRequirement,
   StudentActiveStatus,

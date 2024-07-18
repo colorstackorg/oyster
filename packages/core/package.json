@@ -16,6 +16,7 @@
     "./admin.server": "./src/modules/admin/index.server.ts",
     "./employment": "./src/modules/employment/index.ts",
     "./employment.server": "./src/modules/employment/index.server.ts",
+    "./mixpanel": "./src/modules/mixpanel/mixpanel.ts",
     "./resources": "./src/modules/resource/index.ts",
     "./resources.server": "./src/modules/resource/index.server.ts",
     "./resume-books": "./src/modules/resume-book/index.ts",
@@ -30,10 +31,11 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.576.0",
+    "@aws-sdk/s3-request-presigner": "^3.577.0",
     "@mailchimp/mailchimp_marketing": "^3.0.78",
     "@oyster/db": "*",
     "@oyster/email-templates": "*",
-    "@oyster/infrastructure": "*",
     "@oyster/types": "*",
     "@oyster/utils": "*",
     "@react-email/render": "^0.0.6",
@@ -43,10 +45,13 @@
     "dedent": "^0.7.0",
     "googleapis": "^126.0.1",
     "ioredis": "^5.3.2",
+    "is-ip": "^5.0.1",
     "jsonwebtoken": "^9.0.2",
+    "mixpanel": "^0.18.0",
     "nanoid": "^3.0.0",
     "nodemailer": "^6.9.13",
     "postmark": "^3.0.15",
+    "ua-parser-js": "^1.0.36",
     "zod": "^3.20.2"
   },
   "devDependencies": {

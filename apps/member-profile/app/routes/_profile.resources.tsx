@@ -17,8 +17,7 @@ import {
   type ResourceType,
 } from '@oyster/core/resources';
 import { listResources, listTags } from '@oyster/core/resources.server';
-import { track } from '@oyster/infrastructure/mixpanel';
-import { getPresignedURL } from '@oyster/infrastructure/object-storage';
+import { track } from '@oyster/core/mixpanel';
 import {
   Dashboard,
   ExistingSearchParams,
@@ -31,6 +30,7 @@ import {
 import { iife } from '@oyster/utils';
 
 import { ListSearchParams } from '@/member-profile.ui';
+import { getPresignedURL } from '@/modules/object-storage/object-storage';
 import { Resource } from '@/shared/components/resource';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';

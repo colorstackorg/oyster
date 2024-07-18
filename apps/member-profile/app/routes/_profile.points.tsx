@@ -17,7 +17,7 @@ import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
-import { track } from '@oyster/infrastructure/mixpanel';
+import { track } from '@oyster/core/mixpanel';
 import { type CompletedActivity } from '@oyster/types';
 import {
   Button,

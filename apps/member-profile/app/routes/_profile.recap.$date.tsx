@@ -13,7 +13,7 @@ import { type PropsWithChildren } from 'react';
 import { listCompanyReviews } from '@oyster/core/employment.server';
 import { listResources } from '@oyster/core/resources.server';
 import { listSlackMessages } from '@oyster/core/slack.server';
-import { track } from '@oyster/infrastructure/mixpanel';
+import { track } from '@oyster/core/mixpanel';
 import { Divider, Text } from '@oyster/ui';
 import { iife } from '@oyster/utils';
 
