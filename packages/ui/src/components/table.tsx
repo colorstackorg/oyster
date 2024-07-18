@@ -168,6 +168,8 @@ function TableBody({
                 );
               })}
 
+            <td className={dataCellCn}></td>
+
             <td className={cx(dataCellCn, 'sticky right-0')}>
               {!!Dropdown && <Dropdown {...row} />}
             </td>
