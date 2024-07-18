@@ -16,7 +16,7 @@
     "./admin.server": "./src/modules/admin/index.server.ts",
     "./employment": "./src/modules/employment/index.ts",
     "./employment.server": "./src/modules/employment/index.server.ts",
-    "./mixpanel": "./src/modules/mixpanel/mixpanel.ts",
+    "./mixpanel": "./src/modules/mixpanel/index.ts",
     "./resources": "./src/modules/resource/index.ts",
     "./resources.server": "./src/modules/resource/index.server.ts",
     "./resume-books": "./src/modules/resume-book/index.ts",

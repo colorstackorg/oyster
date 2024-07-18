@@ -9,10 +9,7 @@ import { job } from '@/infrastructure/bull/use-cases/job';
 import { createAirtableRecord } from '@/modules/airtable/use-cases/create-airtable-record';
 import { updateAirtableRecord } from '@/modules/airtable/use-cases/update-airtable-record';
 import { type DegreeType } from '@/modules/education/education.types';
-import {
-  getPresignedURL,
-  putObject,
-} from '@/modules/object-storage/object-storage';
+import { getPresignedURL, putObject } from '@/modules/object-storage';
 import { getResumeBookSubmission } from '@/modules/resume-book/queries/get-resume-book-submission';
 import { type SubmitResumeInput } from '@/modules/resume-book/resume-book.types';
 

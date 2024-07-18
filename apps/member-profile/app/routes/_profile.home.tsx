@@ -15,8 +15,8 @@ import {
 } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { db } from '@oyster/db';
 import { getIpAddress, setMixpanelProfile, track } from '@oyster/core/mixpanel';
+import { db } from '@oyster/db';
 import {
   type ActivationRequirement,
   StudentActiveStatus,
