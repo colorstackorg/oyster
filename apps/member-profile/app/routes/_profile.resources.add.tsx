@@ -14,9 +14,9 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 
+import { track } from '@oyster/core/mixpanel';
 import { AddResourceInput } from '@oyster/core/resources';
 import { addResource } from '@oyster/core/resources.server';
-import { track } from '@oyster/infrastructure/mixpanel';
 import {
   Button,
   Divider,

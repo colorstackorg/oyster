@@ -18,7 +18,6 @@
     "@aws-sdk/s3-request-presigner": "^3.577.0",
     "@oyster/core": "*",
     "@oyster/db": "*",
-    "@oyster/infrastructure": "*",
     "@oyster/types": "*",
     "@oyster/ui": "*",
     "@oyster/utils": "*",
