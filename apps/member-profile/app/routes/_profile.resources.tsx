@@ -12,6 +12,7 @@ import { Plus } from 'react-feather';
 
 import { isMemberAdmin } from '@oyster/core/admin.server';
 import { track } from '@oyster/core/mixpanel';
+import { getPresignedURL } from '@oyster/core/object-storage';
 import {
   ListResourcesOrderBy,
   ListResourcesWhere,
@@ -30,7 +31,6 @@ import {
 import { iife } from '@oyster/utils';
 
 import { ListSearchParams } from '@/member-profile.ui';
-import { getPresignedURL } from '@/modules/object-storage';
 import { Resource } from '@/shared/components/resource';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
