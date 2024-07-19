@@ -1,17 +1,135 @@
 import dayjs from 'dayjs';
+import { type SelectExpression } from 'kysely';
 import { match } from 'ts-pattern';
 
-import { db, point } from '@oyster/db';
+import { type DB, db, point } from '@oyster/db';
 import { FORMATTED_RACE } from '@oyster/types';
-import { iife } from '@oyster/utils';
+import { id, iife } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { createAirtableRecord } from '@/modules/airtable/use-cases/create-airtable-record';
 import { updateAirtableRecord } from '@/modules/airtable/use-cases/update-airtable-record';
 import { type DegreeType } from '@/modules/education/education.types';
 import { getPresignedURL, putObject } from '@/modules/object-storage';
-import { getResumeBookSubmission } from '@/modules/resume-book/queries/get-resume-book-submission';
-import { type SubmitResumeInput } from '@/modules/resume-book/resume-book.types';
+import {
+  type CreateResumeBookInput,
+  type SubmitResumeInput,
+} from '@/modules/resume-book/resume-book.types';
+
+// Queries
+
+type GetResumeBookOptions<Selection> = {
+  select: Selection[];
+  where: { id: string };
+};
+
+export async function getResumeBook<
+  Selection extends SelectExpression<DB, 'resumeBooks'>,
+>({ select, where }: GetResumeBookOptions<Selection>) {
+  const resumeBook = await db
+    .selectFrom('resumeBooks')
+    .select(select)
+    .where('id', '=', where.id)
+    .executeTakeFirst();
+
+  return resumeBook;
+}
+
+type GetResumeBookSubmissionOptions<Selection> = {
+  select: Selection[];
+  where: {
+    memberId: string;
+    resumeBookId: string;
+  };
+};
+
+export async function getResumeBookSubmission<
+  Selection extends SelectExpression<DB, 'resumeBookSubmissions'>,
+>({ select, where }: GetResumeBookSubmissionOptions<Selection>) {
+  const submission = await db
+    .selectFrom('resumeBookSubmissions')
+    .select(select)
+    .where('memberId', '=', where.memberId)
+    .where('resumeBookId', '=', where.resumeBookId)
+    .executeTakeFirst();
+
+  return submission;
+}
+
+export async function listResumeBooks() {
+  const resumeBooks = await db
+    .selectFrom('resumeBooks')
+    .select([
+      'airtableBaseId',
+      'airtableTableId',
+      'endDate',
+      'id',
+      'name',
+      'startDate',
+
+      (eb) => {
+        return eb
+          .selectFrom('resumeBookSubmissions')
+          .select((eb) => eb.fn.countAll().as('submissions'))
+          .whereRef('resumeBooks.id', '=', 'resumeBookSubmissions.resumeBookId')
+          .as('submissions');
+      },
+    ])
+    .orderBy('startDate', 'desc')
+    .orderBy('endDate', 'desc')
+    .execute();
+
+  return resumeBooks;
+}
+
+type ListResumeBookSponsorsOptions = {
+  where: { resumeBookId: string };
+};
+
+export async function listResumeBookSponsors({
+  where,
+}: ListResumeBookSponsorsOptions) {
+  const sponsors = await db
+    .selectFrom('resumeBookSponsors')
+    .leftJoin('companies', 'companies.id', 'resumeBookSponsors.companyId')
+    .select(['companies.id', 'companies.name'])
+    .where('resumeBookId', '=', where.resumeBookId)
+    .execute();
+
+  return sponsors;
+}
+
+// Mutations
+
+export async function createResumeBook(input: CreateResumeBookInput) {
+  await db.transaction().execute(async (trx) => {
+    const resumeBookId = id();
+
+    await trx
+      .insertInto('resumeBooks')
+      .values({
+        airtableBaseId: input.airtableBaseId,
+        airtableTableId: input.airtableTableId,
+        endDate: input.endDate,
+        id: resumeBookId,
+        name: input.name,
+        startDate: input.startDate,
+      })
+      .execute();
+
+    await trx
+      .insertInto('resumeBookSponsors')
+      .values(
+        input.sponsors.map((sponsor) => {
+          return {
+            companyId: sponsor,
+            resumeBookId,
+          };
+        })
+      )
+      .execute();
+  });
+}
 
 export async function submitResume({
   codingLanguages,

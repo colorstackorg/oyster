@@ -19,13 +19,13 @@ import {
 import dayjs from 'dayjs';
 import { match } from 'ts-pattern';
 
-import { SubmitResumeInput } from '@oyster/core/resume-books';
 import {
   getResumeBook,
   getResumeBookSubmission,
   listResumeBookSponsors,
   submitResume,
-} from '@oyster/core/resume-books.server';
+} from '@oyster/core/resume-books';
+import { SubmitResumeInput } from '@oyster/core/resume-books.types';
 import { db } from '@oyster/db';
 import { FORMATTED_RACE, Race, WorkAuthorizationStatus } from '@oyster/types';
 import {
