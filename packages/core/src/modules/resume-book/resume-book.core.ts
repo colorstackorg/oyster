@@ -65,6 +65,7 @@ export async function listResumeBooks() {
       'airtableBaseId',
       'airtableTableId',
       'endDate',
+      'googleDriveFolderId',
       'id',
       'name',
       'startDate',
