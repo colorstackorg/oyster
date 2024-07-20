@@ -31,13 +31,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const _resumeBooks = await listResumeBooks();
 
   const resumeBooks = _resumeBooks.map(
-    ({ airtableBaseId, airtableTableId, endDate, startDate, ...record }) => {
+    ({
+      airtableBaseId,
+      airtableTableId,
+      endDate,
+      googleDriveFolderId,
+      startDate,
+      ...record
+    }) => {
       const format = 'MM/DD/YY @ h:mm A (z)';
 
       return {
         ...record,
         airtableUri: `https://airtable.com/${airtableBaseId}/${airtableTableId}`,
         endDate: dayjs(endDate).tz(timezone).format(format),
+        googleDriveUri: `https://drive.google.com/drive/folders/${googleDriveFolderId}`,
         resumeBookUri: `${ENV.MEMBER_PROFILE_URL}/resume-books/${record.id}`,
         startDate: dayjs(startDate).tz(timezone).format(format),
       };
@@ -138,7 +146,11 @@ function ResumeBooksTable() {
   );
 }
 
-function ResumeBookDropdown({ airtableUri, resumeBookUri }: ResumeBookInView) {
+function ResumeBookDropdown({
+  airtableUri,
+  googleDriveUri,
+  resumeBookUri,
+}: ResumeBookInView) {
   const [open, setOpen] = useState<boolean>(false);
   const toast = useToast();
 
@@ -167,9 +179,16 @@ function ResumeBookDropdown({ airtableUri, resumeBookUri }: ResumeBookInView) {
                 <Clipboard /> Copy Resume Book Link
               </button>
             </Dropdown.Item>
+
             <Dropdown.Item>
               <Link to={airtableUri} target="_blank">
                 <ExternalLink /> Go to Airtable
+              </Link>
+            </Dropdown.Item>
+
+            <Dropdown.Item>
+              <Link to={googleDriveUri} target="_blank">
+                <ExternalLink /> Go to Google Drive
               </Link>
             </Dropdown.Item>
           </Dropdown.List>

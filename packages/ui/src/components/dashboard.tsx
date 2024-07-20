@@ -158,7 +158,7 @@ Dashboard.Page = function Page({
   return (
     <section
       className={cx(
-        'box-border flex flex-col gap-4 @container',
+        'box-border flex min-h-screen flex-col gap-4 @container',
         'p-4 pb-24',
         'md:ml-[270px] md:p-6 md:pb-16',
         className
