@@ -372,7 +372,7 @@ export async function submitResume({
       return id;
     } catch (e) {
       throw new ColorStackError()
-        .withMessage('Failed to upload resume to Google Drive')
+        .withMessage('Failed to upload resume to Google Drive.')
         .report();
     }
   });
