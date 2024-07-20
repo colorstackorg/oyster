@@ -7,8 +7,10 @@ import { FORMATTED_RACE } from '@oyster/types';
 import { id, iife } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { createAirtableRecord } from '@/modules/airtable/use-cases/create-airtable-record';
-import { updateAirtableRecord } from '@/modules/airtable/use-cases/update-airtable-record';
+import {
+  createAirtableRecord,
+  updateAirtableRecord,
+} from '@/modules/airtable/airtable.core';
 import { type DegreeType } from '@/modules/education/education.types';
 import {
   createGoogleDriveFolder,
