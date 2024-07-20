@@ -11,6 +11,60 @@ const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET as string;
 
 // Core
 
+type CreateFolderInput = {
+  /**
+   * The ID of the folder to create the folder in. If not provided, the folder
+   * will be created in the root of the user's Google Drive.
+   */
+  folderId: string | null;
+
+  /**
+   * The name of the folder to create.
+   *
+   * @example "2024 Spring Resume Book"
+   * @example "2023 Fall Resume Book"
+   */
+  name: string;
+};
+
+/**
+ * Creates a folder in Google Drive. Returns the ID of the folder that was
+ * created.
+ *
+ * @see https://developers.google.com/drive/api/guides/folder#create-folder
+ */
+export async function createGoogleDriveFolder({
+  folderId,
+  name,
+}: CreateFolderInput) {
+  const accessToken = await retrieveAccessToken();
+
+  const body = JSON.stringify({
+    mimeType: 'application/vnd.google-apps.folder',
+    name,
+    parents: folderId ? [folderId] : undefined,
+  });
+
+  const response = await fetch('https://www.googleapis.com/drive/v3/files', {
+    body,
+    method: 'post',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    throw new ColorStackError()
+      .withMessage('Failed to create a Google Drive folder.')
+      .withContext({ folderId, name, response: json })
+      .report();
+  }
+
+  return json.id;
+}
+
 type UploadFileInput = {
   /**
    * The file to upload to Google Drive, which is sent in a `multipart/form-data`
