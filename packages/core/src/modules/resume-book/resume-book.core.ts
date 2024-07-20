@@ -10,11 +10,13 @@ import { job } from '@/infrastructure/bull/use-cases/job';
 import { createAirtableRecord } from '@/modules/airtable/use-cases/create-airtable-record';
 import { updateAirtableRecord } from '@/modules/airtable/use-cases/update-airtable-record';
 import { type DegreeType } from '@/modules/education/education.types';
+import { uploadFileToGoogleDrive } from '@/modules/google-drive';
 import { getPresignedURL, putObject } from '@/modules/object-storage';
 import {
   type CreateResumeBookInput,
   type SubmitResumeInput,
 } from '@/modules/resume-book/resume-book.types';
+import { ColorStackError } from '@/shared/errors';
 
 // Queries
 
@@ -161,13 +163,18 @@ export async function submitResume({
     company3,
   ] = await Promise.all([
     getResumeBookSubmission({
-      select: ['airtableRecordId'],
+      select: ['airtableRecordId', 'googleDriveFileId'],
       where: { memberId, resumeBookId },
     }),
 
     db
       .selectFrom('resumeBooks')
-      .select(['airtableBaseId', 'airtableTableId', 'name'])
+      .select([
+        'airtableBaseId',
+        'airtableTableId',
+        'googleDriveFolderId',
+        'name',
+      ])
       .where('id', '=', resumeBookId)
       .executeTakeFirstOrThrow(),
 
@@ -234,11 +241,14 @@ export async function submitResume({
       })
     : null;
 
+  // In order to keep the resume file names consistent for the partners,
+  // we'll use the same naming convention based on the submitter.
+  const graduationYear = education.endDate.getFullYear();
+  const fileName = `${lastName}_${firstName}_${graduationYear}.pdf`;
+
   // We need to do a little massaging/formatting of the data before we sent it
   // over to Airtable.
   const airtableData = iife(function formatAirtableRecord() {
-    const graduationYear = education.endDate.getFullYear();
-
     return {
       'Education Level': iife(() => {
         const graduated = dayjs().isAfter(education.endDate);
@@ -313,11 +323,7 @@ export async function submitResume({
         // for upload attachments/files:
         // https://airtable.com/developers/web/api/field-model#multipleattachment
         Resume: iife(() => {
-          // In order to keep the resume file names consistent for the partners,
-          // we'll use the same naming convention based on the submitter.
-          const filename = `${lastName}_${firstName}_${graduationYear}.pdf`;
-
-          return [{ filename, url: resumeLink }];
+          return [{ filename: fileName, url: resumeLink }];
         }),
       }),
 
@@ -350,6 +356,27 @@ export async function submitResume({
         data: airtableData,
       });
 
+  const googleDriveFileId = await iife(async () => {
+    if (!resume) {
+      return '';
+    }
+
+    try {
+      const id = await uploadFileToGoogleDrive({
+        file: resume,
+        fileId: submission?.googleDriveFileId || undefined,
+        fileName,
+        folderId: resumeBook.googleDriveFolderId as string,
+      });
+
+      return id;
+    } catch (e) {
+      throw new ColorStackError()
+        .withMessage('Failed to upload resume to Google Drive')
+        .report();
+    }
+  });
+
   await db.transaction().execute(async (trx) => {
     await trx
       .updateTable('students')
@@ -375,6 +402,7 @@ export async function submitResume({
         codingLanguages,
         educationId,
         employmentSearchStatus,
+        googleDriveFileId,
         memberId,
         preferredCompany1,
         preferredCompany2,
@@ -386,9 +414,17 @@ export async function submitResume({
       .onConflict((oc) => {
         return oc.columns(['memberId', 'resumeBookId']).doUpdateSet((eb) => {
           return {
+            airtableRecordId: eb.fn.coalesce(
+              'resumeBookSubmissions.airtableRecordId',
+              'excluded.airtableRecordId'
+            ),
             codingLanguages: eb.ref('excluded.codingLanguages'),
             educationId: eb.ref('excluded.educationId'),
             employmentSearchStatus: eb.ref('excluded.employmentSearchStatus'),
+            googleDriveFileId: eb.fn.coalesce(
+              'resumeBookSubmissions.googleDriveFileId',
+              'excluded.googleDriveFileId'
+            ),
             preferredCompany1: eb.ref('excluded.preferredCompany1'),
             preferredCompany2: eb.ref('excluded.preferredCompany2'),
             preferredCompany3: eb.ref('excluded.preferredCompany3'),

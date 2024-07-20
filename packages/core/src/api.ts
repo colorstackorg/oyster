@@ -21,6 +21,7 @@ export { educationWorker } from './modules/education/education.worker';
 export { workExperienceWorker } from './modules/employment/employment.worker';
 export { eventWorker } from './modules/event/event.worker';
 export { gamificationWorker } from './modules/gamification/gamification.worker';
+export { saveGoogleDriveCredentials } from './modules/google-drive';
 export { emailMarketingWorker } from './modules/mailchimp/email-marketing.worker';
 export { memberEmailWorker } from './modules/member/member-email.worker';
 export { memberWorker } from './modules/member/member.worker';
