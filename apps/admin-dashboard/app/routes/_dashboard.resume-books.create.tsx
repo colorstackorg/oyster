@@ -87,7 +87,7 @@ export default function CreateResumeBookModal() {
 
       <RemixForm className="form" method="post">
         <Form.Field
-          description="Example: Spring '24"
+          description={`Please don't add "Resume Book" to the title. Example: Spring '24`}
           error={errors.name}
           label="Name"
           labelFor={keys.name}

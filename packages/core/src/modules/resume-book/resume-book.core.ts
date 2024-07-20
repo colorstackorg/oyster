@@ -10,13 +10,21 @@ import { job } from '@/infrastructure/bull/use-cases/job';
 import { createAirtableRecord } from '@/modules/airtable/use-cases/create-airtable-record';
 import { updateAirtableRecord } from '@/modules/airtable/use-cases/update-airtable-record';
 import { type DegreeType } from '@/modules/education/education.types';
-import { uploadFileToGoogleDrive } from '@/modules/google-drive';
+import {
+  createGoogleDriveFolder,
+  uploadFileToGoogleDrive,
+} from '@/modules/google-drive';
 import { getPresignedURL, putObject } from '@/modules/object-storage';
 import {
   type CreateResumeBookInput,
   type SubmitResumeInput,
 } from '@/modules/resume-book/resume-book.types';
 import { ColorStackError } from '@/shared/errors';
+
+// Environment Variables
+
+const GOOGLE_DRIVE_RESUME_BOOKS_FOLDER_ID = process.env
+  .GOOGLE_DRIVE_RESUME_BOOKS_FOLDER_ID as string;
 
 // Queries
 
@@ -104,7 +112,17 @@ export async function listResumeBookSponsors({
 
 // Mutations
 
+/**
+ * Creates a new resume book as well as the sponsors (companies) of the
+ * resume book. This also automatically creates a Google Drive folder and stores
+ * a reference on the resume book record.
+ */
 export async function createResumeBook(input: CreateResumeBookInput) {
+  const googleDriveFolderId = await createGoogleDriveFolder({
+    folderId: GOOGLE_DRIVE_RESUME_BOOKS_FOLDER_ID,
+    name: `${input.name} Resume Book`,
+  });
+
   await db.transaction().execute(async (trx) => {
     const resumeBookId = id();
 
@@ -114,6 +132,7 @@ export async function createResumeBook(input: CreateResumeBookInput) {
         airtableBaseId: input.airtableBaseId,
         airtableTableId: input.airtableTableId,
         endDate: input.endDate,
+        googleDriveFolderId,
         id: resumeBookId,
         name: input.name,
         startDate: input.startDate,
