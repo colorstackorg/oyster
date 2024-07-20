@@ -6,6 +6,7 @@ const EnvironmentVariable = z.string().trim().min(1);
 
 const BaseEnvironmentConfig = z.object({
   ADMIN_DASHBOARD_URL: EnvironmentVariable,
+  AIRTABLE_API_KEY: EnvironmentVariable,
   AIRTABLE_FAMILY_BASE_ID: EnvironmentVariable,
   AIRTABLE_MEMBERS_TABLE_ID: EnvironmentVariable,
   AIRTABLE_RESUME_BOOKS_BASE_ID: EnvironmentVariable,
@@ -24,6 +25,7 @@ const BaseEnvironmentConfig = z.object({
 
 const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
   BaseEnvironmentConfig.partial({
+    AIRTABLE_API_KEY: true,
     AIRTABLE_FAMILY_BASE_ID: true,
     AIRTABLE_MEMBERS_TABLE_ID: true,
     AIRTABLE_RESUME_BOOKS_BASE_ID: true,
