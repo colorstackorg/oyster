@@ -53,7 +53,6 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   await createResumeBook({
-    airtableBaseId: data.airtableBaseId,
     airtableTableId: data.airtableTableId,
     endDate: data.endDate,
     name: data.name,
@@ -129,16 +128,6 @@ export default function CreateResumeBookModal() {
         <SponsorsField />
 
         <Divider />
-
-        <Form.Field
-          description="This is the ID of the Airtable base that the resume book responses will be sent to."
-          error={errors.airtableBaseId}
-          label="Airtable Base ID"
-          labelFor={keys.airtableBaseId}
-          required
-        >
-          <Input id={keys.airtableBaseId} name={keys.airtableBaseId} required />
-        </Form.Field>
 
         <Form.Field
           description="This is the ID of the Airtable table that the resume book responses will be sent to."

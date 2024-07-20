@@ -8,6 +8,7 @@ const BaseEnvironmentConfig = z.object({
   ADMIN_DASHBOARD_URL: EnvironmentVariable,
   AIRTABLE_FAMILY_BASE_ID: EnvironmentVariable,
   AIRTABLE_MEMBERS_TABLE_ID: EnvironmentVariable,
+  AIRTABLE_RESUME_BOOKS_BASE_ID: EnvironmentVariable,
   API_URL: EnvironmentVariable,
   DATABASE_URL: EnvironmentVariable,
   ENVIRONMENT: z.nativeEnum(Environment),
@@ -25,6 +26,7 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
   BaseEnvironmentConfig.partial({
     AIRTABLE_FAMILY_BASE_ID: true,
     AIRTABLE_MEMBERS_TABLE_ID: true,
+    AIRTABLE_RESUME_BOOKS_BASE_ID: true,
     GOOGLE_CLIENT_ID: true,
     GOOGLE_CLIENT_SECRET: true,
     GOOGLE_DRIVE_RESUME_BOOKS_FOLDER_ID: true,

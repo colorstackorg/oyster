@@ -25,7 +25,6 @@ const ResumeBook = z.object({
 // Use Case(s)
 
 export const CreateResumeBookInput = ResumeBook.pick({
-  airtableBaseId: true,
   airtableTableId: true,
   endDate: true,
   name: true,

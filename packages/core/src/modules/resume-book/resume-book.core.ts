@@ -23,6 +23,9 @@ import { ColorStackError } from '@/shared/errors';
 
 // Environment Variables
 
+const AIRTABLE_RESUME_BOOKS_BASE_ID = process.env
+  .AIRTABLE_RESUME_BOOKS_BASE_ID as string;
+
 const GOOGLE_DRIVE_RESUME_BOOKS_FOLDER_ID = process.env
   .GOOGLE_DRIVE_RESUME_BOOKS_FOLDER_ID as string;
 
@@ -129,7 +132,7 @@ export async function createResumeBook(input: CreateResumeBookInput) {
     await trx
       .insertInto('resumeBooks')
       .values({
-        airtableBaseId: input.airtableBaseId,
+        airtableBaseId: AIRTABLE_RESUME_BOOKS_BASE_ID,
         airtableTableId: input.airtableTableId,
         endDate: input.endDate,
         googleDriveFolderId,
