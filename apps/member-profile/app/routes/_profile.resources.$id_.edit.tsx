@@ -23,6 +23,7 @@ import {
 } from '@oyster/ui';
 
 import {
+  ResourceAttachmentField,
   ResourceDescriptionField,
   ResourceLinkField,
   ResourceProvider,
@@ -77,6 +78,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     link: data.link,
     tags: data.tags,
     title: data.title,
+    attachments: data.attachments,
   });
 
   toast(session, {
@@ -143,6 +145,17 @@ export default function EditResourceModal() {
                 defaultValue={resource.link || undefined}
                 error={errors.link}
                 name={keys.link}
+              />
+            </>
+          )}
+
+          {resource.type == 'file' && (
+            <>
+              <Divider />
+
+              <ResourceAttachmentField
+                error={errors.attachments}
+                name={keys.attachments}
               />
             </>
           )}
