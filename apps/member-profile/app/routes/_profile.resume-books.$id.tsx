@@ -584,7 +584,7 @@ function ResumeBookForm() {
         </Radio.Group>
       </Form.Field>
 
-      <SponsorField />
+      <PreferredSponsorsField />
 
       <Form.Field
         description={
@@ -615,7 +615,7 @@ function ResumeBookForm() {
   );
 }
 
-function SponsorField() {
+function PreferredSponsorsField() {
   const { sponsors, submission } = useLoaderData<typeof loader>();
   const { errors } = getErrors(useActionData<typeof action>());
 
