@@ -633,10 +633,10 @@ function PreferredSponsorsField() {
     // to pick a different company.
     const duplicateCompanies = Object.keys(selectedCompanies)
       .filter((key) => {
-        return (
-          key !== rank.toString() &&
-          selectedCompanies[key as unknown as 1 | 2 | 3] === value
-        );
+        const alreadySelected =
+          selectedCompanies[key as unknown as 1 | 2 | 3] === value;
+
+        return key !== rank.toString() && alreadySelected;
       })
       .map((key) => {
         return [key, ''];
