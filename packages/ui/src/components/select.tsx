@@ -14,13 +14,13 @@ export type SelectProps = Pick<
   | 'placeholder'
   | 'readOnly'
   | 'required'
+  | 'value'
 > & {
   width?: 'fit';
 };
 
 export function Select({
   children,
-  defaultValue = '',
   placeholder = 'Select...',
   required,
   width,
@@ -42,7 +42,6 @@ export function Select({
         // iOS has weird default styling for select elements - we'll undo those.
         'bg-inherit'
       )}
-      defaultValue={defaultValue}
       required={required}
       {...rest}
     >
