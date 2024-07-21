@@ -44,6 +44,7 @@ import {
   Radio,
   Select,
   Text,
+  useRevalidateOnFocus,
   validateForm,
 } from '@oyster/ui';
 import { iife } from '@oyster/utils';
@@ -134,11 +135,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     endDate: dayjs(_resumeBook.endDate)
       .tz(timezone)
-      .format('dddd, MMMM DD, YYYY @ h:mm A'),
+      .format('dddd, MMMM DD, YYYY @ h:mm A (z)'),
 
     startDate: dayjs(_resumeBook.startDate)
       .tz(timezone)
-      .format('dddd, MMMM DD, YYYY @ h:mm A'),
+      .format('dddd, MMMM DD, YYYY @ h:mm A (z)'),
 
     status: iife(() => {
       const now = dayjs();
@@ -269,6 +270,10 @@ export default function ResumeBook() {
   const { resumeBook, submission } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // If the user leaves to edit their education history or email, the data
+  // will now be updated when they return.
+  useRevalidateOnFocus();
+
   const showEditButton =
     !!submission && searchParams.get('state') !== 'editing';
 
@@ -279,29 +284,9 @@ export default function ResumeBook() {
 
         {match(resumeBook.status)
           .with('active', () => {
-            if (showEditButton) {
-              return null;
-            }
-
             return (
               <Text color="gray-500">
-                Before continuining, please ensure that your{' '}
-                <Link
-                  className="link"
-                  target="_blank"
-                  to={Route['/profile/emails']}
-                >
-                  primary email
-                </Link>{' '}
-                and{' '}
-                <Link
-                  className="link"
-                  target="_blank"
-                  to={Route['/profile/education']}
-                >
-                  education history
-                </Link>{' '}
-                is up to date.
+                Submissions will be open until {resumeBook.endDate}.
               </Text>
             );
           })
@@ -315,7 +300,7 @@ export default function ResumeBook() {
           .with('upcoming', () => {
             return (
               <Text color="gray-500">
-                This resume book opens on {resumeBook.startDate}.
+                Submissions will open on {resumeBook.startDate}.
               </Text>
             );
           })
@@ -327,8 +312,8 @@ export default function ResumeBook() {
           <div className="flex flex-col gap-8 rounded-xl border border-dashed border-green-700 bg-green-50 p-4">
             <Text>
               Thank you for submitting your resume to the {resumeBook.name}{' '}
-              resume book! You can edit your submission until the deadline:{' '}
-              {resumeBook.endDate}.
+              resume book! You can edit your submission anytime before the
+              deadline by clicking the button below.
             </Text>
 
             <button
@@ -363,6 +348,50 @@ function ResumeBookForm() {
       method="post"
       encType="multipart/form-data"
     >
+      <Form.Field
+        description={iife(() => {
+          const emailLink = (
+            <Link
+              className="link"
+              target="_blank"
+              to={Route['/profile/emails']}
+            >
+              primary email
+            </Link>
+          );
+
+          const educationLink = (
+            <Link
+              className="link"
+              target="_blank"
+              to={Route['/profile/education']}
+            >
+              education history
+            </Link>
+          );
+
+          return (
+            <Text color="gray-500">
+              Please ensure that your {emailLink} and {educationLink} are up to
+              date.
+            </Text>
+          );
+        })}
+        labelFor="isProfileUpdated"
+        label="Email + Education History"
+        required
+      >
+        <Checkbox
+          id="isProfileUpdated"
+          label="My primary email and education history are up to date."
+          name="isProfileUpdated"
+          required
+          value="1"
+        />
+      </Form.Field>
+
+      <Divider />
+
       <Form.Field
         error={errors.firstName}
         label="First Name"
