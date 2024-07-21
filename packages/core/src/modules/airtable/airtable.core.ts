@@ -15,7 +15,7 @@ import {
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { db } from '@/infrastructure/database';
 import { IS_PRODUCTION } from '@/shared/env';
-import { ErrorWithContext } from '@/shared/errors';
+import { ColorStackError, ErrorWithContext } from '@/shared/errors';
 import { RateLimiter } from '@/shared/utils/rate-limiter';
 
 // Environment Variables
@@ -51,6 +51,29 @@ function getAirtableHeaders(
     }),
   };
 }
+
+// Bull Worker
+
+export const airtableWorker = registerWorker(
+  'airtable',
+  AirtableBullJob,
+  async (job) => {
+    return match(job)
+      .with({ name: 'airtable.record.create' }, ({ data }) => {
+        return createAirtableRecord(data);
+      })
+      .with({ name: 'airtable.record.create.member' }, ({ data }) => {
+        return createAirtableMemberRecord(data);
+      })
+      .with({ name: 'airtable.record.delete' }, ({ data }) => {
+        return deleteAirtableRecord(data);
+      })
+      .with({ name: 'airtable.record.update' }, ({ data }) => {
+        return updateAirtableRecord(data);
+      })
+      .exhaustive();
+  }
+);
 
 // Core
 
@@ -180,6 +203,57 @@ export async function createAirtableRecord({
   return json.id as string;
 }
 
+type AirtableFieldOptions = {
+  choices: { name: string }[];
+};
+
+type AirtableField = { name: string } & (
+  | { type: 'email' }
+  | { type: 'multipleAttachments' }
+  | { type: 'multipleSelects'; options: AirtableFieldOptions }
+  | { type: 'singleLineText' }
+  | { type: 'singleSelect'; options: AirtableFieldOptions }
+  | { type: 'url' }
+);
+
+type CreateAirtableTableInput = {
+  baseId: string;
+  fields: AirtableField[];
+  name: string;
+};
+
+export async function createAirtableTable({
+  baseId,
+  fields,
+  name,
+}: CreateAirtableTableInput) {
+  await airtableRateLimiter.process();
+
+  const response = await fetch(
+    `${AIRTABLE_API_URI}/meta/bases/${baseId}/tables`,
+    {
+      body: JSON.stringify({ name, fields }),
+      method: 'post',
+      headers: getAirtableHeaders({ includeContentType: true }),
+    }
+  );
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    throw new ColorStackError()
+      .withMessage('Failed to create Airtable table.')
+      .withContext({
+        baseId,
+        fields,
+        name,
+        response: json,
+      });
+  }
+
+  return json.id as string;
+}
+
 /**
  * @see https://airtable.com/developers/web/api/delete-record
  */
@@ -255,26 +329,3 @@ export async function updateAirtableRecord({
 
   return json.id as string;
 }
-
-// Bull Worker
-
-export const airtableWorker = registerWorker(
-  'airtable',
-  AirtableBullJob,
-  async (job) => {
-    return match(job)
-      .with({ name: 'airtable.record.create' }, ({ data }) => {
-        return createAirtableRecord(data);
-      })
-      .with({ name: 'airtable.record.create.member' }, ({ data }) => {
-        return createAirtableMemberRecord(data);
-      })
-      .with({ name: 'airtable.record.delete' }, ({ data }) => {
-        return deleteAirtableRecord(data);
-      })
-      .with({ name: 'airtable.record.update' }, ({ data }) => {
-        return updateAirtableRecord(data);
-      })
-      .exhaustive();
-  }
-);

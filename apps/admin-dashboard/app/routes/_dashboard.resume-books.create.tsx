@@ -12,7 +12,6 @@ import {
   Button,
   ComboboxPopover,
   DatePicker,
-  Divider,
   Form,
   getErrors,
   Input,
@@ -53,7 +52,6 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   await createResumeBook({
-    airtableTableId: data.airtableTableId,
     endDate: data.endDate,
     name: data.name,
     sponsors: data.sponsors,
@@ -126,22 +124,6 @@ export default function CreateResumeBookModal() {
         </Form.Field>
 
         <SponsorsField />
-
-        <Divider />
-
-        <Form.Field
-          description="This is the ID of the Airtable table that the resume book responses will be sent to."
-          error={errors.airtableTableId}
-          label="Airtable Table ID"
-          labelFor={keys.airtableTableId}
-          required
-        >
-          <Input
-            id={keys.airtableTableId}
-            name={keys.airtableTableId}
-            required
-          />
-        </Form.Field>
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
