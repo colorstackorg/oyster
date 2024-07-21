@@ -3,6 +3,47 @@ import { z } from 'zod';
 
 import { Entity, Student } from '@oyster/types';
 
+export const RESUME_BOOK_CODING_LANGUAGES = [
+  'C',
+  'C++',
+  'C#',
+  'Go',
+  'Java',
+  'JavaScript',
+  'Kotlin',
+  'Matlab',
+  'Objective-C',
+  'PHP',
+  'Python',
+  'Ruby',
+  'Rust',
+  'Scala',
+  'Solidity',
+  'SQL',
+  'Swift',
+  'TypeScript',
+];
+
+export const RESUME_BOOK_JOB_SEARCH_STATUSES = [
+  'I am actively searching for a position.',
+  'I have accepted an offer.',
+  'I am between offers, but still searching.',
+];
+
+export const RESUME_BOOK_ROLES = [
+  'Software Engineering',
+  'Data Science',
+  'Web Development',
+  'AI/Machine Learning',
+  'iOS Developer',
+  'Android Developer',
+  'Product Management',
+  'Product Design (UI/UX)',
+  'Developer Advocacy',
+  'Network Architecture',
+  'Cybersecurity Engineer/Analyst',
+];
+
 // Domain
 
 const ResumeBook = z.object({
@@ -25,8 +66,6 @@ const ResumeBook = z.object({
 // Use Case(s)
 
 export const CreateResumeBookInput = ResumeBook.pick({
-  airtableBaseId: true,
-  airtableTableId: true,
   endDate: true,
   name: true,
   startDate: true,

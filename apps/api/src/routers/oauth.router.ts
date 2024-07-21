@@ -2,7 +2,11 @@ import express from 'express';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { loginWithOAuth, OAuthCodeState } from '@oyster/core/api';
+import {
+  loginWithOAuth,
+  OAuthCodeState,
+  saveGoogleDriveCredentials,
+} from '@oyster/core/api';
 
 export const oauthRouter = express.Router();
 
@@ -16,6 +20,22 @@ oauthRouter.get('/oauth/google', async (req, res) => {
     });
 
     return res.redirect(to);
+  } catch (e) {
+    return res.status(500).json({
+      message: (e as Error).message,
+    });
+  }
+});
+
+// This route is used to save the credentials to access the Google Drive API
+// on behalf of the user.
+oauthRouter.get('/oauth/google/drive', async (req, res) => {
+  try {
+    const query = AuthorizationCodeQuery.pick({ code: true }).parse(req.query);
+
+    await saveGoogleDriveCredentials(query.code);
+
+    return res.json({ ok: true });
   } catch (e) {
     return res.status(500).json({
       message: (e as Error).message,

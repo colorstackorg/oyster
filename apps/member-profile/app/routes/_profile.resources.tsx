@@ -11,14 +11,14 @@ import dayjs from 'dayjs';
 import { Plus } from 'react-feather';
 
 import { isMemberAdmin } from '@oyster/core/admin.server';
+import { track } from '@oyster/core/mixpanel';
+import { getPresignedURL } from '@oyster/core/object-storage';
 import {
   ListResourcesOrderBy,
   ListResourcesWhere,
   type ResourceType,
 } from '@oyster/core/resources';
 import { listResources, listTags } from '@oyster/core/resources.server';
-import { track } from '@oyster/infrastructure/mixpanel';
-import { getPresignedURL } from '@oyster/infrastructure/object-storage';
 import {
   Dashboard,
   ExistingSearchParams,

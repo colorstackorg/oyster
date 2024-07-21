@@ -16,8 +16,8 @@ import { Award, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
-import { track } from '@oyster/infrastructure/mixpanel';
 import { type CompletedActivity } from '@oyster/types';
 import {
   Button,

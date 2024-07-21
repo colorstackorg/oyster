@@ -7,11 +7,11 @@ import {
 import { Form as RemixForm, useActionData, useFetcher } from '@remix-run/react';
 import { useEffect } from 'react';
 
+import { createResumeBook } from '@oyster/core/resume-books';
 import {
   Button,
   ComboboxPopover,
   DatePicker,
-  Divider,
   Form,
   getErrors,
   Input,
@@ -24,7 +24,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { createResumeBook } from '@/member-profile.server';
 import { CreateResumeBookInput } from '@/member-profile.ui';
 import { type SearchCompaniesResult } from '@/routes/api.companies.search';
 import { Route } from '@/shared/constants';
@@ -53,8 +52,6 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   await createResumeBook({
-    airtableBaseId: data.airtableBaseId,
-    airtableTableId: data.airtableTableId,
     endDate: data.endDate,
     name: data.name,
     sponsors: data.sponsors,
@@ -87,7 +84,7 @@ export default function CreateResumeBookModal() {
 
       <RemixForm className="form" method="post">
         <Form.Field
-          description="Example: Spring '24"
+          description={`Please don't add "Resume Book" to the title. Example: Spring '24`}
           error={errors.name}
           label="Name"
           labelFor={keys.name}
@@ -127,32 +124,6 @@ export default function CreateResumeBookModal() {
         </Form.Field>
 
         <SponsorsField />
-
-        <Divider />
-
-        <Form.Field
-          description="This is the ID of the Airtable base that the resume book responses will be sent to."
-          error={errors.airtableBaseId}
-          label="Airtable Base ID"
-          labelFor={keys.airtableBaseId}
-          required
-        >
-          <Input id={keys.airtableBaseId} name={keys.airtableBaseId} required />
-        </Form.Field>
-
-        <Form.Field
-          description="This is the ID of the Airtable table that the resume book responses will be sent to."
-          error={errors.airtableTableId}
-          label="Airtable Table ID"
-          labelFor={keys.airtableTableId}
-          required
-        >
-          <Input
-            id={keys.airtableTableId}
-            name={keys.airtableTableId}
-            required
-          />
-        </Form.Field>
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

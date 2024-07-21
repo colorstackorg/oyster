@@ -19,13 +19,18 @@ import {
 import dayjs from 'dayjs';
 import { match } from 'ts-pattern';
 
-import { SubmitResumeInput } from '@oyster/core/resume-books';
 import {
   getResumeBook,
   getResumeBookSubmission,
   listResumeBookSponsors,
   submitResume,
-} from '@oyster/core/resume-books.server';
+} from '@oyster/core/resume-books';
+import {
+  RESUME_BOOK_CODING_LANGUAGES,
+  RESUME_BOOK_JOB_SEARCH_STATUSES,
+  RESUME_BOOK_ROLES,
+  SubmitResumeInput,
+} from '@oyster/core/resume-books.types';
 import { db } from '@oyster/db';
 import { FORMATTED_RACE, Race, WorkAuthorizationStatus } from '@oyster/types';
 import {
@@ -520,26 +525,7 @@ function ResumeBookForm() {
         required
       >
         <Checkbox.Group>
-          {[
-            'C',
-            'C++',
-            'C#',
-            'Go',
-            'Java',
-            'JavaScript',
-            'Kotlin',
-            'Matlab',
-            'Objective-C',
-            'PHP',
-            'Python',
-            'Ruby',
-            'Rust',
-            'Scala',
-            'Solidity',
-            'SQL',
-            'Swift',
-            'TypeScript',
-          ].map((value) => {
+          {RESUME_BOOK_CODING_LANGUAGES.map((value) => {
             return (
               <Checkbox
                 key={value}
@@ -561,19 +547,7 @@ function ResumeBookForm() {
         required
       >
         <Checkbox.Group>
-          {[
-            'Software Engineering',
-            'Data Science',
-            'Web Development',
-            'AI/Machine Learning',
-            'iOS Developer',
-            'Android Developer',
-            'Product Management',
-            'Product Design (UI/UX)',
-            'Developer Advocacy',
-            'Network Architecture',
-            'Cybersecurity Engineer/Analyst',
-          ].map((value) => {
+          {RESUME_BOOK_ROLES.map((value) => {
             return (
               <Checkbox
                 key={value}
@@ -595,11 +569,7 @@ function ResumeBookForm() {
         required
       >
         <Radio.Group>
-          {[
-            'I am actively searching for a position.',
-            'I have accepted an offer.',
-            'I am between offers, but still searching.',
-          ].map((value) => {
+          {RESUME_BOOK_JOB_SEARCH_STATUSES.map((value) => {
             return (
               <Radio
                 key={value}
