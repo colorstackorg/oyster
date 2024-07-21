@@ -203,8 +203,96 @@ export async function createAirtableRecord({
   return json.id as string;
 }
 
+type AirtableColor =
+  | 'blueBright'
+  | 'blueDark1'
+  | 'blueLight1'
+  | 'blueLight2'
+  | 'cyanBright'
+  | 'cyanDark1'
+  | 'cyanLight1'
+  | 'cyanLight2'
+  | 'grayBright'
+  | 'grayDark1'
+  | 'grayLight1'
+  | 'grayLight2'
+  | 'greenBright'
+  | 'greenDark1'
+  | 'greenLight1'
+  | 'greenLight2'
+  | 'orangeBright'
+  | 'orangeDark1'
+  | 'orangeLight1'
+  | 'orangeLight2'
+  | 'pinkBright'
+  | 'pinkDark1'
+  | 'pinkLight1'
+  | 'pinkLight2'
+  | 'purpleBright'
+  | 'purpleDark1'
+  | 'purpleLight1'
+  | 'purpleLight2'
+  | 'redBright'
+  | 'redDark1'
+  | 'redLight1'
+  | 'redLight2'
+  | 'tealBright'
+  | 'tealDark1'
+  | 'tealLight1'
+  | 'tealLight2'
+  | 'yellowBright'
+  | 'yellowDark1'
+  | 'yellowLight1'
+  | 'yellowLight2';
+
+const SORTED_AIRTABLE_COLORS: AirtableColor[] = [
+  'blueBright',
+  'cyanBright',
+  'tealBright',
+  'greenBright',
+  'yellowBright',
+  'orangeBright',
+  'redBright',
+  'pinkBright',
+  'purpleBright',
+  'grayBright',
+  'blueLight1',
+  'cyanLight1',
+  'tealLight1',
+  'greenLight1',
+  'yellowLight1',
+  'orangeLight1',
+  'redLight1',
+  'pinkLight1',
+  'purpleLight1',
+  'grayLight1',
+  'blueLight2',
+  'cyanLight2',
+  'tealLight2',
+  'greenLight2',
+  'yellowLight2',
+  'orangeLight2',
+  'redLight2',
+  'pinkLight2',
+  'purpleLight2',
+  'grayLight2',
+  'blueDark1',
+  'cyanDark1',
+  'tealDark1',
+  'greenDark1',
+  'yellowDark1',
+  'orangeDark1',
+  'redDark1',
+  'pinkDark1',
+  'purpleDark1',
+  'grayDark1',
+];
+
 type AirtableFieldOptions = {
-  choices: { name: string }[];
+  choices: {
+    color?: AirtableColor;
+    name: string;
+  }[];
 };
 
 type AirtableField = { name: string } & (
@@ -228,6 +316,29 @@ export async function createAirtableTable({
   name,
 }: CreateAirtableTableInput) {
   await airtableRateLimiter.process();
+
+  // The Airtable API doesn't automatically assign colors to select fields, that
+  // only happens when you use the Airtable UI. So we need to manually assign
+  // colors if we don't specify them.
+  fields = fields.map((field) => {
+    if (field.type === 'singleSelect' || field.type === 'multipleSelects') {
+      return {
+        ...field,
+        options: {
+          choices: field.options.choices.map((choice, i) => {
+            return {
+              ...choice,
+              color:
+                choice.color ||
+                SORTED_AIRTABLE_COLORS[i % SORTED_AIRTABLE_COLORS.length],
+            };
+          }),
+        },
+      };
+    }
+
+    return field;
+  });
 
   const response = await fetch(
     `${AIRTABLE_API_URI}/meta/bases/${baseId}/tables`,
