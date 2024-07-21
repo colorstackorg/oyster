@@ -218,7 +218,13 @@ export async function action({ params, request }: ActionFunctionArgs) {
   );
 
   if (!ok) {
-    return json({ errors }, { status: 400 });
+    return json(
+      {
+        error: 'Please fix the errors above.',
+        errors,
+      },
+      { status: 400 }
+    );
   }
 
   await submitResume({
@@ -444,7 +450,7 @@ function ResumeBookForm() {
       </Form.Field>
 
       <Form.Field
-        error={error}
+        error={errors.linkedInUrl}
         label="LinkedIn Profile/URL"
         labelFor={keys.linkedInUrl}
         required
