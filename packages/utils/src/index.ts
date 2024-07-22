@@ -1,3 +1,8 @@
+// TODO: Move all utils into one file (except for ones that require a specific
+// NPM package).
+
+// TODO: Move this to the `core` package.
+
 export { getCookie } from './get-cookie';
 export { id } from './id';
 export { iife } from './iife';
