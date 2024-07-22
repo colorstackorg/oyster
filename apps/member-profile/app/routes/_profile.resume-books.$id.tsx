@@ -532,22 +532,41 @@ function ResumeBookForm() {
         labelFor={keys.educationId}
         required
       >
-        <Select
-          defaultValue={submission?.educationId}
-          id={keys.educationId}
-          name={keys.educationId}
-          required
-        >
-          {educations.map((education) => {
-            return (
-              <option key={education.id} value={education.id}>
-                {education.schoolName},{' '}
-                {FORMATTED_DEGREEE_TYPE[education.degreeType as DegreeType]},{' '}
-                {education.date}
-              </option>
-            );
-          })}
-        </Select>
+        <div className="flex flex-col gap-4">
+          {!educations.length && (
+            <div className="rounded-lg border border-dashed border-error bg-red-50 p-2">
+              <Text color="error">
+                Well, this is awkward...you checked the box that said your{' '}
+                <Link
+                  className="font-semibold underline"
+                  target="_blank"
+                  to={Route['/profile/education']}
+                >
+                  education history
+                </Link>{' '}
+                was up to date, but it's not...so you won't see any options
+                here. 😕
+              </Text>
+            </div>
+          )}
+
+          <Select
+            defaultValue={submission?.educationId}
+            id={keys.educationId}
+            name={keys.educationId}
+            required
+          >
+            {educations.map((education) => {
+              return (
+                <option key={education.id} value={education.id}>
+                  {education.schoolName},{' '}
+                  {FORMATTED_DEGREEE_TYPE[education.degreeType as DegreeType]},{' '}
+                  {education.date}
+                </option>
+              );
+            })}
+          </Select>
+        </div>
       </Form.Field>
 
       <Divider />
