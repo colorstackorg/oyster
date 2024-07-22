@@ -44,22 +44,21 @@ export const RESUME_BOOK_ROLES = [
   'Cybersecurity Engineer/Analyst',
 ];
 
+export const RESUME_BOOK_TIMEZONE = 'America/Los_Angeles';
+
 // Domain
 
-const ResumeBook = z.object({
+export const ResumeBook = z.object({
   airtableBaseId: z.string().trim().min(1),
   airtableTableId: z.string().trim().min(1),
   createdAt: Entity.shape.createdAt,
   endDate: z.string().transform((value) => {
-    return dayjs(value).tz('America/Los_Angeles', true).endOf('date').toDate();
+    return dayjs(value).tz(RESUME_BOOK_TIMEZONE, true).endOf('date').toDate();
   }),
   id: Entity.shape.id,
   name: z.string().trim().min(1),
   startDate: z.string().transform((value) => {
-    return dayjs(value)
-      .tz('America/Los_Angeles', true)
-      .startOf('date')
-      .toDate();
+    return dayjs(value).tz(RESUME_BOOK_TIMEZONE, true).startOf('date').toDate();
   }),
 });
 
@@ -104,5 +103,13 @@ export const SubmitResumeInput = Student.pick({
     resumeBookId: z.string().trim().min(1),
   });
 
+export const UpdateResumeBookInput = ResumeBook.pick({
+  endDate: true,
+  id: true,
+  name: true,
+  startDate: true,
+});
+
 export type CreateResumeBookInput = z.infer<typeof CreateResumeBookInput>;
 export type SubmitResumeInput = z.infer<typeof SubmitResumeInput>;
+export type UpdateResumeBookInput = z.infer<typeof UpdateResumeBookInput>;

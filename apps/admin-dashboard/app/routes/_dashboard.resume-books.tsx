@@ -3,10 +3,10 @@ import {
   type LoaderFunctionArgs,
   type SerializeFrom,
 } from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
+import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { Clipboard, ExternalLink, Menu, Plus } from 'react-feather';
+import { Clipboard, Edit, ExternalLink, Menu, Plus } from 'react-feather';
 
 import { listResumeBooks } from '@oyster/core/resume-books';
 import {
@@ -149,6 +149,7 @@ function ResumeBooksTable() {
 function ResumeBookDropdown({
   airtableUri,
   googleDriveUri,
+  id,
   resumeBookUri,
 }: ResumeBookInView) {
   const [open, setOpen] = useState<boolean>(false);
@@ -168,6 +169,12 @@ function ResumeBookDropdown({
         <Table.Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
+              <Link to={generatePath(Route['/resume-books/:id/edit'], { id })}>
+                <Edit /> Edit Resume Book
+              </Link>
+            </Dropdown.Item>
+
+            <Dropdown.Item>
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(resumeBookUri);
@@ -176,7 +183,7 @@ function ResumeBookDropdown({
                 }}
                 type="button"
               >
-                <Clipboard /> Copy Resume Book Link
+                <Clipboard /> Copy Resume Book URL
               </button>
             </Dropdown.Item>
 
