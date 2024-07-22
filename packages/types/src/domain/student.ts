@@ -10,6 +10,7 @@ import {
   Major,
   Race,
 } from './types';
+import { normalizeUri } from '../../../utils/src/index';
 import { type ExtractValue } from '../shared/types';
 import { NullishString } from '../shared/zod';
 
@@ -38,6 +39,7 @@ const StudentSocialLinks = z.object({
     .startsWith('http', 'URL must start with "http://".')
     .url()
     .transform((value) => value.toLowerCase())
+    .transform((value) => normalizeUri(value))
     .refine((value) => value.includes('calendly.com'), {
       message: 'URL must be a valid Calendly URL.',
     })
@@ -68,6 +70,7 @@ const StudentSocialLinks = z.object({
     .startsWith('http', 'URL must start with "http://".')
     .url()
     .transform((value) => value.toLowerCase())
+    .transform((value) => normalizeUri(value))
     .refine((value) => value.includes('linkedin.com/in/'), {
       message: 'URL must be a valid LinkedIn URL.',
     })
@@ -79,6 +82,7 @@ const StudentSocialLinks = z.object({
     .startsWith('http', 'URL must start with "http".')
     .url()
     .transform((value) => value.toLowerCase())
+    .transform((value) => normalizeUri(value))
     .nullable(),
 
   twitterHandle: z
