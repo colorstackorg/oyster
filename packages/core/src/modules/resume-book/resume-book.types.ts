@@ -48,7 +48,7 @@ export const RESUME_BOOK_TIMEZONE = 'America/Los_Angeles';
 
 // Domain
 
-const ResumeBook = z.object({
+export const ResumeBook = z.object({
   airtableBaseId: z.string().trim().min(1),
   airtableTableId: z.string().trim().min(1),
   createdAt: Entity.shape.createdAt,

@@ -17,14 +17,11 @@ import {
   UpdateResumeBookInput,
 } from '@oyster/core/resume-books.types';
 import {
-  Button,
-  DatePicker,
-  Form,
-  getErrors,
-  Input,
-  Modal,
-  validateForm,
-} from '@oyster/ui';
+  ResumeBookEndDateField,
+  ResumeBookNameField,
+  ResumeBookStartDateField,
+} from '@oyster/core/resume-books.ui';
+import { Button, getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -88,11 +85,9 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 }
 
-const keys = UpdateResumeBookInput.keyof().enum;
-
 export default function EditResumeBookModal() {
   const { endDate, name, startDate } = useLoaderData<typeof loader>();
-  const { error, errors } = getErrors(useActionData<typeof action>());
+  const { errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Modal onCloseTo={Route['/resume-books']}>
@@ -102,50 +97,12 @@ export default function EditResumeBookModal() {
       </Modal.Header>
 
       <RemixForm className="form" method="post">
-        <Form.Field
-          description={`Please don't add "Resume Book" to the title. Example: Spring '24`}
-          error={errors.name}
-          label="Name"
-          labelFor={keys.name}
-          required
-        >
-          <Input defaultValue={name} id={keys.name} name={keys.name} required />
-        </Form.Field>
-
-        <Form.Field
-          description="The date that the resume book should start accepting responses."
+        <ResumeBookNameField defaultValue={name} error={errors.name} />
+        <ResumeBookStartDateField
+          defaultValue={startDate}
           error={errors.startDate}
-          label="Start Date"
-          labelFor={keys.startDate}
-          required
-        >
-          <DatePicker
-            defaultValue={startDate}
-            id={keys.startDate}
-            name={keys.startDate}
-            type="date"
-            required
-          />
-        </Form.Field>
-
-        <Form.Field
-          description="The date that the resume book should stop accepting responses."
-          error={errors.endDate}
-          label="End Date"
-          labelFor={keys.endDate}
-          required
-        >
-          <DatePicker
-            defaultValue={endDate}
-            id={keys.endDate}
-            name={keys.endDate}
-            type="date"
-            required
-          />
-        </Form.Field>
-
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
-
+        />
+        <ResumeBookEndDateField defaultValue={endDate} error={errors.endDate} />
         <Button.Group>
           <Button.Submit>Edit</Button.Submit>
         </Button.Group>

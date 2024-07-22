@@ -9,12 +9,15 @@ import { useEffect } from 'react';
 
 import { createResumeBook } from '@oyster/core/resume-books';
 import {
+  ResumeBookEndDateField,
+  ResumeBookNameField,
+  ResumeBookStartDateField,
+} from '@oyster/core/resume-books.ui';
+import {
   Button,
   ComboboxPopover,
-  DatePicker,
   Form,
   getErrors,
-  Input,
   Modal,
   MultiCombobox,
   MultiComboboxDisplay,
@@ -73,7 +76,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = CreateResumeBookInput.keyof().enum;
 
 export default function CreateResumeBookModal() {
-  const { error, errors } = getErrors(useActionData<typeof action>());
+  const { errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Modal onCloseTo={Route['/resume-books']}>
@@ -83,50 +86,10 @@ export default function CreateResumeBookModal() {
       </Modal.Header>
 
       <RemixForm className="form" method="post">
-        <Form.Field
-          description={`Please don't add "Resume Book" to the title. Example: Spring '24`}
-          error={errors.name}
-          label="Name"
-          labelFor={keys.name}
-          required
-        >
-          <Input id={keys.name} name={keys.name} required />
-        </Form.Field>
-
-        <Form.Field
-          description="The date that the resume book should start accepting responses."
-          error={errors.startDate}
-          label="Start Date"
-          labelFor={keys.startDate}
-          required
-        >
-          <DatePicker
-            id={keys.startDate}
-            name={keys.startDate}
-            type="date"
-            required
-          />
-        </Form.Field>
-
-        <Form.Field
-          description="The date that the resume book should stop accepting responses."
-          error={errors.endDate}
-          label="End Date"
-          labelFor={keys.endDate}
-          required
-        >
-          <DatePicker
-            id={keys.endDate}
-            name={keys.endDate}
-            type="date"
-            required
-          />
-        </Form.Field>
-
+        <ResumeBookNameField error={errors.name} />
+        <ResumeBookStartDateField error={errors.startDate} />
+        <ResumeBookEndDateField error={errors.endDate} />
         <SponsorsField />
-
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
-
         <Button.Group>
           <Button.Submit>Create</Button.Submit>
         </Button.Group>
