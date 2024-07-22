@@ -24,6 +24,7 @@ import {
   RESUME_BOOK_JOB_SEARCH_STATUSES,
   RESUME_BOOK_ROLES,
   type SubmitResumeInput,
+  type UpdateResumeBookInput,
 } from '@/modules/resume-book/resume-book.types';
 import { ColorStackError } from '@/shared/errors';
 
@@ -382,6 +383,25 @@ export async function createResumeBook({
           };
         })
       )
+      .execute();
+  });
+}
+
+export async function updateResumeBook({
+  endDate,
+  id,
+  name,
+  startDate,
+}: UpdateResumeBookInput) {
+  await db.transaction().execute(async (trx) => {
+    await trx
+      .updateTable('resumeBooks')
+      .set({
+        endDate,
+        name,
+        startDate,
+      })
+      .where('id', '=', id)
       .execute();
   });
 }
