@@ -40,7 +40,11 @@ const GOOGLE_DRIVE_RESUME_BOOKS_FOLDER_ID = process.env
 
 type GetResumeBookOptions<Selection> = {
   select: Selection[];
-  where: { id: string };
+  where: Partial<{
+    hidden: false;
+    id: string;
+    status: 'active';
+  }>;
 };
 
 export async function getResumeBook<
@@ -49,7 +53,17 @@ export async function getResumeBook<
   const resumeBook = await db
     .selectFrom('resumeBooks')
     .select(select)
-    .where('id', '=', where.id)
+    .$if(where.hidden !== undefined, (eb) => {
+      return eb.where('hidden', '=', where.hidden as boolean);
+    })
+    .$if(!!where.id, (eb) => {
+      return eb.where('id', '=', where.id!);
+    })
+    .$if(where.status === 'active', (eb) => {
+      return eb
+        .where('startDate', '<', new Date())
+        .where('endDate', '>', new Date());
+    })
     .executeTakeFirst();
 
   return resumeBook;
@@ -367,6 +381,7 @@ export async function createResumeBook({
         airtableTableId,
         endDate,
         googleDriveFolderId,
+        hidden: false,
         id: resumeBookId,
         name,
         startDate,
