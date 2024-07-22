@@ -13,6 +13,7 @@ import {
   Dashboard,
   Dropdown,
   IconButton,
+  Pill,
   Table,
   type TableColumnProps,
 } from '@oyster/ui';
@@ -28,7 +29,25 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const timezone = getTimezone(request);
 
-  const _resumeBooks = await listResumeBooks();
+  const _resumeBooks = await listResumeBooks({
+    select: [
+      'airtableBaseId',
+      'airtableTableId',
+      'endDate',
+      'googleDriveFolderId',
+      'hidden',
+      'id',
+      'name',
+      'startDate',
+      (eb) => {
+        return eb
+          .selectFrom('resumeBookSubmissions')
+          .select((eb) => eb.fn.countAll().as('submissions'))
+          .whereRef('resumeBooks.id', '=', 'resumeBookSubmissions.resumeBookId')
+          .as('submissions');
+      },
+    ],
+  });
 
   const resumeBooks = _resumeBooks.map(
     ({
@@ -133,6 +152,17 @@ function ResumeBooksTable() {
       displayName: 'End Date',
       size: '240',
       render: (resumeBook) => resumeBook.endDate,
+    },
+    {
+      displayName: 'Visibility',
+      size: '160',
+      render: (resumeBook) => {
+        return resumeBook.hidden ? (
+          <Pill color="amber-100">Hidden</Pill>
+        ) : (
+          <Pill color="orange-100">Visible</Pill>
+        );
+      },
     },
   ];
 

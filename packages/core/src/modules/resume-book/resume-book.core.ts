@@ -90,28 +90,19 @@ export async function getResumeBookSubmission<
   return submission;
 }
 
-export async function listResumeBooks() {
+type ListResumeBookOptions<Selection> = {
+  select: Selection[];
+};
+
+export async function listResumeBooks<
+  Selection extends SelectExpression<DB, 'resumeBooks'>,
+>({ select }: ListResumeBookOptions<Selection>) {
   const resumeBooks = await db
     .selectFrom('resumeBooks')
-    .select([
-      'airtableBaseId',
-      'airtableTableId',
-      'endDate',
-      'googleDriveFolderId',
-      'id',
-      'name',
-      'startDate',
-
-      (eb) => {
-        return eb
-          .selectFrom('resumeBookSubmissions')
-          .select((eb) => eb.fn.countAll().as('submissions'))
-          .whereRef('resumeBooks.id', '=', 'resumeBookSubmissions.resumeBookId')
-          .as('submissions');
-      },
-    ])
+    .select(select)
     .orderBy('startDate', 'desc')
     .orderBy('endDate', 'desc')
+    .orderBy('createdAt', 'desc')
     .execute();
 
   return resumeBooks;

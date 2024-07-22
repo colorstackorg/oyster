@@ -1,4 +1,4 @@
-import { Checkbox, DatePicker, type FieldProps, Form, Input } from '@oyster/ui';
+import { DatePicker, type FieldProps, Form, Input, Radio } from '@oyster/ui';
 
 import { ResumeBook } from '@/modules/resume-book/resume-book.types';
 
@@ -33,20 +33,32 @@ export function ResumeBookHiddenField({
 }: Omit<FieldProps<boolean>, 'name'>) {
   return (
     <Form.Field
-      description="If you check this box, the resume book will not be visible in the Member Profile and will only be accessible to members who have the link."
+      description='If you choose "Hidden", the resume book will only be accessible to members who have the link. If you choose "Visible", the resume book will be accessible in the Member Profile navigation to all members.'
       error={error}
-      label="Hidden"
+      label="Visibility"
       labelFor={keys.hidden}
       required
     >
-      <Checkbox
-        color="red-100"
-        defaultChecked={defaultValue}
-        label="Yes"
-        id={keys.hidden}
-        name={keys.hidden}
-        value="1"
-      />
+      <Radio.Group>
+        <Radio
+          color="amber-100"
+          defaultChecked={defaultValue === true}
+          id={keys.hidden + '_1'}
+          label="Hidden"
+          name={keys.hidden}
+          required
+          value="1"
+        />
+        <Radio
+          color="orange-100"
+          defaultChecked={defaultValue === false}
+          id={keys.hidden + '_0'}
+          label="Visible"
+          name={keys.hidden}
+          required
+          value="0"
+        />
+      </Radio.Group>
     </Form.Field>
   );
 }
