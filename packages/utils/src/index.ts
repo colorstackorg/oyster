@@ -19,6 +19,15 @@ type NormalizeOptions = Partial<{
   removeTrailingSlash: boolean;
 }>;
 
+/**
+ * Transforms a URL ensuring that URLs are consistent across the application.
+ *
+ * By default, this function will force HTTPS, remove the hash, remove the
+ * search, and remove the trailing slash.
+ *
+ * @param input - The URL to normalize. Must be a valid URL object.
+ * @param options - The options to use when normalizing the URL.
+ */
 export function normalizeUri<T extends string | null | undefined>(
   input: T,
   options: NormalizeOptions = {}
