@@ -18,6 +18,7 @@ import {
 } from '@oyster/core/resume-books.types';
 import {
   ResumeBookEndDateField,
+  ResumeBookHiddenField,
   ResumeBookNameField,
   ResumeBookStartDateField,
 } from '@oyster/core/resume-books.ui';
@@ -34,7 +35,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
   const resumeBook = await getResumeBook({
-    select: ['endDate', 'name', 'startDate'],
+    select: ['endDate', 'hidden', 'name', 'startDate'],
     where: { id: params.id as string },
   });
 
@@ -49,6 +50,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   return json({
     endDate: dayjs(resumeBook.endDate).tz(tz).format(format),
+    hidden: resumeBook.hidden,
     name: resumeBook.name,
     startDate: dayjs(resumeBook.startDate).tz(tz).format(format),
   });
@@ -68,6 +70,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   await updateResumeBook({
     endDate: data.endDate,
+    hidden: data.hidden,
     id: params.id as string,
     name: data.name,
     startDate: data.startDate,
@@ -86,7 +89,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 export default function EditResumeBookModal() {
-  const { endDate, name, startDate } = useLoaderData<typeof loader>();
+  const { endDate, hidden, name, startDate } = useLoaderData<typeof loader>();
   const { errors } = getErrors(useActionData<typeof action>());
 
   return (
@@ -103,6 +106,7 @@ export default function EditResumeBookModal() {
           error={errors.startDate}
         />
         <ResumeBookEndDateField defaultValue={endDate} error={errors.endDate} />
+        <ResumeBookHiddenField defaultValue={hidden} error={errors.hidden} />
         <Button.Group>
           <Button.Submit>Edit</Button.Submit>
         </Button.Group>

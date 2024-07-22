@@ -10,6 +10,7 @@ import { useEffect } from 'react';
 import { createResumeBook } from '@oyster/core/resume-books';
 import {
   ResumeBookEndDateField,
+  ResumeBookHiddenField,
   ResumeBookNameField,
   ResumeBookStartDateField,
 } from '@oyster/core/resume-books.ui';
@@ -56,6 +57,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   await createResumeBook({
     endDate: data.endDate,
+    hidden: data.hidden,
     name: data.name,
     sponsors: data.sponsors,
     startDate: data.startDate,
@@ -90,6 +92,7 @@ export default function CreateResumeBookModal() {
         <ResumeBookStartDateField error={errors.startDate} />
         <ResumeBookEndDateField error={errors.endDate} />
         <SponsorsField />
+        <ResumeBookHiddenField error={errors.hidden} />
         <Button.Group>
           <Button.Submit>Create</Button.Submit>
         </Button.Group>

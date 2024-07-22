@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
-import { Entity, Student } from '@oyster/types';
+import { BooleanInput, Entity, Student } from '@oyster/types';
 
 export const RESUME_BOOK_CODING_LANGUAGES = [
   'C',
@@ -55,6 +55,7 @@ export const ResumeBook = z.object({
   endDate: z.string().transform((value) => {
     return dayjs(value).tz(RESUME_BOOK_TIMEZONE, true).endOf('date').toDate();
   }),
+  hidden: BooleanInput,
   id: Entity.shape.id,
   name: z.string().trim().min(1),
   startDate: z.string().transform((value) => {
@@ -66,6 +67,7 @@ export const ResumeBook = z.object({
 
 export const CreateResumeBookInput = ResumeBook.pick({
   endDate: true,
+  hidden: true,
   name: true,
   startDate: true,
 }).extend({
@@ -105,6 +107,7 @@ export const SubmitResumeInput = Student.pick({
 
 export const UpdateResumeBookInput = ResumeBook.pick({
   endDate: true,
+  hidden: true,
   id: true,
   name: true,
   startDate: true,

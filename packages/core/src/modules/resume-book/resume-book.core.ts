@@ -40,7 +40,11 @@ const GOOGLE_DRIVE_RESUME_BOOKS_FOLDER_ID = process.env
 
 type GetResumeBookOptions<Selection> = {
   select: Selection[];
-  where: { id: string };
+  where: Partial<{
+    hidden: false;
+    id: string;
+    status: 'active';
+  }>;
 };
 
 export async function getResumeBook<
@@ -49,7 +53,17 @@ export async function getResumeBook<
   const resumeBook = await db
     .selectFrom('resumeBooks')
     .select(select)
-    .where('id', '=', where.id)
+    .$if(where.hidden !== undefined, (eb) => {
+      return eb.where('hidden', '=', where.hidden as boolean);
+    })
+    .$if(!!where.id, (eb) => {
+      return eb.where('id', '=', where.id!);
+    })
+    .$if(where.status === 'active', (eb) => {
+      return eb
+        .where('startDate', '<', new Date())
+        .where('endDate', '>', new Date());
+    })
     .executeTakeFirst();
 
   return resumeBook;
@@ -76,28 +90,19 @@ export async function getResumeBookSubmission<
   return submission;
 }
 
-export async function listResumeBooks() {
+type ListResumeBookOptions<Selection> = {
+  select: Selection[];
+};
+
+export async function listResumeBooks<
+  Selection extends SelectExpression<DB, 'resumeBooks'>,
+>({ select }: ListResumeBookOptions<Selection>) {
   const resumeBooks = await db
     .selectFrom('resumeBooks')
-    .select([
-      'airtableBaseId',
-      'airtableTableId',
-      'endDate',
-      'googleDriveFolderId',
-      'id',
-      'name',
-      'startDate',
-
-      (eb) => {
-        return eb
-          .selectFrom('resumeBookSubmissions')
-          .select((eb) => eb.fn.countAll().as('submissions'))
-          .whereRef('resumeBooks.id', '=', 'resumeBookSubmissions.resumeBookId')
-          .as('submissions');
-      },
-    ])
+    .select(select)
     .orderBy('startDate', 'desc')
     .orderBy('endDate', 'desc')
+    .orderBy('createdAt', 'desc')
     .execute();
 
   return resumeBooks;
@@ -129,6 +134,7 @@ export async function listResumeBookSponsors({
  */
 export async function createResumeBook({
   endDate,
+  hidden,
   name,
   sponsors,
   startDate,
@@ -367,6 +373,7 @@ export async function createResumeBook({
         airtableTableId,
         endDate,
         googleDriveFolderId,
+        hidden,
         id: resumeBookId,
         name,
         startDate,
@@ -389,6 +396,7 @@ export async function createResumeBook({
 
 export async function updateResumeBook({
   endDate,
+  hidden,
   id,
   name,
   startDate,
@@ -398,6 +406,7 @@ export async function updateResumeBook({
       .updateTable('resumeBooks')
       .set({
         endDate,
+        hidden,
         name,
         startDate,
       })

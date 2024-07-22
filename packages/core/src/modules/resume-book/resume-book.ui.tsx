@@ -1,4 +1,4 @@
-import { DatePicker, type FieldProps, Form, Input } from '@oyster/ui';
+import { DatePicker, type FieldProps, Form, Input, Radio } from '@oyster/ui';
 
 import { ResumeBook } from '@/modules/resume-book/resume-book.types';
 
@@ -23,6 +23,42 @@ export function ResumeBookEndDateField({
         type="date"
         required
       />
+    </Form.Field>
+  );
+}
+
+export function ResumeBookHiddenField({
+  defaultValue,
+  error,
+}: Omit<FieldProps<boolean>, 'name'>) {
+  return (
+    <Form.Field
+      description='If you choose "Hidden", the resume book will only be accessible to members who have the link. If you choose "Visible", the resume book will be accessible in the Member Profile navigation to all members.'
+      error={error}
+      label="Visibility"
+      labelFor={keys.hidden}
+      required
+    >
+      <Radio.Group>
+        <Radio
+          color="amber-100"
+          defaultChecked={defaultValue === true}
+          id={keys.hidden + '_1'}
+          label="Hidden"
+          name={keys.hidden}
+          required
+          value="1"
+        />
+        <Radio
+          color="orange-100"
+          defaultChecked={defaultValue === false}
+          id={keys.hidden + '_0'}
+          label="Visible"
+          name={keys.hidden}
+          required
+          value="0"
+        />
+      </Radio.Group>
     </Form.Field>
   );
 }
