@@ -143,6 +143,7 @@ export async function listResumeBookSponsors({
  */
 export async function createResumeBook({
   endDate,
+  hidden,
   name,
   sponsors,
   startDate,
@@ -381,7 +382,7 @@ export async function createResumeBook({
         airtableTableId,
         endDate,
         googleDriveFolderId,
-        hidden: false,
+        hidden,
         id: resumeBookId,
         name,
         startDate,
@@ -404,6 +405,7 @@ export async function createResumeBook({
 
 export async function updateResumeBook({
   endDate,
+  hidden,
   id,
   name,
   startDate,
@@ -413,6 +415,7 @@ export async function updateResumeBook({
       .updateTable('resumeBooks')
       .set({
         endDate,
+        hidden,
         name,
         startDate,
       })

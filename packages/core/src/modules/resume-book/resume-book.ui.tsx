@@ -1,4 +1,4 @@
-import { DatePicker, type FieldProps, Form, Input } from '@oyster/ui';
+import { Checkbox, DatePicker, type FieldProps, Form, Input } from '@oyster/ui';
 
 import { ResumeBook } from '@/modules/resume-book/resume-book.types';
 
@@ -22,6 +22,30 @@ export function ResumeBookEndDateField({
         name={keys.endDate}
         type="date"
         required
+      />
+    </Form.Field>
+  );
+}
+
+export function ResumeBookHiddenField({
+  defaultValue,
+  error,
+}: Omit<FieldProps<boolean>, 'name'>) {
+  return (
+    <Form.Field
+      description="If you check this box, the resume book will not be visible in the Member Profile and will only be accessible to members who have the link."
+      error={error}
+      label="Hidden"
+      labelFor={keys.hidden}
+      required
+    >
+      <Checkbox
+        color="red-100"
+        defaultChecked={defaultValue}
+        label="Yes"
+        id={keys.hidden}
+        name={keys.hidden}
+        value="1"
       />
     </Form.Field>
   );
