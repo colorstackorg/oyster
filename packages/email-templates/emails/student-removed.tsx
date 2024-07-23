@@ -25,8 +25,8 @@ export function StudentRemovedEmail({
           <br />
           There have been reports with evidence of you being disrespectful,
           harassing, and/or violent. We have a zero-tolerance policy for this
-          type of behavior within our community. As a result, you are being
-          permanently removed from the ColorStack Family.
+          type of behavior within our community. As a result, you are
+          permanently banned from the ColorStack Family.
           <br />
           <br />
           This decision is final.
