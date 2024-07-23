@@ -25,7 +25,18 @@ import { Route } from '@/shared/constants';
 import { commitSession, getSession } from '@/shared/session.server';
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'ColorStack Family Application' }];
+  const title = 'Apply to ColorStack';
+
+  const description =
+    'Apply to join the largest community of Black and Latinx Computer Science college students.';
+
+  return [
+    { title },
+    { name: 'description', content: description },
+    { property: 'og:title', content: title },
+    { property: 'og:description', content: description },
+    { property: 'og:image', content: '/images/og_apply.jpg' },
+  ];
 };
 
 const ApplyInput = ApplicationType.pick({
