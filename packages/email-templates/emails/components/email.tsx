@@ -132,6 +132,7 @@ Email.Preview = function EmailPreview({ children }: EmailPreviewProps) {
 };
 
 type EmailSignatureProps = {
+  children?: React.ReactNode;
   type?: 'colorstack' | 'jehron';
 };
 
@@ -158,11 +159,12 @@ const EmailSignatureContent: Record<
 };
 
 Email.Signature = function EmailSignature({
+  children,
   type = 'colorstack',
 }: EmailSignatureProps) {
   return (
     <Email.Text marginBottom="0px" marginTop="32px">
-      {EmailSignatureContent[type]}
+      {children || EmailSignatureContent[type]}
     </Email.Text>
   );
 };

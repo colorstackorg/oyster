@@ -283,14 +283,14 @@ function StudentDropdown({ activatedAt, airtableUri, id }: StudentInView) {
             </Dropdown.Item>
 
             <Dropdown.Item>
-              <Link to={generatePath(Route['/students/:id/remove'], { id })}>
-                <Trash /> Delete Member
+              <Link target="_blank" to={airtableUri} rel="noopener noreferrer">
+                <ExternalLink /> View Airtable Record
               </Link>
             </Dropdown.Item>
 
             <Dropdown.Item>
-              <Link target="_blank" to={airtableUri} rel="noopener noreferrer">
-                <ExternalLink /> View Airtable Record
+              <Link to={generatePath(Route['/students/:id/remove'], { id })}>
+                <Trash /> Remove Member
               </Link>
             </Dropdown.Item>
           </Dropdown.List>
