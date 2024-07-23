@@ -23,7 +23,6 @@ import { apply } from '@/member-profile.server';
 import { Application } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { commitSession, getSession } from '@/shared/session.server';
-import { formatUrl } from '@/shared/url.utils';
 
 export const meta: MetaFunction = () => {
   return [{ title: 'ColorStack Family Application' }];
@@ -38,6 +37,7 @@ const ApplyInput = ApplicationType.pick({
   goals: true,
   graduationYear: true,
   lastName: true,
+  linkedInUrl: true,
   major: true,
   otherDemographics: true,
   otherMajor: true,
@@ -46,7 +46,6 @@ const ApplyInput = ApplicationType.pick({
   schoolId: true,
 }).extend({
   codeOfConduct: z.preprocess((value) => value === '1', z.boolean()),
-  linkedInUrl: ApplicationType.shape.linkedInUrl.transform(formatUrl),
 });
 
 type ApplyInput = z.infer<typeof ApplyInput>;

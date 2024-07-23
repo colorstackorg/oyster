@@ -17,6 +17,7 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
+import { useState } from 'react';
 import { match } from 'ts-pattern';
 
 import {
@@ -36,15 +37,14 @@ import { FORMATTED_RACE, Race, WorkAuthorizationStatus } from '@oyster/types';
 import {
   Button,
   Checkbox,
-  type DescriptionProps,
   Divider,
-  type FieldProps,
   Form,
   getErrors,
   Input,
   Radio,
   Select,
   Text,
+  useRevalidateOnFocus,
   validateForm,
 } from '@oyster/ui';
 import { iife } from '@oyster/utils';
@@ -135,11 +135,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     endDate: dayjs(_resumeBook.endDate)
       .tz(timezone)
-      .format('dddd, MMMM DD, YYYY @ h:mm A'),
+      .format('dddd, MMMM DD, YYYY @ h:mm A (z)'),
 
     startDate: dayjs(_resumeBook.startDate)
       .tz(timezone)
-      .format('dddd, MMMM DD, YYYY @ h:mm A'),
+      .format('dddd, MMMM DD, YYYY @ h:mm A (z)'),
 
     status: iife(() => {
       const now = dayjs();
@@ -219,7 +219,13 @@ export async function action({ params, request }: ActionFunctionArgs) {
   );
 
   if (!ok) {
-    return json({ errors }, { status: 400 });
+    return json(
+      {
+        error: 'Please fix the errors above.',
+        errors,
+      },
+      { status: 400 }
+    );
   }
 
   await submitResume({
@@ -264,6 +270,10 @@ export default function ResumeBook() {
   const { resumeBook, submission } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // If the user leaves to edit their education history or email, the data
+  // will now be updated when they return.
+  useRevalidateOnFocus();
+
   const showEditButton =
     !!submission && searchParams.get('state') !== 'editing';
 
@@ -274,29 +284,9 @@ export default function ResumeBook() {
 
         {match(resumeBook.status)
           .with('active', () => {
-            if (showEditButton) {
-              return null;
-            }
-
             return (
               <Text color="gray-500">
-                Before continuining, please ensure that your{' '}
-                <Link
-                  className="link"
-                  target="_blank"
-                  to={Route['/profile/emails']}
-                >
-                  primary email
-                </Link>{' '}
-                and{' '}
-                <Link
-                  className="link"
-                  target="_blank"
-                  to={Route['/profile/education']}
-                >
-                  education history
-                </Link>{' '}
-                is up to date.
+                Submissions will be open until {resumeBook.endDate}.
               </Text>
             );
           })
@@ -310,7 +300,7 @@ export default function ResumeBook() {
           .with('upcoming', () => {
             return (
               <Text color="gray-500">
-                This resume book opens on {resumeBook.startDate}.
+                Submissions will open on {resumeBook.startDate}.
               </Text>
             );
           })
@@ -322,8 +312,8 @@ export default function ResumeBook() {
           <div className="flex flex-col gap-8 rounded-xl border border-dashed border-green-700 bg-green-50 p-4">
             <Text>
               Thank you for submitting your resume to the {resumeBook.name}{' '}
-              resume book! You can edit your submission until the deadline:{' '}
-              {resumeBook.endDate}.
+              resume book! You can edit your submission anytime before the
+              deadline by clicking the button below.
             </Text>
 
             <button
@@ -358,6 +348,50 @@ function ResumeBookForm() {
       method="post"
       encType="multipart/form-data"
     >
+      <Form.Field
+        description={iife(() => {
+          const emailLink = (
+            <Link
+              className="link"
+              target="_blank"
+              to={Route['/profile/emails']}
+            >
+              primary email
+            </Link>
+          );
+
+          const educationLink = (
+            <Link
+              className="link"
+              target="_blank"
+              to={Route['/profile/education']}
+            >
+              education history
+            </Link>
+          );
+
+          return (
+            <Text color="gray-500">
+              Please ensure that your {emailLink} and {educationLink} are up to
+              date.
+            </Text>
+          );
+        })}
+        labelFor="isProfileUpdated"
+        label="Email + Education History"
+        required
+      >
+        <Checkbox
+          id="isProfileUpdated"
+          label="My primary email and education history are up to date."
+          name="isProfileUpdated"
+          required
+          value="1"
+        />
+      </Form.Field>
+
+      <Divider />
+
       <Form.Field
         error={errors.firstName}
         label="First Name"
@@ -445,7 +479,7 @@ function ResumeBookForm() {
       </Form.Field>
 
       <Form.Field
-        error={error}
+        error={errors.linkedInUrl}
         label="LinkedIn Profile/URL"
         labelFor={keys.linkedInUrl}
         required
@@ -498,22 +532,41 @@ function ResumeBookForm() {
         labelFor={keys.educationId}
         required
       >
-        <Select
-          defaultValue={submission?.educationId}
-          id={keys.educationId}
-          name={keys.educationId}
-          required
-        >
-          {educations.map((education) => {
-            return (
-              <option key={education.id} value={education.id}>
-                {education.schoolName},{' '}
-                {FORMATTED_DEGREEE_TYPE[education.degreeType as DegreeType]},{' '}
-                {education.date}
-              </option>
-            );
-          })}
-        </Select>
+        <div className="flex flex-col gap-4">
+          {!educations.length && (
+            <div className="rounded-lg border border-dashed border-error bg-red-50 p-2">
+              <Text color="error">
+                Well, this is awkward...you checked the box that said your{' '}
+                <Link
+                  className="font-semibold underline"
+                  target="_blank"
+                  to={Route['/profile/education']}
+                >
+                  education history
+                </Link>{' '}
+                was up to date, but it's not...so you won't see any options
+                here. 😕
+              </Text>
+            </div>
+          )}
+
+          <Select
+            defaultValue={submission?.educationId}
+            id={keys.educationId}
+            name={keys.educationId}
+            required
+          >
+            {educations.map((education) => {
+              return (
+                <option key={education.id} value={education.id}>
+                  {education.schoolName},{' '}
+                  {FORMATTED_DEGREEE_TYPE[education.degreeType as DegreeType]},{' '}
+                  {education.date}
+                </option>
+              );
+            })}
+          </Select>
+        </div>
       </Form.Field>
 
       <Divider />
@@ -585,26 +638,7 @@ function ResumeBookForm() {
         </Radio.Group>
       </Form.Field>
 
-      <SponsorField
-        defaultValue={submission?.preferredCompany1}
-        description="Which company would you accept an offer from right now?"
-        error={errors.preferredCompany1}
-        name={keys.preferredCompany1}
-      />
-
-      <SponsorField
-        defaultValue={submission?.preferredCompany2}
-        description="Maybe not your #1, but which company is a close second?"
-        error={errors.preferredCompany2}
-        name={keys.preferredCompany2}
-      />
-
-      <SponsorField
-        defaultValue={submission?.preferredCompany3}
-        description="Third?"
-        error={errors.preferredCompany3}
-        name={keys.preferredCompany3}
-      />
+      <PreferredSponsorsField />
 
       <Form.Field
         description={
@@ -635,31 +669,105 @@ function ResumeBookForm() {
   );
 }
 
-function SponsorField({
-  defaultValue,
-  description,
-  error,
-  name,
-}: FieldProps<string> & DescriptionProps) {
-  const { sponsors } = useLoaderData<typeof loader>();
+function PreferredSponsorsField() {
+  const { sponsors, submission } = useLoaderData<typeof loader>();
+  const { errors } = getErrors(useActionData<typeof action>());
+
+  const [selectedCompanies, setSelectedCompanies] = useState({
+    1: submission?.preferredCompany1 || '',
+    2: submission?.preferredCompany2 || '',
+    3: submission?.preferredCompany3 || '',
+  });
+
+  function chooseCompany(e: React.FormEvent<HTMLSelectElement>, rank: number) {
+    const value = e.currentTarget.value;
+
+    // If the company that we're selecting is already selected in a
+    // different option, we'll clear that option forcing the user
+    // to pick a different company.
+    const duplicateCompanies = Object.keys(selectedCompanies)
+      .filter((key) => {
+        const alreadySelected =
+          selectedCompanies[key as unknown as 1 | 2 | 3] === value;
+
+        return key !== rank.toString() && alreadySelected;
+      })
+      .map((key) => {
+        return [key, ''];
+      });
+
+    setSelectedCompanies((companies) => {
+      return {
+        ...companies,
+        ...Object.fromEntries(duplicateCompanies),
+        [rank]: value,
+      };
+    });
+  }
+
+  const options = (
+    <>
+      {sponsors.map((sponsor) => {
+        return (
+          <option key={sponsor.id} value={sponsor.id as string}>
+            {sponsor.name}
+          </option>
+        );
+      })}
+    </>
+  );
 
   return (
     <Form.Field
-      description={description}
-      error={error}
-      label="Of all the ColorStack sponsors, which company are you most interested in working for?"
-      labelFor={name}
+      error={
+        errors.preferredCompany1 ||
+        errors.preferredCompany2 ||
+        errors.preferredCompany3
+      }
+      label="Of all the ColorStack sponsors, which are you most interested in working for?"
+      labelFor={keys.preferredCompany1}
       required
     >
-      <Select defaultValue={defaultValue} id={name} name={name} required>
-        {sponsors.map((sponsor) => {
-          return (
-            <option key={sponsor.id} value={sponsor.id!}>
-              {sponsor.name}
-            </option>
-          );
-        })}
-      </Select>
+      <div className="flex flex-col gap-2">
+        <Select
+          id={keys.preferredCompany1}
+          name={keys.preferredCompany1}
+          onChange={(e) => {
+            chooseCompany(e, 1);
+          }}
+          placeholder="Choose your #1 company..."
+          required
+          value={selectedCompanies[1]}
+        >
+          {options}
+        </Select>
+
+        <Select
+          id={keys.preferredCompany2}
+          name={keys.preferredCompany2}
+          onChange={(e) => {
+            chooseCompany(e, 2);
+          }}
+          placeholder="Choose your #2 company..."
+          required
+          value={selectedCompanies[2]}
+        >
+          {options}
+        </Select>
+
+        <Select
+          id={keys.preferredCompany3}
+          name={keys.preferredCompany3}
+          onChange={(e) => {
+            chooseCompany(e, 3);
+          }}
+          placeholder="Choose your #3 company..."
+          required
+          value={selectedCompanies[3]}
+        >
+          {options}
+        </Select>
+      </div>
     </Form.Field>
   );
 }
