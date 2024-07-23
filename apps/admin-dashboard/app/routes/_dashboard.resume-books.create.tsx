@@ -7,14 +7,18 @@ import {
 import { Form as RemixForm, useActionData, useFetcher } from '@remix-run/react';
 import { useEffect } from 'react';
 
+import { createResumeBook } from '@oyster/core/resume-books';
+import {
+  ResumeBookEndDateField,
+  ResumeBookHiddenField,
+  ResumeBookNameField,
+  ResumeBookStartDateField,
+} from '@oyster/core/resume-books.ui';
 import {
   Button,
   ComboboxPopover,
-  DatePicker,
-  Divider,
   Form,
   getErrors,
-  Input,
   Modal,
   MultiCombobox,
   MultiComboboxDisplay,
@@ -24,7 +28,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { createResumeBook } from '@/member-profile.server';
 import { CreateResumeBookInput } from '@/member-profile.ui';
 import { type SearchCompaniesResult } from '@/routes/api.companies.search';
 import { Route } from '@/shared/constants';
@@ -53,9 +56,8 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   await createResumeBook({
-    airtableBaseId: data.airtableBaseId,
-    airtableTableId: data.airtableTableId,
     endDate: data.endDate,
+    hidden: data.hidden,
     name: data.name,
     sponsors: data.sponsors,
     startDate: data.startDate,
@@ -76,7 +78,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = CreateResumeBookInput.keyof().enum;
 
 export default function CreateResumeBookModal() {
-  const { error, errors } = getErrors(useActionData<typeof action>());
+  const { errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Modal onCloseTo={Route['/resume-books']}>
@@ -86,76 +88,11 @@ export default function CreateResumeBookModal() {
       </Modal.Header>
 
       <RemixForm className="form" method="post">
-        <Form.Field
-          description="Example: Spring '24"
-          error={errors.name}
-          label="Name"
-          labelFor={keys.name}
-          required
-        >
-          <Input id={keys.name} name={keys.name} required />
-        </Form.Field>
-
-        <Form.Field
-          description="The date that the resume book should start accepting responses."
-          error={errors.startDate}
-          label="Start Date"
-          labelFor={keys.startDate}
-          required
-        >
-          <DatePicker
-            id={keys.startDate}
-            name={keys.startDate}
-            type="date"
-            required
-          />
-        </Form.Field>
-
-        <Form.Field
-          description="The date that the resume book should stop accepting responses."
-          error={errors.endDate}
-          label="End Date"
-          labelFor={keys.endDate}
-          required
-        >
-          <DatePicker
-            id={keys.endDate}
-            name={keys.endDate}
-            type="date"
-            required
-          />
-        </Form.Field>
-
+        <ResumeBookNameField error={errors.name} />
+        <ResumeBookStartDateField error={errors.startDate} />
+        <ResumeBookEndDateField error={errors.endDate} />
         <SponsorsField />
-
-        <Divider />
-
-        <Form.Field
-          description="This is the ID of the Airtable base that the resume book responses will be sent to."
-          error={errors.airtableBaseId}
-          label="Airtable Base ID"
-          labelFor={keys.airtableBaseId}
-          required
-        >
-          <Input id={keys.airtableBaseId} name={keys.airtableBaseId} required />
-        </Form.Field>
-
-        <Form.Field
-          description="This is the ID of the Airtable table that the resume book responses will be sent to."
-          error={errors.airtableTableId}
-          label="Airtable Table ID"
-          labelFor={keys.airtableTableId}
-          required
-        >
-          <Input
-            id={keys.airtableTableId}
-            name={keys.airtableTableId}
-            required
-          />
-        </Form.Field>
-
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
-
+        <ResumeBookHiddenField error={errors.hidden} />
         <Button.Group>
           <Button.Submit>Create</Button.Submit>
         </Button.Group>

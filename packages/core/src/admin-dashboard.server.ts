@@ -11,7 +11,6 @@ export { updateEmailApplication } from './modules/application/use-cases/update-a
 export { getGoogleAuthUri } from './modules/authentication/shared/oauth.utils';
 export { sendOneTimeCode } from './modules/authentication/use-cases/send-one-time-code';
 export { verifyOneTimeCode } from './modules/authentication/use-cases/verify-one-time-code';
-export { createSchool } from './modules/education/use-cases/create-school';
 export { getEvent } from './modules/event/queries/get-event';
 export { listEvents } from './modules/event/queries/list-events';
 export { addEventRecordingLink } from './modules/event/use-cases/add-event-recording-link';

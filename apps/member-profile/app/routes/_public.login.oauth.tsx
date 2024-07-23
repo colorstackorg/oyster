@@ -1,7 +1,7 @@
 import { type LoaderFunctionArgs, redirect } from '@remix-run/node';
 import jwt from 'jsonwebtoken';
 
-import { track } from '@oyster/infrastructure/mixpanel';
+import { track } from '@oyster/core/mixpanel';
 import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';

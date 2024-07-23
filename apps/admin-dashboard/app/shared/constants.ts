@@ -35,6 +35,7 @@ const ROUTES = [
   '/resources/create',
   '/resume-books',
   '/resume-books/create',
+  '/resume-books/:id/edit',
   '/schools',
   '/schools/create',
   '/schools/:id/edit',

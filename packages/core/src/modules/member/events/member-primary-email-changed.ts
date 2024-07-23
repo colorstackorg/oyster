@@ -4,7 +4,7 @@ import { db } from '@/infrastructure/database';
 import {
   AIRTABLE_FAMILY_BASE_ID,
   AIRTABLE_MEMBERS_TABLE_ID,
-} from '@/modules/airtable/airtable.shared';
+} from '@/modules/airtable/airtable.core';
 import { updateMailchimpListMember } from '@/modules/mailchimp/use-cases/update-mailchimp-list-member';
 import { reportException } from '@/modules/sentry/use-cases/report-exception';
 import {

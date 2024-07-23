@@ -3,7 +3,7 @@ import { db } from '@/infrastructure/database';
 import {
   AIRTABLE_FAMILY_BASE_ID,
   AIRTABLE_MEMBERS_TABLE_ID,
-} from '@/modules/airtable/airtable.shared';
+} from '@/modules/airtable/airtable.core';
 import { DegreeType, type EducationLevel } from '../education.types';
 
 const EducationLevelFromDegreeType: Record<DegreeType, EducationLevel> = {
