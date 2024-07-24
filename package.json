@@ -11,7 +11,6 @@
     "build": "turbo run build --cache-dir=.turbo",
     "db:migrate": "yarn workspace @oyster/db migrate",
     "db:migration:create": "yarn workspace @oyster/db migration:create",
-    "db:prisma:studio": "yarn workspace @oyster/db prisma:studio",
     "db:seed": "yarn workspace @oyster/db seed",
     "db:types": "yarn workspace @oyster/db types",
     "dev": "turbo run dev --cache-dir=.turbo",
@@ -23,6 +22,8 @@
     "lint": "turbo run lint --cache-dir=.turbo",
     "lint:fix": "turbo run lint:fix --cache-dir=.turbo",
     "prepare": "husky install",
+    "prisma:setup": "yarn workspace @oyster/scripts prisma:setup",
+    "prisma:studio": "yarn workspace @oyster/db prisma:studio",
     "start": "turbo run start --cache-dir=.turbo",
     "test": "turbo run test --cache-dir=.turbo",
     "type-check": "turbo run type-check --cache-dir=.turbo"
