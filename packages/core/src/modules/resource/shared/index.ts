@@ -20,7 +20,7 @@ export function buildAttachmentsField(eb: ExpressionBuilder<DB, 'resources'>) {
       });
 
       return fn
-        .jsonAgg(sql`${object}`)
+        .jsonAgg(object)
         .$castTo<{ id: string; mimeType: string; objectKey: string }[]>()
         .as('attachments');
     })
