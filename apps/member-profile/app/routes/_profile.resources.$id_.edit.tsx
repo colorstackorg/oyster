@@ -91,9 +91,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const { data, errors, ok } = await validateForm(
     {
       ...Object.fromEntries(form),
-      attachments: form.getAll('attachments').filter((file) => {
-        return (file as File).size!;
-      }),
+      attachments: form.getAll('attachments'),
     },
     UpdateResourceInput
   );
@@ -174,9 +172,9 @@ export default function EditResourceModal() {
             name={keys.link}
           />
           <ResourceAttachmentField
+            defaultValue={resource.attachments?.[0]}
             error={errors.attachments}
             name={keys.attachments}
-            required={false}
           />
         </ResourceProvider>
 

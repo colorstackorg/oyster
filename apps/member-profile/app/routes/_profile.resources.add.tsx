@@ -71,7 +71,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
   form.set('postedBy', user(session));
 
-  const { data, errors, ok } = await validateForm(form, AddResourceInput);
+  const { data, errors, ok } = await validateForm(
+    {
+      ...Object.fromEntries(form),
+      attachments: form.getAll('attachments'),
+    },
+    AddResourceInput
+  );
 
   if (!ok) {
     return json({ errors }, { status: 400 });

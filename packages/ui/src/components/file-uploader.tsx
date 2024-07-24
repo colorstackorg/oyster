@@ -12,22 +12,30 @@ const DEFAULT_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB (in bytes)
 
 type MimeType = 'application/pdf' | 'image/jpeg' | 'image/png' | 'text/csv';
 
+type FileMetadata = Pick<File, 'name' | 'size' | 'type'> &
+  Partial<{ id: string }>;
+
 type FileUploaderProps = Pick<
   HTMLProps<HTMLInputElement>,
   'id' | 'name' | 'required'
 > & {
   accept: MimeType[];
+  initialFile?: FileMetadata;
   maxFileSize?: number;
 };
 
 export function FileUploader({
   accept,
   id,
+  initialFile,
   maxFileSize = DEFAULT_MAX_FILE_SIZE,
   name,
   required,
 }: FileUploaderProps) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<FileMetadata | null>(
+    initialFile || null
+  );
+
   const [error, setError] = useState<string | null>(null);
   const [isDragged, setIsDragged] = useState(false);
 
@@ -96,9 +104,17 @@ export function FileUploader({
           onDragOver={(_) => setIsDragged(true)}
           onDrop={(_) => setIsDragged(false)}
           ref={inputRef}
-          required={required}
           type="file"
+          {...(!selectedFile && { required })}
         />
+
+        {
+          // Since the native <input type="file" /> doesn't support a default
+          // value or controlled value, we need to somehow keep track of a
+          // file that was already uploaded (ie: in the "edit" workflows). We'll
+          // use a hidden input that sends that file's ID to the server.
+          <input name={name} type="hidden" value={selectedFile?.id} />
+        }
       </div>
 
       {error && <Text color="error">{error}</Text>}
@@ -113,8 +129,13 @@ export function FileUploader({
             </Text>
 
             <Text color="gray-500" variant="xs">
-              {formatFileType(selectedFile.type)} |{' '}
-              {formatFileSize(selectedFile.size)}
+              <span>{formatFileType(selectedFile.type)}</span>
+
+              {!!selectedFile.size && (
+                // We'll only display the file size if it's not empty...this
+                // handles the case in which we don't have the file size.
+                <span> | {formatFileSize(selectedFile.size)}</span>
+              )}
             </Text>
           </div>
 

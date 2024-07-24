@@ -51,11 +51,10 @@ export function ResourceProvider({
 }
 
 export function ResourceAttachmentField({
-  defaultValue: _,
+  defaultValue,
   error,
   name,
-  required = true,
-}: FieldProps<ResourceType> & { required?: boolean }) {
+}: FieldProps<{ id: string; mimeType: string }>) {
   const { type } = useContext(ResourceFormContext);
 
   if (type !== 'file') {
@@ -64,16 +63,25 @@ export function ResourceAttachmentField({
 
   return (
     <Form.Field
+      description="Please choose the file you want to upload."
       error={error}
       label="Attachment"
       labelFor={name}
-      required={required}
+      required
     >
       <FileUploader
         accept={['application/pdf', 'image/jpeg', 'image/png']}
         id={name}
         name={name}
-        required={required}
+        required
+        {...(defaultValue && {
+          initialFile: {
+            id: defaultValue.id,
+            name: defaultValue.id,
+            size: 0,
+            type: defaultValue.mimeType,
+          },
+        })}
       />
     </Form.Field>
   );
