@@ -43,14 +43,28 @@ export async function updateResource(
       return;
     }
 
+    const existingAttachments: string[] = [];
+    const newAttachments: File[] = [];
+
+    for (const attachment of input.attachments) {
+      if (typeof attachment === 'string') {
+        existingAttachments.push(attachment);
+      } else {
+        newAttachments.push(attachment);
+      }
+    }
+
     const previousAttachments = await trx
       .deleteFrom('resourceAttachments')
       .where('resourceId', '=', resourceId)
+      .$if(!!existingAttachments.length, (qb) => {
+        return qb.where('id', 'not in', existingAttachments);
+      })
       .returning(['objectKey'])
       .execute();
 
-    for (const attachment of input.attachments) {
-      const arrayBuffer = await attachment.arrayBuffer();
+    for (const file of newAttachments) {
+      const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
       const attachmentId = id();
@@ -58,7 +72,7 @@ export async function updateResource(
 
       await putObject({
         content: buffer,
-        contentType: attachment.type,
+        contentType: file.type,
         key: attachmentKey,
       });
 
@@ -66,7 +80,7 @@ export async function updateResource(
         .insertInto('resourceAttachments')
         .values({
           id: attachmentId,
-          mimeType: attachment.type,
+          mimeType: file.type,
           objectKey: attachmentKey,
           resourceId,
         })

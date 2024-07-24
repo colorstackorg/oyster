@@ -16,17 +16,30 @@ export type ResourceType = ExtractValue<typeof ResourceType>;
 // Domain
 
 const Resource = z.object({
-  attachments: z.unknown().transform((value) => {
-    if (!value) {
-      return [] as File[];
-    }
+  /**
+   * Attachments can either be:
+   * - A string, representing an ID of an already uploaded attachment.
+   * - A `File` object, representing a new attachment.
+   *
+   * Supporting the ability to have both types of attachments will help with
+   * editing, think keeping old attachments but adding new ones as well.
+   */
+  attachments: z
+    .array(
+      z.union([
+        z.string().trim(),
+        z.unknown().transform((value) => value as File),
+      ])
+    )
+    .transform((value) => {
+      return value.filter((attachment) => {
+        if (typeof attachment === 'string') {
+          return !!attachment;
+        }
 
-    if (Array.isArray(value)) {
-      return value as File[];
-    }
-
-    return [value] as File[];
-  }),
+        return !!attachment.size;
+      });
+    }),
 
   description: z
     .string()
