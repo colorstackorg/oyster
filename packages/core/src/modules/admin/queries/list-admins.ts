@@ -19,6 +19,7 @@ export async function listAdmins() {
           .as('isArchived');
       },
     ])
+    .where('deletedAt', 'is', null) // returns only active admins
     .orderBy('createdAt', 'desc')
     .execute();
 
