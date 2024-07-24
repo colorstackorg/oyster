@@ -21,20 +21,23 @@ const Resource = z.object({
    * - A string, representing an ID of an already uploaded attachment.
    * - A `File` object, representing a new attachment.
    *
-   * Currently, we'll only do things with the `File` objects. But soon, we'll
-   * support the ability to have both types of attachments (think keeping
-   * old attachments but adding new ones as well).
+   * Supporting the ability to have both types of attachments will help with
+   * editing, think keeping old attachments but adding new ones as well.
    */
   attachments: z
     .array(
       z.union([
-        z.string().trim().min(1),
+        z.string().trim(),
         z.unknown().transform((value) => value as File),
       ])
     )
     .transform((value) => {
       return value.filter((attachment) => {
-        return !!(attachment as File).size;
+        if (typeof attachment === 'string') {
+          return !!attachment;
+        }
+
+        return !!attachment.size;
       });
     }),
 

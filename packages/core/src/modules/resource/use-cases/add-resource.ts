@@ -32,8 +32,8 @@ export async function addResource(input: AddResourceInput) {
         .execute();
     }
 
-    for (const attachment of input.attachments) {
-      const arrayBuffer = await attachment.arrayBuffer();
+    for (const file of input.attachments as File[]) {
+      const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
       const attachmentId = id();
@@ -41,7 +41,7 @@ export async function addResource(input: AddResourceInput) {
 
       await putObject({
         content: buffer,
-        contentType: attachment.type,
+        contentType: file.type,
         key: attachmentKey,
       });
 
@@ -49,7 +49,7 @@ export async function addResource(input: AddResourceInput) {
         .insertInto('resourceAttachments')
         .values({
           id: attachmentId,
-          mimeType: attachment.type,
+          mimeType: file.type,
           objectKey: attachmentKey,
           resourceId: resource.id,
         })

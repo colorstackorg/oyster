@@ -113,7 +113,7 @@ export function FileUploader({
           // value or controlled value, we need to somehow keep track of a
           // file that was already uploaded (ie: in the "edit" workflows). We'll
           // use a hidden input that sends that file's ID to the server.
-          <input name={name} type="hidden" value={selectedFile?.id} />
+          <input name={name} type="hidden" value={selectedFile?.id || ''} />
         }
       </div>
 
