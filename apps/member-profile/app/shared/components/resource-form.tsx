@@ -64,14 +64,13 @@ export function ResourceAttachmentField({
 
   return (
     <Form.Field
-      description="Supported formats: JPG, PNG, PDF (max file size: 20MB)"
       error={error}
       label="Attachment"
       labelFor={name}
       required={required}
     >
       <FileUploader
-        accept="image/png, image/jpeg, .pdf"
+        accept={['.jpeg', '.pdf', '.png']}
         id={name}
         name={name}
         required={required}

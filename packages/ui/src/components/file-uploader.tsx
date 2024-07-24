@@ -1,93 +1,100 @@
 import { useState } from 'react';
-import type { ChangeEvent } from 'react';
-import { File, Image } from 'react-feather';
+import { type ChangeEvent, type HTMLProps } from 'react';
+import { File, UploadCloud } from 'react-feather';
 
-import type { ResourceType } from '@oyster/core/resources';
-import type { FieldProps } from '@oyster/ui';
+import { Text } from './text';
+import { cx } from '../utils/cx';
 
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB limit in bytes
-const FILE_TYPES = ['image/png', 'image/jpeg', 'application/pdf'];
+const DEFAULT_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB (in bytes)
 
-export function FileUploader({ name }: FieldProps<ResourceType>) {
+const FORMATTED_FILE_EXTENSIONS: Record<FileExtension, string> = {
+  '.csv': 'CSV',
+  '.jpeg': 'JPG',
+  '.pdf': 'PDF',
+  '.png': 'PNG',
+};
+
+type FileExtension = '.csv' | '.jpeg' | '.pdf' | '.png';
+
+type FileUploaderProps = Pick<
+  HTMLProps<HTMLInputElement>,
+  'id' | 'name' | 'required'
+> & {
+  accept: FileExtension[];
+  maxFileSize?: number;
+};
+
+export function FileUploader({
+  accept,
+  id,
+  maxFileSize = DEFAULT_MAX_FILE_SIZE,
+  name,
+  required,
+}: FileUploaderProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [fileError, setFileError] = useState<string | null>(null);
-  const [isHover, setisHover] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isDragged, setIsDragged] = useState(false);
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>): void => {
+  const formattedMaxSize = formatFileSize(maxFileSize);
+
+  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
 
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
-    if (file.size > MAX_FILE_SIZE && !FILE_TYPES.includes(file.type)) {
-      setFileError(
-        `File size exceeds 20 MB limit and File type not supported.`
-      );
-      setSelectedFile(null);
-    } else if (file.size > MAX_FILE_SIZE) {
-      setFileError(`File size exceeds 20 MB limit.`);
-      setSelectedFile(null);
-    } else if (!FILE_TYPES.includes(file.type)) {
-      setFileError(`File type not supported.`);
+    if (file.size > maxFileSize) {
+      setError(`File size exceeds ${formattedMaxSize} limit.`);
       setSelectedFile(null);
     } else {
-      setFileError(null);
+      setError(null);
       setSelectedFile(file);
     }
-  };
-
-  const formatFileSize = (size: number): string => {
-    const units = ['B', 'KB', 'MB'];
-    let i = 0;
-
-    while (size >= 1024 && i < units.length - 1) {
-      size /= 1024;
-      i += 1;
-    }
-
-    return `${size.toFixed(0)}${units[i]}`;
-  };
+  }
 
   return (
-    <div>
-      <label
-        htmlFor={name}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setisHover(true);
-        }}
-        onDragLeave={() => setisHover(false)}
-        onDrop={() => setisHover(false)}
-        className={`relative flex flex-col items-center rounded-3xl border-2 border-dashed transition-all duration-300 ease-in-out ${
-          isHover
-            ? 'cursor-grab border-primary'
-            : 'border-gray-300 hover:cursor-grab hover:border-primary'
-        }`}
+    <div className="flex flex-col gap-2">
+      <div
+        className={cx(
+          'relative cursor-grab rounded-3xl border-2 border-dashed border-gray-300',
+          'transition-colors duration-300 ease-in-out',
+          'hover:border-primary',
+          isDragged && 'border-primary'
+        )}
       >
-        <div className="flex flex-col items-center p-4">
-          <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-green-50 p-3">
-            <Image className="h-8 w-8 text-primary" />
+        <div className="flex flex-col items-center gap-1 p-4">
+          <div className="mb-2 rounded-full bg-green-50 p-3">
+            <UploadCloud className="h-8 w-8 text-primary" />
           </div>
 
-          <p className="text-center font-normal">
-            <span className="cursor-pointer font-bold text-primary hover:underline">
-              Click here
-            </span>{' '}
-            or drag and drop to upload your file.
-          </p>
+          <Text>
+            Drag and drop or{' '}
+            <span className="font-bold text-primary">browse</span> to upload
+            your file.
+          </Text>
+
+          <Text color="gray-500" variant="sm">
+            {accept.map((type) => FORMATTED_FILE_EXTENSIONS[type]).join(', ')}{' '}
+            (Max Size: {formattedMaxSize})
+          </Text>
         </div>
 
         <input
-          id={name}
+          accept={accept.join(', ')}
+          className="absolute top-0 h-full w-full cursor-grab rounded-3xl opacity-0"
+          id={id}
           name={name}
-          type="file"
-          accept="image/png, image/jpeg, .pdf"
-          className="absolute top-0 z-10 h-full w-full rounded-3xl opacity-0 hover:cursor-grab"
-          required
           onChange={handleFileChange}
+          onDragLeave={(_) => setIsDragged(false)}
+          onDragOver={(_) => setIsDragged(true)}
+          onDrop={(_) => setIsDragged(false)}
+          required={required}
+          type="file"
         />
-      </label>
+      </div>
 
-      {fileError && <p className="mb-1 text-sm text-red-500">*{fileError}</p>}
+      {error && <p className="mb-1 text-sm text-red-500">*{error}</p>}
 
       {selectedFile && (
         <div className="flex items-center rounded-md bg-white p-2 shadow-sm">
@@ -107,4 +114,20 @@ export function FileUploader({ name }: FieldProps<ResourceType>) {
       )}
     </div>
   );
+}
+
+function formatFileSize(bytes: number) {
+  const units = ['B', 'KB', 'MB', 'GB'];
+
+  let i = 0;
+
+  while (bytes >= 1024 && i < units.length - 1) {
+    bytes = bytes / 1024;
+    i += 1;
+  }
+
+  const size = bytes.toFixed(0);
+  const unit = units[i];
+
+  return `${size} ${unit}`;
 }
