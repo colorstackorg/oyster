@@ -2,6 +2,7 @@ export { QueueFromName } from './infrastructure/bull/bull';
 export { job } from './infrastructure/bull/use-cases/job';
 export { listAdmins } from './modules/admin/queries/list-admins';
 export { addAdmin } from './modules/admin/use-cases/add-admin';
+export { removeAdmin } from './modules/admin/use-cases/remove-admin';
 export { countPendingApplications } from './modules/application/queries/count-pending-applications';
 export { getApplication } from './modules/application/queries/get-application';
 export { listApplications } from './modules/application/queries/list-applications';
