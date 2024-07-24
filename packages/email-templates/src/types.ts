@@ -35,6 +35,15 @@ export const EmailTemplate = z.discriminatedUnion('name', [
     }),
   }),
   BaseEmail.extend({
+    name: z.literal('resume-submitted'),
+    data: z.object({
+      edited: z.boolean(),
+      firstName: Student.shape.firstName,
+      resumeBookName: z.string().trim().min(1),
+      resumeBookUri: z.string().url(),
+    }),
+  }),
+  BaseEmail.extend({
     name: z.literal('student-activated'),
     data: z.object({
       firstName: Student.shape.firstName,
@@ -58,7 +67,9 @@ export const EmailTemplate = z.discriminatedUnion('name', [
   }),
   BaseEmail.extend({
     name: z.literal('student-removed'),
-    data: z.object({}),
+    data: z.object({
+      firstName: z.string().trim().min(1),
+    }),
   }),
 ]);
 

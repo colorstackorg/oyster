@@ -6,17 +6,16 @@ import {
 } from '@remix-run/node';
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 
+import { createSchool } from '@oyster/core/education';
+import { CreateSchoolInput } from '@oyster/core/education.types';
 import {
-  Button,
-  Form,
-  getErrors,
-  Input,
-  Modal,
-  validateForm,
-} from '@oyster/ui';
+  SchoolCityField,
+  SchoolNameField,
+  SchoolStateField,
+  SchoolZipField,
+} from '@oyster/core/education.ui';
+import { Button, getErrors, Modal, validateForm } from '@oyster/ui';
 
-import { createSchool } from '@/admin-dashboard.server';
-import { CreateSchoolInput } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -47,7 +46,7 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   toast(session, {
-    message: `Created ${data.name}.`,
+    message: 'Created school.',
   });
 
   return redirect(Route['/schools'], {
@@ -58,6 +57,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function CreateSchoolPage() {
+  const { errors } = getErrors(useActionData<typeof action>());
+
   return (
     <Modal onCloseTo={Route['/schools']}>
       <Modal.Header>
@@ -65,80 +66,16 @@ export default function CreateSchoolPage() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <CreateSchoolForm />
+      <RemixForm className="form" method="post">
+        <SchoolNameField error={errors.name} />
+        <SchoolCityField error={errors.addressCity} />
+        <SchoolStateField error={errors.addressState} />
+        <SchoolZipField error={errors.addressZip} />
+
+        <Button.Group>
+          <Button.Submit>Create</Button.Submit>
+        </Button.Group>
+      </RemixForm>
     </Modal>
-  );
-}
-
-const keys = CreateSchoolInput.keyof().enum;
-
-function CreateSchoolForm() {
-  const { error, errors } = getErrors(useActionData<typeof action>());
-
-  return (
-    <RemixForm className="form" method="post">
-      <Form.Field
-        error={errors.name}
-        label="Name"
-        labelFor={keys.name}
-        required
-      >
-        <Input
-          id={keys.name}
-          name={keys.name}
-          placeholder="University of California, Los Angeles"
-          required
-        />
-      </Form.Field>
-
-      <Form.Field
-        error={errors.addressCity}
-        label="City"
-        labelFor={keys.addressCity}
-        required
-      >
-        <Input
-          id={keys.addressCity}
-          name={keys.addressCity}
-          placeholder="Los Angeles"
-          required
-        />
-      </Form.Field>
-
-      <Form.Field
-        description="Please use the two-letter abbreviation."
-        error={errors.addressState}
-        label="State"
-        labelFor={keys.addressState}
-        required
-      >
-        <Input
-          id={keys.addressState}
-          name={keys.addressState}
-          placeholder="CA"
-          required
-        />
-      </Form.Field>
-
-      <Form.Field
-        error={errors.addressZip}
-        label="Zip Code"
-        labelFor={keys.addressZip}
-        required
-      >
-        <Input
-          id={keys.addressZip}
-          name={keys.addressZip}
-          placeholder="90210"
-          required
-        />
-      </Form.Field>
-
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
-
-      <Button.Group>
-        <Button.Submit>Create</Button.Submit>
-      </Button.Group>
-    </RemixForm>
   );
 }

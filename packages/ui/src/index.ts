@@ -11,7 +11,7 @@ export { Dropdown } from './components/dropdown';
 export { ExistingSearchParams } from './components/existing-search-params';
 export { FileUploader } from './components/file-uploader';
 export { Form, getErrors, InputField, validateForm } from './components/form';
-export type { FieldProps } from './components/form';
+export type { DescriptionProps, FieldProps } from './components/form';
 export { IconButton, getIconButtonCn } from './components/icon-button';
 export { Input, getInputCn } from './components/input';
 export type { InputProps } from './components/input';

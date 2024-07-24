@@ -232,12 +232,22 @@ function TextField({ defaultValue, error, name }: FieldProps<string>) {
         <div>
           Should be at least 750 characters. Feel free to use these guiding
           questions:
-          <ul className="mt-2 list-disc ps-8">
+          <ul className="my-2 list-disc ps-8">
             <li>What was the company culture like?</li>
             <li>Did you feel supported as an employee?</li>
             <li>What did you work on?</li>
             <li>Were you able to develop any new skills?</li>
           </ul>
+          See a sample review{' '}
+          <a
+            className="link"
+            href="/images/company-sample-review.png"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            here
+          </a>
+          .
         </div>
       }
       error={error}

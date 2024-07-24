@@ -74,8 +74,8 @@ Dashboard.ColorStackLogo = function ColorStackLogo() {
 };
 
 const itemClassName = cx(
-  'box-border flex w-full items-center gap-3 rounded-2xl p-3',
-  'hover:text-primary',
+  'box-border flex w-full items-center gap-3 rounded-2xl p-3 transition-colors',
+  'hover:bg-primary hover:bg-opacity-10',
   'aria-[current="page"]:bg-primary aria-[current="page"]:text-white aria-[current="page"]:hover:text-white'
 );
 
@@ -114,6 +114,7 @@ Dashboard.Navigation = function Navigation({ children }: PropsWithChildren) {
 
 type DashboardNavigationLinkProps = {
   icon: JSX.Element;
+  isNew?: boolean;
   label: string;
   pathname: string;
   prefetch?: LinkProps['prefetch'];
@@ -122,6 +123,7 @@ type DashboardNavigationLinkProps = {
 Dashboard.NavigationLink = function NavigationLink({
   icon,
   label,
+  isNew,
   pathname,
   prefetch,
 }: DashboardNavigationLinkProps) {
@@ -139,7 +141,12 @@ Dashboard.NavigationLink = function NavigationLink({
         prefetch={prefetch}
         to={pathname}
       >
-        {icon} {label}
+        {icon} {label}{' '}
+        {isNew && (
+          <span className="rounded bg-green-100 px-1 text-xs text-green-700">
+            New
+          </span>
+        )}
       </NavLink>
     </li>
   );
@@ -158,7 +165,7 @@ Dashboard.Page = function Page({
   return (
     <section
       className={cx(
-        'box-border flex flex-col gap-4 @container',
+        'box-border flex min-h-screen flex-col gap-4 @container',
         'p-4 pb-24',
         'md:ml-[270px] md:p-6 md:pb-16',
         className

@@ -103,13 +103,21 @@ export function HometownField({
   defaultValue,
   defaultLatitude,
   defaultLongitude,
+  description,
   error,
   latitudeName,
   longitudeName,
   name,
-}: FieldProps<string> & Omit<CityComboboxProps, 'required'>) {
+}: FieldProps<string> &
+  Omit<CityComboboxProps, 'required'> & { description?: string }) {
   return (
-    <Form.Field error={error} labelFor={name} label="Hometown" required>
+    <Form.Field
+      description={description}
+      error={error}
+      labelFor={name}
+      label="Hometown"
+      required
+    >
       <CityCombobox
         defaultLatitude={defaultLatitude}
         defaultLongitude={defaultLongitude}

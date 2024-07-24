@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import { type ZodError } from 'zod';
 
 import { extractZodErrorMessage } from '@/shared/utils/zod.utils';
@@ -5,8 +6,6 @@ import { extractZodErrorMessage } from '@/shared/utils/zod.utils';
 export type ErrorContext<
   T extends Record<string, unknown> = Record<string, unknown>,
 > = T;
-
-export type ErrorLevel = 'error' | 'warning';
 
 /**
  * This is an error that can be used to pass additional context to the error
@@ -17,16 +16,30 @@ export type ErrorLevel = 'error' | 'warning';
 export class ErrorWithContext extends Error {
   context?: ErrorContext;
 
-  level?: ErrorLevel;
-
   withContext(context: ErrorContext): this {
     this.context = context;
 
     return this;
   }
 
-  withLevel(level: ErrorLevel): this {
-    this.level = level;
+  withMessage(message: string): this {
+    this.message = message;
+
+    return this;
+  }
+}
+
+export class ColorStackError extends ErrorWithContext {
+  constructor() {
+    super();
+  }
+
+  report(): this {
+    console.error(this);
+
+    Sentry.captureException(this, {
+      extra: this.context,
+    });
 
     return this;
   }

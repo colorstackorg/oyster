@@ -53,6 +53,7 @@ const ROUTES = [
   '/resources',
   '/resources/add',
   '/resources/:id/edit',
+  '/resume-books/:id',
 ] as const;
 
 export type Route = (typeof ROUTES)[number];
