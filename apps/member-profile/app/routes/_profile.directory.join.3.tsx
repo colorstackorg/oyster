@@ -22,7 +22,6 @@ import {
 import { Route } from '@/shared/constants';
 import { getMember } from '@/shared/queries';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
-import { formatUrl } from '@/shared/url.utils';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -44,13 +43,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 const UpdateSocialsInformation = z.object({
-  calendlyUrl: nullableField(Student.shape.calendlyUrl).transform(formatUrl),
-  githubUrl: nullableField(Student.shape.githubUrl).transform(formatUrl),
+  calendlyUrl: nullableField(Student.shape.calendlyUrl),
+  githubUrl: nullableField(Student.shape.githubUrl),
   instagramHandle: nullableField(Student.shape.instagramHandle),
-  linkedInUrl: Student.shape.linkedInUrl.transform(formatUrl),
-  personalWebsiteUrl: nullableField(Student.shape.personalWebsiteUrl).transform(
-    formatUrl
-  ),
+  linkedInUrl: Student.shape.linkedInUrl,
+  personalWebsiteUrl: nullableField(Student.shape.personalWebsiteUrl),
   twitterHandle: nullableField(Student.shape.twitterHandle),
 });
 

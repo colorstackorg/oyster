@@ -14,6 +14,9 @@
     "./member-profile.server": "./src/member-profile.server.ts",
     "./member-profile.ui": "./src/member-profile.ui.ts",
     "./admin.server": "./src/modules/admin/index.server.ts",
+    "./education": "./src/modules/education/education.core.ts",
+    "./education.types": "./src/modules/education/education.types.ts",
+    "./education.ui": "./src/modules/education/education.ui.tsx",
     "./employment": "./src/modules/employment/index.ts",
     "./employment.server": "./src/modules/employment/index.server.ts",
     "./mixpanel": "./src/modules/mixpanel/index.ts",
@@ -22,6 +25,7 @@
     "./resources.server": "./src/modules/resource/index.server.ts",
     "./resume-books": "./src/modules/resume-book/resume-book.core.ts",
     "./resume-books.types": "./src/modules/resume-book/resume-book.types.ts",
+    "./resume-books.ui": "./src/modules/resume-book/resume-book.ui.tsx",
     "./slack.server": "./src/modules/slack/index.server.ts"
   },
   "scripts": {
