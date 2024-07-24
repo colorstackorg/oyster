@@ -70,7 +70,7 @@ export function ResourceAttachmentField({
       required={required}
     >
       <FileUploader
-        accept={['.jpeg', '.pdf', '.png']}
+        accept={['.jpg', '.jpeg', '.pdf', '.png']}
         id={name}
         name={name}
         required={required}

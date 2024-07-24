@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { type ChangeEvent, type HTMLProps } from 'react';
-import { File, UploadCloud } from 'react-feather';
+import { File, UploadCloud, X } from 'react-feather';
 
+import { IconButton } from './icon-button';
 import { Text } from './text';
 import { cx } from '../utils/cx';
 
@@ -9,12 +10,13 @@ const DEFAULT_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB (in bytes)
 
 const FORMATTED_FILE_EXTENSIONS: Record<FileExtension, string> = {
   '.csv': 'CSV',
-  '.jpeg': 'JPG',
+  '.jpeg': 'JPEG',
+  '.jpg': 'JPG',
   '.pdf': 'PDF',
   '.png': 'PNG',
 };
 
-type FileExtension = '.csv' | '.jpeg' | '.pdf' | '.png';
+type FileExtension = '.csv' | '.jpeg' | '.jpg' | '.pdf' | '.png';
 
 type FileUploaderProps = Pick<
   HTMLProps<HTMLInputElement>,
@@ -35,6 +37,8 @@ export function FileUploader({
   const [error, setError] = useState<string | null>(null);
   const [isDragged, setIsDragged] = useState(false);
 
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
   const formattedMaxSize = formatFileSize(maxFileSize);
 
   function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
@@ -54,7 +58,7 @@ export function FileUploader({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
       <div
         className={cx(
           'relative cursor-grab rounded-3xl border-2 border-dashed border-gray-300',
@@ -89,27 +93,44 @@ export function FileUploader({
           onDragLeave={(_) => setIsDragged(false)}
           onDragOver={(_) => setIsDragged(true)}
           onDrop={(_) => setIsDragged(false)}
+          ref={inputRef}
           required={required}
           type="file"
         />
       </div>
 
-      {error && <p className="mb-1 text-sm text-red-500">*{error}</p>}
+      {error && <Text color="error">{error}</Text>}
 
       {selectedFile && (
-        <div className="flex items-center rounded-md bg-white p-2 shadow-sm">
-          <File className="mr-2 h-6 w-6 text-primary" />
+        <div className="flex items-center gap-2 rounded-lg bg-primary bg-opacity-5 p-2">
+          <File className="h-6 w-6 text-primary" />
+
           <div>
-            <p className="break-words font-medium text-gray-800">
+            <Text className="line-clamp-1" weight="500">
               {selectedFile.name}
-            </p>
-            <p className="text-xs text-gray-500">
-              {formatFileSize(selectedFile.size)}{' '}
-              <span className="font-medium">
-                {selectedFile.type.split('/')[1].toUpperCase()}
-              </span>
-            </p>
+            </Text>
+
+            <Text color="gray-500" variant="xs">
+              {selectedFile.type.split('/')[1].toUpperCase()} |{' '}
+              {formatFileSize(selectedFile.size)}
+            </Text>
           </div>
+
+          <IconButton
+            backgroundColor="gray-100"
+            backgroundColorOnHover="gray-200"
+            className="ml-auto"
+            icon={<X />}
+            label="Remove file."
+            onClick={() => {
+              // The input value is not controlled, so we need to reset it
+              // manually using it's ref.
+              inputRef.current!.value = '';
+
+              setSelectedFile(null);
+              setError(null);
+            }}
+          />
         </div>
       )}
     </div>
