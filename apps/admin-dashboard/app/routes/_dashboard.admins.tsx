@@ -3,11 +3,21 @@ import {
   type LoaderFunctionArgs,
   type SerializeFrom,
 } from '@remix-run/node';
-import { Outlet, useLoaderData } from '@remix-run/react';
+import { Link, Outlet, useLoaderData } from '@remix-run/react';
+import { useState } from 'react';
+import { Trash } from 'react-feather';
+import { generatePath } from 'react-router';
 
-import { Dashboard, Pill, Table, type TableColumnProps } from '@oyster/ui';
+import {
+  Dashboard,
+  Dropdown,
+  Pill,
+  Table,
+  type TableColumnProps,
+} from '@oyster/ui';
 
 import { listAdmins } from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -70,6 +80,41 @@ function AdminsTable() {
   ];
 
   return (
-    <Table columns={columns} data={admins} emptyMessage="No admins found." />
+    <Table
+      columns={columns}
+      data={admins}
+      Dropdown={AdminDropdown}
+      emptyMessage="No admins found."
+    />
+  );
+}
+
+function AdminDropdown({ id }: AdminInView) {
+  const [open, setOpen] = useState<boolean>(false);
+
+  function onClose() {
+    setOpen(false);
+  }
+
+  function onOpen() {
+    setOpen(true);
+  }
+
+  return (
+    <Dropdown.Container onClose={onClose}>
+      {open && (
+        <Table.Dropdown>
+          <Dropdown.List>
+            <Dropdown.Item>
+              <Link to={generatePath(Route['/admins/:id/remove'], { id })}>
+                <Trash /> Remove Admin
+              </Link>
+            </Dropdown.Item>
+          </Dropdown.List>
+        </Table.Dropdown>
+      )}
+
+      <Table.DropdownOpenButton onClick={onOpen} />
+    </Dropdown.Container>
   );
 }
