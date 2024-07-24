@@ -53,7 +53,8 @@ export function ResourceAttachmentField({
   defaultValue: _,
   error,
   name,
-}: FieldProps<ResourceType>) {
+  required = true,
+}: FieldProps<ResourceType> & { required?: boolean }) {
   const { type } = useContext(ResourceFormContext);
 
   if (type !== 'file') {
@@ -66,13 +67,13 @@ export function ResourceAttachmentField({
       error={error}
       label="Attachment"
       labelFor={name}
-      required
+      required={required}
     >
       <input
         accept="image/png, image/jpeg, .pdf"
         id={name}
         name={name}
-        required
+        required={required}
         type="file"
       />
     </Form.Field>

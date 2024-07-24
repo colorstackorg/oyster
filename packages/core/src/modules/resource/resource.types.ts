@@ -99,7 +99,6 @@ export const DownvoteResourceInput = z.object({
 });
 
 export const UpdateResourceInput = AddResourceInput.omit({
-  attachments: true,
   postedBy: true,
   type: true,
 });
