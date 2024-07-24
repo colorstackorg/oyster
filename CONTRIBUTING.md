@@ -26,7 +26,7 @@ ColorStack members first, and then friends of ColorStack. ❤️
     - [Executing Database Migrations](#executing-database-migrations)
     - [Seeding the Database](#seeding-the-database)
     - [Stopping the Database](#stopping-the-database)
-    - [Start the Database GUI (Prisma Studio)](#start-the-database-gui-prisma-studio)
+    - [Using a Database GUI (Prisma Studio)](#using-a-database-gui-prisma-studio)
   - [Building the Project](#building-the-project)
   - [Running the Applications](#running-the-applications)
   - [Logging Into Applications](#logging-into-applications)
@@ -157,15 +157,19 @@ recommended to take them down once you are done using them. Run:
 yarn dx:down
 ```
 
-#### Start the Database GUI (Prisma Studio)
+#### Using a Database GUI (Prisma Studio)
 
-Setup your Prisma schema file by running:
+To make it easier to interact with and manage your data in the browser, you can
+use [Prisma Studio](https://www.prisma.io/studio)!
+
+To get started, setup your Prisma schema file by running:
 
 ```
 yarn prisma:setup
 ```
 
-Interact with and manage data interactively with in the browser.
+Then, start Prisma Studio locally and open your browser to the URL that gets
+printed:
 
 ```
 yarn prisma:studio
