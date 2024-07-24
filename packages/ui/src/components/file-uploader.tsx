@@ -2,27 +2,21 @@ import { useRef, useState } from 'react';
 import { type ChangeEvent, type HTMLProps } from 'react';
 import { File, UploadCloud, X } from 'react-feather';
 
+import { iife } from '@oyster/utils';
+
 import { IconButton } from './icon-button';
 import { Text } from './text';
 import { cx } from '../utils/cx';
 
 const DEFAULT_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB (in bytes)
 
-const FORMATTED_FILE_EXTENSIONS: Record<FileExtension, string> = {
-  '.csv': 'CSV',
-  '.jpeg': 'JPEG',
-  '.jpg': 'JPG',
-  '.pdf': 'PDF',
-  '.png': 'PNG',
-};
-
-type FileExtension = '.csv' | '.jpeg' | '.jpg' | '.pdf' | '.png';
+type MimeType = 'application/pdf' | 'image/jpeg' | 'image/png' | 'text/csv';
 
 type FileUploaderProps = Pick<
   HTMLProps<HTMLInputElement>,
   'id' | 'name' | 'required'
 > & {
-  accept: FileExtension[];
+  accept: MimeType[];
   maxFileSize?: number;
 };
 
@@ -41,7 +35,7 @@ export function FileUploader({
 
   const formattedMaxSize = formatFileSize(maxFileSize);
 
-  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+  function onFileChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
 
     if (!file) {
@@ -78,10 +72,18 @@ export function FileUploader({
             your file.
           </Text>
 
-          <Text color="gray-500" variant="sm">
-            {accept.map((type) => FORMATTED_FILE_EXTENSIONS[type]).join(', ')}{' '}
-            (Max Size: {formattedMaxSize})
-          </Text>
+          {iife(() => {
+            const formattedAccept = accept
+              .map(formatFileType)
+              .sort()
+              .join(', ');
+
+            return (
+              <Text color="gray-500" variant="sm">
+                {formattedAccept} (Max Size: {formattedMaxSize})
+              </Text>
+            );
+          })}
         </div>
 
         <input
@@ -89,7 +91,7 @@ export function FileUploader({
           className="absolute top-0 h-full w-full cursor-grab rounded-3xl opacity-0"
           id={id}
           name={name}
-          onChange={handleFileChange}
+          onChange={onFileChange}
           onDragLeave={(_) => setIsDragged(false)}
           onDragOver={(_) => setIsDragged(true)}
           onDrop={(_) => setIsDragged(false)}
@@ -111,7 +113,7 @@ export function FileUploader({
             </Text>
 
             <Text color="gray-500" variant="xs">
-              {selectedFile.type.split('/')[1].toUpperCase()} |{' '}
+              {formatFileType(selectedFile.type)} |{' '}
               {formatFileSize(selectedFile.size)}
             </Text>
           </div>
@@ -151,4 +153,8 @@ function formatFileSize(bytes: number) {
   const unit = units[i];
 
   return `${size} ${unit}`;
+}
+
+function formatFileType(mimeType: string) {
+  return mimeType.split('/')[1].toUpperCase();
 }
