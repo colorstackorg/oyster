@@ -110,13 +110,15 @@ export function FileUploader({
           {...(!selectedFile && { required })}
         />
 
-        {
-          // Since the native <input type="file" /> doesn't support a default
-          // value or controlled value, we need to somehow keep track of a
-          // file that was already uploaded (ie: in the "edit" workflows). We'll
-          // use a hidden input that sends that file's ID to the server.
-          <input name={name} type="hidden" value={selectedFile?.id || ''} />
-        }
+        {!!initialFile?.id &&
+          !!selectedFile?.id &&
+          initialFile.id === selectedFile.id && (
+            // Since the native <input type="file" /> doesn't support a default
+            // value or controlled value, we need to somehow keep track of a
+            // file that was already uploaded (ie: in the "edit" workflows).
+            // We'll use a hidden input that sends that file's ID to the server.
+            <input name={name} type="hidden" value={initialFile.id} />
+          )}
       </div>
 
       {error && <Text color="error">{error}</Text>}

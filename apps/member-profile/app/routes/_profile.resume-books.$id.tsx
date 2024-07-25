@@ -38,9 +38,11 @@ import {
   Button,
   Checkbox,
   Divider,
+  FileUploader,
   Form,
   getErrors,
   Input,
+  MB_IN_BYTES,
   Radio,
   Select,
   Text,
@@ -92,6 +94,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           'codingLanguages',
           'educationId',
           'employmentSearchStatus',
+          'memberId',
           'preferredCompany1',
           'preferredCompany2',
           'preferredCompany3',
@@ -175,11 +178,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 }
 
+const RESUME_MAX_FILE_SIZE = MB_IN_BYTES * 1;
+
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const uploadHandler = composeUploadHandlers(
-    createFileUploadHandler({ maxPartSize: 1_000_000 * 1 }),
+    createFileUploadHandler({ maxPartSize: RESUME_MAX_FILE_SIZE }),
     createMemoryUploadHandler()
   );
 
@@ -205,15 +210,12 @@ export async function action({ params, request }: ActionFunctionArgs) {
   form.set('memberId', user(session));
   form.set('resumeBookId', resumeBookId);
 
-  const resume = form.get('resume') as File;
-
   const { data, errors, ok } = await validateForm(
     {
       ...Object.fromEntries(form),
       codingLanguages: form.getAll('codingLanguages'),
       preferredRoles: form.getAll('preferredRoles'),
       race: form.getAll('race'),
-      resume: resume.size ? resume : null,
     },
     SubmitResumeInput
   );
@@ -382,6 +384,7 @@ function ResumeBookForm() {
         required
       >
         <Checkbox
+          defaultChecked={!!submission}
           id="isProfileUpdated"
           label="My primary email and education history are up to date."
           name="isProfileUpdated"
@@ -641,22 +644,26 @@ function ResumeBookForm() {
       <PreferredSponsorsField />
 
       <Form.Field
-        description={
-          !submission
-            ? 'Must be a PDF less than 1 MB.'
-            : 'Must be a PDF less than 1 MB. If you do not choose a new resume to resubmit, we will use the resume you currently have on file.'
-        }
+        description="Please upload your resume."
         error={errors.resume}
         label="Resume"
-        labelFor="resume"
-        required={!submission}
+        labelFor={keys.resume}
+        required
       >
-        <input
-          accept=".pdf"
-          id="resume"
-          name="resume"
-          required={!submission}
-          type="file"
+        <FileUploader
+          accept={['application/pdf']}
+          id={keys.resume}
+          maxFileSize={RESUME_MAX_FILE_SIZE}
+          name={keys.resume}
+          required
+          {...(submission && {
+            initialFile: {
+              id: submission.memberId,
+              name: 'Resume.pdf',
+              size: 0,
+              type: 'application/pdf',
+            },
+          })}
         />
       </Form.Field>
 
