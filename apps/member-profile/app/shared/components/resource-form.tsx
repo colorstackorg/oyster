@@ -169,62 +169,74 @@ export function ResourceTagsField({
       required
     >
       <MultiCombobox defaultValues={defaultValue}>
-        <MultiComboboxDisplay>
-          <MultiComboboxValues name={name} />
-          <MultiComboboxSearch
-            id={name}
-            onChange={(e) => {
-              setSearch(e.currentTarget.value);
+        {({ values }) => {
+          const filteredTags = tags.filter((tag) => {
+            return values.every((value) => {
+              return value.value !== tag.id;
+            });
+          });
 
-              listFetcher.submit(
-                { search: e.currentTarget.value },
-                {
-                  action: '/api/tags/search',
-                  method: 'get',
-                }
-              );
-            }}
-          />
-        </MultiComboboxDisplay>
+          return (
+            <>
+              <MultiComboboxDisplay>
+                <MultiComboboxValues name={name} />
+                <MultiComboboxSearch
+                  id={name}
+                  onChange={(e) => {
+                    setSearch(e.currentTarget.value);
 
-        {(!!tags.length || !!search.length) && (
-          <ComboboxPopover>
-            <ul>
-              {tags.map((tag) => {
-                return (
-                  <MultiComboboxItem
-                    key={tag.id}
-                    label={tag.name}
-                    onSelect={reset}
-                    value={tag.id}
-                  >
-                    <Pill color="pink-100">{tag.name}</Pill>
-                  </MultiComboboxItem>
-                );
-              })}
-
-              {!!search.length && (
-                <MultiComboboxItem
-                  label={search}
-                  onSelect={(e) => {
-                    createFetcher.submit(
-                      { id: e.currentTarget.value, name: search },
+                    listFetcher.submit(
+                      { search: e.currentTarget.value },
                       {
-                        action: '/api/tags/add',
-                        method: 'post',
+                        action: '/api/tags/search',
+                        method: 'get',
                       }
                     );
-
-                    reset();
                   }}
-                  value={newTagId}
-                >
-                  Create <Pill color="pink-100">{search}</Pill>
-                </MultiComboboxItem>
+                />
+              </MultiComboboxDisplay>
+
+              {(!!filteredTags.length || !!search.length) && (
+                <ComboboxPopover>
+                  <ul>
+                    {filteredTags.map((tag) => {
+                      return (
+                        <MultiComboboxItem
+                          key={tag.id}
+                          label={tag.name}
+                          onSelect={reset}
+                          value={tag.id}
+                        >
+                          <Pill color="pink-100">{tag.name}</Pill>
+                        </MultiComboboxItem>
+                      );
+                    })}
+
+                    {!!search.length && (
+                      <MultiComboboxItem
+                        label={search}
+                        onSelect={(e) => {
+                          createFetcher.submit(
+                            { id: e.currentTarget.value, name: search },
+                            {
+                              action: '/api/tags/add',
+                              method: 'post',
+                            }
+                          );
+
+                          reset();
+                        }}
+                        value={newTagId}
+                      >
+                        Create <Pill color="pink-100">{search}</Pill>
+                      </MultiComboboxItem>
+                    )}
+                  </ul>
+                </ComboboxPopover>
               )}
-            </ul>
-          </ComboboxPopover>
-        )}
+            </>
+          );
+        }}
       </MultiCombobox>
     </Form.Field>
   );
