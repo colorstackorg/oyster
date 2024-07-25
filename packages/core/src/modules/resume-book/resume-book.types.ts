@@ -3,6 +3,8 @@ import { z } from 'zod';
 
 import { BooleanInput, Entity, Student } from '@oyster/types';
 
+import { FileLike } from '@/shared/utils/zod.utils';
+
 export const RESUME_BOOK_CODING_LANGUAGES = [
   'C',
   'C++',
@@ -101,7 +103,7 @@ export const SubmitResumeInput = Student.pick({
     preferredCompany2: z.string().trim().min(1),
     preferredCompany3: z.string().trim().min(1),
     preferredRoles: z.array(z.string().trim().min(1)).min(1),
-    resume: z.unknown().transform((value) => (value as File) || null),
+    resume: FileLike,
     resumeBookId: z.string().trim().min(1),
   });
 

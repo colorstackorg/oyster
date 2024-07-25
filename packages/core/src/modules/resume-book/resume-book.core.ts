@@ -499,11 +499,12 @@ export async function submitResume({
   ]);
 
   const isFirstSubmission = !submission;
+  const isResumeFile = !!resume && typeof resume !== 'string';
 
   // Upload the resume to object storage and get a presigned URL which allows
   // the resume to be accessed by Airtable, who will copy the file to their
   // own storage.
-  const resumeLink = resume
+  const resumeLink = isResumeFile
     ? await iife(async function uploadResume() {
         const attachmentKey = `resume-books/${resumeBookId}/${memberId}`;
 
@@ -639,7 +640,7 @@ export async function submitResume({
       });
 
   const googleDriveFileId = await iife(async () => {
-    if (!resume) {
+    if (!isResumeFile) {
       return '';
     }
 
