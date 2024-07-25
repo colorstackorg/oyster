@@ -5,7 +5,8 @@ import {
 } from '@remix-run/node';
 import { z } from 'zod';
 
-import { searchCountries } from '@/member-profile.server';
+import { searchCountries } from '@oyster/core/location';
+
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const CountriesSearchParams = z.object({

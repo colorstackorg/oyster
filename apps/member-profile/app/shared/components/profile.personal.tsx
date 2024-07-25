@@ -1,3 +1,4 @@
+import { type Country } from '@oyster/core/location.types';
 import { FORMATTED_GENDER, type Gender } from '@oyster/types';
 import {
   Checkbox,
@@ -7,7 +8,6 @@ import {
   Select,
 } from '@oyster/ui';
 
-import { type Country } from '@/member-profile.ui';
 import {
   CityCombobox,
   type CityComboboxProps,

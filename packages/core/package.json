@@ -20,6 +20,8 @@
     "./employment": "./src/modules/employment/index.ts",
     "./employment.server": "./src/modules/employment/index.server.ts",
     "./github": "./src/modules/github/github.ts",
+    "./location": "./src/modules/location/location.core.ts",
+    "./location.types": "./src/modules/location/location.types.ts",
     "./mixpanel": "./src/modules/mixpanel/index.ts",
     "./object-storage": "./src/modules/object-storage/index.ts",
     "./resources": "./src/modules/resource/index.ts",

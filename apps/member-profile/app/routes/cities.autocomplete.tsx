@@ -5,7 +5,8 @@ import {
 } from '@remix-run/node';
 import { z } from 'zod';
 
-import { getAutocompletedCities } from '@/member-profile.server';
+import { getAutocompletedCities } from '@oyster/core/location';
+
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const CitiesSearchParams = z.object({

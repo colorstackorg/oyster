@@ -4,7 +4,8 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 
-import { getCityDetails } from '@/member-profile.server';
+import { getCityDetails } from '@oyster/core/location';
+
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
