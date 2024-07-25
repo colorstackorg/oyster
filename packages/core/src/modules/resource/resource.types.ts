@@ -1,9 +1,9 @@
-import { NodeOnDiskFile } from '@remix-run/node';
 import { z } from 'zod';
 
 import { type ExtractValue } from '@oyster/types';
 
 import { ListSearchParams } from '@/shared/types';
+import { FileLike } from '@/shared/utils/zod.utils';
 
 // Types
 
@@ -17,20 +17,7 @@ export type ResourceType = ExtractValue<typeof ResourceType>;
 // Domain
 
 const Resource = z.object({
-  /**
-   * Attachments can either be:
-   * - A string, representing an ID of an already uploaded attachment.
-   * - A `File` object, representing a new attachment.
-   *
-   * Supporting the ability to have both types of attachments will help with
-   * editing, think keeping old attachments but adding new ones as well.
-   */
-  attachments: z.array(
-    z.union([
-      z.string().trim().min(1),
-      z.instanceof(NodeOnDiskFile).transform((value) => value as File),
-    ])
-  ),
+  attachments: z.array(FileLike),
 
   description: z
     .string()
