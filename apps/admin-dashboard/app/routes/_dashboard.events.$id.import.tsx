@@ -17,7 +17,14 @@ import { z } from 'zod';
 
 import { db } from '@oyster/db';
 import { Email, EventAttendee } from '@oyster/types';
-import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
+import {
+  Button,
+  FileUploader,
+  Form,
+  getErrors,
+  Modal,
+  validateForm,
+} from '@oyster/ui';
 import { id } from '@oyster/utils';
 
 import { getEvent, job, parseCsv } from '@/admin-dashboard.server';
@@ -181,12 +188,11 @@ function ImportEventAttendeesForm() {
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
       <Form.Field error={errors.file} labelFor={keys.file} required>
-        <input
-          accept=".csv"
+        <FileUploader
+          accept={['text/csv']}
           id={keys.file}
           name={keys.file}
           required
-          type="file"
         />
       </Form.Field>
 

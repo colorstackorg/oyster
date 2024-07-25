@@ -17,14 +17,20 @@ import {
   listCompanyReviews,
 } from '@oyster/core/employment.server';
 import { cx, Divider, getTextCn, ProfilePicture, Text } from '@oyster/ui';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipText,
+  TooltipTrigger,
+} from '@oyster/ui/tooltip';
 
 import { Card } from '@/shared/components/card';
 import { CompanyReview } from '@/shared/components/company-review';
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
   const id = params.id as string;
 
@@ -37,6 +43,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'companies.id',
         'companies.imageUrl',
         'companies.name',
+        'companies.levelsFyiSlug',
       ],
       where: { id },
     }),
@@ -63,6 +70,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'workExperiences.locationType',
         'workExperiences.startDate',
         'workExperiences.title',
+        'workExperiences.id as workExperienceId',
       ],
       where: { companyId: id },
     }),
@@ -103,6 +111,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       return {
         ...review,
         date: `${startMonth} - ${endMonth}`,
+        editable: review.reviewerId === user(session),
         reviewedAt: dayjs().to(createdAt),
       };
     }
@@ -130,9 +139,15 @@ export default function CompanyPage() {
         </div>
 
         <div>
-          <Text variant="2xl" weight="500">
-            {company.name}
-          </Text>
+          <div className="flex items-center gap-2">
+            <Text variant="2xl" weight="500">
+              {company.name}
+            </Text>
+
+            {company.levelsFyiSlug && (
+              <LevelsFyiLink slug={company.levelsFyiSlug} />
+            )}
+          </div>
 
           <DomainLink domain={company.domain} />
         </div>
@@ -166,6 +181,34 @@ function DomainLink({ domain }: Pick<CompanyInView, 'domain'>) {
   );
 }
 
+type LevelsFyiLinkProps = {
+  slug: string;
+};
+
+function LevelsFyiLink({ slug }: LevelsFyiLinkProps) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <a
+          className="mt-1"
+          href={`https://www.levels.fyi/companies/${slug}/salaries`}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <img
+            alt="Levels.fyi Logo"
+            className="h-4 w-4 cursor-pointer rounded-sm hover:opacity-90"
+            src="/images/levels-fyi.png"
+          />
+        </a>
+      </TooltipTrigger>
+      <TooltipContent>
+        <TooltipText>View Salary Information on Levels.fyi</TooltipText>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 function AverageRating({
   averageRating,
 }: Pick<CompanyInView, 'averageRating'>) {
@@ -174,7 +217,7 @@ function AverageRating({
   }
 
   return (
-    <div className="ml-auto mt-auto">
+    <div className="ml-auto">
       <Text>
         <span className="text-2xl">{averageRating}</span>/10
       </Text>
@@ -207,6 +250,7 @@ function ReviewsList() {
                   name: review.companyName || '',
                 }}
                 date={review.date}
+                editable={review.editable}
                 employmentType={review.employmentType as EmploymentType}
                 locationCity={review.locationCity}
                 locationState={review.locationState}
@@ -220,6 +264,7 @@ function ReviewsList() {
                 reviewerProfilePicture={review.reviewerProfilePicture}
                 text={review.text}
                 title={review.title || ''}
+                workExperienceId={review.workExperienceId || ''}
               />
             );
           })}

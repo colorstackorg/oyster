@@ -18,7 +18,14 @@ import {
   ScholarshipRecipient,
   type ScholarshipType,
 } from '@oyster/types';
-import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
+import {
+  Button,
+  FileUploader,
+  Form,
+  getErrors,
+  Modal,
+  validateForm,
+} from '@oyster/ui';
 import { id } from '@oyster/utils';
 
 import { parseCsv } from '@/admin-dashboard.server';
@@ -202,12 +209,11 @@ function ImportScholarshipsForm() {
         labelFor={keys.file}
         required
       >
-        <input
-          accept=".csv"
+        <FileUploader
+          accept={['text/csv']}
           id={keys.file}
           name={keys.file}
           required
-          type="file"
         />
       </Form.Field>
 

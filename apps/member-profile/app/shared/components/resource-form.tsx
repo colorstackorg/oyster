@@ -11,8 +11,10 @@ import {
   ComboboxPopover,
   type ComboboxValue,
   type FieldProps,
+  FileUploader,
   Form,
   Input,
+  MB_IN_BYTES,
   MultiCombobox,
   MultiComboboxDisplay,
   MultiComboboxItem,
@@ -51,10 +53,10 @@ export function ResourceProvider({
 }
 
 export function ResourceAttachmentField({
-  defaultValue: _,
+  defaultValue,
   error,
   name,
-}: FieldProps<ResourceType>) {
+}: FieldProps<{ id: string; mimeType: string }>) {
   const { type } = useContext(ResourceFormContext);
 
   if (type !== 'file') {
@@ -63,18 +65,26 @@ export function ResourceAttachmentField({
 
   return (
     <Form.Field
-      description="Must be less than 20 MB and one of the following file types: PNG, JPG, or PDF."
+      description="Please choose the file you want to upload."
       error={error}
       label="Attachment"
       labelFor={name}
       required
     >
-      <input
-        accept="image/png, image/jpeg, .pdf"
+      <FileUploader
+        accept={['application/pdf', 'image/jpeg', 'image/png']}
         id={name}
+        maxFileSize={MB_IN_BYTES * 20}
         name={name}
         required
-        type="file"
+        {...(defaultValue && {
+          initialFile: {
+            id: defaultValue.id,
+            name: defaultValue.id,
+            size: 0,
+            type: defaultValue.mimeType,
+          },
+        })}
       />
     </Form.Field>
   );

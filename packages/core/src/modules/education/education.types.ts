@@ -88,6 +88,14 @@ export const CreateSchoolInput = School.pick({
   name: true,
 });
 
+export const UpdateSchoolInput = School.pick({
+  addressCity: true,
+  addressState: true,
+  addressZip: true,
+  id: true,
+  name: true,
+});
+
 // Types
 
 export type AddEducationInput = z.infer<typeof AddEducationInput>;
@@ -96,3 +104,4 @@ export type DegreeType = ExtractValue<typeof DegreeType>;
 export type Education = z.infer<typeof Education>;
 export type EducationLevel = ExtractValue<typeof EducationLevel>;
 export type School = z.infer<typeof School>;
+export type UpdateSchoolInput = z.infer<typeof UpdateSchoolInput>;

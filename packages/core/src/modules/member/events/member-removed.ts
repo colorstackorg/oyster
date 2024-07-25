@@ -1,14 +1,21 @@
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
+import {
+  AIRTABLE_FAMILY_BASE_ID,
+  AIRTABLE_MEMBERS_TABLE_ID,
+} from '@/modules/airtable/airtable.core';
 
 export async function onMemberRemoved({
   airtableId,
   email,
+  firstName,
   sendViolationEmail,
   slackId,
 }: GetBullJobData<'student.removed'>) {
   job('airtable.record.delete', {
-    airtableId,
+    airtableBaseId: AIRTABLE_FAMILY_BASE_ID!,
+    airtableRecordId: airtableId,
+    airtableTableId: AIRTABLE_MEMBERS_TABLE_ID!,
   });
 
   job('email_marketing.remove', {
@@ -30,7 +37,7 @@ export async function onMemberRemoved({
     job('notification.email.send', {
       to: email,
       name: 'student-removed',
-      data: {},
+      data: { firstName },
     });
   }
 }

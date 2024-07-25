@@ -1,4 +1,18 @@
-import { type z, type ZodError } from 'zod';
+import { z, type ZodError } from 'zod';
+
+export const FileLike = z.union([
+  z.string().trim().min(1),
+  z.custom((value) => {
+    return (
+      !!value &&
+      typeof value === 'object' &&
+      'arrayBuffer' in value &&
+      'name' in value &&
+      'size' in value &&
+      'type' in value
+    );
+  }),
+]);
 
 /**
  * Returns the error message that lives within the `error`. Note that even if

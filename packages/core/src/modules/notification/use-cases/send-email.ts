@@ -8,12 +8,13 @@ import {
   type EmailTemplate,
   OneTimeCodeSentEmail,
   PrimaryEmailChangedEmail,
+  ResumeSubmittedEmail,
   StudentActivatedEmail,
   StudentAttendedOnboardingEmail,
   StudentRemovedEmail,
 } from '@oyster/email-templates';
-import { getObject } from '@oyster/infrastructure/object-storage';
 
+import { getObject } from '@/modules/object-storage';
 import { ENVIRONMENT } from '@/shared/env';
 import {
   getNodemailerTransporter,
@@ -67,6 +68,7 @@ async function sendEmailWithPostmark(input: EmailTemplate) {
     .with('application-rejected', () => FROM_NOTIFICATIONS)
     .with('one-time-code-sent', () => FROM_NOTIFICATIONS)
     .with('primary-email-changed', () => FROM_NOTIFICATIONS)
+    .with('resume-submitted', () => FROM_NOTIFICATIONS)
     .with('student-activated', () => FROM_NOTIFICATIONS)
     .with('student-attended-onboarding', () => FROM_NOTIFICATIONS)
     .with('student-removed', () => FROM_NOTIFICATIONS)
@@ -134,6 +136,9 @@ function getHtml(input: EmailTemplate): string {
     .with({ name: 'primary-email-changed' }, ({ data }) => {
       return PrimaryEmailChangedEmail(data);
     })
+    .with({ name: 'resume-submitted' }, ({ data }) => {
+      return ResumeSubmittedEmail(data);
+    })
     .with({ name: 'student-activated' }, ({ data }) => {
       return StudentActivatedEmail(data);
     })
@@ -166,6 +171,9 @@ function getSubject(input: EmailTemplate): string {
     })
     .with({ name: 'primary-email-changed' }, () => {
       return 'Your Primary Email Was Changed';
+    })
+    .with({ name: 'resume-submitted' }, ({ data }) => {
+      return `Confirmation: ${data.resumeBookName} Resume Book! ✅`;
     })
     .with({ name: 'student-activated' }, () => {
       return 'Swag Pack 😜';
@@ -202,6 +210,7 @@ async function getAttachments(
       { name: 'application-rejected' },
       { name: 'one-time-code-sent' },
       { name: 'primary-email-changed' },
+      { name: 'resume-submitted' },
       { name: 'student-activated' },
       { name: 'student-removed' },
       () => {

@@ -1,7 +1,11 @@
 import {
   type ActionFunctionArgs,
+  unstable_composeUploadHandlers as composeUploadHandlers,
+  unstable_createFileUploadHandler as createFileUploadHandler,
+  unstable_createMemoryUploadHandler as createMemoryUploadHandler,
   json,
   type LoaderFunctionArgs,
+  unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
 import {
@@ -23,6 +27,7 @@ import {
 } from '@oyster/ui';
 
 import {
+  ResourceAttachmentField,
   ResourceDescriptionField,
   ResourceLinkField,
   ResourceProvider,
@@ -66,13 +71,27 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(request, UpdateResourceInput);
+  const uploadHandler = composeUploadHandlers(
+    createFileUploadHandler({ maxPartSize: 1_000_000 * 20 }),
+    createMemoryUploadHandler()
+  );
+
+  const form = await parseMultipartFormData(request, uploadHandler);
+
+  const { data, errors, ok } = await validateForm(
+    {
+      ...Object.fromEntries(form),
+      attachments: form.getAll('attachments'),
+    },
+    UpdateResourceInput
+  );
 
   if (!ok) {
     return json({ errors }, { status: 400 });
   }
 
   await updateResource(params.id as string, {
+    attachments: data.attachments,
     description: data.description,
     link: data.link,
     tags: data.tags,
@@ -112,7 +131,7 @@ export default function EditResourceModal() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <RemixForm className="form" method="post" encType="multipart/form-data">
         <ResourceProvider type={resource.type}>
           <ResourceTitleField
             defaultValue={resource.title || undefined}
@@ -135,17 +154,18 @@ export default function EditResourceModal() {
             name={keys.tags}
           />
 
-          {resource.link && (
-            <>
-              <Divider />
+          <Divider />
 
-              <ResourceLinkField
-                defaultValue={resource.link || undefined}
-                error={errors.link}
-                name={keys.link}
-              />
-            </>
-          )}
+          <ResourceLinkField
+            defaultValue={resource.link || undefined}
+            error={errors.link}
+            name={keys.link}
+          />
+          <ResourceAttachmentField
+            defaultValue={resource.attachments?.[0]}
+            error={errors.attachments}
+            name={keys.attachments}
+          />
         </ResourceProvider>
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>

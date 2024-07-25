@@ -165,7 +165,7 @@ function SchoolsTable() {
     {
       displayName: '# of Students',
       render: (school) => school.students,
-      size: null,
+      size: '120',
     },
   ];
 
