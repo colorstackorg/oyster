@@ -1,8 +1,9 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { defer, type LoaderFunctionArgs } from '@remix-run/node';
+import { Await, useLoaderData } from '@remix-run/react';
+import { Suspense } from 'react';
 
 import { getOysterContributorStats } from '@oyster/core/github';
-import { Modal, Text } from '@oyster/ui';
+import { Modal, Spinner, Text } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
@@ -10,19 +11,15 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const stats = await getOysterContributorStats();
+  const statsPromise = getOysterContributorStats();
 
-  return json(stats);
+  return defer({
+    statsPromise,
+  });
 }
 
 export default function OysterContributorsModal() {
-  const {
-    totalContributors,
-    uniqueContributorsChore,
-    uniqueContributorsDocs,
-    uniqueContributorsFeature,
-    uniqueContributorsFix,
-  } = useLoaderData<typeof loader>();
+  const { statsPromise } = useLoaderData<typeof loader>();
 
   return (
     <Modal onCloseTo={Route['/']}>
@@ -31,13 +28,39 @@ export default function OysterContributorsModal() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <div className="flex flex-col gap-2">
-        <Text>Unique Contributors (Chore): {uniqueContributorsChore}</Text>
-        <Text>Unique Contributors (Docs): {uniqueContributorsDocs}</Text>
-        <Text>Unique Contributors (Feature): {uniqueContributorsFeature}</Text>
-        <Text>Unique Contributors (Fix): {uniqueContributorsFix}</Text>
-        <Text>Total Contributors: {totalContributors}</Text>
-      </div>
+      <Suspense fallback={<LoadingState />}>
+        <Await resolve={statsPromise}>
+          {({
+            totalContributors: total,
+            uniqueContributorsChore: chore,
+            uniqueContributorsDocs: docs,
+            uniqueContributorsFeature: feature,
+            uniqueContributorsFix: fix,
+          }) => {
+            return (
+              <div className="flex flex-col gap-2">
+                <Text>Unique Contributors (Chore): {chore}</Text>
+                <Text>Unique Contributors (Docs): {docs}</Text>
+                <Text>Unique Contributors (Feature): {feature}</Text>
+                <Text>Unique Contributors (Fix): {fix}</Text>
+                <Text>Total Contributors: {total}</Text>
+              </div>
+            );
+          }}
+        </Await>
+      </Suspense>
     </Modal>
+  );
+}
+
+function LoadingState() {
+  return (
+    <div className="flex items-center gap-2">
+      <Spinner />
+
+      <Text color="gray-500" variant="sm">
+        Querying the GitHub API...
+      </Text>
+    </div>
   );
 }
