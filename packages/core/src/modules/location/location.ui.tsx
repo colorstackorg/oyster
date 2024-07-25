@@ -6,12 +6,27 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxPopover,
-  type ComboboxProps,
-  type InputProps,
   useDelayedValue,
 } from '@oyster/ui';
 
 import { type Nullable } from '@/shared/types';
+
+export type CityComboboxProps = {
+  defaultLatitude?: number | string;
+  defaultLongitude?: number | string;
+  defaultValue?: string;
+  latitudeName: string;
+  longitudeName: string;
+  name: string;
+  required?: boolean;
+};
+
+type AutocompleteResult = Nullable<
+  Array<{
+    description: string;
+    id: string;
+  }>
+>;
 
 type CityDetailsResult = Nullable<{
   id: string;
@@ -20,26 +35,10 @@ type CityDetailsResult = Nullable<{
   name: string;
 }>;
 
-type SearchCitiesResult = Nullable<
-  Array<{
-    description: string;
-    id: string;
-  }>
->;
-
-export type CityComboboxProps = Pick<ComboboxProps, 'defaultValue'> &
-  Pick<InputProps, 'required'> & {
-    defaultLatitude?: number | string;
-    defaultLongitude?: number | string;
-    latitudeName: string;
-    longitudeName: string;
-    name: string;
-  };
-
 export function CityCombobox({
-  defaultValue = '',
   defaultLatitude = '',
   defaultLongitude = '',
+  defaultValue = '',
   latitudeName,
   longitudeName,
   name,
@@ -49,7 +48,7 @@ export function CityCombobox({
 
   const delayedSearch = useDelayedValue(search, 250);
 
-  const autocompleteFetcher = useFetcher<SearchCitiesResult>();
+  const autocompleteFetcher = useFetcher<AutocompleteResult>();
   const detailsFetcher = useFetcher<CityDetailsResult>();
 
   useEffect(() => {
