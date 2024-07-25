@@ -53,7 +53,7 @@ export function CityCombobox({
     autocompleteFetcher.submit(
       { search: delayedSearch },
       {
-        action: '/cities/autocomplete',
+        action: '/api/cities/autocomplete',
         method: 'get',
       }
     );
@@ -80,7 +80,7 @@ export function CityCombobox({
                 <ComboboxItem
                   key={city.id}
                   onSelect={(_) => {
-                    detailsFetcher.load(`/cities/${city.id}`);
+                    detailsFetcher.load(`/api/cities/${city.id}`);
                   }}
                   value={city.description}
                 >
