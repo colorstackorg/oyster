@@ -152,7 +152,7 @@ function ApplicationsTable() {
           </Link>
         );
       },
-      size: '280',
+      size: '240',
     },
     {
       displayName: 'Email',
