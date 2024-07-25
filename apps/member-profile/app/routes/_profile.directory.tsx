@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { Filter, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 
+import { CityCombobox } from '@oyster/core/location.ui';
 import { db } from '@oyster/db';
 import { type ExtractValue } from '@oyster/types';
 import {
@@ -36,7 +37,6 @@ import {
   ListSearchParams,
   SchoolCombobox,
 } from '@/member-profile.ui';
-import { CityCombobox } from '@/shared/components/city-combobox';
 import { CompanyCombobox } from '@/shared/components/company-combobox';
 import { EthnicityCombobox } from '@/shared/components/ethnicity-combobox';
 import { Route } from '@/shared/constants';

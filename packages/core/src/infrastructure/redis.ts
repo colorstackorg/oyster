@@ -38,6 +38,8 @@ export type RedisKey = ExtractValue<typeof RedisKey>;
  *
  * @param key - Key to store the data in Redis.
  * @param schema - Zod schema to validate any cached data.
+ *
+ * @deprecated Use `withCache` instead.
  */
 export function cache<T>(key: string, schema: z.ZodType<T>) {
   async function get() {
@@ -70,4 +72,39 @@ export function cache<T>(key: string, schema: z.ZodType<T>) {
     get,
     set,
   };
+}
+
+/**
+ * Returns the cached data if it exists and is valid. Otherwise, it will call
+ * the provided function and store the result in Redis. The cache will expire
+ * after the provided time.
+ *
+ * @param key - Key to store the data in Redis.
+ * @param expires - Time in seconds for the cache to expire.
+ * @param fn - Function to call if the cache is empty.
+ */
+export async function withCache<T>(
+  key: string,
+  expires: number | null,
+  fn: () => T | Promise<T>
+): Promise<T> {
+  const data = await redis.get(key);
+
+  if (data) {
+    return JSON.parse(data);
+  }
+
+  const result = await fn();
+
+  if (!result) {
+    return result;
+  }
+
+  if (expires) {
+    await redis.set(key, JSON.stringify(result), 'EX', expires);
+  } else {
+    await redis.set(key, JSON.stringify(result));
+  }
+
+  return result;
 }
