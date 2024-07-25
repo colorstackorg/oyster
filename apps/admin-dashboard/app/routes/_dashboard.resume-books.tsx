@@ -3,16 +3,17 @@ import {
   type LoaderFunctionArgs,
   type SerializeFrom,
 } from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
+import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { Clipboard, ExternalLink, Menu, Plus } from 'react-feather';
+import { Clipboard, Edit, ExternalLink, Menu, Plus } from 'react-feather';
 
 import { listResumeBooks } from '@oyster/core/resume-books';
 import {
   Dashboard,
   Dropdown,
   IconButton,
+  Pill,
   Table,
   type TableColumnProps,
 } from '@oyster/ui';
@@ -28,16 +29,42 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const timezone = getTimezone(request);
 
-  const _resumeBooks = await listResumeBooks();
+  const _resumeBooks = await listResumeBooks({
+    select: [
+      'airtableBaseId',
+      'airtableTableId',
+      'endDate',
+      'googleDriveFolderId',
+      'hidden',
+      'id',
+      'name',
+      'startDate',
+      (eb) => {
+        return eb
+          .selectFrom('resumeBookSubmissions')
+          .select((eb) => eb.fn.countAll().as('submissions'))
+          .whereRef('resumeBooks.id', '=', 'resumeBookSubmissions.resumeBookId')
+          .as('submissions');
+      },
+    ],
+  });
 
   const resumeBooks = _resumeBooks.map(
-    ({ airtableBaseId, airtableTableId, endDate, startDate, ...record }) => {
+    ({
+      airtableBaseId,
+      airtableTableId,
+      endDate,
+      googleDriveFolderId,
+      startDate,
+      ...record
+    }) => {
       const format = 'MM/DD/YY @ h:mm A (z)';
 
       return {
         ...record,
         airtableUri: `https://airtable.com/${airtableBaseId}/${airtableTableId}`,
         endDate: dayjs(endDate).tz(timezone).format(format),
+        googleDriveUri: `https://drive.google.com/drive/folders/${googleDriveFolderId}`,
         resumeBookUri: `${ENV.MEMBER_PROFILE_URL}/resume-books/${record.id}`,
         startDate: dayjs(startDate).tz(timezone).format(format),
       };
@@ -126,6 +153,17 @@ function ResumeBooksTable() {
       size: '240',
       render: (resumeBook) => resumeBook.endDate,
     },
+    {
+      displayName: 'Visibility',
+      size: '160',
+      render: (resumeBook) => {
+        return resumeBook.hidden ? (
+          <Pill color="amber-100">Hidden</Pill>
+        ) : (
+          <Pill color="orange-100">Visible</Pill>
+        );
+      },
+    },
   ];
 
   return (
@@ -138,7 +176,12 @@ function ResumeBooksTable() {
   );
 }
 
-function ResumeBookDropdown({ airtableUri, resumeBookUri }: ResumeBookInView) {
+function ResumeBookDropdown({
+  airtableUri,
+  googleDriveUri,
+  id,
+  resumeBookUri,
+}: ResumeBookInView) {
   const [open, setOpen] = useState<boolean>(false);
   const toast = useToast();
 
@@ -156,6 +199,12 @@ function ResumeBookDropdown({ airtableUri, resumeBookUri }: ResumeBookInView) {
         <Table.Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
+              <Link to={generatePath(Route['/resume-books/:id/edit'], { id })}>
+                <Edit /> Edit Resume Book
+              </Link>
+            </Dropdown.Item>
+
+            <Dropdown.Item>
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(resumeBookUri);
@@ -164,12 +213,19 @@ function ResumeBookDropdown({ airtableUri, resumeBookUri }: ResumeBookInView) {
                 }}
                 type="button"
               >
-                <Clipboard /> Copy Resume Book Link
+                <Clipboard /> Copy Resume Book URL
               </button>
             </Dropdown.Item>
+
             <Dropdown.Item>
               <Link to={airtableUri} target="_blank">
                 <ExternalLink /> Go to Airtable
+              </Link>
+            </Dropdown.Item>
+
+            <Dropdown.Item>
+              <Link to={googleDriveUri} target="_blank">
+                <ExternalLink /> Go to Google Drive
               </Link>
             </Dropdown.Item>
           </Dropdown.List>

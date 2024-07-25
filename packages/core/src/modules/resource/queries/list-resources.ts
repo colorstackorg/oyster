@@ -1,5 +1,4 @@
 import { type SelectExpression, sql } from 'kysely';
-import { jsonBuildObject } from 'kysely/helpers/postgres';
 
 import { db, type DB } from '@oyster/db';
 
@@ -7,7 +6,10 @@ import {
   type ListResourcesOrderBy,
   type ListResourcesWhere,
 } from '@/modules/resource/resource.types';
-import { buildTagsField } from '@/modules/resource/shared';
+import {
+  buildAttachmentsField,
+  buildTagsField,
+} from '@/modules/resource/shared';
 import { type ListSearchParams } from '@/shared/types';
 
 type ListResourcesOptions<Selection> = {
@@ -84,29 +86,8 @@ export async function listResources<
     .leftJoin('students', 'students.id', 'resources.postedBy')
     .select([
       ...select,
+      buildAttachmentsField,
       buildTagsField,
-
-      // The "attachments" field is a JSON array of objects, each containing
-      // the "mimeType" and "objectKey" of an attachment associated with the
-      // resource.
-      (eb) => {
-        return eb
-          .selectFrom('resourceAttachments')
-          .whereRef('resourceAttachments.resourceId', '=', 'resources.id')
-          .select(({ fn, ref }) => {
-            const object = jsonBuildObject({
-              mimeType: ref('resourceAttachments.mimeType'),
-              objectKey: ref('resourceAttachments.objectKey'),
-            });
-
-            return fn
-              .jsonAgg(sql`${object} order by ${ref('createdAt')} asc`)
-              .filterWhere('objectKey', 'is not', null)
-              .$castTo<{ mimeType: string; objectKey: string }[]>()
-              .as('attachments');
-          })
-          .as('attachments');
-      },
 
       // The "upvoted" field is a boolean indicating whether the current
       // member has upvoted the resource or not.

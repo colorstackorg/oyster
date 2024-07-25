@@ -7,7 +7,8 @@
   "scripts": {
     "env:setup": "tsx ./src/setup-env.ts",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "prisma:setup": "tsx ./src/setup-prisma.ts"
   },
   "devDependencies": {
     "@oyster/eslint-config": "*",

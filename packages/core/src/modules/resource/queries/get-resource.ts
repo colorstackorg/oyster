@@ -2,7 +2,10 @@ import { type SelectExpression } from 'kysely';
 
 import { db, type DB } from '@oyster/db';
 
-import { buildTagsField } from '@/modules/resource/shared';
+import {
+  buildAttachmentsField,
+  buildTagsField,
+} from '@/modules/resource/shared';
 
 type GetResourceOptions<Selection> = {
   select: Selection[];
@@ -14,7 +17,7 @@ export async function getResource<
 >({ select, where }: GetResourceOptions<Selection>) {
   const resource = await db
     .selectFrom('resources')
-    .select([...select, buildTagsField])
+    .select([...select, buildAttachmentsField, buildTagsField])
     .where('resources.id', '=', where.id)
     .executeTakeFirst();
 

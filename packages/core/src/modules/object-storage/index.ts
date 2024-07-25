@@ -1,4 +1,5 @@
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -13,6 +14,32 @@ const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || '';
 const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || '';
 
 // Queries + Use Cases
+
+// "Delete Object"
+
+type DeleteObjectInput = {
+  bucket?: string;
+  key: string;
+};
+
+type DeleteObjectResult = void;
+
+/**
+ * Deletes the object stored in the specified bucket. If no bucket is specified,
+ * the default bucket is used.
+ *
+ * @param input - Specifies the object to delete.
+ */
+export async function deleteObject(
+  input: DeleteObjectInput
+): Promise<DeleteObjectResult> {
+  const command = new DeleteObjectCommand({
+    Bucket: input.bucket || R2_BUCKET_NAME,
+    Key: input.key,
+  });
+
+  await getClient().send(command);
+}
 
 // "Get Object"
 
