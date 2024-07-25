@@ -65,7 +65,8 @@ export async function getAutocompletedCities(search: string) {
     if (!response.ok) {
       const _ = new ColorStackError()
         .withMessage('Failed to get autocompleted cities from Google.')
-        .withContext({ response: json, status: response.status });
+        .withContext({ response: json, status: response.status })
+        .report();
 
       return null;
     }
@@ -146,7 +147,8 @@ export async function getCityDetails(id: string) {
     if (!response.ok) {
       const _ = new ColorStackError()
         .withMessage('Failed to get city details from Google.')
-        .withContext({ response: json, status: response.status });
+        .withContext({ response: json, status: response.status })
+        .report();
 
       return null;
     }
@@ -156,7 +158,8 @@ export async function getCityDetails(id: string) {
     if (!result.success) {
       const _ = new ColorStackError()
         .withMessage('Failed to validate city details from Google.')
-        .withContext({ error: result.error, response: json });
+        .withContext({ error: result.error, response: json })
+        .report();
 
       return null;
     }
