@@ -5,7 +5,7 @@ import {
 } from '@remix-run/node';
 import { z } from 'zod';
 
-import { searchCountries } from '@oyster/core/location';
+import { listCountries } from '@oyster/core/location';
 
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -24,7 +24,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     Object.fromEntries(url.searchParams)
   );
 
-  const countries = await searchCountries({
+  const countries = await listCountries({
     select: [
       'countries.code',
       'countries.demonym',

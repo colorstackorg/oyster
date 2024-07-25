@@ -3,35 +3,23 @@ import { z } from 'zod';
 
 import { type DB, db } from '@oyster/db';
 
-import { ErrorWithContext } from '@/shared/errors';
+import { ColorStackError } from '@/shared/errors';
 
-// Constants
+// Environment Variables
 
-export const GOOGLE_PLACES_API_URL =
-  'https://maps.googleapis.com/maps/api/place';
-
-// Errors
-
-export class GooglePlacesError extends ErrorWithContext {}
-
-const GOOGLE_MAPS_API_KEY_MISSING_MESSAGE =
-  '"GOOGLE_MAPS_API_KEY" is not set, so Google Maps API is disabled.';
-
-export class GoogleKeyMissingError extends ErrorWithContext {
-  constructor() {
-    super(GOOGLE_MAPS_API_KEY_MISSING_MESSAGE);
-  }
-}
+const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY as string;
 
 // Google API
 
+// "Get Autocompleted Cities"
+
+const GooglePrediction = z.object({
+  description: z.string().trim().min(1),
+  place_id: z.string().trim().min(1),
+});
+
 const GoogleAutocompleteData = z.object({
-  predictions: z
-    .object({
-      description: z.string().trim().min(1),
-      place_id: z.string().trim().min(1),
-    })
-    .array(),
+  predictions: z.array(GooglePrediction),
 });
 
 /**
@@ -40,41 +28,49 @@ const GoogleAutocompleteData = z.object({
  * Uses the Google Maps Places API under the hood, so it is required to have the
  * `GOOGLE_MAPS_API_KEY` environment variable set.
  *
- * @see https://developers.google.com/maps/documentation/places/web-service/autocomplete
- *
  * @param search - The search term to use for autocompletion.
+ *
+ * @see https://developers.google.com/maps/documentation/places/web-service/autocomplete
  */
 export async function getAutocompletedCities(search: string) {
-  const url = new URL(GOOGLE_PLACES_API_URL + '/autocomplete/json');
-
-  const key = getGoogleMapsKey();
-
-  if (!key) {
+  if (!GOOGLE_MAPS_API_KEY) {
     return [];
   }
 
-  url.searchParams.set('key', key);
-  url.searchParams.set('input', search);
-  url.searchParams.set(
-    'types',
-    ['locality', 'administrative_area_level_3', 'neighborhood'].join('|')
+  const uri = new URL(
+    'https://maps.googleapis.com/maps/api/place/autocomplete/json'
   );
 
-  const response = await fetch(url);
-  const data = await response.json();
+  const searchParams = new URLSearchParams({
+    key: GOOGLE_MAPS_API_KEY,
+    input: search,
+    types: ['locality', 'administrative_area_level_3', 'neighborhood'].join(
+      '|'
+    ),
+  });
+
+  uri.search = searchParams.toString();
+
+  const response = await fetch(uri);
+  const json = await response.json();
 
   if (!response.ok) {
-    throw new GooglePlacesError(
-      'Failed to get autocompleted cities from Google.'
-    ).withContext(data);
+    const _ = new ColorStackError()
+      .withMessage('Failed to get autocompleted cities from Google.')
+      .withContext({ response: json, status: response.status });
+
+    return [];
   }
 
-  const result = GoogleAutocompleteData.safeParse(data);
+  const result = GoogleAutocompleteData.safeParse(json);
 
   if (!result.success) {
-    throw new GooglePlacesError(
-      'Failed to validate autocompleted cities from Google.'
-    ).withContext(data);
+    const _ = new ColorStackError()
+      .withMessage('Failed to validate autocompleted cities from Google.')
+      .withContext({ error: result.error, response: json })
+      .report();
+
+    return [];
   }
 
   const cities = result.data.predictions.map((prediction) => {
@@ -86,6 +82,8 @@ export async function getAutocompletedCities(search: string) {
 
   return cities;
 }
+
+// "Get City Details"
 
 const GooglePlaceDetailsResponse = z.object({
   result: z.object({
@@ -105,65 +103,68 @@ const GooglePlaceDetailsResponse = z.object({
  * Uses the Google Maps Places API under the hood, so it is required to have the
  * `GOOGLE_MAPS_API_KEY` environment variable set.
  *
- * @see https://developers.google.com/maps/documentation/places/web-service/details
- *
  * @param id - The ID of the "Google Place".
+ *
+ * @see https://developers.google.com/maps/documentation/places/web-service/details
  */
 export async function getCityDetails(id: string) {
-  const url = new URL(GOOGLE_PLACES_API_URL + '/details/json');
-
-  const key = getGoogleMapsKey();
-
-  if (!key) {
-    throw new GoogleKeyMissingError();
+  if (!GOOGLE_MAPS_API_KEY) {
+    return null;
   }
 
-  url.searchParams.set('key', key);
-  url.searchParams.set('fields', 'geometry,name');
-  url.searchParams.set('place_id', id);
+  const uri = new URL(
+    'https://maps.googleapis.com/maps/api/place/details/json'
+  );
 
-  const response = await fetch(url);
-  const data = await response.json();
+  const searchParams = new URLSearchParams({
+    key: GOOGLE_MAPS_API_KEY,
+    fields: ['geometry', 'name'].join(','),
+    place_id: id,
+  });
+
+  uri.search = searchParams.toString();
+
+  const response = await fetch(uri);
+  const json = await response.json();
 
   if (!response.ok) {
-    throw new GooglePlacesError(
-      'Failed to get city details from Google.'
-    ).withContext(data);
+    const _ = new ColorStackError()
+      .withMessage('Failed to get city details from Google.')
+      .withContext({ response: json, status: response.status });
+
+    return null;
   }
 
-  const result = GooglePlaceDetailsResponse.safeParse(data);
+  const result = GooglePlaceDetailsResponse.safeParse(json);
 
   if (!result.success) {
-    throw new GooglePlacesError(
-      'Failed to validate city details from Google.'
-    ).withContext(data);
+    const _ = new ColorStackError()
+      .withMessage('Failed to validate city details from Google.')
+      .withContext({ error: result.error, response: json });
+
+    return null;
   }
 
   const { geometry, name } = result.data.result;
 
-  const details = {
+  return {
     id,
     latitude: geometry.location.lat,
     longitude: geometry.location.lng,
     name,
   };
-
-  return details;
 }
 
 // DB Queries
 
-type SearchCountriesOptions<Selection> = {
+type ListCountriesOptions<Selection> = {
   select: Selection[];
-  where: {
-    search: string;
-  };
+  where: { search: string };
 };
 
-export async function searchCountries<
+export async function listCountries<
   Selection extends SelectExpression<DB, 'countries'>,
->(options: SearchCountriesOptions<Selection>) {
-  const { select, where } = options;
+>({ select, where }: ListCountriesOptions<Selection>) {
   const { search } = where;
 
   const countries = await db
@@ -186,18 +187,4 @@ export async function searchCountries<
     .execute();
 
   return countries;
-}
-
-// Helpers
-
-export function getGoogleMapsKey() {
-  const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
-
-  if (!GOOGLE_MAPS_API_KEY) {
-    console.warn(GOOGLE_MAPS_API_KEY_MISSING_MESSAGE);
-
-    return null;
-  }
-
-  return GOOGLE_MAPS_API_KEY;
 }

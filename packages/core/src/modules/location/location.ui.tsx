@@ -17,7 +17,7 @@ type CityDetailsResult = {
     latitude: number;
     longitude: number;
     name: string;
-  };
+  } | null;
 };
 
 type SearchCitiesResult = {
