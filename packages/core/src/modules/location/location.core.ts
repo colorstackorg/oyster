@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { type DB, db } from '@oyster/db';
 
+import { withCache } from '@/infrastructure/redis';
 import { ColorStackError } from '@/shared/errors';
 
 // Environment Variables
@@ -33,54 +34,68 @@ const GoogleAutocompleteData = z.object({
  * @see https://developers.google.com/maps/documentation/places/web-service/autocomplete
  */
 export async function getAutocompletedCities(search: string) {
-  if (!GOOGLE_MAPS_API_KEY) {
-    return [];
+  search = search.trim().toLowerCase();
+
+  async function fn() {
+    if (!GOOGLE_MAPS_API_KEY) {
+      return null;
+    }
+
+    if (!search) {
+      return [];
+    }
+
+    const uri = new URL(
+      'https://maps.googleapis.com/maps/api/place/autocomplete/json'
+    );
+
+    const searchParams = new URLSearchParams({
+      key: GOOGLE_MAPS_API_KEY,
+      input: search,
+      types: ['locality', 'administrative_area_level_3', 'neighborhood'].join(
+        '|'
+      ),
+    });
+
+    uri.search = searchParams.toString();
+
+    const response = await fetch(uri);
+    const json = await response.json();
+
+    if (!response.ok) {
+      const _ = new ColorStackError()
+        .withMessage('Failed to get autocompleted cities from Google.')
+        .withContext({ response: json, status: response.status });
+
+      return null;
+    }
+
+    const result = GoogleAutocompleteData.safeParse(json);
+
+    if (!result.success) {
+      const _ = new ColorStackError()
+        .withMessage('Failed to validate autocompleted cities from Google.')
+        .withContext({ error: result.error, response: json })
+        .report();
+
+      return null;
+    }
+
+    const cities = result.data.predictions.map((prediction) => {
+      return {
+        description: prediction.description,
+        id: prediction.place_id,
+      };
+    });
+
+    return cities;
   }
 
-  const uri = new URL(
-    'https://maps.googleapis.com/maps/api/place/autocomplete/json'
+  return withCache(
+    `google:places:autocomplete:${search}`,
+    60 * 60 * 24 * 30,
+    fn
   );
-
-  const searchParams = new URLSearchParams({
-    key: GOOGLE_MAPS_API_KEY,
-    input: search,
-    types: ['locality', 'administrative_area_level_3', 'neighborhood'].join(
-      '|'
-    ),
-  });
-
-  uri.search = searchParams.toString();
-
-  const response = await fetch(uri);
-  const json = await response.json();
-
-  if (!response.ok) {
-    const _ = new ColorStackError()
-      .withMessage('Failed to get autocompleted cities from Google.')
-      .withContext({ response: json, status: response.status });
-
-    return [];
-  }
-
-  const result = GoogleAutocompleteData.safeParse(json);
-
-  if (!result.success) {
-    const _ = new ColorStackError()
-      .withMessage('Failed to validate autocompleted cities from Google.')
-      .withContext({ error: result.error, response: json })
-      .report();
-
-    return [];
-  }
-
-  const cities = result.data.predictions.map((prediction) => {
-    return {
-      description: prediction.description,
-      id: prediction.place_id,
-    };
-  });
-
-  return cities;
 }
 
 // "Get City Details"
@@ -108,51 +123,55 @@ const GooglePlaceDetailsResponse = z.object({
  * @see https://developers.google.com/maps/documentation/places/web-service/details
  */
 export async function getCityDetails(id: string) {
-  if (!GOOGLE_MAPS_API_KEY) {
-    return null;
+  async function fn() {
+    if (!GOOGLE_MAPS_API_KEY) {
+      return null;
+    }
+
+    const uri = new URL(
+      'https://maps.googleapis.com/maps/api/place/details/json'
+    );
+
+    const searchParams = new URLSearchParams({
+      key: GOOGLE_MAPS_API_KEY,
+      fields: ['geometry', 'name'].join(','),
+      place_id: id,
+    });
+
+    uri.search = searchParams.toString();
+
+    const response = await fetch(uri);
+    const json = await response.json();
+
+    if (!response.ok) {
+      const _ = new ColorStackError()
+        .withMessage('Failed to get city details from Google.')
+        .withContext({ response: json, status: response.status });
+
+      return null;
+    }
+
+    const result = GooglePlaceDetailsResponse.safeParse(json);
+
+    if (!result.success) {
+      const _ = new ColorStackError()
+        .withMessage('Failed to validate city details from Google.')
+        .withContext({ error: result.error, response: json });
+
+      return null;
+    }
+
+    const { geometry, name } = result.data.result;
+
+    return {
+      id,
+      latitude: geometry.location.lat,
+      longitude: geometry.location.lng,
+      name,
+    };
   }
 
-  const uri = new URL(
-    'https://maps.googleapis.com/maps/api/place/details/json'
-  );
-
-  const searchParams = new URLSearchParams({
-    key: GOOGLE_MAPS_API_KEY,
-    fields: ['geometry', 'name'].join(','),
-    place_id: id,
-  });
-
-  uri.search = searchParams.toString();
-
-  const response = await fetch(uri);
-  const json = await response.json();
-
-  if (!response.ok) {
-    const _ = new ColorStackError()
-      .withMessage('Failed to get city details from Google.')
-      .withContext({ response: json, status: response.status });
-
-    return null;
-  }
-
-  const result = GooglePlaceDetailsResponse.safeParse(json);
-
-  if (!result.success) {
-    const _ = new ColorStackError()
-      .withMessage('Failed to validate city details from Google.')
-      .withContext({ error: result.error, response: json });
-
-    return null;
-  }
-
-  const { geometry, name } = result.data.result;
-
-  return {
-    id,
-    latitude: geometry.location.lat,
-    longitude: geometry.location.lng,
-    name,
-  };
+  return withCache(`google:places:details:${id}`, 60 * 60 * 24 * 30, fn);
 }
 
 // DB Queries

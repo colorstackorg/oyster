@@ -11,18 +11,21 @@ import {
   useDelayedValue,
 } from '@oyster/ui';
 
-type CityDetailsResult = {
-  details: {
-    id: string;
-    latitude: number;
-    longitude: number;
-    name: string;
-  } | null;
-};
+import { type Nullable } from '@/shared/types';
 
-type SearchCitiesResult = {
-  cities: Array<{ description: string; id: string }>;
-};
+type CityDetailsResult = Nullable<{
+  id: string;
+  latitude: number;
+  longitude: number;
+  name: string;
+}>;
+
+type SearchCitiesResult = Nullable<
+  Array<{
+    description: string;
+    id: string;
+  }>
+>;
 
 export type CityComboboxProps = Pick<ComboboxProps, 'defaultValue'> &
   Pick<InputProps, 'required'> & {
@@ -59,9 +62,9 @@ export function CityCombobox({
     );
   }, [delayedSearch]);
 
-  const cities = autocompleteFetcher.data?.cities || [];
-  const latitude = detailsFetcher.data?.details?.latitude || defaultLatitude;
-  const longitude = detailsFetcher.data?.details?.longitude || defaultLongitude;
+  const cities = autocompleteFetcher.data || [];
+  const latitude = detailsFetcher.data?.latitude || defaultLatitude;
+  const longitude = detailsFetcher.data?.longitude || defaultLongitude;
 
   return (
     <Combobox defaultDisplayValue={defaultValue} defaultValue={defaultValue}>

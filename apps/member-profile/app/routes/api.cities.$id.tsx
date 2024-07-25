@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 
 import { getCityDetails } from '@oyster/core/location';
 
@@ -13,9 +9,5 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const details = await getCityDetails(params.id as string);
 
-  return json({
-    details,
-  });
+  return json(details);
 }
-
-export type CityDetailsResult = SerializeFrom<typeof loader>;
