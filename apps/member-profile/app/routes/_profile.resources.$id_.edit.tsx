@@ -76,17 +76,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     createMemoryUploadHandler()
   );
 
-  let form: FormData;
-
-  try {
-    form = await parseMultipartFormData(request, uploadHandler);
-  } catch (e) {
-    return json({
-      errors: {
-        attachments: 'Attachment is too big. Must be less than 20 MB in size.',
-      } as Record<keyof UpdateResourceInput, string>,
-    });
-  }
+  const form = await parseMultipartFormData(request, uploadHandler);
 
   const { data, errors, ok } = await validateForm(
     {

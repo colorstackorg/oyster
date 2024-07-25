@@ -188,22 +188,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     createMemoryUploadHandler()
   );
 
-  let form: FormData;
-
-  try {
-    form = await parseMultipartFormData(request, uploadHandler);
-  } catch (e) {
-    return json(
-      {
-        errors: {
-          resume: 'Attachment is too big. Must be less than 1 MB in size.',
-        } as Record<keyof SubmitResumeInput, string>,
-      },
-      {
-        status: 400,
-      }
-    );
-  }
+  const form = await parseMultipartFormData(request, uploadHandler);
 
   const resumeBookId = params.id as string;
 
