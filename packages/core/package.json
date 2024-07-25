@@ -22,6 +22,7 @@
     "./github": "./src/modules/github/github.ts",
     "./location": "./src/modules/location/location.core.ts",
     "./location.types": "./src/modules/location/location.types.ts",
+    "./location.ui": "./src/modules/location/location.ui.tsx",
     "./mixpanel": "./src/modules/mixpanel/index.ts",
     "./object-storage": "./src/modules/object-storage/index.ts",
     "./resources": "./src/modules/resource/index.ts",

@@ -11,8 +11,18 @@ import {
   useDelayedValue,
 } from '@oyster/ui';
 
-import type { CityDetailsResult } from '@/routes/cities.$id';
-import type { SearchCitiesResult } from '@/routes/cities.autocomplete';
+type CityDetailsResult = {
+  details: {
+    id: string;
+    latitude: number;
+    longitude: number;
+    name: string;
+  };
+};
+
+type SearchCitiesResult = {
+  cities: Array<{ description: string; id: string }>;
+};
 
 export type CityComboboxProps = Pick<ComboboxProps, 'defaultValue'> &
   Pick<InputProps, 'required'> & {
@@ -69,7 +79,7 @@ export function CityCombobox({
               return (
                 <ComboboxItem
                   key={city.id}
-                  onSelect={() => {
+                  onSelect={(_) => {
                     detailsFetcher.load(`/cities/${city.id}`);
                   }}
                   value={city.description}
