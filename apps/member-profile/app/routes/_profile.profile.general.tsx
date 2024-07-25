@@ -10,7 +10,7 @@ import {
 } from '@remix-run/react';
 import { type z } from 'zod';
 
-import { track } from '@oyster/infrastructure/mixpanel';
+import { track } from '@oyster/core/mixpanel';
 import { Student } from '@oyster/types';
 import {
   Button,

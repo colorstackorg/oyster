@@ -14,14 +14,15 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 
+import { track } from '@oyster/core/mixpanel';
 import { AddResourceInput } from '@oyster/core/resources';
 import { addResource } from '@oyster/core/resources.server';
-import { track } from '@oyster/infrastructure/mixpanel';
 import {
   Button,
   Divider,
   Form,
   getErrors,
+  MB_IN_BYTES,
   Modal,
   validateForm,
 } from '@oyster/ui';
@@ -53,25 +54,21 @@ export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const uploadHandler = composeUploadHandlers(
-    createFileUploadHandler({ maxPartSize: 1_000_000 * 20 }),
+    createFileUploadHandler({ maxPartSize: MB_IN_BYTES * 20 }),
     createMemoryUploadHandler()
   );
 
-  let form: FormData;
-
-  try {
-    form = await parseMultipartFormData(request, uploadHandler);
-  } catch (e) {
-    return json({
-      errors: {
-        attachments: 'Attachment is too big. Must be less than 20 MB in size.',
-      } as Record<keyof AddResourceInput, string>,
-    });
-  }
+  const form = await parseMultipartFormData(request, uploadHandler);
 
   form.set('postedBy', user(session));
 
-  const { data, errors, ok } = await validateForm(form, AddResourceInput);
+  const { data, errors, ok } = await validateForm(
+    {
+      ...Object.fromEntries(form),
+      attachments: form.getAll('attachments'),
+    },
+    AddResourceInput
+  );
 
   if (!ok) {
     return json({ errors }, { status: 400 });

@@ -171,7 +171,7 @@ function OnboardingSessionsTable() {
     {
       displayName: 'Attendees',
       render: (session) => session.attendees,
-      size: null,
+      size: '800',
     },
     {
       displayName: 'Uploaded By',

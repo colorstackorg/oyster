@@ -10,7 +10,6 @@ export {
 export { authenticateWithGithub } from './modules/authentication/use-cases/authenticate-with-github';
 export { sendOneTimeCode } from './modules/authentication/use-cases/send-one-time-code';
 export { verifyOneTimeCode } from './modules/authentication/use-cases/verify-one-time-code';
-export { listSchools } from './modules/education/queries/list-schools';
 export { addEducation } from './modules/education/use-cases/add-education';
 export { deleteEducation } from './modules/education/use-cases/delete-education';
 export { editEducation } from './modules/education/use-cases/edit-education';
@@ -43,7 +42,6 @@ export { changePrimaryEmail } from './modules/member/use-cases/change-primary-em
 export { joinMemberDirectory } from './modules/member/use-cases/join-member-directory';
 export { updateAllowEmailShare } from './modules/member/use-cases/update-allow-email-share';
 export { updateMember } from './modules/member/use-cases/update-member';
-export { createResumeBook } from './modules/resume-book/use-cases/create-resume-book';
 export { reportException } from './modules/sentry/use-cases/report-exception';
 export { countMessagesSent } from './modules/slack/queries/count-messages-sent';
 export { getSwagPackInventory } from './modules/swag-pack/swag-pack.service';

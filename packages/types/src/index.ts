@@ -31,6 +31,7 @@ export {
   Student,
   StudentActiveStatus,
   StudentEmail,
+  WorkAuthorizationStatus,
 } from './domain/student';
 export {
   Address,
