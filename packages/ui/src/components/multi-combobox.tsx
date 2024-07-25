@@ -16,20 +16,30 @@ import { getInputCn, type InputProps } from './input';
 import { getPillCn } from './pill';
 import { cx } from '../utils/cx';
 
-export type ComboboxValue = {
+type ComboboxValue = {
   label: string;
   value: string;
 };
 
-const MultiComboboxContext = React.createContext({
-  searchRef: createRef() as React.MutableRefObject<HTMLInputElement | null>,
+type MultiComboboxContext = {
+  searchRef: React.MutableRefObject<HTMLInputElement | null>;
+  setValues: (_: ComboboxValue[]) => void;
+  values: ComboboxValue[];
+};
+
+const MultiComboboxContext = React.createContext<MultiComboboxContext>({
+  searchRef: createRef() as MultiComboboxContext['searchRef'],
   setValues: (_: ComboboxValue[]) => {},
   values: [] as ComboboxValue[],
 });
 
-export type MultiComboboxProps = PropsWithChildren<{
+export type MultiComboboxProps = {
+  children:
+    | React.ReactNode
+    | ((props: Pick<MultiComboboxContext, 'values'>) => React.ReactNode);
+
   defaultValues?: ComboboxValue[];
-}>;
+};
 
 export function MultiCombobox({
   children,
@@ -47,7 +57,9 @@ export function MultiCombobox({
         values,
       }}
     >
-      <ComboboxPopoverProvider>{children}</ComboboxPopoverProvider>
+      <ComboboxPopoverProvider>
+        {typeof children === 'function' ? children({ values }) : children}
+      </ComboboxPopoverProvider>
     </MultiComboboxContext.Provider>
   );
 }
@@ -124,15 +136,7 @@ export function MultiComboboxItem({
   );
 }
 
-type MultiComboboxValuesProps = PropsWithChildren<{
-  name: string;
-  onSelect?(value: ComboboxValue): void;
-}>;
-
-export function MultiComboboxValues({
-  name,
-  onSelect,
-}: MultiComboboxValuesProps) {
+export function MultiComboboxValues({ name }: Pick<InputProps, 'name'>) {
   const { setValues, values } = useContext(MultiComboboxContext);
 
   if (!values.length) {
@@ -161,7 +165,6 @@ export function MultiComboboxValues({
 
               <button
                 onClick={(e) => {
-                  onSelect?.(value);
                   e.stopPropagation();
                   setValues(
                     values.filter((element) => {
