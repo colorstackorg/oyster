@@ -13,6 +13,7 @@ import {
   FileUploader,
   Form,
   Input,
+  MB_IN_BYTES,
   MultiCombobox,
   MultiComboboxDisplay,
   MultiComboboxItem,
@@ -72,6 +73,7 @@ export function ResourceAttachmentField({
       <FileUploader
         accept={['application/pdf', 'image/jpeg', 'image/png']}
         id={name}
+        maxFileSize={MB_IN_BYTES * 20}
         name={name}
         required
         {...(defaultValue && {

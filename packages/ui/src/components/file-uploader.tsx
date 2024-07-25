@@ -8,7 +8,9 @@ import { IconButton } from './icon-button';
 import { Text } from './text';
 import { cx } from '../utils/cx';
 
-const DEFAULT_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB (in bytes)
+export const MB_IN_BYTES = 1024 * 1024;
+
+const DEFAULT_MAX_FILE_SIZE = 5 * MB_IN_BYTES; // 5 MB (in bytes)
 
 type MimeType = 'application/pdf' | 'image/jpeg' | 'image/png' | 'text/csv';
 
