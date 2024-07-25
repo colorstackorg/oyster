@@ -19,6 +19,7 @@
     "./education.ui": "./src/modules/education/education.ui.tsx",
     "./employment": "./src/modules/employment/index.ts",
     "./employment.server": "./src/modules/employment/index.server.ts",
+    "./github": "./src/modules/github/github.ts",
     "./mixpanel": "./src/modules/mixpanel/index.ts",
     "./object-storage": "./src/modules/object-storage/index.ts",
     "./resources": "./src/modules/resource/index.ts",
