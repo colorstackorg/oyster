@@ -8,7 +8,6 @@ import { sql } from 'kysely';
 import { Video } from 'react-feather';
 
 import { db } from '@oyster/db';
-import { EventType } from '@oyster/types';
 import { cx, getButtonCn, ProfilePicture } from '@oyster/ui';
 
 import {
@@ -74,7 +73,7 @@ async function getPastEvents({ timezone }: GetPastEventsInput) {
       },
     ])
     .where('endTime', '<=', new Date())
-    .where('type', '=', EventType.VIRTUAL)
+    .where('events.hidden', '=', false)
     .orderBy('startTime', 'desc')
     .execute();
 
