@@ -5,7 +5,8 @@ import { BooleanInput, Entity } from '@oyster/types';
 export type FeatureFlagName =
   | 'companies'
   | 'family_application'
-  | 'resume_books';
+  | 'resume_books'
+  | 'interview_reviews';
 
 // Domain
 

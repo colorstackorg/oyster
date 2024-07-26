@@ -26,6 +26,7 @@ import {
   TooltipTrigger,
 } from '@oyster/ui/tooltip';
 
+import { isFeatureFlagEnabled } from '@/member-profile.server';
 import { Card } from '@/shared/components/card';
 import { CompanyReview } from '@/shared/components/company-review';
 import { InterviewReview } from '@/shared/components/interview-review';
@@ -142,17 +143,20 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     };
   });
 
+  const featureFlagEnabled = await isFeatureFlagEnabled('interview_reviews');
+
   return json({
     company,
     currentEmployees,
     pastEmployees,
     reviews,
     interviewReviews,
+    featureFlagEnabled,
   });
 }
 
 export default function CompanyPage() {
-  const { company } = useLoaderData<typeof loader>();
+  const { company, featureFlagEnabled } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'employees';
 
@@ -184,19 +188,28 @@ export default function CompanyPage() {
       </header>
 
       <Text color="gray-500">{company.description}</Text>
-      <nav>
-        <ul className="flex flex-wrap gap-x-4 gap-y-2">
-          <NavigationItem to="?tab=employees">Employees</NavigationItem>
-          <NavigationItem to="?tab=reviews">Company Reviews</NavigationItem>
-          <NavigationItem to="?tab=interview-reviews">
-            Interview Reviews
-          </NavigationItem>
-        </ul>
-      </nav>
-      <Divider my="4" />
-      {activeTab === 'employees' && <Employees />}
-      {activeTab === 'reviews' && <ReviewsList />}
-      {activeTab === 'interview-reviews' && <InterviewReviewsList />}
+      {featureFlagEnabled ? (
+        <>
+          <nav>
+            <ul className="flex flex-wrap gap-x-4 gap-y-2">
+              <NavigationItem to="?tab=employees">Employees</NavigationItem>
+              <NavigationItem to="?tab=reviews">Company Reviews</NavigationItem>
+              <NavigationItem to="?tab=interview-reviews">
+                Interview Reviews
+              </NavigationItem>
+            </ul>
+          </nav>
+          <Divider my="4" />
+          {activeTab === 'employees' && <Employees />}
+          {activeTab === 'reviews' && <ReviewsList />}
+          {activeTab === 'interview-reviews' && <InterviewReviewsList />}
+        </>
+      ) : (
+        <>
+          <ReviewsList />
+          <Employees />
+        </>
+      )}
     </section>
   );
 }
