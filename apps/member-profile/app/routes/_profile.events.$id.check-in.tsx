@@ -18,13 +18,14 @@ import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
   const event = await getEvent(
     params.id as string,
     ['events.endTime', 'events.name', 'events.startTime'],
     {
       include: ['isCheckedIn'],
+      memberId: user(session),
       type: 'irl',
     }
   );

@@ -1,5 +1,3 @@
-import { sql } from 'kysely';
-
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
 
@@ -27,11 +25,10 @@ export async function checkIntoEvent({
         name: member.firstName + ' ' + member.lastName,
         studentId: memberId,
       })
-      .returning(sql<boolean>`xmax = 0`.as('inserted'))
       .onConflict((oc) => oc.doNothing())
-      .executeTakeFirstOrThrow();
+      .executeTakeFirst();
 
-    return record.inserted;
+    return !!Number(record.numInsertedOrUpdatedRows);
   });
 
   if (isNewCheckIn) {

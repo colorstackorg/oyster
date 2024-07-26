@@ -17,7 +17,7 @@ export async function getEvent<
 >(
   id: string,
   selections: Selection[],
-  { include, memberId, type, withIsRegistered }: GetEventOptions = {}
+  { include = [], memberId, type, withIsRegistered }: GetEventOptions = {}
 ) {
   const result = await db
     .selectFrom('events')
@@ -34,7 +34,7 @@ export async function getEvent<
           .as('isRegistered');
       });
     })
-    .$if(!!include?.includes('isCheckedIn') && !!memberId, (qb) => {
+    .$if(include.includes('isCheckedIn') && !!memberId, (qb) => {
       return qb.select((eb) => {
         return eb
           .exists(
