@@ -6,7 +6,7 @@ import {
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { Camera, Menu, Plus, RefreshCw, Upload } from 'react-feather';
+import { Camera, Menu, Plus, RefreshCw, Trash2, Upload } from 'react-feather';
 import { generatePath } from 'react-router';
 
 import { type Event, EventType } from '@oyster/types';
@@ -249,6 +249,11 @@ function EventDropdown({ id, type }: EventInView) {
                 to={generatePath(Route['/events/:id/add-recording'], { id })}
               >
                 <Upload /> Add Recording
+              </Link>
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <Link to={generatePath(Route['/events/:id/delete'], { id })}>
+                <Trash2 /> Delete Event
               </Link>
             </Dropdown.Item>
           </Dropdown.List>
