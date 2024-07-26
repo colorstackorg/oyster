@@ -17,7 +17,7 @@ export type ResourceType = ExtractValue<typeof ResourceType>;
 // Domain
 
 const Resource = z.object({
-  attachments: z.array(FileLike),
+  attachments: z.array(z.union([z.string().trim().min(1), FileLike])),
 
   description: z
     .string()

@@ -1,11 +1,8 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { z } from 'zod';
 
-import { getAutocompletedCities } from '@/member-profile.server';
+import { getAutocompletedCities } from '@oyster/core/location';
+
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const CitiesSearchParams = z.object({
@@ -23,9 +20,5 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const cities = await getAutocompletedCities(search);
 
-  return json({
-    cities,
-  });
+  return json(cities);
 }
-
-export type SearchCitiesResult = SerializeFrom<typeof loader>;

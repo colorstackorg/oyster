@@ -19,6 +19,11 @@
     "./education.ui": "./src/modules/education/education.ui.tsx",
     "./employment": "./src/modules/employment/index.ts",
     "./employment.server": "./src/modules/employment/index.server.ts",
+    "./events": "./src/modules/event/event.core.ts",
+    "./github": "./src/modules/github/github.ts",
+    "./location": "./src/modules/location/location.core.ts",
+    "./location.types": "./src/modules/location/location.types.ts",
+    "./location.ui": "./src/modules/location/location.ui.tsx",
     "./mixpanel": "./src/modules/mixpanel/index.ts",
     "./object-storage": "./src/modules/object-storage/index.ts",
     "./resources": "./src/modules/resource/index.ts",
@@ -26,6 +31,8 @@
     "./resume-books": "./src/modules/resume-book/resume-book.core.ts",
     "./resume-books.types": "./src/modules/resume-book/resume-book.types.ts",
     "./resume-books.ui": "./src/modules/resume-book/resume-book.ui.tsx",
+    "./scholarships": "./src/modules/scholarship/scholarship.core.ts",
+    "./scholarships.ui": "./src/modules/scholarship/scholarship.ui.tsx",
     "./slack.server": "./src/modules/slack/index.server.ts"
   },
   "scripts": {
