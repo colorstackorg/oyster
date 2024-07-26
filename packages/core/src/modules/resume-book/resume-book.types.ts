@@ -103,7 +103,7 @@ export const SubmitResumeInput = Student.pick({
     preferredCompany2: z.string().trim().min(1),
     preferredCompany3: z.string().trim().min(1),
     preferredRoles: z.array(z.string().trim().min(1)).min(1),
-    resume: FileLike,
+    resume: z.union([z.string().trim().min(1), FileLike]),
     resumeBookId: z.string().trim().min(1),
   });
 
