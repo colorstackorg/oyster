@@ -16,6 +16,7 @@ const ROUTES = [
   '/events/create',
   '/events/sync-airmeet-event',
   '/events/:id/add-recording',
+  '/events/:id/check-in',
   '/events/:id/import',
   '/feature-flags',
   '/feature-flags/create',

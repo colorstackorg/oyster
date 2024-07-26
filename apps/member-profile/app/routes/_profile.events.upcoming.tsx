@@ -9,7 +9,6 @@ import { Check, CheckCircle, ExternalLink } from 'react-feather';
 import { generatePath } from 'react-router';
 
 import { db } from '@oyster/db';
-import { EventType } from '@oyster/types';
 import { Button, getButtonCn, ProfilePicture, Text } from '@oyster/ui';
 
 import {
@@ -97,7 +96,7 @@ async function getUpcomingEvents({
       },
     ])
     .where('endTime', '>', new Date())
-    .where('type', '=', EventType.VIRTUAL)
+    .where('events.hidden', '=', false)
     .orderBy('startTime', 'asc')
     .execute();
 
