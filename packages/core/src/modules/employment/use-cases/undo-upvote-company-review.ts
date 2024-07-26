@@ -1,10 +1,10 @@
 import { db } from '@oyster/db';
 
-import { type DownvoteCompanyReviewInput } from '@/modules/employment/company.types';
+import { type UpvoteCompanyReviewInput } from '@/modules/employment/company.types';
 
-export async function downvoteCompanyReview(
+export async function undoUpvoteCompanyReview(
   id: string,
-  input: DownvoteCompanyReviewInput
+  input: UpvoteCompanyReviewInput
 ) {
   const result = await db.transaction().execute(async (trx) => {
     await trx

@@ -5,5 +5,5 @@ export { listCompanyEmployees } from './queries/list-company-employees';
 export { listCompanyReviews } from './queries/list-company-reviews';
 export { addCompanyReview } from './use-cases/add-company-review';
 export { editCompanyReview } from './use-cases/edit-company-review';
-export { downvoteCompanyReview } from './use-cases/downvote-company-review';
+export { undoUpvoteCompanyReview } from './use-cases/undo-upvote-company-review';
 export { upvoteCompanyReview } from './use-cases/upvote-company-review';

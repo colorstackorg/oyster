@@ -28,7 +28,6 @@ import { Route } from '@/shared/constants';
 
 type CompanyReviewProps = {
   id?: string;
-  date: string;
   company?: {
     id: string;
     image: string;
@@ -91,11 +90,6 @@ export const CompanyReview = ({
         <Text color="gray-500" variant="sm">
           {reviewedAt}
         </Text>
-        <UpvoteCompanyReviewButton
-          id={id}
-          upvoted={upvoted}
-          upvotes={upvotes}
-        />
 
         {editable && workExperienceId && (
           <div className="ml-auto">
@@ -169,6 +163,7 @@ export const CompanyReview = ({
       </div>
 
       <CompanyReviewText text={text} />
+      <UpvoteCompanyReviewButton id={id} upvoted={upvoted} upvotes={upvotes} />
     </Card>
   );
 };
@@ -284,11 +279,11 @@ function UpvoteCompanyReviewButton({
   const fetcher = useFetcher();
 
   const action = upvoted
-    ? `/api/company-review/${id}/downvote`
+    ? `/api/company-review/${id}/undo-upvote`
     : `/api/company-review/${id}/upvote`;
 
   return (
-    <fetcher.Form action={action} method="post" className="ml-auto">
+    <fetcher.Form action={action} method="post" className="mr-auto">
       <button
         className={cx(
           getTextCn({ color: 'gray-500', variant: 'sm' }),
