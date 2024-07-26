@@ -33,6 +33,7 @@ export async function syncAirmeetEvent({
         description: event.description,
         endTime: event.endTime,
         externalLink: event.externalLink,
+        hidden: false,
         id: event.id,
         name: event.name,
         startTime: event.startTime,

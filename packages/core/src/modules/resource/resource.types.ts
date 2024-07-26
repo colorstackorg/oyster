@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { type ExtractValue } from '@oyster/types';
 
 import { ListSearchParams } from '@/shared/types';
+import { FileLike } from '@/shared/utils/zod.utils';
 
 // Types
 
@@ -16,17 +17,7 @@ export type ResourceType = ExtractValue<typeof ResourceType>;
 // Domain
 
 const Resource = z.object({
-  attachments: z.unknown().transform((value) => {
-    if (!value) {
-      return [] as File[];
-    }
-
-    if (Array.isArray(value)) {
-      return value as File[];
-    }
-
-    return [value] as File[];
-  }),
+  attachments: z.array(z.union([z.string().trim().min(1), FileLike])),
 
   description: z
     .string()
@@ -99,7 +90,6 @@ export const DownvoteResourceInput = z.object({
 });
 
 export const UpdateResourceInput = AddResourceInput.omit({
-  attachments: true,
   postedBy: true,
   type: true,
 });

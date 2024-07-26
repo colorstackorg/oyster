@@ -1,7 +1,7 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { z } from 'zod';
 
-import { listSchools } from '@/member-profile.server';
+import { listSchools } from '@oyster/core/education';
 
 const SchoolsSearchParams = z.object({
   search: z.string().trim().min(1).catch(''),

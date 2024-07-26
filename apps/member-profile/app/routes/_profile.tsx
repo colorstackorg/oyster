@@ -1,7 +1,8 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet, useLoaderData } from '@remix-run/react';
+import { generatePath, Outlet, useLoaderData } from '@remix-run/react';
 import {
   Award,
+  Book,
   BookOpen,
   Briefcase,
   Calendar,
@@ -10,24 +11,30 @@ import {
   User,
 } from 'react-feather';
 
-import { Dashboard } from '@oyster/ui';
+import { getResumeBook } from '@oyster/core/resume-books';
+import { Dashboard, Divider } from '@oyster/ui';
 
-import { isFeatureFlagEnabled } from '@/member-profile.server';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const isCompaniesEnabled = await isFeatureFlagEnabled('companies');
+  const resumeBook = await getResumeBook({
+    select: ['resumeBooks.id'],
+    where: {
+      hidden: false,
+      status: 'active',
+    },
+  });
 
   return json({
-    isCompaniesEnabled,
+    resumeBook,
   });
 }
 
 export default function ProfileLayout() {
-  const { isCompaniesEnabled } = useLoaderData<typeof loader>();
+  const { resumeBook } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -39,6 +46,21 @@ export default function ProfileLayout() {
 
         <Dashboard.Navigation>
           <Dashboard.NavigationList>
+            {!!resumeBook && (
+              <>
+                <Dashboard.NavigationLink
+                  icon={<Book />}
+                  isNew
+                  label="Resume Book"
+                  pathname={generatePath(Route['/resume-books/:id'], {
+                    id: resumeBook.id,
+                  })}
+                  prefetch="intent"
+                />
+
+                <Divider my="4" />
+              </>
+            )}
             <Dashboard.NavigationLink
               icon={<Home />}
               label="Home"
@@ -57,14 +79,12 @@ export default function ProfileLayout() {
               pathname={Route['/resources']}
               prefetch="intent"
             />
-            {isCompaniesEnabled && (
-              <Dashboard.NavigationLink
-                icon={<Briefcase />}
-                label="Companies"
-                pathname={Route['/companies']}
-                prefetch="intent"
-              />
-            )}
+            <Dashboard.NavigationLink
+              icon={<Briefcase />}
+              label="Companies"
+              pathname={Route['/companies']}
+              prefetch="intent"
+            />
             <Dashboard.NavigationLink
               icon={<Award />}
               label="Points"

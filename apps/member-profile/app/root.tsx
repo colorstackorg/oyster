@@ -25,7 +25,17 @@ export const links: LinksFunction = () => {
 };
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'ColorStack | Member Profile' }];
+  const title = 'Member Profile';
+
+  const description =
+    'Your home for all things ColorStack membership. Manage your profile and more!';
+
+  return [
+    { title },
+    { name: 'description', content: description },
+    { property: 'og:title', content: title },
+    { property: 'og:description', content: description },
+  ];
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {

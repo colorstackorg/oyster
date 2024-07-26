@@ -28,7 +28,6 @@ import {
   toast,
   user,
 } from '@/shared/session.server';
-import { formatUrl } from '@/shared/url.utils';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -50,12 +49,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 const UpdateSocialsInformation = z.object({
-  calendlyUrl: nullableField(Student.shape.calendlyUrl).transform(formatUrl),
+  calendlyUrl: nullableField(Student.shape.calendlyUrl),
   instagramHandle: nullableField(Student.shape.instagramHandle),
-  linkedInUrl: Student.shape.linkedInUrl.transform(formatUrl),
-  personalWebsiteUrl: nullableField(Student.shape.personalWebsiteUrl).transform(
-    formatUrl
-  ),
+  linkedInUrl: Student.shape.linkedInUrl,
+  personalWebsiteUrl: nullableField(Student.shape.personalWebsiteUrl),
   twitterHandle: nullableField(Student.shape.twitterHandle),
 });
 

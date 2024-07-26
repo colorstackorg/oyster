@@ -1,7 +1,9 @@
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
-import { Entity, Student } from '@oyster/types';
+import { BooleanInput, Entity, Student } from '@oyster/types';
+
+import { FileLike } from '@/shared/utils/zod.utils';
 
 export const RESUME_BOOK_CODING_LANGUAGES = [
   'C',
@@ -44,22 +46,22 @@ export const RESUME_BOOK_ROLES = [
   'Cybersecurity Engineer/Analyst',
 ];
 
+export const RESUME_BOOK_TIMEZONE = 'America/Los_Angeles';
+
 // Domain
 
-const ResumeBook = z.object({
+export const ResumeBook = z.object({
   airtableBaseId: z.string().trim().min(1),
   airtableTableId: z.string().trim().min(1),
   createdAt: Entity.shape.createdAt,
   endDate: z.string().transform((value) => {
-    return dayjs(value).tz('America/Los_Angeles', true).endOf('date').toDate();
+    return dayjs(value).tz(RESUME_BOOK_TIMEZONE, true).endOf('date').toDate();
   }),
+  hidden: BooleanInput,
   id: Entity.shape.id,
   name: z.string().trim().min(1),
   startDate: z.string().transform((value) => {
-    return dayjs(value)
-      .tz('America/Los_Angeles', true)
-      .startOf('date')
-      .toDate();
+    return dayjs(value).tz(RESUME_BOOK_TIMEZONE, true).startOf('date').toDate();
   }),
 });
 
@@ -67,6 +69,7 @@ const ResumeBook = z.object({
 
 export const CreateResumeBookInput = ResumeBook.pick({
   endDate: true,
+  hidden: true,
   name: true,
   startDate: true,
 }).extend({
@@ -100,9 +103,18 @@ export const SubmitResumeInput = Student.pick({
     preferredCompany2: z.string().trim().min(1),
     preferredCompany3: z.string().trim().min(1),
     preferredRoles: z.array(z.string().trim().min(1)).min(1),
-    resume: z.unknown().transform((value) => (value as File) || null),
+    resume: z.union([z.string().trim().min(1), FileLike]),
     resumeBookId: z.string().trim().min(1),
   });
 
+export const UpdateResumeBookInput = ResumeBook.pick({
+  endDate: true,
+  hidden: true,
+  id: true,
+  name: true,
+  startDate: true,
+});
+
 export type CreateResumeBookInput = z.infer<typeof CreateResumeBookInput>;
 export type SubmitResumeInput = z.infer<typeof SubmitResumeInput>;
+export type UpdateResumeBookInput = z.infer<typeof UpdateResumeBookInput>;

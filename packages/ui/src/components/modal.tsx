@@ -21,11 +21,13 @@ export function useIsModalParent() {
 
 type ModalProps = PropsWithChildren<{
   onCloseTo: LinkProps['to'];
+  size?: '400' | '600';
 }>;
 
 export const Modal = ({
   children,
   onCloseTo,
+  size = '600',
 }: ModalProps): JSX.Element | null => {
   const hydrated = useHydrated();
 
@@ -44,9 +46,11 @@ export const Modal = ({
       >
         <aside
           className={cx(
-            'lock-scroll relative z-10 flex max-h-[calc(100vh-5rem)] w-full max-w-[600px] flex-col gap-4 overflow-auto bg-white p-4',
+            'lock-scroll relative z-10 flex max-h-[calc(100vh-5rem)] w-full flex-col gap-4 overflow-auto bg-white p-4',
             'animate-[modal-animation-mobile_250ms] rounded-t-lg',
-            'sm:animate-[modal-animation_250ms] sm:rounded-lg'
+            'sm:animate-[modal-animation_250ms] sm:rounded-lg',
+            size === '400' && 'sm:max-w-[400px]',
+            size === '600' && 'sm:max-w-[600px]'
           )}
           id="modal"
           role="dialog"
@@ -89,7 +93,7 @@ Modal.Description = function ModalDescription({ children }: PropsWithChildren) {
 
 Modal.Header = function ModalHeader({ children }: PropsWithChildren) {
   return (
-    <header className="flex items-center justify-between gap-2">
+    <header className="flex items-start justify-between gap-2">
       {children}
     </header>
   );

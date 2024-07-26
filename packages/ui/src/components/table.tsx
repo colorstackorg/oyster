@@ -183,11 +183,7 @@ function TableBody({
 // Dropdown
 
 Table.Dropdown = function TableDropdown({ children }: PropsWithChildren) {
-  return (
-    <Dropdown className="fixed right-16 mt-[unset] md:right-20">
-      {children}
-    </Dropdown>
-  );
+  return <Dropdown className="fixed right-20 mt-[unset]">{children}</Dropdown>;
 };
 
 type TableDropdownOpenButtonProps = {

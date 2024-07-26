@@ -10,8 +10,10 @@ import { ResourceType } from '@oyster/core/resources';
 import {
   ComboboxPopover,
   type FieldProps,
+  FileUploader,
   Form,
   Input,
+  MB_IN_BYTES,
   MultiCombobox,
   MultiComboboxDisplay,
   MultiComboboxItem,
@@ -50,10 +52,10 @@ export function ResourceProvider({
 }
 
 export function ResourceAttachmentField({
-  defaultValue: _,
+  defaultValue,
   error,
   name,
-}: FieldProps<ResourceType>) {
+}: FieldProps<{ id: string; mimeType: string }>) {
   const { type } = useContext(ResourceFormContext);
 
   if (type !== 'file') {
@@ -62,18 +64,26 @@ export function ResourceAttachmentField({
 
   return (
     <Form.Field
-      description="Must be less than 20 MB and one of the following file types: PNG, JPG, or PDF."
+      description="Please choose the file you want to upload."
       error={error}
       label="Attachment"
       labelFor={name}
       required
     >
-      <input
-        accept="image/png, image/jpeg, .pdf"
+      <FileUploader
+        accept={['application/pdf', 'image/jpeg', 'image/png']}
         id={name}
+        maxFileSize={MB_IN_BYTES * 20}
         name={name}
         required
-        type="file"
+        {...(defaultValue && {
+          initialFile: {
+            id: defaultValue.id,
+            name: defaultValue.id,
+            size: 0,
+            type: defaultValue.mimeType,
+          },
+        })}
       />
     </Form.Field>
   );
@@ -159,62 +169,74 @@ export function ResourceTagsField({
       required
     >
       <MultiCombobox defaultValues={defaultValue}>
-        <MultiComboboxDisplay>
-          <MultiComboboxValues name={name} />
-          <MultiComboboxSearch
-            id={name}
-            onChange={(e) => {
-              setSearch(e.currentTarget.value);
+        {({ values }) => {
+          const filteredTags = tags.filter((tag) => {
+            return values.every((value) => {
+              return value.value !== tag.id;
+            });
+          });
 
-              listFetcher.submit(
-                { search: e.currentTarget.value },
-                {
-                  action: '/api/tags/search',
-                  method: 'get',
-                }
-              );
-            }}
-          />
-        </MultiComboboxDisplay>
+          return (
+            <>
+              <MultiComboboxDisplay>
+                <MultiComboboxValues name={name} />
+                <MultiComboboxSearch
+                  id={name}
+                  onChange={(e) => {
+                    setSearch(e.currentTarget.value);
 
-        {(!!tags.length || !!search.length) && (
-          <ComboboxPopover>
-            <ul>
-              {tags.map((tag) => {
-                return (
-                  <MultiComboboxItem
-                    key={tag.id}
-                    label={tag.name}
-                    onSelect={reset}
-                    value={tag.id}
-                  >
-                    <Pill color="pink-100">{tag.name}</Pill>
-                  </MultiComboboxItem>
-                );
-              })}
-
-              {!!search.length && (
-                <MultiComboboxItem
-                  label={search}
-                  onSelect={(e) => {
-                    createFetcher.submit(
-                      { id: e.currentTarget.value, name: search },
+                    listFetcher.submit(
+                      { search: e.currentTarget.value },
                       {
-                        action: '/api/tags/add',
-                        method: 'post',
+                        action: '/api/tags/search',
+                        method: 'get',
                       }
                     );
-
-                    reset();
                   }}
-                  value={newTagId}
-                >
-                  Create <Pill color="pink-100">{search}</Pill>
-                </MultiComboboxItem>
+                />
+              </MultiComboboxDisplay>
+
+              {(!!filteredTags.length || !!search.length) && (
+                <ComboboxPopover>
+                  <ul>
+                    {filteredTags.map((tag) => {
+                      return (
+                        <MultiComboboxItem
+                          key={tag.id}
+                          label={tag.name}
+                          onSelect={reset}
+                          value={tag.id}
+                        >
+                          <Pill color="pink-100">{tag.name}</Pill>
+                        </MultiComboboxItem>
+                      );
+                    })}
+
+                    {!!search.length && (
+                      <MultiComboboxItem
+                        label={search}
+                        onSelect={(e) => {
+                          createFetcher.submit(
+                            { id: e.currentTarget.value, name: search },
+                            {
+                              action: '/api/tags/add',
+                              method: 'post',
+                            }
+                          );
+
+                          reset();
+                        }}
+                        value={newTagId}
+                      >
+                        Create <Pill color="pink-100">{search}</Pill>
+                      </MultiComboboxItem>
+                    )}
+                  </ul>
+                </ComboboxPopover>
               )}
-            </ul>
-          </ComboboxPopover>
-        )}
+            </>
+          );
+        }}
       </MultiCombobox>
     </Form.Field>
   );

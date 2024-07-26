@@ -65,23 +65,8 @@ export default function DashboardLayout() {
                 />
                 <Dashboard.NavigationLink
                   icon={<User />}
-                  label="Students"
+                  label="Members"
                   pathname={Route['/students']}
-                />
-                <Dashboard.NavigationLink
-                  icon={<User />}
-                  label="Admins"
-                  pathname={Route['/admins']}
-                />
-                <Dashboard.NavigationLink
-                  icon={<Gift />}
-                  label="Gamification"
-                  pathname={Route['/gamification/activities']}
-                />
-                <Dashboard.NavigationLink
-                  icon={<Video />}
-                  label="Onboarding Sessions"
-                  pathname={Route['/onboarding-sessions']}
                 />
                 <Dashboard.NavigationLink
                   icon={<Calendar />}
@@ -94,20 +79,31 @@ export default function DashboardLayout() {
                   pathname={Route['/resume-books']}
                 />
                 <Dashboard.NavigationLink
-                  icon={<HelpCircle />}
-                  label="Surveys"
-                  pathname={Route['/surveys']}
+                  icon={<Video />}
+                  label="Onboarding Sessions"
+                  pathname={Route['/onboarding-sessions']}
+                />
+                <Dashboard.NavigationLink
+                  icon={<Gift />}
+                  label="Gamification"
+                  pathname={Route['/gamification/activities']}
+                />
+                <Dashboard.NavigationLink
+                  icon={<User />}
+                  label="Admins"
+                  pathname={Route['/admins']}
                 />
                 <Dashboard.NavigationLink
                   icon={<MapPin />}
                   label="Schools"
                   pathname={Route['/schools']}
                 />
-
-                <div className="my-2">
-                  <Divider />
-                </div>
-
+                <Dashboard.NavigationLink
+                  icon={<HelpCircle />}
+                  label="Surveys"
+                  pathname={Route['/surveys']}
+                />
+                <Divider my="2" />
                 <Dashboard.NavigationLink
                   icon={<ToggleRight />}
                   label="Feature Flags"

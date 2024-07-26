@@ -37,7 +37,6 @@ export {
   IcebreakerPrompt,
   IcebreakerResponse,
 } from './modules/icebreaker/icebreaker.types';
-export { Country } from './modules/location/location.types';
 export {
   ChangePrimaryEmailInput,
   ListMembersInDirectoryWhere,
