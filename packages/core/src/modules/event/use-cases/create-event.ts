@@ -24,6 +24,7 @@ export async function createEvent({
     .values({
       description,
       endTime: dayjs.tz(endTime, timezone).toDate(),
+      hidden: type === 'irl',
       id: id(),
       name,
       startTime: dayjs.tz(startTime, timezone).toDate(),
