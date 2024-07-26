@@ -13,6 +13,8 @@ import {
 import { ColorStackError } from '@/shared/errors';
 import { parseCsv } from '@/shared/utils/csv.utils';
 
+export { ImportRecipientsInput } from '@/modules/scholarship/scholarship.types';
+
 const ScholarshipRecipientRow = z.object({
   Amount: ScholarshipRecipient.shape.amount,
 

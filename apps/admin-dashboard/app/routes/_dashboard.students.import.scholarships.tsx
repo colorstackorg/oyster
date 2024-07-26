@@ -10,17 +10,13 @@ import {
 } from '@remix-run/node';
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 
-import { importScholarshipRecipients } from '@oyster/core/scholarships';
-import { ImportRecipientsInput } from '@oyster/core/scholarships.types';
 import {
-  Button,
-  FileUploader,
-  Form,
-  getErrors,
-  Modal,
-  validateForm,
-} from '@oyster/ui';
+  ImportRecipientsInput,
+  importScholarshipRecipients,
+} from '@oyster/core/scholarships';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
+import { ScholarshipFileField } from '@/modules/scholarship/scholarship.ui';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -72,6 +68,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function ImportScholarshipsPage() {
+  const { error, errors } = getErrors(useActionData<typeof action>());
+
   return (
     <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
@@ -79,38 +77,13 @@ export default function ImportScholarshipsPage() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <ImportScholarshipsForm />
+      <RemixForm className="form" method="post" encType="multipart/form-data">
+        <ScholarshipFileField error={errors.file} />
+        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <Button.Group>
+          <Button.Submit>Import</Button.Submit>
+        </Button.Group>
+      </RemixForm>
     </Modal>
-  );
-}
-
-const keys = ImportRecipientsInput.keyof().enum;
-
-function ImportScholarshipsForm() {
-  const { error, errors } = getErrors(useActionData<typeof action>());
-
-  return (
-    <RemixForm className="form" method="post" encType="multipart/form-data">
-      <Form.Field
-        description="Please upload a .csv file."
-        error={errors.file}
-        label="File"
-        labelFor={keys.file}
-        required
-      >
-        <FileUploader
-          accept={['text/csv']}
-          id={keys.file}
-          name={keys.file}
-          required
-        />
-      </Form.Field>
-
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
-
-      <Button.Group>
-        <Button.Submit>Import</Button.Submit>
-      </Button.Group>
-    </RemixForm>
   );
 }
