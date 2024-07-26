@@ -1,32 +1,21 @@
-import { useFetcher } from '@remix-run/react';
-import React, {
-  type PropsWithChildren,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import React, { type PropsWithChildren, useContext, useState } from 'react';
 
 import { ResourceType } from '@oyster/core/resources';
 import {
-  ComboboxPopover,
   type FieldProps,
   FileUploader,
   Form,
   Input,
   MB_IN_BYTES,
-  MultiCombobox,
-  MultiComboboxDisplay,
-  MultiComboboxItem,
-  type MultiComboboxProps,
-  MultiComboboxSearch,
-  MultiComboboxValues,
-  Pill,
   Select,
   Textarea,
 } from '@oyster/ui';
-import { id } from '@oyster/utils';
-
-import { type SearchTagsResult } from '@/routes/api.tags.search';
+import {
+  SearchBox,
+  SearchComponent,
+  SearchResults,
+  SearchValues,
+} from '@oyster/ui';
 
 type ResourceFormContext = {
   setType(type: ResourceType): void;
@@ -138,27 +127,24 @@ export function ResourceLinkField({
   );
 }
 
-export function ResourceTagsField({
-  defaultValue,
-  error,
-  name,
-}: FieldProps<MultiComboboxProps['defaultValues']>) {
-  const createFetcher = useFetcher<unknown>();
-  const listFetcher = useFetcher<SearchTagsResult>();
+export function ResourceTagsField({ error, name }: FieldProps<string>) {
+  // defaultValue,
+  // const createFetcher = useFetcher<unknown>();
+  // const listFetcher = useFetcher<SearchTagsResult>();
 
-  const [newTagId, setNewTagId] = useState<string>(id());
-  const [search, setSearch] = useState<string>('');
+  // const [newTagId, setNewTagId] = useState<string>(id());
+  // const [search, setSearch] = useState<string>('');
 
-  useEffect(() => {
-    listFetcher.load('/api/tags/search');
-  }, []);
+  // useEffect(() => {
+  //   listFetcher.load('/api/tags/search');
+  // }, []);
 
-  const tags = listFetcher.data?.tags || [];
+  // const tags = listFetcher.data?.tags || [];
 
-  function reset() {
-    setSearch('');
-    setNewTagId(id());
-  }
+  // function reset() {
+  //   setSearch('');
+  //   setNewTagId(id());
+  // }
 
   return (
     <Form.Field
@@ -168,76 +154,13 @@ export function ResourceTagsField({
       labelFor={name}
       required
     >
-      <MultiCombobox defaultValues={defaultValue}>
-        {({ values }) => {
-          const filteredTags = tags.filter((tag) => {
-            return values.every((value) => {
-              return value.value !== tag.id;
-            });
-          });
-
-          return (
-            <>
-              <MultiComboboxDisplay>
-                <MultiComboboxValues name={name} />
-                <MultiComboboxSearch
-                  id={name}
-                  onChange={(e) => {
-                    setSearch(e.currentTarget.value);
-
-                    listFetcher.submit(
-                      { search: e.currentTarget.value },
-                      {
-                        action: '/api/tags/search',
-                        method: 'get',
-                      }
-                    );
-                  }}
-                />
-              </MultiComboboxDisplay>
-
-              {(!!filteredTags.length || !!search.length) && (
-                <ComboboxPopover>
-                  <ul>
-                    {filteredTags.map((tag) => {
-                      return (
-                        <MultiComboboxItem
-                          key={tag.id}
-                          label={tag.name}
-                          onSelect={reset}
-                          value={tag.id}
-                        >
-                          <Pill color="pink-100">{tag.name}</Pill>
-                        </MultiComboboxItem>
-                      );
-                    })}
-
-                    {!!search.length && (
-                      <MultiComboboxItem
-                        label={search}
-                        onSelect={(e) => {
-                          createFetcher.submit(
-                            { id: e.currentTarget.value, name: search },
-                            {
-                              action: '/api/tags/add',
-                              method: 'post',
-                            }
-                          );
-
-                          reset();
-                        }}
-                        value={newTagId}
-                      >
-                        Create <Pill color="pink-100">{search}</Pill>
-                      </MultiComboboxItem>
-                    )}
-                  </ul>
-                </ComboboxPopover>
-              )}
-            </>
-          );
-        }}
-      </MultiCombobox>
+      <SearchComponent>
+        <div className="flex flex-col gap-2 rounded-lg border border-gray-300 p-2 focus:border-primary disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500">
+          <SearchValues></SearchValues>
+          <SearchBox></SearchBox>
+        </div>
+        <SearchResults></SearchResults>
+      </SearchComponent>
     </Form.Field>
   );
 }
