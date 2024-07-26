@@ -194,12 +194,7 @@ export default function CompanyPage() {
         </ul>
       </nav>
       <Divider my="4" />
-      {activeTab === 'employees' && (
-        <>
-          <CurrentEmployees />
-          <PastEmployees />
-        </>
-      )}
+      {activeTab === 'employees' && <Employees />}
       {activeTab === 'reviews' && <ReviewsList />}
       {activeTab === 'interview-reviews' && <InterviewReviewsList />}
     </section>
@@ -360,47 +355,40 @@ function InterviewReviewsList() {
   );
 }
 
-function CurrentEmployees() {
-  const { currentEmployees } = useLoaderData<typeof loader>();
+function Employees() {
+  const { currentEmployees, pastEmployees } = useLoaderData<typeof loader>();
 
   return (
-    <Card>
-      <Card.Title>Current Employees ({currentEmployees.length})</Card.Title>
-
-      {currentEmployees.length ? (
-        <ul>
-          {currentEmployees.map((employee) => {
-            return <EmployeeItem key={employee.id} employee={employee} />;
-          })}
-        </ul>
-      ) : (
-        <Text color="gray-500">
-          There are no current employees from ColorStack.
-        </Text>
-      )}
-    </Card>
-  );
-}
-
-function PastEmployees() {
-  const { pastEmployees } = useLoaderData<typeof loader>();
-
-  return (
-    <Card>
-      <Card.Title>Past Employees ({pastEmployees.length})</Card.Title>
-
-      {pastEmployees.length ? (
-        <ul>
-          {pastEmployees.map((employee) => {
-            return <EmployeeItem key={employee.id} employee={employee} />;
-          })}
-        </ul>
-      ) : (
-        <Text color="gray-500">
-          There are no past employees from ColorStack.
-        </Text>
-      )}
-    </Card>
+    <>
+      <Card>
+        <Card.Title>Current Employees ({currentEmployees.length})</Card.Title>
+        {currentEmployees.length ? (
+          <ul>
+            {currentEmployees.map((employee) => {
+              return <EmployeeItem key={employee.id} employee={employee} />;
+            })}
+          </ul>
+        ) : (
+          <Text color="gray-500">
+            There are no current employees from ColorStack.
+          </Text>
+        )}
+      </Card>
+      <Card>
+        <Card.Title>Past Employees ({pastEmployees.length})</Card.Title>
+        {pastEmployees.length ? (
+          <ul>
+            {pastEmployees.map((employee) => {
+              return <EmployeeItem key={employee.id} employee={employee} />;
+            })}
+          </ul>
+        ) : (
+          <Text color="gray-500">
+            There are no past employees from ColorStack.
+          </Text>
+        )}
+      </Card>
+    </>
   );
 }
 
