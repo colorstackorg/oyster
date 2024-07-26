@@ -72,9 +72,7 @@ export default function DeleteEventModal() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button color="error" type="submit">
-            Delete
-          </Button>
+          <Button.Submit color="error">Delete</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>
