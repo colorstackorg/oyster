@@ -7,75 +7,78 @@ import { id } from '@oyster/utils';
 
 import { getMemberByEmail } from '@/modules/member/queries/get-member-by-email';
 import {
-  type ImportScholarshipRecipientsInput,
+  type ImportRecipientsInput,
   ScholarshipRecipient,
-  type ScholarshipType,
 } from '@/modules/scholarship/scholarship.types';
 import { ColorStackError } from '@/shared/errors';
 import { parseCsv } from '@/shared/utils/csv.utils';
 
-const TYPE_FROM_CSV: Record<string, ScholarshipType> = {
-  Conference: 'conference',
-  Direct: 'direct',
-  Tuition: 'tuition',
-};
-
 const ScholarshipRecipientRow = z.object({
-  Amount: z.coerce.number(),
+  Amount: ScholarshipRecipient.shape.amount,
 
   // If the date is valid, then we'll just set to the 12th hour of the day. We
   // chose that arbitrarily so that all timezones would show the same date.
   'Award Date': z
     .string()
     .refine((value) => dayjs(value).isValid())
-    .transform((value) => dayjs(value).hour(12).toDate()),
+    .transform((value) => dayjs(value).toDate()),
 
   Email: Email,
 
-  Reason: z.string(),
+  Reason: ScholarshipRecipient.shape.reason,
 
   // In order for the CSV to be more friendly to our admins, we'll require
   // them to use the title-case version of the scholarship type.
-  Type: z.string().transform((value) => TYPE_FROM_CSV[value]),
+  Type: z.string().transform((value) => value.toLowerCase()),
 });
 
+/**
+ * Imports the scholarship recipients from a CSV file. The CSV file must have
+ * the following columns:
+ * - Amount
+ * - Award Date
+ * - Email
+ * - Reason
+ * - Type
+ */
 export async function importScholarshipRecipients({
   file,
-}: ImportScholarshipRecipientsInput) {
+}: ImportRecipientsInput) {
   const text = await file.text();
 
-  const records = await parseCsv(text);
+  const rows = await parseCsv(text);
 
-  if (!records.length) {
+  if (!rows.length) {
     throw new Error(
       'There must be at least one row in order to import scholarship recipients.'
     );
   }
 
-  const result = z.array(ScholarshipRecipientRow).safeParse(records);
+  const result = z.array(ScholarshipRecipientRow).safeParse(rows);
 
   if (!result.success) {
     throw new ColorStackError()
-      .withMessage('There was an error parsing the records.')
-      .withContext({ records })
+      .withMessage('There was an error parsing the rows.')
+      .withContext({ rows })
       .report();
   }
 
   const recipients = await Promise.all(
-    records.map(async (record) => {
+    result.data.map(async (row) => {
       const {
-        'Award Date': awardedAt,
+        'Award Date': awardDate,
         Amount: amount,
         Email: email,
         Reason: reason,
         Type: type,
-      } = record;
+      } = row;
 
       const member = await getMemberByEmail(email);
 
       return ScholarshipRecipient.parse({
         amount,
-        awardedAt,
+        awardDate,
+        email,
         id: id(),
         reason,
         studentId: member?.id,

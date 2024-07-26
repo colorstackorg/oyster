@@ -1,37 +1,26 @@
 import { z } from 'zod';
 
-import { Email, type ExtractValue } from '@oyster/types';
+import { Email } from '@oyster/types';
 
 import { FileLike } from '@/shared/utils/zod.utils';
-
-// Enums
-
-export const ScholarshipType = {
-  CONFERENCE: 'conference',
-  DIRECT: 'direct',
-  TUITION: 'tuition',
-} as const;
 
 // Schemas
 
 export const ScholarshipRecipient = z.object({
-  amount: z.number().int().positive(),
-  awardedAt: z.date(),
+  amount: z.coerce.number().int().positive(),
+  awardDate: z.date(),
   email: Email,
   id: z.string().trim().min(1),
   reason: z.string().trim().min(1),
   studentId: z.string().trim().min(1).optional(),
-  type: z.nativeEnum(ScholarshipType),
+  type: z.enum(['conference', 'direct', 'tuition']),
 });
 
-export const ImportScholarshipRecipientsInput = z.object({
+export const ImportRecipientsInput = z.object({
   file: FileLike,
 });
 
 // Types
 
-export type ImportScholarshipRecipientsInput = z.infer<
-  typeof ImportScholarshipRecipientsInput
->;
+export type ImportRecipientsInput = z.infer<typeof ImportRecipientsInput>;
 export type ScholarshipRecipient = z.infer<typeof ScholarshipRecipient>;
-export type ScholarshipType = ExtractValue<typeof ScholarshipType>;

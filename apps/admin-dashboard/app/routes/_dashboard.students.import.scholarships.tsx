@@ -9,9 +9,9 @@ import {
   redirect,
 } from '@remix-run/node';
 import { Form as RemixForm, useActionData } from '@remix-run/react';
-import { z } from 'zod';
 
 import { importScholarshipRecipients } from '@oyster/core/scholarships';
+import { ImportRecipientsInput } from '@oyster/core/scholarships.types';
 import {
   Button,
   FileUploader,
@@ -34,14 +34,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({});
 }
 
-const ImportScholarshipRecipientsInput = z.object({
-  file: z.custom<File>(),
-});
-
-type ImportScholarshipRecipientsInput = z.infer<
-  typeof ImportScholarshipRecipientsInput
->;
-
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
@@ -52,10 +44,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors, ok } = await validateForm(
-    form,
-    ImportScholarshipRecipientsInput
-  );
+  const { data, errors, ok } = await validateForm(form, ImportRecipientsInput);
 
   if (!ok) {
     return json({ errors }, { status: 400 });
@@ -95,7 +84,7 @@ export default function ImportScholarshipsPage() {
   );
 }
 
-const keys = ImportScholarshipRecipientsInput.keyof().enum;
+const keys = ImportRecipientsInput.keyof().enum;
 
 function ImportScholarshipsForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
