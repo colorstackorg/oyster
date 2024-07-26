@@ -2,9 +2,7 @@ import { z } from 'zod';
 
 import { BooleanInput, Entity } from '@oyster/types';
 
-export type FeatureFlagName =
-  | 'family_application'
-  | 'interview_reviews';
+export type FeatureFlagName = 'family_application' | 'interview_reviews';
 
 // Domain
 
