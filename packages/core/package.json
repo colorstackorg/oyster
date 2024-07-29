@@ -26,6 +26,7 @@
     "./location.ui": "./src/modules/location/location.ui.tsx",
     "./mixpanel": "./src/modules/mixpanel/index.ts",
     "./object-storage": "./src/modules/object-storage/index.ts",
+    "./remix": "./src/modules/remix.ts",
     "./resources": "./src/modules/resource/index.ts",
     "./resources.server": "./src/modules/resource/index.server.ts",
     "./resume-books": "./src/modules/resume-book/resume-book.core.ts",
