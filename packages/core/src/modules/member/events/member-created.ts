@@ -2,7 +2,7 @@ import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
 import { addMailchimpListMember } from '@/modules/mailchimp/use-cases/add-mailchimp-list-member';
-import { reportError } from '@/modules/sentry/use-cases/report-error';
+import { reportException } from '@/modules/sentry/use-cases/report-exception';
 
 type StudentCreatedInput = GetBullJobData<'student.created'>;
 
@@ -45,6 +45,6 @@ export async function onMemberCreated(input: StudentCreatedInput) {
       lastName: student.lastName,
     });
   } catch (e) {
-    reportError(e);
+    reportException(e);
   }
 }

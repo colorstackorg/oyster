@@ -15,7 +15,7 @@ import {
   MajorCombobox,
   type School,
   SchoolCombobox,
-} from '../core.ui';
+} from '@/member-profile.ui';
 
 const EducationFormContext = React.createContext({
   isOtherFieldOfStudy: false,

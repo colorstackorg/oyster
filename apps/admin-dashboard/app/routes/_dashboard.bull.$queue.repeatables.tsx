@@ -23,15 +23,15 @@ import {
   type TableColumnProps,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { QueueFromName } from '../shared/core.server';
-import { BullQueue } from '../shared/core.ui';
+import { QueueFromName } from '@/admin-dashboard.server';
+import { BullQueue } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 const BullParams = z.object({
   queue: z.nativeEnum(BullQueue),
@@ -77,7 +77,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Removed repeatable.',
-    type: 'success',
   });
 
   return json(
@@ -103,7 +102,7 @@ export default function RepeatablesPage() {
               backgroundColorOnHover: 'gray-200',
               shape: 'square',
             })}
-            to={generatePath(Route.ADD_BULL_REPEATABLE, { queue })}
+            to={generatePath(Route['/bull/:queue/repeatables/add'], { queue })}
           >
             <Plus />
           </Link>

@@ -1,16 +1,11 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import {
-  generatePath,
-  Link,
-  useLoaderData,
-  useNavigate,
-} from '@remix-run/react';
+import { generatePath, Link, useLoaderData } from '@remix-run/react';
 
+import { db } from '@oyster/db';
 import { type Student } from '@oyster/types';
 import { Modal, ProfilePicture } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { db } from '../shared/core.server';
+import { Route } from '@/shared/constants';
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const registrations = await getEventRegistrations(params.id as string);
@@ -41,14 +36,8 @@ async function getEventRegistrations(eventId: string) {
 export default function EventRegistrationsPage() {
   const { registrations } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/events/upcoming']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/events/upcoming']}>
       <Modal.Header>
         <Modal.Title>Guest List ({registrations.length})</Modal.Title>
         <Modal.CloseButton />

@@ -4,27 +4,22 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type z } from 'zod';
 
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
-import { EducationForm } from '../shared/components/education-form';
-import { Route } from '../shared/constants';
-import { addEducation } from '../shared/core.server';
-import { AddEducationInput } from '../shared/core.ui';
+import { addEducation } from '@/member-profile.server';
+import { AddEducationInput } from '@/member-profile.ui';
+import { EducationForm } from '@/shared/components/education-form';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -49,18 +44,13 @@ type AddEducationFormData = z.infer<typeof AddEducationFormData>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    AddEducationFormData,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    AddEducationFormData
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the above errors.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   if (data.startDate && data.endDate && data.startDate > data.endDate) {
@@ -78,7 +68,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Added education.',
-      type: 'success',
     });
 
     return redirect(Route['/profile/education'], {
@@ -87,36 +76,17 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
-const {
-  degreeType,
-  endDate,
-  major,
-  otherMajor,
-  otherSchool,
-  schoolId,
-  startDate,
-} = AddEducationFormData.keyof().enum;
+const keys = AddEducationFormData.keyof().enum;
 
 export default function AddEducationPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route['/profile/education']);
-  }
-
-  const submitting = useNavigation().state === 'submitting';
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/education']}>
       <Modal.Header>
         <Modal.Title>Add Education</Modal.Title>
         <Modal.CloseButton />
@@ -124,33 +94,40 @@ export default function AddEducationPage() {
 
       <RemixForm className="form" method="post">
         <EducationForm.Context>
-          <EducationForm.SchoolField error={errors.schoolId} name={schoolId} />
+          <EducationForm.SchoolField
+            error={errors.schoolId}
+            name={keys.schoolId}
+          />
           <EducationForm.OtherSchoolField
             error={errors.otherSchool}
-            name={otherSchool}
+            name={keys.otherSchool}
           />
           <EducationForm.DegreeTypeField
             error={errors.degreeType}
-            name={degreeType}
+            name={keys.degreeType}
           />
-          <EducationForm.FieldOfStudyField error={errors.major} name={major} />
+          <EducationForm.FieldOfStudyField
+            error={errors.major}
+            name={keys.major}
+          />
           <EducationForm.OtherFieldOfStudyField
             error={errors.otherMajor}
-            name={otherMajor}
+            name={keys.otherMajor}
           />
           <EducationForm.StartDateField
             error={errors.startDate}
-            name={startDate}
+            name={keys.startDate}
           />
-          <EducationForm.EndDateField error={errors.endDate} name={endDate} />
+          <EducationForm.EndDateField
+            error={errors.endDate}
+            name={keys.endDate}
+          />
         </EducationForm.Context>
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Save
-          </Button>
+          <Button.Submit>Save</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

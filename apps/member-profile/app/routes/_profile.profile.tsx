@@ -14,14 +14,15 @@ import {
   Mail,
   Settings,
   Smile,
+  Zap,
 } from 'react-feather';
 
 import { cx, Divider, ProfilePicture, Text } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { getMember } from '../shared/queries';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
-import { formatHeadline, formatName } from '../shared/utils/format.utils';
+import { Route } from '@/shared/constants';
+import { getMember } from '@/shared/queries';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
+import { formatHeadline, formatName } from '@/shared/utils/format.utils';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -80,7 +81,7 @@ function ProfileHeader() {
   const { student } = useLoaderData<typeof loader>();
 
   return (
-    <header className="mb-12 flex items-end gap-4">
+    <header className="mb-12 flex items-start gap-4 lg:items-center">
       <Link to={generatePath(Route['/directory/:id'], { id: student.id })}>
         <ProfilePicture
           initials={student.initials}
@@ -123,6 +124,11 @@ function ProfileNavigation() {
           icon={<LinkIcon size={20} />}
           label="Socials"
           to={Route['/profile/socials']}
+        />
+        <ProfileNavigationItem
+          icon={<Zap size={20} />}
+          label="Integrations"
+          to={Route['/profile/integrations']}
         />
         <ProfileNavigationItem
           icon={<Smile size={20} />}

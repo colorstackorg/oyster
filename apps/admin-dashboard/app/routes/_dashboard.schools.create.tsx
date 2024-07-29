@@ -4,30 +4,24 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 
+import { createSchool } from '@oyster/core/education';
+import { CreateSchoolInput } from '@oyster/core/education.types';
 import {
-  Button,
-  Form,
-  getActionErrors,
-  Input,
-  Modal,
-  validateForm,
-} from '@oyster/ui';
+  SchoolCityField,
+  SchoolNameField,
+  SchoolStateField,
+  SchoolZipField,
+} from '@oyster/core/education.ui';
+import { Button, getErrors, Modal, validateForm } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { createSchool } from '../shared/core.server';
-import { CreateSchoolInput } from '../shared/core.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -38,18 +32,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
+  const { data, errors, ok } = await validateForm(request, CreateSchoolInput);
 
-  const { data, errors } = validateForm(
-    CreateSchoolInput,
-    Object.fromEntries(form)
-  );
-
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await createSchool({
@@ -60,11 +46,10 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   toast(session, {
-    message: `Created ${data.name}.`,
-    type: 'success',
+    message: 'Created school.',
   });
 
-  return redirect(Route.SCHOOLS, {
+  return redirect(Route['/schools'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -72,97 +57,25 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function CreateSchoolPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
+  const { errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/schools']}>
       <Modal.Header>
         <Modal.Title>Create School</Modal.Title>
         <Modal.CloseButton />
       </Modal.Header>
 
-      <CreateSchoolForm />
+      <RemixForm className="form" method="post">
+        <SchoolNameField error={errors.name} />
+        <SchoolCityField error={errors.addressCity} />
+        <SchoolStateField error={errors.addressState} />
+        <SchoolZipField error={errors.addressZip} />
+
+        <Button.Group>
+          <Button.Submit>Create</Button.Submit>
+        </Button.Group>
+      </RemixForm>
     </Modal>
-  );
-}
-
-const keys = CreateSchoolInput.keyof().enum;
-
-function CreateSchoolForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
-
-  return (
-    <RemixForm className="form" method="post">
-      <Form.Field
-        error={errors.name}
-        label="Name"
-        labelFor={keys.name}
-        required
-      >
-        <Input
-          id={keys.name}
-          name={keys.name}
-          placeholder="University of California, Los Angeles"
-          required
-        />
-      </Form.Field>
-
-      <Form.Field
-        error={errors.addressCity}
-        label="City"
-        labelFor={keys.addressCity}
-        required
-      >
-        <Input
-          id={keys.addressCity}
-          name={keys.addressCity}
-          placeholder="Los Angeles"
-          required
-        />
-      </Form.Field>
-
-      <Form.Field
-        description="Please use the two-letter abbreviation."
-        error={errors.addressState}
-        label="State"
-        labelFor={keys.addressState}
-        required
-      >
-        <Input
-          id={keys.addressState}
-          name={keys.addressState}
-          placeholder="CA"
-          required
-        />
-      </Form.Field>
-
-      <Form.Field
-        error={errors.addressZip}
-        label="Zip Code"
-        labelFor={keys.addressZip}
-        required
-      >
-        <Input
-          id={keys.addressZip}
-          name={keys.addressZip}
-          placeholder="90210"
-          required
-        />
-      </Form.Field>
-
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
-
-      <Button.Group>
-        <Button loading={submitting} type="submit">
-          Create
-        </Button>
-      </Button.Group>
-    </RemixForm>
   );
 }

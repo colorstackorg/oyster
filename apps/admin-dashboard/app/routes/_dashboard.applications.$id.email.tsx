@@ -8,7 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 import { type z } from 'zod';
 
@@ -16,19 +15,22 @@ import { Application } from '@oyster/types';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { getApplication, updateEmailApplication } from '../shared/core.server';
+import {
+  getApplication,
+  updateEmailApplication,
+} from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
@@ -60,18 +62,13 @@ export async function action({ params, request }: ActionFunctionArgs) {
     allowAmbassador: true,
   });
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpdateApplicationEmailInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    UpdateApplicationEmailInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   const result = updateEmailApplication({
@@ -88,12 +85,11 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Updated application email.',
-    type: 'success',
   });
 
   const url = new URL(request.url);
 
-  url.pathname = Route.APPLICATIONS;
+  url.pathname = Route['/applications'];
 
   return redirect(url.toString(), {
     headers: {
@@ -123,25 +119,26 @@ export default function UpdateApplicationEmailPage() {
   );
 }
 
-const { email } = UpdateApplicationEmailInput.keyof().enum;
+const keys = UpdateApplicationEmailInput.keyof().enum;
 
 function UpdateApplicationEmailForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field error={errors.email} label="Email" labelFor={email} required>
-        <Input id={email} name={email} required />
+      <Form.Field
+        error={errors.email}
+        label="Email"
+        labelFor={keys.email}
+        required
+      >
+        <Input id={keys.email} name={keys.email} required />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Update
-        </Button>
+        <Button.Submit>Update</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

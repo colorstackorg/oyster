@@ -4,32 +4,27 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import {
   Button,
   Checkbox,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { addAdmin } from '../shared/core.server';
-import { AddAdminInput } from '../shared/core.ui';
+import { addAdmin } from '@/admin-dashboard.server';
+import { AddAdminInput } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -40,23 +35,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
+  const { data, errors, ok } = await validateForm(
+    request,
     AddAdminInput.extend({
       isAmbassador: z.preprocess(
         (value) => value === '1',
         AddAdminInput.shape.isAmbassador
       ),
-    }),
-    Object.fromEntries(form)
+    })
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   const result = await addAdmin(data);
@@ -64,16 +54,14 @@ export async function action({ request }: ActionFunctionArgs) {
   if (result instanceof Error) {
     return json({
       error: result.message,
-      errors,
     });
   }
 
   toast(session, {
     message: 'Added admin.',
-    type: 'success',
   });
 
-  return redirect(Route.HOME, {
+  return redirect(Route['/admins'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -81,14 +69,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function AddAdminPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/']}>
       <Modal.Header>
         <Modal.Title>Add Admin</Modal.Title>
         <Modal.CloseButton />
@@ -102,9 +84,7 @@ export default function AddAdminPage() {
 const keys = AddAdminInput.keyof().enum;
 
 function AddAdminForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">
@@ -154,9 +134,7 @@ function AddAdminForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Add
-        </Button>
+        <Button.Submit>Add</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

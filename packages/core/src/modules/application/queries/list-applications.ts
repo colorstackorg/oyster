@@ -28,7 +28,11 @@ export async function listApplications({
           eb('applications.email', 'ilike', `%${search}%`),
           eb('applications.firstName', 'ilike', `%${search}%`),
           eb('applications.lastName', 'ilike', `%${search}%`),
-          eb(sql`first_name || ' ' || last_name`, 'ilike', `%${search}%`),
+          eb(
+            sql`applications.first_name || ' ' || applications.last_name`,
+            'ilike',
+            `%${search}%`
+          ),
         ])
       );
     })
@@ -36,9 +40,12 @@ export async function listApplications({
       return qb.where('applications.status', '=', status);
     });
 
+  const orderDirection = status === 'pending' ? 'asc' : 'desc';
+
   const [rows, { count }] = await Promise.all([
     query
       .leftJoin('schools', 'schools.id', 'applications.schoolId')
+      .leftJoin('admins', 'admins.id', 'applications.reviewedById')
       .select([
         'applications.createdAt',
         'applications.email',
@@ -46,13 +53,15 @@ export async function listApplications({
         'applications.id',
         'applications.lastName',
         'applications.status',
+        'admins.firstName as reviewedByFirstName',
+        'admins.lastName as reviewedByLastName',
         (eb) => {
           return eb.fn
             .coalesce('schools.name', 'applications.otherSchool')
             .as('school');
         },
       ])
-      .orderBy('applications.createdAt', 'asc')
+      .orderBy('applications.createdAt', orderDirection)
       .limit(limit)
       .offset((page - 1) * limit)
       .execute(),

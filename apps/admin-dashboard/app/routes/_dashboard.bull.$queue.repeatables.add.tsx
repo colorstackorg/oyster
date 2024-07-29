@@ -8,28 +8,27 @@ import {
   generatePath,
   Form as RemixForm,
   useActionData,
-  useNavigate,
-  useNavigation,
+  useParams,
 } from '@remix-run/react';
 import { z } from 'zod';
 
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { QueueFromName } from '../shared/core.server';
-import { BullQueue } from '../shared/core.ui';
+import { QueueFromName } from '@/admin-dashboard.server';
+import { BullQueue } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 const BullParams = z.object({
   queue: z.nativeEnum(BullQueue),
@@ -48,23 +47,13 @@ const AddRepeatableInput = z.object({
 
 type AddRepeatableInput = z.infer<typeof AddRepeatableInput>;
 
-const AddRepeatableKey = AddRepeatableInput.keyof().enum;
-
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
+  const { data, errors, ok } = await validateForm(request, AddRepeatableInput);
 
-  const { data, errors } = validateForm(
-    AddRepeatableInput,
-    Object.fromEntries(form)
-  );
-
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   const { queue: queueName } = BullParams.parse(params);
@@ -80,25 +69,27 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Added repeatable.',
-    type: 'success',
   });
 
-  return redirect(generatePath(Route.BULL_REPEATABLES, { queue: queueName }), {
-    headers: {
-      'Set-Cookie': await commitSession(session),
-    },
-  });
+  return redirect(
+    generatePath(Route['/bull/:queue/repeatables'], { queue: queueName }),
+    {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    }
+  );
 }
 
 export default function AddRepeatablePage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
+  const { queue } = useParams();
 
   return (
-    <Modal onClose={onClose}>
+    <Modal
+      onCloseTo={generatePath(Route['/bull/:queue/repeatables'], {
+        queue: queue as string,
+      })}
+    >
       <Modal.Header>
         <Modal.Title>Add Repeatable</Modal.Title>
         <Modal.CloseButton />
@@ -109,46 +100,36 @@ export default function AddRepeatablePage() {
   );
 }
 
-function AddRepeatableForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+const keys = AddRepeatableInput.keyof().enum;
 
-  const submitting = useNavigation().state === 'submitting';
+function AddRepeatableForm() {
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">
       <Form.Field
         error={errors.name}
         label="Name"
-        labelFor={AddRepeatableKey.name}
+        labelFor={keys.name}
         required
       >
-        <Input
-          id={AddRepeatableKey.name}
-          name={AddRepeatableKey.name}
-          required
-        />
+        <Input id={keys.name} name={keys.name} required />
       </Form.Field>
 
       <Form.Field
         description="Please format the job to be in the PT timezone."
         error={errors.pattern}
         label="Pattern (CRON)"
-        labelFor={AddRepeatableKey.pattern}
+        labelFor={keys.pattern}
         required
       >
-        <Input
-          id={AddRepeatableKey.pattern}
-          name={AddRepeatableKey.pattern}
-          required
-        />
+        <Input id={keys.pattern} name={keys.pattern} required />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Add
-        </Button>
+        <Button.Submit>Add</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

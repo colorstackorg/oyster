@@ -1,3 +1,5 @@
+import { type Country } from '@oyster/core/location.types';
+import { CityCombobox, type CityComboboxProps } from '@oyster/core/location.ui';
 import { FORMATTED_GENDER, type Gender } from '@oyster/types';
 import {
   Checkbox,
@@ -7,9 +9,7 @@ import {
   Select,
 } from '@oyster/ui';
 
-import { CityCombobox, type CityComboboxProps } from './city-combobox';
-import { EthnicityMultiCombobox } from './ethnicity-combobox';
-import { type Country } from '../core.ui';
+import { EthnicityMultiCombobox } from '@/shared/components/ethnicity-combobox';
 
 export function BirthdateNotificationField({
   defaultValue,
@@ -100,13 +100,21 @@ export function HometownField({
   defaultValue,
   defaultLatitude,
   defaultLongitude,
+  description,
   error,
   latitudeName,
   longitudeName,
   name,
-}: FieldProps<string> & Omit<CityComboboxProps, 'required'>) {
+}: FieldProps<string> &
+  Omit<CityComboboxProps, 'required'> & { description?: string }) {
   return (
-    <Form.Field error={error} labelFor={name} label="Hometown" required>
+    <Form.Field
+      description={description}
+      error={error}
+      labelFor={name}
+      label="Hometown"
+      required
+    >
       <CityCombobox
         defaultLatitude={defaultLatitude}
         defaultLongitude={defaultLongitude}

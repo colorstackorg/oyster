@@ -8,6 +8,7 @@ export type InputProps = Pick<
   | 'autoFocus'
   | 'className'
   | 'defaultValue'
+  | 'disabled'
   | 'form'
   | 'id'
   | 'max'
@@ -44,6 +45,7 @@ export const Input = React.forwardRef(
 export function getInputCn() {
   return cx(
     'w-full rounded-lg border border-gray-300 p-2',
+    'disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500',
     'focus:border-primary'
   );
 }

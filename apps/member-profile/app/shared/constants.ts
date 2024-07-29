@@ -1,59 +1,69 @@
-import { type ExtractValue } from '@oyster/types';
+const ROUTES = [
+  '/apply',
+  '/apply/thank-you',
+  '/companies',
+  '/companies/reviews/add',
+  '/companies/:id',
+  '/directory',
+  '/directory/join',
+  '/directory/join/1',
+  '/directory/join/2',
+  '/directory/join/3',
+  '/directory/join/4',
+  '/directory/join/finish',
+  '/directory/:id',
+  '/events',
+  '/events/past',
+  '/events/past/:id/attendees',
+  '/events/upcoming',
+  '/events/upcoming/:id/register',
+  '/events/upcoming/:id/registrations',
+  '/home',
+  '/home/claim-swag-pack',
+  '/home/claim-swag-pack/confirmation',
+  '/login',
+  '/login/otp/send',
+  '/login/otp/verify',
+  '/points',
+  '/profile',
+  '/profile/education',
+  '/profile/education/add',
+  '/profile/education/:id/delete',
+  '/profile/education/:id/edit',
+  '/profile/emails',
+  '/profile/emails/add/finish',
+  '/profile/emails/add/start',
+  '/profile/emails/change-primary',
+  '/profile/general',
+  '/profile/icebreakers',
+  '/profile/integrations',
+  '/profile/personal',
+  '/profile/socials',
+  '/profile/work',
+  '/profile/work/add',
+  '/profile/work/:id/delete',
+  '/profile/work/:id/edit',
+  '/profile/work/:id/review/add',
+  '/profile/work/:id/review/edit',
+  '/recap/:date/announcements',
+  '/recap/:date/leaderboard',
+  '/recap/:date/members',
+  '/recap/:date/resources',
+  '/recap/:date/reviews',
+  '/resources',
+  '/resources/add',
+  '/resources/:id/edit',
+  '/resume-books/:id',
+] as const;
 
-export const Route = {
-  ADD_EDUCATION: '/profile/education/add',
-  ADD_WORK_EXPERIENCE: '/profile/work/add',
-  APPLICATION: '/apply',
-  APPLICATION_THANK_YOU: '/apply/thank-you',
-  CHANGE_PRIMARY_EMAIL: '/profile/emails/change-primary',
-  CLAIM_SWAG_PACK: '/home/claim-swag-pack',
-  CLAIM_SWAG_PACK_CONFIRMATION: '/home/claim-swag-pack/confirmation',
-  DELETE_EDUCATION: '/profile/education/:id/delete',
-  DELETE_WORK_EXPERIENCE: '/profile/work/:id/delete',
-  EDIT_WORK_EXPERIENCE: '/profile/work/:id/edit',
-  LOGIN: '/login',
-  LOGIN_OTP_SEND: '/login/otp/send',
-  LOGIN_OTP_VERIFY: '/login/otp/verify',
-  HOME: '/home',
-  POINTS: '/points',
+export type Route = (typeof ROUTES)[number];
 
-  // Census
+type RouteMap = {
+  [Key in Route]: Key;
+};
 
-  '/census': '/census',
+export const Route = ROUTES.reduce((result, route) => {
+  Object.assign(result, { [route]: route });
 
-  // Directory
-
-  '/directory': '/directory',
-  '/directory/:id': '/directory/:id',
-  '/directory/join': '/directory/join',
-  '/directory/join/1': '/directory/join/1',
-  '/directory/join/2': '/directory/join/2',
-  '/directory/join/3': '/directory/join/3',
-  '/directory/join/4': '/directory/join/4',
-  '/directory/join/finish': '/directory/join/finish',
-
-  // Events
-
-  '/events': '/events',
-  '/events/past': '/events/past',
-  '/events/past/:id/attendees': '/events/past/:id/attendees',
-  '/events/upcoming': '/events/upcoming',
-  '/events/upcoming/:id/register': '/events/upcoming/:id/register',
-  '/events/upcoming/:id/registrations': '/events/upcoming/:id/registrations',
-
-  // Profile
-
-  '/profile': '/profile',
-  '/profile/education': '/profile/education',
-  '/profile/education/:id/edit': '/profile/education/:id/edit',
-  '/profile/emails': '/profile/emails',
-  '/profile/emails/add/finish': '/profile/emails/add/finish',
-  '/profile/emails/add/start': '/profile/emails/add/start',
-  '/profile/general': '/profile/general',
-  '/profile/icebreakers': '/profile/icebreakers',
-  '/profile/personal': '/profile/personal',
-  '/profile/socials': '/profile/socials',
-  '/profile/work': '/profile/work',
-} as const;
-
-export type Route = ExtractValue<typeof Route>;
+  return result;
+}, {} as RouteMap);

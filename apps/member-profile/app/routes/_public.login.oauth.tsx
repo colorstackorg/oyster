@@ -1,12 +1,12 @@
 import { type LoaderFunctionArgs, redirect } from '@remix-run/node';
 import jwt from 'jsonwebtoken';
 
+import { track } from '@oyster/core/mixpanel';
 import { toTitleCase } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { ENV } from '../shared/constants.server';
-import { trackWithoutRequest } from '../shared/mixpanel.server';
-import { commitSession, getSession, SESSION } from '../shared/session.server';
+import { Route } from '@/shared/constants';
+import { ENV } from '@/shared/constants.server';
+import { commitSession, getSession, SESSION } from '@/shared/session.server';
 
 // TODO: Add Zod validation here.
 
@@ -22,7 +22,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!token) {
     session.flash('error', error);
 
-    return redirect(Route.LOGIN, {
+    return redirect(Route['/login'], {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
@@ -38,16 +38,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     id = data.id;
   } catch {
-    return redirect(Route.LOGIN);
+    return redirect(Route['/login']);
   }
 
   session.set(SESSION.USER_ID, id);
 
-  trackWithoutRequest(id, 'Logged In', {
-    Method: toTitleCase(method) as 'Google' | 'Slack',
+  track({
+    event: 'Logged In',
+    properties: { Method: toTitleCase(method) as 'Google' | 'Slack' },
+    user: id,
   });
 
-  const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route.HOME;
+  const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route['/home'];
 
   return redirect(redirectUrl, {
     headers: {

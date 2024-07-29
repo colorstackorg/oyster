@@ -12,14 +12,17 @@ import {
 
 import { Button, Form, Modal } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { deleteWorkExperience, getWorkExperience } from '../shared/core.server';
+import {
+  deleteWorkExperience,
+  getWorkExperience,
+} from '@/member-profile.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -50,7 +53,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Deleted work experience.',
-      type: 'success',
     });
 
     return redirect(Route['/profile/work'], {
@@ -59,9 +61,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
@@ -70,16 +70,12 @@ export default function DeleteWorkExperiencePage() {
 
   const navigate = useNavigate();
 
-  function onClose() {
-    navigate(Route['/profile/work']);
-  }
-
   function onBack() {
     navigate(-1);
   }
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/work']}>
       <Modal.Header>
         <Modal.Title>Delete Work Experience</Modal.Title>
         <Modal.CloseButton />

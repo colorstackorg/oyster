@@ -1,9 +1,5 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
-import { Outlet, Link as RemixLink, useLoaderData } from '@remix-run/react';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren, type PropsWithoutRef } from 'react';
 import {
@@ -19,35 +15,26 @@ import {
 } from 'react-feather';
 import { match } from 'ts-pattern';
 
+import { getIpAddress, setMixpanelProfile, track } from '@oyster/core/mixpanel';
+import { db } from '@oyster/db';
 import {
   type ActivationRequirement,
   StudentActiveStatus,
   Timezone,
 } from '@oyster/types';
-import {
-  Button,
-  cx,
-  Divider,
-  getButtonCn,
-  Link,
-  ProfilePicture,
-  Text,
-} from '@oyster/ui';
+import { Button, cx, Divider, getButtonCn, Text } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { Card } from '../shared/components/card';
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
 import {
   countEventAttendees,
   countMessagesSent,
-  db,
   getActiveStreakLeaderboard,
-  getActiveStreakLeaderboardPosition,
-  getIpAddress,
-} from '../shared/core.server';
-import { setMixpanelProfile, track } from '../shared/mixpanel.server';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+} from '@/member-profile.server';
+import { Card, type CardProps } from '@/shared/components/card';
+import { Leaderboard } from '@/shared/components/leaderboard';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 const RECENT_WEEKS = 16;
 
@@ -78,14 +65,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     getTotalStudentsCount(),
   ]);
 
-  let leaderboardPosition = null;
-
-  // If there are no statuses for the student, then they won't have a position
-  // on the leaderboard so we won't send that query.
-  if (_statuses.length) {
-    leaderboardPosition = await getActiveStreakLeaderboardPosition(id);
-  }
-
   const statuses = fillRecentStatuses(_statuses, timezone);
 
   setMixpanelProfile(id, {
@@ -95,14 +74,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ip: getIpAddress(request),
   });
 
-  track(request, 'Page Viewed', {
-    Page: 'Home',
+  track({
+    event: 'Page Viewed',
+    properties: { Page: 'Home' },
+    request,
+    user: id,
   });
 
   return json({
     eventsAttendedCount,
     leaderboard,
-    leaderboardPosition,
     messagesSentCount,
     statuses,
     student,
@@ -381,12 +362,12 @@ function ClaimSwagPackCard() {
       </Card.Description>
 
       <Button.Group>
-        <RemixLink
-          to={Route.CLAIM_SWAG_PACK}
+        <Link
           className={getButtonCn({ variant: 'primary' })}
+          to={Route['/home/claim-swag-pack']}
         >
           Claim Swag Pack
-        </RemixLink>
+        </Link>
       </Button.Group>
     </Card>
   );
@@ -404,7 +385,7 @@ function OnboardingSessionCard() {
 
       <Button.Group>
         <a
-          href="https://calendly.com/colorstack-ambassador/onboarding"
+          href="https://calendly.com/colorstack-onboarding-ambassador/onboarding"
           target="_blank"
           className={getButtonCn({ variant: 'primary' })}
         >
@@ -523,16 +504,8 @@ function TotalCommunityMemberCard() {
   );
 }
 
-function LeaderboardCard({
-  className,
-}: PropsWithoutRef<{ className?: string }>) {
-  const { leaderboard, leaderboardPosition } = useLoaderData<typeof loader>();
-
-  const isAlreadyInLeaderboard =
-    leaderboardPosition &&
-    leaderboard.some((position) => {
-      return position.id === leaderboardPosition.id;
-    });
+function LeaderboardCard({ className }: CardProps) {
+  const { leaderboard, student } = useLoaderData<typeof loader>();
 
   return (
     <Card className={cx('flex-1', className)}>
@@ -543,71 +516,32 @@ function LeaderboardCard({
         message or reacted to a Slack message, in that week.
       </Card.Description>
 
-      {!leaderboardPosition && (
-        <Card.Description>
-          You will be eligible for the leaderboard after you have been in
-          ColorStack for a full calendar week.
-        </Card.Description>
-      )}
-
-      <ul className="flex flex-col gap-4">
+      <Leaderboard.List>
         {leaderboard.map((position) => {
           return (
-            <LeaderboardPositionItem key={position.id} position={position} />
+            <Leaderboard.Item
+              key={position.id}
+              firstName={position.firstName}
+              isMe={position.id === student.id}
+              label={<LeaderboardItemLabel weeks={position.value} />}
+              lastName={position.lastName}
+              position={position.position}
+              profilePicture={position.profilePicture || undefined}
+            />
           );
         })}
-
-        {leaderboardPosition && !isAlreadyInLeaderboard && (
-          <LeaderboardPositionItem position={leaderboardPosition} />
-        )}
-      </ul>
+      </Leaderboard.List>
     </Card>
   );
 }
 
-type LeaderboardPositionItemProps = {
-  position: SerializeFrom<typeof loader>['leaderboard'][number];
-};
-
-function LeaderboardPositionItem({ position }: LeaderboardPositionItemProps) {
-  const { student } = useLoaderData<typeof loader>();
-
-  const isMe = position.id === student.id;
-
-  const formattedPosition = Intl.NumberFormat('en-US', {
-    maximumFractionDigits: 1,
-    notation: 'compact',
-  }).format(position.position);
-
+function LeaderboardItemLabel({ weeks }: { weeks: number }) {
   return (
-    <li
-      className="grid grid-cols-[3rem_4fr_1fr] items-center"
-      key={position.id}
-    >
-      <Text className="ml-auto mr-4" color="gray-500" weight="500">
-        {formattedPosition}
-      </Text>
-
-      <div className="flex items-center gap-2">
-        <ProfilePicture
-          initials={position.firstName[0] + position.lastName[0]}
-          src={position.profilePicture || undefined}
-        />
-
-        <Text {...(isMe && { weight: '600' })}>
-          {position.firstName}{' '}
-          <span className="hidden sm:inline">{position.lastName}</span>
-          <span className="inline sm:hidden">{position.lastName[0]}.</span>{' '}
-          {isMe && '(You)'}
-        </Text>
-      </div>
-
-      <Text>
-        {position.value}
-        <span className="hidden text-sm sm:inline"> Weeks</span>
-        <span className="inline text-sm sm:hidden">w</span>
-      </Text>
-    </li>
+    <Leaderboard.ItemLabel>
+      {weeks}
+      <span className="hidden text-sm sm:inline"> Weeks</span>
+      <span className="inline text-sm sm:hidden">w</span>
+    </Leaderboard.ItemLabel>
   );
 }
 
@@ -636,13 +570,6 @@ function ImportantResourcesCard() {
           href="https://github.com/colorstackorg/oyster"
         >
           GitHub
-        </ResourceItem>
-
-        <ResourceItem
-          description="A space for 1:1 coaching. Ask any career questions from resume help to negotiating your offer."
-          href="https://calendly.com/catalystcreation/color-stack-decoded-1-1-coaching-sessions-"
-        >
-          Career Coaching w/ Cataliña
         </ResourceItem>
 
         <ResourceItem
@@ -679,7 +606,7 @@ function ResourceItem({
 >) {
   return (
     <li>
-      <Link href={href} target="_blank">
+      <Link className="link" to={href} target="_blank">
         {children}
       </Link>
 

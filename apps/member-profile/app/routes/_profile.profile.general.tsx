@@ -7,37 +7,36 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 import { type z } from 'zod';
 
+import { track } from '@oyster/core/mixpanel';
 import { Student } from '@oyster/types';
 import {
   Button,
   Divider,
-  getActionErrors,
+  getErrors,
   InputField,
   validateForm,
 } from '@oyster/ui';
 
+import { updateMember } from '@/member-profile.server';
 import {
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
-} from '../shared/components/profile';
+} from '@/shared/components/profile';
 import {
   CurrentLocationField,
   PreferredNameField,
-} from '../shared/components/profile.general';
-import { updateMember } from '../shared/core.server';
-import { track } from '../shared/mixpanel.server';
-import { getMember } from '../shared/queries/index';
+} from '@/shared/components/profile.general';
+import { getMember } from '@/shared/queries/index';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -57,8 +56,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ])
     .executeTakeFirstOrThrow();
 
-  track(request, 'Page Viewed', {
-    Page: 'Profile - General',
+  track({
+    event: 'Page Viewed',
+    properties: { Page: 'Profile' },
+    request,
+    user: id,
   });
 
   return json({
@@ -82,18 +84,13 @@ type UpdateGeneralInformation = z.infer<typeof UpdateGeneralInformation>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpdateGeneralInformation,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    UpdateGeneralInformation
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await updateMember({
@@ -103,7 +100,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Updated!',
-    type: 'success',
   });
 
   return json(
@@ -119,20 +115,11 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 }
 
-const {
-  currentLocation,
-  currentLocationLatitude,
-  currentLocationLongitude,
-  firstName,
-  headline,
-  lastName,
-  preferredName,
-} = UpdateGeneralInformation.keyof().enum;
+const keys = UpdateGeneralInformation.keyof().enum;
 
 export default function UpdateGeneralInformationSection() {
-  const { errors } = getActionErrors(useActionData<typeof action>());
+  const { errors } = getErrors(useActionData<typeof action>());
   const { student } = useLoaderData<typeof loader>();
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <ProfileSection>
@@ -145,14 +132,14 @@ export default function UpdateGeneralInformationSection() {
           defaultValue={student.firstName}
           error={errors.firstName}
           label="First Name"
-          name={firstName}
+          name={keys.firstName}
           required
         />
         <InputField
           defaultValue={student.lastName}
           error={errors.lastName}
           label="Last Name"
-          name={lastName}
+          name={keys.lastName}
           required
         />
         <PreferredNameField
@@ -160,7 +147,7 @@ export default function UpdateGeneralInformationSection() {
           error={errors.preferredName}
           firstName={student.firstName}
           lastName={student.lastName}
-          name={preferredName}
+          name={keys.preferredName}
         />
 
         <Divider />
@@ -170,7 +157,7 @@ export default function UpdateGeneralInformationSection() {
           description="A LinkedIn-style headline."
           error={errors.headline}
           label="Headline"
-          name={headline}
+          name={keys.headline}
           placeholder="Incoming SWE Intern @ Google | Cornell '26"
           required
         />
@@ -182,15 +169,13 @@ export default function UpdateGeneralInformationSection() {
           defaultLongitude={student.currentLocationCoordinates?.x}
           defaultValue={student.currentLocation || undefined}
           error={errors.currentLocation}
-          name={currentLocation}
-          latitudeName={currentLocationLatitude}
-          longitudeName={currentLocationLongitude}
+          name={keys.currentLocation}
+          latitudeName={keys.currentLocationLatitude}
+          longitudeName={keys.currentLocationLongitude}
         />
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Save
-          </Button>
+          <Button.Submit>Save</Button.Submit>
         </Button.Group>
       </RemixForm>
     </ProfileSection>

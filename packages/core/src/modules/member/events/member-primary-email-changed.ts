@@ -1,10 +1,17 @@
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
+import {
+  AIRTABLE_FAMILY_BASE_ID,
+  AIRTABLE_MEMBERS_TABLE_ID,
+} from '@/modules/airtable/airtable.core';
 import { updateMailchimpListMember } from '@/modules/mailchimp/use-cases/update-mailchimp-list-member';
-import { reportError } from '@/modules/sentry/use-cases/report-error';
-import { updateSlackEmail } from '@/modules/slack/services/slack-user.service';
-import { NotFoundError } from '@/shared/errors';
+import { reportException } from '@/modules/sentry/use-cases/report-exception';
+import {
+  getSlackUserByEmail,
+  updateSlackEmail,
+} from '@/modules/slack/services/slack-user.service';
+import { ErrorWithContext, NotFoundError } from '@/shared/errors';
 
 type UpdateEmailMarketingMemberInput = {
   email: string;
@@ -13,6 +20,7 @@ type UpdateEmailMarketingMemberInput = {
 
 type UpdateSlackUserInput = {
   email: string;
+  previousEmail: string;
   slackId: string | null;
 };
 
@@ -22,7 +30,7 @@ export async function onPrimaryEmailChanged({
 }: GetBullJobData<'member_email.primary.changed'>) {
   const student = await db
     .selectFrom('students')
-    .select(['email as newEmail', 'firstName', 'slackId'])
+    .select(['airtableId', 'email as newEmail', 'firstName', 'slackId'])
     .where('id', '=', studentId)
     .executeTakeFirst();
 
@@ -40,13 +48,18 @@ export async function onPrimaryEmailChanged({
 
     updateEmailOnSlack({
       email: student.newEmail,
+      previousEmail,
       slackId: student.slackId,
     }),
   ]);
 
   job('airtable.record.update', {
-    newEmail: student.newEmail,
-    previousEmail,
+    airtableBaseId: AIRTABLE_FAMILY_BASE_ID!,
+    airtableRecordId: student.airtableId!,
+    airtableTableId: AIRTABLE_MEMBERS_TABLE_ID!,
+    data: {
+      Email: student.newEmail,
+    },
   });
 
   const data = {
@@ -77,20 +90,37 @@ async function updateEmailMarketingMember(
       id: input.previousEmail,
     });
   } catch (e) {
-    reportError(e);
+    reportException(e);
   }
 }
 
 async function updateEmailOnSlack(input: UpdateSlackUserInput) {
   try {
-    const id = input.slackId;
+    let id = input.slackId;
 
     if (!id) {
-      return;
+      // This is the case in which the member is trying to change their email
+      // before they've accepted their Slack invitation. We'll attempt to find
+      // their Slack account, which should be registered under their previous
+      // email.
+      const user = await getSlackUserByEmail(input.previousEmail);
+
+      if (user) {
+        id = user.id;
+      } else {
+        // If it's not found, there's not much we can do. We'll throw and
+        // report to Sentry.
+        throw new ErrorWithContext(
+          'Failed to update Slack account email.'
+        ).withContext({
+          email: input.email,
+          previousEmail: input.previousEmail,
+        });
+      }
     }
 
     await updateSlackEmail(id, input.email);
   } catch (e) {
-    reportError(e);
+    reportException(e);
   }
 }

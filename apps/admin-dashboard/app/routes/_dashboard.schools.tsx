@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { Edit, Menu, Plus } from 'react-feather';
 import { generatePath } from 'react-router';
 
+import { db } from '@oyster/db';
 import {
   Dashboard,
   Dropdown,
@@ -20,10 +21,9 @@ import {
   useSearchParams,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { db } from '../shared/core.server';
-import { ListSearchParams } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { ListSearchParams } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
@@ -135,7 +135,7 @@ function SchoolsActionDropdown() {
         <Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={Route.CREATE_SCHOOL}>
+              <Link to={Route['/schools/create']}>
                 <Plus /> Create School
               </Link>
             </Dropdown.Item>
@@ -165,7 +165,7 @@ function SchoolsTable() {
     {
       displayName: '# of Students',
       render: (school) => school.students,
-      size: null,
+      size: '120',
     },
   ];
 
@@ -211,7 +211,7 @@ function SchoolsTableDropdown({ id }: SchoolInView) {
         <Table.Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={generatePath(Route.EDIT_SCHOOL, { id })}>
+              <Link to={generatePath(Route['/schools/:id/edit'], { id })}>
                 <Edit /> Edit School
               </Link>
             </Dropdown.Item>

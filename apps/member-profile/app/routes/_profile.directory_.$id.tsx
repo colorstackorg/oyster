@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import React, { type PropsWithChildren } from 'react';
 import { BookOpen, Calendar, Globe, Home, Link, MapPin } from 'react-feather';
 
+import { type MixpanelEvent } from '@oyster/core/mixpanel';
 import {
   cx,
   getButtonCn,
@@ -12,10 +13,6 @@ import {
   type TextProps,
 } from '@oyster/ui';
 
-import { Card } from '../shared/components/card';
-import { EducationExperienceItem } from '../shared/components/education-experience';
-import { ExperienceList } from '../shared/components/profile';
-import { ENV } from '../shared/constants.server';
 import {
   countEventAttendees,
   countMessagesSent,
@@ -24,15 +21,20 @@ import {
   getTotalPoints,
   job,
   listWorkExperiences,
-} from '../shared/core.server';
-import { WorkExperienceItem } from '../shared/core.ui';
+} from '@/member-profile.server';
+import { WorkExperienceItem } from '@/member-profile.ui';
+import { Card } from '@/shared/components/card';
+import { EducationExperienceItem } from '@/shared/components/education-experience';
+import { ExperienceList } from '@/shared/components/profile';
+import { ENV } from '@/shared/constants.server';
+import { useMixpanelTracker } from '@/shared/hooks/use-mixpanel-tracker';
 import {
   getEducationExperiences,
   getMember,
   getMemberEthnicities,
-} from '../shared/queries';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
-import { formatHeadline, formatName } from '../shared/utils/format.utils';
+} from '@/shared/queries';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
+import { formatHeadline, formatName } from '@/shared/utils/format.utils';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -185,6 +187,8 @@ function CoreSection({ children }: PropsWithChildren) {
 function MemberHeader() {
   const { member } = useLoaderData<typeof loader>();
 
+  const { trackFromClient } = useMixpanelTracker();
+
   return (
     <header className="flex items-center justify-between gap-[inherit]">
       <ProfilePicture
@@ -201,6 +205,12 @@ function MemberHeader() {
             'border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200'
           )}
           href={member.slackUrl}
+          onClick={() => {
+            trackFromClient({
+              event: 'Directory - CTA Clicked',
+              properties: { CTA: 'Slack' },
+            });
+          }}
         >
           <img alt="Slack Logo" className="h-5 w-5" src="/images/slack.svg" />{' '}
           DM on Slack
@@ -257,90 +267,92 @@ function MemberPronouns({ className }: { className: string }) {
 function MemberSocials() {
   const { member } = useLoaderData<typeof loader>();
 
-  const className = 'h-5 w-5';
-
   return (
     <section>
       <ul className="mb-1 flex items-center gap-2">
         {!!member.linkedInUrl && (
-          <li>
-            <a href={member.linkedInUrl} target="_blank">
-              <img
-                alt="LinkedIn Logo"
-                className={className}
-                src="/images/linkedin.png"
-              />
-            </a>
-          </li>
+          <MemberSocialItem
+            href={member.linkedInUrl}
+            logo="/images/linkedin.png"
+            social="LinkedIn"
+          />
         )}
 
         {!!member.instagramHandle && (
-          <li>
-            <a
+          <MemberSocialItem
+            href={
               // The Instagram URL cannot have the @ symbol in it, so we remove it.
-              href={`https://instagram.com/${member.instagramHandle.replace(
-                '@',
-                ''
-              )}`}
-              target="_blank"
-            >
-              <img
-                alt="Instagram Logo"
-                className={className}
-                src="/images/instagram.svg"
-              />
-            </a>
-          </li>
+              'https://instagram.com/' + member.instagramHandle.replace('@', '')
+            }
+            logo="/images/instagram.svg"
+            social="Instagram"
+          />
         )}
 
         {!!member.twitterHandle && (
-          <li>
-            <a
-              href={`https://twitter.com/${member.twitterHandle}`}
-              target="_blank"
-            >
-              <img
-                alt="Twitter Logo"
-                className={className}
-                src="/images/x.png"
-              />
-            </a>
-          </li>
+          <MemberSocialItem
+            href={`https://twitter.com/${member.twitterHandle}`}
+            logo="/images/x.png"
+            social="Twitter"
+          />
         )}
 
         {!!member.githubUrl && (
-          <li>
-            <a href={member.githubUrl} target="_blank">
-              <img
-                alt="GitHub Logo"
-                className={className}
-                src="/images/github.svg"
-              />
-            </a>
-          </li>
+          <MemberSocialItem
+            href={member.githubUrl}
+            logo="/images/github.svg"
+            social="GitHub"
+          />
         )}
 
         {!!member.calendlyUrl && (
-          <li>
-            <a href={member.calendlyUrl} target="_blank">
-              <img
-                alt="Calendly Logo"
-                className={className}
-                src="/images/calendly.svg"
-              />
-            </a>
-          </li>
+          <MemberSocialItem
+            href={member.calendlyUrl}
+            logo="/images/calendly.svg"
+            social="Calendly"
+          />
         )}
 
         {!!member.personalWebsiteUrl && (
-          <li>
-            <a href={member.personalWebsiteUrl} target="_blank">
-              <Link className={className} />
-            </a>
-          </li>
+          <MemberSocialItem
+            href={member.personalWebsiteUrl}
+            logo={<Link className="h-5 w-5" />}
+            social="Personal Website"
+          />
         )}
       </ul>
     </section>
+  );
+}
+
+type MemberSocialItemProps = {
+  href: string;
+  logo: string | React.ReactNode;
+  social: MixpanelEvent['Directory - CTA Clicked']['CTA'];
+};
+
+function MemberSocialItem({ href, logo, social }: MemberSocialItemProps) {
+  const { trackFromClient } = useMixpanelTracker();
+
+  return (
+    <li>
+      <a
+        href={href}
+        onClick={() => {
+          trackFromClient({
+            event: 'Directory - CTA Clicked',
+            properties: { CTA: social },
+          });
+        }}
+        target="_blank"
+      >
+        {typeof logo === 'string' ? (
+          <img alt={social + 'Logo'} className="h-5 w-5" src={logo} />
+        ) : (
+          logo
+        )}
+      </a>
+    </li>
   );
 }
 

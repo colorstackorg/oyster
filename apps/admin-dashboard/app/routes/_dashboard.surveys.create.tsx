@@ -8,15 +8,13 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
-  useNavigation,
 } from '@remix-run/react';
 import { sql } from 'kysely';
 
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   Select,
@@ -24,14 +22,14 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { createSurvey, listEvents } from '../shared/core.server';
-import { CreateSurveyInput } from '../shared/core.ui';
+import { createSurvey, listEvents } from '@/admin-dashboard.server';
+import { CreateSurveyInput } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -50,18 +48,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
+  const { data, errors, ok } = await validateForm(request, CreateSurveyInput);
 
-  const { data, errors } = validateForm(
-    CreateSurveyInput,
-    Object.fromEntries(form)
-  );
-
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await createSurvey({
@@ -71,11 +61,10 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   toast(session, {
-    message: `Created survey.`,
-    type: 'success',
+    message: 'Created survey.',
   });
 
-  return redirect(Route.SURVEYS, {
+  return redirect(Route['/surveys'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -83,14 +72,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function CreateSurveyPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/surveys']}>
       <Modal.Header>
         <Modal.Title>Create Survey</Modal.Title>
         <Modal.CloseButton />
@@ -104,10 +87,8 @@ export default function CreateSurveyPage() {
 const keys = CreateSurveyInput.keyof().enum;
 
 function CreateSurveyForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const { events } = useLoaderData<typeof loader>();
-
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <RemixForm className="form" method="post">
@@ -147,9 +128,7 @@ function CreateSurveyForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Create
-        </Button>
+        <Button.Submit>Create</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

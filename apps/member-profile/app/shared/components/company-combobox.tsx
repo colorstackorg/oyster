@@ -10,8 +10,8 @@ import {
   useDelayedValue,
 } from '@oyster/ui';
 
-import type { SearchCompaniesResult } from '../../routes/companies';
-import { type Company } from '../core.ui';
+import { type Company } from '@/member-profile.ui';
+import type { SearchCompaniesResult } from '@/routes/api.companies';
 
 type CompanyComboboxProps = FieldProps<Pick<Company, 'crunchbaseId' | 'name'>>;
 
@@ -26,7 +26,7 @@ export function CompanyCombobox({ defaultValue, name }: CompanyComboboxProps) {
     fetcher.submit(
       { search: delayedSearch },
       {
-        action: '/companies',
+        action: '/api/companies',
         method: 'get',
       }
     );

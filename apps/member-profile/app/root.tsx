@@ -9,19 +9,14 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 import { withSentry } from '@sentry/remix';
-import dayjs from 'dayjs';
-import timezone from 'dayjs/plugin/timezone.js';
-import utc from 'dayjs/plugin/utc.js';
 
+import { buildMeta } from '@oyster/core/remix';
 import { Toast } from '@oyster/ui';
 import uiStylesheet from '@oyster/ui/index.css?url';
 
-import { ENV } from './shared/constants.server';
-import { commitSession, getSession, SESSION } from './shared/session.server';
-import tailwindStylesheet from './tailwind.css?url';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
+import { ENV } from '@/shared/constants.server';
+import { commitSession, getSession, SESSION } from '@/shared/session.server';
+import tailwindStylesheet from '@/tailwind.css?url';
 
 export const links: LinksFunction = () => {
   return [
@@ -31,7 +26,10 @@ export const links: LinksFunction = () => {
 };
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'ColorStack | Member Profile' }];
+  return buildMeta({
+    description: `Your home for all things ColorStack membership. Manage your profile and more!`,
+    title: 'Member Profile',
+  });
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {

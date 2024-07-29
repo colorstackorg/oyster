@@ -4,32 +4,33 @@ import {
   type MetaFunction,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
+import { buildMeta } from '@oyster/core/remix';
 import { Application as ApplicationType } from '@oyster/types';
 import {
   Button,
   Checkbox,
   Form,
-  getActionErrors,
+  getErrors,
   Link,
   Text,
   type TextProps,
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { apply } from '../shared/core.server';
-import { Application } from '../shared/core.ui';
-import { formatUrl } from '../shared/url.utils';
+import { apply } from '@/member-profile.server';
+import { Application } from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
+import { commitSession, getSession } from '@/shared/session.server';
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'ColorStack Family Application' }];
+  return buildMeta({
+    description: `Apply to join the largest community of Black and Latinx Computer Science college students.`,
+    image: '/images/og_apply.jpg',
+    title: 'Apply to ColorStack',
+  });
 };
 
 const ApplyInput = ApplicationType.pick({
@@ -41,6 +42,7 @@ const ApplyInput = ApplicationType.pick({
   goals: true,
   graduationYear: true,
   lastName: true,
+  linkedInUrl: true,
   major: true,
   otherDemographics: true,
   otherMajor: true,
@@ -49,7 +51,6 @@ const ApplyInput = ApplicationType.pick({
   schoolId: true,
 }).extend({
   codeOfConduct: z.preprocess((value) => value === '1', z.boolean()),
-  linkedInUrl: ApplicationType.shape.linkedInUrl.transform(formatUrl),
 });
 
 type ApplyInput = z.infer<typeof ApplyInput>;
@@ -68,39 +69,44 @@ const ApplyFormData = ApplyInput.extend({
 type ApplyFormData = z.infer<typeof ApplyFormData>;
 
 export async function action({ request }: ActionFunctionArgs) {
+  const session = await getSession(request);
   const form = await request.formData();
 
-  const { data, errors } = validateForm(ApplyFormData, {
-    ...Object.fromEntries(form),
-    otherDemographics: form.getAll('otherDemographics'),
-    race: form.getAll('race'),
-  });
+  const { data, errors, ok } = await validateForm(
+    {
+      ...Object.fromEntries(form),
+      otherDemographics: form.getAll('otherDemographics'),
+      race: form.getAll('race'),
+    },
+    ApplyFormData
+  );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the issues above.',
-      errors,
-    });
+  if (!ok) {
+    return json(
+      { error: 'Please fix the issues above.', errors },
+      { status: 400 }
+    );
   }
 
   try {
     await apply(data);
 
-    return redirect(Route.APPLICATION_THANK_YOU);
-  } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
+    session.flash('email', data.email);
+
+    return redirect(Route['/apply/thank-you'], {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
     });
+  } catch (e) {
+    return json({ error: (e as Error).message, errors }, { status: 500 });
   }
 }
 
-const ApplicationKey = ApplyFormData.keyof().enum;
+const keys = ApplyFormData.keyof().enum;
 
 export default function ApplicationPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <>
@@ -115,76 +121,61 @@ export default function ApplicationPage() {
         <Application readOnly={false}>
           <Application.FirstNameField
             error={errors.firstName}
-            name={ApplicationKey.firstName}
+            name={keys.firstName}
           />
           <Application.LastNameField
             error={errors.lastName}
-            name={ApplicationKey.lastName}
+            name={keys.lastName}
           />
-          <Application.EmailField
-            error={errors.email}
-            name={ApplicationKey.email}
-          />
+          <Application.EmailField error={errors.email} name={keys.email} />
           <Application.LinkedInField
             error={errors.linkedInUrl}
-            name={ApplicationKey.linkedInUrl}
+            name={keys.linkedInUrl}
           />
           <Application.SchoolField
             error={errors.schoolId}
-            name={ApplicationKey.schoolId}
+            name={keys.schoolId}
           />
           <Application.OtherSchoolField
             error={errors.otherSchool}
-            name={ApplicationKey.otherSchool}
+            name={keys.otherSchool}
           />
-          <Application.MajorField
-            error={errors.major}
-            name={ApplicationKey.major}
-          />
+          <Application.MajorField error={errors.major} name={keys.major} />
           <Application.OtherMajorField
             error={errors.otherMajor}
-            name={ApplicationKey.otherMajor}
+            name={keys.otherMajor}
           />
           <Application.EducationLevelField
             error={errors.educationLevel}
-            name={ApplicationKey.educationLevel}
+            name={keys.educationLevel}
           />
           <Application.GraduationYearField
             error={errors.graduationYear}
-            name={ApplicationKey.graduationYear}
+            name={keys.graduationYear}
           />
-          <Application.RaceField
-            error={errors.race}
-            name={ApplicationKey.race}
-          />
-          <Application.GenderField
-            error={errors.gender}
-            name={ApplicationKey.gender}
-          />
+          <Application.RaceField error={errors.race} name={keys.race} />
+          <Application.GenderField error={errors.gender} name={keys.gender} />
           <Application.OtherDemographicsField
             error={errors.otherDemographics}
-            name={ApplicationKey.otherDemographics}
+            name={keys.otherDemographics}
           />
-          <Application.GoalsField
-            error={errors.goals}
-            name={ApplicationKey.goals}
-          />
+          <Application.GoalsField error={errors.goals} name={keys.goals} />
           <Application.ContributionField
             error={errors.contribution}
-            name={ApplicationKey.contribution}
+            name={keys.contribution}
           />
         </Application>
 
         <Form.Field
           description={<CodeOfConductDescription />}
-          labelFor={ApplicationKey.codeOfConduct}
+          labelFor={keys.codeOfConduct}
           label="Code of Conduct"
           required
         >
           <Checkbox
-            id={ApplicationKey.codeOfConduct}
+            id={keys.codeOfConduct}
             label="I have read, understand and will comply with the ColorStack Code of Conduct."
-            name={ApplicationKey.codeOfConduct}
+            name={keys.codeOfConduct}
             required
             value="1"
           />
@@ -192,9 +183,7 @@ export default function ApplicationPage() {
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
-        <Button fill loading={submitting} type="submit">
-          Apply
-        </Button>
+        <Button.Submit fill>Apply</Button.Submit>
       </RemixForm>
     </>
   );

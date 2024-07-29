@@ -10,12 +10,13 @@ import {
 } from '@remix-run/react';
 import { withSentry } from '@sentry/remix';
 
+import { buildMeta } from '@oyster/core/remix';
 import { Toast } from '@oyster/ui';
 import uiStylesheet from '@oyster/ui/index.css?url';
 
-import { ENV } from './shared/constants.server';
-import { commitSession, getSession, SESSION } from './shared/session.server';
-import tailwindStylesheet from './tailwind.css?url';
+import { ENV } from '@/shared/constants.server';
+import { commitSession, getSession, SESSION } from '@/shared/session.server';
+import tailwindStylesheet from '@/tailwind.css?url';
 
 export const links: LinksFunction = () => {
   return [
@@ -25,7 +26,10 @@ export const links: LinksFunction = () => {
 };
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'ColorStack | Admin Dashboard' }];
+  return buildMeta({
+    description: `Your home for all things ColorStack administration. Manage applications, events and more!`,
+    title: 'Admin Dashboard',
+  });
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {

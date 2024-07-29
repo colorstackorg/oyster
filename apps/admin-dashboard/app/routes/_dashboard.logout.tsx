@@ -6,12 +6,12 @@ import {
   type Session,
 } from '@remix-run/node';
 
-import { Route } from '../shared/constants';
+import { Route } from '@/shared/constants';
 import {
   destroySession,
   ensureUserAuthenticated,
   getSession,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);

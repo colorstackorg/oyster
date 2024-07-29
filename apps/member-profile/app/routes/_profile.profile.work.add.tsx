@@ -4,12 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
@@ -17,20 +12,20 @@ import {
   Address,
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Modal,
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { addWorkExperience } from '../shared/core.server';
-import { AddWorkExperienceInput, WorkForm } from '../shared/core.ui';
+import { addWorkExperience } from '@/member-profile.server';
+import { AddWorkExperienceInput, WorkForm } from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -57,17 +52,13 @@ type AddWorkExperienceFormData = z.infer<typeof AddWorkExperienceFormData>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
+  const { data, errors, ok } = await validateForm(
+    request,
+    AddWorkExperienceFormData
+  );
 
-  const values = Object.fromEntries(form);
-
-  const { data, errors } = validateForm(AddWorkExperienceFormData, values);
-
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   if (data.endDate && data.startDate > data.endDate) {
@@ -84,7 +75,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Added work experience.',
-    type: 'success',
   });
 
   return redirect(Route['/profile/work'], {
@@ -97,18 +87,10 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = AddWorkExperienceFormData.keyof().enum;
 
 export default function AddWorkExperiencePage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const navigate = useNavigate();
-
-  const submitting = useNavigation().state === 'submitting';
-
-  function onClose() {
-    navigate(Route['/profile/work']);
-  }
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/work']}>
       <Modal.Header>
         <Modal.Title>Add Work Experience</Modal.Title>
         <Modal.CloseButton />
@@ -161,9 +143,7 @@ export default function AddWorkExperiencePage() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Save
-          </Button>
+          <Button.Submit>Save</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

@@ -14,6 +14,8 @@ import { useState } from 'react';
 import { Filter, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 
+import { CityCombobox } from '@oyster/core/location.ui';
+import { db } from '@oyster/db';
 import { type ExtractValue } from '@oyster/types';
 import {
   Button,
@@ -29,24 +31,26 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { CityCombobox } from '../shared/components/city-combobox';
-import { CompanyCombobox } from '../shared/components/company-combobox';
-import { EthnicityCombobox } from '../shared/components/ethnicity-combobox';
-import { Route } from '../shared/constants';
-import { db, listMembersInDirectory } from '../shared/core.server';
+import { listMembersInDirectory } from '@/member-profile.server';
 import {
   ListMembersInDirectoryWhere,
   ListSearchParams,
   SchoolCombobox,
-} from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
-import { formatName } from '../shared/utils/format.utils';
+} from '@/member-profile.ui';
+import { CompanyCombobox } from '@/shared/components/company-combobox';
+import { EthnicityCombobox } from '@/shared/components/ethnicity-combobox';
+import { Route } from '@/shared/constants';
+import { useMixpanelTracker } from '@/shared/hooks/use-mixpanel-tracker';
+import { ensureUserAuthenticated } from '@/shared/session.server';
+import { formatName } from '@/shared/utils/format.utils';
 
 const DirectoryFilterKey = ListMembersInDirectoryWhere.omit({
   hometownLatitude: true,
   hometownLongitude: true,
   locationLatitude: true,
   locationLongitude: true,
+  joinedDirectoryAfter: true,
+  joinedDirectoryBefore: true,
   search: true,
 }).keyof().enum;
 
@@ -390,7 +394,7 @@ function MembersGrid() {
   }
 
   return (
-    <ul className="grid grid-cols-1 gap-2 overflow-scroll @[800px]:grid-cols-2 @[1200px]:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-2 overflow-auto @[800px]:grid-cols-2 @[1200px]:grid-cols-3">
       {members.map((member) => {
         return <MemberItem key={member.id} member={member} />;
       })}
@@ -401,10 +405,18 @@ function MembersGrid() {
 type MemberInView = SerializeFrom<typeof loader>['members'][number];
 
 function MemberItem({ member }: { member: MemberInView }) {
+  const { trackFromClient } = useMixpanelTracker();
+
   return (
     <li>
       <Link
         className="grid grid-cols-[3rem,1fr] items-center gap-4 rounded-2xl p-2 hover:bg-gray-100 sm:grid-cols-[4rem,1fr]"
+        onClick={() => {
+          trackFromClient({
+            event: 'Directory - Profile Clicked',
+            properties: undefined,
+          });
+        }}
         to={generatePath(Route['/directory/:id'], { id: member.id })}
       >
         <ProfilePicture

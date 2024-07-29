@@ -9,32 +9,29 @@ import { Briefcase, Plus } from 'react-feather';
 
 import { Button } from '@oyster/ui';
 
+import { listWorkExperiences } from '@/member-profile.server';
+import { WorkExperienceItem } from '@/member-profile.ui';
 import {
   EmptyState,
   EmptyStateContainer,
-} from '../shared/components/empty-state';
+} from '@/shared/components/empty-state';
 import {
   ExperienceList,
   ProfileDescription,
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
-} from '../shared/components/profile';
-import { Route } from '../shared/constants';
-import { listWorkExperiences } from '../shared/core.server';
-import { WorkExperienceItem } from '../shared/core.ui';
-import { track } from '../shared/mixpanel.server';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+} from '@/shared/components/profile';
+import { Route } from '@/shared/constants';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const id = user(session);
 
-  const workExperiences = await listWorkExperiences(id);
-
-  track(request, 'Page Viewed', {
-    Page: 'Profile - Work History',
+  const workExperiences = await listWorkExperiences(id, {
+    include: ['hasReviewed'],
   });
 
   return json({
@@ -57,7 +54,7 @@ function WorkHistorySection() {
   const navigate = useNavigate();
 
   function onAddExperience() {
-    navigate(Route.ADD_WORK_EXPERIENCE);
+    navigate(Route['/profile/work/add']);
   }
 
   return (
@@ -76,17 +73,22 @@ function WorkHistorySection() {
         <>
           <ExperienceList>
             {workExperiences.map((experience) => {
+              const id = experience.id;
+              const hasReviewed = !!experience.hasReviewed;
+
               return (
                 <WorkExperienceItem
                   key={experience.id}
+                  editTo={generatePath(Route['/profile/work/:id/edit'], { id })}
+                  hasReviewed={hasReviewed}
                   experience={experience}
-                  onClickEdit={() => {
-                    navigate(
-                      generatePath(Route.EDIT_WORK_EXPERIENCE, {
-                        id: experience.id,
-                      })
-                    );
-                  }}
+                  reviewTo={generatePath(
+                    hasReviewed
+                      ? Route['/profile/work/:id/review/edit']
+                      : Route['/profile/work/:id/review/add'],
+                    { id }
+                  )}
+                  showOptions={true}
                 />
               );
             })}

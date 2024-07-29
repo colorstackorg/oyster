@@ -8,29 +8,28 @@ import {
   generatePath,
   Form as RemixForm,
   useActionData,
-  useNavigate,
-  useNavigation,
+  useParams,
 } from '@remix-run/react';
 import { z } from 'zod';
 
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   Textarea,
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { QueueFromName } from '../shared/core.server';
-import { BullQueue } from '../shared/core.ui';
+import { QueueFromName } from '@/admin-dashboard.server';
+import { BullQueue } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 const BullParams = z.object({
   queue: z.nativeEnum(BullQueue),
@@ -63,21 +62,13 @@ const AddJobInput = z.object({
 
 type AddJobInput = z.infer<typeof AddJobInput>;
 
-const AddJobKey = AddJobInput.keyof().enum;
-
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-  const values = Object.fromEntries(form);
+  const { data, errors, ok } = await validateForm(request, AddJobInput);
 
-  const { data, errors } = validateForm(AddJobInput, values);
-
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   const { queue: queueName } = BullParams.parse(params);
@@ -88,7 +79,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Added job.',
-    type: 'success',
   });
 
   return redirect(
@@ -102,14 +92,14 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 export default function AddJobPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
+  const { queue } = useParams();
 
   return (
-    <Modal onClose={onClose}>
+    <Modal
+      onCloseTo={generatePath(Route['/bull/:queue/jobs'], {
+        queue: queue as string,
+      })}
+    >
       <Modal.Header>
         <Modal.Title>Add Job</Modal.Title>
         <Modal.CloseButton />
@@ -120,42 +110,35 @@ export default function AddJobPage() {
   );
 }
 
-function AddJobForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+const keys = AddJobInput.keyof().enum;
 
-  const submitting = useNavigation().state === 'submitting';
+function AddJobForm() {
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">
       <Form.Field
         error={errors.name}
         label="Name"
-        labelFor={AddJobKey.name}
+        labelFor={keys.name}
         required
       >
-        <Input id={AddJobKey.name} name={AddJobKey.name} required />
+        <Input id={keys.name} name={keys.name} required />
       </Form.Field>
 
       <Form.Field
         error={errors.data}
         label="Data"
-        labelFor={AddJobKey.data}
+        labelFor={keys.data}
         required
       >
-        <Textarea
-          id={AddJobKey.data}
-          minRows={4}
-          name={AddJobKey.data}
-          required
-        />
+        <Textarea id={keys.data} minRows={4} name={keys.data} required />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Add
-        </Button>
+        <Button.Submit>Add</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

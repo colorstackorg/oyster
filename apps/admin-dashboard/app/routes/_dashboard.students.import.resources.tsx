@@ -13,17 +13,17 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
-  useNavigation,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import { Email, Resource, ResourceUser } from '@oyster/types';
 import {
   Button,
+  FileUploader,
   Form,
-  getActionErrors,
+  getErrors,
   Modal,
   Select,
   Text,
@@ -32,14 +32,14 @@ import {
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { db, parseCsv } from '../shared/core.server';
-import { findStudentByEmail } from '../shared/queries/student';
+import { parseCsv } from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
+import { findStudentByEmail } from '@/shared/queries/student';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 const ResourceInView = Resource.pick({
   id: true,
@@ -58,7 +58,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 async function listResources() {
   const rows = await db
-    .selectFrom('resources')
+    .selectFrom('internalResources')
     .select(['id', 'name'])
     .execute();
 
@@ -86,16 +86,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors } = validateForm(
-    ImportResourceUsersInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    form,
+    ImportResourceUsersInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   let count = 0;
@@ -105,18 +102,14 @@ export async function action({ request }: ActionFunctionArgs) {
 
     count = result.count;
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 
   toast(session, {
     message: `Imported ${count} resource users.`,
-    type: 'success',
   });
 
-  return redirect(Route.STUDENTS, {
+  return redirect(Route['/students'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -182,7 +175,7 @@ async function importResourceUsers(input: ImportResourceUsersInput) {
   );
 
   await db
-    .insertInto('resourceUsers')
+    .insertInto('internalResourceUsers')
     .values(resourceUsers)
     .onConflict((oc) => oc.doNothing())
     .execute();
@@ -193,14 +186,8 @@ async function importResourceUsers(input: ImportResourceUsersInput) {
 }
 
 export default function ImportResourcesPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.STUDENTS);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>Import Resource Users</Modal.Title>
         <Modal.CloseButton />
@@ -211,13 +198,11 @@ export default function ImportResourcesPage() {
   );
 }
 
-const { file, resource } = ImportResourceUsersInput.keyof().enum;
+const keys = ImportResourceUsersInput.keyof().enum;
 
 function ImportResourcesForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const { resources } = useLoaderData<typeof loader>();
-
-  const submitting = useNavigation().state === 'submitting';
 
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
@@ -225,10 +210,10 @@ function ImportResourcesForm() {
         description={<ResourceFieldDescription />}
         error={errors.resource}
         label="Resource"
-        labelFor={resource}
+        labelFor={keys.resource}
         required
       >
-        <Select id={resource} name={resource} required>
+        <Select id={keys.resource} name={keys.resource} required>
           {resources.map((resource) => {
             return (
               <option key={resource.id} value={resource.id}>
@@ -243,25 +228,28 @@ function ImportResourcesForm() {
         description="Please upload a .csv file."
         error={errors.file}
         label="File"
-        labelFor={file}
+        labelFor={keys.file}
         required
       >
-        <input accept=".csv" id={file} name={file} required type="file" />
+        <FileUploader
+          accept={['text/csv']}
+          id={keys.file}
+          name={keys.file}
+          required
+        />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Import
-        </Button>
+        <Button.Submit>Import</Button.Submit>
       </Button.Group>
     </RemixForm>
   );
 }
 
 function ResourceFieldDescription(props: Pick<TextProps, 'className'>) {
-  const to = `${Route.RESOURCES_CREATE}?redirect=${Route.STUDENTS_IMPORT_RESOURCES}`;
+  const to = `${Route['/resources/create']}?redirect=${Route['/students/import/resources']}`;
 
   return (
     <Text {...props}>

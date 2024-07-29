@@ -25,6 +25,8 @@ ColorStack members first, and then friends of ColorStack. ❤️
     - [Postgres Setup](#postgres-setup)
     - [Executing Database Migrations](#executing-database-migrations)
     - [Seeding the Database](#seeding-the-database)
+    - [Stopping the Database](#stopping-the-database)
+    - [Using a Database GUI (Prisma Studio)](#using-a-database-gui-prisma-studio)
   - [Building the Project](#building-the-project)
   - [Running the Applications](#running-the-applications)
   - [Logging Into Applications](#logging-into-applications)
@@ -33,6 +35,7 @@ ColorStack members first, and then friends of ColorStack. ❤️
 - [Making a Pull Request](#making-a-pull-request)
   - [Your First PR](#your-first-pr)
 - [Deciding What to Work On](#deciding-what-to-work-on)
+  - [Proposing Ideas](#proposing-ideas)
 - [License](#license)
 
 ## Local Development
@@ -58,6 +61,13 @@ If you choose to use `nvm`, we would also recommend setting up a
 which will automatically install the right node version for any given directory
 that you're working in, as long as there is a [`.nvmrc`](./.nvmrc) file found in
 that directory.
+
+If you don't want to set up a shell integration, you can switch to the
+appropriate Node version manually by doing:
+
+```sh
+nvm install && nvm use
+```
 
 ### Fork and Clone Repository
 
@@ -125,15 +135,6 @@ To execute the database migrations, run:
 yarn db:migrate
 ```
 
-To verify that the migration was executed successfully, connect to your Postgres
-database and run:
-
-```sh
-\d
-```
-
-You should see a bunch of SQL tables!
-
 #### Seeding the Database
 
 Now that we have some tables, we're ready to add some seed data in our database,
@@ -145,6 +146,34 @@ yarn db:seed
 
 Follow the prompt to add your email, and you will now be able to log into both
 applications.
+
+#### Stopping the Database
+
+Once you are done developing, you might want to stop the database containers
+from running. Keeping your containers up can eat up your battery life, so it's
+recommended to take them down once you are done using them. Run:
+
+```
+yarn dx:down
+```
+
+#### Using a Database GUI (Prisma Studio)
+
+To make it easier to interact with and manage your data in the browser, you can
+use [Prisma Studio](https://www.prisma.io/studio)!
+
+To get started, setup your Prisma schema file by running:
+
+```
+yarn prisma:setup
+```
+
+Then, start Prisma Studio locally and open your browser to the URL that gets
+printed:
+
+```
+yarn prisma:studio
+```
 
 ### Building the Project
 
@@ -253,10 +282,17 @@ chore: my first contribution ❤️
 ## Deciding What to Work On
 
 You can start by browsing through our list of
-[issues](https://github.com/colorstackorg/oyster/issues) or creating your own
-issue that would improve our product. Once you've decided on an issue, leave a
-comment and wait to get approval from one of our codebase admins - this helps
-avoid multiple people working on this same issue.
+[issues](https://github.com/colorstackorg/oyster/issues). Once you've decided on
+an issue, leave a comment and wait to get approval from one of our codebase
+admins - this helps avoid multiple people working on this same issue.
+
+### Proposing Ideas
+
+If you have a feature request or idea that would improve our product, please
+start a discussion in our
+[GitHub Discussions](https://github.com/colorstackorg/oyster/discussions) space!
+If the maintainers see value in the idea, they will create issue from that
+discussion.
 
 ## License
 

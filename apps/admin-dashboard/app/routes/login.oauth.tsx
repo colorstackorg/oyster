@@ -1,10 +1,10 @@
 import { type LoaderFunctionArgs, redirect } from '@remix-run/node';
 import jwt from 'jsonwebtoken';
 
-import { Route } from '../shared/constants';
-import { ENV } from '../shared/constants.server';
-import { isAmbassador } from '../shared/queries/admin';
-import { commitSession, getSession, SESSION } from '../shared/session.server';
+import { Route } from '@/shared/constants';
+import { ENV } from '@/shared/constants.server';
+import { isAmbassador } from '@/shared/queries/admin';
+import { commitSession, getSession, SESSION } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);
@@ -42,7 +42,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   session.set(SESSION.IS_AMBASSADOR, ambassador);
   session.set(SESSION.USER_ID, id);
 
-  const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route.HOME;
+  const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route['/'];
 
   return redirect(redirectUrl, {
     headers: {

@@ -4,29 +4,25 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
 } from '@oyster/ui';
 
-import { addIcebreakerPrompt } from '../shared/core.server';
-import { AddIcebreakerPromptInput } from '../shared/core.ui';
+import { addIcebreakerPrompt } from '@/admin-dashboard.server';
+import { AddIcebreakerPromptInput } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -37,25 +33,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    AddIcebreakerPromptInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    AddIcebreakerPromptInput
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await addIcebreakerPrompt(data);
 
   toast(session, {
     message: 'Added icebreaker prompt.',
-    type: 'success',
   });
 
   return redirect('/icebreakers/add', {
@@ -66,14 +56,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function AddIcebreakerPromptPage() {
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(-1);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/']}>
       <Modal.Header>
         <Modal.Title>Add Icebreaker Prompt</Modal.Title>
         <Modal.CloseButton />
@@ -87,9 +71,7 @@ export default function AddIcebreakerPromptPage() {
 const keys = AddIcebreakerPromptInput.keyof().enum;
 
 function AddIcebreakerPromptForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">
@@ -105,9 +87,7 @@ function AddIcebreakerPromptForm() {
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Add
-        </Button>
+        <Button.Submit>Add</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

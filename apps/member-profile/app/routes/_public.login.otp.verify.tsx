@@ -8,18 +8,17 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 
-import { Button, Form, getActionErrors, validateForm } from '@oyster/ui';
+import { track } from '@oyster/core/mixpanel';
+import { Button, Form, getErrors, validateForm } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { ENV } from '../shared/constants.server';
-import { oneTimeCodeIdCookie } from '../shared/cookies.server';
-import { verifyOneTimeCode } from '../shared/core.server';
-import { OneTimeCodeForm, VerifyOneTimeCodeInput } from '../shared/core.ui';
-import { trackWithoutRequest } from '../shared/mixpanel.server';
-import { commitSession, getSession, SESSION } from '../shared/session.server';
+import { verifyOneTimeCode } from '@/member-profile.server';
+import { OneTimeCodeForm, VerifyOneTimeCodeInput } from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
+import { ENV } from '@/shared/constants.server';
+import { oneTimeCodeIdCookie } from '@/shared/cookies.server';
+import { commitSession, getSession, SESSION } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const oneTimeCodeId = await oneTimeCodeIdCookie.parse(
@@ -27,7 +26,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
 
   if (!oneTimeCodeId) {
-    return redirect(Route.LOGIN_OTP_SEND);
+    return redirect(Route['/login/otp/send']);
   }
 
   const description =
@@ -41,18 +40,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    VerifyOneTimeCodeInput.pick({ value: true }),
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    VerifyOneTimeCodeInput.pick({ value: true })
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   const oneTimeCodeId = await oneTimeCodeIdCookie.parse(
@@ -76,11 +70,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
     session.set(SESSION.USER_ID, userId);
 
-    trackWithoutRequest(userId, 'Logged In', {
-      Method: 'OTP',
+    track({
+      event: 'Logged In',
+      properties: { Method: 'OTP' },
+      user: userId,
     });
 
-    const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route.HOME;
+    const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route['/home'];
 
     return redirect(redirectUrl, {
       headers: {
@@ -88,10 +84,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
@@ -99,9 +92,7 @@ const keys = VerifyOneTimeCodeInput.keyof().enum;
 
 export default function VerifyOneTimeCodePage() {
   const { description } = useLoaderData<typeof loader>();
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">
@@ -113,9 +104,7 @@ export default function VerifyOneTimeCodePage() {
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
-      <Button fill loading={submitting} type="submit">
-        Verify Code
-      </Button>
+      <Button.Submit fill>Verify Code</Button.Submit>
     </RemixForm>
   );
 }

@@ -7,7 +7,7 @@ import { type ListMembersInDirectoryWhere } from '@/modules/member/member.types'
 type GetMembersOptions = {
   limit: number;
   page: number;
-  where: ListMembersInDirectoryWhere;
+  where: ListMembersInDirectoryWhere; // TODO: These should all be optional...
 };
 
 export async function listMembersInDirectory(options: GetMembersOptions) {
@@ -18,6 +18,8 @@ export async function listMembersInDirectory(options: GetMembersOptions) {
     graduationYear,
     hometownLatitude,
     hometownLongitude,
+    joinedDirectoryAfter,
+    joinedDirectoryBefore,
     locationLatitude,
     locationLongitude,
     school,
@@ -89,6 +91,20 @@ export async function listMembersInDirectory(options: GetMembersOptions) {
             .where('educations.schoolId', '=', school)
         );
       });
+    })
+    .$if(!!joinedDirectoryAfter, (query) => {
+      return query.where(
+        'joinedMemberDirectoryAt',
+        '>=',
+        joinedDirectoryAfter!
+      );
+    })
+    .$if(!!joinedDirectoryBefore, (query) => {
+      return query.where(
+        'joinedMemberDirectoryAt',
+        '<=',
+        joinedDirectoryBefore!
+      );
     })
     .where('joinedMemberDirectoryAt', 'is not', null);
 

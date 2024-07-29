@@ -77,6 +77,27 @@ export async function grantGamificationPoints(
           .execute();
       }
     )
+    .with({ type: 'get_resource_upvote' }, async (input) => {
+      await db
+        .insertInto('completedActivities')
+        .values({
+          ...activityCompleted,
+          resourceId: input.resourceId,
+          resourceUpvotedBy: input.upvotedBy,
+        })
+        .onConflict((oc) => oc.doNothing())
+        .execute();
+    })
+    .with({ type: 'post_resource' }, async (input) => {
+      await db
+        .insertInto('completedActivities')
+        .values({
+          ...activityCompleted,
+          resourceId: input.resourceId,
+        })
+        .onConflict((oc) => oc.doNothing())
+        .execute();
+    })
     .with({ type: 'react_to_message' }, async (input) => {
       const messageReactedTo = await db
         .selectFrom('slackMessages')
@@ -132,6 +153,36 @@ export async function grantGamificationPoints(
         .values({
           ...activityCompleted,
           surveyRespondedTo: input.surveyRespondedTo,
+        })
+        .onConflict((oc) => oc.doNothing())
+        .execute();
+    })
+    .with({ type: 'review_company' }, async (input) => {
+      await db
+        .insertInto('completedActivities')
+        .values({
+          ...activityCompleted,
+          workExperienceId: input.workExperienceId,
+        })
+        .onConflict((oc) => oc.doNothing())
+        .execute();
+    })
+    .with({ type: 'submit_census_response' }, async (input) => {
+      await db
+        .insertInto('completedActivities')
+        .values({
+          ...activityCompleted,
+          censusYear: input.year,
+        })
+        .onConflict((oc) => oc.doNothing())
+        .execute();
+    })
+    .with({ type: 'submit_resume' }, async (input) => {
+      await db
+        .insertInto('completedActivities')
+        .values({
+          ...activityCompleted,
+          resumeBookId: input.resumeBookId,
         })
         .onConflict((oc) => oc.doNothing())
         .execute();

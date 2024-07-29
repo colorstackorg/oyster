@@ -8,28 +8,27 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
-  useNavigation,
 } from '@remix-run/react';
 import { type z } from 'zod';
 
+import { db } from '@oyster/db';
 import { Student } from '@oyster/types';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { db, updateMemberEmail } from '../shared/core.server';
+import { updateMemberEmail } from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -58,18 +57,13 @@ type UpdateStudentEmailInput = z.infer<typeof UpdateStudentEmailInput>;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpdateStudentEmailInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    UpdateStudentEmailInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   const result = await updateMemberEmail({
@@ -86,10 +80,9 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Updated member email.',
-    type: 'success',
   });
 
-  return redirect(Route.STUDENTS, {
+  return redirect(Route['/students'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -99,14 +92,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
 export default function UpdateStudentEmailPage() {
   const { student } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.STUDENTS);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>
           Update Email - {student.firstName} {student.lastName}
@@ -125,25 +112,26 @@ export default function UpdateStudentEmailPage() {
   );
 }
 
-const { email } = UpdateStudentEmailInput.keyof().enum;
+const keys = UpdateStudentEmailInput.keyof().enum;
 
 function UpdateStudentEmailForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field error={errors.email} label="Email" labelFor={email} required>
-        <Input id={email} name={email} required />
+      <Form.Field
+        error={errors.email}
+        label="Email"
+        labelFor={keys.email}
+        required
+      >
+        <Input id={keys.email} name={keys.email} required />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Update
-        </Button>
+        <Button.Submit>Update</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

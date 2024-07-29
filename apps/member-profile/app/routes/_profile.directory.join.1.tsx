@@ -8,7 +8,6 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
 
@@ -18,7 +17,7 @@ import {
   Checkbox,
   Divider,
   Form,
-  getActionErrors,
+  getErrors,
   InputField,
   Link,
   Text,
@@ -26,12 +25,12 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { JoinDirectoryNextButton } from './_profile.directory.join';
-import { CurrentLocationField } from '../shared/components/profile.general';
-import { Route } from '../shared/constants';
-import { updateMember } from '../shared/core.server';
-import { getMember } from '../shared/queries';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+import { updateMember } from '@/member-profile.server';
+import { JoinDirectoryNextButton } from '@/routes/_profile.directory.join';
+import { CurrentLocationField } from '@/shared/components/profile.general';
+import { Route } from '@/shared/constants';
+import { getMember } from '@/shared/queries';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -57,18 +56,13 @@ type UpdateGeneralInformation = z.infer<typeof UpdateGeneralInformation>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpdateGeneralInformation,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    UpdateGeneralInformation
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await updateMember({
@@ -79,18 +73,11 @@ export async function action({ request }: ActionFunctionArgs) {
   return redirect(Route['/directory/join/2']);
 }
 
-const {
-  currentLocation,
-  currentLocationLatitude,
-  currentLocationLongitude,
-  headline,
-} = UpdateGeneralInformation.keyof().enum;
+const keys = UpdateGeneralInformation.keyof().enum;
 
 export default function UpdateGeneralInformationForm() {
   const { student } = useLoaderData<typeof loader>();
-  const { errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
+  const { errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">
@@ -99,7 +86,7 @@ export default function UpdateGeneralInformationForm() {
         description="A LinkedIn-style headline."
         error={errors.headline}
         label="Headline"
-        name={headline}
+        name={keys.headline}
         placeholder="Incoming SWE Intern @ Google | Cornell '26"
         required
       />
@@ -111,9 +98,9 @@ export default function UpdateGeneralInformationForm() {
         defaultLongitude={student.currentLocationCoordinates?.x}
         defaultValue={student.currentLocation || undefined}
         error={errors.currentLocation}
-        name={currentLocation}
-        latitudeName={currentLocationLatitude}
-        longitudeName={currentLocationLongitude}
+        name={keys.currentLocation}
+        latitudeName={keys.currentLocationLatitude}
+        longitudeName={keys.currentLocationLongitude}
       />
 
       <Divider />
@@ -135,7 +122,7 @@ export default function UpdateGeneralInformationForm() {
       </Form.Field>
 
       <Button.Group>
-        <JoinDirectoryNextButton submitting={submitting} />
+        <JoinDirectoryNextButton />
       </Button.Group>
     </RemixForm>
   );

@@ -1,12 +1,15 @@
 import { z } from 'zod';
 
 import {
+  BooleanInput,
   Entity,
   type ExtractValue,
   ISO8601Date,
   NullishString,
   Student,
 } from '@oyster/types';
+
+import { ListSearchParams } from '@/shared/types';
 
 // Enums
 
@@ -18,6 +21,8 @@ export const EmploymentType = {
   INTERNSHIP: 'internship',
   PART_TIME: 'part_time',
 } as const;
+
+export type EmploymentType = ExtractValue<typeof EmploymentType>;
 
 export const FORMATTED_EMPLOYMENT_TYPE: Record<EmploymentType, string> = {
   apprenticeship: 'Apprenticeship',
@@ -40,13 +45,15 @@ export const LocationType = {
   REMOTE: 'remote',
 } as const;
 
+export type LocationType = ExtractValue<typeof LocationType>;
+
 export const FORMATTED_LOCATION_TYPE: Record<LocationType, string> = {
   hybrid: 'Hybrid',
   in_person: 'In-Person',
   remote: 'Remote',
 };
 
-// Schemas (Base)
+// Domain
 
 export const BaseCompany = z.object({
   crunchbaseId: z.string(),
@@ -57,7 +64,19 @@ export const BaseCompany = z.object({
   stockSymbol: z.string().optional(),
 });
 
+export type BaseCompany = z.infer<typeof BaseCompany>;
+
 export const Company = Entity.merge(BaseCompany);
+
+export type Company = z.infer<typeof Company>;
+
+const CompanyReview = z.object({
+  rating: z.coerce.number().int().min(0).max(10),
+  recommend: BooleanInput,
+  studentId: Student.shape.id,
+  text: z.string().trim().min(750),
+  workExperienceId: z.string().trim().min(1),
+});
 
 export const JobOffer = Entity.omit({ deletedAt: true }).extend({
   baseSalary: z.number().optional(),
@@ -72,7 +91,7 @@ export const JobOffer = Entity.omit({ deletedAt: true }).extend({
   locationType: z.nativeEnum(LocationType),
   otherCompany: NullishString.optional(),
   startDate: ISO8601Date,
-  status: z.string(),
+  status: z.nativeEnum(JobOfferStatus),
   stockPerYear: z.number().optional(),
   studentId: Student.shape.id,
 });
@@ -90,7 +109,52 @@ export const WorkExperience = Entity.extend({
   title: z.string().trim().min(1),
 });
 
-// Schemas (Use Cases)
+export type WorkExperience = z.infer<typeof WorkExperience>;
+
+// Queries
+
+export const GetCompanyWhere = z.object({
+  id: Company.shape.id,
+});
+
+export const ListCompanyReviewsWhere = z
+  .object({
+    companyId: Company.shape.id,
+    postedAfter: z.date(),
+    postedBefore: z.date(),
+  })
+  .partial();
+
+export const ListCompaniesOrderBy = z
+  .enum([
+    'highest_rated',
+    'most_employees',
+    'most_recently_reviewed',
+    'most_reviews',
+  ])
+  .catch('most_employees');
+
+export const ListCompaniesWhere = z.object({
+  search: ListSearchParams.shape.search,
+});
+
+export const ListJobOffersWhere = z.object({
+  company: Company.shape.id.nullable().catch(null),
+  employmentType: JobOffer.shape.employmentType.nullable().catch(null),
+  locationLatitude: JobOffer.shape.locationLatitude,
+  locationLongitude: JobOffer.shape.locationLongitude,
+  status: JobOffer.shape.status.nullable().catch(null),
+});
+
+export type GetCompanyWhere = z.infer<typeof GetCompanyWhere>;
+export type ListCompaniesOrderBy = z.infer<typeof ListCompaniesOrderBy>;
+export type ListCompaniesWhere = z.infer<typeof ListCompaniesWhere>;
+export type ListCompanyReviewsWhere = z.infer<typeof ListCompanyReviewsWhere>;
+export type ListJobOffersWhere = z.infer<typeof ListJobOffersWhere>;
+
+// Use Case(s)
+
+export const AddCompanyReviewInput = CompanyReview;
 
 export const AddWorkExperienceInput = WorkExperience.pick({
   companyName: true,
@@ -111,6 +175,10 @@ export const DeleteWorkExperienceInput = WorkExperience.pick({
   studentId: true,
 });
 
+export const EditCompanyReviewInput = AddCompanyReviewInput.omit({
+  studentId: true,
+});
+
 export const EditWorkExperienceInput = AddWorkExperienceInput.extend({
   id: WorkExperience.shape.id,
 });
@@ -121,16 +189,11 @@ export const UploadJobOfferInput = JobOffer.omit({
   updatedAt: true,
 });
 
-// Types
-
+export type AddCompanyReviewInput = z.infer<typeof AddCompanyReviewInput>;
 export type AddWorkExperienceInput = z.infer<typeof AddWorkExperienceInput>;
-export type BaseCompany = z.infer<typeof BaseCompany>;
-export type Company = z.infer<typeof Company>;
 export type DeleteWorkExperienceInput = z.infer<
   typeof DeleteWorkExperienceInput
 >;
+export type EditCompanyReviewInput = z.infer<typeof EditCompanyReviewInput>;
 export type EditWorkExperienceInput = z.infer<typeof EditWorkExperienceInput>;
-export type EmploymentType = ExtractValue<typeof EmploymentType>;
-export type LocationType = ExtractValue<typeof LocationType>;
 export type UploadJobOfferInput = z.infer<typeof UploadJobOfferInput>;
-export type WorkExperience = z.infer<typeof WorkExperience>;

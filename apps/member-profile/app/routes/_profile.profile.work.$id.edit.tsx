@@ -19,25 +19,25 @@ import {
   Address,
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Modal,
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { editWorkExperience, getWorkExperience } from '../shared/core.server';
+import { editWorkExperience, getWorkExperience } from '@/member-profile.server';
 import {
   EditWorkExperienceInput,
   type EmploymentType,
   type LocationType,
   WorkForm,
-} from '../shared/core.ui';
+} from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -90,18 +90,13 @@ const EditWorkExperienceFormData = EditWorkExperienceInput.omit({
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    EditWorkExperienceFormData,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    EditWorkExperienceFormData
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   if (data.startDate && data.endDate && data.startDate > data.endDate) {
@@ -120,7 +115,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Edited work experience.',
-      type: 'success',
     });
 
     return redirect(Route['/profile/work'], {
@@ -129,37 +123,30 @@ export async function action({ params, request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
 const keys = EditWorkExperienceFormData.keyof().enum;
 
 export default function EditWorkExperiencePage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const { workExperience } = useLoaderData<typeof loader>();
 
   const navigate = useNavigate();
 
   const submitting = useNavigation().state === 'submitting';
 
-  function onClose() {
-    navigate(Route['/profile/work']);
-  }
-
   function onDelete() {
     navigate(
-      generatePath(Route.DELETE_WORK_EXPERIENCE, {
+      generatePath(Route['/profile/work/:id/delete'], {
         id: workExperience.id,
       })
     );
   }
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/work']}>
       <Modal.Header>
         <Modal.Title>Edit Work Experience</Modal.Title>
         <Modal.CloseButton />
@@ -244,14 +231,12 @@ export default function EditWorkExperiencePage() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group flexDirection="row-reverse" spacing="between">
-          <Button loading={submitting} type="submit">
-            Update
-          </Button>
+          <Button.Submit>Update</Button.Submit>
 
           <Button
             color="error"
-            loading={submitting}
             onClick={onDelete}
+            submitting={submitting}
             type="button"
             variant="secondary"
           >

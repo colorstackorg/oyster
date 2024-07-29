@@ -18,16 +18,10 @@ export const RedisKey = {
   GOOGLE_GEOCODING_CONNECTIONS: 'google:connections:geocoding',
   MAILCHIMP_CONNECTIONS: 'mailchimp:connections',
   SLACK_DEACTIVATE_CONNECTIONS: 'slack:connections:deactivate',
+  SLACK_GET_BIRTHDATES_CONNECTIONS: 'slack:connections:get_birthdates',
   SLACK_GET_MESSAGE_CONNECTIONS: 'slack:connections:get_message',
   SLACK_INVITE_USER_CONNECTIONS: 'slack:connections:invite_user',
   SLACK_JOIN_CHANNEL_CONNECTIONS: 'slack:connections:join_channel',
-  SLACK_LEGACY_COOKIE: 'slack:legacy_cookie',
-  SLACK_LEGACY_TOKEN: 'slack:legacy_token',
-  SWAG_UP_ACCESS_TOKEN: 'swag_up:access_token',
-  SWAG_UP_BOTTLE_PRODUCT_ID: 'swag_up:bottle_product_id',
-  SWAG_UP_HAT_PRODUCT_ID: 'swag_up:hat_product_id',
-  SWAG_UP_REFRESH_TOKEN: 'swag_up:refresh_token',
-  SWAG_UP_SIZE_ID: 'swag_up:size_id',
 } as const;
 
 export type RedisKey = ExtractValue<typeof RedisKey>;
@@ -44,6 +38,8 @@ export type RedisKey = ExtractValue<typeof RedisKey>;
  *
  * @param key - Key to store the data in Redis.
  * @param schema - Zod schema to validate any cached data.
+ *
+ * @deprecated Use `withCache` instead.
  */
 export function cache<T>(key: string, schema: z.ZodType<T>) {
   async function get() {
@@ -76,4 +72,39 @@ export function cache<T>(key: string, schema: z.ZodType<T>) {
     get,
     set,
   };
+}
+
+/**
+ * Returns the cached data if it exists and is valid. Otherwise, it will call
+ * the provided function and store the result in Redis. The cache will expire
+ * after the provided time.
+ *
+ * @param key - Key to store the data in Redis.
+ * @param expires - Time in seconds for the cache to expire.
+ * @param fn - Function to call if the cache is empty.
+ */
+export async function withCache<T>(
+  key: string,
+  expires: number | null,
+  fn: () => T | Promise<T>
+): Promise<T> {
+  const data = await redis.get(key);
+
+  if (data) {
+    return JSON.parse(data);
+  }
+
+  const result = await fn();
+
+  if (!result) {
+    return result;
+  }
+
+  if (expires) {
+    await redis.set(key, JSON.stringify(result), 'EX', expires);
+  } else {
+    await redis.set(key, JSON.stringify(result));
+  }
+
+  return result;
 }

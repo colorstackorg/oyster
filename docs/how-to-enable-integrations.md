@@ -6,12 +6,12 @@ We have integrations with the following platforms:
 
 - Airmeet (Virtual Events)
 - Airtable (CRM)
+- Cloudflare R2 (Object Storage)
 - Crunchbase (Company Database)
 - Google (Authentication)
 - Mailchimp (Email Marketing)
 - Sentry (Error Monitoring)
 - Slack (Community Home, Authentication)
-- Statsig (Feature Flag)
 - SwagUp (Swag Packs)
 
 ## Airmeet
@@ -44,13 +44,27 @@ To enable the **Airtable** integration:
    AIRTABLE_FAMILY_BASE_ID
    ```
 
+## Cloudflare R2
+
+To enable the **Cloudflare R2** integration:
+
+1. See [this](https://developers.cloudflare.com/r2/get-started/) Cloudflare R2
+   documentation to get started.
+2. In `/api/.env`, set the following variables:
+   ```
+   R2_ACCESS_KEY_ID
+   R2_ACCOUNT_ID
+   R2_BUCKET_NAME
+   R2_SECRET_ACCESS_KEY
+   ```
+
 ## Crunchbase
 
 To enable the **Crunchbase** integration:
 
 1. See [this](https://data.crunchbase.com/docs/crunchbase-basic-getting-started)
    Crunchbase documentation to generate an API key.
-2. In `/member-profile/.env`, the following variable:
+2. In `/member-profile/.env`, set the following variable:
    ```
    CRUNCHBASE_BASIC_API_KEY
    ```
@@ -134,20 +148,6 @@ To enable the **Slack** integration:
    ```
    SLACK_CLIENT_ID
    SLACK_TEAM_ID
-   ```
-
-## Statsig
-
-To enable the **Statsig** integration:
-
-1.
-2. In `/api/.env`, set the following variables:
-   ```
-   STATSIG_SECRET_KEY
-   ```
-3. In `/member-profile/.env`, set the following variables:
-   ```
-   STATSIG_SECRET_KEY
    ```
 
 ## SwagUp

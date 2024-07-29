@@ -23,13 +23,14 @@ export type { GetActivityType } from './domain/gamification';
 export { ProfileView } from './domain/profile-view';
 export { Program, ProgramParticipant } from './domain/program';
 export { Resource, ResourceStatus, ResourceUser } from './domain/resource';
-export { ScholarshipRecipient, ScholarshipType } from './domain/scholarship';
 export {
   ActivationRequirement,
   MemberEthnicity,
+  MemberType,
   Student,
   StudentActiveStatus,
   StudentEmail,
+  WorkAuthorizationStatus,
 } from './domain/student';
 export {
   Address,
@@ -45,12 +46,13 @@ export {
   Major,
   OtherDemographic,
   Race,
-  SwagPackType,
 } from './domain/types';
 export type { ExtractValue } from './shared/types';
 export {
+  BooleanInput,
   ISO8601Date,
   NullishString,
   Timezone,
+  multiSelectField,
   nullableField,
 } from './shared/zod';

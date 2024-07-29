@@ -1,4 +1,7 @@
 contact_links:
-  - name: Ask a Question ❓
-    url: https://colorstack-family.slack.com/channels/C06S0DBFD6X
-    about: Need help on something? Feedback on a feature idea? Ask in our Slack!
+  - name: Feature Request 🚀
+    url: https://github.com/colorstackorg/oyster/discussions/new?category=ideas
+    about: We use GitHub Discussions to propose and discuss new ideas. 💬
+  - name: Get Help 🙏
+    url: https://github.com/colorstackorg/oyster/discussions/new?category=help
+    about: Need help on something? Ask a question to other community members!

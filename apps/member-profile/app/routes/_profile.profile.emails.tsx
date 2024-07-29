@@ -2,6 +2,7 @@ import {
   type ActionFunctionArgs,
   json,
   type LoaderFunctionArgs,
+  type MetaFunction,
 } from '@remix-run/node';
 import {
   Outlet,
@@ -14,32 +15,40 @@ import {
 import { Edit, Plus } from 'react-feather';
 import { z } from 'zod';
 
+import { buildMeta } from '@oyster/core/remix';
+import { db } from '@oyster/db';
 import {
   Button,
   Checkbox,
   cx,
   Form,
-  getActionErrors,
+  getErrors,
   Text,
   validateForm,
 } from '@oyster/ui';
 
+import { listEmails, updateAllowEmailShare } from '@/member-profile.server';
 import {
   ProfileDescription,
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
-} from '../shared/components/profile';
-import { Route } from '../shared/constants';
-import { db, listEmails, updateAllowEmailShare } from '../shared/core.server';
-import { track } from '../shared/mixpanel.server';
-import { getMember } from '../shared/queries';
+} from '@/shared/components/profile';
+import { Route } from '@/shared/constants';
+import { getMember } from '@/shared/queries';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
+
+export const meta: MetaFunction = () => {
+  return buildMeta({
+    description: 'Manage your email addresses and email sharing settings.',
+    title: 'Email Addresses',
+  });
+};
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -50,10 +59,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     listEmails(id),
     getMember(id).select('allowEmailShare').executeTakeFirstOrThrow(),
   ]);
-
-  track(request, 'Page Viewed', {
-    Page: 'Profile - Email Addresses',
-  });
 
   return json({
     emails,
@@ -70,18 +75,13 @@ type UpdateAllowEmailShare = z.infer<typeof UpdateAllowEmailShare>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpdateAllowEmailShare,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    UpdateAllowEmailShare
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await db.transaction().execute(async (trx) => {
@@ -90,7 +90,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Updated!',
-    type: 'success',
   });
 
   return json(
@@ -106,7 +105,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 }
 
-const { allowEmailShare } = UpdateAllowEmailShare.keyof().enum;
+const keys = UpdateAllowEmailShare.keyof().enum;
 
 export default function EmailsPage() {
   return (
@@ -119,7 +118,7 @@ export default function EmailsPage() {
 
 function EmailAddressSection() {
   const { emails, student } = useLoaderData<typeof loader>();
-  const { errors } = getActionErrors(useActionData<typeof action>());
+  const { errors } = getErrors(useActionData<typeof action>());
 
   const submit = useSubmit();
 
@@ -130,7 +129,7 @@ function EmailAddressSection() {
   }
 
   function onChangePrimaryEmail() {
-    navigate(Route.CHANGE_PRIMARY_EMAIL);
+    navigate(Route['/profile/emails/change-primary']);
   }
 
   return (
@@ -192,8 +191,8 @@ function EmailAddressSection() {
           <Checkbox
             defaultChecked={student.allowEmailShare}
             label="Share my email with chapter leaders! 🌟"
-            id={allowEmailShare}
-            name={allowEmailShare}
+            id={keys.allowEmailShare}
+            name={keys.allowEmailShare}
             value="1"
           />
         </Form.Field>

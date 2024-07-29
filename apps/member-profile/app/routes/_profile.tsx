@@ -1,25 +1,40 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet, useLoaderData } from '@remix-run/react';
-import { Award, Book, Calendar, Folder, Home, User } from 'react-feather';
+import { generatePath, Outlet, useLoaderData } from '@remix-run/react';
+import {
+  Award,
+  Book,
+  BookOpen,
+  Briefcase,
+  Calendar,
+  Folder,
+  Home,
+  User,
+} from 'react-feather';
 
-import { Dashboard } from '@oyster/ui';
+import { getResumeBook } from '@oyster/core/resume-books';
+import { Dashboard, Divider } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { isFeatureFlagEnabled } from '../shared/core.server';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { Route } from '@/shared/constants';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const isCensusEnabled = await isFeatureFlagEnabled('census_2024');
+  const resumeBook = await getResumeBook({
+    select: ['resumeBooks.id'],
+    where: {
+      hidden: false,
+      status: 'active',
+    },
+  });
 
   return json({
-    isCensusEnabled,
+    resumeBook,
   });
 }
 
 export default function ProfileLayout() {
-  const { isCensusEnabled } = useLoaderData<typeof loader>();
+  const { resumeBook } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -31,32 +46,56 @@ export default function ProfileLayout() {
 
         <Dashboard.Navigation>
           <Dashboard.NavigationList>
+            {!!resumeBook && (
+              <>
+                <Dashboard.NavigationLink
+                  icon={<Book />}
+                  isNew
+                  label="Resume Book"
+                  pathname={generatePath(Route['/resume-books/:id'], {
+                    id: resumeBook.id,
+                  })}
+                  prefetch="intent"
+                />
+
+                <Divider my="4" />
+              </>
+            )}
             <Dashboard.NavigationLink
               icon={<Home />}
               label="Home"
-              pathname={Route.HOME}
+              pathname={Route['/home']}
+              prefetch="intent"
             />
-            {isCensusEnabled && (
-              <Dashboard.NavigationLink
-                icon={<Book />}
-                label="Census '24"
-                pathname={Route['/census']}
-              />
-            )}
             <Dashboard.NavigationLink
               icon={<Folder />}
               label="Directory"
               pathname={Route['/directory']}
+              prefetch="intent"
+            />
+            <Dashboard.NavigationLink
+              icon={<BookOpen />}
+              label="Resources"
+              pathname={Route['/resources']}
+              prefetch="intent"
+            />
+            <Dashboard.NavigationLink
+              icon={<Briefcase />}
+              label="Companies"
+              pathname={Route['/companies']}
+              prefetch="intent"
             />
             <Dashboard.NavigationLink
               icon={<Award />}
               label="Points"
-              pathname={Route.POINTS}
+              pathname={Route['/points']}
+              prefetch="intent"
             />
             <Dashboard.NavigationLink
               icon={<Calendar />}
               label="Events"
               pathname={Route['/events']}
+              prefetch="intent"
             />
             <Dashboard.NavigationLink
               icon={<User />}

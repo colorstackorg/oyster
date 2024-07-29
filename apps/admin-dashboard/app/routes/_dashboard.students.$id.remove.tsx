@@ -4,21 +4,19 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useLoaderData,
-  useNavigate,
-} from '@remix-run/react';
+import { Form as RemixForm, useLoaderData } from '@remix-run/react';
 
-import { Button, Modal } from '@oyster/ui';
+import { db } from '@oyster/db';
+import { BooleanInput } from '@oyster/types';
+import { Button, Checkbox, Modal } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { db, job } from '../shared/core.server';
+import { job } from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -30,7 +28,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     .executeTakeFirst();
 
   if (!student) {
-    return redirect(Route.STUDENTS);
+    return redirect(Route['/students']);
   }
 
   return json({
@@ -43,7 +41,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const student = await db
     .deleteFrom('students')
-    .returning(['email', 'slackId'])
+    .returning(['airtableId', 'email', 'firstName', 'slackId'])
     .where('id', '=', params.id as string)
     .executeTakeFirst();
 
@@ -51,17 +49,23 @@ export async function action({ params, request }: ActionFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
+  const form = await request.formData();
+
+  const sendViolationEmail = BooleanInput.parse(form.get('sendViolationEmail'));
+
   job('student.removed', {
+    airtableId: student.airtableId as string,
     email: student.email,
+    firstName: student.firstName,
+    sendViolationEmail,
     slackId: student.slackId,
   });
 
   toast(session, {
     message: 'Removed member.',
-    type: 'success',
   });
 
-  return redirect(Route.STUDENTS, {
+  return redirect(Route['/students'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -71,14 +75,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
 export default function RemoveMemberPage() {
   const { student } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.STUDENTS);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
         <Modal.Title>
           Remove {student.firstName} {student.lastName}
@@ -93,6 +91,15 @@ export default function RemoveMemberPage() {
       </Modal.Description>
 
       <RemixForm className="form" method="post">
+        <Checkbox
+          color="amber-100"
+          defaultChecked={true}
+          label="Send a Code of Conduct violation email."
+          id="sendViolationEmail"
+          name="sendViolationEmail"
+          value="1"
+        />
+
         <Button.Group>
           <Button color="error" type="submit">
             Remove

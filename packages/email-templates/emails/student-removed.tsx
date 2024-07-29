@@ -1,7 +1,11 @@
+import React from 'react';
+
 import { Email } from './components/email';
 import { type EmailTemplateData } from '../src/types';
 
-export function StudentRemovedEmail(_: EmailTemplateData<'student-removed'>) {
+export function StudentRemovedEmail({
+  firstName,
+}: EmailTemplateData<'student-removed'>) {
   return (
     <Email.Template>
       <Email.Preview>
@@ -9,18 +13,30 @@ export function StudentRemovedEmail(_: EmailTemplateData<'student-removed'>) {
       </Email.Preview>
 
       <Email.Main>
-        <Email.Text>We're here with some unfortunate news.</Email.Text>
+        <Email.Text>Hello {firstName},</Email.Text>
 
         <Email.Text>
-          You have violated the{' '}
+          We are informing you that you have violated the{' '}
           <Email.Link href="https://docs.google.com/document/d/10hIOyIJQAdU4ZTvil5ECmRlM34Ds0dPGFNpg18WQ1js">
             ColorStack Code of Conduct
           </Email.Link>
-          , and as a result you have been permanently banned from the ColorStack
-          community.
+          .
+          <br />
+          <br />
+          There have been reports with evidence of you being disrespectful,
+          harassing, and/or violent. We have a zero-tolerance policy for this
+          type of behavior within our community. As a result, you are
+          permanently banned from the ColorStack Family.
+          <br />
+          <br />
+          This decision is final.
         </Email.Text>
 
-        <Email.Signature />
+        <Email.Signature>
+          Regards,
+          <br />
+          The ColorStack Team
+        </Email.Signature>
       </Email.Main>
     </Email.Template>
   );

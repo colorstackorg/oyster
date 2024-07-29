@@ -8,31 +8,30 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
-  useNavigation,
 } from '@remix-run/react';
 import { type z } from 'zod';
 
+import { db } from '@oyster/db';
 import { StudentEmail } from '@oyster/types';
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Input,
   Modal,
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { addEmailCookie } from '../shared/cookies.server';
-import { db, job } from '../shared/core.server';
-import { OneTimeCode, OneTimeCodePurpose } from '../shared/core.ui';
+import { job } from '@/member-profile.server';
+import { OneTimeCode, OneTimeCodePurpose } from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
+import { addEmailCookie } from '@/shared/cookies.server';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -66,18 +65,10 @@ type AddEmailFormData = z.infer<typeof AddEmailFormData>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
+  const { data, errors, ok } = await validateForm(request, AddEmailFormData);
 
-  const { data, errors } = validateForm(
-    AddEmailFormData,
-    Object.fromEntries(form)
-  );
-
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   const email = await addEmailCookie.parse(request.headers.get('Cookie'));
@@ -98,7 +89,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Added email address to your profile.',
-      type: 'success',
     });
 
     return redirect(Route['/profile/emails'], {
@@ -107,10 +97,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
@@ -163,22 +150,14 @@ async function addEmail(input: AddEmailInput) {
   });
 }
 
-const { code } = AddEmailFormData.keyof().enum;
+const keys = AddEmailFormData.keyof().enum;
 
 export default function AddEmailPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const { email } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  const submitting = useNavigation().state === 'submitting';
-
-  function onClose() {
-    navigate(Route['/profile/emails']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/emails']}>
       <Modal.Header>
         <Modal.Title>Add Email Address</Modal.Title>
         <Modal.CloseButton />
@@ -191,16 +170,19 @@ export default function AddEmailPage() {
       </Modal.Description>
 
       <RemixForm className="form" method="post">
-        <Form.Field error={errors.code} label="Code" labelFor={code} required>
-          <Input autoFocus id={code} name={code} required />
+        <Form.Field
+          error={errors.code}
+          label="Code"
+          labelFor={keys.code}
+          required
+        >
+          <Input autoFocus id={keys.code} name={keys.code} required />
         </Form.Field>
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Verify
-          </Button>
+          <Button.Submit>Verify</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

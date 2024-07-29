@@ -4,28 +4,24 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
+import { uploadOnboardingSession } from '@/admin-dashboard.server';
+import { OnboardingSession } from '@/admin-dashboard.ui';
 import {
   OnboardingSessionAttendeesField,
   OnboardingSessionForm,
-} from '../shared/components/onboarding-session-form';
-import { Route } from '../shared/constants';
-import { uploadOnboardingSession } from '../shared/core.server';
-import { OnboardingSession } from '../shared/core.ui';
+} from '@/shared/components/onboarding-session-form';
+import { Route } from '@/shared/constants';
 import {
+  admin,
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
@@ -43,6 +39,7 @@ const UploadOnboardingSessionInput = OnboardingSession.pick({
     .trim()
     .min(1, { message: 'Please select at least one attendee.' })
     .transform((value) => value.split(',')),
+  uploadedById: z.string().trim().min(1),
 });
 
 type UploadOnboardingSessionInput = z.infer<
@@ -56,16 +53,15 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await request.formData();
 
-  const { data, errors } = validateForm(
-    UploadOnboardingSessionInput,
-    Object.fromEntries(form)
+  form.set('uploadedById', admin(session));
+
+  const { data, errors, ok } = await validateForm(
+    form,
+    UploadOnboardingSessionInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   try {
@@ -73,55 +69,41 @@ export async function action({ request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Uploaded onboarding session.',
-      type: 'success',
     });
 
-    return redirect(Route.ONBOARDING_SESSIONS, {
+    return redirect(Route['/onboarding-sessions'], {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
-const { attendees, date } = UploadOnboardingSessionInput.keyof().enum;
+const keys = UploadOnboardingSessionInput.keyof().enum;
 
 export default function UploadOnboardingSessionPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
-
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.ONBOARDING_SESSIONS);
-  }
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/onboarding-sessions']}>
       <Modal.Header>
         <Modal.Title>Upload Onboarding Session</Modal.Title>
         <Modal.CloseButton />
       </Modal.Header>
 
       <RemixForm className="form" method="post">
-        <OnboardingSessionForm.DateField error={errors.date} name={date} />
+        <OnboardingSessionForm.DateField error={errors.date} name={keys.date} />
         <OnboardingSessionAttendeesField
           error={errors.attendees}
-          name={attendees}
+          name={keys.attendees}
         />
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Upload
-          </Button>
+          <Button.Submit>Upload</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

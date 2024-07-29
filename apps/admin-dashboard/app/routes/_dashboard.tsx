@@ -1,21 +1,23 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
 import {
+  BookOpen,
   Calendar,
   Gift,
   HelpCircle,
   Layers,
   MapPin,
   Target,
+  ToggleRight,
   User,
   Video,
 } from 'react-feather';
 
-import { Dashboard } from '@oyster/ui';
+import { Dashboard, Divider } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { countPendingApplications } from '../shared/core.server';
-import { getSession, isAmbassador } from '../shared/session.server';
+import { countPendingApplications } from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
+import { getSession, isAmbassador } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);
@@ -46,12 +48,12 @@ export default function DashboardLayout() {
                 <Dashboard.NavigationLink
                   icon={<Layers />}
                   label={`Applications (${pendingApplications})`}
-                  pathname={Route.APPLICATIONS}
+                  pathname={Route['/applications']}
                 />
                 <Dashboard.NavigationLink
                   icon={<Video />}
                   label="Onboarding Sessions"
-                  pathname={Route.ONBOARDING_SESSIONS}
+                  pathname={Route['/onboarding-sessions']}
                 />
               </>
             ) : (
@@ -59,42 +61,58 @@ export default function DashboardLayout() {
                 <Dashboard.NavigationLink
                   icon={<Layers />}
                   label={`Applications (${pendingApplications})`}
-                  pathname={Route.APPLICATIONS}
+                  pathname={Route['/applications']}
                 />
                 <Dashboard.NavigationLink
                   icon={<User />}
-                  label="Students"
-                  pathname={Route.STUDENTS}
-                />
-                <Dashboard.NavigationLink
-                  icon={<Gift />}
-                  label="Gamification"
-                  pathname={Route.ACTIVITIES}
-                />
-                <Dashboard.NavigationLink
-                  icon={<Video />}
-                  label="Onboarding Sessions"
-                  pathname={Route.ONBOARDING_SESSIONS}
+                  label="Members"
+                  pathname={Route['/students']}
                 />
                 <Dashboard.NavigationLink
                   icon={<Calendar />}
                   label="Events"
-                  pathname={Route.EVENTS}
+                  pathname={Route['/events']}
                 />
                 <Dashboard.NavigationLink
-                  icon={<HelpCircle />}
-                  label="Surveys"
-                  pathname={Route.SURVEYS}
+                  icon={<BookOpen />}
+                  label="Resume Books"
+                  pathname={Route['/resume-books']}
+                />
+                <Dashboard.NavigationLink
+                  icon={<Video />}
+                  label="Onboarding Sessions"
+                  pathname={Route['/onboarding-sessions']}
+                />
+                <Dashboard.NavigationLink
+                  icon={<Gift />}
+                  label="Gamification"
+                  pathname={Route['/gamification/activities']}
+                />
+                <Dashboard.NavigationLink
+                  icon={<User />}
+                  label="Admins"
+                  pathname={Route['/admins']}
                 />
                 <Dashboard.NavigationLink
                   icon={<MapPin />}
                   label="Schools"
-                  pathname={Route.SCHOOLS}
+                  pathname={Route['/schools']}
+                />
+                <Dashboard.NavigationLink
+                  icon={<HelpCircle />}
+                  label="Surveys"
+                  pathname={Route['/surveys']}
+                />
+                <Divider my="2" />
+                <Dashboard.NavigationLink
+                  icon={<ToggleRight />}
+                  label="Feature Flags"
+                  pathname={Route['/feature-flags']}
                 />
                 <Dashboard.NavigationLink
                   icon={<Target />}
                   label="Bull"
-                  pathname={Route.BULL}
+                  pathname={Route['/bull']}
                 />
               </>
             )}
@@ -104,7 +122,7 @@ export default function DashboardLayout() {
         <Dashboard.LogoutForm />
       </Dashboard.Sidebar>
 
-      <Dashboard.Page>
+      <Dashboard.Page className="max-h-screen overflow-auto">
         <Dashboard.MenuButton />
         <Outlet />
       </Dashboard.Page>

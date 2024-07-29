@@ -8,28 +8,26 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
-  useNavigation,
 } from '@remix-run/react';
 
 import {
   Button,
   Form,
-  getActionErrors,
+  getErrors,
   Modal,
   Select,
   validateForm,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { changePrimaryEmail, listEmails } from '../shared/core.server';
-import { ChangePrimaryEmailInput } from '../shared/core.ui';
+import { changePrimaryEmail, listEmails } from '@/member-profile.server';
+import { ChangePrimaryEmailInput } from '@/member-profile.ui';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -44,18 +42,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    ChangePrimaryEmailInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    ChangePrimaryEmailInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   try {
@@ -63,7 +56,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
     toast(session, {
       message: 'Your primary email address was updated.',
-      type: 'success',
     });
 
     return redirect(Route['/profile/emails'], {
@@ -72,29 +64,18 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
 const keys = ChangePrimaryEmailInput.keyof().enum;
 
 export default function ChangePrimaryEmailPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const { emails } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  const submitting = useNavigation().state === 'submitting';
-
-  function onClose() {
-    navigate(Route['/profile/emails']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/profile/emails']}>
       <Modal.Header>
         <Modal.Title>Change Primary Email Address</Modal.Title>
         <Modal.CloseButton />
@@ -132,9 +113,7 @@ export default function ChangePrimaryEmailPage() {
         </Form.Field>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Save
-          </Button>
+          <Button.Submit>Save</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

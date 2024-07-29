@@ -64,7 +64,7 @@ export function ComboboxPopover({ children }: PropsWithChildren) {
   return (
     <div
       className={cx(
-        'z-10 mt-1 max-h-60 overflow-scroll rounded-lg border border-gray-300 bg-white',
+        'z-10 mt-1 max-h-60 overflow-auto rounded-lg border border-gray-300 bg-white',
         position === 'fixed' ? 'fixed' : 'absolute top-full w-full',
         !popoverOpen && 'hidden'
       )}

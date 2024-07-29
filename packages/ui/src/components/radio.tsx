@@ -76,10 +76,11 @@ export const Radio = ({
 };
 
 Radio.Group = function RadioGroup({ children }: PropsWithChildren) {
-  const childrenWithProps = React.Children.map(children, (child, i: number) => {
+  const childrenWithProps = React.Children.map(children, (child, i) => {
     if (React.isValidElement(child)) {
       const props: Partial<RadioProps> = {
-        color: ACCENT_COLORS[i % ACCENT_COLORS.length],
+        ...child.props,
+        color: child.props.color || ACCENT_COLORS[i % ACCENT_COLORS.length],
       };
 
       return React.cloneElement(child, props);

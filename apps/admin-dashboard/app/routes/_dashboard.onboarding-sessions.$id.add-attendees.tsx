@@ -4,24 +4,20 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { db } from '@oyster/db';
+import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
-import { OnboardingSessionAttendeesField } from '../shared/components/onboarding-session-form';
-import { Route } from '../shared/constants';
-import { addOnboardingSessionAttendees, db } from '../shared/core.server';
+import { addOnboardingSessionAttendees } from '@/admin-dashboard.server';
+import { OnboardingSessionAttendeesField } from '@/shared/components/onboarding-session-form';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
@@ -57,49 +53,35 @@ export async function action({ params, request }: ActionFunctionArgs) {
     allowAmbassador: true,
   });
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    AddOnboardingSessionAttendeesInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    AddOnboardingSessionAttendeesInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await addOnboardingSessionAttendees(params.id as string, data);
 
   toast(session, {
     message: `Added ${data.attendees.length} attendees.`,
-    type: 'success',
   });
 
-  return redirect(Route.ONBOARDING_SESSIONS, {
+  return redirect(Route['/onboarding-sessions'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
   });
 }
 
-const { attendees } = AddOnboardingSessionAttendeesInput.keyof().enum;
+const keys = AddOnboardingSessionAttendeesInput.keyof().enum;
 
 export default function AddOnboardingSessionAttendeesPage() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
-
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.ONBOARDING_SESSIONS);
-  }
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/onboarding-sessions']}>
       <Modal.Header>
         <Modal.Title>Add Onboarding Session Attendees</Modal.Title>
         <Modal.CloseButton />
@@ -108,15 +90,13 @@ export default function AddOnboardingSessionAttendeesPage() {
       <RemixForm className="form" method="post">
         <OnboardingSessionAttendeesField
           error={errors.attendees}
-          name={attendees}
+          name={keys.attendees}
         />
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button loading={submitting} type="submit">
-            Upload
-          </Button>
+          <Button.Submit>Upload</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>

@@ -5,9 +5,10 @@ import {
 } from '@remix-run/node';
 import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
+import { Video } from 'react-feather';
 
-import { EventType } from '@oyster/types';
-import { ProfilePicture } from '@oyster/ui';
+import { db } from '@oyster/db';
+import { cx, getButtonCn, ProfilePicture } from '@oyster/ui';
 
 import {
   EventDate,
@@ -15,11 +16,10 @@ import {
   EventName,
   EventSection,
   formatEventDate,
-} from '../shared/components/event';
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { db } from '../shared/core.server';
-import { ensureUserAuthenticated } from '../shared/session.server';
+} from '@/shared/components/event';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -44,6 +44,7 @@ async function getPastEvents({ timezone }: GetPastEventsInput) {
       'endTime',
       'id',
       'name',
+      'recordingLink',
       'startTime',
       (eb) => {
         return eb
@@ -72,7 +73,7 @@ async function getPastEvents({ timezone }: GetPastEventsInput) {
       },
     ])
     .where('endTime', '<=', new Date())
-    .where('type', '=', EventType.VIRTUAL)
+    .where('events.hidden', '=', false)
     .orderBy('startTime', 'desc')
     .execute();
 
@@ -145,6 +146,17 @@ function PastEventItem({ event }: PastEventItemProps) {
             profilePictures={event.profilePictures}
           />
         )}
+
+        <a
+          className={cx(
+            getButtonCn({ fill: true, size: 'small', variant: 'secondary' }),
+            !event.recordingLink && 'invisible'
+          )}
+          href={event.recordingLink || undefined}
+          target="_blank"
+        >
+          View Recording <Video />
+        </a>
       </div>
     </li>
   );

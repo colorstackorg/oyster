@@ -12,23 +12,29 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
-  useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import { Email, EventAttendee } from '@oyster/types';
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import {
+  Button,
+  FileUploader,
+  Form,
+  getErrors,
+  Modal,
+  validateForm,
+} from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { db, getEvent, job, parseCsv } from '../shared/core.server';
-import { findStudentByEmail } from '../shared/queries/student';
+import { getEvent, job, parseCsv } from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
+import { findStudentByEmail } from '@/shared/queries/student';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -60,16 +66,13 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors } = validateForm(
-    ImportEventAttendeesInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    form,
+    ImportEventAttendeesInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Something went wrong, please try again.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   let count = 0;
@@ -79,18 +82,14 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     count = result.count;
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 
   toast(session, {
     message: `Imported ${count} event attendees.`,
-    type: 'success',
   });
 
-  return redirect(Route.EVENTS, {
+  return redirect(Route['/events'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -165,14 +164,8 @@ async function importEventAttendees(
 export default function ImportEventAttendeesPage() {
   const { event } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.EVENTS);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/events']}>
       <Modal.Header>
         <Modal.Title>Import Event Attendees</Modal.Title>
         <Modal.CloseButton />
@@ -187,25 +180,26 @@ export default function ImportEventAttendeesPage() {
   );
 }
 
-const { file } = ImportEventAttendeesInput.keyof().enum;
+const keys = ImportEventAttendeesInput.keyof().enum;
 
 function ImportEventAttendeesForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
-      <Form.Field error={errors.file} labelFor={file} required>
-        <input accept=".csv" id={file} name={file} required type="file" />
+      <Form.Field error={errors.file} labelFor={keys.file} required>
+        <FileUploader
+          accept={['text/csv']}
+          id={keys.file}
+          name={keys.file}
+          required
+        />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Import
-        </Button>
+        <Button.Submit>Import</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

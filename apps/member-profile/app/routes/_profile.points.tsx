@@ -4,6 +4,7 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import {
+  generatePath,
   Form as RemixForm,
   Link as RemixLink,
   useLoaderData,
@@ -11,11 +12,12 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { type PropsWithoutRef } from 'react';
 import { Award, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { track } from '@oyster/core/mixpanel';
+import { db } from '@oyster/db';
 import { type CompletedActivity } from '@oyster/types';
 import {
   Button,
@@ -23,27 +25,25 @@ import {
   getButtonCn,
   Link,
   Pill,
-  ProfilePicture,
   Select,
   Text,
   useSearchParams,
 } from '@oyster/ui';
 
-import { Card } from '../shared/components/card';
 import {
-  EmptyState,
-  EmptyStateContainer,
-} from '../shared/components/empty-state';
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import {
-  db,
   getPointsLeaderboard,
   getTotalPoints,
   listActivities,
-} from '../shared/core.server';
-import { track } from '../shared/mixpanel.server';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+} from '@/member-profile.server';
+import { Card, type CardProps } from '@/shared/components/card';
+import {
+  EmptyState,
+  EmptyStateContainer,
+} from '@/shared/components/empty-state';
+import { Leaderboard } from '@/shared/components/leaderboard';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 const TIMEFRAME = {
   ALL_TIME: 'all_time',
@@ -60,8 +60,6 @@ const PointsSearchParams = z.object({
 });
 
 type PointsSearchParams = z.infer<typeof PointsSearchParams>;
-
-const PointsSearchParam = PointsSearchParams.keyof().enum;
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -98,13 +96,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
       where: {
         memberId: id,
         occurredAfter,
+        occurredBefore: null,
       },
     }),
     listActivities(),
   ]);
 
-  track(request, 'Page Viewed', {
-    Page: 'Points',
+  track({
+    event: 'Page Viewed',
+    properties: { Page: 'Points' },
+    request,
+    user: id,
   });
 
   return json({
@@ -139,27 +141,51 @@ async function getActivityHistory(
         'surveys.id',
         'completedActivities.surveyRespondedTo'
       )
+      .leftJoin('slackMessages as threads', (join) => {
+        return join
+          .onRef('threads.id', '=', 'completedActivities.threadRepliedTo')
+          .onRef('threads.channelId', '=', 'completedActivities.channelId');
+      })
+      .leftJoin('slackMessages as messagesReactedTo', (join) => {
+        return join
+          .onRef(
+            'messagesReactedTo.id',
+            '=',
+            'completedActivities.messageReactedTo'
+          )
+          .onRef(
+            'messagesReactedTo.channelId',
+            '=',
+            'completedActivities.channelId'
+          );
+      })
       .leftJoin(
-        'slackMessages as threads',
-        'threads.id',
-        'completedActivities.threadRepliedTo'
+        'students as resourceUpvoters',
+        'resourceUpvoters.id',
+        'completedActivities.resourceUpvotedBy'
       )
       .leftJoin(
-        'slackMessages as messagesReactedTo',
-        'messagesReactedTo.id',
-        'completedActivities.messageReactedTo'
+        'resumeBooks',
+        'resumeBooks.id',
+        'completedActivities.resumeBookId'
       )
       .select([
         'activities.name',
+        'completedActivities.censusYear',
         'completedActivities.description',
         'completedActivities.id',
         'completedActivities.occurredAt',
         'completedActivities.points',
+        'completedActivities.resourceId',
         'completedActivities.type',
         'events.name as eventAttended',
         'messagesReactedTo.channelId as messageReactedToChannelId',
         'messagesReactedTo.id as messageReactedToId',
         'messagesReactedTo.text as messageReactedToText',
+        'resourceUpvoters.firstName as resourceUpvoterFirstName',
+        'resourceUpvoters.id as resourceUpvoterId',
+        'resourceUpvoters.lastName as resourceUpvoterLastName',
+        'resumeBooks.name as resumeBookName',
         'surveys.title as surveyRespondedTo',
         'threads.channelId as threadRepliedToChannelId',
         'threads.id as threadRepliedToId',
@@ -237,6 +263,8 @@ export default function PointsPage() {
   );
 }
 
+const keys = PointsSearchParams.keyof().enum;
+
 function TimeframeForm() {
   const [searchParams] = useSearchParams(PointsSearchParams);
 
@@ -250,8 +278,8 @@ function TimeframeForm() {
     >
       <Select
         defaultValue={searchParams.timeframe}
-        name={PointsSearchParam.timeframe}
-        id={PointsSearchParam.timeframe}
+        name={keys.timeframe}
+        id={keys.timeframe}
         placeholder="Timeframe"
         required
       >
@@ -262,8 +290,8 @@ function TimeframeForm() {
       </Select>
 
       <input
-        name={PointsSearchParam.leaderboardLimit}
-        id={PointsSearchParam.leaderboardLimit}
+        name={keys.leaderboardLimit}
+        id={keys.leaderboardLimit}
         type="hidden"
         value={searchParams.leaderboardLimit}
       />
@@ -271,9 +299,7 @@ function TimeframeForm() {
   );
 }
 
-function PointsLeaderboard({
-  className,
-}: PropsWithoutRef<{ className?: string }>) {
+function PointsLeaderboard({ className }: CardProps) {
   const { pointsLeaderboard } = useLoaderData<typeof loader>();
 
   const [searchParams] = useSearchParams(PointsSearchParams);
@@ -282,7 +308,7 @@ function PointsLeaderboard({
 
   return (
     <Card className={cx('h-fit', className)}>
-      <div className="flex justify-between gap-4">
+      <Card.Header>
         <Card.Title>Points Leaderboard</Card.Title>
 
         <RemixForm
@@ -292,8 +318,8 @@ function PointsLeaderboard({
         >
           <Select
             defaultValue={searchParams.leaderboardLimit}
-            name={PointsSearchParam.leaderboardLimit}
-            id={PointsSearchParam.leaderboardLimit}
+            name={keys.leaderboardLimit}
+            id={keys.leaderboardLimit}
             required
           >
             <option value="10">Top 10</option>
@@ -303,74 +329,45 @@ function PointsLeaderboard({
           </Select>
 
           <input
-            name={PointsSearchParam.timeframe}
-            id={PointsSearchParam.timeframe}
+            name={keys.timeframe}
+            id={keys.timeframe}
             type="hidden"
             value={searchParams.timeframe}
           />
         </RemixForm>
-      </div>
+      </Card.Header>
 
       <Card.Description>
         The top point earners in the ColorStack Family. Our community leaders
         and role models!
       </Card.Description>
 
-      <ul className="flex max-h-[800px] flex-col gap-4 overflow-scroll">
-        {pointsLeaderboard.map((position, i) => {
+      <Leaderboard.List scroll>
+        {pointsLeaderboard.map((position) => {
           return (
-            <LeaderboardPositionItem
+            <Leaderboard.Item
               key={position.id}
-              i={i}
-              position={position}
+              firstName={position.firstName}
+              isMe={position.me}
+              label={<LeaderboardItemLabel points={position.points} />}
+              lastName={position.lastName}
+              position={position.rank}
+              profilePicture={position.profilePicture || undefined}
             />
           );
         })}
-      </ul>
+      </Leaderboard.List>
     </Card>
   );
 }
 
-type LeaderboardPositionItemProps = {
-  i?: number;
-  position: SerializeFrom<typeof loader>['pointsLeaderboard'][number];
-};
-
-function LeaderboardPositionItem({ position }: LeaderboardPositionItemProps) {
-  const formattedPoints = Intl.NumberFormat('en-US').format(position.points);
-
-  const formattedPosition = Intl.NumberFormat('en-US', {
-    maximumFractionDigits: 1,
-    notation: 'compact',
-  }).format(position.rank);
+function LeaderboardItemLabel({ points }: { points: number }) {
+  const formatter = Intl.NumberFormat('en-US');
 
   return (
-    <li
-      className="grid grid-cols-[3rem_4fr_2fr] items-center"
-      key={position.id}
-    >
-      <Text className="ml-auto mr-4" color="gray-500" weight="500">
-        {formattedPosition}
-      </Text>
-
-      <div className="flex items-center gap-2">
-        <ProfilePicture
-          initials={position.firstName[0] + position.lastName[0]}
-          src={position.profilePicture || undefined}
-        />
-
-        <Text className="line-clamp-1" weight={position.me ? '600' : undefined}>
-          {position.firstName}{' '}
-          <span className="hidden sm:inline">{position.lastName}</span>
-          <span className="inline sm:hidden">{position.lastName[0]}.</span>{' '}
-          {position.me && '(You)'}
-        </Text>
-      </div>
-
-      <Text className="text-right">
-        {formattedPoints} <span className="text-sm"> Points</span>
-      </Text>
-    </li>
+    <Leaderboard.ItemLabel>
+      {formatter.format(points)} <span className="text-sm"> Points</span>
+    </Leaderboard.ItemLabel>
   );
 }
 
@@ -453,14 +450,14 @@ function ActivityHistory() {
 
                   <Button.Group>
                     <RemixLink
-                      to={Route.ADD_EDUCATION}
+                      to={Route['/profile/education/add']}
                       className={getButtonCn({ variant: 'secondary' })}
                     >
                       <Plus /> Add Education
                     </RemixLink>
 
                     <RemixLink
-                      to={Route.ADD_WORK_EXPERIENCE}
+                      to={Route['/profile/work/add']}
                       className={getButtonCn({ variant: 'secondary' })}
                     >
                       <Plus /> Add Work Experience
@@ -524,6 +521,32 @@ function ActivityHistoryItemDescription({
     .with('get_activated', () => {
       return <p>You became activated.</p>;
     })
+    .with('get_resource_upvote', () => {
+      return (
+        <p>
+          <RemixLink
+            className="link"
+            to={generatePath(Route['/directory/:id'], {
+              id: activity.resourceUpvoterId,
+            })}
+          >
+            {activity.resourceUpvoterFirstName}{' '}
+            {activity.resourceUpvoterLastName}
+          </RemixLink>{' '}
+          upvoted a{' '}
+          <RemixLink
+            className="link"
+            to={{
+              pathname: Route['/resources'],
+              search: `id=${activity.resourceId}`,
+            }}
+          >
+            resource
+          </RemixLink>{' '}
+          you posted.
+        </p>
+      );
+    })
     .with('join_member_directory', () => {
       return <p>You joined the Member Directory.</p>;
     })
@@ -537,6 +560,23 @@ function ActivityHistoryItemDescription({
             <Text color="gray-500">{activity.description}</Text>
           </div>
         </div>
+      );
+    })
+    .with('post_resource', () => {
+      return (
+        <p>
+          You posted a{' '}
+          <RemixLink
+            className="link"
+            to={{
+              pathname: Route['/resources'],
+              search: `id=${activity.resourceId}`,
+            }}
+          >
+            resource
+          </RemixLink>
+          .
+        </p>
       );
     })
     .with('react_to_message', () => {
@@ -593,6 +633,22 @@ function ActivityHistoryItemDescription({
     })
     .with('respond_to_survey', () => {
       return <p>You responded to a survey: "{activity.surveyRespondedTo}"</p>;
+    })
+    .with('review_company', () => {
+      return <p>You reviewed a work experience.</p>;
+    })
+    .with('submit_census_response', () => {
+      return (
+        <p>You submitted a response to the Census ({activity.censusYear}).</p>
+      );
+    })
+    .with('submit_resume', () => {
+      return (
+        <p>
+          You submitted your resume to the "{activity.resumeBookName}" Resume
+          Book.
+        </p>
+      );
     })
     .with('update_education_history', () => {
       return <p>You added an education experience.</p>;

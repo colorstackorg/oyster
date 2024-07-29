@@ -6,10 +6,10 @@ import {
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { Menu, Plus, Upload } from 'react-feather';
+import { Camera, Menu, Plus, RefreshCw, Trash2, Upload } from 'react-feather';
 import { generatePath } from 'react-router';
 
-import { type Event } from '@oyster/types';
+import { type Event, EventType } from '@oyster/types';
 import {
   Dashboard,
   Dropdown,
@@ -22,11 +22,11 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { listEvents } from '../shared/core.server';
-import { ListSearchParams } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { listEvents } from '@/admin-dashboard.server';
+import { ListSearchParams } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -54,16 +54,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
         .whereRef('eventAttendees.eventId', '=', 'events.id')
         .as('attendees');
     },
+    (eb) => {
+      return eb
+        .selectFrom('eventRegistrations')
+        .select(eb.fn.countAll<string>().as('count'))
+        .whereRef('eventRegistrations.eventId', '=', 'events.id')
+        .as('registrations');
+    },
   ]);
 
-  const events = _events.map((event) => {
-    return {
-      ...event,
-      date: dayjs(event.startTime).tz(timezone).format('MM/DD/YY'),
-      endTime: dayjs(event.endTime).tz(timezone).format('h:mm A'),
-      startTime: dayjs(event.startTime).tz(timezone).format('h:mm A'),
-    };
-  });
+  const formatter = new Intl.NumberFormat();
+
+  const events = _events.map(
+    ({ attendees, endTime, registrations, startTime, ...event }) => {
+      return {
+        ...event,
+        attendees: formatter.format(Number(attendees)),
+        date: dayjs(startTime).tz(timezone).format('MM/DD/YY'),
+        endTime: dayjs(endTime).tz(timezone).format('h:mm A'),
+        registrations: formatter.format(Number(registrations)),
+        startTime: dayjs(startTime).tz(timezone).format('h:mm A'),
+      };
+    }
+  );
 
   return json({
     events,
@@ -116,8 +129,13 @@ function EventsMenuDropdown() {
         <Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link to={Route.CREATE_EVENT}>
+              <Link to={Route['/events/create']}>
                 <Plus /> Create Event
+              </Link>
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <Link to={Route['/events/sync-airmeet-event']}>
+                <RefreshCw /> Sync Airmeet Event
               </Link>
             </Dropdown.Item>
           </Dropdown.List>
@@ -139,11 +157,14 @@ function EventsTable() {
       render: (event) => event.name,
     },
     {
+      displayName: '# of Registrations',
+      size: '160',
+      render: (event) => event.registrations,
+    },
+    {
       displayName: '# of Attendees',
       size: '160',
-      render: (event) => {
-        return new Intl.NumberFormat().format(Number(event.attendees));
-      },
+      render: (event) => event.attendees,
     },
     {
       displayName: 'Type',
@@ -166,7 +187,7 @@ function EventsTable() {
     {
       displayName: 'Time',
       render: (event) => `${event.startTime} - ${event.endTime}`,
-      size: null,
+      size: '200',
     },
   ];
 
@@ -195,7 +216,7 @@ function EventsPagination() {
   );
 }
 
-function EventDropdown({ id }: EventInView) {
+function EventDropdown({ id, type }: EventInView) {
   const [open, setOpen] = useState<boolean>(false);
 
   function onClose() {
@@ -211,9 +232,28 @@ function EventDropdown({ id }: EventInView) {
       {open && (
         <Table.Dropdown>
           <Dropdown.List>
+            {type === EventType.IRL && (
+              <Dropdown.Item>
+                <Link to={generatePath(Route['/events/:id/check-in'], { id })}>
+                  <Camera /> Check-In QR Code
+                </Link>
+              </Dropdown.Item>
+            )}
             <Dropdown.Item>
-              <Link to={generatePath(Route.IMPORT_EVENT_ATTENDEES, { id })}>
+              <Link to={generatePath(Route['/events/:id/import'], { id })}>
                 <Upload /> Import Attendees
+              </Link>
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <Link
+                to={generatePath(Route['/events/:id/add-recording'], { id })}
+              >
+                <Upload /> Add Recording
+              </Link>
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <Link to={generatePath(Route['/events/:id/delete'], { id })}>
+                <Trash2 /> Delete Event
               </Link>
             </Dropdown.Item>
           </Dropdown.List>

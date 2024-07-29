@@ -1,5 +1,6 @@
 export { QueueFromName } from './infrastructure/bull/bull';
 export { job } from './infrastructure/bull/use-cases/job';
+export { listAdmins } from './modules/admin/queries/list-admins';
 export { addAdmin } from './modules/admin/use-cases/add-admin';
 export { countPendingApplications } from './modules/application/queries/count-pending-applications';
 export { getApplication } from './modules/application/queries/get-application';
@@ -10,10 +11,15 @@ export { updateEmailApplication } from './modules/application/use-cases/update-a
 export { getGoogleAuthUri } from './modules/authentication/shared/oauth.utils';
 export { sendOneTimeCode } from './modules/authentication/use-cases/send-one-time-code';
 export { verifyOneTimeCode } from './modules/authentication/use-cases/verify-one-time-code';
-export { createSchool } from './modules/education/use-cases/create-school';
 export { getEvent } from './modules/event/queries/get-event';
 export { listEvents } from './modules/event/queries/list-events';
+export { addEventRecordingLink } from './modules/event/use-cases/add-event-recording-link';
 export { createEvent } from './modules/event/use-cases/create-event';
+export { getFeatureFlag } from './modules/feature-flag/queries/get-feature-flag';
+export { listFeatureFlags } from './modules/feature-flag/queries/list-feature-flags';
+export { createFeatureFlag } from './modules/feature-flag/use-cases/create-feature-flag';
+export { deleteFeatureFlag } from './modules/feature-flag/use-cases/delete-feature-flag';
+export { editFeatureFlag } from './modules/feature-flag/use-cases/edit-feature-flag';
 export { archiveActivity } from './modules/gamification/use-cases/archive-activity';
 export { editActivity } from './modules/gamification/use-cases/edit-activity';
 export { addIcebreakerPrompt } from './modules/icebreaker/use-cases/add-icebreaker-prompt';

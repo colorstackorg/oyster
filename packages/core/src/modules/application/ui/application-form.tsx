@@ -132,7 +132,7 @@ Application.EmailField = function EmailField({
 
   return (
     <Form.Field
-      description="Must be a valid .edu email. Please make sure to check for typos."
+      description="Must be a valid .edu email. If your email is invalid, your application will automatically be rejected. Please make sure to check for typos!"
       error={error}
       label="Email"
       labelFor={name}

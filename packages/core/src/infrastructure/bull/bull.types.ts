@@ -50,9 +50,9 @@ export const AirtableBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('airtable.record.create'),
     data: z.object({
-      baseId: z.string().trim().min(1),
+      airtableBaseId: z.string().trim().min(1),
+      airtableTableId: z.string().trim().min(1),
       data: z.any(),
-      tableName: z.string().trim().min(1),
     }),
   }),
   z.object({
@@ -64,14 +64,18 @@ export const AirtableBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('airtable.record.delete'),
     data: z.object({
-      email: Student.shape.email,
+      airtableBaseId: z.string().trim().min(1),
+      airtableRecordId: z.string().trim().min(1),
+      airtableTableId: z.string().trim().min(1),
     }),
   }),
   z.object({
     name: z.literal('airtable.record.update'),
     data: z.object({
-      newEmail: Student.shape.email,
-      previousEmail: Student.shape.email,
+      airtableBaseId: z.string().trim().min(1),
+      airtableRecordId: z.string().trim().min(1),
+      airtableTableId: z.string().trim().min(1),
+      data: z.any(),
     }),
   }),
 ]);
@@ -211,6 +215,12 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         type: z.literal('get_activated'),
       }),
       z.object({
+        resourceId: z.string().trim().min(1),
+        studentId: CompletedActivity.shape.studentId,
+        type: z.literal(ActivityType.GET_RESOURCE_UPVOTE),
+        upvotedBy: z.string().trim().min(1),
+      }),
+      z.object({
         studentId: CompletedActivity.shape.studentId,
         type: z.literal(ActivityType.JOIN_MEMBER_DIRECTORY),
       }),
@@ -219,6 +229,11 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         points: CompletedActivity.shape.points,
         studentId: CompletedActivity.shape.studentId,
         type: z.literal('one_off'),
+      }),
+      z.object({
+        resourceId: z.string().trim().min(1),
+        studentId: CompletedActivity.shape.studentId,
+        type: z.literal(ActivityType.POST_RESOURCE),
       }),
       z.object({
         channelId: SlackMessage.shape.channelId,
@@ -239,6 +254,21 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
       }),
       z.object({
         studentId: CompletedActivity.shape.studentId,
+        type: z.literal(ActivityType.REVIEW_COMPANY),
+        workExperienceId: z.string().trim().min(1),
+      }),
+      z.object({
+        studentId: CompletedActivity.shape.studentId,
+        type: z.literal('submit_census_response'),
+        year: z.number().int().min(2024),
+      }),
+      z.object({
+        resumeBookId: z.string().trim().min(1),
+        studentId: CompletedActivity.shape.studentId,
+        type: z.literal(ActivityType.SUBMIT_RESUME),
+      }),
+      z.object({
+        studentId: CompletedActivity.shape.studentId,
         type: z.literal('update_education_history'),
       }),
       z.object({
@@ -254,6 +284,12 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('gamification.activity.completed.undo'),
     data: z.discriminatedUnion('type', [
+      z.object({
+        resourceId: z.string().trim().min(1),
+        studentId: CompletedActivity.shape.studentId,
+        type: z.literal(ActivityType.GET_RESOURCE_UPVOTE),
+        upvotedBy: z.string().trim().min(1),
+      }),
       z.object({
         channelId: SlackMessage.shape.channelId,
         messageReactedTo: SlackMessage.shape.id,
@@ -344,6 +380,10 @@ export const ProfileBullJob = z.discriminatedUnion('name', [
 
 export const SlackBullJob = z.discriminatedUnion('name', [
   z.object({
+    name: z.literal('slack.birthdates.update'),
+    data: z.object({}),
+  }),
+  z.object({
     name: z.literal('slack.channel.archive'),
     data: SlackChannel.pick({
       id: true,
@@ -385,6 +425,12 @@ export const SlackBullJob = z.discriminatedUnion('name', [
   }),
   z.object({
     name: z.literal('slack.invite'),
+    data: z.object({
+      email: Student.shape.email,
+    }),
+  }),
+  z.object({
+    name: z.literal('slack.invited'),
     data: z.object({
       email: Student.shape.email,
     }),
@@ -502,7 +548,10 @@ export const StudentBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('student.removed'),
     data: z.object({
+      airtableId: z.string().trim().min(1),
       email: Student.shape.email,
+      firstName: z.string().trim().min(1),
+      sendViolationEmail: z.boolean(),
       slackId: Student.shape.slackId.nullable(),
     }),
   }),

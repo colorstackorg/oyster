@@ -8,7 +8,7 @@ import { sql } from 'kysely';
 import { Check, CheckCircle, ExternalLink } from 'react-feather';
 import { generatePath } from 'react-router';
 
-import { EventType } from '@oyster/types';
+import { db } from '@oyster/db';
 import { Button, getButtonCn, ProfilePicture, Text } from '@oyster/ui';
 
 import {
@@ -17,11 +17,10 @@ import {
   EventName,
   EventSection,
   formatEventDate,
-} from '../shared/components/event';
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { db } from '../shared/core.server';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
+} from '@/shared/components/event';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -97,7 +96,7 @@ async function getUpcomingEvents({
       },
     ])
     .where('endTime', '>', new Date())
-    .where('type', '=', EventType.VIRTUAL)
+    .where('events.hidden', '=', false)
     .orderBy('startTime', 'asc')
     .execute();
 

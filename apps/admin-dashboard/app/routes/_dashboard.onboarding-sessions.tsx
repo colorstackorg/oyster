@@ -11,6 +11,7 @@ import { Plus } from 'react-feather';
 import { generatePath } from 'react-router';
 import { type z } from 'zod';
 
+import { db } from '@oyster/db';
 import {
   ACCENT_COLORS,
   Dashboard,
@@ -24,11 +25,10 @@ import {
   useSearchParams,
 } from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { db } from '../shared/core.server';
-import { ListSearchParams } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { ListSearchParams } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const OnboardingSessionsSearchParams = ListSearchParams.omit({
   search: true,
@@ -67,9 +67,9 @@ async function listOnboardingSessions({
 }: OnboardingSessionsSearchParams) {
   const attendeesAggregation = sql<string>`
     string_agg(
-      students.first_name || ' ' || last_name,
-      ', ' 
-      ORDER BY 
+      students.first_name || ' ' || students.last_name,
+      ', '
+      ORDER BY
         students.first_name,
         students.last_name
     )
@@ -83,13 +83,16 @@ async function listOnboardingSessions({
       'onboardingSessions.id'
     )
     .leftJoin('students', 'students.id', 'onboardingSessionAttendees.studentId')
+    .leftJoin('admins', 'admins.id', 'onboardingSessions.uploadedById')
     .select([
+      'admins.firstName as ambassadorFirstName',
+      'admins.lastName as ambassadorLastName',
       'onboardingSessions.date',
       'onboardingSessions.group',
       'onboardingSessions.id',
       attendeesAggregation,
     ])
-    .groupBy('onboardingSessions.id')
+    .groupBy(['onboardingSessions.id', 'admins.firstName', 'admins.lastName'])
     .orderBy('onboardingSessions.date', 'desc')
     .orderBy('onboardingSessions.group', 'desc')
     .limit(limit)
@@ -100,6 +103,10 @@ async function listOnboardingSessions({
     return {
       ...row,
       date: dayjs(row.date).format('MM/DD/YY'),
+      ambassadorName:
+        row.ambassadorFirstName && row.ambassadorLastName
+          ? `${row.ambassadorFirstName} ${row.ambassadorLastName}`
+          : '',
     };
   });
 
@@ -133,7 +140,7 @@ export default function OnboardingSessionsPage() {
 function UploadOnboardingSessionButton() {
   return (
     <Link
-      to={Route.UPLOAD_ONBOARDING_SESSIONS}
+      to={Route['/onboarding-sessions/upload']}
       className={getButtonCn({ variant: 'primary' })}
     >
       <Plus size={16} /> Upload Session
@@ -164,7 +171,12 @@ function OnboardingSessionsTable() {
     {
       displayName: 'Attendees',
       render: (session) => session.attendees,
-      size: null,
+      size: '800',
+    },
+    {
+      displayName: 'Uploaded By',
+      render: (session) => session.ambassadorName,
+      size: '200',
     },
   ];
 
@@ -211,9 +223,12 @@ function OnboardingSessionsDropdown({ id }: OnboardingSessionInView) {
           <Dropdown.List>
             <Dropdown.Item>
               <Link
-                to={generatePath(Route.ADD_ONBOARDING_SESSION_ATTENDEES, {
-                  id,
-                })}
+                to={generatePath(
+                  Route['/onboarding-sessions/:id/add-attendees'],
+                  {
+                    id,
+                  }
+                )}
               >
                 <Plus /> Add Attendees
               </Link>

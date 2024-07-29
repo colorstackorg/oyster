@@ -5,9 +5,9 @@ import { z } from 'zod';
 
 import { type ExtractValue } from '@oyster/types';
 
-import { Route } from '../shared/constants';
-import { BullQueue } from '../shared/core.ui';
-import { ensureUserAuthenticated } from '../shared/session.server';
+import { BullQueue } from '@/admin-dashboard.ui';
+import { Route } from '@/shared/constants';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const BullType = {
   JOB: 'job',
@@ -58,7 +58,7 @@ function TypeNavigationItem({ type }: TypeNavigationItemProps) {
 
   const basePathname = match(type)
     .with('job', () => Route['/bull/:queue/jobs'])
-    .with('repeatable', () => Route.BULL_REPEATABLES)
+    .with('repeatable', () => Route['/bull/:queue/repeatables'])
     .exhaustive();
 
   const label = match(type)

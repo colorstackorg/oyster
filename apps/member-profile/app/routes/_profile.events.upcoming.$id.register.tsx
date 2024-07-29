@@ -4,26 +4,22 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useLoaderData,
-  useNavigate,
-  useNavigation,
-} from '@remix-run/react';
+import { Form as RemixForm, useLoaderData } from '@remix-run/react';
 import { Calendar, Check, ExternalLink } from 'react-feather';
 
+import { db } from '@oyster/db';
 import { Button, getButtonCn, Modal, Text } from '@oyster/ui';
 
-import { formatEventDate } from '../shared/components/event';
-import { Route } from '../shared/constants';
-import { getTimezone } from '../shared/cookies.server';
-import { db, getEvent, job } from '../shared/core.server';
+import { getEvent, job } from '@/member-profile.server';
+import { formatEventDate } from '@/shared/components/event';
+import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
   user,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -75,7 +71,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   toast(session, {
     message: 'Registered!',
-    type: 'success',
   });
 
   return redirect(Route['/events'], {
@@ -118,15 +113,8 @@ async function registerForEvent({
 export default function EventRegisterPage() {
   const { event } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-  const submitting = useNavigation().state === 'submitting';
-
-  function onClose() {
-    navigate(Route['/events/upcoming']);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/events/upcoming']}>
       <Modal.Header>
         <Modal.Title>{event.name}</Modal.Title>
         <Modal.CloseButton />
@@ -165,9 +153,9 @@ export default function EventRegisterPage() {
           )}
 
           {!event.isRegistered && (
-            <Button loading={submitting} type="submit">
+            <Button.Submit>
               <Check className="h-5 w-5" /> Register
-            </Button>
+            </Button.Submit>
           )}
         </Button.Group>
       </RemixForm>

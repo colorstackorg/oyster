@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import TextareaAutosize, {
   type TextareaAutosizeProps,
 } from 'react-textarea-autosize';
 
 import { getInputCn } from './input';
+import { Text } from './text';
 import { cx } from '../utils/cx';
 
 type TextareaProps = Pick<
@@ -11,6 +13,7 @@ type TextareaProps = Pick<
   | 'defaultValue'
   | 'id'
   | 'maxLength'
+  | 'minLength'
   | 'minRows'
   | 'name'
   | 'onBlur'
@@ -20,12 +23,92 @@ type TextareaProps = Pick<
   | 'value'
 >;
 
-export function Textarea({ minRows = 3, ...rest }: TextareaProps) {
+const className = cx(getInputCn(), 'resize-none');
+
+export function Textarea({
+  maxLength,
+  minLength,
+  minRows = 3,
+  ...rest
+}: TextareaProps) {
+  if (maxLength) {
+    return (
+      <TextareaWithMaximum
+        maxLength={maxLength}
+        minLength={minLength}
+        minRows={minRows}
+        {...rest}
+      />
+    );
+  }
+
+  if (minLength) {
+    return (
+      <TextareaWithMinimum
+        maxLength={maxLength}
+        minLength={minLength}
+        minRows={minRows}
+        {...rest}
+      />
+    );
+  }
+
   return (
     <TextareaAutosize
-      className={cx(getInputCn(), 'resize-none')}
+      className={className}
+      maxLength={maxLength}
       minRows={minRows}
       {...rest}
     />
+  );
+}
+
+function TextareaWithMaximum({
+  defaultValue,
+  minRows,
+  maxLength,
+  ...rest
+}: TextareaProps) {
+  const [value, setValue] = useState<string>(defaultValue?.toString() || '');
+
+  return (
+    <>
+      <TextareaAutosize
+        className={className}
+        defaultValue={defaultValue}
+        maxLength={maxLength}
+        minRows={minRows}
+        onChange={(e) => setValue(e.target.value)}
+        {...rest}
+      />
+
+      <Text className="text-right" color="gray-500" variant="sm">
+        {value.length}/{maxLength}
+      </Text>
+    </>
+  );
+}
+
+function TextareaWithMinimum({
+  defaultValue,
+  minLength,
+  ...rest
+}: TextareaProps) {
+  const [value, setValue] = useState<string>(defaultValue?.toString() || '');
+
+  return (
+    <>
+      <TextareaAutosize
+        className={className}
+        defaultValue={defaultValue}
+        minLength={minLength}
+        onChange={(e) => setValue(e.target.value)}
+        {...rest}
+      />
+
+      <Text className="text-right" color="gray-500" variant="sm">
+        Current: {value.length} &bull; Minimum: {minLength}
+      </Text>
+    </>
   );
 }

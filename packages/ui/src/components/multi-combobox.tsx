@@ -21,15 +21,25 @@ type ComboboxValue = {
   value: string;
 };
 
-const MultiComboboxContext = React.createContext({
-  searchRef: createRef() as React.MutableRefObject<HTMLInputElement | null>,
+type MultiComboboxContext = {
+  searchRef: React.MutableRefObject<HTMLInputElement | null>;
+  setValues: (_: ComboboxValue[]) => void;
+  values: ComboboxValue[];
+};
+
+const MultiComboboxContext = React.createContext<MultiComboboxContext>({
+  searchRef: createRef() as MultiComboboxContext['searchRef'],
   setValues: (_: ComboboxValue[]) => {},
   values: [] as ComboboxValue[],
 });
 
-export type MultiComboboxProps = PropsWithChildren<{
+export type MultiComboboxProps = {
+  children:
+    | React.ReactNode
+    | ((props: Pick<MultiComboboxContext, 'values'>) => React.ReactNode);
+
   defaultValues?: ComboboxValue[];
-}>;
+};
 
 export function MultiCombobox({
   children,
@@ -47,7 +57,9 @@ export function MultiCombobox({
         values,
       }}
     >
-      <ComboboxPopoverProvider>{children}</ComboboxPopoverProvider>
+      <ComboboxPopoverProvider>
+        {typeof children === 'function' ? children({ values }) : children}
+      </ComboboxPopoverProvider>
     </MultiComboboxContext.Provider>
   );
 }
@@ -108,8 +120,12 @@ export function MultiComboboxItem({
 
           if (!alreadySelected) {
             setValues([...values, { label, value }]);
-            searchRef.current!.focus();
           }
+
+          // After an item is selected, we should reset the search value
+          // and focus the search input.
+          searchRef.current!.value = '';
+          searchRef.current!.focus();
         }}
         type="button"
         value={value}

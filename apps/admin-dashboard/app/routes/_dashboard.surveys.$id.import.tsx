@@ -12,20 +12,26 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigate,
-  useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
 
-import { Button, Form, getActionErrors, Modal, validateForm } from '@oyster/ui';
+import { db } from '@oyster/db';
+import {
+  Button,
+  FileUploader,
+  Form,
+  getErrors,
+  Modal,
+  validateForm,
+} from '@oyster/ui';
 
-import { Route } from '../shared/constants';
-import { db, importSurveyResponses } from '../shared/core.server';
+import { importSurveyResponses } from '@/admin-dashboard.server';
+import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-} from '../shared/session.server';
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -61,16 +67,13 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors } = validateForm(
-    ImportSurveyResponsesInput,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    form,
+    ImportSurveyResponsesInput
   );
 
-  if (!data) {
-    return json({
-      error: 'Please fix the errors above.',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   let count = 0;
@@ -81,18 +84,14 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     count = result.count;
   } catch (e) {
-    return json({
-      error: (e as Error).message,
-      errors,
-    });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 
   toast(session, {
     message: `Imported ${count} survey responses.`,
-    type: 'success',
   });
 
-  return redirect(Route.SURVEYS, {
+  return redirect(Route['/surveys'], {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -102,14 +101,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
 export default function ImportSurveyResponsesPage() {
   const { survey } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  function onClose() {
-    navigate(Route.SURVEYS);
-  }
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onCloseTo={Route['/surveys']}>
       <Modal.Header>
         <Modal.Title>Import Survey Responses</Modal.Title>
         <Modal.CloseButton />
@@ -127,28 +120,23 @@ export default function ImportSurveyResponsesPage() {
 const keys = ImportSurveyResponsesInput.keyof().enum;
 
 function ImportSurveyResponsesForm() {
-  const { error, errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
       <Form.Field error={errors.file} labelFor={keys.file} required>
-        <input
-          accept=".csv"
+        <FileUploader
+          accept={['text/csv']}
           id={keys.file}
           name={keys.file}
           required
-          type="file"
         />
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
-        <Button loading={submitting} type="submit">
-          Import
-        </Button>
+        <Button.Submit>Import</Button.Submit>
       </Button.Group>
     </RemixForm>
   );

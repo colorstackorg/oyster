@@ -8,13 +8,10 @@ export { Dashboard } from './components/dashboard';
 export { DatePicker } from './components/date-picker';
 export { Divider } from './components/divider';
 export { Dropdown } from './components/dropdown';
-export {
-  Form,
-  InputField,
-  getActionErrors,
-  validateForm,
-} from './components/form';
-export type { FieldProps } from './components/form';
+export { ExistingSearchParams } from './components/existing-search-params';
+export { MB_IN_BYTES, FileUploader } from './components/file-uploader';
+export { Form, getErrors, InputField, validateForm } from './components/form';
+export type { DescriptionProps, FieldProps } from './components/form';
 export { IconButton, getIconButtonCn } from './components/icon-button';
 export { Input, getInputCn } from './components/input';
 export type { InputProps } from './components/input';
@@ -30,7 +27,7 @@ export {
 } from './components/multi-combobox';
 export type { MultiComboboxProps } from './components/multi-combobox';
 export { Pagination } from './components/pagination';
-export { Pill } from './components/pill';
+export { Pill, getPillCn } from './components/pill';
 export type { PillProps } from './components/pill';
 export { ProfilePicture } from './components/profile-picture';
 export { Public } from './components/public';
@@ -40,7 +37,7 @@ export { Select } from './components/select';
 export { Spinner } from './components/spinner';
 export { Table } from './components/table';
 export type { TableColumnProps } from './components/table';
-export { Text } from './components/text';
+export { getTextCn, Text } from './components/text';
 export type { TextProps } from './components/text';
 export { Textarea } from './components/textarea';
 export { Toast } from './components/toast';
@@ -48,6 +45,7 @@ export type { ToastProps } from './components/toast';
 export { useDelayedValue } from './hooks/use-delayed-value';
 export { useHydrated } from './hooks/use-hydrated';
 export { useOnClickOutside } from './hooks/use-on-click-outside';
+export { useRevalidateOnFocus } from './hooks/use-revalidate-on-focus';
 export { useSearchParams } from './hooks/use-search-params';
 export { ACCENT_COLORS } from './utils/constants';
 export type { AccentColor } from './utils/constants';

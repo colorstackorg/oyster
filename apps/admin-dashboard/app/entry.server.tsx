@@ -3,6 +3,7 @@ import { createReadableStreamFromReadable } from '@remix-run/node';
 import { RemixServer } from '@remix-run/react';
 import * as Sentry from '@sentry/remix';
 import dayjs from 'dayjs';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
 import timezone from 'dayjs/plugin/timezone.js';
 import utc from 'dayjs/plugin/utc.js';
 import isbot from 'isbot';
@@ -14,10 +15,11 @@ import { getCookie } from '@oyster/utils';
 // Importing this file ensures that our application has all of the environment
 // variables necessary to run. If any are missing, this file will throw an error
 // and crash the application.
-import { ENV } from './shared/constants.server';
+import { ENV } from '@/shared/constants.server';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(advancedFormat);
 
 Sentry.init({
   dsn: ENV.SENTRY_DSN,

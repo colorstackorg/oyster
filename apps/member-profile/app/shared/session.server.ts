@@ -7,8 +7,8 @@ import {
 import { type ToastProps } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import { Route } from './constants';
-import { ENV } from './constants.server';
+import { Route } from '@/shared/constants';
+import { ENV } from '@/shared/constants.server';
 
 const {
   getSession: _getSession,
@@ -44,7 +44,7 @@ type EnsureUserAuthenticatedOptions = {
 
 export async function ensureUserAuthenticated(
   request: Request,
-  { redirectTo = Route.LOGIN }: EnsureUserAuthenticatedOptions = {}
+  { redirectTo = Route['/login'] }: EnsureUserAuthenticatedOptions = {}
 ): Promise<Session> {
   const session = await getSession(request);
 

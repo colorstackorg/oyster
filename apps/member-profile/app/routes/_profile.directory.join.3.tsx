@@ -8,22 +8,20 @@ import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
-  useNavigation,
 } from '@remix-run/react';
 import { z } from 'zod';
 
 import { nullableField, Student } from '@oyster/types';
-import { Button, getActionErrors, InputField, validateForm } from '@oyster/ui';
+import { Button, getErrors, InputField, validateForm } from '@oyster/ui';
 
+import { updateMember } from '@/member-profile.server';
 import {
   JoinDirectoryBackButton,
   JoinDirectoryNextButton,
-} from './_profile.directory.join';
-import { Route } from '../shared/constants';
-import { updateMember } from '../shared/core.server';
-import { getMember } from '../shared/queries';
-import { ensureUserAuthenticated, user } from '../shared/session.server';
-import { formatUrl } from '../shared/url.utils';
+} from '@/routes/_profile.directory.join';
+import { Route } from '@/shared/constants';
+import { getMember } from '@/shared/queries';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -45,13 +43,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 const UpdateSocialsInformation = z.object({
-  calendlyUrl: nullableField(Student.shape.calendlyUrl).transform(formatUrl),
-  githubUrl: nullableField(Student.shape.githubUrl).transform(formatUrl),
+  calendlyUrl: nullableField(Student.shape.calendlyUrl),
+  githubUrl: nullableField(Student.shape.githubUrl),
   instagramHandle: nullableField(Student.shape.instagramHandle),
-  linkedInUrl: Student.shape.linkedInUrl.transform(formatUrl),
-  personalWebsiteUrl: nullableField(Student.shape.personalWebsiteUrl).transform(
-    formatUrl
-  ),
+  linkedInUrl: Student.shape.linkedInUrl,
+  personalWebsiteUrl: nullableField(Student.shape.personalWebsiteUrl),
   twitterHandle: nullableField(Student.shape.twitterHandle),
 });
 
@@ -60,18 +56,13 @@ type UpdateSocialsInformation = z.infer<typeof UpdateSocialsInformation>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const form = await request.formData();
-
-  const { data, errors } = validateForm(
-    UpdateSocialsInformation,
-    Object.fromEntries(form)
+  const { data, errors, ok } = await validateForm(
+    request,
+    UpdateSocialsInformation
   );
 
-  if (!data) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!ok) {
+    return json({ errors }, { status: 400 });
   }
 
   await updateMember({
@@ -82,20 +73,11 @@ export async function action({ request }: ActionFunctionArgs) {
   return redirect(Route['/directory/join/4']);
 }
 
-const {
-  calendlyUrl,
-  githubUrl,
-  instagramHandle,
-  linkedInUrl,
-  personalWebsiteUrl,
-  twitterHandle,
-} = UpdateSocialsInformation.keyof().enum;
+const keys = UpdateSocialsInformation.keyof().enum;
 
 export default function UpdateSocialsInformationForm() {
   const { student } = useLoaderData<typeof loader>();
-  const { errors } = getActionErrors(useActionData<typeof action>());
-
-  const submitting = useNavigation().state === 'submitting';
+  const { errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post">
@@ -103,45 +85,43 @@ export default function UpdateSocialsInformationForm() {
         defaultValue={student.linkedInUrl || undefined}
         error={errors.linkedInUrl}
         label="LinkedIn URL"
-        name={linkedInUrl}
+        name={keys.linkedInUrl}
         required
       />
       <InputField
         defaultValue={student.instagramHandle || undefined}
         error={errors.instagramHandle}
         label="Instagram Handle"
-        name={instagramHandle}
+        name={keys.instagramHandle}
       />
       <InputField
         defaultValue={student.twitterHandle || undefined}
         error={errors.twitterHandle}
         label="Twitter Handle"
-        name={twitterHandle}
+        name={keys.twitterHandle}
       />
       <InputField
         defaultValue={student.githubUrl || undefined}
         error={errors.githubUrl}
         label="GitHub URL"
-        name={githubUrl}
+        name={keys.githubUrl}
       />
       <InputField
         defaultValue={student.calendlyUrl || undefined}
         error={errors.calendlyUrl}
         label="Calendly URL"
-        name={calendlyUrl}
+        name={keys.calendlyUrl}
       />
       <InputField
         defaultValue={student.personalWebsiteUrl || undefined}
         error={errors.personalWebsiteUrl}
         label="Personal Website"
-        name={personalWebsiteUrl}
+        name={keys.personalWebsiteUrl}
       />
 
       <Button.Group spacing="between">
         <JoinDirectoryBackButton to={Route['/directory/join/2']} />
-        <JoinDirectoryNextButton submitting={submitting}>
-          Next
-        </JoinDirectoryNextButton>
+        <JoinDirectoryNextButton>Next</JoinDirectoryNextButton>
       </Button.Group>
     </RemixForm>
   );
