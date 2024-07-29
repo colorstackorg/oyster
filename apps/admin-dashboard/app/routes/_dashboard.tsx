@@ -13,9 +13,9 @@ import {
   Video,
 } from 'react-feather';
 
+import { countPendingApplications } from '@oyster/core/applications';
 import { Dashboard, Divider } from '@oyster/ui';
 
-import { countPendingApplications } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import { getSession, isAmbassador } from '@/shared/session.server';
 
