@@ -7,6 +7,7 @@ import {
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
+import { buildMeta } from '@oyster/core/remix';
 import { Application as ApplicationType } from '@oyster/types';
 import {
   Button,
@@ -25,18 +26,11 @@ import { Route } from '@/shared/constants';
 import { commitSession, getSession } from '@/shared/session.server';
 
 export const meta: MetaFunction = () => {
-  const title = 'Apply to ColorStack';
-
-  const description =
-    'Apply to join the largest community of Black and Latinx Computer Science college students.';
-
-  return [
-    { title },
-    { name: 'description', content: description },
-    { property: 'og:title', content: title },
-    { property: 'og:description', content: description },
-    { property: 'og:image', content: '/images/og_apply.jpg' },
-  ];
+  return buildMeta({
+    description: `Apply to join the largest community of Black and Latinx Computer Science college students.`,
+    image: '/images/og_apply.jpg',
+    title: 'Apply to ColorStack',
+  });
 };
 
 const ApplyInput = ApplicationType.pick({
