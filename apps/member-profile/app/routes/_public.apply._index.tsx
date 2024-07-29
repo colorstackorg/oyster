@@ -5,11 +5,10 @@ import {
   redirect,
 } from '@remix-run/node';
 import { Form as RemixForm, useActionData } from '@remix-run/react';
-import { z } from 'zod';
 
 import { apply } from '@oyster/core/applications';
+import { ApplyInput } from '@oyster/core/applications.types';
 import { buildMeta } from '@oyster/core/remix';
-import { Application as ApplicationType } from '@oyster/types';
 import {
   Button,
   Checkbox,
@@ -33,41 +32,6 @@ export const meta: MetaFunction = () => {
   });
 };
 
-const ApplyInput = ApplicationType.pick({
-  contribution: true,
-  educationLevel: true,
-  email: true,
-  firstName: true,
-  gender: true,
-  goals: true,
-  graduationYear: true,
-  lastName: true,
-  linkedInUrl: true,
-  major: true,
-  otherDemographics: true,
-  otherMajor: true,
-  otherSchool: true,
-  race: true,
-  schoolId: true,
-}).extend({
-  codeOfConduct: z.preprocess((value) => value === '1', z.boolean()),
-});
-
-type ApplyInput = z.infer<typeof ApplyInput>;
-
-const ApplyFormData = ApplyInput.extend({
-  otherSchool: z.string().optional(),
-  schoolId: z
-    .string()
-    .min(1)
-    .optional()
-    .transform((value) => {
-      return value === 'other' ? undefined : value;
-    }),
-});
-
-type ApplyFormData = z.infer<typeof ApplyFormData>;
-
 export async function action({ request }: ActionFunctionArgs) {
   const session = await getSession(request);
   const form = await request.formData();
@@ -78,7 +42,7 @@ export async function action({ request }: ActionFunctionArgs) {
       otherDemographics: form.getAll('otherDemographics'),
       race: form.getAll('race'),
     },
-    ApplyFormData
+    ApplyInput
   );
 
   if (!ok) {
@@ -103,7 +67,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-const keys = ApplyFormData.keyof().enum;
+const keys = ApplyInput.keyof().enum;
 
 export default function ApplicationPage() {
   const { error, errors } = getErrors(useActionData<typeof action>());

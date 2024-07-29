@@ -13,7 +13,10 @@ import {
 } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
-import { ApplicationStatus } from '@/modules/application/application.types';
+import {
+  ApplicationStatus,
+  type ApplyInput,
+} from '@/modules/application/application.types';
 import { getPostmarkInstance } from '@/modules/notification/shared/email.utils';
 
 // Queries
@@ -233,25 +236,6 @@ export async function acceptApplication(
     studentId,
   });
 }
-
-type ApplyInput = Pick<
-  Application,
-  | 'contribution'
-  | 'educationLevel'
-  | 'email'
-  | 'firstName'
-  | 'gender'
-  | 'goals'
-  | 'graduationYear'
-  | 'lastName'
-  | 'linkedInUrl'
-  | 'major'
-  | 'otherDemographics'
-  | 'otherMajor'
-  | 'otherSchool'
-  | 'race'
-  | 'schoolId'
->;
 
 /**
  * Applies to join the ColorStack family. This also queues a job to send a
