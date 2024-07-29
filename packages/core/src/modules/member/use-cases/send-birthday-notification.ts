@@ -32,14 +32,14 @@ export async function sendBirthdayNotification(
       });
   } 
   if(members.length > 1) {
-  let commaSeparatedIds = members.map(member => `<@${member.slackId}>`).join(', '); 
-  const lastCommaIndex : number = commaSeparatedIds.lastIndexOf(',');
-  const result: string = commaSeparatedIds.substring(0, lastCommaIndex) + ' and' + commaSeparatedIds.substring(lastCommaIndex + 1);
-      job('notification.slack.send', {
-        channel: ENV.SLACK_BIRTHDAYS_CHANNEL_ID,
-        message: `Everyone wish a happy birthday to ${ result }! 🎉🎂🎈`,
-        workspace: 'regular',
-      });
-    }
+    let commaSeparatedIds = members.map(member => `<@${member.slackId}>`).join(', '); 
+    const lastCommaIndex : number = commaSeparatedIds.lastIndexOf(',');
+    const result: string = commaSeparatedIds.substring(0, lastCommaIndex) + ' and' + commaSeparatedIds.substring(lastCommaIndex + 1);
+    job('notification.slack.send', {
+      channel: ENV.SLACK_BIRTHDAYS_CHANNEL_ID,
+      message: `Everyone wish a happy birthday to ${result}! 🎉🎂🎈`,
+      workspace: 'regular',
+    });
+  }
 
 }
