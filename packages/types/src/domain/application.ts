@@ -2,11 +2,10 @@ import { z } from 'zod';
 
 import { Student } from './student';
 import { Demographic, OtherDemographic } from './types';
-import { type ExtractValue } from '../shared/types';
 
 // Enums
 
-export const ApplicationStatus = {
+const ApplicationStatus = {
   ACCEPTED: 'accepted',
   PENDING: 'pending',
   REJECTED: 'rejected',
@@ -65,4 +64,3 @@ export const Application = Student.pick({
 // Types
 
 export type Application = z.infer<typeof Application>;
-export type ApplicationStatus = ExtractValue<typeof ApplicationStatus>;

@@ -3,11 +3,7 @@ import { type SelectExpression, sql } from 'kysely';
 import { match } from 'ts-pattern';
 
 import { type DB, db } from '@oyster/db';
-import {
-  type Application,
-  ApplicationStatus,
-  OtherDemographic,
-} from '@oyster/types';
+import { type Application, OtherDemographic } from '@oyster/types';
 import { id } from '@oyster/utils';
 import { iife } from '@oyster/utils';
 
@@ -17,6 +13,7 @@ import {
 } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
+import { ApplicationStatus } from '@/modules/application/application.types';
 import { getPostmarkInstance } from '@/modules/notification/shared/email.utils';
 
 // Queries
