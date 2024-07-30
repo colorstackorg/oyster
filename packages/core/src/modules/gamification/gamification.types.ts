@@ -1,10 +1,12 @@
 import { z } from 'zod';
 
-import { Student } from './student';
-import { Entity } from './types';
-import { type ExtractValue } from '../shared/types';
+import { Entity, type ExtractValue, Student } from '@oyster/types';
 
 // Enums
+
+export const ActivityPeriod = {
+  QUARTERLY: 'quarterly',
+} as const;
 
 // NOTE: If any of these values are changed, the unique indicies in the
 // database also need to be updated.
@@ -25,9 +27,8 @@ export const ActivityType = {
   UPLOAD_PROFILE_PICTURE: 'upload_profile_picture',
 } as const;
 
-export const ActivityPeriod = {
-  QUARTERLY: 'quarterly',
-} as const;
+export type ActivityType = ExtractValue<typeof ActivityType>;
+export type ActivityPeriod = ExtractValue<typeof ActivityPeriod>;
 
 // Schemas
 
@@ -69,11 +70,35 @@ export const CompletedActivity = z.object({
   type: z.union([z.nativeEnum(ActivityType), z.literal('one_off')]),
 });
 
-// Types
-
 export type Activity = z.infer<typeof Activity>;
-export type ActivityPeriod = ExtractValue<typeof ActivityPeriod>;
-export type ActivityType = ExtractValue<typeof ActivityType>;
 export type CompletedActivity = z.infer<typeof CompletedActivity>;
 
-export type GetActivityType<Type extends ActivityType> = Type;
+// Use Cases
+
+export const CreateActivityInput = Activity.pick({
+  description: true,
+  name: true,
+  period: true,
+  points: true,
+  type: true,
+});
+
+export const EditActivityInput = Activity.pick({
+  description: true,
+  name: true,
+  period: true,
+  points: true,
+  type: true,
+});
+
+export const GrantPointsInput = CompletedActivity.pick({
+  description: true,
+  points: true,
+}).extend({
+  description: z.string().trim().min(1),
+  memberId: Student.shape.id,
+});
+
+export type CreateActivityInput = z.infer<typeof CreateActivityInput>;
+export type EditActivityInput = z.infer<typeof EditActivityInput>;
+export type GrantPointsInput = z.infer<typeof GrantPointsInput>;

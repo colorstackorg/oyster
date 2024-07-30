@@ -5,12 +5,7 @@ import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
-import {
-  type Activity,
-  type ActivityPeriod,
-  type CompletedActivity,
-  Student,
-} from '@oyster/types';
+import { Student } from '@oyster/types';
 import { id } from '@oyster/utils';
 
 import {
@@ -19,6 +14,13 @@ import {
 } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
+import {
+  type Activity,
+  type ActivityPeriod,
+  type CompletedActivity,
+  type CreateActivityInput,
+  type GrantPointsInput,
+} from '@/modules/gamification/gamification.types';
 import { IS_PRODUCTION } from '@/shared/env';
 
 dayjs.extend(quarterOfYear);
@@ -121,6 +123,20 @@ export async function listActivities() {
 
 // Use Cases
 
+export async function addActivity(input: CreateActivityInput) {
+  await db
+    .insertInto('activities')
+    .values({
+      description: input.description,
+      name: input.name,
+      period: input.period,
+      points: input.points,
+      id: id(),
+      type: input.type,
+    })
+    .execute();
+}
+
 export async function archiveActivity(id: string) {
   await db
     .updateTable('activities')
@@ -153,6 +169,19 @@ export async function editActivity({
     })
     .where('id', '=', id)
     .execute();
+}
+
+export async function grantPoints({
+  description,
+  memberId,
+  points,
+}: GrantPointsInput) {
+  job('gamification.activity.completed', {
+    description: description,
+    points: points,
+    studentId: memberId,
+    type: 'one_off',
+  });
 }
 
 // Worker

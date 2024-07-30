@@ -23,6 +23,8 @@
     "./employment.server": "./src/modules/employment/index.server.ts",
     "./events": "./src/modules/event/event.core.ts",
     "./gamification": "./src/modules/gamification/gamification.core.ts",
+    "./gamification.types": "./src/modules/gamification/gamification.types.ts",
+    "./gamification.ui": "./src/modules/gamification/gamification.ui.tsx",
     "./github": "./src/modules/github/github.ts",
     "./location": "./src/modules/location/location.core.ts",
     "./location.types": "./src/modules/location/location.types.ts",
