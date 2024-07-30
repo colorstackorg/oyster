@@ -9,6 +9,8 @@ export function reportException(error: unknown): void {
     context = error.context;
   }
 
+  console.error(error);
+
   Sentry.captureException(error, {
     extra: context,
   });

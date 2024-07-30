@@ -276,19 +276,19 @@ export async function acceptApplication(
         'referrers.email as referrerEmail',
         'referrers.firstName as referrerFirstName',
       ])
-      .where('id', '=', application.referralId)
+      .where('referrals.id', '=', application.referralId)
       .executeTakeFirst();
 
     if (referral) {
       job('notification.email.send', {
         data: {
           firstName: referral.referrerFirstName as string,
-          referralsUri: `${ENV.STUDENT_PROFILE_URL}/profile/referrals`,
+          referralsUri: `${ENV.MEMBER_PROFILE_URL}/profile/referrals`,
           referredFirstName: referral.referredFirstName,
           referredLastName: referral.referredLastName,
         },
         name: 'referral-accepted',
-        to: application.email,
+        to: referral.referrerEmail as string,
       });
     }
   }
