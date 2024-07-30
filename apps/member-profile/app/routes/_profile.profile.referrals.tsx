@@ -51,7 +51,7 @@ export default function Referrals() {
           {!!referrals.length && (
             <Button.Group>
               <Link
-                className={getButtonCn({ color: 'primary', size: 'small' })}
+                className={getButtonCn({ size: 'small' })}
                 to={Route['/profile/referrals/add']}
               >
                 <Send size={20} /> Refer a Friend
