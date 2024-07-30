@@ -4,7 +4,6 @@ import { EmailTemplate } from '@oyster/email-templates';
 import {
   ActivationRequirement,
   Application,
-  Email,
   EmailCampaign,
   Event,
   type ExtractValue,
@@ -225,7 +224,7 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         type: z.literal('react_to_message'),
       }),
       z.object({
-        email: Email,
+        referralId: z.string().trim().min(1),
         studentId: CompletedActivity.shape.studentId,
         type: z.literal(ActivityType.REFER_FRIEND),
       }),

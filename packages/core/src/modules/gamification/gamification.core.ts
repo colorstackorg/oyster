@@ -322,7 +322,7 @@ async function grantGamificationPoints(
         .insertInto('completedActivities')
         .values({
           ...activityCompleted,
-          email: input.email,
+          referralId: input.referralId,
         })
         .onConflict((oc) => oc.doNothing())
         .execute();
