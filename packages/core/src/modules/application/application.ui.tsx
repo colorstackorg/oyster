@@ -33,6 +33,11 @@ import {
   SchoolCombobox,
 } from '@/modules/education/education.ui';
 
+export {
+  ApplicationStatus,
+  ApplyInput,
+} from '@/modules/application/application.types';
+
 const ApplicationContext = React.createContext({
   isOtherMajor: false,
   isOtherSchool: false,

@@ -17,7 +17,7 @@ import { generatePath } from 'react-router';
 import { z } from 'zod';
 
 import { listApplications } from '@oyster/core/applications';
-import { ApplicationStatus } from '@oyster/core/applications.types';
+import { ApplicationStatus } from '@oyster/core/applications.ui';
 import { Application } from '@oyster/types';
 import {
   type AccentColor,

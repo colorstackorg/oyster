@@ -1,5 +1,5 @@
 import { useFetcher } from '@remix-run/react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Major } from '@oyster/types';
 import {
@@ -108,33 +108,6 @@ export function SchoolZipField({
 
 // Major Combobox
 
-const TOP_MAJORS: Major[] = [
-  'computer_science',
-  'information_science',
-  'electrical_or_computer_engineering',
-];
-
-const SORTED_MAJORS = [
-  ...TOP_MAJORS,
-  ...Object.values(Major).filter((major) => {
-    return !TOP_MAJORS.includes(major);
-  }),
-];
-
-/**
- * Returns the list of majors that match the given search string. It will
- * always keep the `other` option available - no need to filter that out.
- *
- * @param search - The search string to filter majors by.
- */
-function searchMajors(search: string) {
-  return SORTED_MAJORS.filter((major) => {
-    return major === 'other'
-      ? true
-      : new RegExp(toEscapedString(search), 'i').test(toTitleCase(major));
-  });
-}
-
 type MajorComboboxProps = Omit<FieldProps<Major>, 'error'> &
   Pick<ComboboxProps, 'defaultDisplayValue'> &
   Pick<InputProps, 'readOnly' | 'required'> & {
@@ -179,6 +152,33 @@ export function MajorCombobox({
       </ComboboxPopover>
     </Combobox>
   );
+}
+
+const TOP_MAJORS: Major[] = [
+  'computer_science',
+  'information_science',
+  'electrical_or_computer_engineering',
+];
+
+const SORTED_MAJORS = [
+  ...TOP_MAJORS,
+  ...Object.values(Major).filter((major) => {
+    return !TOP_MAJORS.includes(major);
+  }),
+];
+
+/**
+ * Returns the list of majors that match the given search string. It will
+ * always keep the `other` option available - no need to filter that out.
+ *
+ * @param search - The search string to filter majors by.
+ */
+function searchMajors(search: string) {
+  return SORTED_MAJORS.filter((major) => {
+    return major === 'other'
+      ? true
+      : new RegExp(toEscapedString(search), 'i').test(toTitleCase(major));
+  });
 }
 
 // School Combobox

@@ -12,8 +12,7 @@ import {
 } from '@remix-run/react';
 
 import { apply } from '@oyster/core/applications';
-import { ApplyInput } from '@oyster/core/applications.types';
-import { Application } from '@oyster/core/applications.ui';
+import { Application, ApplyInput } from '@oyster/core/applications.ui';
 import { getReferral } from '@oyster/core/referrals';
 import { buildMeta } from '@oyster/core/remix';
 import {

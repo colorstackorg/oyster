@@ -4,8 +4,7 @@ import { match } from 'ts-pattern';
 
 import { type DB, db } from '@oyster/db';
 import { type Application, OtherDemographic } from '@oyster/types';
-import { id } from '@oyster/utils';
-import { iife } from '@oyster/utils';
+import { id, iife } from '@oyster/utils';
 
 import {
   ApplicationBullJob,
@@ -357,6 +356,71 @@ export async function rejectApplication(
   });
 }
 
+export async function updateEmailApplication({
+  email,
+  id,
+}: Pick<Application, 'email' | 'id'>) {
+  const existingApplication = await db
+    .selectFrom('applications')
+    .where('email', 'ilike', email)
+    .where('id', '!=', id)
+    .executeTakeFirst();
+
+  if (existingApplication) {
+    return new Error(
+      'There is another application that exists with this email.'
+    );
+  }
+
+  await db
+    .updateTable('applications')
+    .set({ email })
+    .where('id', '=', id)
+    .execute();
+}
+
+// Helpers
+
+async function queueRejectionEmail({
+  automated,
+  email,
+  firstName,
+}: Pick<Application, 'email' | 'firstName'> & { automated: boolean }) {
+  job(
+    'notification.email.send',
+    {
+      data: { firstName },
+      name: 'application-rejected',
+      to: email,
+    },
+    {
+      delay: automated
+        ? iife(() => {
+            const now = dayjs().tz('America/Los_Angeles');
+            const tomorrowMorning = now.add(1, 'day').hour(9);
+            const delay = tomorrowMorning.diff(now);
+
+            return delay;
+          })
+        : undefined,
+    }
+  );
+}
+
+// Worker
+
+export const applicationWorker = registerWorker(
+  'application',
+  ApplicationBullJob,
+  async (job) => {
+    return match(job)
+      .with({ name: 'application.review' }, ({ data }) => {
+        return reviewApplication(data);
+      })
+      .exhaustive();
+  }
+);
+
 async function reviewApplication({
   applicationId,
 }: GetBullJobData<'application.review'>) {
@@ -467,70 +531,3 @@ async function shouldReject(
 
   return false;
 }
-
-type UpdateApplicationEmailInput = Pick<Application, 'email' | 'id'>;
-
-export async function updateEmailApplication({
-  email,
-  id,
-}: UpdateApplicationEmailInput) {
-  const existingApplication = await db
-    .selectFrom('applications')
-    .where('email', 'ilike', email)
-    .where('id', '!=', id)
-    .executeTakeFirst();
-
-  if (existingApplication) {
-    return new Error(
-      'There is another application that exists with this email.'
-    );
-  }
-
-  await db
-    .updateTable('applications')
-    .set({ email })
-    .where('id', '=', id)
-    .execute();
-}
-
-// Helpers
-
-async function queueRejectionEmail({
-  automated,
-  email,
-  firstName,
-}: Pick<Application, 'email' | 'firstName'> & { automated: boolean }) {
-  job(
-    'notification.email.send',
-    {
-      data: { firstName },
-      name: 'application-rejected',
-      to: email,
-    },
-    {
-      delay: automated
-        ? iife(() => {
-            const now = dayjs().tz('America/Los_Angeles');
-            const tomorrowMorning = now.add(1, 'day').hour(9);
-            const delay = tomorrowMorning.diff(now);
-
-            return delay;
-          })
-        : undefined,
-    }
-  );
-}
-
-// Worker
-
-export const applicationWorker = registerWorker(
-  'application',
-  ApplicationBullJob,
-  async (job) => {
-    return match(job)
-      .with({ name: 'application.review' }, ({ data }) => {
-        return reviewApplication(data);
-      })
-      .exhaustive();
-  }
-);
