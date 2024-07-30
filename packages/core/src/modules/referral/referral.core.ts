@@ -48,6 +48,7 @@ export async function listReferrals<
     .$if(!!where.referrerId, (qb) => {
       return qb.where('referrerId', '=', where.referrerId as string);
     })
+    .orderBy('referrals.referredAt', 'desc')
     .execute();
 
   return referrals;
