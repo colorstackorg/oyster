@@ -31,7 +31,7 @@ import {
 import {
   type EducationLevel,
   FORMATTED_EDUCATION_LEVEL,
-} from '../../education/education.types';
+} from '../education/education.types';
 
 const ApplicationContext = React.createContext({
   isOtherMajor: false,
