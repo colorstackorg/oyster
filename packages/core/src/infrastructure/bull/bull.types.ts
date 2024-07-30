@@ -4,6 +4,7 @@ import { EmailTemplate } from '@oyster/email-templates';
 import {
   ActivationRequirement,
   Application,
+  Email,
   EmailCampaign,
   Event,
   type ExtractValue,
@@ -222,6 +223,11 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         messageReactedTo: SlackMessage.shape.id,
         studentId: CompletedActivity.shape.studentId,
         type: z.literal('react_to_message'),
+      }),
+      z.object({
+        email: Email,
+        studentId: CompletedActivity.shape.studentId,
+        type: z.literal(ActivityType.REFER_FRIEND),
       }),
       z.object({
         channelId: SlackMessage.shape.channelId,
