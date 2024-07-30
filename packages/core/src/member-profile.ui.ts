@@ -1,5 +1,4 @@
 export { Application } from './modules/application/ui/application-form';
-export { SchoolCombobox } from './modules/application/ui/school-combobox';
 export {
   OneTimeCode,
   OneTimeCodePurpose,

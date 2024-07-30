@@ -24,8 +24,10 @@ import {
 } from '@oyster/ui';
 import { iife, toTitleCase } from '@oyster/utils';
 
-import { MajorCombobox } from '@/modules/education/education.ui';
-import { SchoolCombobox } from './school-combobox';
+import {
+  MajorCombobox,
+  SchoolCombobox,
+} from '@/modules/education/education.ui';
 import {
   type EducationLevel,
   FORMATTED_EDUCATION_LEVEL,
