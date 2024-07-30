@@ -4,7 +4,7 @@ export async function up(db: Kysely<any>) {
   await db.schema
     .createTable('referrals')
     .addColumn('email', 'text', (column) => {
-      return column.notNull();
+      return column.notNull().unique();
     })
     .addColumn('first_name', 'text', (column) => {
       return column.notNull();
