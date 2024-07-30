@@ -8,6 +8,7 @@ import { Form as RemixForm, useActionData } from '@remix-run/react';
 
 import { apply } from '@oyster/core/applications';
 import { ApplyInput } from '@oyster/core/applications.types';
+import { Application } from '@oyster/core/applications.ui';
 import { buildMeta } from '@oyster/core/remix';
 import {
   Button,
@@ -20,7 +21,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { Application } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { commitSession, getSession } from '@/shared/session.server';
 

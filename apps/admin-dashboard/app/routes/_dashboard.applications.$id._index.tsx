@@ -14,9 +14,10 @@ import { type PropsWithChildren, useState } from 'react';
 
 import {
   acceptApplication,
+  getApplication,
   rejectApplication,
 } from '@oyster/core/applications';
-import { getApplication } from '@oyster/core/applications';
+import { Application } from '@oyster/core/applications.ui';
 import {
   Application as ApplicationType,
   type Gender,
@@ -26,7 +27,7 @@ import {
 } from '@oyster/types';
 import { Button, Text } from '@oyster/ui';
 
-import { Application, type EducationLevel } from '@/admin-dashboard.ui';
+import { type EducationLevel } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import {
   admin,

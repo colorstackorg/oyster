@@ -1,4 +1,3 @@
-export { Application } from './modules/application/ui/application-form';
 export {
   OneTimeCode,
   OneTimeCodePurpose,

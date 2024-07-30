@@ -16,6 +16,7 @@
     "./admin.server": "./src/modules/admin/index.server.ts",
     "./applications": "./src/modules/application/application.core.ts",
     "./applications.types": "./src/modules/application/application.types.ts",
+    "./applications.ui": "./src/modules/application/application.ui.tsx",
     "./education": "./src/modules/education/education.core.ts",
     "./education.types": "./src/modules/education/education.types.ts",
     "./education.ui": "./src/modules/education/education.ui.tsx",
