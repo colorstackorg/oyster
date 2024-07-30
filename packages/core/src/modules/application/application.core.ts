@@ -18,7 +18,7 @@ import {
   type ApplyInput,
 } from '@/modules/application/application.types';
 import { getPostmarkInstance } from '@/modules/notification/shared/email.utils';
-import { getReferral } from '@/modules/referral/referral.core';
+import { ReferralStatus } from '@/modules/referral/referral.types';
 
 // Queries
 
@@ -254,10 +254,13 @@ export async function apply(input: ApplyInput) {
     let referralId: string | undefined = undefined;
 
     if (input.referralId) {
-      const referral = await getReferral({
-        select: ['id'],
-        where: { id: input.referralId, status: 'sent' },
-      });
+      const referral = await db
+        .updateTable('referrals')
+        .set({ status: ReferralStatus.APPLIED })
+        .where('id', '=', input.referralId)
+        .where('status', '=', ReferralStatus.SENT)
+        .returning(['id'])
+        .executeTakeFirst();
 
       referralId = referral?.id;
     }
