@@ -605,6 +605,9 @@ function ActivityHistoryItemDescription({
         </div>
       );
     })
+    .with('refer_friend', () => {
+      return <p>You referred a friend to ColorStack.</p>;
+    })
     .with('reply_to_thread', () => {
       const href = `https://colorstack-family.slack.com/archives/${activity.threadRepliedToChannelId}/p${activity.threadRepliedToId}`;
 
