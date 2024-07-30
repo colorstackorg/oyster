@@ -18,8 +18,8 @@ export async function up(db: Kysely<any>) {
     .addColumn('referred_at', 'timestamptz', (column) => {
       return column.notNull().defaultTo(sql`now()`);
     })
-    .addColumn('referred_id', 'text', (column) => {
-      return column.references('students.id');
+    .addColumn('referrer_id', 'text', (column) => {
+      return column.notNull().references('students.id');
     })
     .addColumn('status', 'text', (column) => {
       return column.notNull();

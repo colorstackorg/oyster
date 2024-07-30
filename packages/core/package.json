@@ -29,6 +29,8 @@
     "./location.ui": "./src/modules/location/location.ui.tsx",
     "./mixpanel": "./src/modules/mixpanel/index.ts",
     "./object-storage": "./src/modules/object-storage/index.ts",
+    "./referrals": "./src/modules/referral/referral.core.ts",
+    "./referrals.ui": "./src/modules/referral/referral.ui.tsx",
     "./remix": "./src/modules/remix.ts",
     "./resources": "./src/modules/resource/index.ts",
     "./resources.server": "./src/modules/resource/index.server.ts",
