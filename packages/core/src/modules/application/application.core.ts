@@ -172,6 +172,7 @@ export async function acceptApplication(
       'applications.otherMajor',
       'applications.otherSchool',
       'applications.race',
+      'applications.referralId',
       'applications.schoolId',
     ])
     .where('id', '=', applicationId)
@@ -189,6 +190,14 @@ export async function acceptApplication(
       })
       .where('id', '=', applicationId)
       .execute();
+
+    if (application.referralId) {
+      await trx
+        .updateTable('referrals')
+        .set({ status: ReferralStatus.ACCEPTED })
+        .where('id', '=', application.referralId)
+        .execute();
+    }
 
     // Some applicants apply multiple times to ColorStack (typically it's an
     // accident) and historically we would _try_ to accept all of their
@@ -318,16 +327,28 @@ export async function rejectApplication(
   applicationId: string,
   adminId: string
 ) {
-  const application = await db
-    .updateTable('applications')
-    .set({
-      rejectedAt: new Date(),
-      reviewedById: adminId,
-      status: ApplicationStatus.REJECTED,
-    })
-    .where('id', '=', applicationId)
-    .returning(['email', 'firstName'])
-    .executeTakeFirstOrThrow();
+  const application = await db.transaction().execute(async (trx) => {
+    const application = await trx
+      .updateTable('applications')
+      .set({
+        rejectedAt: new Date(),
+        reviewedById: adminId,
+        status: ApplicationStatus.REJECTED,
+      })
+      .where('id', '=', applicationId)
+      .returning(['email', 'firstName', 'referralId'])
+      .executeTakeFirstOrThrow();
+
+    if (application.referralId) {
+      await trx
+        .updateTable('referrals')
+        .set({ status: ReferralStatus.REJECTED })
+        .where('id', '=', application.referralId)
+        .execute();
+    }
+
+    return application;
+  });
 
   queueRejectionEmail({
     automated: false,
@@ -351,6 +372,7 @@ async function reviewApplication({
       'applications.linkedInUrl',
       'applications.major',
       'applications.race',
+      'applications.referralId',
       'applications.schoolId',
     ])
     .where('id', '=', applicationId)
@@ -367,14 +389,24 @@ async function reviewApplication({
     return;
   }
 
-  await db
-    .updateTable('applications')
-    .set({
-      rejectedAt: new Date(),
-      status: ApplicationStatus.REJECTED,
-    })
-    .where('id', '=', application.id)
-    .execute();
+  await db.transaction().execute(async (trx) => {
+    await trx
+      .updateTable('applications')
+      .set({
+        rejectedAt: new Date(),
+        status: ApplicationStatus.REJECTED,
+      })
+      .where('id', '=', application.id)
+      .execute();
+
+    if (application.referralId) {
+      await trx
+        .updateTable('referrals')
+        .set({ status: ReferralStatus.REJECTED })
+        .where('id', '=', application.referralId)
+        .execute();
+    }
+  });
 
   queueRejectionEmail({
     automated: true,
