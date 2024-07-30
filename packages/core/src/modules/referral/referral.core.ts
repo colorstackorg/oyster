@@ -3,10 +3,12 @@ import { type SelectExpression } from 'kysely';
 import { type DB, db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
+import { job } from '@/infrastructure/bull/use-cases/job';
 import {
   type ReferFriendInput,
   ReferralStatus,
 } from '@/modules/referral/referral.types';
+import { ENV } from '@/shared/env';
 
 export { ReferFriendInput } from '@/modules/referral/referral.types';
 
@@ -94,12 +96,14 @@ export async function referFriend({
       };
     }
 
+    const referralId = id();
+
     await trx
       .insertInto('referrals')
       .values({
         email,
         firstName,
-        id: id(),
+        id: referralId,
         lastName,
         referredAt: new Date(),
         referrerId,
@@ -107,8 +111,18 @@ export async function referFriend({
       })
       .execute();
 
+    const referrer = await trx
+      .selectFrom('students')
+      .select(['firstName', 'lastName'])
+      .where('id', '=', referrerId)
+      .executeTakeFirstOrThrow();
+
     return {
       ok: true,
+      data: {
+        referralId,
+        referrer,
+      },
     };
   });
 
@@ -116,9 +130,20 @@ export async function referFriend({
     return result;
   }
 
-  // Send email #1...
+  if (result.data) {
+    const { referralId, referrer } = result.data;
 
-  // Send email #2...
+    job('notification.email.send', {
+      data: {
+        firstName,
+        referralUri: `${ENV.STUDENT_PROFILE_URL}/apply?r=${referralId}`,
+        referrerFirstName: referrer.firstName,
+        referrerLastName: referrer.lastName,
+      },
+      name: 'referral-sent',
+      to: email,
+    });
+  }
 
   return result;
 }

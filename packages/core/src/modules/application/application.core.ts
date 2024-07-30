@@ -18,6 +18,7 @@ import {
 } from '@/modules/application/application.types';
 import { getPostmarkInstance } from '@/modules/notification/shared/email.utils';
 import { ReferralStatus } from '@/modules/referral/referral.types';
+import { ENV } from '@/shared/env';
 
 // Queries
 
@@ -264,6 +265,33 @@ export async function acceptApplication(
     name: 'application-accepted',
     to: application.email,
   });
+
+  if (application.referralId) {
+    const referral = await db
+      .selectFrom('referrals')
+      .leftJoin('students as referrers', 'referrers.id', 'referrals.referrerId')
+      .select([
+        'referrals.firstName as referredFirstName',
+        'referrals.lastName as referredLastName',
+        'referrers.email as referrerEmail',
+        'referrers.firstName as referrerFirstName',
+      ])
+      .where('id', '=', application.referralId)
+      .executeTakeFirst();
+
+    if (referral) {
+      job('notification.email.send', {
+        data: {
+          firstName: referral.referrerFirstName as string,
+          referralsUri: `${ENV.STUDENT_PROFILE_URL}/profile/referrals`,
+          referredFirstName: referral.referredFirstName,
+          referredLastName: referral.referredLastName,
+        },
+        name: 'referral-accepted',
+        to: application.email,
+      });
+    }
+  }
 }
 
 /**
