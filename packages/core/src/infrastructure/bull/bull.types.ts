@@ -82,26 +82,6 @@ export const AirtableBullJob = z.discriminatedUnion('name', [
 
 export const ApplicationBullJob = z.discriminatedUnion('name', [
   z.object({
-    name: z.literal('application.accepted'),
-    data: z.object({
-      applicationId: Application.shape.id,
-      studentId: Student.shape.id,
-    }),
-  }),
-  z.object({
-    name: z.literal('application.created'),
-    data: z.object({
-      applicationId: Application.shape.id,
-    }),
-  }),
-  z.object({
-    name: z.literal('application.rejected'),
-    data: z.object({
-      applicationId: Application.shape.id,
-      automated: z.boolean().optional(),
-    }),
-  }),
-  z.object({
     name: z.literal('application.review'),
     data: z.object({
       applicationId: Application.shape.id,

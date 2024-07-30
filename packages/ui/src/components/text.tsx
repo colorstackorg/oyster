@@ -7,7 +7,7 @@ export type TextProps = Pick<
   React.HTMLProps<HTMLElement>,
   'className' | 'children'
 > & {
-  color?: 'black' | 'error' | 'gray-500' | 'success' | 'white';
+  color?: 'black' | 'error' | 'gray-500' | 'primary' | 'success' | 'white';
   variant?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';
   weight?: '400' | '500' | '600';
 };
@@ -44,6 +44,7 @@ export function getTextCn({
       .with('black', () => 'text-black')
       .with('error', () => 'text-red-600')
       .with('gray-500', () => 'text-gray-500')
+      .with('primary', () => 'text-primary')
       .with('success', () => 'text-green-600')
       .with('white', () => 'text-white')
       .exhaustive(),

@@ -2,12 +2,8 @@ import dayjs from 'dayjs';
 import { type SelectExpression, sql } from 'kysely';
 import { match } from 'ts-pattern';
 
-import { db, type DB } from '@oyster/db';
-import {
-  type Application,
-  ApplicationStatus,
-  OtherDemographic,
-} from '@oyster/types';
+import { type DB, db } from '@oyster/db';
+import { type Application, OtherDemographic } from '@oyster/types';
 import { id, iife } from '@oyster/utils';
 
 import {
@@ -16,7 +12,13 @@ import {
 } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
+import {
+  ApplicationStatus,
+  type ApplyInput,
+} from '@/modules/application/application.types';
 import { getPostmarkInstance } from '@/modules/notification/shared/email.utils';
+import { ReferralStatus } from '@/modules/referral/referral.types';
+import { ENV } from '@/shared/env';
 
 // Queries
 
@@ -33,7 +35,8 @@ export async function countPendingApplications() {
 }
 
 type GetApplicationOptions = {
-  withSchool?: boolean;
+  withReferrer?: true;
+  withSchool?: true;
 };
 
 export async function getApplication<
@@ -42,6 +45,20 @@ export async function getApplication<
   const result = await db
     .selectFrom('applications')
     .select(selections)
+    .$if(!!options.withReferrer, (qb) => {
+      return qb
+        .leftJoin('referrals', 'referrals.id', 'applications.referralId')
+        .leftJoin(
+          'students as referrers',
+          'referrers.id',
+          'referrals.referrerId'
+        )
+        .select([
+          'referrers.firstName as referrerFirstName',
+          'referrers.id as referrerId',
+          'referrers.lastName as referrerLastName',
+        ]);
+    })
     .$if(!!options.withSchool, (qb) => {
       return qb
         .leftJoin('schools', 'schools.id', 'applications.schoolId')
@@ -155,6 +172,7 @@ export async function acceptApplication(
       'applications.otherMajor',
       'applications.otherSchool',
       'applications.race',
+      'applications.referralId',
       'applications.schoolId',
     ])
     .where('id', '=', applicationId)
@@ -172,6 +190,14 @@ export async function acceptApplication(
       })
       .where('id', '=', applicationId)
       .execute();
+
+    if (application.referralId) {
+      await trx
+        .updateTable('referrals')
+        .set({ status: ReferralStatus.ACCEPTED })
+        .where('id', '=', application.referralId)
+        .execute();
+    }
 
     // Some applicants apply multiple times to ColorStack (typically it's an
     // accident) and historically we would _try_ to accept all of their
@@ -230,30 +256,43 @@ export async function acceptApplication(
       .execute();
   });
 
-  job('application.accepted', {
-    applicationId,
+  job('student.created', {
     studentId,
   });
-}
 
-type ApplyInput = Pick<
-  Application,
-  | 'contribution'
-  | 'educationLevel'
-  | 'email'
-  | 'firstName'
-  | 'gender'
-  | 'goals'
-  | 'graduationYear'
-  | 'lastName'
-  | 'linkedInUrl'
-  | 'major'
-  | 'otherDemographics'
-  | 'otherMajor'
-  | 'otherSchool'
-  | 'race'
-  | 'schoolId'
->;
+  job('notification.email.send', {
+    data: { firstName: application.firstName },
+    name: 'application-accepted',
+    to: application.email,
+  });
+
+  if (application.referralId) {
+    const referral = await db
+      .selectFrom('referrals')
+      .leftJoin('students as referrers', 'referrers.id', 'referrals.referrerId')
+      .select([
+        'referrals.firstName as referredFirstName',
+        'referrals.lastName as referredLastName',
+        'referrers.email as referrerEmail',
+        'referrers.firstName as referrerFirstName',
+      ])
+      .where('referrals.id', '=', application.referralId)
+      .executeTakeFirst();
+
+    if (referral) {
+      job('notification.email.send', {
+        data: {
+          firstName: referral.referrerFirstName as string,
+          referralsUri: `${ENV.MEMBER_PROFILE_URL}/profile/referrals`,
+          referredFirstName: referral.referredFirstName,
+          referredLastName: referral.referredLastName,
+        },
+        name: 'referral-accepted',
+        to: referral.referrerEmail as string,
+      });
+    }
+  }
+}
 
 /**
  * Applies to join the ColorStack family. This also queues a job to send a
@@ -262,50 +301,86 @@ type ApplyInput = Pick<
 export async function apply(input: ApplyInput) {
   const applicationId = id();
 
-  await db
-    .insertInto('applications')
-    .values({
-      contribution: input.contribution,
-      educationLevel: input.educationLevel,
-      email: input.email,
-      firstName: input.firstName,
-      gender: input.gender,
-      goals: input.goals,
-      graduationYear: input.graduationYear,
-      id: applicationId,
-      lastName: input.lastName,
-      linkedInUrl: input.linkedInUrl!,
-      major: input.major,
-      otherDemographics: input.otherDemographics,
-      otherMajor: input.otherMajor,
-      otherSchool: input.otherSchool,
-      race: input.race,
-      schoolId: input.schoolId,
-      status: ApplicationStatus.PENDING,
-    })
-    .execute();
+  await db.transaction().execute(async (trx) => {
+    let referralId: string | undefined = undefined;
 
-  job('application.created', {
-    applicationId,
+    if (input.referralId) {
+      const referral = await db
+        .updateTable('referrals')
+        .set({ status: ReferralStatus.APPLIED })
+        .where('id', '=', input.referralId)
+        .where('status', '=', ReferralStatus.SENT)
+        .returning(['id'])
+        .executeTakeFirst();
+
+      referralId = referral?.id;
+    }
+
+    await trx
+      .insertInto('applications')
+      .values({
+        contribution: input.contribution,
+        educationLevel: input.educationLevel,
+        email: input.email,
+        firstName: input.firstName,
+        gender: input.gender,
+        goals: input.goals,
+        graduationYear: input.graduationYear,
+        id: applicationId,
+        lastName: input.lastName,
+        linkedInUrl: input.linkedInUrl,
+        major: input.major,
+        otherDemographics: input.otherDemographics,
+        otherMajor: input.otherMajor,
+        otherSchool: input.otherSchool,
+        race: input.race,
+        referralId,
+        schoolId: input.schoolId,
+        status: ApplicationStatus.PENDING,
+      })
+      .execute();
   });
+
+  job('notification.email.send', {
+    data: { firstName: input.firstName },
+    name: 'application-created',
+    to: input.email,
+  });
+
+  job('application.review', { applicationId }, { delay: 1000 * 60 * 2.5 });
 }
 
 export async function rejectApplication(
   applicationId: string,
   adminId: string
 ) {
-  await db
-    .updateTable('applications')
-    .set({
-      rejectedAt: new Date(),
-      reviewedById: adminId,
-      status: ApplicationStatus.REJECTED,
-    })
-    .where('id', '=', applicationId)
-    .execute();
+  const application = await db.transaction().execute(async (trx) => {
+    const application = await trx
+      .updateTable('applications')
+      .set({
+        rejectedAt: new Date(),
+        reviewedById: adminId,
+        status: ApplicationStatus.REJECTED,
+      })
+      .where('id', '=', applicationId)
+      .returning(['email', 'firstName', 'referralId'])
+      .executeTakeFirstOrThrow();
 
-  job('application.rejected', {
-    applicationId,
+    if (application.referralId) {
+      await trx
+        .updateTable('referrals')
+        .set({ status: ReferralStatus.REJECTED })
+        .where('id', '=', application.referralId)
+        .execute();
+    }
+
+    return application;
+  });
+
+  queueRejectionEmail({
+    automated: false,
+    email: application.email,
+    firstName: application.firstName,
   });
 }
 
@@ -332,84 +407,19 @@ export async function updateEmailApplication({
     .execute();
 }
 
-// Worker
+// Helpers
 
-export const applicationWorker = registerWorker(
-  'application',
-  ApplicationBullJob,
-  async (job) => {
-    return match(job)
-      .with({ name: 'application.accepted' }, ({ data }) => {
-        return onApplicationAccepted(data);
-      })
-      .with({ name: 'application.created' }, ({ data }) => {
-        return onApplicationCreated(data);
-      })
-      .with({ name: 'application.rejected' }, ({ data }) => {
-        return onApplicationRejected(data);
-      })
-      .with({ name: 'application.review' }, ({ data }) => {
-        return reviewApplication(data);
-      })
-      .exhaustive();
-  }
-);
-
-async function onApplicationAccepted({
-  applicationId,
-  studentId,
-}: GetBullJobData<'application.accepted'>) {
-  const application = await db
-    .selectFrom('applications')
-    .select(['email', 'firstName'])
-    .where('id', '=', applicationId)
-    .executeTakeFirstOrThrow();
-
-  job('student.created', {
-    studentId,
-  });
-
-  job('notification.email.send', {
-    data: { firstName: application.firstName },
-    name: 'application-accepted',
-    to: application.email,
-  });
-}
-
-async function onApplicationCreated({
-  applicationId,
-}: GetBullJobData<'application.created'>) {
-  const application = await db
-    .selectFrom('applications')
-    .select(['email', 'firstName'])
-    .where('id', '=', applicationId)
-    .executeTakeFirstOrThrow();
-
-  job('notification.email.send', {
-    data: { firstName: application.firstName },
-    name: 'application-created',
-    to: application.email,
-  });
-
-  job('application.review', { applicationId }, { delay: 1000 * 60 * 2.5 });
-}
-
-async function onApplicationRejected({
-  applicationId,
+function queueRejectionEmail({
   automated,
-}: GetBullJobData<'application.rejected'>) {
-  const application = await db
-    .selectFrom('applications')
-    .select(['email', 'firstName'])
-    .where('id', '=', applicationId)
-    .executeTakeFirstOrThrow();
-
+  email,
+  firstName,
+}: Pick<Application, 'email' | 'firstName'> & { automated: boolean }) {
   job(
     'notification.email.send',
     {
-      data: { firstName: application.firstName },
+      data: { firstName },
       name: 'application-rejected',
-      to: application.email,
+      to: email,
     },
     {
       delay: automated
@@ -424,6 +434,20 @@ async function onApplicationRejected({
     }
   );
 }
+
+// Worker
+
+export const applicationWorker = registerWorker(
+  'application',
+  ApplicationBullJob,
+  async (job) => {
+    return match(job)
+      .with({ name: 'application.review' }, ({ data }) => {
+        return reviewApplication(data);
+      })
+      .exhaustive();
+  }
+);
 
 async function reviewApplication({
   applicationId,
@@ -440,6 +464,7 @@ async function reviewApplication({
       'applications.linkedInUrl',
       'applications.major',
       'applications.race',
+      'applications.referralId',
       'applications.schoolId',
     ])
     .where('id', '=', applicationId)
@@ -456,18 +481,29 @@ async function reviewApplication({
     return;
   }
 
-  await db
-    .updateTable('applications')
-    .set({
-      rejectedAt: new Date(),
-      status: ApplicationStatus.REJECTED,
-    })
-    .where('id', '=', application.id)
-    .execute();
+  await db.transaction().execute(async (trx) => {
+    await trx
+      .updateTable('applications')
+      .set({
+        rejectedAt: new Date(),
+        status: ApplicationStatus.REJECTED,
+      })
+      .where('id', '=', application.id)
+      .execute();
 
-  job('application.rejected', {
-    applicationId: application.id,
+    if (application.referralId) {
+      await trx
+        .updateTable('referrals')
+        .set({ status: ReferralStatus.REJECTED })
+        .where('id', '=', application.referralId)
+        .execute();
+    }
+  });
+
+  queueRejectionEmail({
     automated: true,
+    email: application.email,
+    firstName: application.firstName,
   });
 }
 

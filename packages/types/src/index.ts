@@ -1,4 +1,4 @@
-export { Application, ApplicationStatus } from './domain/application';
+export { Application } from './domain/application';
 export {
   EmailCampaign,
   EmailCampaignClick,

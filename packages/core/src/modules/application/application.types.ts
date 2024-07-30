@@ -1,0 +1,38 @@
+import { type z } from 'zod';
+
+import { Application, BooleanInput, type ExtractValue } from '@oyster/types';
+
+// Enums
+
+export const ApplicationStatus = {
+  ACCEPTED: 'accepted',
+  PENDING: 'pending',
+  REJECTED: 'rejected',
+} as const;
+
+export type ApplicationStatus = ExtractValue<typeof ApplicationStatus>;
+
+// Use Cases
+
+export const ApplyInput = Application.pick({
+  contribution: true,
+  educationLevel: true,
+  email: true,
+  firstName: true,
+  gender: true,
+  goals: true,
+  graduationYear: true,
+  lastName: true,
+  linkedInUrl: true,
+  major: true,
+  otherDemographics: true,
+  otherMajor: true,
+  otherSchool: true,
+  race: true,
+  referralId: true,
+  schoolId: true,
+}).extend({
+  codeOfConduct: BooleanInput,
+});
+
+export type ApplyInput = z.infer<typeof ApplyInput>;
