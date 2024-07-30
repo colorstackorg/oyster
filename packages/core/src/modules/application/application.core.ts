@@ -409,7 +409,7 @@ export async function updateEmailApplication({
 
 // Helpers
 
-async function queueRejectionEmail({
+function queueRejectionEmail({
   automated,
   email,
   firstName,
