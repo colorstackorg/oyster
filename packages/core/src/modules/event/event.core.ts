@@ -1,7 +1,6 @@
-import { ActivityType } from '@oyster/types';
-
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { db } from '@/infrastructure/database';
+import { ActivityType } from '@/modules/gamification/gamification.types';
 
 type CheckIntoEventInput = {
   eventId: string;

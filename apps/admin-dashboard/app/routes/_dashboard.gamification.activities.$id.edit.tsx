@@ -4,19 +4,18 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
+import { useActionData, useLoaderData } from '@remix-run/react';
+
+import { editActivity } from '@oyster/core/gamification';
 import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
-import { type z } from 'zod';
-
+  type ActivityPeriod,
+  type ActivityType,
+  EditActivityInput,
+} from '@oyster/core/gamification.types';
+import { ActivityForm } from '@oyster/core/gamification.ui';
 import { db } from '@oyster/db';
-import { Activity, type ActivityPeriod } from '@oyster/types';
-import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
+import { getErrors, Modal, validateForm } from '@oyster/ui';
 
-import { editActivity } from '@/admin-dashboard.server';
-import { ActivityForm } from '@/shared/components/activity-form';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -48,16 +47,6 @@ async function getActivity(id: string) {
   return activity;
 }
 
-const EditActivityInput = Activity.pick({
-  description: true,
-  name: true,
-  period: true,
-  points: true,
-  type: true,
-});
-
-type EditActivityInput = z.infer<typeof EditActivityInput>;
-
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
@@ -87,8 +76,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 }
 
-const keys = EditActivityInput.keyof().enum;
-
 export default function EditActivityPage() {
   const { activity } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
@@ -100,43 +87,15 @@ export default function EditActivityPage() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
-        <ActivityForm.NameField
-          defaultValue={activity.name}
-          error={errors.name}
-          name={keys.name}
-        />
-
-        <ActivityForm.DescriptionField
-          defaultValue={activity.description || undefined}
-          error={errors.description}
-          name={keys.description}
-        />
-
-        <ActivityForm.TypeField
-          defaultValue={(activity.type as Activity['type']) || undefined}
-          error={errors.type}
-          name={keys.type}
-        />
-
-        <ActivityForm.PeriodField
-          defaultValue={(activity.period as ActivityPeriod) || undefined}
-          error={errors.period}
-          name={keys.period}
-        />
-
-        <ActivityForm.PointsField
-          defaultValue={activity.points}
-          error={errors.points}
-          name={keys.points}
-        />
-
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
-
-        <Button.Group>
-          <Button type="submit">Edit</Button>
-        </Button.Group>
-      </RemixForm>
+      <ActivityForm
+        activity={{
+          ...activity,
+          period: activity.period as ActivityPeriod,
+          type: activity.type as ActivityType,
+        }}
+        error={error}
+        errors={errors}
+      />
     </Modal>
   );
 }

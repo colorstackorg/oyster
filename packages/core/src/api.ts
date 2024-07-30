@@ -1,12 +1,10 @@
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
-dayjs.extend(quarterOfYear);
 dayjs.extend(timezone);
 
 // This is only meant to be imported by the `api` application.
@@ -20,7 +18,7 @@ export { loginWithOAuth } from './modules/authentication/use-cases/login-with-oa
 export { educationWorker } from './modules/education/education.worker';
 export { workExperienceWorker } from './modules/employment/employment.worker';
 export { eventWorker } from './modules/event/event.worker';
-export { gamificationWorker } from './modules/gamification/gamification.worker';
+export { gamificationWorker } from './modules/gamification/gamification.core';
 export { saveGoogleDriveCredentials } from './modules/google-drive';
 export { emailMarketingWorker } from './modules/mailchimp/email-marketing.worker';
 export { memberEmailWorker } from './modules/member/member-email.worker';

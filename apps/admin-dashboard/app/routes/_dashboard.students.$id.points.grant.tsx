@@ -9,10 +9,10 @@ import {
   useActionData,
   useLoaderData,
 } from '@remix-run/react';
-import { z } from 'zod';
 
+import { grantPoints } from '@oyster/core/gamification';
+import { GrantPointsInput } from '@oyster/core/gamification.types';
 import { db } from '@oyster/db';
-import { CompletedActivity } from '@oyster/types';
 import {
   Button,
   Form,
@@ -23,7 +23,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { job } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -49,29 +48,22 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 }
 
-const GrantPointsInput = CompletedActivity.pick({
-  description: true,
-  points: true,
-}).extend({
-  description: z.string().trim().min(1),
-});
-
-type GrantPointsInput = z.infer<typeof GrantPointsInput>;
-
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(request, GrantPointsInput);
+  const { data, errors, ok } = await validateForm(
+    request,
+    GrantPointsInput.omit({ memberId: true })
+  );
 
   if (!ok) {
     return json({ errors }, { status: 400 });
   }
 
-  job('gamification.activity.completed', {
+  await grantPoints({
     description: data.description,
+    memberId: params.id as string,
     points: data.points,
-    studentId: params.id as string,
-    type: 'one_off',
   });
 
   toast(session, {

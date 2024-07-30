@@ -3,9 +3,7 @@ import { z } from 'zod';
 import { EmailTemplate } from '@oyster/email-templates';
 import {
   ActivationRequirement,
-  ActivityType,
   Application,
-  CompletedActivity,
   EmailCampaign,
   Event,
   type ExtractValue,
@@ -17,6 +15,10 @@ import {
 import { OneTimeCode } from '@/modules/authentication/authentication.types';
 import { Education } from '@/modules/education/education.types';
 import { WorkExperience } from '@/modules/employment/employment.types';
+import {
+  ActivityType,
+  CompletedActivity,
+} from '@/modules/gamification/gamification.types';
 import { OnboardingSession } from '@/modules/onboarding-session/onboarding-session.types';
 import {
   SlackChannel,

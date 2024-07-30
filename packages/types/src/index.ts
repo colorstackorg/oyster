@@ -13,13 +13,6 @@ export {
   EventRegistration,
   EventType,
 } from './domain/event';
-export {
-  Activity,
-  ActivityPeriod,
-  ActivityType,
-  CompletedActivity,
-} from './domain/gamification';
-export type { GetActivityType } from './domain/gamification';
 export { ProfileView } from './domain/profile-view';
 export { Program, ProgramParticipant } from './domain/program';
 export { Resource, ResourceStatus, ResourceUser } from './domain/resource';
