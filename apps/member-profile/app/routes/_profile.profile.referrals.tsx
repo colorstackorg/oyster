@@ -1,6 +1,5 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
-import dayjs from 'dayjs';
 import { Send } from 'react-feather';
 import { match } from 'ts-pattern';
 
@@ -14,31 +13,21 @@ import {
   ProfileTitle,
 } from '@/shared/components/profile';
 import { Route } from '@/shared/constants';
-import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const _referrals = await listReferrals({
+  const referrals = await listReferrals({
     select: [
       'referrals.email',
       'referrals.firstName',
       'referrals.id',
       'referrals.lastName',
-      'referrals.referredAt',
+
       'referrals.status',
     ],
     where: { referrerId: user(session) },
-  });
-
-  const tz = getTimezone(request);
-
-  const referrals = _referrals.map(({ referredAt, ...referral }) => {
-    return {
-      ...referral,
-      referredAt: dayjs(referredAt).tz(tz).format('MM/DD/YYYY'),
-    };
   });
 
   return json({
@@ -80,9 +69,6 @@ export default function Referrals() {
 
                     <Text color="gray-500" variant="sm">
                       {referral.email}
-                    </Text>
-                    <Text color="gray-500" variant="sm">
-                      Invited on {referral.referredAt}
                     </Text>
                   </div>
 
