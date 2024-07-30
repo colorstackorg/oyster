@@ -37,7 +37,7 @@ export const EmailTemplate = z.discriminatedUnion('name', [
   BaseEmail.extend({
     name: z.literal('referral-accepted'),
     data: z.object({
-      firstName: z.string(),
+      firstName: z.string().trim().min(1),
       referralsUri: z.string().url(),
       referredFirstName: z.string().trim().min(1),
       referredLastName: z.string().trim().min(1),
@@ -46,8 +46,8 @@ export const EmailTemplate = z.discriminatedUnion('name', [
   BaseEmail.extend({
     name: z.literal('referral-sent'),
     data: z.object({
-      firstName: z.string(),
-      referralUri: z.string().url(),
+      applicationUri: z.string().url(),
+      firstName: z.string().trim().min(1),
       referrerFirstName: z.string().trim().min(1),
       referrerLastName: z.string().trim().min(1),
     }),

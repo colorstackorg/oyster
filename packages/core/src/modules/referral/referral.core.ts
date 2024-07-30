@@ -135,8 +135,8 @@ export async function referFriend({
 
     job('notification.email.send', {
       data: {
+        applicationUri: `${ENV.STUDENT_PROFILE_URL}/apply?r=${referralId}`,
         firstName,
-        referralUri: `${ENV.STUDENT_PROFILE_URL}/apply?r=${referralId}`,
         referrerFirstName: referrer.firstName,
         referrerLastName: referrer.lastName,
       },
