@@ -55,7 +55,7 @@ export default function Referrals() {
         </ProfileHeader>
 
         {!!referrals.length && (
-          <ul>
+          <ul className="flex flex-col gap-2">
             {referrals.map((referral) => {
               return (
                 <li
