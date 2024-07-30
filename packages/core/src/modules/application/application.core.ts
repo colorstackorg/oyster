@@ -231,9 +231,14 @@ export async function acceptApplication(
       .execute();
   });
 
-  job('application.accepted', {
-    applicationId,
+  job('student.created', {
     studentId,
+  });
+
+  job('notification.email.send', {
+    data: { firstName: application.firstName },
+    name: 'application-accepted',
+    to: application.email,
   });
 }
 
@@ -256,27 +261,32 @@ export async function apply(input: ApplyInput) {
       graduationYear: input.graduationYear,
       id: applicationId,
       lastName: input.lastName,
-      linkedInUrl: input.linkedInUrl!,
+      linkedInUrl: input.linkedInUrl,
       major: input.major,
       otherDemographics: input.otherDemographics,
       otherMajor: input.otherMajor,
       otherSchool: input.otherSchool,
       race: input.race,
+      referralId: input.referralId,
       schoolId: input.schoolId,
       status: ApplicationStatus.PENDING,
     })
     .execute();
 
-  job('application.created', {
-    applicationId,
+  job('notification.email.send', {
+    data: { firstName: input.firstName },
+    name: 'application-created',
+    to: input.email,
   });
+
+  job('application.review', { applicationId }, { delay: 1000 * 60 * 2.5 });
 }
 
 export async function rejectApplication(
   applicationId: string,
   adminId: string
 ) {
-  await db
+  const application = await db
     .updateTable('applications')
     .set({
       rejectedAt: new Date(),
@@ -284,10 +294,13 @@ export async function rejectApplication(
       status: ApplicationStatus.REJECTED,
     })
     .where('id', '=', applicationId)
-    .execute();
+    .returning(['email', 'firstName'])
+    .executeTakeFirstOrThrow();
 
-  job('application.rejected', {
-    applicationId,
+  queueRejectionEmail({
+    automated: false,
+    email: application.email,
+    firstName: application.firstName,
   });
 }
 
@@ -331,9 +344,10 @@ async function reviewApplication({
     .where('id', '=', application.id)
     .execute();
 
-  job('application.rejected', {
-    applicationId: application.id,
+  queueRejectionEmail({
     automated: true,
+    email: application.email,
+    firstName: application.firstName,
   });
 }
 
@@ -415,84 +429,19 @@ export async function updateEmailApplication({
     .execute();
 }
 
-// Worker
+// Helpers
 
-export const applicationWorker = registerWorker(
-  'application',
-  ApplicationBullJob,
-  async (job) => {
-    return match(job)
-      .with({ name: 'application.accepted' }, ({ data }) => {
-        return onApplicationAccepted(data);
-      })
-      .with({ name: 'application.created' }, ({ data }) => {
-        return onApplicationCreated(data);
-      })
-      .with({ name: 'application.rejected' }, ({ data }) => {
-        return onApplicationRejected(data);
-      })
-      .with({ name: 'application.review' }, ({ data }) => {
-        return reviewApplication(data);
-      })
-      .exhaustive();
-  }
-);
-
-async function onApplicationAccepted({
-  applicationId,
-  studentId,
-}: GetBullJobData<'application.accepted'>) {
-  const application = await db
-    .selectFrom('applications')
-    .select(['email', 'firstName'])
-    .where('id', '=', applicationId)
-    .executeTakeFirstOrThrow();
-
-  job('student.created', {
-    studentId,
-  });
-
-  job('notification.email.send', {
-    data: { firstName: application.firstName },
-    name: 'application-accepted',
-    to: application.email,
-  });
-}
-
-async function onApplicationCreated({
-  applicationId,
-}: GetBullJobData<'application.created'>) {
-  const application = await db
-    .selectFrom('applications')
-    .select(['email', 'firstName'])
-    .where('id', '=', applicationId)
-    .executeTakeFirstOrThrow();
-
-  job('notification.email.send', {
-    data: { firstName: application.firstName },
-    name: 'application-created',
-    to: application.email,
-  });
-
-  job('application.review', { applicationId }, { delay: 1000 * 60 * 2.5 });
-}
-
-async function onApplicationRejected({
-  applicationId,
+async function queueRejectionEmail({
   automated,
-}: GetBullJobData<'application.rejected'>) {
-  const application = await db
-    .selectFrom('applications')
-    .select(['email', 'firstName'])
-    .where('id', '=', applicationId)
-    .executeTakeFirstOrThrow();
-
+  email,
+  firstName,
+}: Pick<Application, 'email' | 'firstName'> & { automated: boolean }) {
   job(
     'notification.email.send',
     {
-      data: { firstName: application.firstName },
+      data: { firstName },
       name: 'application-rejected',
-      to: application.email,
+      to: email,
     },
     {
       delay: automated
@@ -507,3 +456,17 @@ async function onApplicationRejected({
     }
   );
 }
+
+// Worker
+
+export const applicationWorker = registerWorker(
+  'application',
+  ApplicationBullJob,
+  async (job) => {
+    return match(job)
+      .with({ name: 'application.review' }, ({ data }) => {
+        return reviewApplication(data);
+      })
+      .exhaustive();
+  }
+);

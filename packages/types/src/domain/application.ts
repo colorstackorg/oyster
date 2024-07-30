@@ -56,6 +56,7 @@ export const Application = Student.pick({
       .array()
       .min(1)
       .transform((demographics) => demographics.sort()),
+    referralId: z.string().trim().min(1).optional(),
     rejectedAt: z.coerce.date().optional(),
     reviewedById: z.string().trim().min(1).optional(),
     status: z.nativeEnum(ApplicationStatus),

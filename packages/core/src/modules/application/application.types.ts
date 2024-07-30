@@ -29,6 +29,7 @@ export const ApplyInput = Application.pick({
   otherMajor: true,
   otherSchool: true,
   race: true,
+  referralId: true,
   schoolId: true,
 }).extend({
   codeOfConduct: BooleanInput,
