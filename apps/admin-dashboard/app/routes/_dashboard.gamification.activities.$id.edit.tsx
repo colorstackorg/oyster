@@ -11,11 +11,11 @@ import {
 } from '@remix-run/react';
 import { type z } from 'zod';
 
+import { editActivity } from '@oyster/core/gamification';
 import { db } from '@oyster/db';
 import { Activity, type ActivityPeriod } from '@oyster/types';
 import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
-import { editActivity } from '@/admin-dashboard.server';
 import { ActivityForm } from '@/shared/components/activity-form';
 import { Route } from '@/shared/constants';
 import {
