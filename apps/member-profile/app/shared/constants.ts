@@ -2,6 +2,7 @@ const ROUTES = [
   '/apply',
   '/apply/thank-you',
   '/companies',
+  '/companies/interview-reviews/add',
   '/companies/reviews/add',
   '/companies/:id',
   '/directory',
