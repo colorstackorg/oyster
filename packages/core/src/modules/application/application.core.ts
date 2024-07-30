@@ -3,8 +3,12 @@ import { type SelectExpression, sql } from 'kysely';
 import { match } from 'ts-pattern';
 
 import { db, type DB } from '@oyster/db';
-import { ApplicationStatus } from '@oyster/types';
-import { iife } from '@oyster/utils';
+import {
+  type Application,
+  ApplicationStatus,
+  OtherDemographic,
+} from '@oyster/types';
+import { id, iife } from '@oyster/utils';
 
 import {
   ApplicationBullJob,
@@ -12,11 +16,9 @@ import {
 } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
-import { reviewApplication } from './use-cases/review-application';
+import { getPostmarkInstance } from '@/modules/notification/shared/email.utils';
 
 // Queries
-
-// "Count Pending Applications"
 
 export async function countPendingApplications() {
   const result = await db
@@ -29,8 +31,6 @@ export async function countPendingApplications() {
 
   return count;
 }
-
-// "Get Application"
 
 type GetApplicationOptions = {
   withSchool?: boolean;
@@ -52,8 +52,6 @@ export async function getApplication<
 
   return result;
 }
-
-// "List Applications"
 
 type ApplicationsSearchParams = {
   limit: number;
@@ -132,6 +130,206 @@ export async function listApplications({
     applications,
     totalCount: Number(count),
   };
+}
+
+// Use Cases
+
+export async function acceptApplication(
+  applicationId: string,
+  adminId: string
+) {
+  const application = await db
+    .selectFrom('applications')
+    .select([
+      'applications.createdAt',
+      'applications.educationLevel',
+      'applications.email',
+      'applications.firstName',
+      'applications.gender',
+      'applications.graduationYear',
+      'applications.id',
+      'applications.lastName',
+      'applications.linkedInUrl',
+      'applications.major',
+      'applications.otherDemographics',
+      'applications.otherMajor',
+      'applications.otherSchool',
+      'applications.race',
+      'applications.schoolId',
+    ])
+    .where('id', '=', applicationId)
+    .executeTakeFirstOrThrow();
+
+  let studentId = '';
+
+  await db.transaction().execute(async (trx) => {
+    await trx
+      .updateTable('applications')
+      .set({
+        acceptedAt: new Date(),
+        reviewedById: adminId,
+        status: ApplicationStatus.ACCEPTED,
+      })
+      .where('id', '=', applicationId)
+      .execute();
+
+    // Some applicants apply multiple times to ColorStack (typically it's an
+    // accident) and historically we would _try_ to accept all of their
+    // applications, but we can't have multiple members with the same email
+    // so it would cause issues. We'll scrap any other pending applications
+    // from the same email address.
+    await trx
+      .deleteFrom('applications')
+      .where('email', '=', application.email)
+      .where('id', '!=', application.id)
+      .where('status', '=', ApplicationStatus.PENDING)
+      .execute();
+
+    await trx
+      .insertInto('studentEmails')
+      .values({ email: application.email })
+      .execute();
+
+    const allOtherDemographics = Object.values(OtherDemographic) as string[];
+
+    const otherDemographics = application.otherDemographics.filter(
+      (demographic) => {
+        return !allOtherDemographics.includes(demographic);
+      }
+    );
+
+    studentId = id();
+
+    await trx
+      .insertInto('students')
+      .values({
+        acceptedAt: new Date(),
+        applicationId: application.id,
+        appliedAt: application.createdAt,
+        educationLevel: application.educationLevel,
+        email: application.email,
+        firstName: application.firstName,
+        gender: application.gender,
+        graduationYear: application.graduationYear.toString(),
+        id: studentId,
+        lastName: application.lastName,
+        linkedInUrl: application.linkedInUrl,
+        major: application.major,
+        otherDemographics,
+        otherMajor: application.otherMajor,
+        otherSchool: application.otherSchool,
+        race: application.race,
+        schoolId: application.schoolId,
+      })
+      .execute();
+
+    await trx
+      .updateTable('studentEmails')
+      .set({ studentId })
+      .where('email', '=', application.email)
+      .execute();
+  });
+
+  job('application.accepted', {
+    applicationId,
+    studentId,
+  });
+}
+
+type ApplyInput = Pick<
+  Application,
+  | 'contribution'
+  | 'educationLevel'
+  | 'email'
+  | 'firstName'
+  | 'gender'
+  | 'goals'
+  | 'graduationYear'
+  | 'lastName'
+  | 'linkedInUrl'
+  | 'major'
+  | 'otherDemographics'
+  | 'otherMajor'
+  | 'otherSchool'
+  | 'race'
+  | 'schoolId'
+>;
+
+/**
+ * Applies to join the ColorStack family. This also queues a job to send a
+ * confirmation email to the applicant.
+ */
+export async function apply(input: ApplyInput) {
+  const applicationId = id();
+
+  await db
+    .insertInto('applications')
+    .values({
+      contribution: input.contribution,
+      educationLevel: input.educationLevel,
+      email: input.email,
+      firstName: input.firstName,
+      gender: input.gender,
+      goals: input.goals,
+      graduationYear: input.graduationYear,
+      id: applicationId,
+      lastName: input.lastName,
+      linkedInUrl: input.linkedInUrl!,
+      major: input.major,
+      otherDemographics: input.otherDemographics,
+      otherMajor: input.otherMajor,
+      otherSchool: input.otherSchool,
+      race: input.race,
+      schoolId: input.schoolId,
+      status: ApplicationStatus.PENDING,
+    })
+    .execute();
+
+  job('application.created', {
+    applicationId,
+  });
+}
+
+export async function rejectApplication(
+  applicationId: string,
+  adminId: string
+) {
+  await db
+    .updateTable('applications')
+    .set({
+      rejectedAt: new Date(),
+      reviewedById: adminId,
+      status: ApplicationStatus.REJECTED,
+    })
+    .where('id', '=', applicationId)
+    .execute();
+
+  job('application.rejected', {
+    applicationId,
+  });
+}
+
+export async function updateEmailApplication({
+  email,
+  id,
+}: Pick<Application, 'email' | 'id'>) {
+  const existingApplication = await db
+    .selectFrom('applications')
+    .where('email', 'ilike', email)
+    .where('id', '!=', id)
+    .executeTakeFirst();
+
+  if (existingApplication) {
+    return new Error(
+      'There is another application that exists with this email.'
+    );
+  }
+
+  await db
+    .updateTable('applications')
+    .set({ email })
+    .where('id', '=', id)
+    .execute();
 }
 
 // Worker
@@ -225,4 +423,103 @@ async function onApplicationRejected({
         : undefined,
     }
   );
+}
+
+async function reviewApplication({
+  applicationId,
+}: GetBullJobData<'application.review'>) {
+  const application = await db
+    .selectFrom('applications')
+    .select([
+      'applications.createdAt',
+      'applications.educationLevel',
+      'applications.email',
+      'applications.firstName',
+      'applications.graduationYear',
+      'applications.id',
+      'applications.linkedInUrl',
+      'applications.major',
+      'applications.race',
+      'applications.schoolId',
+    ])
+    .where('id', '=', applicationId)
+    .where('status', '=', ApplicationStatus.PENDING)
+    .executeTakeFirst();
+
+  if (!application) {
+    return;
+  }
+
+  const reject = await shouldReject(application as ApplicationForDecision);
+
+  if (!reject) {
+    return;
+  }
+
+  await db
+    .updateTable('applications')
+    .set({
+      rejectedAt: new Date(),
+      status: ApplicationStatus.REJECTED,
+    })
+    .where('id', '=', application.id)
+    .execute();
+
+  job('application.rejected', {
+    applicationId: application.id,
+    automated: true,
+  });
+}
+
+type ApplicationForDecision = Pick<
+  Application,
+  | 'createdAt'
+  | 'educationLevel'
+  | 'email'
+  | 'graduationYear'
+  | 'id'
+  | 'linkedInUrl'
+  | 'major'
+  | 'race'
+  | 'schoolId'
+>;
+
+async function shouldReject(
+  application: ApplicationForDecision
+): Promise<boolean> {
+  if (application.educationLevel !== 'undergraduate') {
+    return true;
+  }
+
+  const currentYear = new Date().getFullYear();
+
+  if (
+    application.graduationYear < currentYear ||
+    application.graduationYear > currentYear + 5
+  ) {
+    return true;
+  }
+
+  const memberWithSameEmail = await db
+    .selectFrom('studentEmails')
+    .where('email', 'ilike', application.email)
+    .executeTakeFirst();
+
+  if (memberWithSameEmail) {
+    return true;
+  }
+
+  const postmark = getPostmarkInstance();
+
+  const bounces = await postmark.getBounces({
+    count: 1,
+    emailFilter: application.email,
+    inactive: true,
+  });
+
+  if (bounces.TotalCount >= 1) {
+    return true;
+  }
+
+  return false;
 }

@@ -11,7 +11,10 @@ import {
 } from '@remix-run/react';
 import { type z } from 'zod';
 
-import { getApplication } from '@oyster/core/applications';
+import {
+  getApplication,
+  updateEmailApplication,
+} from '@oyster/core/applications';
 import { Application } from '@oyster/types';
 import {
   Button,
@@ -22,7 +25,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { updateEmailApplication } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
   commitSession,

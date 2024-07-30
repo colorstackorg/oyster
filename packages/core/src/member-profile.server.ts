@@ -1,7 +1,6 @@
 export { job } from './infrastructure/bull/use-cases/job';
 export { getActiveStreak } from './modules/active-status/queries/get-active-streak';
 export { getActiveStreakLeaderboard } from './modules/active-status/queries/get-active-streak-leaderboard';
-export { apply } from './modules/application/use-cases/apply';
 export { getGithubProfile } from './modules/authentication/queries/get-github-profile';
 export {
   getGoogleAuthUri,

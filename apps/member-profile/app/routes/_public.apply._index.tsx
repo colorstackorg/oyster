@@ -7,6 +7,7 @@ import {
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
+import { apply } from '@oyster/core/applications';
 import { buildMeta } from '@oyster/core/remix';
 import { Application as ApplicationType } from '@oyster/types';
 import {
@@ -20,7 +21,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { apply } from '@/member-profile.server';
 import { Application } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { commitSession, getSession } from '@/shared/session.server';
