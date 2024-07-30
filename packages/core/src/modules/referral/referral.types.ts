@@ -16,7 +16,13 @@ export type ReferralStatus = ExtractValue<typeof ReferralStatus>;
 // Use Cases
 
 export const ReferFriendInput = z.object({
-  email: Email,
+  email: Email.refine((value) => {
+    return (
+      value.endsWith('.edu') ||
+      value.endsWith('.ca') ||
+      value.endsWith('mymdc.net')
+    );
+  }, 'Must be a valid .edu email.'),
   firstName: z.string().trim().min(1),
   lastName: z.string().trim().min(1),
   referrerId: z.string().trim().min(1),
