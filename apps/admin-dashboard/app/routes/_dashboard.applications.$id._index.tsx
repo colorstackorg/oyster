@@ -13,6 +13,12 @@ import dayjs from 'dayjs';
 import { type PropsWithChildren, useState } from 'react';
 
 import {
+  acceptApplication,
+  getApplication,
+  rejectApplication,
+} from '@oyster/core/applications';
+import { Application } from '@oyster/core/applications.ui';
+import {
   Application as ApplicationType,
   type Gender,
   type Major,
@@ -21,12 +27,7 @@ import {
 } from '@oyster/types';
 import { Button, Text } from '@oyster/ui';
 
-import {
-  acceptApplication,
-  getApplication,
-  rejectApplication,
-} from '@/admin-dashboard.server';
-import { Application, type EducationLevel } from '@/admin-dashboard.ui';
+import { type EducationLevel } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import {
   admin,
