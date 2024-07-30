@@ -36,6 +36,16 @@ export async function action({ request }: ActionFunctionArgs) {
   const session = await getSession(request);
   const form = await request.formData();
 
+  const { searchParams } = new URL(request.url);
+
+  // The referral ID is passed as a query parameter, and it must be present
+  // when the user submits the form in order to be processed correctly.
+  const referralId = searchParams.get('r');
+
+  if (referralId) {
+    form.set('referralId', referralId);
+  }
+
   const { data, errors, ok } = await validateForm(
     {
       ...Object.fromEntries(form),

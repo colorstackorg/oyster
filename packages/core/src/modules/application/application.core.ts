@@ -249,29 +249,44 @@ export async function acceptApplication(
 export async function apply(input: ApplyInput) {
   const applicationId = id();
 
-  await db
-    .insertInto('applications')
-    .values({
-      contribution: input.contribution,
-      educationLevel: input.educationLevel,
-      email: input.email,
-      firstName: input.firstName,
-      gender: input.gender,
-      goals: input.goals,
-      graduationYear: input.graduationYear,
-      id: applicationId,
-      lastName: input.lastName,
-      linkedInUrl: input.linkedInUrl,
-      major: input.major,
-      otherDemographics: input.otherDemographics,
-      otherMajor: input.otherMajor,
-      otherSchool: input.otherSchool,
-      race: input.race,
-      referralId: input.referralId,
-      schoolId: input.schoolId,
-      status: ApplicationStatus.PENDING,
-    })
-    .execute();
+  await db.transaction().execute(async (trx) => {
+    let referralId: string | undefined = undefined;
+
+    if (input.referralId) {
+      const referral = await trx
+        .selectFrom('referrals')
+        .select(['id'])
+        .where('id', '=', input.referralId)
+        .where('status', '=', 'unused')
+        .executeTakeFirst();
+
+      referralId = referral?.id;
+    }
+
+    await trx
+      .insertInto('applications')
+      .values({
+        contribution: input.contribution,
+        educationLevel: input.educationLevel,
+        email: input.email,
+        firstName: input.firstName,
+        gender: input.gender,
+        goals: input.goals,
+        graduationYear: input.graduationYear,
+        id: applicationId,
+        lastName: input.lastName,
+        linkedInUrl: input.linkedInUrl,
+        major: input.major,
+        otherDemographics: input.otherDemographics,
+        otherMajor: input.otherMajor,
+        otherSchool: input.otherSchool,
+        race: input.race,
+        referralId,
+        schoolId: input.schoolId,
+        status: ApplicationStatus.PENDING,
+      })
+      .execute();
+  });
 
   job('notification.email.send', {
     data: { firstName: input.firstName },
