@@ -35,7 +35,8 @@ export async function countPendingApplications() {
 }
 
 type GetApplicationOptions = {
-  withSchool?: boolean;
+  withReferrer?: true;
+  withSchool?: true;
 };
 
 export async function getApplication<
@@ -44,6 +45,20 @@ export async function getApplication<
   const result = await db
     .selectFrom('applications')
     .select(selections)
+    .$if(!!options.withReferrer, (qb) => {
+      return qb
+        .leftJoin('referrals', 'referrals.id', 'applications.referralId')
+        .leftJoin(
+          'students as referrers',
+          'referrers.id',
+          'referrals.referrerId'
+        )
+        .select([
+          'referrers.firstName as referrerFirstName',
+          'referrers.id as referrerId',
+          'referrers.lastName as referrerLastName',
+        ]);
+    })
     .$if(!!options.withSchool, (qb) => {
       return qb
         .leftJoin('schools', 'schools.id', 'applications.schoolId')
