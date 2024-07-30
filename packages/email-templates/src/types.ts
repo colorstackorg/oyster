@@ -35,6 +35,24 @@ export const EmailTemplate = z.discriminatedUnion('name', [
     }),
   }),
   BaseEmail.extend({
+    name: z.literal('referral-accepted'),
+    data: z.object({
+      firstName: z.string(),
+      referralsUri: z.string().url(),
+      referredFirstName: z.string().trim().min(1),
+      referredLastName: z.string().trim().min(1),
+    }),
+  }),
+  BaseEmail.extend({
+    name: z.literal('referral-sent'),
+    data: z.object({
+      firstName: z.string(),
+      referralUri: z.string().url(),
+      referrerFirstName: z.string().trim().min(1),
+      referrerLastName: z.string().trim().min(1),
+    }),
+  }),
+  BaseEmail.extend({
     name: z.literal('resume-submitted'),
     data: z.object({
       edited: z.boolean(),
