@@ -8,6 +8,11 @@ import { type ReferralStatus } from '@oyster/core/referrals.ui';
 import { Button, getButtonCn, Pill, Text } from '@oyster/ui';
 
 import {
+  EmptyState,
+  EmptyStateContainer,
+} from '@/shared/components/empty-state';
+import {
+  ProfileDescription,
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
@@ -44,17 +49,19 @@ export default function Referrals() {
         <ProfileHeader>
           <ProfileTitle>Referrals</ProfileTitle>
 
-          <Button.Group>
-            <Link
-              className={getButtonCn({ color: 'primary', size: 'small' })}
-              to={Route['/profile/referrals/add']}
-            >
-              <Send size={20} /> Refer a Friend
-            </Link>
-          </Button.Group>
+          {!!referrals.length && (
+            <Button.Group>
+              <Link
+                className={getButtonCn({ color: 'primary', size: 'small' })}
+                to={Route['/profile/referrals/add']}
+              >
+                <Send size={20} /> Refer a Friend
+              </Link>
+            </Button.Group>
+          )}
         </ProfileHeader>
 
-        {!!referrals.length && (
+        {referrals.length ? (
           <ul className="flex flex-col gap-2">
             {referrals.map((referral) => {
               return (
@@ -90,6 +97,23 @@ export default function Referrals() {
               );
             })}
           </ul>
+        ) : (
+          <EmptyStateContainer>
+            <EmptyState icon={<Send />} />
+
+            <ProfileDescription>
+              You can refer your friends to join ColorStack! When they apply
+              using your referral, they'll have a better chance of getting
+              accepted. You'll also earn points for each successful referral!
+            </ProfileDescription>
+
+            <Link
+              className={getButtonCn({ fill: true, size: 'small' })}
+              to={Route['/profile/referrals/add']}
+            >
+              Refer a Friend
+            </Link>
+          </EmptyStateContainer>
         )}
       </ProfileSection>
 
