@@ -16,6 +16,11 @@ import { Award, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import {
+  getPointsLeaderboard,
+  getTotalPoints,
+  listActivities,
+} from '@oyster/core/gamification';
 import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
 import { type CompletedActivity } from '@oyster/types';
@@ -30,11 +35,6 @@ import {
   useSearchParams,
 } from '@oyster/ui';
 
-import {
-  getPointsLeaderboard,
-  getTotalPoints,
-  listActivities,
-} from '@/member-profile.server';
 import { Card, type CardProps } from '@/shared/components/card';
 import {
   EmptyState,
