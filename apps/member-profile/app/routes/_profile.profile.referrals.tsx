@@ -29,7 +29,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
       'referrals.firstName',
       'referrals.id',
       'referrals.lastName',
-
       'referrals.status',
     ],
     where: { referrerId: user(session) },
