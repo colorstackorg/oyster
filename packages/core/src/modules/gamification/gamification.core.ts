@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import { sql } from 'kysely';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
@@ -19,6 +20,8 @@ import {
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { IS_PRODUCTION } from '@/shared/env';
+
+dayjs.extend(quarterOfYear);
 
 // Queries
 
