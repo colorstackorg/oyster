@@ -13,7 +13,7 @@ dayjs.extend(timezone);
 
 export { job } from './infrastructure/bull/use-cases/job';
 export { airtableWorker } from './modules/airtable/airtable.core';
-export { applicationWorker } from './modules/application/application.worker';
+export { applicationWorker } from './modules/application/application.core';
 export { OAuthCodeState } from './modules/authentication/authentication.types';
 export { oneTimeCodeWorker } from './modules/authentication/one-time-code.worker';
 export { loginWithOAuth } from './modules/authentication/use-cases/login-with-oauth';
