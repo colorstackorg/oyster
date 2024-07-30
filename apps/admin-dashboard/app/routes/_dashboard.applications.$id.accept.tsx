@@ -10,9 +10,10 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 
+import { getApplication } from '@oyster/core/applications';
 import { Button, Form, Modal } from '@oyster/ui';
 
-import { acceptApplication, getApplication } from '@/admin-dashboard.server';
+import { acceptApplication } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
   admin,
