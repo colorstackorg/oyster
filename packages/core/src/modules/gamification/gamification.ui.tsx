@@ -27,7 +27,7 @@ export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
     <RemixForm className="form" method="post">
       <Form.Field
         description="This will be visible to members."
-        error={error}
+        error={errors.name}
         label="Name"
         labelFor={keys.name}
         required
