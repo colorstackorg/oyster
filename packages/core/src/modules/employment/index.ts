@@ -1,5 +1,6 @@
 export {
   AddCompanyReviewInput,
+  AddInterviewReviewInput,
   EditCompanyReviewInput,
   EmploymentType,
   FORMATTED_EMPLOYMENT_TYPE,

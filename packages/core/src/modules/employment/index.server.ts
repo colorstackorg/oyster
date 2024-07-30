@@ -6,4 +6,5 @@ export { listCompanyEmployees } from './queries/list-company-employees';
 export { listCompanyReviews } from './queries/list-company-reviews';
 export { listInterviewReviews } from './queries/list-interview-reviews';
 export { addCompanyReview } from './use-cases/add-company-review';
+export { addInterviewReview } from './use-cases/add-interview-review';
 export { editCompanyReview } from './use-cases/edit-company-review';
