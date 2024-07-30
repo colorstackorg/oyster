@@ -78,6 +78,13 @@ const CompanyReview = z.object({
   workExperienceId: z.string().trim().min(1),
 });
 
+const InterviewReview = z.object({
+  interviewPosition: z.string().trim().min(1),
+  studentId: Student.shape.id,
+  text: z.string().trim().min(1),
+  companyCrunchbaseId: Company.shape.id,
+});
+
 export const JobOffer = Entity.omit({ deletedAt: true }).extend({
   baseSalary: z.number().optional(),
   bonus: z.number().optional(),
@@ -156,6 +163,8 @@ export type ListJobOffersWhere = z.infer<typeof ListJobOffersWhere>;
 
 export const AddCompanyReviewInput = CompanyReview;
 
+export const AddInterviewReviewInput = InterviewReview;
+
 export const AddWorkExperienceInput = WorkExperience.pick({
   companyName: true,
   employmentType: true,
@@ -190,6 +199,7 @@ export const UploadJobOfferInput = JobOffer.omit({
 });
 
 export type AddCompanyReviewInput = z.infer<typeof AddCompanyReviewInput>;
+export type AddInterviewReviewInput = z.infer<typeof AddInterviewReviewInput>;
 export type AddWorkExperienceInput = z.infer<typeof AddWorkExperienceInput>;
 export type DeleteWorkExperienceInput = z.infer<
   typeof DeleteWorkExperienceInput
