@@ -23,8 +23,6 @@ import {
 } from '@/modules/gamification/gamification.types';
 import { IS_PRODUCTION } from '@/shared/env';
 
-dayjs.extend(quarterOfYear);
-
 // Queries
 
 type GetPointsLeaderboardOptions = {
@@ -190,6 +188,8 @@ export const gamificationWorker = registerWorker(
   'gamification',
   GamificationBullJob,
   async (job) => {
+    dayjs.extend(quarterOfYear);
+
     return match(job)
       .with({ name: 'gamification.activity.completed' }, ({ data }) => {
         return grantGamificationPoints(data);
