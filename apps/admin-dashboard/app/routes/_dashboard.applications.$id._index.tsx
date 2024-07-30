@@ -234,7 +234,7 @@ export default function ApplicationPage() {
               target="_blank"
               to={application.referrerUri}
             >
-              {application.firstName} {application.lastName}
+              {application.referrerFirstName} {application.referrerLastName}
             </Link>
           </Text>
         </div>

@@ -20,7 +20,8 @@ export const ReferFriendInput = z.object({
     return (
       value.endsWith('.edu') ||
       value.endsWith('.ca') ||
-      value.endsWith('mymdc.net')
+      value.endsWith('mymdc.net') ||
+      value.endsWith('@colorstack.org')
     );
   }, 'Must be a valid .edu email.'),
   firstName: z.string().trim().min(1),
