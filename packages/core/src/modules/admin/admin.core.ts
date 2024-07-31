@@ -121,26 +121,32 @@ export async function addAdmin({
     });
   }
 
-  const memberId = db
-    .selectFrom('students')
-    .select('students.id')
-    .leftJoin('studentEmails as emails', 'emails.studentId', 'students.id')
-    .where('emails.email', 'ilike', email)
-    .limit(1);
-
   const adminId = id();
 
-  await db
-    .insertInto('admins')
-    .values({
-      email,
-      firstName,
-      id: adminId,
-      lastName,
-      memberId,
-      role,
-    })
-    .execute();
+  await db.transaction().execute(async (trx) => {
+    await trx
+      .insertInto('admins')
+      .values((eb) => {
+        // If the admin also happens to be a member of ColorStack, then we can
+        // link the records upon creation.
+        const memberId = eb
+          .selectFrom('students')
+          .select('students.id')
+          .leftJoin('studentEmails', 'studentEmails.studentId', 'students.id')
+          .where('studentEmails.email', 'ilike', email)
+          .limit(1);
+
+        return {
+          email,
+          firstName,
+          id: adminId,
+          lastName,
+          memberId,
+          role,
+        };
+      })
+      .execute();
+  });
 
   return success({ id: adminId });
 }
