@@ -1,5 +1,36 @@
 import { sleep } from '@oyster/utils';
 
+export type Result<T = object> =
+  | {
+      data: T;
+      ok: true;
+    }
+  | {
+      code: 400 | 401 | 403 | 404 | 409;
+      error: string;
+      ok: false;
+    };
+
+export const result = {
+  fail({
+    code,
+    error,
+  }: Pick<Extract<Result, { ok: false }>, 'code' | 'error'>): Result {
+    return {
+      code,
+      error,
+      ok: false,
+    };
+  },
+
+  success<T>(data: T): Result<T> {
+    return {
+      data,
+      ok: true,
+    };
+  },
+};
+
 type RetryUntilFinishedOptions = {
   maxRetries: number;
   retryInterval: number;
