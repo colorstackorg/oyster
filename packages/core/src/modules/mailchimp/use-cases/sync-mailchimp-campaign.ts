@@ -1,5 +1,6 @@
 import mailchimp, { type Mailchimp } from '@mailchimp/mailchimp_marketing';
 
+import { db } from '@oyster/db';
 import {
   type EmailCampaign,
   type EmailCampaignClick,
@@ -10,7 +11,6 @@ import { id } from '@oyster/utils';
 
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { db } from '@/infrastructure/database';
 import { getMemberByEmail } from '@/modules/member/queries/get-member-by-email';
 import { NotFoundError } from '@/shared/errors';
 

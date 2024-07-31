@@ -1,4 +1,5 @@
-import { db } from '@/infrastructure/database';
+import { db } from '@oyster/db';
+
 import { type ListSearchParams } from '@/shared/types';
 
 type ListSlackMessagesOptions = {

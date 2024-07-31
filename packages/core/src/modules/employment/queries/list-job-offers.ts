@@ -1,6 +1,7 @@
 import { sql } from 'kysely';
 
-import { db } from '@/infrastructure/database';
+import { db } from '@oyster/db';
+
 import { type ListJobOffersWhere } from '../employment.types';
 
 type ListJobOffersOptions = {
