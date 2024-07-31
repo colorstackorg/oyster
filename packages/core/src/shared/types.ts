@@ -1,3 +1,7 @@
+import {
+  type AnyAliasedColumnWithTable,
+  type AnyColumnWithTable,
+} from 'kysely';
 import { z } from 'zod';
 
 import { type ExtractValue, Timezone } from '@oyster/types';
@@ -28,7 +32,6 @@ export type PaginationSearchParams = z.infer<typeof PaginationSearchParams>;
 
 export type Nullable<T> = T | null;
 
-export type QueryOptions<Selection, Where> = {
-  select: Selection[];
-  where: Where;
-};
+export type SelectExpression<DB, TB extends keyof DB> =
+  | AnyAliasedColumnWithTable<DB, TB>
+  | AnyColumnWithTable<DB, TB>;

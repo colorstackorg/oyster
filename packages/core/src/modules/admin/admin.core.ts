@@ -1,56 +1,58 @@
-import { type SelectExpression } from 'kysely';
-
 import { type DB, db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { type QueryOptions } from '@/shared/types';
+import { type SelectExpression } from '@/shared/types';
 import { type AddAdminInput } from './admin.types';
 
+// Types
+
+type Admin = DB['admins'];
 type AdminSelection = SelectExpression<DB, 'admins'>;
 
 // Queries
 
+type GetAdminOptions<Selection> = {
+  select: Selection[];
+  where: Partial<Pick<Admin, 'id' | 'memberId'>>;
+};
+
 export async function getAdmin<Selection extends AdminSelection>({
   select,
   where,
-}: QueryOptions<Selection, { id: string }>) {
+}: GetAdminOptions<Selection>) {
   const admin = await db
     .selectFrom('admins')
     .select(select)
-    .where('id', '=', where.id)
+    .$if(!!where.id, (qb) => {
+      return qb.where('id', '=', where.id as string);
+    })
+    .$if(!!where.memberId, (qb) => {
+      return qb.where('memberId', '=', where.memberId as string);
+    })
     .executeTakeFirst();
 
   return admin;
 }
 
 export async function isMemberAdmin(memberId: string) {
-  const admin = await db
-    .selectFrom('admins')
-    .where('memberId', '=', memberId)
-    .executeTakeFirst();
+  const admin = await getAdmin({
+    select: [],
+    where: { memberId },
+  });
 
   return !!admin;
 }
 
-export async function listAdmins() {
+type ListAdminsOptions<Selection> = {
+  select: Selection[];
+};
+
+export async function listAdmins<Selection extends AdminSelection>({
+  select,
+}: ListAdminsOptions<Selection>) {
   const admins = await db
     .selectFrom('admins')
-    .select([
-      'firstName',
-      'lastName',
-      'email',
-      'id',
-      'role',
-      (eb) => {
-        return eb
-          .case()
-          .when('deletedAt', 'is not', null)
-          .then(true)
-          .else(false)
-          .end()
-          .as('isArchived');
-      },
-    ])
+    .select(select)
     .orderBy('createdAt', 'desc')
     .execute();
 

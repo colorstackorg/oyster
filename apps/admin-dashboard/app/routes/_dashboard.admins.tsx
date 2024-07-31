@@ -15,7 +15,15 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const admins = await listAdmins();
+  const admins = await listAdmins({
+    select: [
+      'admins.firstName',
+      'admins.lastName',
+      'admins.email',
+      'admins.id',
+      'admins.role',
+    ],
+  });
 
   return json({
     admins,
