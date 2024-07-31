@@ -10,8 +10,9 @@ export async function up(db: Kysely<any>) {
         role: eb
           .case()
           .when('is_ambassador', '=', true)
-          .then({ role: 'ambassador' })
-          .else({ role: 'admin' }),
+          .then('ambassador')
+          .else('admin')
+          .end(),
       };
     })
     .execute();
