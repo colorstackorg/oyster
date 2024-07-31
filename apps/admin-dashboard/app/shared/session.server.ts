@@ -4,8 +4,10 @@ import {
   type Session,
 } from '@remix-run/node';
 
+import { getAdmin } from '@oyster/core/admins';
+import { AdminRole } from '@oyster/core/admins.types';
 import { type ToastProps } from '@oyster/ui';
-import { id, iife } from '@oyster/utils';
+import { id } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
@@ -31,7 +33,6 @@ export async function getSession(request: Request) {
 }
 
 export const SESSION = {
-  IS_AMBASSADOR: 'is_ambassador',
   REDIRECT_URL: 'redirect_url',
   TOAST: 'toast',
   USER_ID: 'user_id',
@@ -49,17 +50,12 @@ export async function ensureUserAuthenticated(
 ) {
   const session = await getSession(request);
 
-  const authenticated = iife(() => {
-    if (!admin(session)) {
-      return false;
-    }
-
-    if (!options.allowAmbassador && !!isAmbassador(session)) {
-      return false;
-    }
-
-    return true;
-  });
+  // In order to determine if the user is authenticated, we'll query the DB
+  // for the admin record and check the admin's role.
+  const { authenticated, authorized } = await getAuthenticationStatus(
+    session,
+    options
+  );
 
   if (!authenticated) {
     session.flash(SESSION.REDIRECT_URL, request.url);
@@ -71,17 +67,58 @@ export async function ensureUserAuthenticated(
     });
   }
 
+  if (!authorized) {
+    throw new Response(null, {
+      status: 403,
+      statusText: 'You are not authorized to access this page.',
+    });
+  }
+
   return session;
+}
+
+export async function getAuthenticationStatus(
+  session: Session,
+  options: EnsureUserAuthenticatedOptions = {}
+) {
+  const adminId = user(session);
+
+  if (!adminId) {
+    return {
+      authenticated: false,
+      authorized: false,
+    };
+  }
+
+  const admin = await getAdmin({
+    select: ['admins.role'],
+    where: { id: adminId },
+  });
+
+  if (!admin) {
+    return {
+      authenticated: false,
+      authorized: false,
+    };
+  }
+
+  if (!options.allowAmbassador && admin.role === AdminRole.AMBASSADOR) {
+    return {
+      authenticated: true,
+      authorized: false,
+    };
+  }
+
+  return {
+    authenticated: true,
+    authorized: true,
+  };
 }
 
 // Session Helpers
 
-export function admin(session: Session) {
+export function user(session: Session) {
   return session.get(SESSION.USER_ID) as string;
-}
-
-export function isAmbassador(session: Session) {
-  return session.get(SESSION.IS_AMBASSADOR) as boolean;
 }
 
 export function toast(session: Session, toast: ToastProps) {

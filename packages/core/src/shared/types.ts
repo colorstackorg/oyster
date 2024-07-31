@@ -27,3 +27,8 @@ export type ListSearchParams = z.infer<typeof ListSearchParams>;
 export type PaginationSearchParams = z.infer<typeof PaginationSearchParams>;
 
 export type Nullable<T> = T | null;
+
+export type QueryOptions<Selection, Where> = {
+  select: Selection[];
+  where: Where;
+};

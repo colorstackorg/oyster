@@ -17,10 +17,10 @@ import {
 } from '@/shared/components/onboarding-session-form';
 import { Route } from '@/shared/constants';
 import {
-  admin,
   commitSession,
   ensureUserAuthenticated,
   toast,
+  user,
 } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -53,7 +53,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await request.formData();
 
-  form.set('uploadedById', admin(session));
+  form.set('uploadedById', user(session));
 
   const { data, errors, ok } = await validateForm(
     form,

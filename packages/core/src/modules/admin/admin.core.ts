@@ -1,27 +1,23 @@
-import { db } from '@oyster/db';
+import { type SelectExpression } from 'kysely';
+
+import { type DB, db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { type AddAdminInput, AdminRole } from './admin.types';
+import { type QueryOptions } from '@/shared/types';
+import { type AddAdminInput } from './admin.types';
 
 // Queries
 
-/**
- * Returns whether or not the given admin is an ambassador. If the admin does
- * not exist, this will return `false`.
- */
-export async function isAmbassador(adminId: string) {
+export async function getAdmin<
+  Selection extends SelectExpression<DB, 'admins'>,
+>({ select, where }: QueryOptions<Selection, { id: string }>) {
   const admin = await db
     .selectFrom('admins')
-    .select(['role'])
-    .where('id', '=', adminId)
-    .where('deletedAt', 'is', null)
+    .select(select)
+    .where('id', '=', where.id)
     .executeTakeFirst();
 
-  if (!admin) {
-    return false;
-  }
-
-  return admin.role === AdminRole.AMBASSADOR;
+  return admin;
 }
 
 export async function isMemberAdmin(memberId: string) {

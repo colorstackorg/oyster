@@ -13,19 +13,28 @@ import {
   Video,
 } from 'react-feather';
 
+import { getAdmin } from '@oyster/core/admins';
+import { AdminRole } from '@oyster/core/admins.types';
 import { countPendingApplications } from '@oyster/core/applications';
 import { Dashboard, Divider } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
-import { getSession, isAmbassador } from '@/shared/session.server';
+import { getSession, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);
 
-  const pendingApplications = await countPendingApplications();
+  const [pendingApplications, admin] = await Promise.all([
+    countPendingApplications(),
+
+    getAdmin({
+      select: ['admins.role'],
+      where: { id: user(session) },
+    }),
+  ]);
 
   return json({
-    isAmbassador: isAmbassador(session),
+    isAmbassador: admin?.role === AdminRole.AMBASSADOR,
     pendingApplications,
   });
 }

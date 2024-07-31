@@ -33,10 +33,10 @@ import { type EducationLevel } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
 import {
-  admin,
   commitSession,
   ensureUserAuthenticated,
   toast,
+  user,
 } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -96,7 +96,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   try {
     switch (action) {
       case 'accept': {
-        await acceptApplication(params.id as string, admin(session));
+        await acceptApplication(params.id as string, user(session));
 
         toast(session, {
           message: 'Application has been accepted.',
@@ -106,7 +106,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
       }
 
       case 'reject': {
-        await rejectApplication(params.id as string, admin(session));
+        await rejectApplication(params.id as string, user(session));
 
         toast(session, {
           message: 'Application has been rejected.',
