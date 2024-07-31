@@ -1,9 +1,8 @@
 import { useFetcher, useMatches } from '@remix-run/react';
 import { z } from 'zod';
 
+import { AdminRole } from '@oyster/core/admins.types';
 import { type ToastProps } from '@oyster/ui';
-
-import { AdminRole } from '@/modules/admin/admin.types';
 
 /**
  * Returns the role of the logged-in admin.
