@@ -34,6 +34,13 @@ export async function getAdmin<Selection extends AdminSelection>({
   return admin;
 }
 
+/**
+ * Returns whether or not the given member is also an admin. This is useful
+ * for giving additional permissions to certain users in the Member Profile (ie:
+ * ability to edit all resources).
+ *
+ * @param memberId - The ID of the member to check if they are an admin.
+ */
 export async function isMemberAdmin(memberId: string) {
   const admin = await getAdmin({
     select: [],
