@@ -1,8 +1,20 @@
 import { Form as RemixForm } from '@remix-run/react';
+import { match } from 'ts-pattern';
 
-import { Button, Form, Input, Select } from '@oyster/ui';
+import { type DB } from '@oyster/db';
+import {
+  Button,
+  Form,
+  Input,
+  Pill,
+  Select,
+  Table,
+  type TableColumnProps,
+} from '@oyster/ui';
 
 import { AddAdminInput, AdminRole } from '@/modules/admin/admin.types';
+
+// Admin Form
 
 const keys = AddAdminInput.keyof().enum;
 
@@ -59,5 +71,52 @@ export function AdminForm({ error, errors }: AdminFormProps) {
         <Button.Submit>Add</Button.Submit>
       </Button.Group>
     </RemixForm>
+  );
+}
+
+// Admins Table
+
+type AdminInTable = Pick<
+  DB['admins'],
+  'email' | 'firstName' | 'lastName' | 'role'
+>;
+
+type AdminTableProps = {
+  admins: AdminInTable[];
+};
+
+export function AdminTable({ admins }: AdminTableProps) {
+  const columns: TableColumnProps<AdminInTable>[] = [
+    {
+      displayName: 'Full Name',
+      size: '240',
+      render: (admin) => `${admin.firstName} ${admin.lastName}`,
+    },
+    {
+      displayName: 'Email',
+      size: '320',
+      render: (admin) => admin.email,
+    },
+    {
+      displayName: 'Role',
+      size: '200',
+      render: (admin) => {
+        return match(admin.role as AdminRole)
+          .with('admin', () => {
+            return <Pill color="blue-100">Admin</Pill>;
+          })
+          .with('ambassador', () => {
+            return <Pill color="pink-100">Ambassador</Pill>;
+          })
+          .with('owner', () => {
+            return <Pill color="lime-100">Owner</Pill>;
+          })
+          .exhaustive();
+      },
+    },
+  ];
+
+  return (
+    <Table columns={columns} data={admins} emptyMessage="No admins found." />
   );
 }

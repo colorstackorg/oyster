@@ -1,14 +1,9 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
-import { match } from 'ts-pattern';
 
 import { listAdmins } from '@oyster/core/admins';
-import { type AdminRole } from '@oyster/core/admins.types';
-import { Dashboard, Pill, Table, type TableColumnProps } from '@oyster/ui';
+import { AdminTable } from '@oyster/core/admins.ui';
+import { Dashboard } from '@oyster/ui';
 
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -30,55 +25,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
-export default function AdminsPage() {
-  return (
-    <>
-      <div className="flex items-center justify-between gap-4">
-        <Dashboard.Title>Admins</Dashboard.Title>
-      </div>
-
-      <AdminsTable />
-      <Outlet />
-    </>
-  );
-}
-
-type AdminInView = SerializeFrom<typeof loader>['admins'][number];
-
-function AdminsTable() {
+export default function Admins() {
   const { admins } = useLoaderData<typeof loader>();
 
-  const columns: TableColumnProps<AdminInView>[] = [
-    {
-      displayName: 'Full Name',
-      size: '240',
-      render: (admin) => `${admin.firstName} ${admin.lastName}`,
-    },
-    {
-      displayName: 'Email',
-      size: '320',
-      render: (admin) => admin.email,
-    },
-    {
-      displayName: 'Role',
-      size: '200',
-      render: (admin) => {
-        return match(admin.role as AdminRole)
-          .with('admin', () => {
-            return <Pill color="blue-100">Admin</Pill>;
-          })
-          .with('ambassador', () => {
-            return <Pill color="pink-100">Ambassador</Pill>;
-          })
-          .with('owner', () => {
-            return <Pill color="lime-100">Owner</Pill>;
-          })
-          .exhaustive();
-      },
-    },
-  ];
-
   return (
-    <Table columns={columns} data={admins} emptyMessage="No admins found." />
+    <>
+      <Dashboard.Header>
+        <Dashboard.Title>Admins</Dashboard.Title>
+      </Dashboard.Header>
+
+      <AdminTable admins={admins} />
+      <Outlet />
+    </>
   );
 }

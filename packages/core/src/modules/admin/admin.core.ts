@@ -24,7 +24,6 @@ export async function getAdmin<Selection extends AdminSelection>({
   const admin = await db
     .selectFrom('admins')
     .select(select)
-    .where('admins.deletedAt', 'is', null)
     .$if(!!where.email, (qb) => {
       return qb.where('admins.email', 'ilike', where.email as string);
     })
@@ -34,6 +33,7 @@ export async function getAdmin<Selection extends AdminSelection>({
     .$if(!!where.memberId, (qb) => {
       return qb.where('admins.memberId', '=', where.memberId as string);
     })
+    .where('admins.deletedAt', 'is', null)
     .executeTakeFirst();
 
   return admin;
@@ -147,6 +147,8 @@ export async function addAdmin({
       })
       .execute();
   });
+
+  // TODO: Send an email to new admin...
 
   return success({ id: adminId });
 }

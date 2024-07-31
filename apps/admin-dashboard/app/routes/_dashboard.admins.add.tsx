@@ -38,8 +38,11 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   const result = await addAdmin({
-    ...data,
     actor: user(session),
+    email: data.email,
+    firstName: data.firstName,
+    lastName: data.lastName,
+    role: data.role,
   });
 
   if (!result.ok) {
@@ -61,7 +64,7 @@ export default function AddAdmin() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <Modal onCloseTo={Route['/']}>
+    <Modal onCloseTo={Route['/admins']}>
       <Modal.Header>
         <Modal.Title>Add Admin</Modal.Title>
         <Modal.CloseButton />

@@ -73,6 +73,12 @@ Dashboard.ColorStackLogo = function ColorStackLogo() {
   );
 };
 
+Dashboard.Header = function Header({ children }: PropsWithChildren) {
+  return (
+    <div className="flex items-center justify-between gap-4">{children}</div>
+  );
+};
+
 const itemClassName = cx(
   'box-border flex w-full items-center gap-3 rounded-2xl p-3 transition-colors',
   'hover:bg-primary hover:bg-opacity-10',
