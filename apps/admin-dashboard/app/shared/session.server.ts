@@ -5,7 +5,7 @@ import {
 } from '@remix-run/node';
 
 import { type ToastProps } from '@oyster/ui';
-import { id } from '@oyster/utils';
+import { id, iife } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
@@ -49,7 +49,17 @@ export async function ensureUserAuthenticated(
 ) {
   const session = await getSession(request);
 
-  const authenticated = isUserAuthenticated(session, options);
+  const authenticated = iife(() => {
+    if (!admin(session)) {
+      return false;
+    }
+
+    if (!options.allowAmbassador && !!isAmbassador(session)) {
+      return false;
+    }
+
+    return true;
+  });
 
   if (!authenticated) {
     session.flash(SESSION.REDIRECT_URL, request.url);
@@ -62,21 +72,6 @@ export async function ensureUserAuthenticated(
   }
 
   return session;
-}
-
-function isUserAuthenticated(
-  session: Session,
-  options: EnsureUserAuthenticatedOptions = {}
-) {
-  if (!admin(session)) {
-    return false;
-  }
-
-  if (!options.allowAmbassador && !!isAmbassador(session)) {
-    return false;
-  }
-
-  return true;
 }
 
 // Session Helpers

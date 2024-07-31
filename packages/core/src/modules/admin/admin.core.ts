@@ -80,6 +80,13 @@ export async function addAdmin({
     return new Error('An admin already exists with this email.');
   }
 
+  const memberId = db
+    .selectFrom('students')
+    .select('students.id')
+    .leftJoin('studentEmails', 'studentEmails.studentId', 'students.id')
+    .where('studentEmails.email', 'ilike', email)
+    .limit(1);
+
   await db
     .insertInto('admins')
     .values({
@@ -87,12 +94,7 @@ export async function addAdmin({
       firstName,
       id: id(),
       lastName,
-      memberId: db
-        .selectFrom('students')
-        .select('id')
-        .leftJoin('studentEmails', 'studentEmails.studentId', 'students.id')
-        .where('studentEmails.email', 'ilike', email)
-        .limit(1),
+      memberId,
       role,
     })
     .execute();

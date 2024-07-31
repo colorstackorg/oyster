@@ -6,12 +6,12 @@ import { AddAdminInput, AdminRole } from '@/modules/admin/admin.types';
 
 const keys = AddAdminInput.keyof().enum;
 
-type ReferFriendFormProps = {
+type AdminFormProps = {
   error?: string;
   errors: Partial<Record<keyof AddAdminInput, string>>;
 };
 
-export function AdminForm({ error, errors }: ReferFriendFormProps) {
+export function AdminForm({ error, errors }: AdminFormProps) {
   return (
     <RemixForm className="form" method="post">
       <Form.Field
