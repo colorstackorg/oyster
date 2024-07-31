@@ -57,7 +57,9 @@ export async function ensureUserAuthenticated(
     options
   );
 
+  // If the user isn't authenticated, they'll need to log in.
   if (!authenticated) {
+    session.unset(SESSION.USER_ID);
     session.flash(SESSION.REDIRECT_URL, request.url);
 
     throw redirect(Route['/login'], {
@@ -67,6 +69,8 @@ export async function ensureUserAuthenticated(
     });
   }
 
+  // If the user isn't authorized, they'll just get a 403. We don't redirect to
+  // the login page because they're already logged in!
   if (!authorized) {
     throw new Response(null, {
       status: 403,
@@ -77,6 +81,13 @@ export async function ensureUserAuthenticated(
   return session;
 }
 
+/**
+ * Returns both the authentication and authorization status of the user.
+ *
+ * An admin will be considered authenticated if they have a valid user_id set
+ * in the session (checked against the DB). They will be considered authorized
+ * if their role is at least the `minimumRole` provided.
+ */
 export async function getAuthenticationStatus(
   session: Session,
   options: EnsureUserAuthenticatedOptions = {}
@@ -95,6 +106,8 @@ export async function getAuthenticationStatus(
     where: { id: adminId },
   });
 
+  // This is the case in which the admin record was deleted and went back to
+  // the Admin Dashboard.
   if (!admin) {
     return {
       authenticated: false,
