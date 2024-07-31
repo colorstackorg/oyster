@@ -1,8 +1,8 @@
 import { Form as RemixForm } from '@remix-run/react';
 
-import { Button, Checkbox, Form, Input } from '@oyster/ui';
+import { Button, Form, Input, Select } from '@oyster/ui';
 
-import { AddAdminInput } from '@/modules/admin/admin.types';
+import { AddAdminInput, AdminRole } from '@/modules/admin/admin.types';
 
 const keys = AddAdminInput.keyof().enum;
 
@@ -42,19 +42,16 @@ export function AdminForm({ error, errors }: ReferFriendFormProps) {
       </Form.Field>
 
       <Form.Field
-        description="Is this admin an ambassador? Ambassadors will have limited access."
-        error={errors.isAmbassador}
-        label="Ambassador"
-        labelFor={keys.isAmbassador}
+        error={errors.role}
+        label="Role"
+        labelFor={keys.role}
         required
       >
-        <Checkbox
-          color="orange-100"
-          label="Yes"
-          id={keys.isAmbassador}
-          name={keys.isAmbassador}
-          value="1"
-        />
+        <Select id={keys.role} name={keys.role} required>
+          <option value={AdminRole.ADMIN}>Admin</option>
+          <option value={AdminRole.AMBASSADOR}>Ambassador</option>
+          <option value={AdminRole.OWNER}>Owner</option>
+        </Select>
       </Form.Field>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>

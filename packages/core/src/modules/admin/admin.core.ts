@@ -1,9 +1,28 @@
 import { db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { type AddAdminInput } from './admin.types';
+import { type AddAdminInput, AdminRole } from './admin.types';
 
 // Queries
+
+/**
+ * Returns whether or not the given admin is an ambassador. If the admin does
+ * not exist, this will return `false`.
+ */
+export async function isAmbassador(adminId: string) {
+  const admin = await db
+    .selectFrom('admins')
+    .select(['role'])
+    .where('id', '=', adminId)
+    .where('deletedAt', 'is', null)
+    .executeTakeFirst();
+
+  if (!admin) {
+    return false;
+  }
+
+  return admin.role === AdminRole.AMBASSADOR;
+}
 
 export async function isMemberAdmin(memberId: string) {
   const admin = await db
@@ -21,8 +40,8 @@ export async function listAdmins() {
       'firstName',
       'lastName',
       'email',
-      'isAmbassador',
       'id',
+      'role',
       (eb) => {
         return eb
           .case()
@@ -49,8 +68,8 @@ export async function listAdmins() {
 export async function addAdmin({
   email,
   firstName,
-  isAmbassador,
   lastName,
+  role,
 }: AddAdminInput) {
   const existingAdmin = await db
     .selectFrom('admins')
@@ -67,8 +86,14 @@ export async function addAdmin({
       email,
       firstName,
       id: id(),
-      isAmbassador,
       lastName,
+      memberId: db
+        .selectFrom('students')
+        .select('id')
+        .leftJoin('studentEmails', 'studentEmails.studentId', 'students.id')
+        .where('studentEmails.email', 'ilike', email)
+        .limit(1),
+      role,
     })
     .execute();
 }

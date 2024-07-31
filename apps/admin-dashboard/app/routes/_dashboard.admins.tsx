@@ -4,8 +4,10 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
+import { match } from 'ts-pattern';
 
 import { listAdmins } from '@oyster/core/admins';
+import { type AdminRole } from '@oyster/core/admins.types';
 import { Dashboard, Pill, Table, type TableColumnProps } from '@oyster/ui';
 
 import { ensureUserAuthenticated } from '@/shared/session.server';
@@ -55,16 +57,20 @@ function AdminsTable() {
       render: (admin) => admin.email,
     },
     {
-      displayName: 'Status',
+      displayName: 'Role',
       size: '200',
       render: (admin) => {
-        return admin.isArchived ? (
-          <Pill color="gray-100">Archived</Pill>
-        ) : admin.isAmbassador ? (
-          <Pill color="lime-100">Ambassador</Pill>
-        ) : (
-          <Pill color="blue-100">Full</Pill>
-        );
+        return match(admin.role as AdminRole)
+          .with('admin', () => {
+            return <Pill color="blue-100">Admin</Pill>;
+          })
+          .with('ambassador', () => {
+            return <Pill color="pink-100">Ambassador</Pill>;
+          })
+          .with('owner', () => {
+            return <Pill color="lime-100">Owner</Pill>;
+          })
+          .exhaustive();
       },
     },
   ];
