@@ -24,14 +24,15 @@ export async function getAdmin<Selection extends AdminSelection>({
   const admin = await db
     .selectFrom('admins')
     .select(select)
+    .where('admins.deletedAt', 'is', null)
     .$if(!!where.email, (qb) => {
-      return qb.where('email', 'ilike', where.email as string);
+      return qb.where('admins.email', 'ilike', where.email as string);
     })
     .$if(!!where.id, (qb) => {
-      return qb.where('id', '=', where.id as string);
+      return qb.where('admins.id', '=', where.id as string);
     })
     .$if(!!where.memberId, (qb) => {
-      return qb.where('memberId', '=', where.memberId as string);
+      return qb.where('admins.memberId', '=', where.memberId as string);
     })
     .executeTakeFirst();
 
