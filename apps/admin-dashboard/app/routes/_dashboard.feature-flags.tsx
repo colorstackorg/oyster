@@ -22,9 +22,7 @@ import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request, {
-    allowAmbassador: true,
-  });
+  await ensureUserAuthenticated(request);
 
   const flags = await listFeatureFlags();
 

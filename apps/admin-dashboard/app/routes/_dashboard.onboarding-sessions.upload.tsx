@@ -25,7 +25,7 @@ import {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
-    allowAmbassador: true,
+    minimumRole: 'ambassador',
   });
 
   return json({});
@@ -48,7 +48,7 @@ type UploadOnboardingSessionInput = z.infer<
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request, {
-    allowAmbassador: true,
+    minimumRole: 'ambassador',
   });
 
   const form = await request.formData();

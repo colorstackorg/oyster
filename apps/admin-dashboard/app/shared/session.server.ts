@@ -4,8 +4,8 @@ import {
   type Session,
 } from '@remix-run/node';
 
-import { getAdmin } from '@oyster/core/admins';
-import { AdminRole } from '@oyster/core/admins.types';
+import { doesAdminHavePermission, getAdmin } from '@oyster/core/admins';
+import { type AdminRole } from '@oyster/core/admins.types';
 import { type ToastProps } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
@@ -41,7 +41,7 @@ export const SESSION = {
 // Authentication
 
 type EnsureUserAuthenticatedOptions = {
-  allowAmbassador?: boolean;
+  minimumRole?: AdminRole;
 };
 
 export async function ensureUserAuthenticated(
@@ -102,7 +102,12 @@ export async function getAuthenticationStatus(
     };
   }
 
-  if (!options.allowAmbassador && admin.role === AdminRole.AMBASSADOR) {
+  const hasPermission = doesAdminHavePermission({
+    minimumRole: options.minimumRole || 'admin',
+    role: admin.role as AdminRole,
+  });
+
+  if (!hasPermission) {
     return {
       authenticated: true,
       authorized: false,
