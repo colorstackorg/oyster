@@ -77,7 +77,7 @@ export const Table = ({
   emptyMessage,
 }: TableProps) => {
   return (
-    <div className="overflow-auto rounded-lg border border-gray-200">
+    <div className="rounded-lg border border-gray-200">
       {!data.length ? (
         <div className="box-border flex w-full flex-col items-center justify-center gap-4 p-12">
           <Text>{emptyMessage}</Text>
@@ -94,7 +94,7 @@ export const Table = ({
 
 function TableHead({ columns }: Pick<TableProps, 'columns'>) {
   const headerCellCn = cx(
-    'sticky top-0 z-10 border-b border-b-gray-200 bg-gray-50 p-2 py-3 text-left'
+    'top-0 z-10 border-b border-b-gray-200 bg-gray-50 p-2 py-3 text-left'
   );
 
   return (
