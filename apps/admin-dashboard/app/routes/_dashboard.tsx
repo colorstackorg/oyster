@@ -34,13 +34,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   ]);
 
   return json({
-    isAmbassador: admin?.role === AdminRole.AMBASSADOR,
     pendingApplications,
+    role: admin?.role, // This is tied to the "useRole" hook!
   });
 }
 
 export default function DashboardLayout() {
-  const { isAmbassador, pendingApplications } = useLoaderData<typeof loader>();
+  const { pendingApplications, role } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -52,7 +52,7 @@ export default function DashboardLayout() {
 
         <Dashboard.Navigation>
           <Dashboard.NavigationList>
-            {isAmbassador ? (
+            {role === AdminRole.AMBASSADOR ? (
               <>
                 <Dashboard.NavigationLink
                   icon={<Layers />}
@@ -112,17 +112,23 @@ export default function DashboardLayout() {
                   label="Surveys"
                   pathname={Route['/surveys']}
                 />
-                <Divider my="2" />
-                <Dashboard.NavigationLink
-                  icon={<ToggleRight />}
-                  label="Feature Flags"
-                  pathname={Route['/feature-flags']}
-                />
-                <Dashboard.NavigationLink
-                  icon={<Target />}
-                  label="Bull"
-                  pathname={Route['/bull']}
-                />
+
+                {role === AdminRole.OWNER && (
+                  <>
+                    <Divider my="2" />
+
+                    <Dashboard.NavigationLink
+                      icon={<ToggleRight />}
+                      label="Feature Flags"
+                      pathname={Route['/feature-flags']}
+                    />
+                    <Dashboard.NavigationLink
+                      icon={<Target />}
+                      label="Bull"
+                      pathname={Route['/bull']}
+                    />
+                  </>
+                )}
               </>
             )}
           </Dashboard.NavigationList>

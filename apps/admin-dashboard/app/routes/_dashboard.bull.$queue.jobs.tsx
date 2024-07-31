@@ -54,7 +54,9 @@ const BullSearchParams = ListSearchParams.pick({
 });
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  await ensureUserAuthenticated(request, {
+    minimumRole: 'owner',
+  });
 
   const url = new URL(request.url);
 
