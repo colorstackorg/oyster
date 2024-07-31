@@ -11,6 +11,12 @@ type Result<T = object> =
       ok: false;
     };
 
+/**
+ * Returns a "failed" result object, including the error code and message.
+ *
+ * This and the `success` function are intended to be used together to create a
+ * standard way of returning results from core functions.
+ */
 export function fail(
   input: Pick<Extract<Result, { ok: false }>, 'code' | 'error'>
 ): Result {
@@ -21,6 +27,12 @@ export function fail(
   };
 }
 
+/**
+ * Returns a "successful" result object, including the data that was returned.
+ *
+ * This and the `fail` function are intended to be used together to create a
+ * standard way of returning results from core functions.
+ */
 export function success<T>(data: T): Result<T> {
   return {
     data,
