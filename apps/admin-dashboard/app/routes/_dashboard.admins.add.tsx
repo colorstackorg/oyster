@@ -16,6 +16,7 @@ import {
   commitSession,
   ensureUserAuthenticated,
   toast,
+  user,
 } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -27,13 +28,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(request, AddAdminInput);
+  const { data, errors, ok } = await validateForm(
+    request,
+    AddAdminInput.omit({ actor: true })
+  );
 
   if (!ok) {
     return json({ errors }, { status: 400 });
   }
 
-  const result = await addAdmin(data);
+  const result = await addAdmin({
+    ...data,
+    actor: user(session),
+  });
 
   if (!result.ok) {
     return json({ error: result.error }, { status: result.code });

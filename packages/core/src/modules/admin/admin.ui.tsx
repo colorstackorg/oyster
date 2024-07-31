@@ -50,7 +50,6 @@ export function AdminForm({ error, errors }: AdminFormProps) {
         <Select id={keys.role} name={keys.role} required>
           <option value={AdminRole.ADMIN}>Admin</option>
           <option value={AdminRole.AMBASSADOR}>Ambassador</option>
-          <option value={AdminRole.OWNER}>Owner</option>
         </Select>
       </Form.Field>
 
