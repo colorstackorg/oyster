@@ -74,9 +74,12 @@ export async function listAdmins<Selection extends AdminSelection>({
 // Use Cases
 
 /**
- * Adds a new ColorStack admin. This will grant the user access to the Admin
- * Dashboard. If an existing admin already exists with the same email, this will
- * return an `Error`.
+ * Adds a new ColorStack admin, which grants the user access to the Admin
+ * Dashboard. The acting admin must have the required role to add an admin with
+ * the specified role.
+ *
+ * A corresponding member record will also be linked to the admin if the email
+ * matches an existing member.
  */
 export async function addAdmin({
   actor,
