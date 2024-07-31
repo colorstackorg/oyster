@@ -1,7 +1,5 @@
 export { QueueFromName } from './infrastructure/bull/bull';
 export { job } from './infrastructure/bull/use-cases/job';
-export { listAdmins } from './modules/admin/queries/list-admins';
-export { addAdmin } from './modules/admin/use-cases/add-admin';
 export { getGoogleAuthUri } from './modules/authentication/shared/oauth.utils';
 export { sendOneTimeCode } from './modules/authentication/use-cases/send-one-time-code';
 export { verifyOneTimeCode } from './modules/authentication/use-cases/verify-one-time-code';

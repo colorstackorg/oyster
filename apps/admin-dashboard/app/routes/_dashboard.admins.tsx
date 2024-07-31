@@ -5,9 +5,9 @@ import {
 } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
 
+import { listAdmins } from '@oyster/core/admins';
 import { Dashboard, Pill, Table, type TableColumnProps } from '@oyster/ui';
 
-import { listAdmins } from '@/admin-dashboard.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
