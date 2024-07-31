@@ -1,5 +1,45 @@
 import { sleep } from '@oyster/utils';
 
+type Result<T = object> =
+  | {
+      data: T;
+      ok: true;
+    }
+  | {
+      code: 400 | 401 | 403 | 404 | 409;
+      error: string;
+      ok: false;
+    };
+
+/**
+ * Returns a "failed" result object, including the error code and message.
+ *
+ * This and the `success` function are intended to be used together to create a
+ * standard way of returning results from core functions.
+ */
+export function fail(
+  input: Pick<Extract<Result, { ok: false }>, 'code' | 'error'>
+): Result {
+  return {
+    code: input.code,
+    error: input.error,
+    ok: false,
+  };
+}
+
+/**
+ * Returns a "successful" result object, including the data that was returned.
+ *
+ * This and the `fail` function are intended to be used together to create a
+ * standard way of returning results from core functions.
+ */
+export function success<T>(data: T): Result<T> {
+  return {
+    data,
+    ok: true,
+  };
+}
+
 type RetryUntilFinishedOptions = {
   maxRetries: number;
   retryInterval: number;

@@ -13,25 +13,34 @@ import {
   Video,
 } from 'react-feather';
 
+import { getAdmin } from '@oyster/core/admins';
+import { AdminRole } from '@oyster/core/admins.types';
 import { countPendingApplications } from '@oyster/core/applications';
 import { Dashboard, Divider } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
-import { getSession, isAmbassador } from '@/shared/session.server';
+import { getSession, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);
 
-  const pendingApplications = await countPendingApplications();
+  const [pendingApplications, admin] = await Promise.all([
+    countPendingApplications(),
+
+    getAdmin({
+      select: ['admins.role'],
+      where: { id: user(session) },
+    }),
+  ]);
 
   return json({
-    isAmbassador: isAmbassador(session),
     pendingApplications,
+    role: admin?.role, // This is tied to the "useRole" hook!
   });
 }
 
 export default function DashboardLayout() {
-  const { isAmbassador, pendingApplications } = useLoaderData<typeof loader>();
+  const { pendingApplications, role } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -43,7 +52,7 @@ export default function DashboardLayout() {
 
         <Dashboard.Navigation>
           <Dashboard.NavigationList>
-            {isAmbassador ? (
+            {role === AdminRole.AMBASSADOR ? (
               <>
                 <Dashboard.NavigationLink
                   icon={<Layers />}
@@ -103,17 +112,23 @@ export default function DashboardLayout() {
                   label="Surveys"
                   pathname={Route['/surveys']}
                 />
-                <Divider my="2" />
-                <Dashboard.NavigationLink
-                  icon={<ToggleRight />}
-                  label="Feature Flags"
-                  pathname={Route['/feature-flags']}
-                />
-                <Dashboard.NavigationLink
-                  icon={<Target />}
-                  label="Bull"
-                  pathname={Route['/bull']}
-                />
+
+                {role === AdminRole.OWNER && (
+                  <>
+                    <Divider my="2" />
+
+                    <Dashboard.NavigationLink
+                      icon={<ToggleRight />}
+                      label="Feature Flags"
+                      pathname={Route['/feature-flags']}
+                    />
+                    <Dashboard.NavigationLink
+                      icon={<Target />}
+                      label="Bull"
+                      pathname={Route['/bull']}
+                    />
+                  </>
+                )}
               </>
             )}
           </Dashboard.NavigationList>
