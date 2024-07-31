@@ -2,7 +2,8 @@ import { type DB, db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { type SelectExpression } from '@/shared/types';
-import { type AddAdminInput } from './admin.types';
+import { result } from '@/shared/utils/core.utils';
+import { type AddAdminInput, AdminRole } from './admin.types';
 
 // Types
 
@@ -13,7 +14,7 @@ type AdminSelection = SelectExpression<DB, 'admins'>;
 
 type GetAdminOptions<Selection> = {
   select: Selection[];
-  where: Partial<Pick<Admin, 'id' | 'memberId'>>;
+  where: Partial<Pick<Admin, 'email' | 'id' | 'memberId'>>;
 };
 
 export async function getAdmin<Selection extends AdminSelection>({
@@ -23,6 +24,9 @@ export async function getAdmin<Selection extends AdminSelection>({
   const admin = await db
     .selectFrom('admins')
     .select(select)
+    .$if(!!where.email, (qb) => {
+      return qb.where('email', 'ilike', where.email as string);
+    })
     .$if(!!where.id, (qb) => {
       return qb.where('id', '=', where.id as string);
     })
@@ -74,25 +78,53 @@ export async function listAdmins<Selection extends AdminSelection>({
  * return an `Error`.
  */
 export async function addAdmin({
+  actor,
   email,
   firstName,
   lastName,
   role,
 }: AddAdminInput) {
-  const existingAdmin = await db
-    .selectFrom('admins')
-    .where('email', 'ilike', email)
-    .executeTakeFirst();
+  const actingAdmin = await getAdmin({
+    select: ['admins.role'],
+    where: { id: actor },
+  });
+
+  if (!actingAdmin) {
+    return result.fail({
+      code: 404,
+      error: 'The acting admin does not exist.',
+    });
+  }
+
+  const hasPermission = doesAdminHavePermission({
+    minimumRole: role,
+    role: actingAdmin.role as AdminRole,
+  });
+
+  if (!hasPermission) {
+    return result.fail({
+      code: 403,
+      error: 'You do not have permission to add an admin with this role.',
+    });
+  }
+
+  const existingAdmin = await getAdmin({
+    select: [],
+    where: { email },
+  });
 
   if (existingAdmin) {
-    return new Error('An admin already exists with this email.');
+    return result.fail({
+      code: 409,
+      error: 'An admin already exists with this email.',
+    });
   }
 
   const memberId = db
     .selectFrom('students')
     .select('students.id')
-    .leftJoin('studentEmails', 'studentEmails.studentId', 'students.id')
-    .where('studentEmails.email', 'ilike', email)
+    .leftJoin('studentEmails as emails', 'emails.studentId', 'students.id')
+    .where('emails.email', 'ilike', email)
     .limit(1);
 
   await db
@@ -106,4 +138,59 @@ export async function addAdmin({
       role,
     })
     .execute();
+
+  return result.success({});
+}
+
+// Helpers
+
+type DoesAdminHavePermissionInput = {
+  minimumRole: AdminRole;
+  role: AdminRole;
+};
+
+/**
+ * Returns whether or not the given admin has the required role to perform the
+ * action.
+ *
+ * @param minimumRole - The minimum role required to perform the action.
+ * @param role - The role of the acting admin.
+ *
+ * @example
+ * ```ts
+ * // true
+ * const hasPermission = doesAdminHavePermission({
+ *   minimumRole: 'admin',
+ *   role: 'owner',
+ * });
+ * ```
+ *
+ * @example
+ * ```ts
+ * // true
+ * const hasPermission = doesAdminHavePermission({
+ *   minimumRole: 'admin',
+ *   role: 'admin',
+ * });
+ * ```
+ *
+ * @example
+ * ```ts
+ * // false
+ * const hasPermission = doesAdminHavePermission({
+ *   minimumRole: 'owner',
+ *   role: 'admin',
+ * });
+ * ```
+ */
+export function doesAdminHavePermission({
+  minimumRole,
+  role,
+}: DoesAdminHavePermissionInput) {
+  const roles = [AdminRole.AMBASSADOR, AdminRole.ADMIN, AdminRole.OWNER];
+
+  const minimumRoleIndex = roles.indexOf(minimumRole);
+  const roleIndex = roles.indexOf(role);
+
+  return roleIndex >= minimumRoleIndex;
 }

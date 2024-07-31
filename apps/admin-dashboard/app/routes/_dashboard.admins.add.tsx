@@ -35,10 +35,8 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const result = await addAdmin(data);
 
-  if (result instanceof Error) {
-    return json({
-      error: result.message,
-    });
+  if (!result.ok) {
+    return json({ error: result.error }, { status: result.code });
   }
 
   toast(session, {

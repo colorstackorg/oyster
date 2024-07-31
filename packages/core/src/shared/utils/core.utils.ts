@@ -12,13 +12,10 @@ export type Result<T = object> =
     };
 
 export const result = {
-  fail({
-    code,
-    error,
-  }: Pick<Extract<Result, { ok: false }>, 'code' | 'error'>): Result {
+  fail(input: Pick<Extract<Result, { ok: false }>, 'code' | 'error'>): Result {
     return {
-      code,
-      error,
+      code: input.code,
+      error: input.error,
       ok: false,
     };
   },
