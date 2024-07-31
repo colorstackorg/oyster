@@ -1,6 +1,6 @@
 import { sleep } from '@oyster/utils';
 
-export type Result<T = object> =
+type Result<T = object> =
   | {
       data: T;
       ok: true;
@@ -11,22 +11,22 @@ export type Result<T = object> =
       ok: false;
     };
 
-export const result = {
-  fail(input: Pick<Extract<Result, { ok: false }>, 'code' | 'error'>): Result {
-    return {
-      code: input.code,
-      error: input.error,
-      ok: false,
-    };
-  },
+export function fail(
+  input: Pick<Extract<Result, { ok: false }>, 'code' | 'error'>
+): Result {
+  return {
+    code: input.code,
+    error: input.error,
+    ok: false,
+  };
+}
 
-  success<T>(data: T): Result<T> {
-    return {
-      data,
-      ok: true,
-    };
-  },
-};
+export function success<T>(data: T): Result<T> {
+  return {
+    data,
+    ok: true,
+  };
+}
 
 type RetryUntilFinishedOptions = {
   maxRetries: number;

@@ -2,7 +2,7 @@ import { type DB, db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { type SelectExpression } from '@/shared/types';
-import { result } from '@/shared/utils/core.utils';
+import { fail, success } from '@/shared/utils/core.utils';
 import { type AddAdminInput, AdminRole } from './admin.types';
 
 // Types
@@ -90,7 +90,7 @@ export async function addAdmin({
   });
 
   if (!actingAdmin) {
-    return result.fail({
+    return fail({
       code: 404,
       error: 'The acting admin does not exist.',
     });
@@ -102,7 +102,7 @@ export async function addAdmin({
   });
 
   if (!hasPermission) {
-    return result.fail({
+    return fail({
       code: 403,
       error: 'You do not have permission to add an admin with this role.',
     });
@@ -114,7 +114,7 @@ export async function addAdmin({
   });
 
   if (existingAdmin) {
-    return result.fail({
+    return fail({
       code: 409,
       error: 'An admin already exists with this email.',
     });
@@ -127,19 +127,21 @@ export async function addAdmin({
     .where('emails.email', 'ilike', email)
     .limit(1);
 
+  const adminId = id();
+
   await db
     .insertInto('admins')
     .values({
       email,
       firstName,
-      id: id(),
+      id: adminId,
       lastName,
       memberId,
       role,
     })
     .execute();
 
-  return result.success({});
+  return success({ id: adminId });
 }
 
 // Helpers
