@@ -6,11 +6,14 @@ import { id } from '@oyster/utils';
 import { type QueryOptions } from '@/shared/types';
 import { type AddAdminInput } from './admin.types';
 
+type AdminSelection = SelectExpression<DB, 'admins'>;
+
 // Queries
 
-export async function getAdmin<
-  Selection extends SelectExpression<DB, 'admins'>,
->({ select, where }: QueryOptions<Selection, { id: string }>) {
+export async function getAdmin<Selection extends AdminSelection>({
+  select,
+  where,
+}: QueryOptions<Selection, { id: string }>) {
   const admin = await db
     .selectFrom('admins')
     .select(select)
