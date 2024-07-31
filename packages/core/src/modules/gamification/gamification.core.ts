@@ -317,6 +317,16 @@ async function grantGamificationPoints(
         .onConflict((oc) => oc.doNothing())
         .execute();
     })
+    .with({ type: 'refer_friend' }, async (input) => {
+      await db
+        .insertInto('completedActivities')
+        .values({
+          ...activityCompleted,
+          referralId: input.referralId,
+        })
+        .onConflict((oc) => oc.doNothing())
+        .execute();
+    })
     .with({ type: 'reply_to_thread' }, async (input) => {
       const threadRepliedTo = await db
         .selectFrom('slackMessages')

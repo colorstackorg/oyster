@@ -224,6 +224,11 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         type: z.literal('react_to_message'),
       }),
       z.object({
+        referralId: z.string().trim().min(1),
+        studentId: CompletedActivity.shape.studentId,
+        type: z.literal(ActivityType.REFER_FRIEND),
+      }),
+      z.object({
         channelId: SlackMessage.shape.channelId,
         studentId: CompletedActivity.shape.studentId,
         threadRepliedTo: SlackMessage.shape.id,

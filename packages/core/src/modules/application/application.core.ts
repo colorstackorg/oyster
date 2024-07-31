@@ -274,6 +274,7 @@ export async function acceptApplication(
         'referrals.firstName as referredFirstName',
         'referrals.lastName as referredLastName',
         'referrers.email as referrerEmail',
+        'referrers.id as referrerId',
         'referrers.firstName as referrerFirstName',
       ])
       .where('referrals.id', '=', application.referralId)
@@ -289,6 +290,12 @@ export async function acceptApplication(
         },
         name: 'referral-accepted',
         to: referral.referrerEmail as string,
+      });
+
+      job('gamification.activity.completed', {
+        referralId: application.referralId,
+        studentId: referral.referrerId as string,
+        type: 'refer_friend',
       });
     }
   }
