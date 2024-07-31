@@ -1,6 +1,7 @@
+import { db } from '@oyster/db';
+
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { db } from '@/infrastructure/database';
 import { addMailchimpListMember } from '@/modules/mailchimp/use-cases/add-mailchimp-list-member';
 import { reportException } from '@/modules/sentry/use-cases/report-exception';
 

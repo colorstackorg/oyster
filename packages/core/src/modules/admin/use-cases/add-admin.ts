@@ -1,6 +1,6 @@
+import { db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { db } from '@/infrastructure/database';
 import { type AddAdminInput } from '../admin.types';
 
 /**

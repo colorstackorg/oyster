@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 
-import { db } from '@/infrastructure/database';
+import { db } from '@oyster/db';
 
 type ListWorkExperiencesOptions = {
   include?: 'hasReviewed'[];

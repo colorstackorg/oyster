@@ -1,9 +1,8 @@
 import type { SelectExpression } from 'kysely';
 
 import { type DB } from '@oyster/db';
+import { db } from '@oyster/db';
 import { type EventType } from '@oyster/types';
-
-import { db } from '@/infrastructure/database';
 
 type GetEventOptions = {
   include?: 'isCheckedIn'[];

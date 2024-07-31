@@ -1,4 +1,4 @@
-import { db } from '@/infrastructure/database';
+import { db } from '@oyster/db';
 
 export async function countPastEvents() {
   const result = await db
