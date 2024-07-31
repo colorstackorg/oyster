@@ -67,7 +67,7 @@ export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
         >
           {ACTIVITY_TYPES.map((type) => (
             <option key={type} value={type}>
-              {toTitleCase(type)}
+              {type}
             </option>
           ))}
         </Select>
