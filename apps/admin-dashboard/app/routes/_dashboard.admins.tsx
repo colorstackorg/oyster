@@ -50,14 +50,9 @@ function AdminsTable() {
 
   const columns: TableColumnProps<AdminInView>[] = [
     {
-      displayName: 'First Name',
-      size: '200',
-      render: (admin) => admin.firstName,
-    },
-    {
-      displayName: 'Last Name',
-      size: '200',
-      render: (admin) => admin.lastName,
+      displayName: 'Full Name',
+      size: '240',
+      render: (admin) => `${admin.firstName} ${admin.lastName}`,
     },
     {
       displayName: 'Email',
