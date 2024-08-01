@@ -21,7 +21,9 @@ const BullParams = z.object({
 });
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  await ensureUserAuthenticated(request, {
+    minimumRole: 'owner',
+  });
 
   const paramsResult = BullParams.safeParse(params);
 

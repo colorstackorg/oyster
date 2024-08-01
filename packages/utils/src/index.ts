@@ -41,6 +41,13 @@ export function id() {
 }
 
 /**
+ * @deprecated Use `run` instead.
+ */
+export function iife<T>(fn: () => T): T {
+  return fn();
+}
+
+/**
  * Immediately invokes the given function and returns its result.
  *
  * This is helpful when we want to execute some logic within a particular
@@ -57,7 +64,7 @@ export function id() {
  *
  * @param fn - The function to invoke.
  */
-export function iife<T>(fn: () => T): T {
+export function run<T>(fn: () => T): T {
   return fn();
 }
 

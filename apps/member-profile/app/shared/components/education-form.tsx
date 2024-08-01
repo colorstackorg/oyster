@@ -5,6 +5,7 @@ import React, {
   useState,
 } from 'react';
 
+import { MajorCombobox, SchoolCombobox } from '@oyster/core/education.ui';
 import { type Major } from '@oyster/types';
 import { DatePicker, Form, Input, Select } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
@@ -12,9 +13,7 @@ import { toTitleCase } from '@oyster/utils';
 import {
   DegreeType,
   FORMATTED_DEGREEE_TYPE,
-  MajorCombobox,
   type School,
-  SchoolCombobox,
 } from '@/member-profile.ui';
 
 const EducationFormContext = React.createContext({

@@ -24,12 +24,19 @@ import {
 } from '@oyster/ui';
 import { iife, toTitleCase } from '@oyster/utils';
 
-import { MajorCombobox } from './major-combobox';
-import { SchoolCombobox } from './school-combobox';
 import {
   type EducationLevel,
   FORMATTED_EDUCATION_LEVEL,
-} from '../../education/education.types';
+} from '@/modules/education/education.types';
+import {
+  MajorCombobox,
+  SchoolCombobox,
+} from '@/modules/education/education.ui';
+
+export {
+  ApplicationStatus,
+  ApplyInput,
+} from '@/modules/application/application.types';
 
 const ApplicationContext = React.createContext({
   isOtherMajor: false,

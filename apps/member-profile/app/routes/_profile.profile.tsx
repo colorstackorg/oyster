@@ -12,6 +12,7 @@ import {
   Flag,
   Link as LinkIcon,
   Mail,
+  Send,
   Settings,
   Smile,
   Zap,
@@ -147,6 +148,14 @@ function ProfileNavigation() {
           icon={<BookOpen size={20} />}
           label="Education History"
           to={Route['/profile/education']}
+        />
+
+        <Divider />
+
+        <ProfileNavigationItem
+          icon={<Send size={20} />}
+          label="Referrals"
+          to={Route['/profile/referrals']}
         />
       </ul>
     </nav>
