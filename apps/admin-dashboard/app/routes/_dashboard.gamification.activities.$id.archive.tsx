@@ -11,9 +11,9 @@ import {
   useNavigation,
 } from '@remix-run/react';
 
+import { archiveActivity } from '@oyster/core/gamification';
 import { Button, Form, Modal } from '@oyster/ui';
 
-import { archiveActivity } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
   commitSession,

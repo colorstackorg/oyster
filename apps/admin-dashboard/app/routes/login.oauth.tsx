@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
-import { isAmbassador } from '@/shared/queries/admin';
 import { commitSession, getSession, SESSION } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -37,9 +36,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect(Route['/login']);
   }
 
-  const ambassador = await isAmbassador(id);
-
-  session.set(SESSION.IS_AMBASSADOR, ambassador);
   session.set(SESSION.USER_ID, id);
 
   const redirectUrl = session.get(SESSION.REDIRECT_URL) || Route['/'];

@@ -1,43 +1,41 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
-import { useState } from 'react';
-import { Trash } from 'react-feather';
-import { generatePath } from 'react-router';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { Outlet, useLoaderData } from '@remix-run/react';
 
-import {
-  Dashboard,
-  Dropdown,
-  Pill,
-  Table,
-  type TableColumnProps,
-} from '@oyster/ui';
+import { listAdmins } from '@oyster/core/admins';
+import { AdminTable } from '@oyster/core/admins.ui';
+import { Dashboard } from '@oyster/ui';
 
 import { listAdmins } from '@/admin-dashboard.server';
-import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const admins = await listAdmins();
+  const admins = await listAdmins({
+    select: [
+      'admins.firstName',
+      'admins.lastName',
+      'admins.email',
+      'admins.id',
+      'admins.role',
+    ],
+  });
 
   return json({
     admins,
   });
 }
 
-export default function AdminsPage() {
+export default function Admins() {
+  const { admins } = useLoaderData<typeof loader>();
+
   return (
     <>
-      <div className="flex items-center justify-between gap-4">
+      <Dashboard.Header>
         <Dashboard.Title>Admins</Dashboard.Title>
-      </div>
+      </Dashboard.Header>
 
-      <AdminsTable />
+      <AdminTable admins={admins} />
       <Outlet />
     </>
   );
@@ -80,41 +78,6 @@ function AdminsTable() {
   ];
 
   return (
-    <Table
-      columns={columns}
-      data={admins}
-      Dropdown={AdminDropdown}
-      emptyMessage="No admins found."
-    />
-  );
-}
-
-function AdminDropdown({ id }: AdminInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onOpen() {
-    setOpen(true);
-  }
-
-  return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link to={generatePath(Route['/admins/:id/remove'], { id })}>
-                <Trash /> Remove Admin
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
-
-      <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
+    <Table columns={columns} data={admins} emptyMessage="No admins found." />
   );
 }

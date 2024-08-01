@@ -1,24 +1,25 @@
 import { z } from 'zod';
 
-import { Email, Entity } from '@oyster/types';
+import { Email, type ExtractValue } from '@oyster/types';
 
-// Schemas
+// Enums
 
-export const Admin = Entity.extend({
+export const AdminRole = {
+  ADMIN: 'admin',
+  AMBASSADOR: 'ambassador',
+  OWNER: 'owner',
+} as const;
+
+export type AdminRole = ExtractValue<typeof AdminRole>;
+
+// Use Cases
+
+export const AddAdminInput = z.object({
+  actor: z.string().trim().min(1),
   email: Email,
   firstName: z.string().trim().min(1),
-  isAmbassador: z.boolean().default(false),
   lastName: z.string().trim().min(1),
+  role: z.nativeEnum(AdminRole),
 });
 
-export const AddAdminInput = Admin.pick({
-  email: true,
-  firstName: true,
-  lastName: true,
-  isAmbassador: true,
-});
-
-// Types
-
-export type Admin = z.infer<typeof Admin>;
 export type AddAdminInput = z.infer<typeof AddAdminInput>;

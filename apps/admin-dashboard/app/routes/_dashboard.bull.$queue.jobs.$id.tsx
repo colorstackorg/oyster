@@ -29,7 +29,9 @@ const BullParams = z.object({
 });
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  await ensureUserAuthenticated(request, {
+    minimumRole: 'owner',
+  });
 
   const job = await getJobFromParams(params);
 
@@ -90,7 +92,9 @@ const JobAction = {
 } as const;
 
 export async function action({ params, request }: ActionFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  await ensureUserAuthenticated(request, {
+    minimumRole: 'owner',
+  });
 
   const form = await request.formData();
 

@@ -8,6 +8,8 @@ import {
   type EmailTemplate,
   OneTimeCodeSentEmail,
   PrimaryEmailChangedEmail,
+  ReferralAcceptedEmail,
+  ReferralSentEmail,
   ResumeSubmittedEmail,
   StudentActivatedEmail,
   StudentAttendedOnboardingEmail,
@@ -69,6 +71,8 @@ async function sendEmailWithPostmark(input: EmailTemplate) {
     .with('one-time-code-sent', () => FROM_NOTIFICATIONS)
     .with('primary-email-changed', () => FROM_NOTIFICATIONS)
     .with('resume-submitted', () => FROM_NOTIFICATIONS)
+    .with('referral-accepted', () => FROM_NOTIFICATIONS)
+    .with('referral-sent', () => FROM_NOTIFICATIONS)
     .with('student-activated', () => FROM_NOTIFICATIONS)
     .with('student-attended-onboarding', () => FROM_NOTIFICATIONS)
     .with('student-removed', () => FROM_NOTIFICATIONS)
@@ -136,6 +140,12 @@ function getHtml(input: EmailTemplate): string {
     .with({ name: 'primary-email-changed' }, ({ data }) => {
       return PrimaryEmailChangedEmail(data);
     })
+    .with({ name: 'referral-accepted' }, ({ data }) => {
+      return ReferralAcceptedEmail(data);
+    })
+    .with({ name: 'referral-sent' }, ({ data }) => {
+      return ReferralSentEmail(data);
+    })
     .with({ name: 'resume-submitted' }, ({ data }) => {
       return ResumeSubmittedEmail(data);
     })
@@ -171,6 +181,12 @@ function getSubject(input: EmailTemplate): string {
     })
     .with({ name: 'primary-email-changed' }, () => {
       return 'Your Primary Email Was Changed';
+    })
+    .with({ name: 'referral-accepted' }, () => {
+      return 'Your Referral Was Accepted!';
+    })
+    .with({ name: 'referral-sent' }, () => {
+      return "You've Been Referred to Join ColorStack!";
     })
     .with({ name: 'resume-submitted' }, ({ data }) => {
       return `Confirmation: ${data.resumeBookName} Resume Book! ✅`;
@@ -210,6 +226,8 @@ async function getAttachments(
       { name: 'application-rejected' },
       { name: 'one-time-code-sent' },
       { name: 'primary-email-changed' },
+      { name: 'referral-accepted' },
+      { name: 'referral-sent' },
       { name: 'resume-submitted' },
       { name: 'student-activated' },
       { name: 'student-removed' },

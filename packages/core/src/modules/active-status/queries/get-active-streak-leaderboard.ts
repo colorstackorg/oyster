@@ -1,6 +1,7 @@
 import { sql } from 'kysely';
 
-import { db } from '@/infrastructure/database';
+import { db } from '@oyster/db';
+
 import { cache } from '@/infrastructure/redis';
 import { LeaderboardPosition } from '../shared/active-status.shared';
 

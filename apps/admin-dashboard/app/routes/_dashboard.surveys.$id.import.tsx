@@ -16,7 +16,14 @@ import {
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
-import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
+import {
+  Button,
+  FileUploader,
+  Form,
+  getErrors,
+  Modal,
+  validateForm,
+} from '@oyster/ui';
 
 import { importSurveyResponses } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
@@ -118,12 +125,11 @@ function ImportSurveyResponsesForm() {
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
       <Form.Field error={errors.file} labelFor={keys.file} required>
-        <input
-          accept=".csv"
+        <FileUploader
+          accept={['text/csv']}
           id={keys.file}
           name={keys.file}
           required
-          type="file"
         />
       </Form.Field>
 

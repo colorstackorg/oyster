@@ -2,6 +2,7 @@ import {
   type ActionFunctionArgs,
   json,
   type LoaderFunctionArgs,
+  type MetaFunction,
 } from '@remix-run/node';
 import {
   Outlet,
@@ -14,6 +15,7 @@ import {
 import { Edit, Plus } from 'react-feather';
 import { z } from 'zod';
 
+import { buildMeta } from '@oyster/core/remix';
 import { db } from '@oyster/db';
 import {
   Button,
@@ -40,6 +42,13 @@ import {
   toast,
   user,
 } from '@/shared/session.server';
+
+export const meta: MetaFunction = () => {
+  return buildMeta({
+    description: 'Manage your email addresses and email sharing settings.',
+    title: 'Email Addresses',
+  });
+};
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

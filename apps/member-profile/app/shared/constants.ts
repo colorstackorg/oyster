@@ -38,6 +38,8 @@ const ROUTES = [
   '/profile/icebreakers',
   '/profile/integrations',
   '/profile/personal',
+  '/profile/referrals',
+  '/profile/referrals/add',
   '/profile/socials',
   '/profile/work',
   '/profile/work/add',

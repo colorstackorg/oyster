@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import React, { type PropsWithChildren } from 'react';
 import { BookOpen, Calendar, Globe, Home, Link, MapPin } from 'react-feather';
 
+import { getTotalPoints } from '@oyster/core/gamification';
 import { type MixpanelEvent } from '@oyster/core/mixpanel';
 import {
   cx,
@@ -18,7 +19,6 @@ import {
   countMessagesSent,
   getActiveStreak,
   getIcebreakerResponses,
-  getTotalPoints,
   job,
   listWorkExperiences,
 } from '@/member-profile.server';
