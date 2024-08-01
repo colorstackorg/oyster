@@ -23,6 +23,7 @@ export async function sendBirthdayNotification(
       sql`EXTRACT(DAY FROM CURRENT_DATE)`
     )
     .where('birthdateNotification', 'is', true)
+    .where('slackId', 'is not', null)
     .execute();
 
   // We won't send a notification if there are no members with birthdays today!
