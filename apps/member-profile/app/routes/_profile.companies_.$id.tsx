@@ -265,8 +265,8 @@ function ReviewsList() {
                 reviewerProfilePicture={review.reviewerProfilePicture}
                 text={review.text}
                 title={review.title || ''}
-                upvotes={review.upvotes}
-                upvoted={review.upvoted as boolean}
+                upvotesCount={review.upvotes}
+                hasUpvoted={review.upvoted as boolean}
                 workExperienceId={review.workExperienceId || ''}
               />
             );

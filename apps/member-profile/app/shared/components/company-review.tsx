@@ -48,8 +48,8 @@ type CompanyReviewProps = {
   reviewedAt: string;
   text: string;
   title: string;
-  upvotes?: string | null;
-  upvoted?: boolean | null;
+  upvotesCount?: string | null;
+  hasUpvoted?: boolean | null;
   workExperienceId?: string;
 };
 
@@ -71,8 +71,8 @@ export const CompanyReview = ({
   reviewedAt,
   text,
   title,
-  upvotes,
-  upvoted,
+  upvotesCount,
+  hasUpvoted,
   workExperienceId,
 }: CompanyReviewProps) => {
   return (
@@ -163,7 +163,11 @@ export const CompanyReview = ({
       </div>
 
       <CompanyReviewText text={text} />
-      <UpvoteCompanyReviewButton id={id} upvoted={upvoted} upvotes={upvotes} />
+      <UpvoteCompanyReviewButton
+        id={id}
+        hasUpvoted={hasUpvoted}
+        upvotesCount={upvotesCount}
+      />
     </Card>
   );
 };
@@ -273,12 +277,12 @@ CompanyReview.List = function List({ children }: PropsWithChildren) {
 
 function UpvoteCompanyReviewButton({
   id,
-  upvoted,
-  upvotes,
-}: Pick<CompanyReviewProps, 'id' | 'upvoted' | 'upvotes'>) {
+  hasUpvoted,
+  upvotesCount,
+}: Pick<CompanyReviewProps, 'id' | 'hasUpvoted' | 'upvotesCount'>) {
   const fetcher = useFetcher();
 
-  const action = upvoted
+  const action = hasUpvoted
     ? `/api/company-review/${id}/undo-upvote`
     : `/api/company-review/${id}/upvote`;
 
@@ -288,13 +292,13 @@ function UpvoteCompanyReviewButton({
         className={cx(
           getTextCn({ color: 'gray-500', variant: 'sm' }),
           'flex h-fit items-center gap-1 rounded-full border border-gray-200 px-2 py-0.5',
-          upvoted
+          hasUpvoted
             ? 'border-primary bg-primary text-white'
             : 'hover:border-primary hover:text-primary'
         )}
         type="submit"
       >
-        This was helpful ({upvotes || 0})
+        This was helpful ({upvotesCount || 0})
       </button>
     </fetcher.Form>
   );
