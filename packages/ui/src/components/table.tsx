@@ -77,7 +77,7 @@ export const Table = ({
   emptyMessage,
 }: TableProps) => {
   return (
-    <div className="rounded-lg border border-gray-200">
+    <div className="overflow-auto rounded-lg border border-gray-200">
       {!data.length ? (
         <div className="box-border flex w-full flex-col items-center justify-center gap-4 p-12">
           <Text>{emptyMessage}</Text>
