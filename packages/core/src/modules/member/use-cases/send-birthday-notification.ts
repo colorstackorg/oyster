@@ -31,7 +31,7 @@ export async function sendBirthdayNotification(
   }
 
   const ids = members.map((member) => {
-    return member.slackId;
+    return `<@${member.slackId}>`;
   });
 
   const last = ids.pop();
@@ -40,7 +40,7 @@ export async function sendBirthdayNotification(
   // Example (2): <@U123> and <@U456>
   // Example (3): <@U123>, <@U456> and <@U789>
   // Example (4): <@U123>, <@U456>, <@U789> and <@123>
-  const result = ids.length ? `${ids.join(', ')} and ${last}` : `<@${last}>`;
+  const result = ids.length ? `${ids.join(', ')} and ${last}` : last;
 
   job('notification.slack.send', {
     channel: ENV.SLACK_BIRTHDAYS_CHANNEL_ID,
