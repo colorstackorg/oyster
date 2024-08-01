@@ -164,17 +164,13 @@ Dashboard.NavigationList = function NavigationList({
   return <ul className="flex flex-col gap-2">{children}</ul>;
 };
 
-Dashboard.Page = function Page({
-  children,
-  className,
-}: PropsWithChildren<{ className?: string }>) {
+Dashboard.Page = function Page({ children }: PropsWithChildren) {
   return (
     <section
       className={cx(
         'box-border flex min-h-screen flex-col gap-4 @container',
         'p-4 pb-24',
-        'md:ml-[270px] md:p-6 md:pb-16',
-        className
+        'md:ml-[270px] md:p-6 md:pb-16'
       )}
     >
       {children}

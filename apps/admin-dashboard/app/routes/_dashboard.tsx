@@ -137,7 +137,7 @@ export default function DashboardLayout() {
         <Dashboard.LogoutForm />
       </Dashboard.Sidebar>
 
-      <Dashboard.Page className="max-h-screen overflow-auto">
+      <Dashboard.Page>
         <Dashboard.MenuButton />
         <Outlet />
       </Dashboard.Page>
