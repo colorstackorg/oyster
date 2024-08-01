@@ -1,7 +1,8 @@
 import { match } from 'ts-pattern';
 
+import { db } from '@oyster/db';
+
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { db } from '@/infrastructure/database';
 import { IS_DEVELOPMENT } from '@/shared/env';
 import {
   type OneTimeCodePurpose,

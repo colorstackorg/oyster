@@ -38,7 +38,9 @@ const BullParams = z.object({
 });
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  await ensureUserAuthenticated(request, {
+    minimumRole: 'owner',
+  });
 
   const { queue: queueName } = BullParams.parse(params);
   const queue = QueueFromName[queueName];
@@ -65,7 +67,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
-  const session = await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request, {
+    minimumRole: 'owner',
+  });
 
   const form = await request.formData();
   const { id } = Object.fromEntries(form);

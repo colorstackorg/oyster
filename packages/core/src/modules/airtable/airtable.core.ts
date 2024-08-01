@@ -1,6 +1,7 @@
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import {
   FORMATTED_DEMOGRAPHICS,
   FORMATTED_GENDER,
@@ -13,7 +14,6 @@ import {
   type GetBullJobData,
 } from '@/infrastructure/bull/bull.types';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
-import { db } from '@/infrastructure/database';
 import { IS_PRODUCTION } from '@/shared/env';
 import { ColorStackError, ErrorWithContext } from '@/shared/errors';
 import { RateLimiter } from '@/shared/utils/rate-limiter';

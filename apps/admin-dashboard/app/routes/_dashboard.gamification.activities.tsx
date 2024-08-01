@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { Edit, Menu, Plus, Trash } from 'react-feather';
 import { generatePath } from 'react-router';
 
-import { db } from '@oyster/db';
+import { listActivities } from '@oyster/core/gamification';
 import {
   Dashboard,
   Dropdown,
@@ -30,17 +30,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     activities,
   });
-}
-
-async function listActivities() {
-  const rows = await db
-    .selectFrom('activities')
-    .select(['description', 'name', 'id', 'period', 'points', 'type'])
-    .where('deletedAt', 'is', null)
-    .orderBy('createdAt', 'desc')
-    .execute();
-
-  return rows;
 }
 
 export default function GamificationPage() {

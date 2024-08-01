@@ -96,9 +96,9 @@ async function seed(trx: Transaction<DB>) {
       {
         email,
         id: id(),
-        isAmbassador: false,
         firstName: 'First',
         lastName: 'Last',
+        role: 'owner',
       },
     ])
     .execute();

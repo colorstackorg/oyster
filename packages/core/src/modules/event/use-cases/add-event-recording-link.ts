@@ -1,4 +1,5 @@
-import { db } from '@/infrastructure/database';
+import { db } from '@oyster/db';
+
 import { type AddEventRecordingLinkInput } from '@/modules/event/event.types';
 
 export async function addEventRecordingLink(

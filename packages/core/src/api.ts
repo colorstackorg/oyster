@@ -1,26 +1,24 @@
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
-dayjs.extend(quarterOfYear);
 dayjs.extend(timezone);
 
 // This is only meant to be imported by the `api` application.
 
 export { job } from './infrastructure/bull/use-cases/job';
 export { airtableWorker } from './modules/airtable/airtable.core';
-export { applicationWorker } from './modules/application/application.worker';
+export { applicationWorker } from './modules/application/application.core';
 export { OAuthCodeState } from './modules/authentication/authentication.types';
 export { oneTimeCodeWorker } from './modules/authentication/one-time-code.worker';
 export { loginWithOAuth } from './modules/authentication/use-cases/login-with-oauth';
 export { educationWorker } from './modules/education/education.worker';
 export { workExperienceWorker } from './modules/employment/employment.worker';
 export { eventWorker } from './modules/event/event.worker';
-export { gamificationWorker } from './modules/gamification/gamification.worker';
+export { gamificationWorker } from './modules/gamification/gamification.core';
 export { saveGoogleDriveCredentials } from './modules/google-drive';
 export { emailMarketingWorker } from './modules/mailchimp/email-marketing.worker';
 export { memberEmailWorker } from './modules/member/member-email.worker';

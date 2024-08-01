@@ -1,6 +1,4 @@
 export { BullQueue } from './infrastructure/bull/bull.types';
-export { AddAdminInput } from './modules/admin/admin.types';
-export { Application } from './modules/application/ui/application-form';
 export {
   SendOneTimeCodeInput,
   VerifyOneTimeCodeInput,

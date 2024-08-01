@@ -1,9 +1,9 @@
 import dayjs from 'dayjs';
 
+import { db } from '@oyster/db';
 import { type StudentActiveStatus } from '@oyster/types';
 
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
-import { db } from '@/infrastructure/database';
 
 export async function backfillActiveStatuses({
   studentId,
