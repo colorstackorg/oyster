@@ -1,4 +1,5 @@
-import { db } from '@/infrastructure/database';
+import { db } from '@oyster/db';
+
 import { saveCompanyIfNecessary } from './save-company-if-necessary';
 import { type EditWorkExperienceInput } from '../employment.types';
 

@@ -94,7 +94,7 @@ export const Table = ({
 
 function TableHead({ columns }: Pick<TableProps, 'columns'>) {
   const headerCellCn = cx(
-    'sticky top-0 z-10 border-b border-b-gray-200 bg-gray-50 p-2 py-3 text-left'
+    'top-0 z-10 border-b border-b-gray-200 bg-gray-50 p-2 py-3 text-left'
   );
 
   return (

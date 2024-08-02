@@ -4,12 +4,14 @@ import { Outlet } from '@remix-run/react';
 import { Login, Public } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
-import { getSession, SESSION } from '@/shared/session.server';
+import { getAuthenticationStatus, getSession } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);
 
-  if (session.has(SESSION.USER_ID)) {
+  const { authenticated } = await getAuthenticationStatus(session);
+
+  if (authenticated) {
     return redirect(Route['/']);
   }
 

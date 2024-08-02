@@ -1,8 +1,8 @@
 import { sql } from 'kysely';
 
+import { db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { db } from '@/infrastructure/database';
 import { type UploadJobOfferInput } from '../employment.types';
 
 export async function uploadJobOffer({

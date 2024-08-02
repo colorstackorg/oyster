@@ -5,13 +5,21 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
+  Link,
   Form as RemixForm,
   useLoaderData,
   useNavigation,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren, useState } from 'react';
+import { Info } from 'react-feather';
 
+import {
+  acceptApplication,
+  getApplication,
+  rejectApplication,
+} from '@oyster/core/applications';
+import { Application } from '@oyster/core/applications.ui';
 import {
   Application as ApplicationType,
   type Gender,
@@ -21,23 +29,19 @@ import {
 } from '@oyster/types';
 import { Button, Text } from '@oyster/ui';
 
-import {
-  acceptApplication,
-  getApplication,
-  rejectApplication,
-} from '@/admin-dashboard.server';
-import { Application, type EducationLevel } from '@/admin-dashboard.ui';
+import { type EducationLevel } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
+import { ENV } from '@/shared/constants.server';
 import {
-  admin,
   commitSession,
   ensureUserAuthenticated,
   toast,
+  user,
 } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
-    allowAmbassador: true,
+    minimumRole: 'ambassador',
   });
 
   const application = await getApplication(
@@ -60,7 +64,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'applications.race',
       'applications.status',
     ],
-    { withSchool: true }
+    {
+      withReferrer: true,
+      withSchool: true,
+    }
   );
 
   if (!application) {
@@ -68,13 +75,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   return json({
-    application,
+    application: {
+      ...application,
+      ...(application.referrerId && {
+        referrerUri: `${ENV.MEMBER_PROFILE_URL}/directory/${application.referrerId}`,
+      }),
+    },
   });
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request, {
-    allowAmbassador: true,
+    minimumRole: 'ambassador',
   });
 
   const form = await request.formData();
@@ -84,7 +96,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   try {
     switch (action) {
       case 'accept': {
-        await acceptApplication(params.id as string, admin(session));
+        await acceptApplication(params.id as string, user(session));
 
         toast(session, {
           message: 'Application has been accepted.',
@@ -94,7 +106,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
       }
 
       case 'reject': {
-        await rejectApplication(params.id as string, admin(session));
+        await rejectApplication(params.id as string, user(session));
 
         toast(session, {
           message: 'Application has been rejected.',
@@ -207,6 +219,26 @@ export default function ApplicationPage() {
           </RemixForm>
         )}
       </header>
+
+      {!!application.referrerUri && (
+        <div className="flex gap-2 rounded-lg border border-primary border-opacity-25 bg-primary bg-opacity-10 px-2 py-4">
+          <span>
+            <Info className="text-primary" />
+          </span>
+
+          <Text color="primary">
+            {' '}
+            This applicant was referred by:{' '}
+            <Link
+              className="link font-semibold"
+              target="_blank"
+              to={application.referrerUri}
+            >
+              {application.referrerFirstName} {application.referrerLastName}
+            </Link>
+          </Text>
+        </div>
+      )}
 
       <button
         className="w-fit text-sm text-gray-500 underline"

@@ -1,6 +1,7 @@
+import { db } from '@oyster/db';
+
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { db } from '@/infrastructure/database';
 
 export async function onOnboardingSessionAttended({
   onboardingSessionId,

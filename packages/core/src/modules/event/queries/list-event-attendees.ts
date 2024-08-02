@@ -1,9 +1,7 @@
 import { type SelectExpression } from 'kysely';
 
-import { type DB } from '@oyster/db';
+import { type DB, db } from '@oyster/db';
 import { type EventAttendee } from '@oyster/types';
-
-import { db } from '@/infrastructure/database';
 
 type ListEventAttendeesOptions<Selection> = {
   select: Selection[];

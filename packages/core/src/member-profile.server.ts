@@ -1,7 +1,6 @@
 export { job } from './infrastructure/bull/use-cases/job';
 export { getActiveStreak } from './modules/active-status/queries/get-active-streak';
 export { getActiveStreakLeaderboard } from './modules/active-status/queries/get-active-streak-leaderboard';
-export { apply } from './modules/application/use-cases/apply';
 export { getGithubProfile } from './modules/authentication/queries/get-github-profile';
 export {
   getGoogleAuthUri,
@@ -27,9 +26,6 @@ export { countUpcomingEvents } from './modules/event/queries/count-upcoming-even
 export { getEvent } from './modules/event/queries/get-event';
 export { listEventAttendees } from './modules/event/queries/list-event-attendees';
 export { isFeatureFlagEnabled } from './modules/feature-flag/queries/is-feature-flag-enabled';
-export { getPointsLeaderboard } from './modules/gamification/queries/get-points-leaderboard';
-export { getTotalPoints } from './modules/gamification/queries/get-total-points';
-export { listActivities } from './modules/gamification/queries/list-activities';
 export { getIcebreakerPrompts } from './modules/icebreaker/queries/get-icebreaker-prompts';
 export { getIcebreakerResponses } from './modules/icebreaker/queries/get-icebreaker-responses';
 export { upsertIcebreakerResponses } from './modules/icebreaker/use-cases/upsert-icebreaker-responses';

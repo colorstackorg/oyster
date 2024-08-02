@@ -3,7 +3,6 @@ import {
   json,
   type LoaderFunctionArgs,
   redirect,
-  type Session,
 } from '@remix-run/node';
 
 import { Route } from '@/shared/constants';
@@ -20,7 +19,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const session: Session = await getSession(request);
+  const session = await getSession(request);
 
   return redirect(Route['/login'], {
     headers: {

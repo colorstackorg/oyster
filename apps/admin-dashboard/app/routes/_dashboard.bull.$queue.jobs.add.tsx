@@ -36,7 +36,9 @@ const BullParams = z.object({
 });
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  await ensureUserAuthenticated(request, {
+    minimumRole: 'owner',
+  });
 
   return json({});
 }
@@ -63,7 +65,9 @@ const AddJobInput = z.object({
 type AddJobInput = z.infer<typeof AddJobInput>;
 
 export async function action({ params, request }: ActionFunctionArgs) {
-  const session = await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request, {
+    minimumRole: 'owner',
+  });
 
   const { data, errors, ok } = await validateForm(request, AddJobInput);
 

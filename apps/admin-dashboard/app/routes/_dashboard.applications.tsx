@@ -16,7 +16,9 @@ import { Edit } from 'react-feather';
 import { generatePath } from 'react-router';
 import { z } from 'zod';
 
-import { Application, ApplicationStatus } from '@oyster/types';
+import { listApplications } from '@oyster/core/applications';
+import { ApplicationStatus } from '@oyster/core/applications.ui';
+import { Application } from '@oyster/types';
 import {
   type AccentColor,
   Dashboard,
@@ -32,7 +34,6 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { listApplications } from '@/admin-dashboard.server';
 import { ListSearchParams } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
@@ -46,7 +47,7 @@ type ApplicationsSearchParams = z.infer<typeof ApplicationsSearchParams>;
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
-    allowAmbassador: true,
+    minimumRole: 'ambassador',
   });
 
   const url = new URL(request.url);

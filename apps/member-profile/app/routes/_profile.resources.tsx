@@ -10,7 +10,7 @@ import {
 import dayjs from 'dayjs';
 import { Plus } from 'react-feather';
 
-import { isMemberAdmin } from '@oyster/core/admin.server';
+import { isMemberAdmin } from '@oyster/core/admins';
 import { track } from '@oyster/core/mixpanel';
 import { getPresignedURL } from '@oyster/core/object-storage';
 import {
