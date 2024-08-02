@@ -8,3 +8,4 @@ export { listInterviewReviews } from './queries/list-interview-reviews';
 export { addCompanyReview } from './use-cases/add-company-review';
 export { addInterviewReview } from './use-cases/add-interview-review';
 export { editCompanyReview } from './use-cases/edit-company-review';
+export { editInterviewReview } from './use-cases/edit-interview-review';
