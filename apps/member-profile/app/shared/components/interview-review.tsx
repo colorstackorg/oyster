@@ -1,8 +1,14 @@
 import { generatePath, Link } from '@remix-run/react';
 import { type PropsWithChildren, useState } from 'react';
-import { ChevronDown, ChevronUp } from 'react-feather';
+import { ChevronDown, ChevronUp, Edit } from 'react-feather';
 
 import { cx, getTextCn, ProfilePicture, Text } from '@oyster/ui';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipText,
+  TooltipTrigger,
+} from '@oyster/ui/tooltip';
 
 import { Card } from '@/shared/components/card';
 import { Route } from '@/shared/constants';
@@ -32,6 +38,7 @@ export const InterviewReview = ({
   reviewerProfilePicture,
   reviewedAt,
   title,
+  interviewReviewId,
 }: InterviewReviewProps) => {
   return (
     <Card>
@@ -48,6 +55,26 @@ export const InterviewReview = ({
         <Text color="gray-500" variant="sm">
           {reviewedAt}
         </Text>
+
+        <div className="ml-auto">
+          <Tooltip>
+            <TooltipTrigger aria-label="Edit Review">
+              <Link
+                to={generatePath(
+                  Route['/companies/interview-reviews/:id/edit'],
+                  {
+                    id: interviewReviewId,
+                  }
+                )}
+              >
+                <Edit />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              <TooltipText>Edit Review</TooltipText>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </header>
 
       <div className="flex items-start gap-4">

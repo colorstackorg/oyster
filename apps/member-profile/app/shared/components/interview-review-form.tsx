@@ -1,6 +1,9 @@
 import { Form as RemixForm } from '@remix-run/react';
 
-import { AddInterviewReviewInput } from '@oyster/core/employment';
+import {
+  AddInterviewReviewInput,
+  type EditInterviewReviewInput,
+} from '@oyster/core/employment';
 import { Form } from '@oyster/ui';
 import { Button, Divider, type FieldProps, Textarea } from '@oyster/ui';
 
@@ -100,5 +103,42 @@ function PositionField({ defaultValue, error, name }: FieldProps<string>) {
         required
       />
     </Form.Field>
+  );
+}
+
+type EditReviewFormProps = Omit<
+  AddInterviewReviewFormProps,
+  'showExperienceField'
+> & {
+  review: Pick<EditInterviewReviewInput, 'interviewPosition' | 'text'>;
+};
+
+export function EditInterviewReviewForm({
+  error,
+  errors,
+  review,
+}: EditReviewFormProps) {
+  return (
+    <RemixForm className="form" method="post">
+      <PositionField
+        defaultValue={review.interviewPosition}
+        error={errors.interviewPosition}
+        name={keys.interviewPosition}
+      />
+
+      <InterviewTextField
+        defaultValue={review.text}
+        error={errors.text}
+        name={keys.text}
+      />
+
+      <Divider />
+
+      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+
+      <Button.Group>
+        <Button.Submit>Save</Button.Submit>
+      </Button.Group>
+    </RemixForm>
   );
 }
