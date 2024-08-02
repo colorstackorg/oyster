@@ -21,6 +21,7 @@ const ROUTES = [
   '/home',
   '/home/claim-swag-pack',
   '/home/claim-swag-pack/confirmation',
+  '/home/swag-pack/eligibility',
   '/login',
   '/login/otp/send',
   '/login/otp/verify',
