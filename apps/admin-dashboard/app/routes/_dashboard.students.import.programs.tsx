@@ -20,6 +20,7 @@ import { db } from '@oyster/db';
 import { Email, Program, ProgramParticipant } from '@oyster/types';
 import {
   Button,
+  FileUploader,
   Form,
   getErrors,
   Modal,
@@ -211,12 +212,11 @@ function ImportProgramsForm() {
         labelFor={keys.file}
         required
       >
-        <input
-          accept=".csv"
+        <FileUploader
+          accept={['text/csv']}
           id={keys.file}
           name={keys.file}
           required
-          type="file"
         />
       </Form.Field>
 

@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import { Email } from '@oyster/types';
 import { id } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { db } from '@/infrastructure/database';
 import { getMemberByEmail } from '@/modules/member/queries/get-member-by-email';
 import { parseCsv } from '@/shared/utils/csv.utils';
 import { AddSurveyResponseInput, SurveyResponse } from '../survey.types';

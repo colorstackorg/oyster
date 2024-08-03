@@ -16,9 +16,14 @@ import { Award, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import {
+  getPointsLeaderboard,
+  getTotalPoints,
+  listActivities,
+} from '@oyster/core/gamification';
+import { type CompletedActivity } from '@oyster/core/gamification.types';
 import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
-import { type CompletedActivity } from '@oyster/types';
 import {
   Button,
   cx,
@@ -30,11 +35,6 @@ import {
   useSearchParams,
 } from '@oyster/ui';
 
-import {
-  getPointsLeaderboard,
-  getTotalPoints,
-  listActivities,
-} from '@/member-profile.server';
 import { Card, type CardProps } from '@/shared/components/card';
 import {
   EmptyState,
@@ -604,6 +604,9 @@ function ActivityHistoryItemDescription({
           </div>
         </div>
       );
+    })
+    .with('refer_friend', () => {
+      return <p>You referred a friend to ColorStack.</p>;
     })
     .with('reply_to_thread', () => {
       const href = `https://colorstack-family.slack.com/archives/${activity.threadRepliedToChannelId}/p${activity.threadRepliedToId}`;

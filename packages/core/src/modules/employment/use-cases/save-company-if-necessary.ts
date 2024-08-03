@@ -1,9 +1,8 @@
 import { type Transaction } from 'kysely';
 
-import { type DB } from '@oyster/db';
+import { type DB, db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { db } from '@/infrastructure/database';
 import { getCrunchbaseOrganization } from '../queries/get-crunchbase-organization';
 
 /**

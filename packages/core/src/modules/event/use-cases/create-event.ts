@@ -1,9 +1,8 @@
 import dayjs from 'dayjs';
 
+import { db } from '@oyster/db';
 import { type Event } from '@oyster/types';
 import { id } from '@oyster/utils';
-
-import { db } from '@/infrastructure/database';
 
 type CreateEventInput = Pick<Event, 'description' | 'name' | 'type'> & {
   endTime: string;
@@ -24,6 +23,7 @@ export async function createEvent({
     .values({
       description,
       endTime: dayjs.tz(endTime, timezone).toDate(),
+      hidden: type === 'irl',
       id: id(),
       name,
       startTime: dayjs.tz(startTime, timezone).toDate(),

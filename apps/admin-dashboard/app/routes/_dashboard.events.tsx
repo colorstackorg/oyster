@@ -6,10 +6,10 @@ import {
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { Menu, Plus, RefreshCw, Upload } from 'react-feather';
+import { Camera, Menu, Plus, RefreshCw, Trash2, Upload } from 'react-feather';
 import { generatePath } from 'react-router';
 
-import { type Event } from '@oyster/types';
+import { type Event, EventType } from '@oyster/types';
 import {
   Dashboard,
   Dropdown,
@@ -216,7 +216,7 @@ function EventsPagination() {
   );
 }
 
-function EventDropdown({ id }: EventInView) {
+function EventDropdown({ id, type }: EventInView) {
   const [open, setOpen] = useState<boolean>(false);
 
   function onClose() {
@@ -232,6 +232,13 @@ function EventDropdown({ id }: EventInView) {
       {open && (
         <Table.Dropdown>
           <Dropdown.List>
+            {type === EventType.IRL && (
+              <Dropdown.Item>
+                <Link to={generatePath(Route['/events/:id/check-in'], { id })}>
+                  <Camera /> Check-In QR Code
+                </Link>
+              </Dropdown.Item>
+            )}
             <Dropdown.Item>
               <Link to={generatePath(Route['/events/:id/import'], { id })}>
                 <Upload /> Import Attendees
@@ -242,6 +249,11 @@ function EventDropdown({ id }: EventInView) {
                 to={generatePath(Route['/events/:id/add-recording'], { id })}
               >
                 <Upload /> Add Recording
+              </Link>
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <Link to={generatePath(Route['/events/:id/delete'], { id })}>
+                <Trash2 /> Delete Event
               </Link>
             </Dropdown.Item>
           </Dropdown.List>

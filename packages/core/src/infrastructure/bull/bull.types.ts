@@ -3,9 +3,7 @@ import { z } from 'zod';
 import { EmailTemplate } from '@oyster/email-templates';
 import {
   ActivationRequirement,
-  ActivityType,
   Application,
-  CompletedActivity,
   EmailCampaign,
   Event,
   type ExtractValue,
@@ -17,6 +15,10 @@ import {
 import { OneTimeCode } from '@/modules/authentication/authentication.types';
 import { Education } from '@/modules/education/education.types';
 import { WorkExperience } from '@/modules/employment/employment.types';
+import {
+  ActivityType,
+  CompletedActivity,
+} from '@/modules/gamification/gamification.types';
 import { OnboardingSession } from '@/modules/onboarding-session/onboarding-session.types';
 import {
   SlackChannel,
@@ -81,26 +83,6 @@ export const AirtableBullJob = z.discriminatedUnion('name', [
 ]);
 
 export const ApplicationBullJob = z.discriminatedUnion('name', [
-  z.object({
-    name: z.literal('application.accepted'),
-    data: z.object({
-      applicationId: Application.shape.id,
-      studentId: Student.shape.id,
-    }),
-  }),
-  z.object({
-    name: z.literal('application.created'),
-    data: z.object({
-      applicationId: Application.shape.id,
-    }),
-  }),
-  z.object({
-    name: z.literal('application.rejected'),
-    data: z.object({
-      applicationId: Application.shape.id,
-      automated: z.boolean().optional(),
-    }),
-  }),
   z.object({
     name: z.literal('application.review'),
     data: z.object({
@@ -240,6 +222,11 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         messageReactedTo: SlackMessage.shape.id,
         studentId: CompletedActivity.shape.studentId,
         type: z.literal('react_to_message'),
+      }),
+      z.object({
+        referralId: z.string().trim().min(1),
+        studentId: CompletedActivity.shape.studentId,
+        type: z.literal(ActivityType.REFER_FRIEND),
       }),
       z.object({
         channelId: SlackMessage.shape.channelId,
@@ -550,6 +537,7 @@ export const StudentBullJob = z.discriminatedUnion('name', [
     data: z.object({
       airtableId: z.string().trim().min(1),
       email: Student.shape.email,
+      firstName: z.string().trim().min(1),
       sendViolationEmail: z.boolean(),
       slackId: Student.shape.slackId.nullable(),
     }),

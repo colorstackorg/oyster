@@ -1,10 +1,10 @@
 import dayjs from 'dayjs';
 import dedent from 'dedent';
 
+import { db } from '@oyster/db';
 import { ActivationRequirement, type Student } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { db } from '@/infrastructure/database';
 import { ACTIVATION_FLOW_LAUNCH_DATE } from '@/shared/constants';
 import { ENV } from '@/shared/env';
 import { ErrorWithContext } from '@/shared/errors';
@@ -239,9 +239,9 @@ async function sendProgressNotification({
   if (completedRequirements === totalRequirements) {
     message = dedent`
       Congratulations, ${firstName}! 🎉
-      
+
       You've completed all of your activation requirements, which means...you are now an *activated* ColorStack member.
-      
+
       You can now claim your free swag pack in your <https://app.colorstack.io/home|*Member Profile*>! 🎁
     `;
   } else {

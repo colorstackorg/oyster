@@ -8,6 +8,7 @@ import {
 export async function onMemberRemoved({
   airtableId,
   email,
+  firstName,
   sendViolationEmail,
   slackId,
 }: GetBullJobData<'student.removed'>) {
@@ -36,7 +37,7 @@ export async function onMemberRemoved({
     job('notification.email.send', {
       to: email,
       name: 'student-removed',
-      data: {},
+      data: { firstName },
     });
   }
 }

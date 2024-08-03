@@ -1,3 +1,5 @@
+import { type Country } from '@oyster/core/location.types';
+import { CityCombobox, type CityComboboxProps } from '@oyster/core/location.ui';
 import { FORMATTED_GENDER, type Gender } from '@oyster/types';
 import {
   Checkbox,
@@ -7,11 +9,6 @@ import {
   Select,
 } from '@oyster/ui';
 
-import { type Country } from '@/member-profile.ui';
-import {
-  CityCombobox,
-  type CityComboboxProps,
-} from '@/shared/components/city-combobox';
 import { EthnicityMultiCombobox } from '@/shared/components/ethnicity-combobox';
 
 export function BirthdateNotificationField({

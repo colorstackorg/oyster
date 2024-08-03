@@ -15,7 +15,7 @@ import {
   MultiComboboxValues,
 } from '@oyster/ui';
 
-import type { SearchCountriesResult } from '@/routes/countries.search';
+import type { SearchCountriesResult } from '@/routes/api.countries.search';
 
 type EthnicityComboboxProps = Pick<InputProps, 'name' | 'required'>;
 
@@ -23,7 +23,7 @@ export function EthnicityCombobox({ name }: EthnicityComboboxProps) {
   const fetcher = useFetcher<SearchCountriesResult>();
 
   useEffect(() => {
-    fetcher.load('/countries/search');
+    fetcher.load('/api/countries/search');
   }, []);
 
   const countries = fetcher.data?.countries || [];
@@ -37,7 +37,7 @@ export function EthnicityCombobox({ name }: EthnicityComboboxProps) {
           fetcher.submit(
             { search: e.currentTarget.value },
             {
-              action: '/countries/search',
+              action: '/api/countries/search',
               method: 'get',
             }
           );
@@ -74,7 +74,7 @@ export function EthnicityMultiCombobox({
   const fetcher = useFetcher<SearchCountriesResult>();
 
   useEffect(() => {
-    fetcher.load('/countries/search');
+    fetcher.load('/api/countries/search');
   }, []);
 
   const countries = fetcher.data?.countries || [];
@@ -89,7 +89,7 @@ export function EthnicityMultiCombobox({
             fetcher.submit(
               { search: e.currentTarget.value },
               {
-                action: '/countries/search',
+                action: '/api/countries/search',
                 method: 'get',
               }
             );

@@ -17,7 +17,9 @@ import {
 } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  await ensureUserAuthenticated(request, {
+    minimumRole: 'owner',
+  });
 
   const flag = await getFeatureFlag({
     select: ['displayName'],
@@ -34,7 +36,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
-  const session = await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request, {
+    minimumRole: 'owner',
+  });
 
   await deleteFeatureFlag(params.id as string);
 

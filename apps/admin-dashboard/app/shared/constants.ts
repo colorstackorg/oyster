@@ -1,6 +1,7 @@
 const ROUTES = [
   '/',
   '/admins',
+  '/admins/add',
   '/applications',
   '/applications/:id',
   '/applications/:id/accept',
@@ -16,6 +17,8 @@ const ROUTES = [
   '/events/create',
   '/events/sync-airmeet-event',
   '/events/:id/add-recording',
+  '/events/:id/check-in',
+  '/events/:id/delete',
   '/events/:id/import',
   '/feature-flags',
   '/feature-flags/create',

@@ -10,6 +10,7 @@ import {
 } from '@remix-run/react';
 import { withSentry } from '@sentry/remix';
 
+import { buildMeta } from '@oyster/core/remix';
 import { Toast } from '@oyster/ui';
 import uiStylesheet from '@oyster/ui/index.css?url';
 
@@ -25,7 +26,10 @@ export const links: LinksFunction = () => {
 };
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'ColorStack | Member Profile' }];
+  return buildMeta({
+    description: `Your home for all things ColorStack membership. Manage your profile and more!`,
+    title: 'Member Profile',
+  });
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {

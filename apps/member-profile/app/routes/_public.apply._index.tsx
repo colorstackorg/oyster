@@ -1,13 +1,20 @@
 import {
   type ActionFunctionArgs,
   json,
+  type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
-import { z } from 'zod';
+import {
+  Form as RemixForm,
+  useActionData,
+  useLoaderData,
+} from '@remix-run/react';
 
-import { Application as ApplicationType } from '@oyster/types';
+import { apply } from '@oyster/core/applications';
+import { Application, ApplyInput } from '@oyster/core/applications.ui';
+import { getReferral } from '@oyster/core/referrals';
+import { buildMeta } from '@oyster/core/remix';
 import {
   Button,
   Checkbox,
@@ -19,53 +26,51 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { apply } from '@/member-profile.server';
-import { Application } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { commitSession, getSession } from '@/shared/session.server';
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'ColorStack Family Application' }];
+  return buildMeta({
+    description: `Apply to join the largest community of Black and Latinx Computer Science college students.`,
+    image: '/images/og_apply.jpg',
+    title: 'Apply to ColorStack',
+  });
 };
 
-const ApplyInput = ApplicationType.pick({
-  contribution: true,
-  educationLevel: true,
-  email: true,
-  firstName: true,
-  gender: true,
-  goals: true,
-  graduationYear: true,
-  lastName: true,
-  linkedInUrl: true,
-  major: true,
-  otherDemographics: true,
-  otherMajor: true,
-  otherSchool: true,
-  race: true,
-  schoolId: true,
-}).extend({
-  codeOfConduct: z.preprocess((value) => value === '1', z.boolean()),
-});
+export async function loader({ request }: LoaderFunctionArgs) {
+  const { searchParams } = new URL(request.url);
 
-type ApplyInput = z.infer<typeof ApplyInput>;
+  // The referral ID is passed as a query parameter, and it must be present
+  // when the user submits the form in order to be processed correctly.
+  const referralId = searchParams.get('r');
 
-const ApplyFormData = ApplyInput.extend({
-  otherSchool: z.string().optional(),
-  schoolId: z
-    .string()
-    .min(1)
-    .optional()
-    .transform((value) => {
-      return value === 'other' ? undefined : value;
-    }),
-});
+  const referral = referralId
+    ? await getReferral({
+        select: ['email', 'firstName', 'lastName'],
+        where: { id: referralId },
+      })
+    : undefined;
 
-type ApplyFormData = z.infer<typeof ApplyFormData>;
+  return json({
+    email: referral?.email,
+    firstName: referral?.firstName,
+    lastName: referral?.lastName,
+  });
+}
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await getSession(request);
   const form = await request.formData();
+
+  const { searchParams } = new URL(request.url);
+
+  // The referral ID is passed as a query parameter, and it must be present
+  // when the user submits the form in order to be processed correctly.
+  const referralId = searchParams.get('r');
+
+  if (referralId) {
+    form.set('referralId', referralId);
+  }
 
   const { data, errors, ok } = await validateForm(
     {
@@ -73,7 +78,7 @@ export async function action({ request }: ActionFunctionArgs) {
       otherDemographics: form.getAll('otherDemographics'),
       race: form.getAll('race'),
     },
-    ApplyFormData
+    ApplyInput
   );
 
   if (!ok) {
@@ -98,9 +103,10 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-const keys = ApplyFormData.keyof().enum;
+const keys = ApplyInput.keyof().enum;
 
 export default function ApplicationPage() {
+  const { email, firstName, lastName } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
@@ -115,14 +121,20 @@ export default function ApplicationPage() {
       <RemixForm className="form" data-gap="2rem" method="post">
         <Application readOnly={false}>
           <Application.FirstNameField
+            defaultValue={firstName}
             error={errors.firstName}
             name={keys.firstName}
           />
           <Application.LastNameField
+            defaultValue={lastName}
             error={errors.lastName}
             name={keys.lastName}
           />
-          <Application.EmailField error={errors.email} name={keys.email} />
+          <Application.EmailField
+            defaultValue={email}
+            error={errors.email}
+            name={keys.email}
+          />
           <Application.LinkedInField
             error={errors.linkedInUrl}
             name={keys.linkedInUrl}

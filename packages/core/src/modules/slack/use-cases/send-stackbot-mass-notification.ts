@@ -1,5 +1,6 @@
+import { db } from '@oyster/db';
+
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { db } from '@/infrastructure/database';
 
 export async function sendStackBotMassNotification(message: string) {
   const members = await db

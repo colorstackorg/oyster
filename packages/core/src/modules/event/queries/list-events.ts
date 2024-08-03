@@ -1,8 +1,6 @@
 import { type SelectExpression } from 'kysely';
 
-import { type DB } from '@oyster/db';
-
-import { db } from '@/infrastructure/database';
+import { type DB, db } from '@oyster/db';
 
 type ListEventsQuery = Partial<{
   limit: number;

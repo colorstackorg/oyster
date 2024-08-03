@@ -1,6 +1,6 @@
 import { sql } from 'kysely';
 
-import { db } from '@/infrastructure/database';
+import { db } from '@oyster/db';
 
 const streakGroup = sql<number>`
   row_number() over (partition by student_id order by date desc) -
