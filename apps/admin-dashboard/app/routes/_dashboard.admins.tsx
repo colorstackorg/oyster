@@ -56,7 +56,7 @@ function AdminsTable() {
     },
     {
       displayName: 'Status',
-      size: null,
+      size: '200',
       render: (admin) => {
         return admin.isArchived ? (
           <Pill color="gray-100">Archived</Pill>

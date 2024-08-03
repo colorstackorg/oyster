@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs, json } from '@remix-run/node';
 
+import { track } from '@oyster/core/mixpanel';
 import { viewResource } from '@oyster/core/resources.server';
-import { track } from '@oyster/infrastructure/mixpanel';
 
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 

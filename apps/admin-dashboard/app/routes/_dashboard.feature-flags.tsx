@@ -86,7 +86,7 @@ function FeatureFlagsTable() {
     },
     {
       displayName: 'Description',
-      size: null,
+      size: '800',
       render: (flag) => flag.description,
     },
   ];

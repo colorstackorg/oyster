@@ -10,7 +10,7 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 
-import { track } from '@oyster/infrastructure/mixpanel';
+import { track } from '@oyster/core/mixpanel';
 import { Button, Form, getErrors, validateForm } from '@oyster/ui';
 
 import { verifyOneTimeCode } from '@/member-profile.server';

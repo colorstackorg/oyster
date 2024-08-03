@@ -12,7 +12,7 @@ dayjs.extend(timezone);
 // This is only meant to be imported by the `api` application.
 
 export { job } from './infrastructure/bull/use-cases/job';
-export { airtableWorker } from './modules/airtable/airtable.worker';
+export { airtableWorker } from './modules/airtable/airtable.core';
 export { applicationWorker } from './modules/application/application.worker';
 export { OAuthCodeState } from './modules/authentication/authentication.types';
 export { oneTimeCodeWorker } from './modules/authentication/one-time-code.worker';
@@ -21,6 +21,7 @@ export { educationWorker } from './modules/education/education.worker';
 export { workExperienceWorker } from './modules/employment/employment.worker';
 export { eventWorker } from './modules/event/event.worker';
 export { gamificationWorker } from './modules/gamification/gamification.worker';
+export { saveGoogleDriveCredentials } from './modules/google-drive';
 export { emailMarketingWorker } from './modules/mailchimp/email-marketing.worker';
 export { memberEmailWorker } from './modules/member/member-email.worker';
 export { memberWorker } from './modules/member/member.worker';

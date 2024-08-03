@@ -54,16 +54,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
         .whereRef('eventAttendees.eventId', '=', 'events.id')
         .as('attendees');
     },
+    (eb) => {
+      return eb
+        .selectFrom('eventRegistrations')
+        .select(eb.fn.countAll<string>().as('count'))
+        .whereRef('eventRegistrations.eventId', '=', 'events.id')
+        .as('registrations');
+    },
   ]);
 
-  const events = _events.map((event) => {
-    return {
-      ...event,
-      date: dayjs(event.startTime).tz(timezone).format('MM/DD/YY'),
-      endTime: dayjs(event.endTime).tz(timezone).format('h:mm A'),
-      startTime: dayjs(event.startTime).tz(timezone).format('h:mm A'),
-    };
-  });
+  const formatter = new Intl.NumberFormat();
+
+  const events = _events.map(
+    ({ attendees, endTime, registrations, startTime, ...event }) => {
+      return {
+        ...event,
+        attendees: formatter.format(Number(attendees)),
+        date: dayjs(startTime).tz(timezone).format('MM/DD/YY'),
+        endTime: dayjs(endTime).tz(timezone).format('h:mm A'),
+        registrations: formatter.format(Number(registrations)),
+        startTime: dayjs(startTime).tz(timezone).format('h:mm A'),
+      };
+    }
+  );
 
   return json({
     events,
@@ -144,11 +157,14 @@ function EventsTable() {
       render: (event) => event.name,
     },
     {
+      displayName: '# of Registrations',
+      size: '160',
+      render: (event) => event.registrations,
+    },
+    {
       displayName: '# of Attendees',
       size: '160',
-      render: (event) => {
-        return new Intl.NumberFormat().format(Number(event.attendees));
-      },
+      render: (event) => event.attendees,
     },
     {
       displayName: 'Type',
@@ -171,7 +187,7 @@ function EventsTable() {
     {
       displayName: 'Time',
       render: (event) => `${event.startTime} - ${event.endTime}`,
-      size: null,
+      size: '200',
     },
   ];
 

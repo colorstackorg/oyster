@@ -10,7 +10,7 @@ export { Divider } from './components/divider';
 export { Dropdown } from './components/dropdown';
 export { ExistingSearchParams } from './components/existing-search-params';
 export { Form, getErrors, InputField, validateForm } from './components/form';
-export type { FieldProps } from './components/form';
+export type { DescriptionProps, FieldProps } from './components/form';
 export { IconButton, getIconButtonCn } from './components/icon-button';
 export { Input, getInputCn } from './components/input';
 export type { InputProps } from './components/input';

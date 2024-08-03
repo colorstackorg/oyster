@@ -2,9 +2,9 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 
+import { getPresignedURL } from '@oyster/core/object-storage';
 import { type ResourceType } from '@oyster/core/resources';
 import { listResources } from '@oyster/core/resources.server';
-import { getPresignedURL } from '@oyster/infrastructure/object-storage';
 
 import { getDateRange, Recap } from '@/routes/_profile.recap.$date';
 import { Resource } from '@/shared/components/resource';
@@ -70,7 +70,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
                 mimeType: attachment.mimeType,
                 uri: await getPresignedURL({
                   expiresIn: 60 * 60, // 1 hour
-                  key: attachment.s3Key,
+                  key: attachment.objectKey,
                 }),
               };
             })
