@@ -5,7 +5,6 @@ import { listAdmins } from '@oyster/core/admins';
 import { AdminTable } from '@oyster/core/admins.ui';
 import { Dashboard } from '@oyster/ui';
 
-import { listAdmins } from '@/admin-dashboard.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
