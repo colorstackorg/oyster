@@ -1,10 +1,29 @@
 import { type PropsWithChildren } from 'react';
+import React, { useContext, useState } from 'react';
 
 import { Input, type InputProps } from './input';
 import { Select, type SelectProps } from './select';
 
+type AddressContextValue = {
+  countryAbbreviation: string;
+  setCountryAbbreviation(country: string): void;
+};
+
+const AddressContext = React.createContext<AddressContextValue>({
+  countryAbbreviation: 'US',
+  setCountryAbbreviation: (_: string) => {},
+});
+
 export const Address = ({ children }: PropsWithChildren) => {
-  return <div className="grid gap-4 @container">{children}</div>;
+  const [countryAbbreviation, setCountryAbbreviation] = useState<string>('US');
+
+  return (
+    <AddressContext.Provider
+      value={{ countryAbbreviation, setCountryAbbreviation }}
+    >
+      <div className="grid gap-4 @container">{children}</div>;
+    </AddressContext.Provider>
+  );
 };
 
 Address.City = function City(props: InputProps) {
@@ -91,13 +110,64 @@ const USA_STATES: State[] = [
   { abbreviation: 'WY', name: 'Wyoming' },
 ];
 
+const CA_PROVINCES: State[] = [
+  { name: 'Alberta', abbreviation: 'AB' },
+  { name: 'British Columbia ', abbreviation: 'BC' },
+  { name: 'Manitoba ', abbreviation: 'MB' },
+  { name: 'New Brunswick', abbreviation: 'NB' },
+  { name: 'Newfoundland and Labrador', abbreviation: 'NL' },
+  { name: 'Northwest Territories', abbreviation: 'NT' },
+  { name: 'Nova Scotia', abbreviation: 'NS' },
+  { name: 'Nunavut', abbreviation: 'NU' },
+  { name: 'Ontario', abbreviation: 'ON' },
+  { name: 'Prince Edward Island ', abbreviation: 'PE' },
+  { name: 'Quebec ', abbreviation: 'QC' },
+  { name: 'Saskatchewan ', abbreviation: 'SK' },
+  { name: 'Yukon', abbreviation: 'YT' },
+];
+
+type Country = {
+  abbreviation: string;
+  name: string;
+};
+
+const COUNTRIES: Country[] = [
+  { abbreviation: 'CA', name: 'Canada' },
+  { abbreviation: 'US', name: 'United States' },
+];
+
+const mapCountryAbbreviationToStates = {
+  CA: CA_PROVINCES,
+  US: USA_STATES,
+};
+
 Address.State = function State(props: SelectProps) {
+  const { countryAbbreviation } = useContext(AddressContext);
+
+  const states = mapCountryAbbreviationToStates[countryAbbreviation];
+
   return (
     <Select {...props}>
-      {USA_STATES.map((state: State) => {
+      {states.map((state: State) => {
         return (
           <option key={state.abbreviation} value={state.abbreviation}>
             {state.name}
+          </option>
+        );
+      })}
+    </Select>
+  );
+};
+
+Address.Country = function Country(props: SelectProps) {
+  const { setCountryAbbreviation } = useContext(AddressContext);
+
+  return (
+    <Select {...props} onChange={(e) => setCountryAbbreviation(e.target.value)}>
+      {COUNTRIES.map((country: Country) => {
+        return (
+          <option key={country.abbreviation} value={country.abbreviation}>
+            {country.name}
           </option>
         );
       })}
