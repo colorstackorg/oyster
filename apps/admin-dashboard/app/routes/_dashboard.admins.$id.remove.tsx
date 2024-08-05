@@ -6,10 +6,10 @@ import {
 } from '@remix-run/node';
 import { Form as RemixForm, useLoaderData } from '@remix-run/react';
 
+import { removeAdmin } from '@oyster/core/admins';
 import { db } from '@oyster/db';
 import { Button, Modal } from '@oyster/ui';
 
-import { removeAdmin } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -55,7 +55,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 }
 
-export default function RemoveMemberPage() {
+export default function RemoveAdminPage() {
   const { admin } = useLoaderData<typeof loader>();
 
   return (
@@ -68,9 +68,7 @@ export default function RemoveMemberPage() {
       </Modal.Header>
 
       <Modal.Description>
-        This is not an undoable action. All of their engagement records will be
-        deleted and they will be removed from Slack, Mailchimp and Airtable. Are
-        you sure want to remove this member?
+        This is not an undoable action. Are you sure want to remove this admin?
       </Modal.Description>
 
       <RemixForm className="form" method="post">
