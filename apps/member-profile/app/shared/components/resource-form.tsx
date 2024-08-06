@@ -156,10 +156,10 @@ export function ResourceTagsField({ error, name }: FieldProps<string>) {
     >
       <SearchComponent>
         <div className="flex flex-col gap-2 rounded-lg border border-gray-300 p-2 focus:border-primary disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500">
-          <SearchValues></SearchValues>
-          <SearchBox></SearchBox>
+          <SearchValues />
+          <SearchBox />
         </div>
-        <SearchResults></SearchResults>
+        <SearchResults />
       </SearchComponent>
     </Form.Field>
   );

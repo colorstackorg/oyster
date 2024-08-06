@@ -19,7 +19,7 @@ import { useOnClickOutside } from '../hooks/use-on-click-outside';
 import { cx } from '../utils/cx';
 
 type ItemType = {
-  id: string;
+  id: number;
   name: string;
   action: (event?: SyntheticEvent, cb?: () => void) => void | undefined; // onClick || onEnter
 };
