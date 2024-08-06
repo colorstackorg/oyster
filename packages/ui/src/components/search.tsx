@@ -30,9 +30,11 @@ type selectedItemsType = {
 };
 
 /*
- * IMPLEMENT CREATE NEW ITEM (createFetcher)
- * FIX OVERFLOW & SCROLLING WITH KEYBOARD
- *
+ * PR NOTES:
+ * [✅] FIX OVERFLOW & SCROLLING WITH KEYBOARD
+ * [✅] ADD KB INTERACTIONS
+ * [ ] CREATE NEW TAG (createFetcher)
+ * [ ] ADD RATE LIMITER FOR REQUESTS TO API
  */
 
 const SearchComponentContext = createContext({
