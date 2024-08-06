@@ -21,6 +21,7 @@ export const ENV = {
   MAILCHIMP_SERVER_PREFIX: process.env.MAILCHIMP_SERVER_PREFIX as string,
   MEMBER_PROFILE_URL: process.env.MEMBER_PROFILE_URL as string,
   REDIS_URL: process.env.REDIS_URL as string,
+  RESOURCES_CHANNEL_ID: process.env.RESOURCES_CHANNEL_ID as string,
   SENTRY_DSN: process.env.SENTRY_DSN as string,
   SLACK_ANNOUNCEMENTS_CHANNEL_ID: process.env
     .SLACK_ANNOUNCEMENTS_CHANNEL_ID as string,
