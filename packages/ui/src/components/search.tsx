@@ -221,7 +221,7 @@ export function SearchBox() {
       },
     ]);
     setTextValue('');
-    searchRef.current!.focus();
+    searchRef.current!.blur();
     setResultsBoxOpen(false);
   }
 
