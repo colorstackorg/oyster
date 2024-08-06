@@ -47,6 +47,8 @@ const SearchComponentContext = createContext({
   setResults: (_: ItemType[]) => {},
   resultsBoxOpen: false as boolean,
   setResultsBoxOpen: (_: boolean) => {},
+  KeyboardMode: false as boolean,
+  setKeyboardMode: (_: boolean) => {},
 });
 
 export const SearchComponent = ({ children }: PropsWithChildren) => {
@@ -57,6 +59,7 @@ export const SearchComponent = ({ children }: PropsWithChildren) => {
   const [selectedIdx, setSelectedIdx] = useState<number>(-1);
   const [results, setResults] = useState<ItemType[]>([]);
   const [resultsBoxOpen, setResultsBoxOpen] = useState<boolean>(false);
+  const [KeyboardMode, setKeyboardMode] = useState(false);
 
   //const createFetcher = useFetcher<unknown>(); // TODO: IMPLEMENT CREATE NEW ITEM
   const listFetcher = useFetcher<ItemType[]>();
@@ -122,6 +125,8 @@ export const SearchComponent = ({ children }: PropsWithChildren) => {
         setResults,
         resultsBoxOpen,
         setResultsBoxOpen,
+        KeyboardMode,
+        setKeyboardMode,
       }}
     >
       <div className="relative" ref={containerRef}>
@@ -194,6 +199,7 @@ export function SearchBox() {
     results,
     selectedItems,
     setSelectedItems,
+    setKeyboardMode,
   } = useContext(SearchComponentContext);
 
   function onEnter() {
@@ -209,8 +215,10 @@ export function SearchBox() {
     setResultsBoxOpen(false);
   }
 
-  function handleKeys(e: KeyboardEvent<HTMLInputElement>) {
-    switch (e.key) {
+  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    setKeyboardMode(true);
+
+    switch (event.key) {
       case 'Enter':
         e.stopPropagation();
         e.preventDefault();
@@ -241,6 +249,12 @@ export function SearchBox() {
     }
   }
 
+  function handleKeyUp(event: KeyboardEvent<HTMLInputElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    setKeyboardMode(false);
+  }
+
   return (
     <input
       autoComplete="off"
@@ -256,7 +270,8 @@ export function SearchBox() {
           setSelectedIdx(-1);
         }, 200);
       }}
-      onKeyDown={(e) => handleKeys(e)}
+      onKeyDown={(event) => handleKeyDown(event)}
+      onKeyUp={(event) => handleKeyUp(event)}
       ref={searchRef}
       type="text"
       value={textValue}
@@ -275,6 +290,7 @@ export function SearchResults() {
     setTextValue,
     searchRef,
     setResultsBoxOpen,
+    KeyboardMode,
   } = useContext(SearchComponentContext);
 
   const ref: MutableRefObject<HTMLLIElement | null> = useRef(null);
@@ -284,7 +300,7 @@ export function SearchResults() {
   };
 
   useEffect(() => {
-    if (selectedIdx >= 0 && ref.current) {
+    if (selectedIdx >= 0 && KeyboardMode) {
       handleScroll();
     }
   }, [ref.current]);
