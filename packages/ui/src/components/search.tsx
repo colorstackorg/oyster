@@ -75,7 +75,6 @@ export const SearchComponent = ({ children }: PropsWithChildren) => {
           tags: selectedItemsType[];
         };
 
-      console.log(rawData);
       const filteredData = rawData.tags.filter((item) => {
         return !selectedItems.some((selectedItem: selectedItemsType) => {
           return selectedItem.id === item.id;
@@ -93,8 +92,6 @@ export const SearchComponent = ({ children }: PropsWithChildren) => {
             // Handle mouse click (e.g., call cb directly)
             cb?.();
           } else {
-            // Handle keyboard click (e.g., perform custom logic)
-            console.log('bug #1 🐛🐛');
             setSelectedItems([
               ...selectedItems,
               { id: results[selectedIdx].id, name: results[selectedIdx].name },
