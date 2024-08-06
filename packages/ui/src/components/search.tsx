@@ -220,32 +220,34 @@ export function SearchBox() {
 
     switch (event.key) {
       case 'Enter':
-        e.stopPropagation();
-        e.preventDefault();
+        event.stopPropagation();
+        event.preventDefault();
         onEnter();
         break;
       case 'ArrowUp':
-        e.stopPropagation();
-        e.preventDefault();
+        event.stopPropagation();
+        event.preventDefault();
         setSelectedIdx((selectedIdx + results.length - 1) % results.length);
         break;
       case 'ArrowDown':
-        e.stopPropagation();
-        e.preventDefault();
+        event.stopPropagation();
+        event.preventDefault();
         setSelectedIdx((selectedIdx + 1) % results.length);
         break;
       case 'Escape':
-        e.stopPropagation();
-        e.preventDefault();
+        event.stopPropagation();
+        event.preventDefault();
         setResultsBoxOpen(false);
         setSelectedIdx(-1);
         searchRef.current && searchRef.current.blur();
         break;
       case 'Tab':
+        event.stopPropagation();
+        event.preventDefault();
         setResultsBoxOpen(false);
         break;
       default:
-        e.stopPropagation();
+        event.stopPropagation();
     }
   }
 
@@ -258,8 +260,8 @@ export function SearchBox() {
   return (
     <input
       autoComplete="off"
-      onChange={(e) => {
-        setTextValue(e.target.value);
+      onChange={(event) => {
+        setTextValue(event.target.value);
       }}
       onFocus={() => {
         setResultsBoxOpen(true);
