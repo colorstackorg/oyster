@@ -292,8 +292,33 @@ export function SearchBox() {
 }
 
 export function SearchResults() {
+  const { resultsBoxOpen, results } = useContext(SearchComponentContext);
+  const SearchResultsRef = useRef(null);
+
+  return (
+    <div
+      className={cx(
+        'absolute z-10 mt-1 max-h-40 w-full overflow-auto rounded-lg border border-gray-300 bg-white',
+        (results.length === 0 || !resultsBoxOpen) && 'hidden'
+      )}
+      ref={SearchResultsRef}
+    >
+      <ul>
+        {results.map((item, idx) => {
+          return <SearchResultItem key={item.id} item={item} idx={idx} />;
+        })}
+      </ul>
+    </div>
+  );
+}
+
+type SearchResultItemType = {
+  item: ItemType;
+  idx: number;
+};
+
+export function SearchResultItem({ item, idx }: SearchResultItemType) {
   const {
-    resultsBoxOpen,
     results,
     selectedIdx,
     setSelectedIdx,
@@ -308,69 +333,59 @@ export function SearchResults() {
   const ref: MutableRefObject<HTMLLIElement | null> = useRef(null);
 
   const handleScroll = () => {
-    if (ref.current) ref.current.scrollIntoView();
+    if (ref.current)
+      ref.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
   };
 
   useEffect(() => {
     if (selectedIdx >= 0 && KeyboardMode) {
       handleScroll();
     }
-  }, [ref.current]);
+  }, [selectedIdx]);
+
+  function handleClickItem(event: SyntheticEvent<Element, Event>) {
+    item.action(event, () => {
+      setSelectedItems([
+        ...selectedItems,
+        {
+          id: results[selectedIdx].id,
+          name: results[selectedIdx].name,
+        },
+      ]);
+      setTextValue('');
+      setSelectedIdx(-1);
+      searchRef.current!.blur();
+      setResultsBoxOpen(false);
+    });
+  }
 
   return (
-    <div
+    <li
       className={cx(
-        'absolute z-10 mt-1 max-h-40 w-full overflow-auto rounded-lg border border-gray-300 bg-white',
-        (results.length === 0 || !resultsBoxOpen) && 'hidden'
+        selectedIdx === idx ? 'bg-green-50' : '',
+        'w-full cursor-pointer border-gray-100 px-2 py-3 text-left text-sm'
       )}
+      onMouseOver={() => {
+        setSelectedIdx(idx);
+      }}
+      onMouseOut={() => {
+        setSelectedIdx(-1);
+      }}
+      onClick={(event) => handleClickItem(event)}
+      id={item.id.toString()}
+      ref={selectedIdx === idx ? ref : null}
     >
-      <ul>
-        {results.map((item, idx) => {
-          return (
-            <li
-              key={item.id}
-              className={cx(
-                selectedIdx === idx ? 'bg-green-50' : '',
-                'w-full cursor-pointer border-gray-100 px-2 py-3 text-left text-sm'
-              )}
-              onMouseOver={() => {
-                setSelectedIdx(idx);
-                console.log(idx);
-              }}
-              onMouseOut={() => {
-                setSelectedIdx(-1);
-              }}
-              onClick={(e) => {
-                item.action(e, () => {
-                  console.log('default action');
-                  setSelectedItems([
-                    ...selectedItems,
-                    {
-                      id: results[selectedIdx].id,
-                      name: results[selectedIdx].name,
-                    },
-                  ]);
-                  setTextValue('');
-                  setSelectedIdx(-1);
-                  searchRef.current!.blur();
-                  setResultsBoxOpen(false);
-                }); // Call the action function associated with the item
-              }}
-              id={item.id}
-              ref={selectedIdx === idx ? ref : null}
-            >
-              <p
-                className={cx(
-                  getPillCn({ color: 'pink-100' }),
-                  'flex items-center gap-1'
-                )}
-              >
-                {item.name}
-              </p>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
+      <p
+        className={cx(
+          getPillCn({ color: 'pink-100' }),
+          'flex items-center gap-1'
+        )}
+      >
+        {item.name}
+      </p>
+    </li>
   );
 }
