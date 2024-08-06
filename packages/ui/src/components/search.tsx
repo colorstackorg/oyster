@@ -137,9 +137,7 @@ export const SearchComponent = ({ children }: PropsWithChildren) => {
 };
 
 export function SearchValues() {
-  const { selectedItems, setSelectedItems } = useContext(
-    SearchComponentContext
-  );
+  const { selectedItems } = useContext(SearchComponentContext);
 
   return (
     <>
@@ -153,31 +151,7 @@ export function SearchValues() {
 
           <ul className="flex flex-wrap gap-1">
             {selectedItems.map((item) => {
-              return (
-                <li
-                  className={cx(
-                    getPillCn({ color: 'pink-100' }),
-                    'flex items-center gap-1'
-                  )}
-                  key={item.id}
-                >
-                  {item.name}
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedItems(
-                        selectedItems.filter((selectedItem) => {
-                          return selectedItem.id !== item.id;
-                        })
-                      );
-                    }}
-                    type="button"
-                  >
-                    <X size={16} />
-                  </button>
-                </li>
-              );
+              return <SearchValuesItem key={item.id} item={item} />;
             })}
           </ul>
 
@@ -185,6 +159,42 @@ export function SearchValues() {
         </>
       )}
     </>
+  );
+}
+
+type SearchValuesItemType = {
+  item: selectedItemsType;
+};
+
+export function SearchValuesItem({ item }: SearchValuesItemType) {
+  const { selectedItems, setSelectedItems } = useContext(
+    SearchComponentContext
+  );
+
+  return (
+    <li
+      className={cx(
+        getPillCn({ color: 'pink-100' }),
+        'flex items-center gap-1'
+      )}
+      key={item.id}
+    >
+      {item.name}
+
+      <button
+        onClick={(event) => {
+          event.stopPropagation();
+          setSelectedItems(
+            selectedItems.filter((selectedItem) => {
+              return selectedItem.id !== item.id;
+            })
+          );
+        }}
+        type="button"
+      >
+        <X size={16} />
+      </button>
+    </li>
   );
 }
 
