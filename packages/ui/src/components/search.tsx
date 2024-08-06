@@ -25,7 +25,7 @@ type ItemType = {
 };
 
 type selectedItemsType = {
-  id: string;
+  id: number;
   name: string;
 };
 
