@@ -158,6 +158,13 @@ export function ResourceTagsField({
   function reset() {
     setSearch('');
     setNewTagId(id());
+    listFetcher.submit(
+      { search: '' },
+      {
+        action: '/api/tags/search',
+        method: 'get',
+      }
+    );
   }
 
   return (
