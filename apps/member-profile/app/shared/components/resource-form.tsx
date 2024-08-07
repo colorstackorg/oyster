@@ -158,6 +158,7 @@ export function ResourceTagsField({
   function reset() {
     setSearch('');
     setNewTagId(id());
+    listFetcher.load('/api/tags/search');
   }
 
   return (
