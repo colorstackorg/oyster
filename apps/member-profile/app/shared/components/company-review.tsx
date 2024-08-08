@@ -48,6 +48,7 @@ type CompanyReviewProps = {
   text: string;
   title: string;
   workExperienceId?: string;
+  anonymous: boolean;
 };
 
 export const CompanyReview = ({
@@ -67,17 +68,24 @@ export const CompanyReview = ({
   reviewedAt,
   text,
   title,
+  anonymous,
   workExperienceId,
 }: CompanyReviewProps) => {
   return (
     <Card>
       <header className="flex items-center gap-1">
-        <CompanyReviewer
-          reviewerFirstName={reviewerFirstName}
-          reviewerLastName={reviewerLastName}
-          reviewerId={reviewerId}
-          reviewerProfilePicture={reviewerProfilePicture}
-        />
+        {anonymous ? (
+          <Text color="gray-500" variant="sm">
+            Anonymous Member
+          </Text>
+        ) : (
+          <CompanyReviewer
+            reviewerFirstName={reviewerFirstName}
+            reviewerLastName={reviewerLastName}
+            reviewerId={reviewerId}
+            reviewerProfilePicture={reviewerProfilePicture}
+          />
+        )}
         <Text color="gray-500" variant="sm">
           &bull;
         </Text>

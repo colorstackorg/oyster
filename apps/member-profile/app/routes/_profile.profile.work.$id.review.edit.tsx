@@ -55,6 +55,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     recommend: data.recommend,
     text: data.text,
     workExperienceId: data.workExperienceId,
+    anonymous: data.anonymous,
   });
 
   toast(session, {

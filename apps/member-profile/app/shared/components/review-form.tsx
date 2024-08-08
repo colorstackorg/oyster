@@ -9,6 +9,7 @@ import {
 } from '@oyster/core/employment';
 import {
   Button,
+  Checkbox,
   cx,
   Divider,
   type FieldProps,
@@ -52,6 +53,7 @@ export function AddReviewForm({
 
       <RatingField error={errors.rating} name={keys.rating} />
       <RecommendField error={errors.recommend} name={keys.recommend} />
+      <AnonymousField error={errors.anonymous} name={keys.anonymous} />
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
@@ -63,7 +65,10 @@ export function AddReviewForm({
 }
 
 type EditReviewFormProps = Omit<AddReviewFormProps, 'showExperienceField'> & {
-  review: Pick<EditCompanyReviewInput, 'rating' | 'recommend' | 'text'>;
+  review: Pick<
+    EditCompanyReviewInput,
+    'rating' | 'recommend' | 'text' | 'anonymous'
+  >;
 };
 
 export function EditReviewForm({ error, errors, review }: EditReviewFormProps) {
@@ -86,6 +91,11 @@ export function EditReviewForm({ error, errors, review }: EditReviewFormProps) {
         defaultValue={review.recommend}
         error={errors.recommend}
         name={keys.recommend}
+      />
+      <AnonymousField
+        defaultValue={review.anonymous}
+        error={errors.anonymous}
+        name={keys.anonymous}
       />
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
@@ -221,6 +231,18 @@ function RecommendField({ defaultValue, error, name }: FieldProps<boolean>) {
           value="0"
         />
       </Radio.Group>
+    </Form.Field>
+  );
+}
+
+function AnonymousField({ error, name, defaultValue }: FieldProps<boolean>) {
+  return (
+    <Form.Field
+      error={error}
+      label="Would you like to remain anonymous?"
+      labelFor={name}
+    >
+      <Checkbox defaultChecked={defaultValue} id={name} name={name} value="0" />
     </Form.Field>
   );
 }
