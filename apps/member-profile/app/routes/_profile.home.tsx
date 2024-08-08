@@ -689,15 +689,24 @@ function MerchStoreCard() {
         />
       </ul>
 
-      <Button.Group>
-        <a
-          href="https://colorstackmerch.org"
-          target="_blank"
-          className={getButtonCn({ variant: 'primary' })}
-        >
-          Shop Now <ExternalLink size={20} />
-        </a>
-      </Button.Group>
+      <div className="flex w-full items-center justify-between gap-4">
+        <Button.Group>
+          <Link
+            className={getButtonCn({ variant: 'primary' })}
+            to={Route['/home/swag-pack/eligibility']}
+          >
+            Swag Pack
+          </Link>
+
+          <a
+            href="https://colorstackmerch.org"
+            target="_blank"
+            className={getButtonCn({ variant: 'primary' })}
+          >
+            Shop Now <ExternalLink size={20} />
+          </a>
+        </Button.Group>
+      </div>
     </Card>
   );
 }
