@@ -98,6 +98,7 @@ export default function RecapReviews() {
               reviewerProfilePicture={review.reviewerProfilePicture}
               text={review.text}
               title={review.title as string}
+              anonymous={review.anonymous}
             />
           );
         })}

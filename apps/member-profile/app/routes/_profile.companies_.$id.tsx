@@ -266,6 +266,7 @@ function ReviewsList() {
                 text={review.text}
                 title={review.title || ''}
                 workExperienceId={review.workExperienceId || ''}
+                anonymous={review.anonymous}
               />
             );
           })}
