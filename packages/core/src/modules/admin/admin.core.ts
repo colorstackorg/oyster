@@ -165,7 +165,7 @@ export async function removeAdmin({ id }: { id: string }) {
   const admin = await db
     .updateTable('admins')
     .set({
-      deletedAt: new Date(), // not sure of the format
+      deletedAt: new Date(),
     })
     .where('id', '=', id as string)
     .executeTakeFirst();
