@@ -76,7 +76,7 @@ const CompanyReview = z.object({
   studentId: Student.shape.id,
   text: z.string().trim().min(750),
   workExperienceId: z.string().trim().min(1),
-  anonymous: z.boolean(),
+  anonymous: BooleanInput,
 });
 
 export const JobOffer = Entity.omit({ deletedAt: true }).extend({
