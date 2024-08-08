@@ -12,6 +12,7 @@ export async function getCompanyReview({ where }: GetCompanyReviewOptions) {
       'companyReviews.rating',
       'companyReviews.recommend',
       'companyReviews.text',
+      'companyReviews.anonymous',
     ])
     .where('companyReviews.workExperienceId', '=', where.workExperienceId)
     .executeTakeFirst();

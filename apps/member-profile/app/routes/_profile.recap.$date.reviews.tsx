@@ -20,6 +20,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'companyReviews.createdAt',
       'companyReviews.id',
       'companyReviews.rating',
+      'companyReviews.anonymous',
       'companyReviews.recommend',
       'companyReviews.text',
       'students.id as reviewerId',
