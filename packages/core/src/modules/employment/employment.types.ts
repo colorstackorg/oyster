@@ -122,6 +122,7 @@ export const ListCompanyReviewsWhere = z
     companyId: Company.shape.id,
     postedAfter: z.date(),
     postedBefore: z.date(),
+    memberId: z.string().trim().min(1),
   })
   .partial();
 

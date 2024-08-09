@@ -57,6 +57,7 @@ export type MixpanelEvent = {
   'Resource Tag Added': undefined;
   'Resource Upvoted': undefined;
   'Resource Viewed': undefined;
+  'Review Upvoted': undefined;
 };
 
 export type TrackInput<Event extends keyof MixpanelEvent> = {

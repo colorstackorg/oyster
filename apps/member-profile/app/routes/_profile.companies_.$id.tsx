@@ -72,7 +72,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'workExperiences.title',
         'workExperiences.id as workExperienceId',
       ],
-      where: { companyId: id },
+      where: { companyId: id, memberId: user(session) },
     }),
   ]);
 
@@ -244,6 +244,7 @@ function ReviewsList() {
             return (
               <CompanyReview
                 key={review.id}
+                id={review.id}
                 company={{
                   id: review.companyId || '',
                   image: review.companyImage || '',
@@ -264,6 +265,8 @@ function ReviewsList() {
                 reviewerProfilePicture={review.reviewerProfilePicture}
                 text={review.text}
                 title={review.title || ''}
+                upvotesCount={review.upvotes}
+                hasUpvoted={review.upvoted as boolean}
                 workExperienceId={review.workExperienceId || ''}
               />
             );
