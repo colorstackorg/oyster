@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { sql } from 'kysely';
 
 import { db } from '@oyster/db';
@@ -20,15 +21,20 @@ function buildResourceMessage(
     )
     .join('\n');
 
-  // generating url for all resources posted within 24 hours of current timestamp
+  // generating url for all resources posted after 24 hours of current timestamp
   // example: /resources?postedAfter=2024-08-05T12:34:56.789Z
   const currentTimestamp = new Date().toISOString();
-  const url = `/link-to-resource-database?timestamp=${encodeURIComponent(currentTimestamp)}`;
+  const postedAfterTimestamp = dayjs(currentTimestamp)
+    .subtract(24, 'hours')
+    .toDate()
+    .toISOString();
+
+  const url = `https://app.colorstack.io/resources?postedBefore=${currentTimestamp}&postedAfter=${postedAfterTimestamp}`;
 
   const message = `Some new resources were posted in the Resource Database:
-    ${resourceItems}
-    Check out these latest resources [here](${url})!
-    Show some love if any of these are helpful!`;
+${resourceItems}
+Check out these latest resources [here](${url})!
+Show some love if any of these are helpful!`;
 
   return message;
 }

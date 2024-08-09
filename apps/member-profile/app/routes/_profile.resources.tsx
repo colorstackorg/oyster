@@ -47,7 +47,8 @@ const ResourcesSearchParams = ListSearchParams.pick({
   [whereKeys.search]: ListResourcesWhere.shape.search,
   [whereKeys.tags]: ListResourcesWhere.shape.tags.catch([]),
   orderBy: ListResourcesOrderBy,
-  postedAfter: z.string().optional(), // filters by last 24 hrs after this timestamp when set
+  postedAfter: z.string().optional(),
+  postedBefore: z.string().optional(),
 });
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -62,12 +63,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     tags: url.searchParams.getAll('tags'),
   });
 
-  const timestamp = searchParams.postedAfter
+  const postedAfter = searchParams.postedAfter
     ? new Date(searchParams.postedAfter)
-    : null;
+    : undefined;
 
-  const postedAfter = timestamp
-    ? dayjs(timestamp).subtract(24, 'hours').toDate()
+  const postedBefore = searchParams.postedBefore
+    ? new Date(searchParams.postedBefore)
     : undefined;
 
   const { resources: records, totalCount } = await listResources({
@@ -94,6 +95,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       search: searchParams.search,
       tags: searchParams.tags,
       postedAfter,
+      postedBefore,
     },
   });
 
