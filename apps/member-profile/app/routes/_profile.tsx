@@ -11,7 +11,7 @@ import {
   User,
 } from 'react-feather';
 
-import { getResumeBook } from '@oyster/core/resume-books';
+import { getResumeBook } from '@oyster/core/resumes';
 import { Dashboard, Divider } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
