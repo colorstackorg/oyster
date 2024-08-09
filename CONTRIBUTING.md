@@ -1,7 +1,7 @@
 # Contributing
 
 First off, thank you for taking the time to contribute! 🥳 ColorStack is nothing
-without its community, and that certainly extends to the software that we build.
+without its community and that certainly extends to the software that we build.
 This is a big team effort!
 
 ## First Things First
@@ -10,225 +10,213 @@ The #1 reason that we decided to open source Oyster was so that ColorStack
 members can learn from and eventually contribute to a real-world production
 codebase. Everything we do is centered around our helping our members fulfuill
 their dreams of becoming software engineers. That being said, in order to make
-space for our community, we will be prioritizing all contributions from
-ColorStack members first, and then friends of ColorStack. ❤️
+space for our community, we will only accept contributions from ColorStack
+members. ❤️
 
 ## Table of Contents
 
-- [Local Development](#local-development)
-  - [Prerequisites](#prerequisites)
-    - [Installing Node w/ `nvm`](#installing-node-w-nvm)
-  - [Fork and Clone Repository](#fork-and-clone-repository)
-  - [Project Dependencies](#project-dependencies)
-  - [Environment Variables](#environment-variables)
-  - [Database Setup](#database-setup)
-    - [Postgres Setup](#postgres-setup)
-    - [Executing Database Migrations](#executing-database-migrations)
-    - [Seeding the Database](#seeding-the-database)
-    - [Stopping the Database](#stopping-the-database)
-    - [Using a Database GUI (Prisma Studio)](#using-a-database-gui-prisma-studio)
-  - [Building the Project](#building-the-project)
-  - [Running the Applications](#running-the-applications)
-  - [Logging Into Applications](#logging-into-applications)
-  - [Enabling Integrations](#enabling-integrations)
-  - [Editor Setup](#editor-setup)
-- [Making a Pull Request](#making-a-pull-request)
-  - [Your First PR](#your-first-pr)
+- [Getting Started](#getting-started)
+- [Your First PR](#your-first-pr)
 - [Deciding What to Work On](#deciding-what-to-work-on)
-  - [Proposing Ideas](#proposing-ideas)
+- [Making a Pull Request](#making-a-pull-request)
+- [Enabling Integrations](#enabling-integrations)
 - [License](#license)
 
-## Local Development
+## Getting Started
 
-To get started with local development, please follow these simple steps.
+Follow these steps in order to get started with contributing to Oyster!
 
-### Prerequisites
+1. Install [Docker Desktop](https://docs.docker.com/engine/install).
 
-Please ensure that you have the following software on your machine:
+2. Install [Node.js](https://nodejs.org/en/download/package-manager) (v20.x).
 
-- [Docker](https://docs.docker.com/engine/install)
-- [Node.js](https://nodejs.org/en/download/package-manager) (v20.x)
-- [Yarn](https://classic.yarnpkg.com/lang/en/docs/install) (v1)
+   1. [Optional] Our recommendation is to use [`nvm`](https://nvm.sh) to install
+      Node. The main benefit of `nvm` is that it allows you to quickly install
+      and use different versions of Node on your machine.
+   2. [Optional] If you choose to install Node.js with `nvm`, we would also
+      recommend setting up a
+      [shell integration](https://github.com/nvm-sh/nvm/blob/master/README.md#deeper-shell-integration),
+      which will automatically install the right Node version for any project
+      that you're working in, as long as there is a [`.nvmrc`](./.nvmrc) file
+      found in that directory.
+   3. [Optional] If you choose to install Node.js with `nvm` but don't want to
+      set up a shell integration, you can switch to the appropriate Node version
+      manually by doing:
 
-#### Installing Node w/ `nvm`
+      ```sh
+      nvm install && nvm use
+      ```
 
-Our recommendation is to use [`nvm`](https://nvm.sh) to install Node. The main
-benefit of `nvm` is that it allows you to quickly install and use different
-versions of Node on your machine.
+3. Install [Yarn](https://classic.yarnpkg.com/lang/en/docs/install) (v1).
 
-If you choose to use `nvm`, we would also recommend setting up a
-[shell integration](https://github.com/nvm-sh/nvm/blob/master/README.md#deeper-shell-integration),
-which will automatically install the right node version for any given directory
-that you're working in, as long as there is a [`.nvmrc`](./.nvmrc) file found in
-that directory.
+   ```
+   npm install --global yarn
+   ```
 
-If you don't want to set up a shell integration, you can switch to the
-appropriate Node version manually by doing:
-
-```sh
-nvm install && nvm use
-```
-
-### Fork and Clone Repository
-
-1. [Fork the repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
+4. [Fork the repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
    to your own GitHub account.
-2. [Clone the repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
+
+5. [Clone the repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
    to your local machine.
+
    ```
    git clone https://github.com/<YOUR_USERNAME>/oyster.git
    ```
-3. [Configure the upstream repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/configuring-a-remote-repository-for-a-fork),
+
+6. Open the project in the editor of your choice and install all of our
+   [Recommend Extensions](https://code.visualstudio.com/docs/editor/extension-marketplace#_recommended-extensions).
+   You should see a popup to do this in VSCode the first time you open the
+   project!
+
+7. [Configure the upstream repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/configuring-a-remote-repository-for-a-fork),
    which will help you with
    [syncing your fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork)
    with the Oyster codebase as new code is added to it in the future.
+
    ```
    git remote add upstream https://github.com/colorstackorg/oyster.git
    ```
-4. Create a new branch.
+
+8. Install all project dependencies:
+
+   ```sh
+   yarn
    ```
-   git checkout -b YOUR_BRANCH_NAME
+
+9. Set up your environment variables:
+
+   ```
+    yarn env:setup
    ```
 
-### Project Dependencies
+   You'll now have `.env` files in all of your apps (and a couple packages)!
 
-To install all project dependencies, run:
+   You'll also notice that a lot of environment variables are empty. Most of
+   these empty variables are tied to the 3rd party integrations we have with
+   services such as Google for authentication. You shouldn't need to enable
+   these integrations unless you're working on a feature that touches that
+   service, but in case you need to enable an integration, please see the
+   [How to Enable Integrations](./docs/how-to-enable-integrations.md)
+   documentation.
 
-```sh
-yarn
-```
+10. Start your Postgres database and Redis store:
 
-### Environment Variables
+    ```
+    yarn dx:up
+    ```
 
-To set up your environment variables, run:
+11. Run all the database migrations:
 
-```
-yarn env:setup
-```
+    ```sh
+    yarn db:migrate
+    ```
 
-You'll now have `.env` files in all of your apps (and a couple packages)!
+12. Seed your database with some "dummy" data:
 
-You'll notice that a lot of environment variables are empty. Most of these empty
-variables are tied to the 3rd party integrations we have with platforms such as
-Google for authentication. If you would like to enable these integrations in
-development, please see the
-[How to Enable Integrations](./docs/how-to-enable-integrations.md)
-documentation.
+    ```sh
+    yarn db:seed
+    ```
 
-### Database Setup
+    Be sure to follow the prompt to add your email to the database.
 
-You'll need to make sure that Postgres and Redis are running in the background.
+    This will enable you to log into both the Admin Dashboard and Member Profile
+    very soon!
 
-#### Postgres Setup
+13. Build the project:
 
-To set up your Postgres databases, you can run:
+    ```sh
+    yarn build
+    ```
 
-```
-yarn dx:up
-```
+14. Start all of the applications in development:
 
-#### Executing Database Migrations
+    ```sh
+    yarn dev:apps
+    ```
 
-To execute the database migrations, run:
+15. Open up the applications in the browser.
 
-```sh
-yarn db:migrate
-```
+    1. The Member Profile is running at http://localhost:3000.
+    2. The Admin Dashboard is running at http://localhost:3001.
 
-#### Seeding the Database
+16. Log into both applications. In the development environment, you can bypass
+    the "real" authentication by doing the following:
 
-Now that we have some tables, we're ready to add some seed data in our database,
-which will enable you to log into the Admin Dashboard and Member Profile. Run:
+    1. Click "Log In with OTP".
+    2. Input the email that you seeded your database with.
+    3. Input any 6-digit value (ie: 000000).
 
-```sh
-yarn db:seed
-```
+    You should be logged in!
 
-Follow the prompt to add your email, and you will now be able to log into both
-applications.
+17. Set up [Prisma Studio](https://www.prisma.io/studio), a tool to make it
+    easier to interact with and manage your data in the browser:
 
-#### Stopping the Database
+    ```sh
+    yarn prisma:setup # Generates a Prisma schema file...
+    yarn prisma:studio # Starts Prisma Studio locally...
+    ```
 
-Once you are done developing, you might want to stop the database containers
-from running. Keeping your containers up can eat up your battery life, so it's
-recommended to take them down once you are done using them. Run:
+    You can now open up Prisma Studio in your browser at http://localhost:5555.
 
-```
-yarn dx:down
-```
+18. [Optional] Once you are done developing, you may want to stop the database
+    containers since they can eat up battery life.
 
-#### Using a Database GUI (Prisma Studio)
+    ```sh
+    yarn dx:down
+    ```
 
-To make it easier to interact with and manage your data in the browser, you can
-use [Prisma Studio](https://www.prisma.io/studio)!
+That's it -- you've finished setting up Oyster locally! All your applications
+are running properly and you're ready to get your first contribution in!
 
-To get started, setup your Prisma schema file by running:
+## Your First PR
 
-```
-yarn prisma:setup
-```
+It's time to get your first pull request in! We love quick wins, so this first
+one should only take a few minutes. Here's what we want you to do:
 
-Then, start Prisma Studio locally and open your browser to the URL that gets
-printed:
+1. Create a new branch.
 
-```
-yarn prisma:studio
-```
+   ```
+   git checkout -b first-contribution
+   ```
 
-### Building the Project
+2. Add your GitHub username to the [`CONTRIBUTORS.yml`](./CONTRIBUTORS.yml)
+   file.
+3. Push this change up to GitHub (ie: `git add`, `git commit`, `git push`).
+4. Create a pull request.
+   1. The title can be: `chore: my first contribution 🚀`
+   2. The description can be: `Added name to CONTRIBUTORS.yml!`
+5. Here is an [example PR](https://github.com/colorstackorg/oyster/pull/417) in
+   case you want to follow one!
 
-You can build the project by running:
+Boom, you're all done! This should be approved and merged soon, and you'll
+officially be an Oyster contributor! 🥳
 
-```sh
-yarn build
-```
+## Deciding What to Work On
 
-### Running the Applications
+You can start by browsing through our list of
+[issues](https://github.com/colorstackorg/oyster/issues). Once you've decided on
+an issue, leave a comment and wait to get approval from one of our codebase
+admins - this helps avoid multiple people working on this same issue.
 
-To run all of our _applications_, you can run:
+Most of our work comes from our
+[product roadmap](https://github.com/orgs/colorstackorg/projects/4) so if
+there's something that interests you there that hasn't been converted into an
+issue yet, feel free to ask about it.
 
-```sh
-yarn dev:apps
-```
+### Proposing Ideas
 
-To run a _specific package or application_, you can use the `--filter` flag like
-this:
+If you have a feature request or idea that would improve our product, please
+start a thread in our
+[`#oyster`](https://colorstack-family.slack.com/channels/C06S0DBFD6X) channel in
+Slack! If the maintainers see value in the idea, they will add it to our
+[product roadmap](https://github.com/orgs/colorstackorg/projects/4) or create an
+[issue](https://github.com/colorstackorg/oyster/issues) directly.
 
-```sh
-yarn dev --filter=api
-```
+### Reporting Bugs
 
-### Logging Into Applications
-
-In the development environment, you can bypass any real authentication when
-logging into the Member Profile and Admin Dashboard by doing the following:
-
-1. Click "Log In with OTP".
-2. Input the email that you seeded your database with.
-3. Input any 6-digit value.
-
-You should be logged in!
-
-### Enabling Integrations
-
-To enable any of our 3rd party integrations in development, please see the
-[How to Enable Integrations](./docs/how-to-enable-integrations.md)
-documentation.
-
-To enable sending emails, please see the
-[How to Enable Emails](./docs/how-to-enable-emails.md) documentation.
-
-### Editor Setup
-
-Surprise, surprise. We use [VSCode](https://code.visualstudio.com/download) to
-write code! After you download it, we recommend enabling some extensions to make
-life a bit easier:
-
-- [Auto Rename Tag](https://marketplace.visualstudio.com/items?itemName=formulahendry.auto-rename-tag)
-- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
-- [Live Share](https://marketplace.visualstudio.com/items?itemName=MS-vsliveshare.vsliveshare)
-- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
-- [Tailwind IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
+If you find a bug, please file a
+[bug report](https://github.com/colorstackorg/oyster/issues/new?assignees=&labels=Bug+%F0%9F%90%9E&projects=&template=bug_report.md&title=)
+directly!
 
 ## Making a Pull Request
 
@@ -265,34 +253,13 @@ Some things to keep in mind when making a pull request:
   - All branches are up to date before merging.
   - All conversations are resolved.
 
-### Your First PR
+### Enabling Integrations
 
-Getting your first PR in is always the hardest. Lucky for you, we love quick
-wins here at ColorStack, so we're going to reduce that barrier for you! After
-you finish your [local development](#local-development) setup, your first PR can
-simply be updating the [`CONTRIBUTORS.yml`](./CONTRIBUTORS.yml) file with your
-GitHub username!
-
-You can name that PR:
-
-```
-chore: my first contribution ❤️
-```
-
-## Deciding What to Work On
-
-You can start by browsing through our list of
-[issues](https://github.com/colorstackorg/oyster/issues). Once you've decided on
-an issue, leave a comment and wait to get approval from one of our codebase
-admins - this helps avoid multiple people working on this same issue.
-
-### Proposing Ideas
-
-If you have a feature request or idea that would improve our product, please
-start a discussion in our
-[GitHub Discussions](https://github.com/colorstackorg/oyster/discussions) space!
-If the maintainers see value in the idea, they will create issue from that
-discussion.
+- To enable any of our 3rd party integrations in development, please see the
+  [How to Enable Integrations](./docs/how-to-enable-integrations.md)
+  documentation.
+- To enable sending emails, please see the
+  [How to Enable Emails](./docs/how-to-enable-emails.md) documentation.
 
 ## License
 
