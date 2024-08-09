@@ -295,7 +295,7 @@ type AirtableFieldOptions = {
   }[];
 };
 
-type AirtableField = { name: string } & (
+export type AirtableField = { name: string } & (
   | { type: 'email' }
   | { type: 'multipleAttachments' }
   | { type: 'multipleSelects'; options: AirtableFieldOptions }

@@ -4,10 +4,11 @@ import { match } from 'ts-pattern';
 
 import { type DB, db, point } from '@oyster/db';
 import { FORMATTED_RACE, Race } from '@oyster/types';
-import { id, iife } from '@oyster/utils';
+import { id, run } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import {
+  type AirtableField,
   createAirtableRecord,
   createAirtableTable,
   updateAirtableRecord,
@@ -27,6 +28,7 @@ import {
   type UpdateResumeBookInput,
 } from '@/modules/resume/resume.types';
 import { ColorStackError } from '@/shared/errors';
+import { success } from '@/shared/utils/core.utils';
 
 // Environment Variables
 
@@ -125,7 +127,7 @@ export async function listResumeBookSponsors({
   return sponsors;
 }
 
-// Mutations
+// Use Cases
 
 /**
  * Creates a new resume book as well as the sponsors (companies) of the
@@ -140,221 +142,10 @@ export async function createResumeBook({
   startDate,
 }: CreateResumeBookInput) {
   const [airtableTableId, googleDriveFolderId] = await Promise.all([
-    iife(async () => {
-      const companies = await db
-        .selectFrom('companies')
-        .select(['name'])
-        .where('id', 'in', sponsors)
-        .orderBy('name', 'asc')
-        .execute();
-
-      const sponsorOptions = companies.map((company) => {
-        return { name: company.name };
-      });
-
-      const locationOptions = [
-        { name: 'International' },
-        { name: 'Canada' },
-        { name: 'N/A' },
-        { name: 'AL' },
-        { name: 'AK' },
-        { name: 'AR' },
-        { name: 'AZ' },
-        { name: 'CA' },
-        { name: 'CO' },
-        { name: 'CT' },
-        { name: 'DC' },
-        { name: 'DE' },
-        { name: 'FL' },
-        { name: 'GA' },
-        { name: 'HI' },
-        { name: 'IA' },
-        { name: 'ID' },
-        { name: 'IL' },
-        { name: 'IN' },
-        { name: 'KS' },
-        { name: 'KY' },
-        { name: 'LA' },
-        { name: 'MA' },
-        { name: 'MD' },
-        { name: 'ME' },
-        { name: 'MI' },
-        { name: 'MN' },
-        { name: 'MO' },
-        { name: 'MS' },
-        { name: 'MT' },
-        { name: 'NC' },
-        { name: 'ND' },
-        { name: 'NE' },
-        { name: 'NH' },
-        { name: 'NJ' },
-        { name: 'NM' },
-        { name: 'NV' },
-        { name: 'NY' },
-        { name: 'OH' },
-        { name: 'OK' },
-        { name: 'OR' },
-        { name: 'PA' },
-        { name: 'PR' },
-        { name: 'RI' },
-        { name: 'SC' },
-        { name: 'SD' },
-        { name: 'TN' },
-        { name: 'TX' },
-        { name: 'UT' },
-        { name: 'VA' },
-        { name: 'VT' },
-        { name: 'WA' },
-        { name: 'WI' },
-        { name: 'WV' },
-        { name: 'WY' },
-      ];
-
-      return createAirtableTable({
-        baseId: AIRTABLE_RESUME_BOOKS_BASE_ID,
-        name,
-        fields: [
-          {
-            name: 'Email',
-            type: 'email',
-          },
-          {
-            name: 'First Name',
-            type: 'singleLineText',
-          },
-          {
-            name: 'Last Name',
-            type: 'singleLineText',
-          },
-          {
-            name: 'Race',
-            options: {
-              choices: [
-                Race.BLACK,
-                Race.HISPANIC,
-                Race.NATIVE_AMERICAN,
-                Race.MIDDLE_EASTERN,
-                Race.ASIAN,
-                Race.WHITE,
-                Race.OTHER,
-              ].map((race) => {
-                return { name: FORMATTED_RACE[race] };
-              }),
-            },
-            type: 'multipleSelects',
-          },
-          {
-            name: 'Education Level',
-            options: {
-              choices: [
-                { name: 'Undergraduate' },
-                { name: 'Masters' },
-                { name: 'PhD' },
-                { name: 'Early Career Professional' },
-              ],
-            },
-            type: 'singleSelect',
-          },
-          {
-            name: 'Graduation Season',
-            options: {
-              choices: [{ name: 'Spring' }, { name: 'Fall' }],
-            },
-            type: 'singleSelect',
-          },
-          {
-            name: 'Graduation Year',
-            options: {
-              choices: [
-                { name: '2020' },
-                { name: '2021' },
-                { name: '2022' },
-                { name: '2023' },
-                { name: '2024' },
-                { name: '2025' },
-                { name: '2026' },
-                { name: '2027' },
-                { name: '2028' },
-                { name: '2029' },
-                { name: '2030' },
-              ],
-            },
-            type: 'singleSelect',
-          },
-          {
-            name: 'Location (University)',
-            options: { choices: locationOptions },
-            type: 'singleSelect',
-          },
-          {
-            name: 'Hometown',
-            options: { choices: locationOptions },
-            type: 'singleSelect',
-          },
-          {
-            name: 'Role Interest',
-            options: {
-              choices: RESUME_BOOK_ROLES.map((role) => {
-                return { name: role };
-              }),
-            },
-            type: 'multipleSelects',
-          },
-          {
-            name: 'Proficient Language(s)',
-            options: {
-              choices: RESUME_BOOK_CODING_LANGUAGES.map((language) => {
-                return { name: language };
-              }),
-            },
-            type: 'multipleSelects',
-          },
-          {
-            name: 'Employment Search Status',
-            options: {
-              choices: RESUME_BOOK_JOB_SEARCH_STATUSES.map((status) => {
-                return { name: status };
-              }),
-            },
-            type: 'singleSelect',
-          },
-          {
-            name: 'Sponsor Interest #1',
-            options: { choices: sponsorOptions },
-            type: 'singleSelect',
-          },
-          {
-            name: 'Sponsor Interest #2',
-            options: { choices: sponsorOptions },
-            type: 'singleSelect',
-          },
-          {
-            name: 'Sponsor Interest #3',
-            options: { choices: sponsorOptions },
-            type: 'singleSelect',
-          },
-          {
-            name: 'Resume',
-            type: 'multipleAttachments',
-          },
-          {
-            name: 'LinkedIn',
-            type: 'url',
-          },
-          {
-            name: 'Are you authorized to work in the US or Canada?',
-            options: {
-              choices: [
-                { name: 'Yes' },
-                { name: 'Yes, with visa sponsorship' },
-                { name: 'No' },
-                { name: "I'm not sure" },
-              ],
-            },
-            type: 'singleSelect',
-          },
-        ],
-      });
+    createAirtableTable({
+      baseId: AIRTABLE_RESUME_BOOKS_BASE_ID,
+      fields: await getResumeBookAirtableFields({ sponsors }),
+      name,
     }),
 
     createGoogleDriveFolder({
@@ -392,8 +183,243 @@ export async function createResumeBook({
       )
       .execute();
   });
+
+  return success({});
 }
 
+/**
+ * Returns all of the fields that are required for the resume book's Airtable
+ * table. This includes options for single select, multiple select, and
+ * multiple attachments fields.
+ *
+ * The only thing that changes for each resume book is the list of sponsors
+ * (companies) that are associated with the resume book, so that is the only
+ * input required.
+ */
+async function getResumeBookAirtableFields({
+  sponsors,
+}: Pick<CreateResumeBookInput, 'sponsors'>): Promise<AirtableField[]> {
+  const companies = await db
+    .selectFrom('companies')
+    .select(['name'])
+    .where('id', 'in', sponsors)
+    .orderBy('name', 'asc')
+    .execute();
+
+  const sponsorOptions = companies.map((company) => {
+    return { name: company.name };
+  });
+
+  const locationOptions = [
+    { name: 'International' },
+    { name: 'Canada' },
+    { name: 'N/A' },
+    { name: 'AL' },
+    { name: 'AK' },
+    { name: 'AR' },
+    { name: 'AZ' },
+    { name: 'CA' },
+    { name: 'CO' },
+    { name: 'CT' },
+    { name: 'DC' },
+    { name: 'DE' },
+    { name: 'FL' },
+    { name: 'GA' },
+    { name: 'HI' },
+    { name: 'IA' },
+    { name: 'ID' },
+    { name: 'IL' },
+    { name: 'IN' },
+    { name: 'KS' },
+    { name: 'KY' },
+    { name: 'LA' },
+    { name: 'MA' },
+    { name: 'MD' },
+    { name: 'ME' },
+    { name: 'MI' },
+    { name: 'MN' },
+    { name: 'MO' },
+    { name: 'MS' },
+    { name: 'MT' },
+    { name: 'NC' },
+    { name: 'ND' },
+    { name: 'NE' },
+    { name: 'NH' },
+    { name: 'NJ' },
+    { name: 'NM' },
+    { name: 'NV' },
+    { name: 'NY' },
+    { name: 'OH' },
+    { name: 'OK' },
+    { name: 'OR' },
+    { name: 'PA' },
+    { name: 'PR' },
+    { name: 'RI' },
+    { name: 'SC' },
+    { name: 'SD' },
+    { name: 'TN' },
+    { name: 'TX' },
+    { name: 'UT' },
+    { name: 'VA' },
+    { name: 'VT' },
+    { name: 'WA' },
+    { name: 'WI' },
+    { name: 'WV' },
+    { name: 'WY' },
+  ];
+
+  return [
+    {
+      name: 'Email',
+      type: 'email',
+    },
+    {
+      name: 'First Name',
+      type: 'singleLineText',
+    },
+    {
+      name: 'Last Name',
+      type: 'singleLineText',
+    },
+    {
+      name: 'Race',
+      options: {
+        choices: [
+          Race.BLACK,
+          Race.HISPANIC,
+          Race.NATIVE_AMERICAN,
+          Race.MIDDLE_EASTERN,
+          Race.ASIAN,
+          Race.WHITE,
+          Race.OTHER,
+        ].map((race) => {
+          return { name: FORMATTED_RACE[race] };
+        }),
+      },
+      type: 'multipleSelects',
+    },
+    {
+      name: 'Education Level',
+      options: {
+        choices: [
+          { name: 'Undergraduate' },
+          { name: 'Masters' },
+          { name: 'PhD' },
+          { name: 'Early Career Professional' },
+        ],
+      },
+      type: 'singleSelect',
+    },
+    {
+      name: 'Graduation Season',
+      options: {
+        choices: [{ name: 'Spring' }, { name: 'Fall' }],
+      },
+      type: 'singleSelect',
+    },
+    {
+      name: 'Graduation Year',
+      options: {
+        choices: [
+          { name: '2020' },
+          { name: '2021' },
+          { name: '2022' },
+          { name: '2023' },
+          { name: '2024' },
+          { name: '2025' },
+          { name: '2026' },
+          { name: '2027' },
+          { name: '2028' },
+          { name: '2029' },
+          { name: '2030' },
+        ],
+      },
+      type: 'singleSelect',
+    },
+    {
+      name: 'Location (University)',
+      options: { choices: locationOptions },
+      type: 'singleSelect',
+    },
+    {
+      name: 'Hometown',
+      options: { choices: locationOptions },
+      type: 'singleSelect',
+    },
+    {
+      name: 'Role Interest',
+      options: {
+        choices: RESUME_BOOK_ROLES.map((role) => {
+          return { name: role };
+        }),
+      },
+      type: 'multipleSelects',
+    },
+    {
+      name: 'Proficient Language(s)',
+      options: {
+        choices: RESUME_BOOK_CODING_LANGUAGES.map((language) => {
+          return { name: language };
+        }),
+      },
+      type: 'multipleSelects',
+    },
+    {
+      name: 'Employment Search Status',
+      options: {
+        choices: RESUME_BOOK_JOB_SEARCH_STATUSES.map((status) => {
+          return { name: status };
+        }),
+      },
+      type: 'singleSelect',
+    },
+    {
+      name: 'Sponsor Interest #1',
+      options: { choices: sponsorOptions },
+      type: 'singleSelect',
+    },
+    {
+      name: 'Sponsor Interest #2',
+      options: { choices: sponsorOptions },
+      type: 'singleSelect',
+    },
+    {
+      name: 'Sponsor Interest #3',
+      options: { choices: sponsorOptions },
+      type: 'singleSelect',
+    },
+    {
+      name: 'Resume',
+      type: 'multipleAttachments',
+    },
+    {
+      name: 'LinkedIn',
+      type: 'url',
+    },
+    {
+      name: 'Are you authorized to work in the US or Canada?',
+      options: {
+        choices: [
+          { name: 'Yes' },
+          { name: 'Yes, with visa sponsorship' },
+          { name: 'No' },
+          { name: "I'm not sure" },
+        ],
+      },
+      type: 'singleSelect',
+    },
+  ];
+}
+
+/**
+ * Updates the resume book information.
+ *
+ * This will mainly be used to update the start/end date of the resume book,
+ * as well as the name and whether the resume book is hidden or not.
+ *
+ * @todo Implement the ability to update the sponsors of the resume book.
+ * @todo Implement the "edit table" functionality to Airtable.
+ */
 export async function updateResumeBook({
   endDate,
   hidden,
@@ -413,8 +439,29 @@ export async function updateResumeBook({
       .where('id', '=', id)
       .execute();
   });
+
+  return success({});
 }
 
+/**
+ * Submits a resume to the resume book. Note that this same function is used
+ * for both the initial submission as well as any subsequent edits to the
+ * submission.
+ *
+ * This function is quite complex because it involves multiple steps and
+ * external services. The following is a high-level overview of the steps:
+ * - Upload the resume to object storage.
+ * - Upload the resume to Google Drive.
+ * - Create or update the Airtable record. In order to send the resume file to
+ *   Airtable, we first need to generate a presigned URL that allows Airtable to
+ *   access the resume file in object storage. Then, Airtable will create its
+ *   own copy of the file.
+ * - Update the member's information in the database (ie: name, LinkedIn).
+ * - Upsert the resume book submission record.
+ * - Send an email notification to the student.
+ * - If this is the student's first submission, we'll emit a job to grant them
+ *   points.
+ */
 export async function submitResume({
   codingLanguages,
   educationId,
@@ -499,13 +546,15 @@ export async function submitResume({
   ]);
 
   const isFirstSubmission = !submission;
+
+  // If the resume is present, it can either be a File object or a string.
   const isResumeFile = !!resume && typeof resume !== 'string';
 
   // Upload the resume to object storage and get a presigned URL which allows
   // the resume to be accessed by Airtable, who will copy the file to their
   // own storage.
   const resumeLink = isResumeFile
-    ? await iife(async function uploadResume() {
+    ? await run(async () => {
         const attachmentKey = `resume-books/${resumeBookId}/${memberId}`;
 
         const arrayBuffer = await resume.arrayBuffer();
@@ -531,100 +580,99 @@ export async function submitResume({
 
   // We need to do a little massaging/formatting of the data before we sent it
   // over to Airtable.
-  const airtableData = iife(function formatAirtableRecord() {
-    return {
-      'Education Level': iife(() => {
-        const graduated = dayjs().isAfter(education.endDate);
+  const airtableData = {
+    'Education Level': run(() => {
+      const graduated = dayjs().isAfter(education.endDate);
 
-        if (graduated) {
-          return 'Early Career Professional';
-        }
+      if (graduated) {
+        return 'Early Career Professional';
+      }
 
-        return match(education.degreeType as DegreeType)
-          .with('associate', 'bachelors', 'certificate', () => 'Undergraduate')
-          .with('doctoral', 'professional', () => 'PhD')
-          .with('masters', () => 'Masters')
-          .exhaustive();
+      return match(education.degreeType as DegreeType)
+        .with('associate', 'bachelors', 'certificate', () => 'Undergraduate')
+        .with('doctoral', 'professional', () => 'PhD')
+        .with('masters', () => 'Masters')
+        .exhaustive();
+    }),
+
+    Email: member.email,
+    'Employment Search Status': employmentSearchStatus,
+    'First Name': firstName,
+
+    'Graduation Season': run(() => {
+      return education.endDate.getMonth() <= 6 ? 'Spring' : 'Fall';
+    }),
+
+    // We need to convert to a string because Airtable expects strings for
+    // their "Single Select" fields, which we're using instead of a "Number"
+    // field.
+    'Graduation Year': graduationYear.toString(),
+
+    Hometown: run(() => {
+      // The hometown is a formatted string that includes a minimum of city
+      // and country, and potentially state, neighborhood, etc.
+      // Example (1): "Ethiopia"
+      // Example (2): "Cairo, Egypt"
+      // Example (3): "New York City, NY, USA"
+      // Example (4): "Bedford-Stuyvesant, Brooklyn, NY, USA"
+      // Example (5): "Harlem, Manhattan, New York, NY, USA"
+      const parts = hometown.split(', ');
+
+      // The country is always the last "part".
+      const country = parts[parts.length - 1];
+
+      return match(parts.length)
+        .with(1, 2, () => {
+          return country === 'Puerto Rico' ? 'PR' : 'International';
+        })
+        .with(3, 4, 5, () => {
+          if (country === 'USA') {
+            return parts[parts.length - 2]; // This is the state.
+          }
+
+          if (country === 'Canada') {
+            return 'Canada';
+          }
+
+          return 'International';
+        })
+        .otherwise(() => {
+          return country;
+        });
+    }),
+
+    'Last Name': lastName,
+    LinkedIn: linkedInUrl,
+    'Location (University)': education.addressState || 'N/A',
+    'Proficient Language(s)': codingLanguages,
+
+    Race: race.map((value) => {
+      return FORMATTED_RACE[value];
+    }),
+
+    ...(!!resumeLink && {
+      // See the following Airtable API documentation to understand the format
+      // for upload attachments/files:
+      // https://airtable.com/developers/web/api/field-model#multipleattachment
+      Resume: run(() => {
+        return [{ filename: fileName, url: resumeLink }];
       }),
+    }),
 
-      Email: member.email,
-      'Employment Search Status': employmentSearchStatus,
-      'First Name': firstName,
-      'Graduation Season': iife(() => {
-        return education.endDate.getMonth() <= 6 ? 'Spring' : 'Fall';
-      }),
+    'Role Interest': preferredRoles,
+    'Sponsor Interest #1': company1.name,
+    'Sponsor Interest #2': company2.name,
+    'Sponsor Interest #3': company3.name,
 
-      // We need to convert to a string because Airtable expects strings for
-      // their "Single Select" fields, which we're using instead of a "Number"
-      // field.
-      'Graduation Year': graduationYear.toString(),
-
-      Hometown: iife(() => {
-        // The hometown is a formatted string that includes a minimum of city
-        // and country, and potentially state, neighborhood, etc.
-        // Example (1): "Ethiopia"
-        // Example (2): "Cairo, Egypt"
-        // Example (3): "New York City, NY, USA"
-        // Example (4): "Bedford-Stuyvesant, Brooklyn, NY, USA"
-        // Example (5): "Harlem, Manhattan, New York, NY, USA"
-        const parts = hometown.split(', ');
-
-        // The country is always the last "part".
-        const country = parts[parts.length - 1];
-
-        return match(parts.length)
-          .with(1, 2, () => {
-            return country === 'Puerto Rico' ? 'PR' : 'International';
-          })
-          .with(3, 4, 5, () => {
-            if (country === 'USA') {
-              return parts[parts.length - 2]; // This is the state.
-            }
-
-            if (country === 'Canada') {
-              return 'Canada';
-            }
-
-            return 'International';
-          })
-          .otherwise(() => {
-            return country;
-          });
-      }),
-
-      'Last Name': lastName,
-      LinkedIn: linkedInUrl,
-      'Location (University)': education.addressState || 'N/A',
-      'Proficient Language(s)': codingLanguages,
-
-      Race: race.map((value) => {
-        return FORMATTED_RACE[value];
-      }),
-
-      ...(!!resumeLink && {
-        // See the following Airtable API documentation to understand the format
-        // for upload attachments/files:
-        // https://airtable.com/developers/web/api/field-model#multipleattachment
-        Resume: iife(() => {
-          return [{ filename: fileName, url: resumeLink }];
-        }),
-      }),
-
-      'Role Interest': preferredRoles,
-      'Sponsor Interest #1': company1.name,
-      'Sponsor Interest #2': company2.name,
-      'Sponsor Interest #3': company3.name,
-
-      'Are you authorized to work in the US or Canada?': match(
-        workAuthorizationStatus
-      )
-        .with('authorized', () => 'Yes')
-        .with('needs_sponsorship', () => 'Yes, with visa sponsorship')
-        .with('unauthorized', () => 'No')
-        .with('unsure', () => "I'm not sure")
-        .exhaustive(),
-    };
-  });
+    'Are you authorized to work in the US or Canada?': match(
+      workAuthorizationStatus
+    )
+      .with('authorized', () => 'Yes')
+      .with('needs_sponsorship', () => 'Yes, with visa sponsorship')
+      .with('unauthorized', () => 'No')
+      .with('unsure', () => "I'm not sure")
+      .exhaustive(),
+  };
 
   const airtableRecordId = isFirstSubmission
     ? await createAirtableRecord({
@@ -639,7 +687,7 @@ export async function submitResume({
         data: airtableData,
       });
 
-  const googleDriveFileId = await iife(async () => {
+  const googleDriveFileId = await run(async () => {
     if (!isResumeFile) {
       return '';
     }
@@ -737,4 +785,6 @@ export async function submitResume({
       type: 'submit_resume',
     });
   }
+
+  return success({});
 }
