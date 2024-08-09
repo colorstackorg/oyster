@@ -552,6 +552,10 @@ export const StudentBullJob = z.discriminatedUnion('name', [
     name: z.literal('student.statuses.new'),
     data: z.object({}),
   }),
+  z.object({
+    name: z.literal('student.resources.daily'),
+    data: z.object({}),
+  }),
 ]);
 
 export const SurveyBullJob = z.discriminatedUnion('name', [

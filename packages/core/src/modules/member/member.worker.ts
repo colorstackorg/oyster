@@ -4,6 +4,7 @@ import { StudentBullJob } from '@/infrastructure/bull/bull.types';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { backfillActiveStatuses } from '@/modules/active-status/use-cases/backfill-active-statuses';
 import { createNewActiveStatuses } from '@/modules/active-status/use-cases/create-new-active-statuses';
+import { sendResourcesNotification } from '@/modules/member/use-cases/send-resources-notification';
 import { onActivationStepCompleted } from './events/activation-step-completed';
 import { onMemberActivated } from './events/member-activated';
 import { onMemberCreated } from './events/member-created';
@@ -46,6 +47,9 @@ export const memberWorker = registerWorker(
       })
       .with({ name: 'student.statuses.new' }, ({ data }) => {
         return createNewActiveStatuses(data);
+      })
+      .with({ name: 'student.resources.daily' }, ({ data }) => {
+        return sendResourcesNotification(data);
       })
       .exhaustive();
   }

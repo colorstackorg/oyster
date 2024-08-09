@@ -9,6 +9,7 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { Plus } from 'react-feather';
+import { z } from 'zod';
 
 import { isMemberAdmin } from '@oyster/core/admins';
 import { track } from '@oyster/core/mixpanel';
@@ -46,6 +47,8 @@ const ResourcesSearchParams = ListSearchParams.pick({
   [whereKeys.search]: ListResourcesWhere.shape.search,
   [whereKeys.tags]: ListResourcesWhere.shape.tags.catch([]),
   orderBy: ListResourcesOrderBy,
+  postedAfter: z.string().optional(),
+  postedBefore: z.string().optional(),
 });
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -59,6 +62,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ...Object.fromEntries(url.searchParams),
     tags: url.searchParams.getAll('tags'),
   });
+
+  const postedAfter = searchParams.postedAfter
+    ? new Date(searchParams.postedAfter)
+    : undefined;
+
+  const postedBefore = searchParams.postedBefore
+    ? new Date(searchParams.postedBefore)
+    : undefined;
 
   const { resources: records, totalCount } = await listResources({
     memberId: user(session),
@@ -83,6 +94,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       id: searchParams.id,
       search: searchParams.search,
       tags: searchParams.tags,
+      postedAfter,
+      postedBefore,
     },
   });
 
