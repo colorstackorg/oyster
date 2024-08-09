@@ -38,9 +38,9 @@
     "./remix": "./src/modules/remix.ts",
     "./resources": "./src/modules/resource/index.ts",
     "./resources.server": "./src/modules/resource/index.server.ts",
-    "./resume-books": "./src/modules/resume-book/resume-book.core.ts",
-    "./resume-books.types": "./src/modules/resume-book/resume-book.types.ts",
-    "./resume-books.ui": "./src/modules/resume-book/resume-book.ui.tsx",
+    "./resumes": "./src/modules/resume/resume.core.ts",
+    "./resumes.types": "./src/modules/resume/resume.types.ts",
+    "./resumes.ui": "./src/modules/resume/resume.ui.tsx",
     "./scholarships": "./src/modules/scholarship/scholarship.core.ts",
     "./scholarships.ui": "./src/modules/scholarship/scholarship.ui.tsx",
     "./slack.server": "./src/modules/slack/index.server.ts"
