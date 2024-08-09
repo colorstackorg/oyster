@@ -9,9 +9,9 @@ import {
   Outlet,
   Form as RemixForm,
   useLoaderData,
-  useSearchParams,
   useSubmit,
 } from '@remix-run/react';
+import { useState } from 'react';
 import { FileText, Plus, Star, Users } from 'react-feather';
 
 import {
@@ -23,6 +23,7 @@ import { track } from '@oyster/core/mixpanel';
 import {
   cx,
   Dashboard,
+  Dropdown,
   ExistingSearchParams,
   getButtonCn,
   getTextCn,
@@ -90,7 +91,7 @@ export default function CompaniesPage() {
     <>
       <header className="flex items-center justify-between gap-4">
         <Text variant="2xl">Companies 💼</Text>
-        <AddReviewLink />
+        <AddReviewDropdown />
       </header>
 
       <section className="flex flex-wrap gap-4">
@@ -107,19 +108,39 @@ export default function CompaniesPage() {
   );
 }
 
-function AddReviewLink() {
-  const [searchParams] = useSearchParams();
+function AddReviewDropdown() {
+  const [open, setOpen] = useState(false);
+
+  function onClose() {
+    setOpen(false);
+  }
+
+  function onClick() {
+    setOpen(true);
+  }
 
   return (
-    <Link
-      className={getButtonCn({})}
-      to={{
-        pathname: Route['/companies/reviews/add'],
-        search: searchParams.toString(),
-      }}
-    >
-      <Plus size={16} /> Add Review
-    </Link>
+    <Dropdown.Container onClose={onClose}>
+      <button className={getButtonCn({})} onClick={onClick}>
+        <Plus size={16} /> Add Review
+      </button>
+      {open && (
+        <Dropdown>
+          <Dropdown.List>
+            <Dropdown.Item>
+              <Link to={Route['/companies/reviews/add']}>
+                <Plus /> Add Company Review
+              </Link>
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <Link to={Route['/companies/interview-reviews/add']}>
+                <Plus /> Add Interview Review
+              </Link>
+            </Dropdown.Item>
+          </Dropdown.List>
+        </Dropdown>
+      )}
+    </Dropdown.Container>
   );
 }
 
