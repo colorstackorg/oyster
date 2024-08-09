@@ -77,47 +77,41 @@ Follow these steps in order to get started with contributing to Oyster!
    git remote add upstream https://github.com/colorstackorg/oyster.git
    ```
 
-8. Create a new branch.
-
-   ```
-   git checkout -b first-contribution
-   ```
-
-9. Install all project dependencies:
+8. Install all project dependencies:
 
    ```sh
    yarn
    ```
 
-10. Set up your environment variables:
+9. Set up your environment variables:
 
-    ```
-     yarn env:setup
-    ```
+   ```
+    yarn env:setup
+   ```
 
-    You'll now have `.env` files in all of your apps (and a couple packages)!
+   You'll now have `.env` files in all of your apps (and a couple packages)!
 
-    You'll also notice that a lot of environment variables are empty. Most of
-    these empty variables are tied to the 3rd party integrations we have with
-    services such as Google for authentication. You shouldn't need to enable
-    these integrations unless you're working on a feature that touches that
-    service, but in case you need to enable an integration, please see the
-    [How to Enable Integrations](./docs/how-to-enable-integrations.md)
-    documentation.
+   You'll also notice that a lot of environment variables are empty. Most of
+   these empty variables are tied to the 3rd party integrations we have with
+   services such as Google for authentication. You shouldn't need to enable
+   these integrations unless you're working on a feature that touches that
+   service, but in case you need to enable an integration, please see the
+   [How to Enable Integrations](./docs/how-to-enable-integrations.md)
+   documentation.
 
-11. Start your Postgres database and Redis store:
+10. Start your Postgres database and Redis store:
 
     ```
     yarn dx:up
     ```
 
-12. Run all the database migrations:
+11. Run all the database migrations:
 
     ```sh
     yarn db:migrate
     ```
 
-13. Seed your database with some "dummy" data:
+12. Seed your database with some "dummy" data:
 
     ```sh
     yarn db:seed
@@ -128,24 +122,24 @@ Follow these steps in order to get started with contributing to Oyster!
     This will enable you to log into both the Admin Dashboard and Member Profile
     very soon!
 
-14. Build the project:
+13. Build the project:
 
     ```sh
     yarn build
     ```
 
-15. Start all of the applications in development:
+14. Start all of the applications in development:
 
     ```sh
     yarn dev:apps
     ```
 
-16. Open up the applications in the browser.
+15. Open up the applications in the browser.
 
     1. The Member Profile is running at http://localhost:3000.
     2. The Admin Dashboard is running at http://localhost:3001.
 
-17. Log into both applications. In the development environment, you can bypass
+16. Log into both applications. In the development environment, you can bypass
     the "real" authentication by doing the following:
 
     1. Click "Log In with OTP".
@@ -154,7 +148,7 @@ Follow these steps in order to get started with contributing to Oyster!
 
     You should be logged in!
 
-18. Set up [Prisma Studio](https://www.prisma.io/studio), a tool to make it
+17. Set up [Prisma Studio](https://www.prisma.io/studio), a tool to make it
     easier to interact with and manage your data in the browser:
 
     ```sh
@@ -164,7 +158,7 @@ Follow these steps in order to get started with contributing to Oyster!
 
     You can now open up Prisma Studio in your browser at http://localhost:5555.
 
-19. [Optional] Once you are done developing, you may want to stop the database
+18. [Optional] Once you are done developing, you may want to stop the database
     containers since they can eat up battery life.
 
     ```sh
@@ -179,13 +173,19 @@ are running properly and you're ready to get your first contribution in!
 It's time to get your first pull request in! We love quick wins, so this first
 one should only take a few minutes. Here's what we want you to do:
 
-1. Add your GitHub username to the [`CONTRIBUTORS.yml`](./CONTRIBUTORS.yml)
+1. Create a new branch.
+
+   ```
+   git checkout -b first-contribution
+   ```
+
+2. Add your GitHub username to the [`CONTRIBUTORS.yml`](./CONTRIBUTORS.yml)
    file.
-2. Push this change up to GitHub (ie: `git add`, `git commit`, `git push`).
-3. Create a pull request.
+3. Push this change up to GitHub (ie: `git add`, `git commit`, `git push`).
+4. Create a pull request.
    1. The title can be: `chore: my first contribution 🚀`
    2. The description can be: `Added name to CONTRIBUTORS.yml!`
-4. Here is an [example PR](https://github.com/colorstackorg/oyster/pull/417) in
+5. Here is an [example PR](https://github.com/colorstackorg/oyster/pull/417) in
    case you want to follow one!
 
 Boom, you're all done! This should be approved and merged soon, and you'll
