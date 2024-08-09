@@ -1,9 +1,12 @@
-import { Form as RemixForm } from '@remix-run/react';
+import { generatePath, Link, Form as RemixForm } from '@remix-run/react';
+import { useState } from 'react';
+import { Trash } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import { type DB } from '@oyster/db';
 import {
   Button,
+  Dropdown,
   Form,
   Input,
   Pill,
@@ -117,6 +120,45 @@ export function AdminTable({ admins }: AdminTableProps) {
   ];
 
   return (
-    <Table columns={columns} data={admins} emptyMessage="No admins found." />
+    <Table
+      columns={columns}
+      data={admins}
+      emptyMessage="No admins found."
+      Dropdown={AdminDropdown}
+    />
+  );
+}
+
+type AdminType = {
+  id: string;
+};
+
+export function AdminDropdown({ id }: AdminType) {
+  const [open, setOpen] = useState<boolean>(false);
+
+  function onClose() {
+    setOpen(false);
+  }
+
+  function onOpen() {
+    setOpen(true);
+  }
+
+  return (
+    <Dropdown.Container onClose={onClose}>
+      {open && (
+        <Table.Dropdown>
+          <Dropdown.List>
+            <Dropdown.Item>
+              <Link to={generatePath('/admins/:id/remove', { id })}>
+                <Trash /> Remove Admin
+              </Link>
+            </Dropdown.Item>
+          </Dropdown.List>
+        </Table.Dropdown>
+      )}
+
+      <Table.DropdownOpenButton onClick={onOpen} />
+    </Dropdown.Container>
   );
 }

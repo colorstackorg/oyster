@@ -6,9 +6,12 @@ import { AdminTable } from '@oyster/core/admins.ui';
 import { Dashboard } from '@oyster/ui';
 
 import { ensureUserAuthenticated } from '@/shared/session.server';
+import { user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
+
+  const userId = user(session);
 
   const admins = await listAdmins({
     select: [
