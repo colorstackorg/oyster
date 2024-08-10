@@ -1,5 +1,5 @@
 import { generatePath, Link, Form as RemixForm } from '@remix-run/react';
-import { useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { Trash } from 'react-feather';
 import { match } from 'ts-pattern';
 
@@ -86,9 +86,14 @@ type AdminInTable = Pick<
 
 type AdminTableProps = {
   admins: AdminInTable[];
+  userId: string;
 };
 
-export function AdminTable({ admins }: AdminTableProps) {
+const AdminTableContext = createContext({
+  userId: '' as string,
+});
+
+export function AdminTable({ admins, userId }: AdminTableProps) {
   const columns: TableColumnProps<AdminInTable>[] = [
     {
       displayName: 'Full Name',
@@ -120,12 +125,14 @@ export function AdminTable({ admins }: AdminTableProps) {
   ];
 
   return (
-    <Table
-      columns={columns}
-      data={admins}
-      emptyMessage="No admins found."
-      Dropdown={AdminDropdown}
-    />
+    <AdminTableContext.Provider value={{ userId }}>
+      <Table
+        columns={columns}
+        data={admins}
+        emptyMessage="No admins found."
+        Dropdown={AdminDropdown}
+      />
+    </AdminTableContext.Provider>
   );
 }
 
@@ -135,6 +142,7 @@ type AdminType = {
 
 export function AdminDropdown({ id }: AdminType) {
   const [open, setOpen] = useState<boolean>(false);
+  const { userId } = useContext(AdminTableContext);
 
   function onClose() {
     setOpen(false);
@@ -143,6 +151,8 @@ export function AdminDropdown({ id }: AdminType) {
   function onOpen() {
     setOpen(true);
   }
+
+  if (userId === id) return <></>;
 
   return (
     <Dropdown.Container onClose={onClose}>

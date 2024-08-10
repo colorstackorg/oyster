@@ -25,11 +25,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return json({
     admins,
+    userId,
   });
 }
 
 export default function Admins() {
-  const { admins } = useLoaderData<typeof loader>();
+  const { admins, userId } = useLoaderData<typeof loader>();
 
   return (
     <>
@@ -37,7 +38,7 @@ export default function Admins() {
         <Dashboard.Title>Admins</Dashboard.Title>
       </Dashboard.Header>
 
-      <AdminTable admins={admins} />
+      <AdminTable admins={admins} userId={userId} />
       <Outlet />
     </>
   );
