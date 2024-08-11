@@ -15,14 +15,15 @@ function buildResourceMessage(
   }>
 ) {
   const resourceItems = resources
-    .map(
-      (resource) =>
-        `- [${resource.title}](${resource.link}) by <@${resource.slackId}>`
+    .map((resource) =>
+      resource.link
+        ? `- [${resource.title}](${resource.link}) by <@${resource.slackId}>`
+        : `- ${resource.title} by <@${resource.slackId}>`
     )
     .join('\n');
 
-  // generating url for all resources posted after 24 hours of current timestamp
-  // example: /resources?postedAfter=2024-08-05T12:34:56.789Z
+  // generating url for all resources posted within the last 24 hours of current timestamp
+  // example: /resources?postedBefore=2024-08-06T12:34:56.789Z&postedAfter=2024-08-05T12:34:56.789Z
   const currentTimestamp = new Date().toISOString();
   const postedAfterTimestamp = dayjs(currentTimestamp)
     .subtract(24, 'hours')
@@ -53,7 +54,6 @@ export async function sendResourcesNotification(
     )
     .where('students.slackId', 'is not', null)
     .where('resources.title', 'is not', null)
-    .where('resources.link', 'is not', null)
     .execute();
 
   if (!resources.length) {
