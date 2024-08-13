@@ -168,11 +168,9 @@ function UploadProgress() {
 
       <Progress value={progress} />
 
-      <div className="flex flex-col items-center gap-2">
-        <Text className="text-center">
-          This could take a minute or two -- our reviewer is hard at work! 😜
-        </Text>
-      </div>
+      <Text className="text-center">
+        This could take a minute or two -- our reviewer is hard at work! 😜
+      </Text>
     </div>
   );
 }
