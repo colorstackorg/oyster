@@ -552,7 +552,6 @@ export async function reviewResume({ memberId, resume }: ReviewResumeInput) {
         ],
       },
     ],
-    service: 'anthropic',
     system: systemPrompt,
     temperature: 0.25,
   });
