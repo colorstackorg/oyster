@@ -29,11 +29,7 @@ import {
   EmptyStateContainer,
   EmptyStateDescription,
 } from '@/shared/components/empty-state';
-import {
-  commitSession,
-  ensureUserAuthenticated,
-  user,
-} from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export const meta: MetaFunction = () => {
   return buildMeta({
@@ -83,11 +79,7 @@ export async function action({ request }: ActionFunctionArgs) {
     ONE_WEEK_IN_SECONDS
   );
 
-  return json(feedback, {
-    headers: {
-      'Set-Cookie': await commitSession(session),
-    },
-  });
+  return json(feedback);
 }
 
 export default function ReviewResume() {
