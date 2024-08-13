@@ -444,23 +444,6 @@ const ResumeFeedback = z.object({
     .array(),
 });
 
-z.object({
-  experiences: z
-    .object({
-      bullets: ResumeBullet.array(),
-      company: z.string(),
-      role: z.string(),
-    })
-    .array(),
-
-  projects: z
-    .object({
-      bullets: ResumeBullet.array(),
-      title: z.string(),
-    })
-    .array(),
-});
-
 export type ResumeFeedback = z.infer<typeof ResumeFeedback>;
 
 /**
@@ -478,24 +461,24 @@ export async function reviewResume({ memberId, resume }: ReviewResumeInput) {
     aimed at getting a software engineering internship/new grad role. You like
     seeing important technologies used as well as impact. Be concise.
 
-    Here are your guidelines for great bullet points:
+    Here are your guidelines for a great bullet point:
     - It starts with a strong action verb.
-    - It quantifies impact whenever possible.
     - It is very specific.
     - It talks about achievements.
+    - It quantifies impact whenever possible.
     - It is concise. No fluff.
 
     Here are your guidelines for giving feedback:
     - Be kind.
-    - Ask questions (ie: "how many...", "how much...", "what was the impact...").
     - Be specific.
     - Be actionable.
+    - Ask questions (ie: "how many...", "how much...", "what was the impact...").
 
     Here are your guidelines for rewriting bullet points:
     - Be 1000% certain that the suggestion addresses all of your feedback. If
       it doesn't, you're not done yet.
     - It must be an improvement on the original bullet point.
-    - It must be 5/5 quality.
+    - It must be 100/100 quality.
     - Use "x" instead of an arbitrary number.
   `;
 
