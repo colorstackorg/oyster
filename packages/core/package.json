@@ -31,7 +31,7 @@
     "./location": "./src/modules/location/location.core.ts",
     "./location.types": "./src/modules/location/location.types.ts",
     "./location.ui": "./src/modules/location/location.ui.tsx",
-    "./mixpanel": "./src/modules/mixpanel/index.ts",
+    "./mixpanel": "./src/modules/mixpanel.ts",
     "./object-storage": "./src/modules/object-storage/index.ts",
     "./referrals": "./src/modules/referral/referral.core.ts",
     "./referrals.ui": "./src/modules/referral/referral.ui.tsx",
