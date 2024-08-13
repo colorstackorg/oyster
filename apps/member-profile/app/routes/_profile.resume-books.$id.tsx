@@ -629,7 +629,19 @@ function ResumeBookForm() {
       <PreferredSponsorsField />
 
       <Form.Field
-        description="Please upload your resume."
+        description={
+          <Text>
+            Before you submit your resume, you can get feedback from our{' '}
+            <Link
+              className="link font-semibold"
+              target="_blank"
+              to={Route['/resume/review']}
+            >
+              Resume Review
+            </Link>{' '}
+            tool in the Member Profile!
+          </Text>
+        }
         error={errors.resume}
         label="Resume"
         labelFor={keys.resume}
