@@ -1,8 +1,6 @@
-import { createCanvas } from 'canvas';
 import dayjs from 'dayjs';
 import dedent from 'dedent';
 import { type SelectExpression } from 'kysely';
-import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
@@ -23,17 +21,20 @@ import {
   createGoogleDriveFolder,
   uploadFileToGoogleDrive,
 } from '@/modules/google-drive';
+import { track } from '@/modules/mixpanel';
 import { getPresignedURL, putObject } from '@/modules/object-storage';
 import {
   type CreateResumeBookInput,
   RESUME_BOOK_CODING_LANGUAGES,
   RESUME_BOOK_JOB_SEARCH_STATUSES,
   RESUME_BOOK_ROLES,
+  type ReviewResumeInput,
   type SubmitResumeInput,
   type UpdateResumeBookInput,
 } from '@/modules/resume/resume.types';
 import { ColorStackError } from '@/shared/errors';
 import { success } from '@/shared/utils/core.utils';
+import { convertPdfToImage } from '@/shared/utils/file.utils';
 
 // Environment Variables
 
@@ -416,11 +417,12 @@ async function getResumeBookAirtableFields({
   ];
 }
 
+// Review Resume
+
 const ResumeBullet = z.object({
   content: z.string(),
   feedback: z.string(),
-  number: z.number(),
-  rewrites: z.string().array().min(2).max(3),
+  rewrites: z.string().array().length(2),
   suggestions: z.string(),
   score: z.number().min(1).max(5),
 });
@@ -449,28 +451,78 @@ const ResumeFeedback = z.object({
 
 export type ResumeFeedback = z.infer<typeof ResumeFeedback>;
 
-export async function reviewResume(file: File) {
-  const imageBase64 = await run(async () => {
-    const arrayBuffer = await file.arrayBuffer();
-    const data = new Uint8Array(arrayBuffer);
+/**
+ * Reviews a resume using AI and returns feedback in the form of JSON that
+ * adheres to a specific schema. For now, this feedback is focused on the
+ * bullet points of the resume.
+ *
+ * If there is an issue parsing the AI response, it will throw an error.
+ *
+ * @todo Implement the ability to review the rest of the resume.
+ */
+export async function reviewResume({ memberId, resume }: ReviewResumeInput) {
+  const systemPrompt = dedent`
+    You are the best resume reviewer in the world, specifically for resumes
+    aimed at getting a software engineering internship/new grad role. You like
+    seeing important technologies used as well as impact. Be concise.
 
-    const document = await getDocument({ data }).promise;
-    const page = await document.getPage(1);
-    const viewport = page.getViewport({ scale: 1 });
+    Here are your guidelines for great bullet points:
+    - It starts with a strong action verb.
+    - It quantifies impact whenever possible.
+    - It is very specific.
+    - It talks about achievements.
+    - It is concise. No fluff.
 
-    const canvas = createCanvas(viewport.width, viewport.height);
+    Here are your guidelines for giving feedback:
+    - Be kind.
+    - Ask questions (ie: "how many...", "how much...", "what was the impact...").
+    - Be specific.
+    - Be actionable.
 
-    await page.render({
-      // @ts-expect-error b/c this seems to be working...
-      canvasContext: canvas.getContext('2d'),
-      viewport,
-    }).promise;
+    Here are your guidelines for rewriting bullet points:
+    - Be 1000% certain that the suggestion addresses all of your feedback. If
+      it doesn't, you're not done yet.
+    - It must be an improvement on the original bullet point.
+    - It must be 5/5 quality.
+    - Use "x" instead of an arbitrary number.
+  `;
 
-    const buffer = canvas.toBuffer('image/png');
-    const base64 = buffer.toString('base64');
+  const userPrompt = dedent`
+    Please review this resume. Only return JSON that respects the following Zod
+    schema:
 
-    return base64;
-  });
+    const ResumeBullet = z.object({
+      content: z.string(),
+      feedback: z.string(),
+      rewrites: z.string().array().length(2),
+      suggestions: z.string(),
+      score: z.number().min(1).max(5),
+    });
+
+    z.object({
+      experiences: z
+        .object({
+          bullets: ResumeBullet.array(),
+          company: z.string(),
+          date: z.string(),
+          feedback: z.string(),
+          role: z.string(),
+          score: z.number().min(1).max(5),
+        })
+        .array(),
+
+      projects: z
+        .object({
+          bullets: ResumeBullet.array(),
+          feedback: z.string(),
+          score: z.number().min(1).max(5),
+          title: z.string(),
+        })
+        .array(),
+    });
+  `;
+
+  const imageBase64 = await convertPdfToImage(resume);
 
   const completion = await getChatCompletion({
     maxTokens: 8192,
@@ -480,41 +532,7 @@ export async function reviewResume(file: File) {
         content: [
           {
             type: 'text',
-            text: dedent`
-              Please review this resume. Only return JSON that respects the
-              following Zod schema:
-
-              const ResumeBullet = z.object({
-                content: z.string(),
-                feedback: z.string(),
-                number: z.number(),
-                rewrites: z.string().array().min(2).max(3),
-                suggestions: z.string(), // What needs to be improved to be a 5/5?
-                score: z.number().min(1).max(5),
-              });
-
-              z.object({
-                experiences: z
-                  .object({
-                    bullets: ResumeBullet.array(),
-                    company: z.string(),
-                    date: z.string(),
-                    feedback: z.string(),
-                    role: z.string(),
-                    score: z.number().min(1).max(5),
-                  })
-                  .array(),
-
-                projects: z
-                  .object({
-                    bullets: ResumeBullet.array(),
-                    feedback: z.string(),
-                    score: z.number().min(1).max(5),
-                    title: z.string(),
-                  })
-                  .array(),
-              });
-            `,
+            text: userPrompt,
           },
           {
             type: 'image',
@@ -528,32 +546,14 @@ export async function reviewResume(file: File) {
       },
     ],
     service: 'anthropic',
-    system: dedent`
-      You are the best resume reviewer in the world, specifically for resumes
-      aimed at getting a software engineering internship/new grad role. You like
-      seeing important technologies used as well as impact. Be concise.
-
-      Here are your guidelines for great bullet points:
-      - It starts with a strong action verb.
-      - It quantifies impact whenever possible.
-      - It is very specific.
-      - It talks about achievements.
-      - It is concise. No fluff.
-
-      Here are your guidelines for giving feedback:
-      - Be kind.
-      - Ask questions (ie: "how many...", "how much...", "what was the impact...").
-      - Be specific.
-      - Be actionable.
-
-      Here are your guidelines for rewriting bullet points:
-      - Be 1000% certain that the suggestion addresses all of your feedback. If
-        it doesn't, you're not done yet.
-      - It must be an improvement on the original bullet point.
-      - It must be 5/5 quality.
-      - Use "x" instead of an arbitrary number.
-    `,
+    system: systemPrompt,
     temperature: 0.25,
+  });
+
+  track({
+    event: 'Resume Reviewed',
+    properties: undefined,
+    user: memberId,
   });
 
   const object = JSON.parse(completion);

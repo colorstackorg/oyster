@@ -61,6 +61,8 @@ const RESUME_MAX_FILE_SIZE = MB_IN_BYTES * 1;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
+  const memberId = user(session);
+
   const uploadHandler = composeUploadHandlers(
     createFileUploadHandler({ maxPartSize: RESUME_MAX_FILE_SIZE }),
     createMemoryUploadHandler()
@@ -68,13 +70,15 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const resume = form.get('resume') as File;
-  const feedback = await reviewResume(resume);
+  const feedback = await reviewResume({
+    memberId,
+    resume: form.get('resume') as File,
+  });
 
   // We'll cache the feedback for a week so that we don't have to re-run the
   // review process every time the user refreshes the page.
   await cache.set<ResumeFeedback>(
-    keyPrefix + user(session),
+    keyPrefix + memberId,
     feedback,
     ONE_WEEK_IN_SECONDS
   );
@@ -260,8 +264,8 @@ function Experience({ bullets, title }: ExperienceProps) {
       </header>
 
       <ul className="flex flex-col gap-8">
-        {bullets.map((bullet) => {
-          return <BulletPoint key={title + bullet.number} {...bullet} />;
+        {bullets.map((bullet, i) => {
+          return <BulletPoint key={title + i} {...bullet} />;
         })}
       </ul>
     </li>
