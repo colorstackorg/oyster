@@ -432,18 +432,30 @@ const ResumeFeedback = z.object({
     .object({
       bullets: ResumeBullet.array(),
       company: z.string(),
-      date: z.string(),
-      feedback: z.string(),
       role: z.string(),
-      score: z.number().min(1).max(5),
     })
     .array(),
 
   projects: z
     .object({
       bullets: ResumeBullet.array(),
-      feedback: z.string(),
-      score: z.number().min(1).max(5),
+      title: z.string(),
+    })
+    .array(),
+});
+
+z.object({
+  experiences: z
+    .object({
+      bullets: ResumeBullet.array(),
+      company: z.string(),
+      role: z.string(),
+    })
+    .array(),
+
+  projects: z
+    .object({
+      bullets: ResumeBullet.array(),
       title: z.string(),
     })
     .array(),
@@ -504,18 +516,13 @@ export async function reviewResume({ memberId, resume }: ReviewResumeInput) {
         .object({
           bullets: ResumeBullet.array(),
           company: z.string(),
-          date: z.string(),
-          feedback: z.string(),
           role: z.string(),
-          score: z.number().min(1).max(5),
         })
         .array(),
 
       projects: z
         .object({
           bullets: ResumeBullet.array(),
-          feedback: z.string(),
-          score: z.number().min(1).max(5),
           title: z.string(),
         })
         .array(),
