@@ -5,6 +5,7 @@ import {
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
   json,
   type LoaderFunctionArgs,
+  type MetaFunction,
   unstable_parseMultipartFormData as parseMultipartFormData,
 } from '@remix-run/node';
 import {
@@ -13,14 +14,15 @@ import {
   useLoaderData,
   useNavigation,
 } from '@remix-run/react';
-import { useEffect, useState } from 'react';
+import { type PropsWithChildren, useState } from 'react';
 import { FileText } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { cache } from '@oyster/core/member-profile.server';
+import { cache, ONE_WEEK_IN_SECONDS } from '@oyster/core/member-profile.server';
+import { buildMeta } from '@oyster/core/remix';
 import { type ResumeFeedback, reviewResume } from '@oyster/core/resumes';
 import { Button, cx, FileUploader, Form, MB_IN_BYTES, Text } from '@oyster/ui';
-import { Progress } from '@oyster/ui/progress';
+import { Progress, useProgress } from '@oyster/ui/progress';
 
 import {
   EmptyState,
@@ -33,14 +35,20 @@ import {
   user,
 } from '@/shared/session.server';
 
+export const meta: MetaFunction = () => {
+  return buildMeta({
+    description: 'Get the first round of feedback on your resume!',
+    title: 'Resume Review',
+  });
+};
+
+// Cache key for the feedback data.
+const keyPrefix = 'resume_feedback:';
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const memberId = user(session);
-
-  const feedback = await cache<ResumeFeedback>(
-    `resume_feedback:${memberId}`
-  ).get();
+  const feedback = await cache.get<ResumeFeedback>(keyPrefix + user(session));
 
   return json({
     experiences: feedback?.experiences,
@@ -53,8 +61,6 @@ const RESUME_MAX_FILE_SIZE = MB_IN_BYTES * 1;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const memberId = user(session);
-
   const uploadHandler = composeUploadHandlers(
     createFileUploadHandler({ maxPartSize: RESUME_MAX_FILE_SIZE }),
     createMemoryUploadHandler()
@@ -62,11 +68,16 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const resume = form.get('resume') as unknown as File;
-
+  const resume = form.get('resume') as File;
   const feedback = await reviewResume(resume);
 
-  await cache(`resume_feedback:${memberId}`).set(feedback, 60 * 60 * 24 * 7);
+  // We'll cache the feedback for a week so that we don't have to re-run the
+  // review process every time the user refreshes the page.
+  await cache.set<ResumeFeedback>(
+    keyPrefix + user(session),
+    feedback,
+    ONE_WEEK_IN_SECONDS
+  );
 
   return json(feedback, {
     headers: {
@@ -76,200 +87,197 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function ReviewResume() {
-  const loaderData = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
-  const navigation = useNavigation();
-
-  const [submitted, setSubmitted] = useState(false);
-
-  const experiences = actionData?.experiences || loaderData.experiences || [];
-  const projects = actionData?.projects || loaderData.projects || [];
-
-  const isFeedbackAvailable = !!experiences?.length || !!projects?.length;
-
   return (
-    <section className="grid grid-cols-1 gap-16 @[1000px]:grid-cols-2">
-      <section className="flex flex-col gap-4">
-        <Text variant="2xl">Resume Review</Text>
-
-        <Text className="italic" color="gray-500">
-          Note: Currently, the resume review tool will only give feedback on
-          your bullet points for experiences and projects. This does not serve
-          as a complete resume review, so you should still seek feedback from
-          peers. Additionally, this tool relies on AI and may not always provide
-          the best feedback, so take it with a grain of salt.
-        </Text>
-
-        <RemixForm
-          className="form"
-          data-gap="2rem"
-          method="post"
-          encType="multipart/form-data"
-          onSubmit={() => {
-            setSubmitted(true);
-          }}
-        >
-          <Form.Field labelFor="resume" required>
-            <FileUploader
-              accept={['application/pdf']}
-              id="resume"
-              maxFileSize={RESUME_MAX_FILE_SIZE}
-              name="resume"
-              onChange={() => {
-                setSubmitted(false);
-              }}
-              required
-            />
-          </Form.Field>
-
-          <Button.Group>
-            <Button.Submit disabled={!!submitted}>Get Feedback</Button.Submit>
-          </Button.Group>
-        </RemixForm>
-      </section>
-
-      <section className="flex max-h-screen flex-col gap-4 overflow-auto">
-        <Text variant="2xl">Feedback</Text>
-
-        {navigation.state === 'submitting' ? (
-          <ResumeProgress />
-        ) : (
-          !isFeedbackAvailable && (
-            <EmptyStateContainer>
-              <EmptyState icon={<FileText />} />
-              <EmptyStateDescription>
-                After you upload your resume, we'll provide feedback on your
-                resume, specifically on the bullet points for your experiences
-                and projects.
-              </EmptyStateDescription>
-            </EmptyStateContainer>
-          )
-        )}
-
-        {!!experiences.length && (
-          <section>
-            <Text className="mb-2" variant="xl">
-              Experiences ({experiences.length})
-            </Text>
-
-            <ul className="flex flex-col gap-12">
-              {experiences.map((experience, i) => {
-                return (
-                  <li key={i}>
-                    <header className="mb-4">
-                      <Text variant="lg">
-                        {experience.role}, {experience.company}
-                      </Text>
-                      <Text color="gray-500">{experience.date}</Text>
-                    </header>
-
-                    <ul className="flex flex-col gap-8">
-                      {experience.bullets.map((bullet) => {
-                        return (
-                          <ResumeBulletPoint
-                            key={i + bullet.number}
-                            content={bullet.content}
-                            feedback={bullet.feedback}
-                            rewrites={bullet.rewrites}
-                            score={bullet.score}
-                            suggestions={bullet.suggestions}
-                          />
-                        );
-                      })}
-                    </ul>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        )}
-
-        {!!projects.length && (
-          <section>
-            <Text className="mb-2" variant="xl">
-              Projects ({projects.length})
-            </Text>
-
-            <ul className="flex flex-col gap-12">
-              {projects.map((project, i) => {
-                return (
-                  <li key={i}>
-                    <header className="mb-4">
-                      <Text variant="lg">{project.title}</Text>
-                    </header>
-
-                    <ul className="flex flex-col gap-8">
-                      {project.bullets.map((bullet) => {
-                        return (
-                          <ResumeBulletPoint
-                            key={i + bullet.number}
-                            content={bullet.content}
-                            feedback={bullet.feedback}
-                            rewrites={bullet.rewrites}
-                            score={bullet.score}
-                            suggestions={bullet.suggestions}
-                          />
-                        );
-                      })}
-                    </ul>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        )}
-      </section>
+    <section className="grid grid-cols-1 gap-16 @5xl:grid-cols-2">
+      <UploadSection />
+      <FeedbackSection />
     </section>
   );
 }
 
-function ResumeProgress() {
-  const [progress, setProgress] = useState(0);
+// Upload
 
-  useEffect(() => {
-    if (progress >= 98) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setProgress((value) => value + 1.25);
-    }, 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
+function UploadSection() {
+  const navigation = useNavigation();
 
   return (
-    <div className="mx-auto flex w-full max-w-lg flex-col items-center gap-4">
+    <section className="flex flex-col gap-4">
+      <Text variant="2xl">Resume Review</Text>
+
+      <Text color="gray-500">
+        Currently, the resume review tool will only give feedback on your bullet
+        points for experiences and projects. This does not serve as a complete
+        resume review, so you should still seek feedback from peers.
+        Additionally, this tool relies on AI and may not always provide the best
+        feedback, so take it with a grain of salt.
+      </Text>
+
+      <UploadForm />
+
+      {navigation.state === 'submitting' && (
+        <div className="mt-8">
+          <UploadProgress />
+        </div>
+      )}
+    </section>
+  );
+}
+
+function UploadForm() {
+  const navigation = useNavigation();
+
+  // We're only allowing 1 review per resume since there's not much variance in
+  // the feedback provided by the AI. In order to get another review, the user
+  // will need to upload a different resume.
+  const [alreadyReviewed, setAlreadyReviewed] = useState(false);
+
+  return (
+    <RemixForm
+      className="form"
+      data-gap="2rem"
+      encType="multipart/form-data"
+      method="post"
+      onSubmit={() => {
+        setAlreadyReviewed(true);
+      }}
+    >
+      <Form.Field required>
+        <FileUploader
+          accept={['application/pdf']}
+          id="resume"
+          maxFileSize={RESUME_MAX_FILE_SIZE}
+          name="resume"
+          onChange={() => {
+            setAlreadyReviewed(false);
+          }}
+          required
+        />
+      </Form.Field>
+
+      {navigation.state !== 'submitting' && (
+        <Button.Group>
+          <Button.Submit disabled={alreadyReviewed}>Get Feedback</Button.Submit>
+        </Button.Group>
+      )}
+    </RemixForm>
+  );
+}
+
+function UploadProgress() {
+  const progress = useProgress();
+
+  return (
+    <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-4">
+      <Text variant="3xl">{Math.floor(progress)}%</Text>
+
       <Progress value={progress} />
 
       <div className="flex flex-col items-center gap-2">
-        <Text variant="2xl">{Math.round(progress)}%</Text>
         <Text className="text-center">
-          Get comfy, this could take a minute or two -- our reviewer is hard at
-          work! 😜
+          This could take a minute or two -- our reviewer is hard at work! 😜
         </Text>
       </div>
     </div>
   );
 }
 
-type ResumeBulletPointProps = {
-  content: string;
-  feedback: string;
-  rewrites: string[];
-  score: number;
-  suggestions: string;
+// Feedback
+
+function FeedbackSection() {
+  const loaderData = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
+
+  const experiences = actionData?.experiences || loaderData.experiences || [];
+  const projects = actionData?.projects || loaderData.projects || [];
+
+  return (
+    <section className="flex flex-col gap-4 @5xl:max-h-[calc(100vh-4rem)] @5xl:overflow-auto">
+      <Text variant="2xl">Feedback</Text>
+
+      {!!experiences.length || !!projects.length ? (
+        <>
+          <section className="flex flex-col gap-2">
+            <Text variant="xl">Experiences ({experiences.length})</Text>
+
+            <ExperienceList>
+              {experiences.map((experience) => {
+                const title = `${experience.role}, ${experience.company}`;
+
+                return (
+                  <Experience
+                    bullets={experience.bullets}
+                    key={title}
+                    title={title}
+                  />
+                );
+              })}
+            </ExperienceList>
+          </section>
+
+          <section className="flex flex-col gap-2">
+            <Text variant="xl">Projects ({projects.length})</Text>
+
+            <ExperienceList>
+              {projects.map((project) => {
+                return (
+                  <Experience
+                    bullets={project.bullets}
+                    key={project.title}
+                    title={project.title}
+                  />
+                );
+              })}
+            </ExperienceList>
+          </section>
+        </>
+      ) : (
+        <EmptyStateContainer>
+          <EmptyState icon={<FileText />} />
+          <EmptyStateDescription>
+            After you upload your resume, we'll provide feedback on your resume,
+            specifically on the bullet points for your experiences and projects.
+          </EmptyStateDescription>
+        </EmptyStateContainer>
+      )}
+    </section>
+  );
+}
+
+function ExperienceList({ children }: PropsWithChildren) {
+  return <ul className="flex flex-col gap-12">{children}</ul>;
+}
+
+type ExperienceProps = {
+  bullets: ResumeFeedback['experiences'][number]['bullets'];
+  title: string;
 };
 
-function ResumeBulletPoint({
+function Experience({ bullets, title }: ExperienceProps) {
+  return (
+    <li>
+      <header className="mb-4">
+        <Text variant="lg">{title}</Text>
+      </header>
+
+      <ul className="flex flex-col gap-8">
+        {bullets.map((bullet) => {
+          return <BulletPoint key={title + bullet.number} {...bullet} />;
+        })}
+      </ul>
+    </li>
+  );
+}
+
+type BulletPointProps =
+  ResumeFeedback['experiences'][number]['bullets'][number];
+
+function BulletPoint({
   content,
   feedback,
   rewrites,
   score,
   suggestions,
-}: ResumeBulletPointProps) {
+}: BulletPointProps) {
   return (
     <li className="ml-2 flex flex-col gap-4 border-l border-l-gray-200 pl-4">
       <div className="flex items-start justify-between gap-4">
