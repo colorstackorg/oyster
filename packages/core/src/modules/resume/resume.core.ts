@@ -1,12 +1,17 @@
+import { createCanvas } from 'canvas';
 import dayjs from 'dayjs';
+import dedent from 'dedent';
 import { type SelectExpression } from 'kysely';
+import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { match } from 'ts-pattern';
+import { z } from 'zod';
 
 import { type DB, db, point } from '@oyster/db';
 import { FORMATTED_RACE, Race } from '@oyster/types';
 import { id, run } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
+import { getChatCompletion } from '@/modules/ai/ai.core';
 import {
   type AirtableField,
   createAirtableRecord,
@@ -409,6 +414,134 @@ async function getResumeBookAirtableFields({
       type: 'singleSelect',
     },
   ];
+}
+
+export async function reviewResume(file: File) {
+  const imageBase64 = await run(async () => {
+    const arrayBuffer = await file.arrayBuffer();
+    const data = new Uint8Array(arrayBuffer);
+
+    const document = await getDocument({ data }).promise;
+    const page = await document.getPage(1);
+    const viewport = page.getViewport({ scale: 2.0 });
+
+    console.log(viewport.width, viewport.height);
+
+    const canvas = createCanvas(viewport.width, viewport.height);
+
+    await page.render({
+      // @ts-expect-error b/c this seems to be working...
+      canvasContext: canvas.getContext('2d'),
+      viewport: viewport,
+    }).promise;
+
+    // Convert the canvas to a PNG buffer
+    const buffer = canvas.toBuffer('image/png');
+
+    // Convert the buffer to a Base64 string
+    const base64String = buffer.toString('base64');
+
+    return base64String;
+  });
+
+  const Bullet = z.object({
+    content: z.string(),
+    feedback: z.string(),
+    number: z.number(),
+    rewrites: z.string().array().min(2).max(3),
+    suggestions: z.string(),
+    score: z.number().min(1).max(5),
+  });
+
+  const Result = z.object({
+    experiences: z
+      .object({
+        bullets: Bullet.array(),
+        company: z.string(),
+        date: z.string(),
+        feedback: z.string(),
+        role: z.string(),
+        score: z.number().min(1).max(5),
+      })
+      .array(),
+
+    projects: z
+      .object({
+        bullets: Bullet.array(),
+        feedback: z.string(),
+        score: z.number().min(1).max(5),
+        title: z.string(),
+      })
+      .array(),
+  });
+
+  const completion = await getChatCompletion({
+    maxTokens: 8192,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: dedent`
+              Please review this resume. Only return JSON that respects the
+              following Zod schema:
+
+              const Bullet = z.object({
+                content: z.string(),
+                feedback: z.string(),
+                number: z.number(),
+                rewrites: z.string().array().min(2).max(3),
+                suggestions: z.string(),
+                score: z.number().min(1).max(5),
+              });
+
+              z.object({
+                experiences: z
+                  .object({
+                    bullets: Bullet.array(),
+                    company: z.string(),
+                    date: z.string(),
+                    feedback: z.string(),
+                    role: z.string(),
+                    score: z.number().min(1).max(5),
+                  })
+                  .array(),
+
+                projects: z
+                  .object({
+                    bullets: Bullet.array(),
+                    feedback: z.string(),
+                    score: z.number().min(1).max(5),
+                    title: z.string(),
+                  })
+                  .array(),
+              });
+            `,
+          },
+          {
+            type: 'image',
+            source: {
+              data: imageBase64,
+              media_type: 'image/png',
+              type: 'base64',
+            },
+          },
+        ],
+      },
+    ],
+    metadata: undefined,
+    service: 'anthropic',
+    system:
+      'You are the best resume reviewer in the world, specifically for resumes aimed at getting a software engineering internship/new grad role. Be concise.',
+    temperature: 0.25,
+  });
+
+  console.log(completion);
+
+  const result = Result.parse(JSON.parse(completion));
+
+  return result;
 }
 
 /**
