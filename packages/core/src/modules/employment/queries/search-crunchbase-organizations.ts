@@ -1,4 +1,4 @@
-import { cache } from '@/infrastructure/redis';
+import { ONE_WEEK_IN_SECONDS, withCache } from '@/infrastructure/redis';
 import { BaseCompany } from '../employment.types';
 import {
   crunchbaseRateLimiter,
@@ -38,57 +38,54 @@ export async function searchCrunchbaseOrganizations(
 ): Promise<BaseCompany[]> {
   const key = getCrunchbaseKey();
 
-  const { get, set } = cache<BaseCompany[]>(
-    `search-crunchbase-organizations:${search}`
-  );
+  const companies = await withCache<BaseCompany[]>(
+    `search-crunchbase-organizations:${search}`,
+    ONE_WEEK_IN_SECONDS,
+    async () => {
+      const pathname = getCrunchbasePathname('/autocompletes');
+      const url = new URL(pathname);
 
-  const dataFromCache = await get();
+      url.searchParams.set('collection_ids', 'organizations');
+      url.searchParams.set('query', search);
+      url.searchParams.set('user_key', key);
 
-  if (dataFromCache !== null) {
-    return dataFromCache;
-  }
+      await crunchbaseRateLimiter.process();
 
-  const pathname = getCrunchbasePathname('/autocompletes');
-  const url = new URL(pathname);
+      const response = await fetch(url);
 
-  url.searchParams.set('collection_ids', 'organizations');
-  url.searchParams.set('query', search);
-  url.searchParams.set('user_key', key);
+      if (!response.ok) {
+        throw new Error(
+          'Failed to search for organizations from the Crunchbase API.'
+        );
+      }
 
-  await crunchbaseRateLimiter.process();
+      // TODO: Should actually validate this data in the future...
+      const data: CrunchbaseAutocompleteData = await response.json();
 
-  const response = await fetch(url);
+      const companies = data.entities.map(
+        ({ identifier, short_description }) => {
+          const imageUrl = identifier.image_id
+            ? getCrunchbaseLogoUri(identifier.image_id)
+            : undefined;
 
-  if (!response.ok) {
-    throw new Error(
-      'Failed to search for organizations from the Crunchbase API.'
-    );
-  }
+          const result = BaseCompany.safeParse({
+            crunchbaseId: identifier.uuid,
+            description: short_description,
+            imageUrl,
+            name: identifier.value,
+          });
 
-  // TODO: Should actually validate this data in the future...
-  const data: CrunchbaseAutocompleteData = await response.json();
+          if (!result.success) {
+            throw new Error('Failed to validate Crunchbase organization data.');
+          }
 
-  const companies = data.entities.map(({ identifier, short_description }) => {
-    const imageUrl = identifier.image_id
-      ? getCrunchbaseLogoUri(identifier.image_id)
-      : undefined;
+          return result.data;
+        }
+      );
 
-    const result = BaseCompany.safeParse({
-      crunchbaseId: identifier.uuid,
-      description: short_description,
-      imageUrl,
-      name: identifier.value,
-    });
-
-    if (!result.success) {
-      throw new Error('Failed to validate Crunchbase organization data.');
+      return companies;
     }
-
-    return result.data;
-  });
-
-  // Cache for 7 days.
-  set(companies, 60 * 60 * 24 * 7);
+  );
 
   return companies;
 }

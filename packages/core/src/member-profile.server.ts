@@ -1,5 +1,5 @@
 export { job } from './infrastructure/bull/use-cases/job';
-export { cache } from './infrastructure/redis';
+export { cache, ONE_WEEK_IN_SECONDS } from './infrastructure/redis';
 export { getActiveStreak } from './modules/active-status/queries/get-active-streak';
 export { getActiveStreakLeaderboard } from './modules/active-status/queries/get-active-streak-leaderboard';
 export { getGithubProfile } from './modules/authentication/queries/get-github-profile';

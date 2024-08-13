@@ -25,43 +25,34 @@ export const RedisKey = {
 
 export type RedisKey = ExtractValue<typeof RedisKey>;
 
+// Constants
+
+export const ONE_MINUTE_IN_SECONDS = 60;
+export const ONE_HOUR_IN_SECONDS = 60 * 60;
+export const ONE_DAY_IN_SECONDS = 60 * 60 * 24;
+export const ONE_WEEK_IN_SECONDS = 60 * 60 * 24 * 7;
+
 // Utils
 
-/**
- * Returns a cache object with `get` and `set` methods.
- *
- * The `get` method will return the cached data if it exists and is valid.
- * Otherwise, it will return `null` and delete the key.
- *
- * The `set` method will store the data in Redis.
- *
- * @param key - Key to store the data in Redis.
- * @param schema - Zod schema to validate any cached data.
- */
-export function cache<T = unknown>(key: string) {
-  async function get() {
-    const stringifiedData = await redis.get(key);
+export const cache = {
+  async get<T>(key: string) {
+    const value = await redis.get(key);
 
-    if (!stringifiedData) {
+    if (!value) {
       return null;
     }
 
-    const data = stringifiedData ? JSON.parse(stringifiedData) : null;
+    return JSON.parse(value) as T;
+  },
 
-    return data as T;
-  }
+  async set<T>(key: string, data: T, expires?: number) {
+    const value = JSON.stringify(data);
 
-  async function set(data: T, expires?: number) {
     return expires
-      ? redis.set(key, JSON.stringify(data), 'EX', expires)
-      : redis.set(key, JSON.stringify(data));
-  }
-
-  return {
-    get,
-    set,
-  };
-}
+      ? redis.set(key, value, 'EX', expires)
+      : redis.set(key, value);
+  },
+};
 
 /**
  * Returns the cached data if it exists and is valid. Otherwise, it will call
@@ -77,10 +68,10 @@ export async function withCache<T>(
   expires: number | null,
   fn: () => T | Promise<T>
 ): Promise<T> {
-  const data = await redis.get(key);
+  const data = await cache.get<T>(key);
 
   if (data) {
-    return JSON.parse(data);
+    return data;
   }
 
   const result = await fn();
@@ -89,11 +80,7 @@ export async function withCache<T>(
     return result;
   }
 
-  if (expires) {
-    await redis.set(key, JSON.stringify(result), 'EX', expires);
-  } else {
-    await redis.set(key, JSON.stringify(result));
-  }
+  await cache.set(key, result, expires || undefined);
 
   return result;
 }
