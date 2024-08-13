@@ -416,6 +416,39 @@ async function getResumeBookAirtableFields({
   ];
 }
 
+const ResumeBullet = z.object({
+  content: z.string(),
+  feedback: z.string(),
+  number: z.number(),
+  rewrites: z.string().array().min(2).max(3),
+  suggestions: z.string(),
+  score: z.number().min(1).max(5),
+});
+
+const ResumeFeedback = z.object({
+  experiences: z
+    .object({
+      bullets: ResumeBullet.array(),
+      company: z.string(),
+      date: z.string(),
+      feedback: z.string(),
+      role: z.string(),
+      score: z.number().min(1).max(5),
+    })
+    .array(),
+
+  projects: z
+    .object({
+      bullets: ResumeBullet.array(),
+      feedback: z.string(),
+      score: z.number().min(1).max(5),
+      title: z.string(),
+    })
+    .array(),
+});
+
+export type ResumeFeedback = z.infer<typeof ResumeFeedback>;
+
 export async function reviewResume(file: File) {
   const imageBase64 = await run(async () => {
     const arrayBuffer = await file.arrayBuffer();
@@ -423,56 +456,20 @@ export async function reviewResume(file: File) {
 
     const document = await getDocument({ data }).promise;
     const page = await document.getPage(1);
-    const viewport = page.getViewport({ scale: 2.0 });
-
-    console.log(viewport.width, viewport.height);
+    const viewport = page.getViewport({ scale: 1 });
 
     const canvas = createCanvas(viewport.width, viewport.height);
 
     await page.render({
       // @ts-expect-error b/c this seems to be working...
       canvasContext: canvas.getContext('2d'),
-      viewport: viewport,
+      viewport,
     }).promise;
 
-    // Convert the canvas to a PNG buffer
     const buffer = canvas.toBuffer('image/png');
+    const base64 = buffer.toString('base64');
 
-    // Convert the buffer to a Base64 string
-    const base64String = buffer.toString('base64');
-
-    return base64String;
-  });
-
-  const Bullet = z.object({
-    content: z.string(),
-    feedback: z.string(),
-    number: z.number(),
-    rewrites: z.string().array().min(2).max(3),
-    suggestions: z.string(),
-    score: z.number().min(1).max(5),
-  });
-
-  const Result = z.object({
-    experiences: z
-      .object({
-        bullets: Bullet.array(),
-        company: z.string(),
-        date: z.string(),
-        feedback: z.string(),
-        role: z.string(),
-        score: z.number().min(1).max(5),
-      })
-      .array(),
-
-    projects: z
-      .object({
-        bullets: Bullet.array(),
-        feedback: z.string(),
-        score: z.number().min(1).max(5),
-        title: z.string(),
-      })
-      .array(),
+    return base64;
   });
 
   const completion = await getChatCompletion({
@@ -487,19 +484,19 @@ export async function reviewResume(file: File) {
               Please review this resume. Only return JSON that respects the
               following Zod schema:
 
-              const Bullet = z.object({
+              const ResumeBullet = z.object({
                 content: z.string(),
                 feedback: z.string(),
                 number: z.number(),
                 rewrites: z.string().array().min(2).max(3),
-                suggestions: z.string(),
+                suggestions: z.string(), // What needs to be improved to be a 5/5?
                 score: z.number().min(1).max(5),
               });
 
               z.object({
                 experiences: z
                   .object({
-                    bullets: Bullet.array(),
+                    bullets: ResumeBullet.array(),
                     company: z.string(),
                     date: z.string(),
                     feedback: z.string(),
@@ -510,7 +507,7 @@ export async function reviewResume(file: File) {
 
                 projects: z
                   .object({
-                    bullets: Bullet.array(),
+                    bullets: ResumeBullet.array(),
                     feedback: z.string(),
                     score: z.number().min(1).max(5),
                     title: z.string(),
@@ -530,18 +527,45 @@ export async function reviewResume(file: File) {
         ],
       },
     ],
-    metadata: undefined,
     service: 'anthropic',
-    system:
-      'You are the best resume reviewer in the world, specifically for resumes aimed at getting a software engineering internship/new grad role. Be concise.',
+    system: dedent`
+      You are the best resume reviewer in the world, specifically for resumes
+      aimed at getting a software engineering internship/new grad role. You like
+      seeing important technologies used as well as impact. Be concise.
+
+      Here are your guidelines for great bullet points:
+      - It starts with a strong action verb.
+      - It quantifies impact whenever possible.
+      - It is very specific.
+      - It talks about achievements.
+      - It is concise. No fluff.
+
+      Here are your guidelines for giving feedback:
+      - Be kind.
+      - Ask questions (ie: "how many...", "how much...", "what was the impact...").
+      - Be specific.
+      - Be actionable.
+
+      Here are your guidelines for rewriting bullet points:
+      - Be 1000% certain that the suggestion addresses all of your feedback. If
+        it doesn't, you're not done yet.
+      - It must be an improvement on the original bullet point.
+      - It must be 5/5 quality.
+      - Use "x" instead of an arbitrary number.
+    `,
     temperature: 0.25,
   });
 
-  console.log(completion);
+  const object = JSON.parse(completion);
+  const result = ResumeFeedback.safeParse(object);
 
-  const result = Result.parse(JSON.parse(completion));
+  if (!result.success) {
+    throw new ColorStackError()
+      .withMessage('There was an issue parsing your resume.')
+      .report();
+  }
 
-  return result;
+  return result.data;
 }
 
 /**

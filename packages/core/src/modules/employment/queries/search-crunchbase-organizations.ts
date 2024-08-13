@@ -38,9 +38,8 @@ export async function searchCrunchbaseOrganizations(
 ): Promise<BaseCompany[]> {
   const key = getCrunchbaseKey();
 
-  const { get, set } = cache(
-    `search-crunchbase-organizations:${search}`,
-    BaseCompany.array()
+  const { get, set } = cache<BaseCompany[]>(
+    `search-crunchbase-organizations:${search}`
   );
 
   const dataFromCache = await get();

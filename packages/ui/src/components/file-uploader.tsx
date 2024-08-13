@@ -19,7 +19,7 @@ type FileMetadata = Pick<File, 'name' | 'size' | 'type'> &
 
 type FileUploaderProps = Pick<
   HTMLProps<HTMLInputElement>,
-  'id' | 'name' | 'required'
+  'id' | 'name' | 'onChange' | 'required'
 > & {
   accept: MimeType[];
   initialFile?: FileMetadata;
@@ -31,6 +31,7 @@ export function FileUploader({
   id,
   initialFile,
   maxFileSize = DEFAULT_MAX_FILE_SIZE,
+  onChange,
   name,
   required,
 }: FileUploaderProps) {
@@ -46,6 +47,8 @@ export function FileUploader({
   const formattedMaxSize = formatFileSize(maxFileSize);
 
   function onFileChange(e: ChangeEvent<HTMLInputElement>) {
+    onChange?.(e);
+
     const file = e.target.files?.[0];
 
     if (!file) {

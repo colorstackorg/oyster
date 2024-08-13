@@ -1,5 +1,4 @@
 import { Redis } from 'ioredis';
-import { type z } from 'zod';
 
 import { type ExtractValue } from '@oyster/types';
 
@@ -38,10 +37,8 @@ export type RedisKey = ExtractValue<typeof RedisKey>;
  *
  * @param key - Key to store the data in Redis.
  * @param schema - Zod schema to validate any cached data.
- *
- * @deprecated Use `withCache` instead.
  */
-export function cache<T>(key: string, schema: z.ZodType<T>) {
+export function cache<T = unknown>(key: string) {
   async function get() {
     const stringifiedData = await redis.get(key);
 
@@ -51,15 +48,7 @@ export function cache<T>(key: string, schema: z.ZodType<T>) {
 
     const data = stringifiedData ? JSON.parse(stringifiedData) : null;
 
-    const result = schema.safeParse(data);
-
-    if (result.success) {
-      return result.data;
-    }
-
-    await redis.del(key);
-
-    return null;
+    return data as T;
   }
 
   async function set(data: T, expires?: number) {

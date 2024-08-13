@@ -6,9 +6,8 @@ import { cache } from '@/infrastructure/redis';
 import { LeaderboardPosition } from '../shared/active-status.shared';
 
 export async function getActiveStreakLeaderboard() {
-  const { get, set } = cache(
-    'get-active-streak-leaderboard',
-    LeaderboardPosition.array()
+  const { get, set } = cache<LeaderboardPosition[]>(
+    'get-active-streak-leaderboard'
   );
 
   const cachedData = await get();

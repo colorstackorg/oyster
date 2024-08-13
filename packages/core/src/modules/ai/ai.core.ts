@@ -28,14 +28,9 @@ type Message = {
   role: 'assistant' | 'user';
 };
 
-type Metadata = {
-  userId?: string | null;
-};
-
 type GetChatCompletionInput = {
   maxTokens: number;
   messages: Message[];
-  metadata?: Metadata;
   service?: 'anthropic';
   system?: string;
   temperature?: number;
@@ -62,16 +57,12 @@ const AnthropicResponse = z.object({
 async function getChatCompletionWithAnthropic({
   maxTokens,
   messages,
-  metadata: _metadata,
   system,
   temperature,
 }: Omit<GetChatCompletionInput, 'service'>) {
-  const metadata = _metadata ? { user_id: _metadata.userId } : undefined;
-
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     body: JSON.stringify({
       messages,
-      metadata,
       model: 'claude-3-5-sonnet-20240620',
       max_tokens: maxTokens,
       system,
