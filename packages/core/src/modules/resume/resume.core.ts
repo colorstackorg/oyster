@@ -33,7 +33,7 @@ import {
   type UpdateResumeBookInput,
 } from '@/modules/resume/resume.types';
 import { ColorStackError } from '@/shared/errors';
-import { success } from '@/shared/utils/core.utils';
+import { fail, type Result, success } from '@/shared/utils/core.utils';
 import { convertPdfToImage } from '@/shared/utils/file.utils';
 
 // Environment Variables
@@ -454,7 +454,10 @@ export type ResumeFeedback = z.infer<typeof ResumeFeedback>;
  *
  * @todo Implement the ability to review the rest of the resume.
  */
-export async function reviewResume({ memberId, resume }: ReviewResumeInput) {
+export async function reviewResume({
+  memberId,
+  resume,
+}: ReviewResumeInput): Promise<Result<ResumeFeedback>> {
   const systemPrompt = dedent`
     You are the best resume reviewer in the world, specifically for resumes
     aimed at getting a software engineering internship/new grad role.
@@ -520,7 +523,7 @@ export async function reviewResume({ memberId, resume }: ReviewResumeInput) {
 
   const imageBase64 = await convertPdfToImage(resume);
 
-  const completion = await getChatCompletion({
+  const completionResult = await getChatCompletion({
     maxTokens: 8192,
     messages: [
       {
@@ -545,22 +548,27 @@ export async function reviewResume({ memberId, resume }: ReviewResumeInput) {
     temperature: 0.25,
   });
 
+  if (!completionResult.ok) {
+    return completionResult;
+  }
+
   track({
     event: 'Resume Reviewed',
     properties: undefined,
     user: memberId,
   });
 
-  const object = JSON.parse(completion);
+  const object = JSON.parse(completionResult.data);
   const result = ResumeFeedback.safeParse(object);
 
   if (!result.success) {
-    throw new ColorStackError()
-      .withMessage('There was an issue parsing your resume.')
-      .report();
+    return fail({
+      code: 500,
+      error: 'Failed to parse the AI response.',
+    });
   }
 
-  return result.data;
+  return success(result.data);
 }
 
 /**

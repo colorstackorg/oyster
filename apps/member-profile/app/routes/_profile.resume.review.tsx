@@ -66,20 +66,24 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const feedback = await reviewResume({
+  const result = await reviewResume({
     memberId,
     resume: form.get('resume') as File,
   });
+
+  if (!result.ok) {
+    return json(result, { status: result.code });
+  }
 
   // We'll cache the feedback for a week so that we don't have to re-run the
   // review process every time the user refreshes the page.
   await cache.set<ResumeFeedback>(
     keyPrefix + memberId,
-    feedback,
+    result.data,
     ONE_WEEK_IN_SECONDS
   );
 
-  return json(feedback);
+  return json(result);
 }
 
 export default function ReviewResume() {
@@ -120,6 +124,8 @@ function UploadSection() {
 }
 
 function UploadForm() {
+  const actionData = useActionData<typeof action>();
+
   return (
     <RemixForm
       className="form"
@@ -136,6 +142,10 @@ function UploadForm() {
           required
         />
       </Form.Field>
+
+      {actionData && !actionData.ok && (
+        <Form.ErrorMessage>{actionData.error}</Form.ErrorMessage>
+      )}
 
       <Button.Group>
         <Button.Submit>Get Feedback</Button.Submit>
@@ -166,8 +176,15 @@ function FeedbackSection() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
-  const experiences = actionData?.experiences || loaderData.experiences || [];
-  const projects = actionData?.projects || loaderData.projects || [];
+  const experiences =
+    (!!actionData?.ok && actionData?.data.experiences) ||
+    loaderData.experiences ||
+    [];
+
+  const projects =
+    (!!actionData?.ok && actionData?.data.projects) ||
+    loaderData.projects ||
+    [];
 
   return (
     <section className="flex flex-col gap-4 @5xl:max-h-[calc(100vh-4rem)] @5xl:overflow-auto">

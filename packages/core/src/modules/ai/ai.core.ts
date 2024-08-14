@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { ColorStackError } from '@/shared/errors';
+import { fail, type Result, success } from '@/shared/utils/core.utils';
 
 // Environment Variables
 
@@ -79,7 +80,7 @@ export async function getChatCompletion({
   messages,
   system,
   temperature = 0.5,
-}: GetChatCompletionInput): Promise<string> {
+}: GetChatCompletionInput): Promise<Result<string>> {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     body: JSON.stringify({
       messages,
@@ -101,15 +102,20 @@ export async function getChatCompletion({
   const json = await response.json();
 
   if (!response.ok) {
-    throw new ColorStackError()
+    const error = new ColorStackError()
       .withMessage('Failed to fetch chat completion from Anthropic.')
-      .withContext({ response: json, status: response.status })
+      .withContext({ json, status: response.status })
       .report();
+
+    return fail({
+      code: response.status,
+      error: error.message,
+    });
   }
 
   const result = AnthropicResponse.parse(json);
 
   const message = result.content[0].text;
 
-  return message;
+  return success(message);
 }
