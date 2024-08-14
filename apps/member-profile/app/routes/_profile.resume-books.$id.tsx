@@ -354,7 +354,7 @@ function ResumeBookSponsors() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <a
-                    className="cursor-pointer hover:text-primary hover:underline"
+                    className="cursor-pointer"
                     href={'https://' + sponsor.domain}
                     rel="noopener noreferrer"
                     target="_blank"
