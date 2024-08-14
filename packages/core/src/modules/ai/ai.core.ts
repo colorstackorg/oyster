@@ -1,11 +1,23 @@
+import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { ColorStackError } from '@/shared/errors';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
+import { RateLimiter } from '@/shared/utils/rate-limiter';
 
 // Environment Variables
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY as string;
+
+// Rate Limiter
+
+/**
+ * @see https://docs.anthropic.com/en/api/rate-limits#rate-limits
+ */
+const anthropicRateLimiter = new RateLimiter('anthropic:requests', {
+  rateLimit: 50,
+  rateLimitWindow: 60,
+});
 
 // Core
 
@@ -81,6 +93,8 @@ export async function getChatCompletion({
   system,
   temperature = 0.5,
 }: GetChatCompletionInput): Promise<Result<string>> {
+  await anthropicRateLimiter.process();
+
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     body: JSON.stringify({
       messages,
@@ -102,8 +116,19 @@ export async function getChatCompletion({
   const json = await response.json();
 
   if (!response.ok) {
+    const message = match(response.status)
+      .with(429, () => {
+        return 'We have reached the rate limit with the Anthropic API. Please try again in 1-2 minutes.';
+      })
+      .with(529, () => {
+        return 'The Anthropic API is temporarily overloaded down. Please try again in a bit.';
+      })
+      .otherwise(() => {
+        return 'Failed to fetch chat completion from Anthropic.';
+      });
+
     const error = new ColorStackError()
-      .withMessage('Failed to fetch chat completion from Anthropic.')
+      .withMessage(message)
       .withContext({ json, status: response.status })
       .report();
 
