@@ -108,20 +108,18 @@ function UploadSection() {
         feedback, so take it with a grain of salt.
       </Text>
 
-      <UploadForm />
-
-      {navigation.state === 'submitting' && (
+      {navigation.state === 'submitting' && !!navigation.formMethod ? (
         <div className="mt-8">
           <UploadProgress />
         </div>
+      ) : (
+        <UploadForm />
       )}
     </section>
   );
 }
 
 function UploadForm() {
-  const navigation = useNavigation();
-
   // We're only allowing 1 review per resume since there's not much variance in
   // the feedback provided by the AI. In order to get another review, the user
   // will need to upload a different resume.
@@ -150,11 +148,9 @@ function UploadForm() {
         />
       </Form.Field>
 
-      {navigation.state !== 'submitting' && (
-        <Button.Group>
-          <Button.Submit disabled={alreadyReviewed}>Get Feedback</Button.Submit>
-        </Button.Group>
-      )}
+      <Button.Group>
+        <Button.Submit disabled={alreadyReviewed}>Get Feedback</Button.Submit>
+      </Button.Group>
     </RemixForm>
   );
 }
@@ -163,7 +159,7 @@ function UploadProgress() {
   const progress = useProgress();
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-4">
+    <div className="mx-auto flex w-full max-w-lg flex-col items-center gap-4">
       <Text variant="3xl">{Math.floor(progress)}%</Text>
 
       <Progress value={progress} />
@@ -265,13 +261,7 @@ function Experience({ bullets, title }: ExperienceProps) {
 type BulletPointProps =
   ResumeFeedback['experiences'][number]['bullets'][number];
 
-function BulletPoint({
-  content,
-  feedback,
-  rewrites,
-  score,
-  suggestions,
-}: BulletPointProps) {
+function BulletPoint({ content, feedback, rewrites, score }: BulletPointProps) {
   return (
     <li className="ml-2 flex flex-col gap-4 border-l border-l-gray-200 pl-4">
       <div className="flex items-start justify-between gap-4">
@@ -296,9 +286,7 @@ function BulletPoint({
         </span>
       </div>
 
-      <Text>
-        {feedback} {suggestions}
-      </Text>
+      <Text>{feedback}</Text>
 
       <ul className="flex flex-col gap-2">
         {rewrites.map((rewrite) => {

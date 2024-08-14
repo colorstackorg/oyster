@@ -422,8 +422,7 @@ async function getResumeBookAirtableFields({
 const ResumeBullet = z.object({
   content: z.string(),
   feedback: z.string(),
-  rewrites: z.string().array().length(2),
-  suggestions: z.string(),
+  rewrites: z.string().array().max(2),
   score: z.number().min(1).max(5),
 });
 
@@ -465,20 +464,23 @@ export async function reviewResume({ memberId, resume }: ReviewResumeInput) {
     - It starts with a strong action verb.
     - It is very specific.
     - It talks about achievements.
-    - It quantifies impact whenever possible.
     - It is concise. No fluff.
+    - If possible, it quantifies impact. Don't lie though.
 
     Here are your guidelines for giving feedback:
     - Be kind.
     - Be specific.
     - Be actionable.
     - Ask questions (ie: "how many...", "how much...", "what was the impact...").
+    - The last sentence of your feedback should always be an actionable
+      improvement item.
 
     Here are your guidelines for rewriting bullet points:
-    - Be 1000% certain that the suggestion addresses all of your feedback. If
+    - If the original bullet point is a 5/5, don't suggest any rewrites.
+    - If the original bullet point is not a 5/5, suggest 2 rewrite options.
+    - You must rate the rewrite as a 5/5. If you don't know, you're not done yet.
+    - Be 1000% certain that the rewrites address all of your feedback. If
       it doesn't, you're not done yet.
-    - It must be an improvement on the original bullet point.
-    - It must be 100/100 quality.
     - Use "x" instead of an arbitrary number.
   `;
 
@@ -489,8 +491,7 @@ export async function reviewResume({ memberId, resume }: ReviewResumeInput) {
     const ResumeBullet = z.object({
       content: z.string(),
       feedback: z.string(),
-      rewrites: z.string().array().length(2),
-      suggestions: z.string(),
+      rewrites: z.string().array().max(2),
       score: z.number().min(1).max(5),
     });
 
