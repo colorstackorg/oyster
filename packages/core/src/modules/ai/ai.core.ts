@@ -15,7 +15,7 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY as string;
  * @see https://docs.anthropic.com/en/api/rate-limits#rate-limits
  */
 const anthropicRateLimiter = new RateLimiter('anthropic:requests', {
-  rateLimit: 50,
+  rateLimit: 1000,
   rateLimitWindow: 60,
 });
 
