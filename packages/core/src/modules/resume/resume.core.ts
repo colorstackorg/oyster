@@ -9,6 +9,7 @@ import { FORMATTED_RACE, Race } from '@oyster/types';
 import { id, run } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
+import { cache, ONE_WEEK_IN_SECONDS } from '@/infrastructure/redis';
 import { getChatCompletion } from '@/modules/ai/ai.core';
 import {
   type AirtableField,
@@ -44,7 +45,23 @@ const AIRTABLE_RESUME_BOOKS_BASE_ID = process.env
 const GOOGLE_DRIVE_RESUME_BOOKS_FOLDER_ID = process.env
   .GOOGLE_DRIVE_RESUME_BOOKS_FOLDER_ID as string;
 
+// Constants
+
+const RESUME_FEEDBACK_REDIS_PREFIX = 'resume_feedback:';
+
 // Queries
+
+/**
+ * Retrieves the last feedback that the member received on their resume. This
+ * feedback is temporarily stored in Redis, not longer-term storage.
+ */
+export async function getLastResumeFeedback(memberId: string) {
+  const feedback = await cache.get<ResumeFeedback>(
+    RESUME_FEEDBACK_REDIS_PREFIX + memberId
+  );
+
+  return feedback;
+}
 
 type GetResumeBookOptions<Selection> = {
   select: Selection[];
@@ -567,6 +584,14 @@ export async function reviewResume({
       error: 'Failed to parse the AI response.',
     });
   }
+
+  // We'll cache the feedback for a week so that the user can view the
+  // feedback without having to constantly re-run the review.
+  await cache.set<ResumeFeedback>(
+    RESUME_FEEDBACK_REDIS_PREFIX + memberId,
+    result.data,
+    ONE_WEEK_IN_SECONDS
+  );
 
   return success(result.data);
 }

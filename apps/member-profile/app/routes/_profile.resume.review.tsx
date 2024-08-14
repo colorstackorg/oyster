@@ -18,9 +18,12 @@ import { type PropsWithChildren } from 'react';
 import { FileText } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { cache, ONE_WEEK_IN_SECONDS } from '@oyster/core/member-profile.server';
 import { buildMeta } from '@oyster/core/remix';
-import { type ResumeFeedback, reviewResume } from '@oyster/core/resumes';
+import {
+  getLastResumeFeedback,
+  type ResumeFeedback,
+  reviewResume,
+} from '@oyster/core/resumes';
 import { Button, cx, FileUploader, Form, MB_IN_BYTES, Text } from '@oyster/ui';
 import { Progress, useProgress } from '@oyster/ui/progress';
 
@@ -38,13 +41,10 @@ export const meta: MetaFunction = () => {
   });
 };
 
-// Cache key for the feedback data.
-const keyPrefix = 'resume_feedback:';
-
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const feedback = await cache.get<ResumeFeedback>(keyPrefix + user(session));
+  const feedback = await getLastResumeFeedback(user(session));
 
   return json({
     experiences: feedback?.experiences,
@@ -57,8 +57,6 @@ const RESUME_MAX_FILE_SIZE = MB_IN_BYTES * 1;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const memberId = user(session);
-
   const uploadHandler = composeUploadHandlers(
     createFileUploadHandler({ maxPartSize: RESUME_MAX_FILE_SIZE }),
     createMemoryUploadHandler()
@@ -67,21 +65,13 @@ export async function action({ request }: ActionFunctionArgs) {
   const form = await parseMultipartFormData(request, uploadHandler);
 
   const result = await reviewResume({
-    memberId,
+    memberId: user(session),
     resume: form.get('resume') as File,
   });
 
   if (!result.ok) {
     return json(result, { status: result.code });
   }
-
-  // We'll cache the feedback for a week so that we don't have to re-run the
-  // review process every time the user refreshes the page.
-  await cache.set<ResumeFeedback>(
-    keyPrefix + memberId,
-    result.data,
-    ONE_WEEK_IN_SECONDS
-  );
 
   return json(result);
 }
