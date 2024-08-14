@@ -14,7 +14,7 @@ import {
   useLoaderData,
   useNavigation,
 } from '@remix-run/react';
-import { type PropsWithChildren, useState } from 'react';
+import { type PropsWithChildren } from 'react';
 import { FileText } from 'react-feather';
 import { match } from 'ts-pattern';
 
@@ -120,20 +120,12 @@ function UploadSection() {
 }
 
 function UploadForm() {
-  // We're only allowing 1 review per resume since there's not much variance in
-  // the feedback provided by the AI. In order to get another review, the user
-  // will need to upload a different resume.
-  const [alreadyReviewed, setAlreadyReviewed] = useState(false);
-
   return (
     <RemixForm
       className="form"
       data-gap="2rem"
       encType="multipart/form-data"
       method="post"
-      onSubmit={() => {
-        setAlreadyReviewed(true);
-      }}
     >
       <Form.Field required>
         <FileUploader
@@ -141,15 +133,12 @@ function UploadForm() {
           id="resume"
           maxFileSize={RESUME_MAX_FILE_SIZE}
           name="resume"
-          onChange={() => {
-            setAlreadyReviewed(false);
-          }}
           required
         />
       </Form.Field>
 
       <Button.Group>
-        <Button.Submit disabled={alreadyReviewed}>Get Feedback</Button.Submit>
+        <Button.Submit>Get Feedback</Button.Submit>
       </Button.Group>
     </RemixForm>
   );
@@ -273,13 +262,12 @@ function BulletPoint({ content, feedback, rewrites, score }: BulletPointProps) {
           className={cx(
             'rounded px-1.5',
 
-            match(score as 1 | 2 | 3 | 4 | 5)
-              .with(1, () => 'bg-red-100 text-red-700')
-              .with(2, () => 'bg-red-100 text-red-700')
-              .with(3, () => 'bg-yellow-100 text-yellow-700')
-              .with(4, () => 'bg-cyan-100 text-cyan-700')
-              .with(5, () => 'bg-lime-100 text-lime-700')
-              .run()
+            match(score)
+              .with(1, 2, 3, 4, 5, () => 'bg-red-100 text-red-700')
+              .with(6, () => 'bg-yellow-100 text-yellow-700')
+              .with(7, 8, () => 'bg-cyan-100 text-cyan-700')
+              .with(9, 10, () => 'bg-lime-100 text-lime-700')
+              .otherwise(() => '')
           )}
         >
           {score}

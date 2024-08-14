@@ -422,8 +422,8 @@ async function getResumeBookAirtableFields({
 const ResumeBullet = z.object({
   content: z.string(),
   feedback: z.string(),
-  rewrites: z.string().array().max(2),
-  score: z.number().min(1).max(5),
+  rewrites: z.string().array().min(0).max(2),
+  score: z.number().min(1).max(10),
 });
 
 const ResumeFeedback = z.object({
@@ -457,31 +457,36 @@ export type ResumeFeedback = z.infer<typeof ResumeFeedback>;
 export async function reviewResume({ memberId, resume }: ReviewResumeInput) {
   const systemPrompt = dedent`
     You are the best resume reviewer in the world, specifically for resumes
-    aimed at getting a software engineering internship/new grad role. You like
-    seeing important technologies used as well as impact. Be concise.
+    aimed at getting a software engineering internship/new grad role.
 
     Here are your guidelines for a great bullet point:
     - It starts with a strong action verb.
-    - It is very specific.
+    - It is specific.
     - It talks about achievements.
     - It is concise. No fluff.
-    - If possible, it quantifies impact. Don't lie though.
+    - If possible, it quantifies impact. Don't be as critical about this for
+      projects as you are for work experiences. Also, not every single bullet
+      point needs to quantify impact, but you should be able to quantify at
+      least 1-2 bullet points per experience.
 
     Here are your guidelines for giving feedback:
     - Be kind.
     - Be specific.
     - Be actionable.
     - Ask questions (ie: "how many...", "how much...", "what was the impact...").
-    - The last sentence of your feedback should always be an actionable
-      improvement item.
+    - Don't be overly nit-picky.
+    - If the bullet point is NOT a 10/10, then the last sentence of your
+      feedback MUST be an actionable improvement item.
 
     Here are your guidelines for rewriting bullet points:
-    - If the original bullet point is a 5/5, don't suggest any rewrites.
-    - If the original bullet point is not a 5/5, suggest 2 rewrite options.
-    - You must rate the rewrite as a 5/5. If you don't know, you're not done yet.
+    - If the original bullet point is a 10/10, do NOT suggest any rewrites.
+    - If the original bullet point is not a 10/10, suggest 1-2 rewrite
+      options. Those rewrite options should be at minimum 9/10.
     - Be 1000% certain that the rewrites address all of your feedback. If
       it doesn't, you're not done yet.
-    - Use "x" instead of an arbitrary number.
+    - Use letters (ie: "x") instead of arbitrary numbers.
+    - If details about the "what" are missing, you can use placeholders to
+      encourage the user to be more specific (ie: "insert xyz here...").
   `;
 
   const userPrompt = dedent`
@@ -491,8 +496,8 @@ export async function reviewResume({ memberId, resume }: ReviewResumeInput) {
     const ResumeBullet = z.object({
       content: z.string(),
       feedback: z.string(),
-      rewrites: z.string().array().max(2),
-      score: z.number().min(1).max(5),
+      rewrites: z.string().array().min(0).max(2),
+      score: z.number().min(1).max(10),
     });
 
     z.object({
