@@ -1,5 +1,5 @@
 import { createCanvas } from 'canvas';
-import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { getDocument } from 'pdfjs-dist';
 
 /**
  * Converts a PDF file to a base64 encoded "image/png" string. This is meant
