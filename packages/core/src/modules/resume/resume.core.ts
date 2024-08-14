@@ -143,8 +143,14 @@ export async function listResumeBookSponsors({
   const sponsors = await db
     .selectFrom('resumeBookSponsors')
     .leftJoin('companies', 'companies.id', 'resumeBookSponsors.companyId')
-    .select(['companies.id', 'companies.name'])
+    .select([
+      'companies.domain',
+      'companies.id',
+      'companies.imageUrl',
+      'companies.name',
+    ])
     .where('resumeBookId', '=', where.resumeBookId)
+    .orderBy('companies.name', 'asc')
     .execute();
 
   return sponsors;
