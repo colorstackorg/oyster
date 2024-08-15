@@ -597,7 +597,7 @@ function ActivityHistoryItemDescription({
             <div className="border-r-2 border-r-gray-300" />
 
             <SlackMessage
-              className="line-clamp-5 [word-break:break-word]"
+              className="line-clamp-10 [word-break:break-word]"
               color="gray-500"
             >
               {activity.messageReactedToText}
@@ -626,7 +626,7 @@ function ActivityHistoryItemDescription({
             <div className="border-r-2 border-r-gray-300" />
 
             <SlackMessage
-              className="line-clamp-5 [word-break:break-word]"
+              className="line-clamp-10 [word-break:break-word]"
               color="gray-500"
             >
               {activity.threadRepliedToText}
