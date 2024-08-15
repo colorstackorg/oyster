@@ -71,6 +71,9 @@ export const airtableWorker = registerWorker(
       .with({ name: 'airtable.record.update' }, ({ data }) => {
         return updateAirtableRecord(data);
       })
+      .with({ name: 'airtable.record.update.bulk' }, ({ data }) => {
+        return bulkUpdateAirtableRecord(data);
+      })
       .exhaustive();
   }
 );
@@ -439,4 +442,48 @@ export async function updateAirtableRecord({
   const json = await response.json();
 
   return json.id as string;
+}
+
+/**
+ * @see https://airtable.com/developers/web/api/update-multiple-records
+ */
+export async function bulkUpdateAirtableRecord({
+  airtableBaseId,
+  airtableTableId,
+  records,
+}: GetBullJobData<'airtable.record.update.bulk'>) {
+  if (!IS_PRODUCTION) {
+    return;
+  }
+
+  await airtableRateLimiter.process();
+
+  const body = JSON.stringify({
+    records: records.map((record) => {
+      return {
+        id: record.id,
+        fields: record.data,
+      };
+    }),
+
+    typecast: true,
+  });
+
+  const _ = await fetch(
+    `${AIRTABLE_API_URI}/${airtableBaseId}/${airtableTableId}`,
+    {
+      body,
+      headers: getAirtableHeaders({ includeContentType: true }),
+      method: 'PATCH',
+    }
+  );
+
+  console.log({
+    code: 'airtable_record_bulk_updated',
+    message: 'Airtable records were bulk updated.',
+    data: {
+      airtableBaseId,
+      airtableTableId,
+    },
+  });
 }

@@ -1,6 +1,7 @@
 import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
+import { splitArray } from '@oyster/utils';
 
 import { StudentBullJob } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
@@ -43,8 +44,8 @@ export const memberWorker = registerWorker(
       .with({ name: 'student.engagement.backfill' }, ({ data }) => {
         return backfillEngagementRecords(data);
       })
-      .with({ name: 'student.points.daily' }, ({ data: _ }) => {
-        return updatePointsDaily();
+      .with({ name: 'student.points.recurring' }, ({ data: _ }) => {
+        return updatePointTotals();
       })
       .with({ name: 'student.profile.viewed' }, ({ data }) => {
         return viewMemberProfile(data);
@@ -63,14 +64,14 @@ export const memberWorker = registerWorker(
 );
 
 /**
- * This is a daily job that runs and updates the point totals for all members.
+ * This is a weekly job that runs and updates the point totals for all members.
  * The query only updates the points for a member if they've actually changed,
  * to avoid unnecessary updates to the database.
  *
  * For any member that has had their points updated, we also update their
  * Airtable record with the new point total.
  */
-async function updatePointsDaily() {
+async function updatePointTotals() {
   const members = await db
     .with('updatedPoints', (db) => {
       return db
@@ -90,17 +91,26 @@ async function updatePointsDaily() {
     .returning(['students.airtableId', 'students.id', 'students.points'])
     .execute();
 
-  members.forEach((member) => {
-    if (member.airtableId) {
-      job('airtable.record.update', {
-        airtableBaseId: AIRTABLE_FAMILY_BASE_ID as string,
-        airtableRecordId: member.airtableId,
-        airtableTableId: AIRTABLE_MEMBERS_TABLE_ID as string,
-        data: {
-          Points: member.points,
-        },
-      });
-    }
+  // The Airtable API only allows us to update 10 records at a time, so we need
+  // to chunk the members into smaller groups.
+  const memberChunks = splitArray(
+    members.filter((member) => !!member.airtableId),
+    10
+  );
+
+  memberChunks.forEach((members) => {
+    job('airtable.record.update.bulk', {
+      airtableBaseId: AIRTABLE_FAMILY_BASE_ID as string,
+      airtableTableId: AIRTABLE_MEMBERS_TABLE_ID as string,
+      records: members.map((member) => {
+        return {
+          id: member.id,
+          data: {
+            Points: member.points,
+          },
+        };
+      }),
+    });
   });
 
   return success(members.length);
