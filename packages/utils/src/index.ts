@@ -152,6 +152,31 @@ export function sleep(ms: number): Promise<void> {
 }
 
 /**
+ * Splits an array into multiple smaller arrays of a specified maximum size.
+ *
+ * @param array - The array to be split.
+ * @param size - The maximum size of each sub-array.
+ * @returns An array of sub-arrays, each with a maximum length of `size`.
+ *
+ * @example
+ * ```ts
+ * splitArray([1, 2, 3, 4, 5], 2); // => [[1, 2], [3, 4], [5]]
+ * splitArray([1, 2, 3, 4, 5], 3); // => [[1, 2, 3], [4, 5]]
+ * splitArray([1, 2, 3, 4, 5], 5); // => [[1, 2, 3, 4, 5]]
+ * splitArray([1, 2, 3, 4, 5], 10); // => [[1, 2, 3, 4, 5]]
+ * ```
+ */
+export function splitArray<T>(array: T[], size: number): T[][] {
+  const result: T[][] = [];
+
+  for (let i = 0; i < array.length; i += size) {
+    result.push(array.slice(i, i + size));
+  }
+
+  return result;
+}
+
+/**
  * Returns the string with all special characters escaped.
  *
  * This is useful for escaping strings that will be used in a `RegExp`.
