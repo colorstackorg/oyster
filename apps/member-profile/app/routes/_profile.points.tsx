@@ -41,6 +41,7 @@ import {
   EmptyStateContainer,
 } from '@/shared/components/empty-state';
 import { Leaderboard } from '@/shared/components/leaderboard';
+import { SlackMessage } from '@/shared/components/slack-message';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -595,12 +596,12 @@ function ActivityHistoryItemDescription({
           <div className="flex gap-2">
             <div className="border-r-2 border-r-gray-300" />
 
-            <Text
-              className="line-clamp-5 whitespace-pre-wrap [word-break:break-word]"
+            <SlackMessage
+              className="line-clamp-5 [word-break:break-word]"
               color="gray-500"
             >
               {activity.messageReactedToText}
-            </Text>
+            </SlackMessage>
           </div>
         </div>
       );
@@ -624,12 +625,12 @@ function ActivityHistoryItemDescription({
           <div className="flex gap-2">
             <div className="border-r-2 border-r-gray-300" />
 
-            <Text
-              className="line-clamp-5 whitespace-pre-wrap [word-break:break-word]"
+            <SlackMessage
+              className="line-clamp-5 [word-break:break-word]"
               color="gray-500"
             >
               {activity.threadRepliedToText}
-            </Text>
+            </SlackMessage>
           </div>
         </div>
       );
