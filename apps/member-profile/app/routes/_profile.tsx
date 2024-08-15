@@ -6,6 +6,7 @@ import {
   BookOpen,
   Briefcase,
   Calendar,
+  FileText,
   Folder,
   Home,
   User,
@@ -58,7 +59,7 @@ export default function ProfileLayout() {
                   prefetch="intent"
                 />
 
-                <Divider my="4" />
+                <Divider my="2" />
               </>
             )}
             <Dashboard.NavigationLink
@@ -95,6 +96,13 @@ export default function ProfileLayout() {
               icon={<Calendar />}
               label="Events"
               pathname={Route['/events']}
+              prefetch="intent"
+            />
+            <Dashboard.NavigationLink
+              icon={<FileText />}
+              isNew
+              label="Resume Review"
+              pathname={Route['/resume/review']}
               prefetch="intent"
             />
             <Dashboard.NavigationLink

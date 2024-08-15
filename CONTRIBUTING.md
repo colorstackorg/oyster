@@ -77,41 +77,50 @@ Follow these steps in order to get started with contributing to Oyster!
    git remote add upstream https://github.com/colorstackorg/oyster.git
    ```
 
-8. Install all project dependencies:
+8. If you're not on macOS M1/M2/M3, please skip this step! If you are, you'll
+   need to install some native dependencies on your machine in order to support
+   [`node-canvas`](https://www.npmjs.com/package/canvas), which is the library
+   we need in order to convert PDFs to PNGs in our _AI Resume Review_ feature:
+
+   ```sh
+   brew install pkg-config cairo pango
+   ```
+
+9. Install all project dependencies:
 
    ```sh
    yarn
    ```
 
-9. Set up your environment variables:
+10. Set up your environment variables:
 
-   ```
-    yarn env:setup
-   ```
+    ```
+     yarn env:setup
+    ```
 
-   You'll now have `.env` files in all of your apps (and a couple packages)!
+    You'll now have `.env` files in all of your apps (and a couple packages)!
 
-   You'll also notice that a lot of environment variables are empty. Most of
-   these empty variables are tied to the 3rd party integrations we have with
-   services such as Google for authentication. You shouldn't need to enable
-   these integrations unless you're working on a feature that touches that
-   service, but in case you need to enable an integration, please see the
-   [How to Enable Integrations](./docs/how-to-enable-integrations.md)
-   documentation.
+    You'll also notice that a lot of environment variables are empty. Most of
+    these empty variables are tied to the 3rd party integrations we have with
+    services such as Google for authentication. You shouldn't need to enable
+    these integrations unless you're working on a feature that touches that
+    service, but in case you need to enable an integration, please see the
+    [How to Enable Integrations](./docs/how-to-enable-integrations.md)
+    documentation.
 
-10. Start your Postgres database and Redis store:
+11. Start your Postgres database and Redis store:
 
     ```
     yarn dx:up
     ```
 
-11. Run all the database migrations:
+12. Run all the database migrations:
 
     ```sh
     yarn db:migrate
     ```
 
-12. Seed your database with some "dummy" data:
+13. Seed your database with some "dummy" data:
 
     ```sh
     yarn db:seed
@@ -122,24 +131,24 @@ Follow these steps in order to get started with contributing to Oyster!
     This will enable you to log into both the Admin Dashboard and Member Profile
     very soon!
 
-13. Build the project:
+14. Build the project:
 
     ```sh
     yarn build
     ```
 
-14. Start all of the applications in development:
+15. Start all of the applications in development:
 
     ```sh
     yarn dev:apps
     ```
 
-15. Open up the applications in the browser.
+16. Open up the applications in the browser.
 
     1. The Member Profile is running at http://localhost:3000.
     2. The Admin Dashboard is running at http://localhost:3001.
 
-16. Log into both applications. In the development environment, you can bypass
+17. Log into both applications. In the development environment, you can bypass
     the "real" authentication by doing the following:
 
     1. Click "Log In with OTP".
@@ -148,7 +157,7 @@ Follow these steps in order to get started with contributing to Oyster!
 
     You should be logged in!
 
-17. Set up [Prisma Studio](https://www.prisma.io/studio), a tool to make it
+18. Set up [Prisma Studio](https://www.prisma.io/studio), a tool to make it
     easier to interact with and manage your data in the browser:
 
     ```sh
@@ -158,7 +167,7 @@ Follow these steps in order to get started with contributing to Oyster!
 
     You can now open up Prisma Studio in your browser at http://localhost:5555.
 
-18. [Optional] Once you are done developing, you may want to stop the database
+19. [Optional] Once you are done developing, you may want to stop the database
     containers since they can eat up battery life.
 
     ```sh
