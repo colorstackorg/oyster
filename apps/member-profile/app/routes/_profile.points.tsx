@@ -12,6 +12,7 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
+import { emojify } from 'node-emoji';
 import { Award, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
@@ -80,7 +81,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const id = user(session);
 
   const [
-    { completedActivities, totalActivitiesCompleted },
+    { completedActivities: _completedActivities, totalActivitiesCompleted },
     points,
     pointsLeaderboard,
     activities,
@@ -108,6 +109,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     properties: { Page: 'Points' },
     request,
     user: id,
+  });
+
+  const completedActivities = _completedActivities.map((activity) => {
+    if (activity.messageReactedToText) {
+      activity.messageReactedToText = emojify(activity.messageReactedToText);
+    }
+
+    if (activity.threadRepliedToText) {
+      activity.threadRepliedToText = emojify(activity.threadRepliedToText);
+    }
+
+    return activity;
   });
 
   return json({
@@ -597,7 +610,7 @@ function ActivityHistoryItemDescription({
             <div className="border-r-2 border-r-gray-300" />
 
             <SlackMessage
-              className="line-clamp-5 [word-break:break-word]"
+              className="line-clamp-10 [word-break:break-word]"
               color="gray-500"
             >
               {activity.messageReactedToText}
@@ -626,7 +639,7 @@ function ActivityHistoryItemDescription({
             <div className="border-r-2 border-r-gray-300" />
 
             <SlackMessage
-              className="line-clamp-5 [word-break:break-word]"
+              className="line-clamp-10 [word-break:break-word]"
               color="gray-500"
             >
               {activity.threadRepliedToText}
