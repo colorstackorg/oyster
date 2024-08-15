@@ -469,7 +469,7 @@ export async function bulkUpdateAirtableRecord({
     typecast: true,
   });
 
-  const _ = await fetch(
+  const response = await fetch(
     `${AIRTABLE_API_URI}/${airtableBaseId}/${airtableTableId}`,
     {
       body,
@@ -477,6 +477,15 @@ export async function bulkUpdateAirtableRecord({
       method: 'PATCH',
     }
   );
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    throw new ColorStackError()
+      .withMessage('Failed to bulk update records in Airtable.')
+      .withContext({ json, records })
+      .report();
+  }
 
   console.log({
     code: 'airtable_record_bulk_updated',
