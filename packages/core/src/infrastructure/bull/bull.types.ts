@@ -80,6 +80,19 @@ export const AirtableBullJob = z.discriminatedUnion('name', [
       data: z.any(),
     }),
   }),
+  z.object({
+    name: z.literal('airtable.record.update.bulk'),
+    data: z.object({
+      airtableBaseId: z.string().trim().min(1),
+      airtableTableId: z.string().trim().min(1),
+      records: z.array(
+        z.object({
+          id: z.string().trim().min(1),
+          data: z.any(),
+        })
+      ),
+    }),
+  }),
 ]);
 
 export const ApplicationBullJob = z.discriminatedUnion('name', [
@@ -524,6 +537,10 @@ export const StudentBullJob = z.discriminatedUnion('name', [
       email: Student.shape.email,
       studentId: Student.shape.id,
     }),
+  }),
+  z.object({
+    name: z.literal('student.points.recurring'),
+    data: z.object({}),
   }),
   z.object({
     name: z.literal('student.profile.viewed'),
