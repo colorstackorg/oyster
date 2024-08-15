@@ -104,7 +104,7 @@ async function updatePointTotals() {
       airtableTableId: AIRTABLE_MEMBERS_TABLE_ID as string,
       records: members.map((member) => {
         return {
-          id: member.id,
+          id: member.airtableId as string,
           data: {
             Points: member.points,
           },

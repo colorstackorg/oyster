@@ -483,7 +483,7 @@ export async function bulkUpdateAirtableRecord({
   if (!response.ok) {
     throw new ColorStackError()
       .withMessage('Failed to bulk update records in Airtable.')
-      .withContext({ json, records })
+      .withContext({ json, records, status: response.status })
       .report();
   }
 
