@@ -526,6 +526,10 @@ export const StudentBullJob = z.discriminatedUnion('name', [
     }),
   }),
   z.object({
+    name: z.literal('student.points.daily'),
+    data: z.object({}),
+  }),
+  z.object({
     name: z.literal('student.profile.viewed'),
     data: z.object({
       profileViewedId: ProfileView.shape.profileViewedId,

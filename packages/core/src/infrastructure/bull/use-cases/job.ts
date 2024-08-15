@@ -80,6 +80,7 @@ const QueueNameFromJobName: Record<BullJob['name'], BullQueue> = {
   'student.birthdate.daily': 'student',
   'student.created': 'student',
   'student.engagement.backfill': 'student',
+  'student.points.daily': 'student',
   'student.profile.viewed': 'student',
   'student.removed': 'student',
   'student.statuses.backfill': 'student',
