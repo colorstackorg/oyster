@@ -52,7 +52,11 @@ async function sendFeedSlackNotification(
   const resources = await db
     .selectFrom('resources')
     .leftJoin('students', 'students.id', 'resources.postedBy')
-    .select(['resources.title', 'students.slackId as posterSlackId'])
+    .select([
+      'resources.id',
+      'resources.title',
+      'students.slackId as posterSlackId',
+    ])
     .where('resources.postedAt', '>=', startOfYesterday)
     .where('resources.postedAt', '<=', endOfYesterday)
     .execute();
@@ -64,7 +68,12 @@ async function sendFeedSlackNotification(
   const message = run(() => {
     const resourceItems = resources
       .map((resource) => {
-        return `• ${resource.title} by <@${resource.posterSlackId}>`;
+        const url = new URL('/resources', ENV.STUDENT_PROFILE_URL);
+
+        // Example: https://app.colorstack.io/resources?id=123
+        url.searchParams.set('id', resource.id);
+
+        return `• <${url}|*${resource.title}*> by <@${resource.posterSlackId}>`;
       })
       .join('\n');
 
@@ -79,7 +88,7 @@ async function sendFeedSlackNotification(
     return dedent`
       Morning y'all, happy ${dayOfTheWeek}! ☀️
 
-      The following <${url}|_resources_> were posted yesterday:
+      The following <${url}|resources> were posted yesterday:
 
       ${resourceItems}
 
