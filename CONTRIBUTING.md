@@ -26,7 +26,8 @@ members. ❤️
 
 Follow these steps in order to get started with contributing to Oyster!
 
-1. Install [Docker Desktop](https://docs.docker.com/engine/install).
+1. Install [Docker Desktop](https://docs.docker.com/engine/install). After it's
+   installed, start the application!
 
 2. Install [Node.js](https://nodejs.org/en/download/package-manager) (v20.x).
 
