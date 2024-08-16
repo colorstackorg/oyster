@@ -50,6 +50,7 @@ const QueueNameFromJobName: Record<BullJob['name'], BullQueue> = {
   'event.register': 'event',
   'event.registered': 'event',
   'event.sync': 'event',
+  'feed.slack.recurring': 'feed',
   'gamification.activity.completed': 'gamification',
   'gamification.activity.completed.undo': 'gamification',
   'member_email.added': 'member_email',
