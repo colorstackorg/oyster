@@ -9,7 +9,6 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { Plus } from 'react-feather';
-import { z } from 'zod';
 
 import { isMemberAdmin } from '@oyster/core/admins';
 import { track } from '@oyster/core/mixpanel';
@@ -20,6 +19,7 @@ import {
   type ResourceType,
 } from '@oyster/core/resources';
 import { listResources, listTags } from '@oyster/core/resources.server';
+import { ISO8601Date } from '@oyster/types';
 import {
   Dashboard,
   ExistingSearchParams,
@@ -29,7 +29,7 @@ import {
   Select,
   Text,
 } from '@oyster/ui';
-import { iife } from '@oyster/utils';
+import { run } from '@oyster/utils';
 
 import { ListSearchParams } from '@/member-profile.ui';
 import { Resource } from '@/shared/components/resource';
@@ -43,12 +43,11 @@ const ResourcesSearchParams = ListSearchParams.pick({
   limit: true,
   page: true,
 }).extend({
-  [whereKeys.id]: ListResourcesWhere.shape.id.catch(undefined),
-  [whereKeys.search]: ListResourcesWhere.shape.search,
-  [whereKeys.tags]: ListResourcesWhere.shape.tags.catch([]),
+  date: ISO8601Date.optional().catch(undefined),
+  id: ListResourcesWhere.shape.id.catch(undefined),
   orderBy: ListResourcesOrderBy,
-  postedAfter: z.string().optional(),
-  postedBefore: z.string().optional(),
+  search: ListResourcesWhere.shape.search,
+  tags: ListResourcesWhere.shape.tags.catch([]),
 });
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -62,14 +61,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ...Object.fromEntries(url.searchParams),
     tags: url.searchParams.getAll('tags'),
   });
-
-  const postedAfter = searchParams.postedAfter
-    ? new Date(searchParams.postedAfter)
-    : undefined;
-
-  const postedBefore = searchParams.postedBefore
-    ? new Date(searchParams.postedBefore)
-    : undefined;
 
   const { resources: records, totalCount } = await listResources({
     memberId: user(session),
@@ -94,10 +85,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
       id: searchParams.id,
       search: searchParams.search,
       tags: searchParams.tags,
-      postedAfter,
-      postedBefore,
+
+      ...(searchParams.date &&
+        run(() => {
+          const date = dayjs(searchParams.date).tz('America/Los_Angeles', true);
+
+          return {
+            postedAfter: date.startOf('day').toDate(),
+            postedBefore: date.endOf('day').toDate(),
+          };
+        })),
     },
   });
+
+  const tz = getTimezone(request);
 
   const resources = await Promise.all(
     records.map(
@@ -136,7 +137,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           postedAt: dayjs().to(postedAt),
 
           postedAtExpanded: dayjs(postedAt)
-            .tz(getTimezone(request))
+            .tz(tz)
             .format('MMM DD, YYYY • h:mm A'),
 
           // This is the URL that can be shared with others to view the
@@ -153,16 +154,25 @@ export async function loader({ request }: LoaderFunctionArgs) {
     )
   );
 
-  const tags = await iife(async () => {
-    const result: { id: string; name: string; param: string }[] = [];
+  const tags = await run(async () => {
+    const result: { name: string; param: string; value?: string }[] = [];
+
+    if (searchParams.date) {
+      const date = dayjs(searchParams.date).tz(tz, true).format('M/D/YY');
+
+      result.push({
+        name: `Date: ${date}`,
+        param: 'date',
+      });
+    }
 
     // If there is an ID in the search params, we want to show a tag for it
     // to make it clear that the search is for a specific resource.
     if (searchParams.id && resources[0]) {
       result.push({
-        id: searchParams.id,
         name: resources[0].title as string,
         param: whereKeys.id,
+        value: searchParams.id,
       });
     }
 
@@ -176,8 +186,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
       tags.forEach((tag) => {
         result.push({
-          ...tag,
+          name: tag.name,
           param: whereKeys.tags,
+          value: tag.id,
         });
       });
     }
@@ -285,10 +296,10 @@ function CurrentTagsList() {
 
         // Since there could be multiple tags, we need to specify the value
         // along with the key.
-        searchParams.delete(tag.param, tag.id);
+        searchParams.delete(tag.param, tag.value);
 
         return (
-          <li key={tag.id}>
+          <li key={tag.value || tag.param}>
             <Pill
               color="pink-100"
               onCloseHref={{ search: searchParams.toString() }}

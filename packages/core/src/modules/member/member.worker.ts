@@ -12,7 +12,6 @@ import {
   AIRTABLE_FAMILY_BASE_ID,
   AIRTABLE_MEMBERS_TABLE_ID,
 } from '@/modules/airtable/airtable.core';
-import { sendResourcesNotification } from '@/modules/member/use-cases/send-resources-notification';
 import { success } from '@/shared/utils/core.utils';
 import { onActivationStepCompleted } from './events/activation-step-completed';
 import { onMemberActivated } from './events/member-activated';
@@ -59,9 +58,6 @@ export const memberWorker = registerWorker(
       })
       .with({ name: 'student.statuses.new' }, ({ data }) => {
         return createNewActiveStatuses(data);
-      })
-      .with({ name: 'student.resources.daily' }, ({ data }) => {
-        return sendResourcesNotification(data);
       })
       .exhaustive();
   }

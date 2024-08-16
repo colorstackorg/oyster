@@ -33,6 +33,7 @@ export const BullQueue = {
   EDUCATION_HISTORY: 'education_history',
   EMAIL_MARKETING: 'email_marketing',
   EVENT: 'event',
+  FEED: 'feed',
   GAMIFICATION: 'gamification',
   MEMBER_EMAIL: 'member_email',
   NOTIFICATION: 'notification',
@@ -193,6 +194,13 @@ export const EventBullJob = z.discriminatedUnion('name', [
     data: z.object({
       eventId: Event.shape.id,
     }),
+  }),
+]);
+
+export const FeedBullJob = z.discriminatedUnion('name', [
+  z.object({
+    name: z.literal('feed.slack.recurring'),
+    data: z.object({}),
   }),
 ]);
 
@@ -569,10 +577,6 @@ export const StudentBullJob = z.discriminatedUnion('name', [
     name: z.literal('student.statuses.new'),
     data: z.object({}),
   }),
-  z.object({
-    name: z.literal('student.resources.daily'),
-    data: z.object({}),
-  }),
 ]);
 
 export const SurveyBullJob = z.discriminatedUnion('name', [
@@ -617,6 +621,7 @@ export const BullJob = z.union([
   EducationHistoryBullJob,
   EmailMarketingBullJob,
   EventBullJob,
+  FeedBullJob,
   GamificationBullJob,
   MemberEmailBullJob,
   NotificationBullJob,
