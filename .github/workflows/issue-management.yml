@@ -1,70 +1,87 @@
-name: Issue Management
+name: Issue Management (Production Version)
 
 on:
   schedule:
-    - cron: '0 0 * * *' # this will run daily at midnight UTC
-  workflow_dispatch: # allows you to manually trigger this workflow
+    - cron: '0 0 * * *' # runs daily at midnight UTC
+  workflow_dispatch: # allows you to manually trigger the action
 
 jobs:
   manage-issues:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Warn inactive issues
-        uses: actions/github-script@v6
+      - name: Manage inactive issues
+        uses: actions/github-script@v7
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-            const issues = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              assignee: '*'
-            });
-
-            for (const issue of issues.data) {
-              const lastUpdated = new Date(issue.updated_at);
-              if (lastUpdated < twoWeeksAgo) {
-                await github.rest.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: issue.number,
-                  body: 'This issue has been inactive for 2 weeks. Please provide an update or it may be unassigned in 1 week.'
-                });
-              }
-            }
-
-      - name: Unassign inactive issues
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
             const threeWeeksAgo = new Date(Date.now() - 21 * 24 * 60 * 60 * 1000);
+            const botLogin = 'github-actions[bot]';
+
             const issues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              state: 'open',
-              assignee: '*'
+              state: 'open'
             });
 
             for (const issue of issues.data) {
-              const lastUpdated = new Date(issue.updated_at);
-              if (lastUpdated < threeWeeksAgo) {
-                await github.rest.issues.removeAssignees({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: issue.number,
-                  assignees: issue.assignees.map(a => a.login)
-                });
+              const comments = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number
+              });
+
+              const lastNonBotActivity = new Date(Math.max(
+                ...comments.data
+                  .filter(comment => comment.user.login !== botLogin)
+                  .map(comment => new Date(comment.created_at)),
+                new Date(issue.created_at)
+              ));
+
+              const isAssigned = issue.assignees.length > 0;
+              const warningAlreadyGiven = comments.data.some(comment =>
+                comment.user.login === botLogin &&
+                comment.body.includes('This issue has been inactive')
+              );
+
+              if (lastNonBotActivity < threeWeeksAgo) {
+                // Handle issues inactive for 3 weeks
+                if (isAssigned) {
+                  await github.rest.issues.removeAssignees({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    assignees: issue.assignees.map(a => a.login)
+                  });
+
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    body: 'This issue has been inactive for 3 weeks and has been unassigned. Feel free to pick it up again when you\'re ready to work on it.'
+                  });
+                } else if (!warningAlreadyGiven) {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    body: 'This unassigned issue has been inactive for 3 weeks. Please consider assigning it to someone or updating its status.'
+                  });
+                }
+              } else if (lastNonBotActivity < twoWeeksAgo && !warningAlreadyGiven) {
+                // Warning if inactive for 2 weeks
+                const warningMessage = isAssigned
+                  ? 'This issue has been inactive for 2 weeks. Please provide an update or it may be unassigned in 1 week.'
+                  : 'This unassigned issue has been inactive for 2 weeks. Please consider assigning it to someone or updating its status.';
 
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: issue.number,
-                  body: 'This issue has been inactive for 3 weeks and has been unassigned. Feel free to pick it up again when you\'re ready to work on it.'
+                  body: warningMessage
                 });
               }
             }
