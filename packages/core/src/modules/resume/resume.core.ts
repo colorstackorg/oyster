@@ -529,6 +529,7 @@ export async function reviewResume({
     });
 
     z.object({
+      // This should also include leadership experiences.
       experiences: z
         .object({
           bullets: ResumeBullet.array(),
