@@ -48,7 +48,7 @@ jobs:
               );
 
               if (lastNonBotActivity < threeWeeksAgo) {
-                // Handle issues inactive for 3 weeks
+                // handle issues inactive for 3 weeks
                 if (isAssigned) {
                   await github.rest.issues.removeAssignees({
                     owner: context.repo.owner,
@@ -72,7 +72,7 @@ jobs:
                   });
                 }
               } else if (lastNonBotActivity < twoWeeksAgo && !warningAlreadyGiven) {
-                // Warning if inactive for 2 weeks
+                // warning if inactive for 2 weeks
                 const warningMessage = isAssigned
                   ? 'This issue has been inactive for 2 weeks. Please provide an update or it may be unassigned in 1 week.'
                   : 'This unassigned issue has been inactive for 2 weeks. Please consider assigning it to someone or updating its status.';
