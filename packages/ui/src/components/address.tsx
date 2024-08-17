@@ -136,7 +136,7 @@ const COUNTRIES: Country[] = [
   { abbreviation: 'US', name: 'United States' },
 ];
 
-const mapCountryAbbreviationToStates = {
+const mapCountryAbbreviationToStates: Record<string, State[]> = {
   CA: CA_PROVINCES,
   US: USA_STATES,
 };
@@ -163,7 +163,10 @@ Address.Country = function Country(props: SelectProps) {
   const { setCountryAbbreviation } = useContext(AddressContext);
 
   return (
-    <Select {...props} onChange={(e) => setCountryAbbreviation(e.target.value)}>
+    <Select
+      {...props}
+      onChange={(e) => setCountryAbbreviation(e.currentTarget.value)}
+    >
       {COUNTRIES.map((country: Country) => {
         return (
           <option key={country.abbreviation} value={country.abbreviation}>
