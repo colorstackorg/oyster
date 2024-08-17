@@ -9,6 +9,7 @@ export const ClaimSwagPackInput = z.object({
   addressState: Address.shape.state,
   addressZip: Address.shape.zip,
   studentId: Student.shape.id,
+  addressCountry: Address.shape.country,
 });
 
 export type ClaimSwagPackInput = z.infer<typeof ClaimSwagPackInput>;

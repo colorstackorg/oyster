@@ -10,6 +10,7 @@ export async function claimSwagPack({
   addressState,
   addressZip,
   studentId,
+  addressCountry,
 }: ClaimSwagPackInput) {
   const student = await db
     .selectFrom('students')
@@ -25,6 +26,7 @@ export async function claimSwagPack({
         line2: addressLine2,
         state: addressState,
         zip: addressZip,
+        country: addressCountry,
       },
       email: student.email,
       firstName: student.firstName,
@@ -40,6 +42,7 @@ export async function claimSwagPack({
       addressLine2,
       addressState,
       addressZip,
+      addressCountry,
       claimedSwagPackAt: new Date(),
       swagUpOrderId: swagPackOrderId,
     })

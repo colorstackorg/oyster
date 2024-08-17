@@ -21,6 +21,7 @@ export const Address = z.object({
   line2: z.string().trim().optional(),
   state: z.string().trim().min(1),
   zip: z.string().trim().min(1),
+  country: z.string().trim().length(2),
 });
 
 export type Address = z.infer<typeof Address>;

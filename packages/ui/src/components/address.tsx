@@ -21,7 +21,7 @@ export const Address = ({ children }: PropsWithChildren) => {
     <AddressContext.Provider
       value={{ countryAbbreviation, setCountryAbbreviation }}
     >
-      <div className="grid gap-4 @container">{children}</div>;
+      <div className="grid gap-4 @container">{children}</div>
     </AddressContext.Provider>
   );
 };

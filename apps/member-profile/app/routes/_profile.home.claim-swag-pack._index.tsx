@@ -78,6 +78,7 @@ export async function action({ request }: ActionFunctionArgs) {
       addressState: data.addressState,
       addressZip: data.addressZip,
       studentId: user(session),
+      addressCountry: data.addressCountry,
     });
 
     return redirect(Route['/home/claim-swag-pack/confirmation']);
@@ -104,20 +105,22 @@ export default function ClaimSwagPack() {
       </Modal.Header>
 
       <Suspense fallback={<LoadingState />}>
-        <Await resolve={inventoryPromise}>
-          {(inventory) => {
-            return inventory > 0 ? (
-              <ClaimSwagPackForm />
-            ) : (
-              <Modal.Description>
-                Unfortunately, we ran out of swag pack inventory. However, we're
-                restocking ASAP and you should be able to claim a pack in the
-                next 2-4 weeks. Sorry about any inconvenience and thank you for
-                your patience!
-              </Modal.Description>
-            );
-          }}
-        </Await>
+        {
+          <Await resolve={inventoryPromise}>
+            {(inventory) => {
+              return inventory > 0 ? (
+                <ClaimSwagPackForm />
+              ) : (
+                <Modal.Description>
+                  Unfortunately, we ran out of swag pack inventory. However,
+                  we're restocking ASAP and you should be able to claim a pack
+                  in the next 2-4 weeks. Sorry about any inconvenience and thank
+                  you for your patience!
+                </Modal.Description>
+              );
+            }}
+          </Await>
+        }
       </Suspense>
     </>
   );
@@ -164,15 +167,10 @@ function ClaimSwagPackForm() {
         </Form.Field>
 
         <Address.HalfGrid>
-          <Form.Field
-            error={errors.addressCity}
-            label="City"
-            labelFor={keys.addressCity}
-            required
-          >
-            <Address.City
-              id={keys.addressCity}
-              name={keys.addressCity}
+          <Form.Field label="Country" labelFor={keys.addressCountry} required>
+            <Address.Country
+              id={keys.addressCountry}
+              name={keys.addressCountry}
               required
             />
           </Form.Field>
@@ -190,6 +188,18 @@ function ClaimSwagPackForm() {
             />
           </Form.Field>
 
+          <Form.Field
+            error={errors.addressCity}
+            label="City"
+            labelFor={keys.addressCity}
+            required
+          >
+            <Address.City
+              id={keys.addressCity}
+              name={keys.addressCity}
+              required
+            />
+          </Form.Field>
           <Form.Field
             error={errors.addressZip}
             label="ZIP Code"

@@ -80,7 +80,7 @@ export async function orderSwagPack(input: OrderSwagPackInput) {
       shipping_address1: input.contact.address.line1,
       shipping_address2: input.contact.address.line2,
       shipping_city: input.contact.address.city,
-      shipping_country: 'US',
+      shipping_country: input.contact.address.country,
       shipping_state: input.contact.address.state,
       shipping_zip: input.contact.address.zip,
     },
@@ -205,6 +205,7 @@ async function retrieveTokens(): Promise<OAuthTokens> {
   // SwagUp would have an endpoint like POST /token/test to know if the
   // token needed to be refreshed or not, but this is our current
   // workaround.
+
   const response = await fetch(`${SWAG_UP_API_URL}/accounts?limit=1`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
