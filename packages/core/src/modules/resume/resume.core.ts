@@ -519,7 +519,8 @@ export async function reviewResume({
     The following is a resume that has been parsed to text from a PDF. Please
     review this resume.
 
-    IMPORTANT: Only return JSON that respects the following Zod schema:
+    IMPORTANT: Do not return ANYTHING except for JSON that respects the
+    following Zod schema:
 
     const ResumeBullet = z.object({
       content: z.string(),
@@ -580,25 +581,30 @@ export async function reviewResume({
     user: memberId,
   });
 
-  const object = JSON.parse(completionResult.data);
-  const result = ResumeFeedback.safeParse(object);
+  try {
+    const object = JSON.parse(completionResult.data);
+    const feedback = ResumeFeedback.parse(object);
 
-  if (!result.success) {
+    // We'll cache the feedback for a week so that the user can view the
+    // feedback without having to constantly re-run the review.
+    await cache.set<ResumeFeedback>(
+      RESUME_FEEDBACK_REDIS_PREFIX + memberId,
+      feedback,
+      ONE_WEEK_IN_SECONDS
+    );
+
+    return success(feedback);
+  } catch (e) {
+    const error = new ColorStackError()
+      .withMessage('Failed to parse the AI response.')
+      .withContext({ data: completionResult.data, error: e })
+      .report();
+
     return fail({
       code: 500,
-      error: 'Failed to parse the AI response.',
+      error: error.message,
     });
   }
-
-  // We'll cache the feedback for a week so that the user can view the
-  // feedback without having to constantly re-run the review.
-  await cache.set<ResumeFeedback>(
-    RESUME_FEEDBACK_REDIS_PREFIX + memberId,
-    result.data,
-    ONE_WEEK_IN_SECONDS
-  );
-
-  return success(result.data);
 }
 
 /**
