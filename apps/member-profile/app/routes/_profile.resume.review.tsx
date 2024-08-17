@@ -24,7 +24,16 @@ import {
   type ResumeFeedback,
   reviewResume,
 } from '@oyster/core/resumes';
-import { Button, cx, FileUploader, Form, MB_IN_BYTES, Text } from '@oyster/ui';
+import { ReviewResumeInput } from '@oyster/core/resumes.types';
+import {
+  Button,
+  cx,
+  FileUploader,
+  Form,
+  MB_IN_BYTES,
+  Text,
+  validateForm,
+} from '@oyster/ui';
 import { Progress, useProgress } from '@oyster/ui/progress';
 
 import {
@@ -64,10 +73,24 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const result = await reviewResume({
-    memberId: user(session),
-    resume: form.get('resume') as File,
-  });
+  form.set('memberId', user(session));
+
+  const { data, errors, ok } = await validateForm(
+    Object.fromEntries(form),
+    ReviewResumeInput
+  );
+
+  if (!ok) {
+    return json(
+      {
+        error: errors.resume,
+        ok: false,
+      } as const,
+      { status: 400 }
+    );
+  }
+
+  const result = await reviewResume(data);
 
   if (!result.ok) {
     return json(result, { status: result.code });

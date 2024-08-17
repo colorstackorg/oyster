@@ -35,7 +35,7 @@ import {
 } from '@/modules/resume/resume.types';
 import { ColorStackError } from '@/shared/errors';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
-import { convertPdfToImage } from '@/shared/utils/file.utils';
+import { getTextFromPDF } from '@/shared/utils/file.utils';
 
 // Environment Variables
 
@@ -516,8 +516,10 @@ export async function reviewResume({
   `;
 
   const userPrompt = dedent`
-    Please review this resume. Only return JSON that respects the following Zod
-    schema:
+    The following is a resume that has been parsed to text from a PDF. Please
+    review this resume.
+
+    IMPORTANT: Only return JSON that respects the following Zod schema:
 
     const ResumeBullet = z.object({
       content: z.string(),
@@ -544,7 +546,7 @@ export async function reviewResume({
     });
   `;
 
-  const imageBase64 = await convertPdfToImage(resume);
+  const resumeText = await getTextFromPDF(resume);
 
   const completionResult = await getChatCompletion({
     maxTokens: 8192,
@@ -557,12 +559,8 @@ export async function reviewResume({
             text: userPrompt,
           },
           {
-            type: 'image',
-            source: {
-              data: imageBase64,
-              media_type: 'image/png',
-              type: 'base64',
-            },
+            type: 'text',
+            text: resumeText,
           },
         ],
       },
