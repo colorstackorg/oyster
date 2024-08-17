@@ -1,4 +1,4 @@
-name: Issue Management (Production Version)
+name: Issue Management
 
 on:
   schedule:
