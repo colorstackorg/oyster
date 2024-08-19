@@ -1,12 +1,12 @@
 import { sleep } from '@oyster/utils';
 
-type Result<T = object> =
+export type Result<T = object> =
   | {
       data: T;
       ok: true;
     }
   | {
-      code: 400 | 401 | 403 | 404 | 409;
+      code: number;
       error: string;
       ok: false;
     };
@@ -17,9 +17,9 @@ type Result<T = object> =
  * This and the `success` function are intended to be used together to create a
  * standard way of returning results from core functions.
  */
-export function fail(
+export function fail<T>(
   input: Pick<Extract<Result, { ok: false }>, 'code' | 'error'>
-): Result {
+): Result<T> {
   return {
     code: input.code,
     error: input.error,

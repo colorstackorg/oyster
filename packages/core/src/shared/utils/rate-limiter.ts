@@ -1,6 +1,6 @@
 import { sleep } from '@oyster/utils';
 
-import { redis, type RedisKey } from '@/infrastructure/redis';
+import { redis } from '@/infrastructure/redis';
 
 type RateLimitOptions = {
   rateLimit: number;
@@ -20,7 +20,7 @@ export class RateLimiter {
   private rateLimitWindow: RateLimitOptions['rateLimitWindow'];
 
   constructor(
-    protected key: RedisKey,
+    protected key: string,
     options: RateLimitOptions
   ) {
     this.rateLimit = options.rateLimit;

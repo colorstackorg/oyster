@@ -18,6 +18,7 @@ export { loginWithOAuth } from './modules/authentication/use-cases/login-with-oa
 export { educationWorker } from './modules/education/education.worker';
 export { workExperienceWorker } from './modules/employment/employment.worker';
 export { eventWorker } from './modules/event/event.worker';
+export { feedWorker } from './modules/feed/feed.core';
 export { gamificationWorker } from './modules/gamification/gamification.core';
 export { saveGoogleDriveCredentials } from './modules/google-drive';
 export { emailMarketingWorker } from './modules/mailchimp/email-marketing.worker';
