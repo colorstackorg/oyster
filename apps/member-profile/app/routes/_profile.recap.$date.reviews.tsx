@@ -64,6 +64,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export default function RecapReviews() {
   const { reviews } = useLoaderData<typeof loader>();
 
+  console.log(reviews);
+
   return (
     <Recap>
       <Recap.Header>
@@ -78,6 +80,7 @@ export default function RecapReviews() {
           return (
             <CompanyReview
               key={review.id}
+              id={review.id}
               company={{
                 id: review.companyId || '',
                 image: review.companyImage || '',
@@ -97,6 +100,8 @@ export default function RecapReviews() {
               reviewerProfilePicture={review.reviewerProfilePicture}
               text={review.text}
               title={review.title as string}
+              upvotesCount={review.upvotes}
+              hasUpvoted={review.upvoted as boolean}
             />
           );
         })}

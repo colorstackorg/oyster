@@ -27,7 +27,7 @@ import { Card } from '@/shared/components/card';
 import { Route } from '@/shared/constants';
 
 type CompanyReviewProps = {
-  id?: string;
+  id: string;
   company?: {
     id: string;
     image: string;
@@ -48,8 +48,8 @@ type CompanyReviewProps = {
   reviewedAt: string;
   text: string;
   title: string;
-  upvotesCount?: string | null;
-  hasUpvoted?: boolean | null;
+  upvotesCount: string | null;
+  hasUpvoted: boolean | null;
   workExperienceId?: string;
 };
 
@@ -167,6 +167,7 @@ export const CompanyReview = ({
         id={id}
         hasUpvoted={hasUpvoted}
         upvotesCount={upvotesCount}
+        editable={editable}
       />
     </Card>
   );
@@ -279,7 +280,11 @@ function UpvoteCompanyReviewButton({
   id,
   hasUpvoted,
   upvotesCount,
-}: Pick<CompanyReviewProps, 'id' | 'hasUpvoted' | 'upvotesCount'>) {
+  editable,
+}: Pick<
+  CompanyReviewProps,
+  'id' | 'hasUpvoted' | 'upvotesCount' | 'editable'
+>) {
   const fetcher = useFetcher();
 
   const action = hasUpvoted
@@ -289,6 +294,7 @@ function UpvoteCompanyReviewButton({
   return (
     <fetcher.Form action={action} method="post" className="mr-auto">
       <button
+        disabled={!editable}
         className={cx(
           getTextCn({ color: 'gray-500', variant: 'sm' }),
           'flex h-fit items-center gap-1 rounded-full border border-gray-200 px-2 py-0.5',
