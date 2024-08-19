@@ -29,6 +29,7 @@ export const Application = Student.pick({
   otherSchool: true,
   race: true,
   schoolId: true,
+  rejectionReason: true,
 })
   .required({ linkedInUrl: true })
   .partial({ acceptedAt: true })
@@ -60,6 +61,7 @@ export const Application = Student.pick({
     rejectedAt: z.coerce.date().optional(),
     reviewedById: z.string().trim().min(1).optional(),
     status: z.nativeEnum(ApplicationStatus),
+    rejectionReason: z.string().trim().optional(),
   });
 
 // Types

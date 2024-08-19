@@ -5,6 +5,7 @@ const ROUTES = [
   '/applications',
   '/applications/:id',
   '/applications/:id/accept',
+  '/applications/:id/reject',
   '/applications/:id/email',
   '/bull',
   '/bull/:queue',

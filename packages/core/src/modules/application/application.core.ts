@@ -118,6 +118,7 @@ export async function listApplications({
         'applications.id',
         'applications.lastName',
         'applications.status',
+        'applications.rejectionReason',
         'admins.firstName as reviewedByFirstName',
         'admins.lastName as reviewedByLastName',
         (eb) => {
@@ -359,6 +360,7 @@ export async function apply(input: ApplyInput) {
 
 export async function rejectApplication(
   applicationId: string,
+  reason: string,
   adminId: string
 ) {
   const application = await db.transaction().execute(async (trx) => {
@@ -368,6 +370,8 @@ export async function rejectApplication(
         rejectedAt: new Date(),
         reviewedById: adminId,
         status: ApplicationStatus.REJECTED,
+        // rejectionReason: reason || null,
+        rejectionReason: reason,
       })
       .where('id', '=', applicationId)
       .returning(['email', 'firstName', 'referralId'])
@@ -384,10 +388,13 @@ export async function rejectApplication(
     return application;
   });
 
+  console.log('Rejection Reason: ' + reason);
+
   queueRejectionEmail({
     automated: false,
     email: application.email,
     firstName: application.firstName,
+    rejectionReason: reason,
   });
 }
 
@@ -420,11 +427,14 @@ function queueRejectionEmail({
   automated,
   email,
   firstName,
-}: Pick<Application, 'email' | 'firstName'> & { automated: boolean }) {
+  rejectionReason,
+}: Pick<Application, 'email' | 'firstName' | 'rejectionReason'> & {
+  automated: boolean;
+}) {
   job(
     'notification.email.send',
     {
-      data: { firstName },
+      data: { firstName, rejectionReason },
       name: 'application-rejected',
       to: email,
     },

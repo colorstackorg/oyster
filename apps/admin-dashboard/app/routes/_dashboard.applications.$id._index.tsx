@@ -14,11 +14,7 @@ import dayjs from 'dayjs';
 import { type PropsWithChildren, useState } from 'react';
 import { Info } from 'react-feather';
 
-import {
-  acceptApplication,
-  getApplication,
-  rejectApplication,
-} from '@oyster/core/applications';
+import { acceptApplication, getApplication } from '@oyster/core/applications';
 import { Application } from '@oyster/core/applications.ui';
 import {
   Application as ApplicationType,
@@ -63,6 +59,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'applications.otherSchool',
       'applications.race',
       'applications.status',
+      'applications.id',
     ],
     {
       withReferrer: true,
@@ -106,13 +103,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
       }
 
       case 'reject': {
-        await rejectApplication(params.id as string, user(session));
-
-        toast(session, {
-          message: 'Application has been rejected.',
-        });
-
-        break;
+        // Redirects to the modal to select the reason why applicant is being rejected
+        return redirect(`/applications/${params.id}/reject`);
       }
     }
 
