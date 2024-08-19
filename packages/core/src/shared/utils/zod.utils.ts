@@ -10,7 +10,7 @@ export const FileLike = z.custom<File>((value) => {
     'text' in value &&
     'type' in value
   );
-});
+}, 'This is not a valid file object.');
 
 /**
  * Returns the error message that lives within the `error`. Note that even if
