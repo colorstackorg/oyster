@@ -232,8 +232,6 @@ function ReviewsList() {
     return null;
   }
 
-  console.log(reviews);
-
   return (
     <>
       <section className="flex flex-col gap-[inherit]">
