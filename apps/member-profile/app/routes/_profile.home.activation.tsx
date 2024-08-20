@@ -188,10 +188,7 @@ function ActivationList() {
 
   return (
     <ul>
-      <ActivationItem
-        label="Attend a Fam Friday Event"
-        requirement="attend_event"
-      >
+      <ActivationItem label="Attend an Event" requirement="attend_event">
         <ActivationItem.Description>
           We host a monthly virtual event at the end of every month called Fam
           Friday. Stay tuned to the {upcomingEventsLink} page -- we typically
