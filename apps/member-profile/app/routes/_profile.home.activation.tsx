@@ -7,18 +7,14 @@ import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
 import { type ActivationRequirement } from '@oyster/types';
-import { Button, getButtonCn, Modal, Text } from '@oyster/ui';
+import { Modal, Pill, Text } from '@oyster/ui';
 import { run } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
-type ActivationStatus =
-  | 'activated'
-  | 'claimed'
-  | 'ineligible'
-  | 'not_activated';
+type ActivationStatus = 'activated' | 'claimed' | 'ineligible' | 'in_progress';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -64,7 +60,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       return 'activated';
     }
 
-    return 'not_activated';
+    return 'in_progress';
   });
 
   return json({
@@ -78,6 +74,28 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export default function ActivationModal() {
   const { status } = useLoaderData<typeof loader>();
 
+  const pill = match(status)
+    .with('activated', () => {
+      return <Pill color="blue-100">Activated</Pill>;
+    })
+    .with('claimed', () => {
+      return <Pill color="lime-100">Claimed Swag Pack</Pill>;
+    })
+    .with('ineligible', () => {
+      return <Pill color="red-100">Ineligible</Pill>;
+    })
+    .with('in_progress', () => {
+      return <Pill color="amber-100">In Progress</Pill>;
+    })
+    .exhaustive();
+
+  const body = match(status)
+    .with('activated', () => <ActivatedState />)
+    .with('claimed', () => <ClaimedState />)
+    .with('ineligible', () => <IneligibleState />)
+    .with('in_progress', () => <NotActivatedState />)
+    .exhaustive();
+
   return (
     <Modal onCloseTo={Route['/home']}>
       <Modal.Header>
@@ -85,14 +103,9 @@ export default function ActivationModal() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <div className="flex flex-col gap-6">
-        {match(status)
-          .with('activated', () => <ActivatedState />)
-          .with('claimed', () => <ClaimedState />)
-          .with('ineligible', () => <IneligibleState />)
-          .with('not_activated', () => <NotActivatedState />)
-          .exhaustive()}
-      </div>
+      <Text color="gray-500">Status: {pill}</Text>
+
+      <div className="flex flex-col gap-6">{body}</div>
     </Modal>
   );
 }
@@ -101,18 +114,14 @@ function ActivatedState() {
   return (
     <>
       <Text color="gray-500">
-        Great news -- you're activated and eligible to claim your FREE swag
-        pack! 🎉
+        Great news -- you're activated and eligible to{' '}
+        <Link className="link" to={Route['/home/claim-swag-pack']}>
+          claim your FREE swag pack
+        </Link>
+        ! 🎉
       </Text>
 
-      <Button.Group>
-        <Link
-          className={getButtonCn({ variant: 'primary' })}
-          to={Route['/home/claim-swag-pack']}
-        >
-          Claim Swag Pack
-        </Link>
-      </Button.Group>
+      <ActivationList />
     </>
   );
 }
@@ -121,15 +130,19 @@ function ClaimedState() {
   const { claimedSwagPackAt } = useLoaderData<typeof loader>();
 
   return (
-    <Text color="gray-500">
-      You claimed your swag pack on{' '}
-      <span className="font-semibold">{claimedSwagPackAt}</span>. If you're
-      interested in purchasing more swag, check out the official{' '}
-      <Link className="link" target="_blank" to="https://colorstackmerch.org">
-        ColorStack Merch Store
-      </Link>
-      !
-    </Text>
+    <>
+      <Text color="gray-500">
+        You claimed your swag pack on{' '}
+        <span className="font-semibold">{claimedSwagPackAt}</span>. If you're
+        interested in purchasing more swag, check out the official{' '}
+        <Link className="link" target="_blank" to="https://colorstackmerch.org">
+          ColorStack Merch Store
+        </Link>
+        !
+      </Text>
+
+      <ActivationList />
+    </>
   );
 }
 
