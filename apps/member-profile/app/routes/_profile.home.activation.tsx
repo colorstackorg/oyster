@@ -1,8 +1,4 @@
-import {
-  type ActionFunctionArgs,
-  json,
-  type LoaderFunctionArgs,
-} from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import React, { type PropsWithChildren, useState } from 'react';
@@ -11,7 +7,7 @@ import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
 import { type ActivationRequirement } from '@oyster/types';
-import { Button, Divider, getButtonCn, Modal, Text } from '@oyster/ui';
+import { Button, getButtonCn, Modal, Text } from '@oyster/ui';
 import { run } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
@@ -46,10 +42,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const format = 'MMMM D, YYYY';
 
-  const activatedAt = member.activatedAt
-    ? dayjs(member.activatedAt).tz(tz).format(format)
-    : undefined;
-
   const acceptedAt = member.acceptedAt
     ? dayjs(member.acceptedAt).tz(tz).format(format)
     : undefined;
@@ -77,15 +69,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return json({
     acceptedAt,
-    activatedAt,
     claimedSwagPackAt,
     requirementsCompleted: member.activationRequirementsCompleted,
     status,
   });
-}
-
-export async function action({ request }: ActionFunctionArgs) {
-  await ensureUserAuthenticated(request);
 }
 
 export default function ActivationModal() {
@@ -94,7 +81,7 @@ export default function ActivationModal() {
   return (
     <Modal onCloseTo={Route['/home']}>
       <Modal.Header>
-        <Modal.Title>Activation Status</Modal.Title>
+        <Modal.Title>Activation ✅</Modal.Title>
         <Modal.CloseButton />
       </Modal.Header>
 
@@ -131,25 +118,17 @@ function ActivatedState() {
 }
 
 function ClaimedState() {
-  const { activatedAt, claimedSwagPackAt } = useLoaderData<typeof loader>();
-
-  const activationDate = <span className="font-semibold">{activatedAt}</span>;
-
-  const claimedDate = (
-    <span className="font-semibold">{claimedSwagPackAt}</span>
-  );
-
-  const merchLink = (
-    <Link className="link" target="_blank" to="https://colorstackmerch.org">
-      ColorStack Merch Store
-    </Link>
-  );
+  const { claimedSwagPackAt } = useLoaderData<typeof loader>();
 
   return (
     <Text color="gray-500">
-      You were activated on {activationDate} and claimed your swag pack on{' '}
-      {claimedDate}! Check out the official {merchLink} to purchase more swag!
-      👕
+      You claimed your swag pack on{' '}
+      <span className="font-semibold">{claimedSwagPackAt}</span>. If you're
+      interested in purchasing more swag, check out the official{' '}
+      <Link className="link" target="_blank" to="https://colorstackmerch.org">
+        ColorStack Merch Store
+      </Link>
+      !
     </Text>
   );
 }
@@ -157,14 +136,13 @@ function ClaimedState() {
 function IneligibleState() {
   const { acceptedAt } = useLoaderData<typeof loader>();
 
-  const acceptedDate = <span className="font-semibold">{acceptedAt}</span>;
-
   return (
     <Text color="gray-500">
       ColorStack launched the activation flow for members who joined after June
-      9th, 2023. You joined on {acceptedDate}, so unfortunately the activation
-      flow does not apply to you and you are not eligible to claim a swag pack.
-      😢
+      9th, 2023. You joined on{' '}
+      <span className="font-semibold">{acceptedAt}</span>, so unfortunately the
+      activation flow does not apply to you and you are not eligible to claim a
+      swag pack. So sorry about that!
     </Text>
   );
 }
@@ -172,6 +150,20 @@ function IneligibleState() {
 function NotActivatedState() {
   const { requirementsCompleted } = useLoaderData<typeof loader>();
 
+  return (
+    <>
+      <Text color="gray-500">
+        You've completed {requirementsCompleted.length}/6 activation
+        requirements. Once you hit all 6, you will be eligible to claim your
+        FREE swag pack! 👀
+      </Text>
+
+      <ActivationList />
+    </>
+  );
+}
+
+function ActivationList() {
   const emailLink = (
     <Link className="link" target="_blank" to={Route['/profile/emails']}>
       here
@@ -195,152 +187,145 @@ function NotActivatedState() {
   );
 
   return (
-    <>
-      <Text color="gray-500">
-        You've completed {requirementsCompleted.length}/6 activation
-        requirements. Once you hit all 6, you will be eligible to claim your
-        FREE swag pack! 👀
-      </Text>
+    <ul>
+      <ActivationItem
+        label="Attend a Fam Friday Event"
+        requirement="attend_event"
+      >
+        <ActivationItem.Description>
+          We host a monthly virtual event at the end of every month called Fam
+          Friday. Stay tuned to the {upcomingEventsLink} page -- we typically
+          open registration around the 3rd week of every month!
+        </ActivationItem.Description>
 
-      <ul className="flex flex-col">
-        <ActivationItem
-          label="Attend a Fam Friday Event"
-          requirement="attend_event"
-        >
-          <ActivationItem.Description>
-            We host a monthly virtual event at the end of every month called Fam
-            Friday. Stay tuned to the {upcomingEventsLink} page -- we typically
-            open registration around the 3rd week of every month!{' '}
-          </ActivationItem.Description>
+        <ActivationItem.QuestionList>
+          <ActivationItem.Question
+            question="Do I have to attend all the sessions in the event?"
+            answer="No, you just have to attend a minimum of 2 sessions!"
+          />
+          <ActivationItem.Question
+            question="How long does it take for my attendance to be updated?"
+            answer="Event attendance is updated within 2 hours of the event ending."
+          />
+          <ActivationItem.Question
+            question="I waited 2 hours, but my attendance hasn't been updated. What should I do?"
+            answer={
+              <>
+                It is likely that you joined the event with an email address
+                that is not on your ColorStack account, so we couldn't associate
+                the attendance with you. Please add that email to your account{' '}
+                {emailLink}, then it should update!
+              </>
+            }
+          />
+        </ActivationItem.QuestionList>
+      </ActivationItem>
 
-          <ActivationItem.QuestionList>
-            <ActivationItem.Question
-              answer="No, you just have to attend a minimum of 2 sessions!"
-              question="Do I have to attend all the sessions in the event?"
-            />
-            <ActivationItem.Question
-              answer="Event attendance is updated within 2 hours of the event ending."
-              question="How long does it take for my attendance to be updated?"
-            />
-            <ActivationItem.Question
-              answer={
-                <>
-                  It is likely that you joined the event with an email address
-                  that is not on your ColorStack account. Please add that email
-                  to your account {emailLink}, then it should update!
-                </>
-              }
-              question="I waited 2 hours, but my attendance hasn't been updated. What should I do?"
-            />
-          </ActivationItem.QuestionList>
-        </ActivationItem>
+      <ActivationItem
+        label="Attend an Onboarding Session"
+        requirement="attend_onboarding"
+      >
+        <ActivationItem.Description>
+          Attend an {onboardingLink} to learn more about ColorStack and meet
+          other members!
+        </ActivationItem.Description>
 
-        <ActivationItem
-          label="Attend an Onboarding Session"
-          requirement="attend_onboarding"
-        >
-          <ActivationItem.Description>
-            Attend an {onboardingLink} to learn more about ColorStack and meet
-            other members!
-          </ActivationItem.Description>
+        <ActivationItem.QuestionList>
+          <ActivationItem.Question
+            question="I attended an onboarding session, but my attendance hasn't been updated."
+            answer="Please allow our team 72 hours to mark your attendance."
+          />
+        </ActivationItem.QuestionList>
+      </ActivationItem>
 
-          <ActivationItem.QuestionList>
-            <ActivationItem.Question
-              answer="Please allow our team 48 hours to mark your attendance."
-              question="I attended an onboarding session, but my attendance hasn't been updated."
-            />
-          </ActivationItem.QuestionList>
-        </ActivationItem>
+      <ActivationItem
+        label="Open a Weekly Newsletter"
+        requirement="open_email_campaign"
+      >
+        <ActivationItem.Description>
+          You are automatically subscribed to our weekly newsletter -- new
+          issues are typically sent on Wednesdays. If you haven't received a
+          newsletter after 2 weeks of being in ColorStack, let us know.
+        </ActivationItem.Description>
 
-        <ActivationItem
-          label="Open a Weekly Newsletter"
-          requirement="open_email_campaign"
-        >
-          <ActivationItem.Description>
-            You are automatically subscribed to our weekly newsletter -- new
-            issues are typically sent on Wednesdays. If you haven't received a
-            newsletter after 2 weeks of being in ColorStack, let us know.
-          </ActivationItem.Description>
+        <ActivationItem.QuestionList>
+          <ActivationItem.Question
+            question="Where can I find the newsletters?"
+            answer='You will receive the newsletter via email. The subject typically starts with "[ColorStack Newsletter]".'
+          />
+          <ActivationItem.Question
+            question="I opened the newsletter, but it has not been marked as opened. What should I do?"
+            answer='Please allow up to 48 hours for our system to register you opening a newsletter. Sometimes Mailchimp does not register opens properly, so you can guarantee it registers by clicking the button at the bottom of the email that says "Click Here for Activation Checkmark".'
+          />
+        </ActivationItem.QuestionList>
+      </ActivationItem>
 
-          <ActivationItem.QuestionList>
-            <ActivationItem.Question
-              answer='You will receive the newsletter issues in your email inbox. The subject typically starts with "[ColorStack Newsletter]".'
-              question="Where can I find the newsletters?"
-            />
-            <ActivationItem.Question
-              answer='Please allow up to 48 hours for our system to register you opening a newsletter. Sometimes Mailchimp does not register opens, so you can guarantee it registers by clicking the button at the bottom of the email that says "Click Here for Activation Checkmark".'
-              question="I opened the newsletter, but it has not been marked as opened."
-            />
-          </ActivationItem.QuestionList>
-        </ActivationItem>
+      <ActivationItem
+        label={
+          <>
+            Introduce Yourself in{' '}
+            <Link
+              className="link hover:font-semibold"
+              target="_blank"
+              to="https://colorstack-family.slack.com/channels/C0120DK0Y9E"
+            >
+              #introductions
+            </Link>
+          </>
+        }
+        requirement="send_introduction_message"
+      >
+        <ActivationItem.Description>
+          This is an easy one -- introduce yourself in the Slack! Please follow
+          the template others have used in the #introductions channel.
+        </ActivationItem.Description>
+      </ActivationItem>
 
-        <ActivationItem
-          label={
-            <>
-              Introduce Yourself in{' '}
-              <Link
-                className="link"
-                target="_blank"
-                to="https://colorstack-family.slack.com/channels/C0120DK0Y9E"
-              >
-                #introductions
-              </Link>
-            </>
-          }
-          requirement="send_introduction_message"
-        >
-          <ActivationItem.Description>
-            This is an easy one -- please follow the template others have used
-            in the #introductions channel!
-          </ActivationItem.Description>
-        </ActivationItem>
+      <ActivationItem
+        label={
+          <>
+            Answer a QOTD in{' '}
+            <Link
+              className="link hover:font-semibold"
+              target="_blank"
+              to="https://colorstack-family.slack.com/channels/C011H0EFLMU"
+            >
+              #announcements
+            </Link>
+          </>
+        }
+        requirement="reply_to_announcement_message"
+      >
+        <ActivationItem.Description>
+          We post announcements typically 2x a week. Look out for a question of
+          the day (QOTD) and answer it in the thread!
+        </ActivationItem.Description>
 
-        <ActivationItem
-          label={
-            <>
-              Answer a QOTD in{' '}
-              <Link
-                className="link"
-                target="_blank"
-                to="https://colorstack-family.slack.com/channels/C011H0EFLMU"
-              >
-                #announcements
-              </Link>
-            </>
-          }
-          requirement="reply_to_announcement_message"
-        >
-          <ActivationItem.Description>
-            We post announcements typically 2x a week. Look out for a question
-            of the day (QOTD) and answer it in the thread!
-          </ActivationItem.Description>
+        <ActivationItem.QuestionList>
+          <ActivationItem.Question
+            question="Slack is not letting me reply. What should I do?"
+            answer="It is likely that you are trying to post a message in the channel directly, which you are not allowed to do. You have to open the thread of the announcement and reply there."
+          />
+        </ActivationItem.QuestionList>
+      </ActivationItem>
 
-          <ActivationItem.QuestionList>
-            <ActivationItem.Question
-              answer="It is likely that you are trying to post a message in the channel directly, which you are not allowed to do. You have to open the thread of the announcement and reply there."
-              question="Slack is not letting me reply. What should I do?"
-            />
-          </ActivationItem.QuestionList>
-        </ActivationItem>
-
-        <ActivationItem
-          label="Reply to 2 Other Threads"
-          requirement="reply_to_other_messages"
-        >
-          <ActivationItem.Description>
-            We highly value engagement and helping others in the community!
-            Reply to 2 threads that other ColorStack members have posted.
-          </ActivationItem.Description>
-        </ActivationItem>
-      </ul>
-    </>
+      <ActivationItem
+        label="Reply to 2 Other Threads"
+        requirement="reply_to_other_messages"
+      >
+        <ActivationItem.Description>
+          We highly value engagement and helping others in the community! Reply
+          to 2 threads in ANY channel that other ColorStack members have posted.
+        </ActivationItem.Description>
+      </ActivationItem>
+    </ul>
   );
 }
 
 // Activation Item
 
 type ActivationItemProps = PropsWithChildren<{
-  label?: React.ReactNode;
+  label: React.ReactNode;
   requirement: ActivationRequirement;
 }>;
 
@@ -349,8 +334,9 @@ const ActivationItem = ({
   label,
   requirement,
 }: ActivationItemProps) => {
+  // TODO: We should make an official `Accordion` component in our `ui` library
+  // but for now, this will do.
   const [expanded, setExpanded] = useState(false);
-
   const { requirementsCompleted } = useLoaderData<typeof loader>();
 
   const completed = requirementsCompleted.includes(requirement);
@@ -359,12 +345,12 @@ const ActivationItem = ({
     <li>
       <button
         className="group flex w-full cursor-pointer items-start gap-2 py-2"
-        onClick={() => setExpanded((value) => !value)}
+        onClick={() => {
+          setExpanded((value) => !value);
+        }}
         type="button"
       >
-        <div className="mt-0.5">
-          {completed ? <CheckCircle color="green" /> : <XCircle color="red" />}
-        </div>
+        {completed ? <CheckCircle color="green" /> : <XCircle color="red" />}
 
         <Text className="group-hover:underline" weight="500">
           {label}
@@ -381,7 +367,7 @@ const ActivationItem = ({
             <CheckCircle className="invisible" />
           </div>
 
-          <div className="flex flex-col gap-2">{children}</div>
+          <div className="flex flex-col gap-4">{children}</div>
         </div>
       )}
     </li>
@@ -408,14 +394,20 @@ ActivationItem.Question = function Question({
   question,
 }: QuestionProps) {
   return (
-    <li className="flex flex-col gap-1">
+    <li className="flex gap-1">
       <Text weight="500" variant="sm">
-        {question}
+        Q:
       </Text>
 
-      <Text color="gray-500" variant="sm">
-        {answer}
-      </Text>
+      <div className="flex flex-col gap-1">
+        <Text weight="500" variant="sm">
+          {question}
+        </Text>
+
+        <Text color="gray-500" variant="sm">
+          {answer}
+        </Text>
+      </div>
     </li>
   );
 };
@@ -423,14 +415,5 @@ ActivationItem.Question = function Question({
 ActivationItem.QuestionList = function QuestionList({
   children,
 }: PropsWithChildren) {
-  return (
-    <>
-      <Divider my="1" />
-      <ul className="flex flex-col gap-2">{children}</ul>
-    </>
-  );
-};
-
-ActivationItem.Title = function Title({ children }: PropsWithChildren) {
-  return <Text weight="500">{children}</Text>;
+  return <ul className="flex flex-col gap-2">{children}</ul>;
 };
