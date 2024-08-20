@@ -10,6 +10,7 @@ import {
   educationWorker,
   emailMarketingWorker,
   eventWorker,
+  feedWorker,
   gamificationWorker,
   memberEmailWorker,
   memberWorker,
@@ -85,6 +86,7 @@ function initializeBullWorkers() {
   educationWorker.run();
   emailMarketingWorker.run();
   eventWorker.run();
+  feedWorker.run();
   gamificationWorker.run();
   memberWorker.run();
   memberEmailWorker.run();

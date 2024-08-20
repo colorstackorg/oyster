@@ -3,11 +3,17 @@ import React from 'react';
 import parseSlackMessage, { type Node, NodeType } from 'slack-message-parser';
 import { match } from 'ts-pattern';
 
-import { cx, getButtonCn, ProfilePicture, Text } from '@oyster/ui';
+import {
+  cx,
+  getButtonCn,
+  ProfilePicture,
+  Text,
+  type TextProps,
+} from '@oyster/ui';
 
 import { Card } from '@/shared/components/card';
 
-type SlackMessageProps = {
+type SlackMessageCardProps = {
   channelId?: string;
   messageId?: string;
   postedAt?: string;
@@ -19,7 +25,7 @@ type SlackMessageProps = {
 
 const SLACK_WORKSPACE_URL = 'https://colorstack-family.slack.com';
 
-export function SlackMessage({
+export function SlackMessageCard({
   channelId,
   messageId,
   postedAt,
@@ -27,7 +33,7 @@ export function SlackMessage({
   posterLastName = 'Member',
   posterProfilePicture,
   text,
-}: SlackMessageProps) {
+}: SlackMessageCardProps) {
   return (
     <Card>
       <header className="flex items-start justify-between gap-4">
@@ -64,10 +70,22 @@ export function SlackMessage({
         )}
       </header>
 
-      <Text className="whitespace-pre-wrap">
-        {<>{toHTML(parseSlackMessage(text))}</>}
-      </Text>
+      <SlackMessage>{text}</SlackMessage>
     </Card>
+  );
+}
+
+type SlackMessageProps = Pick<TextProps, 'children' | 'className' | 'color'>;
+
+export function SlackMessage({
+  children,
+  className,
+  ...rest
+}: SlackMessageProps) {
+  return (
+    <Text className={cx('whitespace-pre-wrap', className)} {...rest}>
+      {<>{toHTML(parseSlackMessage(children as string))}</>}
+    </Text>
   );
 }
 
