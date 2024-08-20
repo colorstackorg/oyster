@@ -4,30 +4,33 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useLoaderData } from '@remix-run/react';
+import {
+  Form as RemixForm,
+  useActionData,
+  useLoaderData,
+} from '@remix-run/react';
 
-import { removeAdmin } from '@oyster/core/admins';
-import { db } from '@oyster/db';
-import { Button, Modal } from '@oyster/ui';
+import { getAdmin, removeAdmin } from '@oyster/core/admins';
+import { Button, Form, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
+  user,
 } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const admin = await db
-    .selectFrom('admins')
-    .select(['firstName', 'lastName'])
-    .where('id', '=', params.id as string)
-    .executeTakeFirst();
+  const admin = await getAdmin({
+    select: ['admins.firstName', 'admins.lastName'],
+    where: { id: params.id as string },
+  });
 
   if (!admin) {
-    return redirect(Route['/admins']);
+    throw new Response(null, { status: 404 });
   }
 
   return json({
@@ -38,14 +41,17 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const admin = await removeAdmin({ id: params.id as string });
+  const result = await removeAdmin({
+    actor: user(session),
+    id: params.id as string,
+  });
 
-  if (!admin) {
-    throw new Response(null, { status: 404 });
+  if (!result.ok) {
+    return json({ error: result.error }, { status: result.code });
   }
 
   toast(session, {
-    message: 'Removed member.',
+    message: 'Removed admin.',
   });
 
   return redirect(Route['/admins'], {
@@ -57,6 +63,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
 export default function RemoveAdminPage() {
   const { admin } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
 
   return (
     <Modal onCloseTo={Route['/admins']}>
@@ -72,6 +79,8 @@ export default function RemoveAdminPage() {
       </Modal.Description>
 
       <RemixForm className="form" method="post">
+        <Form.ErrorMessage>{actionData?.error}</Form.ErrorMessage>
+
         <Button.Group>
           <Button color="error" type="submit">
             Remove

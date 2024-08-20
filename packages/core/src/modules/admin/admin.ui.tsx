@@ -1,5 +1,5 @@
 import { generatePath, Link, Form as RemixForm } from '@remix-run/react';
-import { createContext, useContext, useState } from 'react';
+import { useState } from 'react';
 import { Trash } from 'react-feather';
 import { match } from 'ts-pattern';
 
@@ -81,19 +81,17 @@ export function AdminForm({ error, errors }: AdminFormProps) {
 
 type AdminInTable = Pick<
   DB['admins'],
-  'email' | 'firstName' | 'lastName' | 'role'
->;
+  'email' | 'firstName' | 'id' | 'lastName' | 'role'
+> & {
+  canRemove: boolean;
+  isDeleted: boolean;
+};
 
 type AdminTableProps = {
   admins: AdminInTable[];
-  userId: string;
 };
 
-const AdminTableContext = createContext({
-  userId: '' as string,
-});
-
-export function AdminTable({ admins, userId }: AdminTableProps) {
+export function AdminTable({ admins }: AdminTableProps) {
   const columns: TableColumnProps<AdminInTable>[] = [
     {
       displayName: 'Full Name',
@@ -107,7 +105,7 @@ export function AdminTable({ admins, userId }: AdminTableProps) {
     },
     {
       displayName: 'Role',
-      size: '200',
+      size: '160',
       render: (admin) => {
         return match(admin.role as AdminRole)
           .with('admin', () => {
@@ -117,32 +115,42 @@ export function AdminTable({ admins, userId }: AdminTableProps) {
             return <Pill color="pink-100">Ambassador</Pill>;
           })
           .with('owner', () => {
-            return <Pill color="lime-100">Owner</Pill>;
+            return <Pill color="purple-100">Owner</Pill>;
           })
           .exhaustive();
+      },
+    },
+    {
+      displayName: 'Status',
+      size: '160',
+      render: (admin) => {
+        return admin.isDeleted ? (
+          <Pill color="gray-100">Archived</Pill>
+        ) : (
+          <Pill color="lime-100">Active</Pill>
+        );
       },
     },
   ];
 
   return (
-    <AdminTableContext.Provider value={{ userId }}>
-      <Table
-        columns={columns}
-        data={admins}
-        emptyMessage="No admins found."
-        Dropdown={AdminDropdown}
-      />
-    </AdminTableContext.Provider>
+    <Table
+      columns={columns}
+      data={admins}
+      emptyMessage="No admins found."
+      Dropdown={(row) => {
+        if (!row.canRemove) {
+          return null;
+        }
+
+        return <AdminDropdown {...row} />;
+      }}
+    />
   );
 }
 
-type AdminType = {
-  id: string;
-};
-
-export function AdminDropdown({ id }: AdminType) {
+function AdminDropdown({ id }: AdminInTable) {
   const [open, setOpen] = useState<boolean>(false);
-  const { userId } = useContext(AdminTableContext);
 
   function onClose() {
     setOpen(false);
@@ -151,8 +159,6 @@ export function AdminDropdown({ id }: AdminType) {
   function onOpen() {
     setOpen(true);
   }
-
-  if (userId === id) return <></>;
 
   return (
     <Dropdown.Container onClose={onClose}>

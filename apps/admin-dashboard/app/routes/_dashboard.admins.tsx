@@ -1,7 +1,12 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
 
-import { listAdmins } from '@oyster/core/admins';
+import {
+  doesAdminHavePermission,
+  getAdmin,
+  listAdmins,
+} from '@oyster/core/admins';
+import { type AdminRole } from '@oyster/core/admins.types';
 import { AdminTable } from '@oyster/core/admins.ui';
 import { Dashboard } from '@oyster/ui';
 
@@ -11,26 +16,52 @@ import { user } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const userId = user(session);
+  const [admin, _admins] = await Promise.all([
+    getAdmin({
+      select: ['admins.id', 'admins.role'],
+      where: { id: user(session) },
+    }),
+    listAdmins({
+      select: [
+        'admins.deletedAt',
+        'admins.firstName',
+        'admins.lastName',
+        'admins.email',
+        'admins.id',
+        'admins.role',
+      ],
+    }),
+  ]);
 
-  const admins = await listAdmins({
-    select: [
-      'admins.firstName',
-      'admins.lastName',
-      'admins.email',
-      'admins.id',
-      'admins.role',
-    ],
+  if (!admin) {
+    throw new Response(null, { status: 404 });
+  }
+
+  const admins = _admins.map(({ deletedAt, ...row }) => {
+    return {
+      ...row,
+
+      // Admins can't delete themselves nor can they delete other admins with
+      // a higher role.
+      canRemove:
+        !deletedAt &&
+        row.id !== admin.id &&
+        doesAdminHavePermission({
+          minimumRole: row.role as AdminRole,
+          role: admin.role as AdminRole,
+        }),
+
+      isDeleted: !!deletedAt,
+    };
   });
 
   return json({
     admins,
-    userId,
   });
 }
 
 export default function Admins() {
-  const { admins, userId } = useLoaderData<typeof loader>();
+  const { admins } = useLoaderData<typeof loader>();
 
   return (
     <>
@@ -38,7 +69,7 @@ export default function Admins() {
         <Dashboard.Title>Admins</Dashboard.Title>
       </Dashboard.Header>
 
-      <AdminTable admins={admins} userId={userId} />
+      <AdminTable admins={admins} />
       <Outlet />
     </>
   );
