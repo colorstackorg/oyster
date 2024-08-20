@@ -82,9 +82,7 @@ export default function RemoveAdminPage() {
         <Form.ErrorMessage>{actionData?.error}</Form.ErrorMessage>
 
         <Button.Group>
-          <Button color="error" type="submit">
-            Remove
-          </Button>
+          <Button.Submit color="error">Remove</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>
