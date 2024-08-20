@@ -652,17 +652,15 @@ function MerchStoreCard() {
         />
       </ul>
 
-      <div className="flex w-full items-center justify-between gap-4">
-        <Button.Group>
-          <a
-            href="https://colorstackmerch.org"
-            target="_blank"
-            className={getButtonCn({ variant: 'primary' })}
-          >
-            Shop Now <ExternalLink size={20} />
-          </a>
-        </Button.Group>
-      </div>
+      <Button.Group>
+        <a
+          href="https://colorstackmerch.org"
+          target="_blank"
+          className={getButtonCn({ variant: 'primary' })}
+        >
+          Shop Now <ExternalLink size={20} />
+        </a>
+      </Button.Group>
     </Card>
   );
 }
