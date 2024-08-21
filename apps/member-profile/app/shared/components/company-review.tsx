@@ -1,4 +1,4 @@
-import { generatePath, Link } from '@remix-run/react';
+import { generatePath, Link, useFetcher } from '@remix-run/react';
 import { type PropsWithChildren, useState } from 'react';
 import { Check, ChevronDown, ChevronUp, Edit, Star, X } from 'react-feather';
 
@@ -35,6 +35,8 @@ type CompanyReviewProps = {
   date: string;
   editable?: boolean;
   employmentType: EmploymentType;
+  hasUpvoted: boolean | null;
+  id: string;
   locationCity: string | null;
   locationState: string | null;
   locationType: LocationType;
@@ -47,6 +49,7 @@ type CompanyReviewProps = {
   reviewedAt: string;
   text: string;
   title: string;
+  upvotesCount: string | null;
   workExperienceId?: string;
 };
 
@@ -55,6 +58,8 @@ export const CompanyReview = ({
   date,
   editable,
   employmentType,
+  hasUpvoted,
+  id,
   locationCity,
   locationState,
   locationType,
@@ -67,6 +72,7 @@ export const CompanyReview = ({
   reviewedAt,
   text,
   title,
+  upvotesCount,
   workExperienceId,
 }: CompanyReviewProps) => {
   return (
@@ -157,6 +163,11 @@ export const CompanyReview = ({
       </div>
 
       <CompanyReviewText text={text} />
+      <CompanyReviewUpvoteButton
+        hasUpvoted={hasUpvoted}
+        id={id}
+        upvotesCount={upvotesCount}
+      />
     </Card>
   );
 };
@@ -240,7 +251,7 @@ function CompanyReviewText({ text }: Pick<CompanyReviewProps, 'text'>) {
       </Text>
 
       <button
-        className="flex items-center gap-1 text-primary"
+        className="flex w-fit items-center gap-1 text-primary"
         onClick={() => {
           setOpen((value) => !value);
         }}
@@ -257,6 +268,35 @@ function CompanyReviewText({ text }: Pick<CompanyReviewProps, 'text'>) {
         )}
       </button>
     </>
+  );
+}
+
+function CompanyReviewUpvoteButton({
+  hasUpvoted,
+  id,
+  upvotesCount,
+}: Pick<CompanyReviewProps, 'hasUpvoted' | 'id' | 'upvotesCount'>) {
+  const fetcher = useFetcher();
+
+  const action = hasUpvoted
+    ? `/api/company-reviews/${id}/undo-upvote`
+    : `/api/company-reviews/${id}/upvote`;
+
+  return (
+    <fetcher.Form action={action} method="post" className="mr-auto">
+      <button
+        className={cx(
+          getTextCn({ color: 'gray-500', variant: 'sm' }),
+          'flex h-fit items-center gap-1 rounded-full border border-gray-200 px-2 py-0.5',
+          hasUpvoted
+            ? 'border-primary bg-primary text-white'
+            : 'hover:border-primary hover:text-primary'
+        )}
+        type="submit"
+      >
+        This was helpful ({upvotesCount || 0})
+      </button>
+    </fetcher.Form>
   );
 }
 

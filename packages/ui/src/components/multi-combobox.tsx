@@ -14,6 +14,7 @@ import {
 import { Divider } from './divider';
 import { getInputCn, type InputProps } from './input';
 import { getPillCn } from './pill';
+import { setInputValue } from '../utils/core';
 import { cx } from '../utils/cx';
 
 type ComboboxValue = {
@@ -122,10 +123,13 @@ export function MultiComboboxItem({
             setValues([...values, { label, value }]);
           }
 
+          const searchElement = searchRef.current!;
+
           // After an item is selected, we should reset the search value
           // and focus the search input.
-          searchRef.current!.value = '';
-          searchRef.current!.focus();
+          setInputValue(searchElement, '');
+
+          searchElement.focus();
         }}
         type="button"
         value={value}

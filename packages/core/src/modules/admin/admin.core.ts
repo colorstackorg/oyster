@@ -2,8 +2,12 @@ import { type DB, db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { type SelectExpression } from '@/shared/types';
-import { fail, success } from '@/shared/utils/core.utils';
-import { type AddAdminInput, AdminRole } from './admin.types';
+import { fail, type Result, success } from '@/shared/utils/core.utils';
+import {
+  type AddAdminInput,
+  AdminRole,
+  type RemoveAdminInput,
+} from './admin.types';
 
 // Types
 
@@ -65,6 +69,7 @@ export async function listAdmins<Selection extends AdminSelection>({
   const admins = await db
     .selectFrom('admins')
     .select(select)
+    .orderBy('deletedAt', 'desc') // Show active admins first...
     .orderBy('createdAt', 'desc')
     .execute();
 
@@ -154,6 +159,63 @@ export async function addAdmin({
   // TODO: Send an email to new admin...
 
   return success({ id: adminId });
+}
+
+/**
+ * Removes a ColorStack admin. Note that the actor must have the required role
+ * to remove an admin (ie: admin cannot remove an owner).
+ *
+ * This will revoke the user access to the Admin Dashboard. Note that this
+ * only SOFT deletes the record (ie: sets the `deletedAt` timestamp).
+ */
+export async function removeAdmin({
+  actor,
+  id,
+}: RemoveAdminInput): Promise<Result> {
+  if (actor === id) {
+    return fail({
+      code: 400,
+      error: 'You cannot remove yourself, silly!',
+    });
+  }
+
+  const [actingAdmin, adminToRemove] = await Promise.all([
+    getAdmin({
+      select: ['admins.role'],
+      where: { id: actor },
+    }),
+    getAdmin({
+      select: ['admins.role'],
+      where: { id },
+    }),
+  ]);
+
+  if (!actingAdmin || !adminToRemove) {
+    return fail({
+      code: 404,
+      error: 'The admin does not exist.',
+    });
+  }
+
+  const hasPermission = doesAdminHavePermission({
+    minimumRole: adminToRemove.role as AdminRole,
+    role: actingAdmin.role as AdminRole,
+  });
+
+  if (!hasPermission) {
+    return fail({
+      code: 403,
+      error: 'You do not have permission to remove an admin with this role.',
+    });
+  }
+
+  await db
+    .updateTable('admins')
+    .set({ deletedAt: new Date() })
+    .where('id', '=', id)
+    .executeTakeFirstOrThrow();
+
+  return success({});
 }
 
 // Helpers

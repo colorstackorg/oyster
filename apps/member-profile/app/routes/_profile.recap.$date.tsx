@@ -79,6 +79,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }),
 
     listCompanyReviews({
+      memberId: '',
       select: [],
       where: {
         postedAfter: startOfWeek,

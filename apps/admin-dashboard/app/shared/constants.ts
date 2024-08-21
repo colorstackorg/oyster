@@ -2,6 +2,7 @@ const ROUTES = [
   '/',
   '/admins',
   '/admins/add',
+  '/admins/:id/remove',
   '/applications',
   '/applications/:id',
   '/applications/:id/accept',
