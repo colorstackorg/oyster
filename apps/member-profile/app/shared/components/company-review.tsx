@@ -279,8 +279,8 @@ function CompanyReviewUpvoteButton({
   const fetcher = useFetcher();
 
   const action = hasUpvoted
-    ? `/api/company-review/${id}/undo-upvote`
-    : `/api/company-review/${id}/upvote`;
+    ? `/api/company-reviews/${id}/undo-upvote`
+    : `/api/company-reviews/${id}/upvote`;
 
   return (
     <fetcher.Form action={action} method="post" className="mr-auto">
