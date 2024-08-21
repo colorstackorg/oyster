@@ -53,6 +53,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }),
 
     listCompanyReviews({
+      memberId: user(session),
       select: [
         'companyReviews.createdAt',
         'companyReviews.id',
@@ -72,7 +73,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'workExperiences.title',
         'workExperiences.id as workExperienceId',
       ],
-      where: { companyId: id, memberId: user(session) },
+      where: { companyId: id },
     }),
   ]);
 
@@ -244,7 +245,6 @@ function ReviewsList() {
             return (
               <CompanyReview
                 key={review.id}
-                id={review.id}
                 company={{
                   id: review.companyId || '',
                   image: review.companyImage || '',
@@ -253,6 +253,8 @@ function ReviewsList() {
                 date={review.date}
                 editable={review.editable}
                 employmentType={review.employmentType as EmploymentType}
+                hasUpvoted={review.upvoted as boolean}
+                id={review.id}
                 locationCity={review.locationCity}
                 locationState={review.locationState}
                 locationType={review.locationType as LocationType}
@@ -266,7 +268,6 @@ function ReviewsList() {
                 text={review.text}
                 title={review.title || ''}
                 upvotesCount={review.upvotes}
-                hasUpvoted={review.upvoted as boolean}
                 workExperienceId={review.workExperienceId || ''}
               />
             );

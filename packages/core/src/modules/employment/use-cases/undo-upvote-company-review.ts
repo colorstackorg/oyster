@@ -1,6 +1,6 @@
 import { db } from '@oyster/db';
 
-import { type UpvoteCompanyReviewInput } from '@/modules/employment/company.types';
+import { type UpvoteCompanyReviewInput } from '@/modules/employment/employment.types';
 
 export async function undoUpvoteCompanyReview(
   id: string,
@@ -8,7 +8,7 @@ export async function undoUpvoteCompanyReview(
 ) {
   const result = await db.transaction().execute(async (trx) => {
     await trx
-      .deleteFrom('companyReviewsUpvotes')
+      .deleteFrom('companyReviewUpvotes')
       .where('companyReviewId', '=', id)
       .where('studentId', '=', input.memberId)
       .execute();

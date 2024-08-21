@@ -122,7 +122,6 @@ export const ListCompanyReviewsWhere = z
     companyId: Company.shape.id,
     postedAfter: z.date(),
     postedBefore: z.date(),
-    memberId: z.string().trim().min(1),
   })
   .partial();
 
@@ -190,6 +189,10 @@ export const UploadJobOfferInput = JobOffer.omit({
   updatedAt: true,
 });
 
+export const UpvoteCompanyReviewInput = z.object({
+  memberId: z.string().trim().min(1),
+});
+
 export type AddCompanyReviewInput = z.infer<typeof AddCompanyReviewInput>;
 export type AddWorkExperienceInput = z.infer<typeof AddWorkExperienceInput>;
 export type DeleteWorkExperienceInput = z.infer<
@@ -198,3 +201,4 @@ export type DeleteWorkExperienceInput = z.infer<
 export type EditCompanyReviewInput = z.infer<typeof EditCompanyReviewInput>;
 export type EditWorkExperienceInput = z.infer<typeof EditWorkExperienceInput>;
 export type UploadJobOfferInput = z.infer<typeof UploadJobOfferInput>;
+export type UpvoteCompanyReviewInput = z.infer<typeof UpvoteCompanyReviewInput>;

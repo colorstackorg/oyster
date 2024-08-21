@@ -27,7 +27,6 @@ import { Card } from '@/shared/components/card';
 import { Route } from '@/shared/constants';
 
 type CompanyReviewProps = {
-  id: string;
   company?: {
     id: string;
     image: string;
@@ -36,6 +35,8 @@ type CompanyReviewProps = {
   date: string;
   editable?: boolean;
   employmentType: EmploymentType;
+  hasUpvoted: boolean | null;
+  id: string;
   locationCity: string | null;
   locationState: string | null;
   locationType: LocationType;
@@ -49,16 +50,16 @@ type CompanyReviewProps = {
   text: string;
   title: string;
   upvotesCount: string | null;
-  hasUpvoted: boolean | null;
   workExperienceId?: string;
 };
 
 export const CompanyReview = ({
-  id,
   company,
   date,
   editable,
   employmentType,
+  hasUpvoted,
+  id,
   locationCity,
   locationState,
   locationType,
@@ -72,7 +73,6 @@ export const CompanyReview = ({
   text,
   title,
   upvotesCount,
-  hasUpvoted,
   workExperienceId,
 }: CompanyReviewProps) => {
   return (
@@ -163,11 +163,10 @@ export const CompanyReview = ({
       </div>
 
       <CompanyReviewText text={text} />
-      <UpvoteCompanyReviewButton
-        id={id}
+      <CompanyReviewUpvoteButton
         hasUpvoted={hasUpvoted}
+        id={id}
         upvotesCount={upvotesCount}
-        editable={editable}
       />
     </Card>
   );
@@ -252,7 +251,7 @@ function CompanyReviewText({ text }: Pick<CompanyReviewProps, 'text'>) {
       </Text>
 
       <button
-        className="flex items-center gap-1 text-primary"
+        className="flex w-fit items-center gap-1 text-primary"
         onClick={() => {
           setOpen((value) => !value);
         }}
@@ -272,19 +271,11 @@ function CompanyReviewText({ text }: Pick<CompanyReviewProps, 'text'>) {
   );
 }
 
-CompanyReview.List = function List({ children }: PropsWithChildren) {
-  return <ul className="flex flex-col gap-4">{children}</ul>;
-};
-
-function UpvoteCompanyReviewButton({
-  id,
+function CompanyReviewUpvoteButton({
   hasUpvoted,
+  id,
   upvotesCount,
-  editable,
-}: Pick<
-  CompanyReviewProps,
-  'id' | 'hasUpvoted' | 'upvotesCount' | 'editable'
->) {
+}: Pick<CompanyReviewProps, 'hasUpvoted' | 'id' | 'upvotesCount'>) {
   const fetcher = useFetcher();
 
   const action = hasUpvoted
@@ -294,7 +285,6 @@ function UpvoteCompanyReviewButton({
   return (
     <fetcher.Form action={action} method="post" className="mr-auto">
       <button
-        disabled={!editable}
         className={cx(
           getTextCn({ color: 'gray-500', variant: 'sm' }),
           'flex h-fit items-center gap-1 rounded-full border border-gray-200 px-2 py-0.5',
@@ -309,3 +299,7 @@ function UpvoteCompanyReviewButton({
     </fetcher.Form>
   );
 }
+
+CompanyReview.List = function List({ children }: PropsWithChildren) {
+  return <ul className="flex flex-col gap-4">{children}</ul>;
+};

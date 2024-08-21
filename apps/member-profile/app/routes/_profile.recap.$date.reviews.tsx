@@ -7,15 +7,16 @@ import { listCompanyReviews } from '@oyster/core/employment.server';
 import { type EmploymentType, type LocationType } from '@/member-profile.ui';
 import { getDateRange, Recap } from '@/routes/_profile.recap.$date';
 import { CompanyReview } from '@/shared/components/company-review';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
   const { endOfWeek, startOfWeek } = getDateRange(params.date);
 
   const _reviews = await listCompanyReviews({
     includeCompanies: true,
+    memberId: user(session),
     select: [
       'companyReviews.createdAt',
       'companyReviews.id',
@@ -78,7 +79,6 @@ export default function RecapReviews() {
           return (
             <CompanyReview
               key={review.id}
-              id={review.id}
               company={{
                 id: review.companyId || '',
                 image: review.companyImage || '',
@@ -86,6 +86,8 @@ export default function RecapReviews() {
               }}
               date={review.date}
               employmentType={review.employmentType as EmploymentType}
+              hasUpvoted={review.upvoted as boolean}
+              id={review.id}
               locationCity={review.locationCity}
               locationState={review.locationState}
               locationType={review.locationType as LocationType}
@@ -99,7 +101,6 @@ export default function RecapReviews() {
               text={review.text}
               title={review.title as string}
               upvotesCount={review.upvotes}
-              hasUpvoted={review.upvoted as boolean}
             />
           );
         })}
