@@ -7,6 +7,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./index.css": "./src/index.css",
+    "./progress": "./src/components/progress.tsx",
     "./tooltip": "./src/components/tooltip.tsx"
   },
   "license": "MIT",
@@ -16,6 +17,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@radix-ui/react-progress": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.0.7"
   },
   "devDependencies": {

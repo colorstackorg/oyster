@@ -33,6 +33,7 @@ export const BullQueue = {
   EDUCATION_HISTORY: 'education_history',
   EMAIL_MARKETING: 'email_marketing',
   EVENT: 'event',
+  FEED: 'feed',
   GAMIFICATION: 'gamification',
   MEMBER_EMAIL: 'member_email',
   NOTIFICATION: 'notification',
@@ -78,6 +79,19 @@ export const AirtableBullJob = z.discriminatedUnion('name', [
       airtableRecordId: z.string().trim().min(1),
       airtableTableId: z.string().trim().min(1),
       data: z.any(),
+    }),
+  }),
+  z.object({
+    name: z.literal('airtable.record.update.bulk'),
+    data: z.object({
+      airtableBaseId: z.string().trim().min(1),
+      airtableTableId: z.string().trim().min(1),
+      records: z.array(
+        z.object({
+          id: z.string().trim().min(1),
+          data: z.any(),
+        })
+      ),
     }),
   }),
 ]);
@@ -180,6 +194,13 @@ export const EventBullJob = z.discriminatedUnion('name', [
     data: z.object({
       eventId: Event.shape.id,
     }),
+  }),
+]);
+
+export const FeedBullJob = z.discriminatedUnion('name', [
+  z.object({
+    name: z.literal('feed.slack.recurring'),
+    data: z.object({}),
   }),
 ]);
 
@@ -526,6 +547,10 @@ export const StudentBullJob = z.discriminatedUnion('name', [
     }),
   }),
   z.object({
+    name: z.literal('student.points.recurring'),
+    data: z.object({}),
+  }),
+  z.object({
     name: z.literal('student.profile.viewed'),
     data: z.object({
       profileViewedId: ProfileView.shape.profileViewedId,
@@ -596,6 +621,7 @@ export const BullJob = z.union([
   EducationHistoryBullJob,
   EmailMarketingBullJob,
   EventBullJob,
+  FeedBullJob,
   GamificationBullJob,
   MemberEmailBullJob,
   NotificationBullJob,

@@ -44,9 +44,19 @@ export const Button = ({
 Button.Submit = function SubmitButton(
   props: Omit<ButtonProps, 'loading' | 'type'>
 ) {
-  const submitting = useNavigation().state === 'submitting';
+  const { formMethod, state } = useNavigation();
 
-  return <Button submitting={submitting} type="submit" {...props} />;
+  return (
+    <Button
+      // There's a weird Remix thing (not sure if it's only in development)
+      // where the initial state on the server is "submitting" but everything
+      // else is undefined...so we just check the "formMethod" to ensure it's
+      // real.
+      submitting={state === 'submitting' && !!formMethod}
+      type="submit"
+      {...props}
+    />
+  );
 };
 
 export function getButtonCn({

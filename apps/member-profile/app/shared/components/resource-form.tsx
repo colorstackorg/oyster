@@ -156,7 +156,6 @@ export function ResourceTagsField({
   const tags = listFetcher.data?.tags || [];
 
   function reset() {
-    setSearch('');
     setNewTagId(id());
   }
 

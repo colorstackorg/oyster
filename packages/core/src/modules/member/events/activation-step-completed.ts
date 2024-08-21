@@ -5,7 +5,6 @@ import { db } from '@oyster/db';
 import { ActivationRequirement, type Student } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { ACTIVATION_FLOW_LAUNCH_DATE } from '@/shared/constants';
 import { ENV } from '@/shared/env';
 import { ErrorWithContext } from '@/shared/errors';
 
@@ -121,7 +120,7 @@ async function shouldProcess({
     return false;
   }
 
-  if (dayjs(acceptedAt).isBefore(ACTIVATION_FLOW_LAUNCH_DATE)) {
+  if (dayjs(acceptedAt).isBefore('2023-06-09')) {
     return false;
   }
 
@@ -250,7 +249,7 @@ async function sendProgressNotification({
 
       You're making some great progress on your activation! You've now completed ${completedRequirements}/${totalRequirements} requirements.
 
-      See an updated checklist in your <https://app.colorstack.io/home|*Member Profile*>! 👀
+      See an updated checklist in your <https://app.colorstack.io/home/activation|*Member Profile*>! 👀
     `;
   }
 
