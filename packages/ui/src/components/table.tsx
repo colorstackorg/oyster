@@ -43,7 +43,7 @@ type TableDropdownProps<T extends TableData> = T & {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TableProps<T extends TableData = any> = {
-  Dropdown?(props: TableDropdownProps<T>): JSX.Element;
+  Dropdown?(props: TableDropdownProps<T>): JSX.Element | null;
 
   /**
    * Array of columns that will be used to build the table's headers.
