@@ -205,7 +205,6 @@ async function retrieveTokens(): Promise<OAuthTokens> {
   // SwagUp would have an endpoint like POST /token/test to know if the
   // token needed to be refreshed or not, but this is our current
   // workaround.
-
   const response = await fetch(`${SWAG_UP_API_URL}/accounts?limit=1`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,

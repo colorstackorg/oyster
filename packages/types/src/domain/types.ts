@@ -17,11 +17,11 @@ export type Entity = z.infer<typeof Entity>;
 
 export const Address = z.object({
   city: z.string().trim().min(1),
+  country: z.string().trim().min(2).max(3),
   line1: z.string().trim().min(1),
   line2: z.string().trim().optional(),
   state: z.string().trim().min(1),
   zip: z.string().trim().min(1),
-  country: z.string().trim().length(2),
 });
 
 export type Address = z.infer<typeof Address>;

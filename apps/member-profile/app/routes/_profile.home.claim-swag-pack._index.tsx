@@ -54,16 +54,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
-const ClaimSwagPackFormData = ClaimSwagPackInput.omit({
-  studentId: true,
-});
-
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const { data, errors, ok } = await validateForm(
     request,
-    ClaimSwagPackFormData
+    ClaimSwagPackInput.omit({ studentId: true })
   );
 
   if (!ok) {
@@ -71,15 +67,19 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    await claimSwagPack({
+    const result = await claimSwagPack({
       addressCity: data.addressCity,
+      addressCountry: data.addressCountry,
       addressLine1: data.addressLine1,
       addressLine2: data.addressLine2,
       addressState: data.addressState,
       addressZip: data.addressZip,
       studentId: user(session),
-      addressCountry: data.addressCountry,
     });
+
+    if (!result.ok) {
+      return json({ error: result.error }, { status: result.code });
+    }
 
     return redirect(Route['/home/claim-swag-pack/confirmation']);
   } catch (e) {
@@ -92,7 +92,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-const keys = ClaimSwagPackFormData.keyof().enum;
+const keys = ClaimSwagPackInput.keyof().enum;
 
 export default function ClaimSwagPack() {
   const { inventoryPromise } = useLoaderData<typeof loader>();
@@ -143,6 +143,19 @@ function ClaimSwagPackForm() {
       <Text color="gray-500">Let us know where to send your swag pack!</Text>
 
       <Address>
+        <Form.Field
+          error={errors.addressCountry}
+          label="Country"
+          labelFor={keys.addressCountry}
+          required
+        >
+          <Address.Country
+            id={keys.addressCountry}
+            name={keys.addressCountry}
+            required
+          />
+        </Form.Field>
+
         <Form.Field
           error={errors.addressLine1}
           label="Street Address"
@@ -199,14 +212,6 @@ function ClaimSwagPackForm() {
             <Address.PostalCode
               id={keys.addressZip}
               name={keys.addressZip}
-              required
-            />
-          </Form.Field>
-
-          <Form.Field label="Country" labelFor={keys.addressCountry} required>
-            <Address.Country
-              id={keys.addressCountry}
-              name={keys.addressCountry}
               required
             />
           </Form.Field>
