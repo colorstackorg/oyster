@@ -40,14 +40,12 @@ const COUNTRIES: Country[] = [
   { abbreviation: 'US', name: 'United States' },
 ];
 
-const DEFAULT_COUNTRY: SupportedCountry = 'US';
-
 Address.Country = function Country(props: SelectProps) {
-  const { setCountry } = useContext(AddressContext);
+  const { country, setCountry } = useContext(AddressContext);
 
   return (
     <Select
-      defaultValue={DEFAULT_COUNTRY}
+      defaultValue={country}
       onChange={(e) => {
         setCountry(e.currentTarget.value as SupportedCountry);
       }}
