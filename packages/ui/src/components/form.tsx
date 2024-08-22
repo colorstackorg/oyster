@@ -9,7 +9,11 @@ import { zodErrorMap } from '../utils/zod';
 export const Form = () => {};
 
 Form.ErrorMessage = function FormErrorMessage({ children }: PropsWithChildren) {
-  return children ? <Text color="error">{children}</Text> : null;
+  return children ? (
+    <Text className="whitespace-pre-wrap" color="error">
+      {children}
+    </Text>
+  ) : null;
 };
 
 type FormFieldProps = {
