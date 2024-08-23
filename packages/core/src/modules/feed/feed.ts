@@ -11,6 +11,7 @@ import {
 } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
+import { buildFullName } from '@/modules/member/member';
 import { ENV } from '@/shared/env';
 
 // Environment Variables
@@ -51,9 +52,9 @@ async function sendFeedSlackNotification(
     ]);
 
   const messages = [
-    membersMessage,
     resourcesMessage,
     companyReviewsMessage,
+    membersMessage,
   ].filter(Boolean);
 
   if (!messages.length) {
@@ -119,14 +120,11 @@ async function getMembersMessage(): Promise<string | null> {
 
   const members = await db
     .selectFrom('students')
-    .select([
-      'students.firstName',
-      'students.lastName',
-      'students.id',
-      'students.slackId',
-    ])
-    .where('students.joinedMemberDirectoryAt', '>=', startOfYesterday)
-    .where('students.joinedMemberDirectoryAt', '<=', endOfYesterday)
+    .select([buildFullName, 'id', 'slackId'])
+    .where('joinedMemberDirectoryAt', '>=', startOfYesterday)
+    .where('joinedMemberDirectoryAt', '<=', endOfYesterday)
+    .orderBy('firstName', 'asc')
+    .orderBy('lastName', 'asc')
     .execute();
 
   if (!members.length) {
@@ -134,10 +132,10 @@ async function getMembersMessage(): Promise<string | null> {
   }
 
   const items = members
-    .map(({ id, firstName, lastName, slackId }) => {
+    .map(({ id, fullName, slackId }) => {
       const url = new URL('/directory/' + id, ENV.STUDENT_PROFILE_URL);
 
-      return `• <${url}|*${firstName} ${lastName}*> (<@${slackId}>)`;
+      return `• <${url}|*${fullName}*> (<@${slackId}>)`;
     })
     .join('\n');
 
