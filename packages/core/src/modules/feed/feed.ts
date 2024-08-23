@@ -11,7 +11,6 @@ import {
 } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
-import { buildFullName } from '@/modules/member/member';
 import { ENV } from '@/shared/env';
 
 // Environment Variables
@@ -52,9 +51,9 @@ async function sendFeedSlackNotification(
     ]);
 
   const messages = [
+    membersMessage,
     resourcesMessage,
     companyReviewsMessage,
-    membersMessage,
   ].filter(Boolean);
 
   if (!messages.length) {
@@ -116,32 +115,24 @@ async function getCompanyReviewsMessage(): Promise<string | null> {
 }
 
 async function getMembersMessage(): Promise<string | null> {
-  const { endOfYesterday, startOfYesterday } = getYesterdayRange();
+  const { endOfYesterday, startOfYesterday, yesterday } = getYesterdayRange();
 
   const members = await db
     .selectFrom('students')
-    .select([buildFullName, 'id', 'slackId'])
     .where('joinedMemberDirectoryAt', '>=', startOfYesterday)
     .where('joinedMemberDirectoryAt', '<=', endOfYesterday)
-    .orderBy('firstName', 'asc')
-    .orderBy('lastName', 'asc')
     .execute();
 
   if (!members.length) {
     return null;
   }
 
-  const items = members
-    .map(({ id, fullName, slackId }) => {
-      const url = new URL('/directory/' + id, ENV.STUDENT_PROFILE_URL);
+  const url = new URL('/directory', ENV.STUDENT_PROFILE_URL);
 
-      return `• <${url}|*${fullName}*> (<@${slackId}>)`;
-    })
-    .join('\n');
+  url.searchParams.set('joinedDirectoryDate', yesterday.format('YYYY-MM-DD'));
 
   return dedent`
-    Say hello to the members who joined the Member Directory yesterday 👋:
-    ${items}
+    Say hello to the <${url}|${members.length} members> who joined the Member Directory yesterday! 👋
   `;
 }
 
