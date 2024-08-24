@@ -10,6 +10,7 @@ import {
   Outlet,
   Form as RemixForm,
   useLoaderData,
+  useOutletContext,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { useState } from 'react';
@@ -87,26 +88,31 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
 export default function RepeatablesPage() {
   const { queue } = useLoaderData<typeof loader>();
+  const context = useOutletContext();
 
   return (
     <>
-      <section className="flex">
-        <div className="ml-auto">
-          <Link
-            className={getIconButtonCn({
-              backgroundColor: 'gray-100',
-              backgroundColorOnHover: 'gray-200',
-              shape: 'square',
-            })}
-            to={generatePath(Route['/bull/:queue/repeatables/add'], { queue })}
-          >
-            <Plus />
-          </Link>
-        </div>
-      </section>
+      {context === 'subheader' && (
+        <Link
+          className={getIconButtonCn({
+            backgroundColor: 'gray-100',
+            backgroundColorOnHover: 'gray-200',
+            shape: 'square',
+          })}
+          to={generatePath(Route['/bull/:queue/repeatables/add'], {
+            queue,
+          })}
+        >
+          <Plus />
+        </Link>
+      )}
 
-      <RepeatablesTable />
-      <Outlet />
+      {context === 'main' && (
+        <>
+          <RepeatablesTable />
+          <Outlet />
+        </>
+      )}
     </>
   );
 }

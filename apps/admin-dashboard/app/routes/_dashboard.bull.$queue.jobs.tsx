@@ -3,12 +3,28 @@ import {
   type LoaderFunctionArgs,
   type SerializeFrom,
 } from '@remix-run/node';
-import { Link, Outlet, useLoaderData, useLocation } from '@remix-run/react';
+import {
+  Link,
+  Outlet,
+  Form as RemixForm,
+  useLoaderData,
+  useLocation,
+  useOutletContext,
+  useSubmit,
+} from '@remix-run/react';
 import dayjs from 'dayjs';
+import { Plus } from 'react-feather';
 import { generatePath } from 'react-router';
 import { z } from 'zod';
 
-import { Pagination, Table, type TableColumnProps } from '@oyster/ui';
+import {
+  getIconButtonCn,
+  Pagination,
+  Select,
+  Table,
+  type TableColumnProps,
+} from '@oyster/ui';
+import { toTitleCase } from '@oyster/utils';
 
 import { ListSearchParams } from '@/admin-dashboard.ui';
 import { validateQueue } from '@/shared/bull';
@@ -79,6 +95,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 
   return json({
+    counts: [
+      { status: 'active', count: counts.active },
+      { status: 'completed', count: counts.completed },
+      { status: 'delayed', count: counts.delayed },
+      { status: 'failed', count: counts.failed },
+      { status: 'paused', count: counts.paused },
+      { status: 'waiting', count: counts.waiting },
+    ],
     jobs,
     limit,
     page,
@@ -89,11 +113,58 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export default function JobsPage() {
+  const { counts, queue, status } = useLoaderData<typeof loader>();
+  const context = useOutletContext();
+  const location = useLocation();
+  const submit = useSubmit();
+
   return (
     <>
-      <JobsTable />
-      <JobsPagination />
-      <Outlet />
+      {context === 'subheader' && (
+        <div className="flex items-center gap-4">
+          <RemixForm
+            action={location.pathname}
+            method="get"
+            onChange={(e) => submit(e.currentTarget)}
+          >
+            <Select
+              defaultValue={status || ''}
+              name="status"
+              placeholder="Status..."
+              required
+              width="fit"
+            >
+              {counts.map(({ count, status }) => {
+                return (
+                  <option key={status} value={status}>
+                    {toTitleCase(status)} ({count})
+                  </option>
+                );
+              })}
+            </Select>
+          </RemixForm>
+
+          <Link
+            className={getIconButtonCn({
+              backgroundColor: 'gray-100',
+              backgroundColorOnHover: 'gray-200',
+              size: 'sm',
+              shape: 'square',
+            })}
+            to={generatePath(Route['/bull/:queue/jobs/add'], { queue })}
+          >
+            <Plus />
+          </Link>
+        </div>
+      )}
+
+      {context === 'main' && (
+        <>
+          <JobsTable />
+          <JobsPagination />
+          <Outlet />
+        </>
+      )}
     </>
   );
 }
