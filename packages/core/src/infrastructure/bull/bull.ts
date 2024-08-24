@@ -1,12 +1,12 @@
 import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
 
-import { iife } from '@oyster/utils';
+import { run } from '@oyster/utils';
 
 import { ENV } from '@/shared/env';
 import { BullQueue } from './bull.types';
 
-export const QueueFromName = iife(() => {
+export const QueueFromName = run(() => {
   const result = {} as Record<BullQueue, Queue>;
 
   Object.values(BullQueue).forEach((name) => {

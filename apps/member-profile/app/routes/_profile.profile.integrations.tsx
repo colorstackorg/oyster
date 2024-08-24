@@ -3,7 +3,7 @@ import { useLoaderData } from '@remix-run/react';
 import { ExternalLink } from 'react-feather';
 
 import { Pill, Text } from '@oyster/ui';
-import { iife } from '@oyster/utils';
+import { run } from '@oyster/utils';
 
 import {
   ProfileHeader,
@@ -23,7 +23,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     .select(['githubId'])
     .executeTakeFirstOrThrow();
 
-  const githubOauthUri = iife(() => {
+  const githubOauthUri = run(() => {
     const url = new URL('https://github.com/login/oauth/authorize');
 
     url.searchParams.set('client_id', ENV.GITHUB_OAUTH_CLIENT_ID || '');
