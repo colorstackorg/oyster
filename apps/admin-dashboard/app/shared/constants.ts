@@ -8,7 +8,6 @@ const ROUTES = [
   '/applications/:id/accept',
   '/applications/:id/email',
   '/bull',
-  '/bull/:queue',
   '/bull/:queue/jobs',
   '/bull/:queue/jobs/add',
   '/bull/:queue/jobs/:id',

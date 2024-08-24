@@ -3,50 +3,27 @@ import {
   type LoaderFunctionArgs,
   type SerializeFrom,
 } from '@remix-run/node';
-import {
-  Link,
-  Outlet,
-  useLoaderData,
-  useLocation,
-  useSearchParams,
-} from '@remix-run/react';
+import { Link, Outlet, useLoaderData, useLocation } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { Plus } from 'react-feather';
 import { generatePath } from 'react-router';
-import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { type ExtractValue } from '@oyster/types';
-import {
-  cx,
-  getIconButtonCn,
-  Pagination,
-  Table,
-  type TableColumnProps,
-  Text,
-} from '@oyster/ui';
-import { toTitleCase } from '@oyster/utils';
+import { Pagination, Table, type TableColumnProps } from '@oyster/ui';
 
 import { ListSearchParams } from '@/admin-dashboard.ui';
-import { validateQueue } from '@/routes/_dashboard.bull.$queue';
+import { validateQueue } from '@/shared/bull';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
-
-const BullStatus = {
-  COMPLETED: 'completed',
-  DELAYED: 'delayed',
-  FAILED: 'failed',
-  WAITING: 'waiting',
-} as const;
-
-type BullStatus = ExtractValue<typeof BullStatus>;
 
 const BullSearchParams = ListSearchParams.pick({
   limit: true,
   page: true,
 }).extend({
-  status: z.nativeEnum(BullStatus).catch('completed'),
+  status: z
+    .enum(['active', 'completed', 'delayed', 'failed', 'paused', 'waiting'])
+    .optional()
+    .catch(undefined),
 });
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -65,26 +42,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const startIndex = (page - 1) * limit;
   const endIndex = startIndex + limit - 1;
 
-  const [
-    {
-      active: activeJobCount,
-      completed: completedJobCount,
-      delayed: delayedJobCount,
-      failed: failedJobCount,
-      waiting: waitingJobCount,
-    },
-    _jobs,
-  ] = await Promise.all([
-    queue.getJobCounts(),
+  const [counts, _jobs] = await Promise.all([
+    status ? queue.getJobCounts(status) : queue.getJobCounts(),
     queue.getJobs(status, startIndex, endIndex),
   ]);
 
-  const totalJobsOfStatus = match(status)
-    .with('completed', () => completedJobCount)
-    .with('delayed', () => delayedJobCount)
-    .with('failed', () => failedJobCount)
-    .with('waiting', () => waitingJobCount)
-    .exhaustive();
+  const totalJobsOfStatus = status
+    ? counts[status]
+    : Object.values(counts).reduce((result, count) => {
+        return result + count;
+      }, 0);
 
   const timezone = getTimezone(request);
 
@@ -104,6 +71,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           .tz(timezone)
           .format(format),
       }),
+
       ...(processedOn && {
         processedAt: dayjs(processedOn).tz(timezone).format(format),
       }),
@@ -111,82 +79,22 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 
   return json({
-    activeJobCount,
-    completedJobCount,
-    delayedJobCount,
-    failedJobCount,
     jobs,
     limit,
     page,
     queue: queue.name,
     status,
     totalJobsOfStatus,
-    waitingJobCount,
   });
 }
 
 export default function JobsPage() {
-  const {
-    completedJobCount,
-    delayedJobCount,
-    failedJobCount,
-    waitingJobCount,
-    queue,
-  } = useLoaderData<typeof loader>();
-
   return (
     <>
-      <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-50 p-2">
-        <ul className="flex gap-4">
-          <StatusNavigationItem count={completedJobCount} status="completed" />
-          <StatusNavigationItem count={waitingJobCount} status="waiting" />
-          <StatusNavigationItem count={delayedJobCount} status="delayed" />
-          <StatusNavigationItem count={failedJobCount} status="failed" />
-        </ul>
-
-        <div className="ml-auto">
-          <Link
-            className={getIconButtonCn({
-              backgroundColor: 'gray-100',
-              backgroundColorOnHover: 'gray-200',
-              size: 'sm',
-              shape: 'square',
-            })}
-            to={generatePath(Route['/bull/:queue/jobs/add'], { queue })}
-          >
-            <Plus />
-          </Link>
-        </div>
-      </div>
-
       <JobsTable />
       <JobsPagination />
       <Outlet />
     </>
-  );
-}
-
-type StatusNavigationItemProps = {
-  count: number;
-  status: BullStatus;
-};
-
-function StatusNavigationItem({ count, status }: StatusNavigationItemProps) {
-  const { status: currentStatus } = useLoaderData<typeof loader>();
-
-  const [searchParams] = useSearchParams();
-
-  searchParams.set('status', status);
-
-  return (
-    <li>
-      <Link
-        className={cx('link', status !== currentStatus && 'text-black')}
-        to={{ search: searchParams.toString() }}
-      >
-        {toTitleCase(status)} ({count})
-      </Link>
-    </li>
   );
 }
 
@@ -257,8 +165,4 @@ function JobsPagination() {
       totalCount={totalJobsOfStatus}
     />
   );
-}
-
-export function ErrorBoundary() {
-  return <Text>Could not find queue.</Text>;
 }

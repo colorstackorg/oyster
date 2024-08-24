@@ -18,7 +18,7 @@ import { z } from 'zod';
 
 import { IconButton, Modal, Text } from '@oyster/ui';
 
-import { validateQueue } from '@/routes/_dashboard.bull.$queue';
+import { validateQueue } from '@/shared/bull';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';

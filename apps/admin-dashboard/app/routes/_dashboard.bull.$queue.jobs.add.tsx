@@ -22,7 +22,7 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { validateQueue } from '@/routes/_dashboard.bull.$queue';
+import { validateQueue } from '@/shared/bull';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
