@@ -1,4 +1,3 @@
-export { BullQueue } from './infrastructure/bull/bull.types';
 export {
   SendOneTimeCodeInput,
   VerifyOneTimeCodeInput,

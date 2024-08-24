@@ -15,11 +15,13 @@ import {
 import dayjs from 'dayjs';
 import { Plus } from 'react-feather';
 import { generatePath } from 'react-router';
+import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import {
   getIconButtonCn,
   Pagination,
+  Pill,
   Select,
   Table,
   type TableColumnProps,
@@ -47,52 +49,45 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     minimumRole: 'owner',
   });
 
-  const url = new URL(request.url);
+  const queue = await validateQueue(params.queue);
+
+  const { searchParams } = new URL(request.url);
 
   const { limit, page, status } = BullSearchParams.parse(
-    Object.fromEntries(url.searchParams)
+    Object.fromEntries(searchParams)
   );
-
-  const queue = await validateQueue(params.queue);
 
   const startIndex = (page - 1) * limit;
   const endIndex = startIndex + limit - 1;
 
   const [counts, _jobs] = await Promise.all([
-    status ? queue.getJobCounts(status) : queue.getJobCounts(),
+    queue.getJobCounts(),
     queue.getJobs(status, startIndex, endIndex),
   ]);
 
-  const totalJobsOfStatus = status
-    ? counts[status]
-    : Object.values(counts).reduce((result, count) => {
-        return result + count;
-      }, 0);
+  const tz = getTimezone(request);
+  const format = 'MM/DD/YY @ h:mm:ss A';
 
-  const timezone = getTimezone(request);
+  const jobs = await Promise.all(
+    _jobs.map(async (job) => {
+      const { delay, id, name, processedOn, timestamp } = job.toJSON();
 
-  const jobs = _jobs.map((job) => {
-    const { delay, id, name, processedOn, timestamp } = job.toJSON();
+      return {
+        createdAt: dayjs(timestamp).tz(tz).format(format),
+        id: id as string,
+        name,
+        status: await job.getState(),
 
-    const format = 'MM/DD/YY @ h:mm:ss A';
+        ...(delay && {
+          delayedUntil: dayjs(timestamp).add(delay, 'ms').tz(tz).format(format),
+        }),
 
-    return {
-      createdAt: dayjs(timestamp).tz(timezone).format(format),
-      id: id!,
-      name,
-
-      ...(delay && {
-        delayedUntil: dayjs(timestamp)
-          .add(delay, 'ms')
-          .tz(timezone)
-          .format(format),
-      }),
-
-      ...(processedOn && {
-        processedAt: dayjs(processedOn).tz(timezone).format(format),
-      }),
-    };
-  });
+        ...(processedOn && {
+          processedAt: dayjs(processedOn).tz(tz).format(format),
+        }),
+      };
+    })
+  );
 
   return json({
     counts: [
@@ -108,53 +103,26 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     page,
     queue: queue.name,
     status,
-    totalJobsOfStatus,
+
+    // If there's no status, we are showing all jobs and thus we need to add
+    // up all the counts.
+    totalCount: status
+      ? counts[status]
+      : Object.values(counts).reduce((result, count) => {
+          return result + count;
+        }, 0),
   });
 }
 
 export default function JobsPage() {
-  const { counts, queue, status } = useLoaderData<typeof loader>();
-  const context = useOutletContext();
-  const location = useLocation();
-  const submit = useSubmit();
+  const context = useOutletContext<'main' | 'subheader'>();
 
   return (
     <>
       {context === 'subheader' && (
         <div className="flex items-center gap-4">
-          <RemixForm
-            action={location.pathname}
-            method="get"
-            onChange={(e) => submit(e.currentTarget)}
-          >
-            <Select
-              defaultValue={status || ''}
-              name="status"
-              placeholder="Status..."
-              required
-              width="fit"
-            >
-              {counts.map(({ count, status }) => {
-                return (
-                  <option key={status} value={status}>
-                    {toTitleCase(status)} ({count})
-                  </option>
-                );
-              })}
-            </Select>
-          </RemixForm>
-
-          <Link
-            className={getIconButtonCn({
-              backgroundColor: 'gray-100',
-              backgroundColorOnHover: 'gray-200',
-              size: 'sm',
-              shape: 'square',
-            })}
-            to={generatePath(Route['/bull/:queue/jobs/add'], { queue })}
-          >
-            <Plus />
-          </Link>
+          <JobStatusForm />
+          <AddJobButton />
         </div>
       )}
 
@@ -169,6 +137,49 @@ export default function JobsPage() {
   );
 }
 
+function JobStatusForm() {
+  const { counts, status } = useLoaderData<typeof loader>();
+  const submit = useSubmit();
+
+  return (
+    <RemixForm method="get" onChange={(e) => submit(e.currentTarget)}>
+      <Select
+        defaultValue={status || ''}
+        name="status"
+        placeholder="Status..."
+        required
+        width="fit"
+      >
+        {counts.map(({ count, status }) => {
+          return (
+            <option key={status} value={status}>
+              {toTitleCase(status)} ({count})
+            </option>
+          );
+        })}
+      </Select>
+    </RemixForm>
+  );
+}
+
+function AddJobButton() {
+  const { queue } = useLoaderData<typeof loader>();
+
+  return (
+    <Link
+      className={getIconButtonCn({
+        backgroundColor: 'gray-100',
+        backgroundColorOnHover: 'gray-200',
+        size: 'sm',
+        shape: 'square',
+      })}
+      to={generatePath(Route['/bull/:queue/jobs/add'], { queue })}
+    >
+      <Plus />
+    </Link>
+  );
+}
+
 type JobInView = SerializeFrom<typeof loader>['jobs'][number];
 
 function JobsTable() {
@@ -178,7 +189,7 @@ function JobsTable() {
   const columns: TableColumnProps<JobInView>[] = [
     {
       displayName: 'ID',
-      size: '80',
+      size: '120',
       render: (job) => {
         return (
           <Link
@@ -194,6 +205,32 @@ function JobsTable() {
             {job.id}
           </Link>
         );
+      },
+    },
+    {
+      displayName: 'Status',
+      size: '120',
+      render: (job) => {
+        return match(job.status)
+          .with('active', () => {
+            return <Pill color="blue-100">Active</Pill>;
+          })
+          .with('completed', () => {
+            return <Pill color="lime-100">Completed</Pill>;
+          })
+          .with('delayed', () => {
+            return <Pill color="amber-100">Delayed</Pill>;
+          })
+          .with('failed', () => {
+            return <Pill color="red-100">Failed</Pill>;
+          })
+          .with('waiting', 'waiting-children', () => {
+            return <Pill color="orange-100">Waiting</Pill>;
+          })
+          .with('prioritized', 'unknown', () => {
+            return '-';
+          })
+          .exhaustive();
       },
     },
     {
@@ -225,15 +262,14 @@ function JobsTable() {
 }
 
 function JobsPagination() {
-  const { jobs, limit, page, totalJobsOfStatus } =
-    useLoaderData<typeof loader>();
+  const { jobs, limit, page, totalCount } = useLoaderData<typeof loader>();
 
   return (
     <Pagination
       dataLength={jobs.length}
       page={page}
       pageSize={limit}
-      totalCount={totalJobsOfStatus}
+      totalCount={totalCount}
     />
   );
 }

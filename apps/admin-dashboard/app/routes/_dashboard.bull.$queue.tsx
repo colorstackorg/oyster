@@ -5,6 +5,7 @@ import {
   Outlet,
   useLoaderData,
   useNavigate,
+  useParams,
 } from '@remix-run/react';
 import { generatePath } from 'react-router';
 
@@ -32,52 +33,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 }
 
-export default function BullQueue() {
-  const { queue, queues } = useLoaderData<typeof loader>();
-  const navigate = useNavigate();
-
+export default function QueuePage() {
   return (
     <>
       <Dashboard.Header>
         <Dashboard.Title>🐂 Bull</Dashboard.Title>
-
-        <Select
-          defaultValue={queue}
-          onChange={(e) => {
-            navigate(
-              generatePath(Route['/bull/:queue/jobs'], {
-                queue: e.currentTarget.value,
-              })
-            );
-          }}
-          required
-          width="fit"
-        >
-          {queues.map((queue) => {
-            return (
-              <option key={queue} value={queue}>
-                {toTitleCase(queue)}
-              </option>
-            );
-          })}
-        </Select>
+        <QueueSelector />
       </Dashboard.Header>
 
       <Dashboard.Subheader>
-        <ul className="flex w-fit gap-4 rounded-lg">
-          <BullNavigationItem
-            to={generatePath(Route['/bull/:queue/jobs'], { queue })}
-          >
-            Jobs
-          </BullNavigationItem>
-
-          <BullNavigationItem
-            to={generatePath(Route['/bull/:queue/repeatables'], { queue })}
-          >
-            Repeatables
-          </BullNavigationItem>
-        </ul>
-
+        <TypeNavigation />
         <Outlet context="subheader" />
       </Dashboard.Subheader>
 
@@ -86,7 +51,53 @@ export default function BullQueue() {
   );
 }
 
-function BullNavigationItem({ children, to }: LinkProps) {
+function QueueSelector() {
+  const { queue, queues } = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+
+  return (
+    <Select
+      defaultValue={queue}
+      onChange={(e) => {
+        navigate(
+          generatePath(Route['/bull/:queue/jobs'], {
+            queue: e.currentTarget.value,
+          })
+        );
+      }}
+      required
+      width="fit"
+    >
+      {queues.map((queue) => {
+        return (
+          <option key={queue} value={queue}>
+            {toTitleCase(queue)}
+          </option>
+        );
+      })}
+    </Select>
+  );
+}
+
+function TypeNavigation() {
+  const queue = useParams().queue as string;
+
+  return (
+    <ul className="flex w-fit gap-4 rounded-lg">
+      <NavigationItem to={generatePath(Route['/bull/:queue/jobs'], { queue })}>
+        Jobs
+      </NavigationItem>
+
+      <NavigationItem
+        to={generatePath(Route['/bull/:queue/repeatables'], { queue })}
+      >
+        Repeatables
+      </NavigationItem>
+    </ul>
+  );
+}
+
+function NavigationItem({ children, to }: LinkProps) {
   return (
     <li>
       <NavLink className="link text-black [&.active]:text-primary" to={to}>
