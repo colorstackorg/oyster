@@ -134,6 +134,12 @@ export const Student = Entity.merge(StudentSocialLinks)
     joinedMemberDirectoryAt: z.coerce.date().nullable(),
     joinedSlackAt: z.coerce.date().optional(),
     lastName: z.string().trim().min(1),
+    phoneNumber: z
+      .number()
+      .int()
+      .gte(1000000000) // 10-digit numbers start from 1000000000
+      .lte(9999999999) // 10-digit numbers end at 9999999999
+      .optional(),
 
     /**
      * Enum that represents all of the accepted majors from the ColorStack

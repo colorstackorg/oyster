@@ -53,6 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       'headline',
       'lastName',
       'preferredName',
+      'phoneNumber',
     ])
     .executeTakeFirstOrThrow();
 
@@ -73,6 +74,7 @@ const UpdateGeneralInformation = Student.pick({
   headline: true,
   lastName: true,
   preferredName: true,
+  phoneNumber: true,
 }).extend({
   currentLocation: Student.shape.currentLocation.unwrap(),
   currentLocationLatitude: Student.shape.currentLocationLatitude.unwrap(),
@@ -172,6 +174,15 @@ export default function UpdateGeneralInformationSection() {
           name={keys.currentLocation}
           latitudeName={keys.currentLocationLatitude}
           longitudeName={keys.currentLocationLongitude}
+        />
+
+        <InputField
+          defaultValue={student.phoneNumber?.toString() || undefined}
+          description="Enter your 10-digit phone number below (no formatting characters e.g. '-' or '(')."
+          error={errors.phoneNumber}
+          label="Phone Number"
+          name={keys.phoneNumber}
+          placeholder="1234567890"
         />
 
         <Button.Group>
