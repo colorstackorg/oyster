@@ -4,22 +4,7 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 
-import {
-  airtableWorker,
-  applicationWorker,
-  emailMarketingWorker,
-  eventWorker,
-  feedWorker,
-  gamificationWorker,
-  memberEmailWorker,
-  memberWorker,
-  notificationWorker,
-  onboardingSessionWorker,
-  oneTimeCodeWorker,
-  profileWorker,
-  slackWorker,
-  swagPackWorker,
-} from '@oyster/core/api';
+import { startBullWorkers } from '@oyster/core/api';
 
 import { healthRouter } from './routers/health.router';
 import { oauthRouter } from './routers/oauth.router';
@@ -70,28 +55,11 @@ async function bootstrap() {
 
   app.use(Sentry.Handlers.errorHandler());
 
-  initializeBullWorkers();
+  startBullWorkers();
 
   app.listen(ENV.PORT, () => {
     console.log('API is up and running! 🚀');
   });
-}
-
-function initializeBullWorkers() {
-  airtableWorker.run();
-  applicationWorker.run();
-  emailMarketingWorker.run();
-  eventWorker.run();
-  feedWorker.run();
-  gamificationWorker.run();
-  memberWorker.run();
-  memberEmailWorker.run();
-  notificationWorker.run();
-  onboardingSessionWorker.run();
-  oneTimeCodeWorker.run();
-  profileWorker.run();
-  slackWorker.run();
-  swagPackWorker.run();
 }
 
 bootstrap();
