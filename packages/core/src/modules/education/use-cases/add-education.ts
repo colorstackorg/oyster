@@ -25,8 +25,8 @@ export async function addEducation(input: AddEducationInput) {
 
   checkMostRecentEducation(input.studentId);
 
-  job('education.added', {
-    educationId,
+  job('gamification.activity.completed', {
     studentId: input.studentId,
+    type: 'update_education_history',
   });
 }

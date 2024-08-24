@@ -7,7 +7,6 @@ import helmet from 'helmet';
 import {
   airtableWorker,
   applicationWorker,
-  educationWorker,
   emailMarketingWorker,
   eventWorker,
   feedWorker,
@@ -21,7 +20,6 @@ import {
   slackWorker,
   surveyWorker,
   swagPackWorker,
-  workExperienceWorker,
 } from '@oyster/core/api';
 
 import { healthRouter } from './routers/health.router';
@@ -83,7 +81,6 @@ async function bootstrap() {
 function initializeBullWorkers() {
   airtableWorker.run();
   applicationWorker.run();
-  educationWorker.run();
   emailMarketingWorker.run();
   eventWorker.run();
   feedWorker.run();
@@ -97,7 +94,6 @@ function initializeBullWorkers() {
   slackWorker.run();
   surveyWorker.run();
   swagPackWorker.run();
-  workExperienceWorker.run();
 }
 
 bootstrap();

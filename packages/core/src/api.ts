@@ -15,8 +15,6 @@ export { applicationWorker } from './modules/application/application.core';
 export { OAuthCodeState } from './modules/authentication/authentication.types';
 export { oneTimeCodeWorker } from './modules/authentication/one-time-code.worker';
 export { loginWithOAuth } from './modules/authentication/use-cases/login-with-oauth';
-export { educationWorker } from './modules/education/education.worker';
-export { workExperienceWorker } from './modules/employment/employment.worker';
 export { eventWorker } from './modules/event/event.worker';
 export { feedWorker } from './modules/feed/feed';
 export { gamificationWorker } from './modules/gamification/gamification.core';
