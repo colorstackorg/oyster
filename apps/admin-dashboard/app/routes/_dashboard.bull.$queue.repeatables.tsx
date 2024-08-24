@@ -14,7 +14,6 @@ import {
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { Plus, Trash } from 'react-feather';
-import { z } from 'zod';
 
 import {
   Dropdown,
@@ -23,8 +22,7 @@ import {
   type TableColumnProps,
 } from '@oyster/ui';
 
-import { QueueFromName } from '@/admin-dashboard.server';
-import { BullQueue } from '@/admin-dashboard.ui';
+import { validateQueue } from '@/routes/_dashboard.bull.$queue';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import {
@@ -33,17 +31,12 @@ import {
   toast,
 } from '@/shared/session.server';
 
-const BullParams = z.object({
-  queue: z.nativeEnum(BullQueue),
-});
-
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
     minimumRole: 'owner',
   });
 
-  const { queue: queueName } = BullParams.parse(params);
-  const queue = QueueFromName[queueName];
+  const queue = await validateQueue(params.queue as string);
 
   const _repeatables = await queue.getRepeatableJobs();
 
@@ -61,7 +54,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 
   return json({
-    queue: queueName,
+    queue: queue.name,
     repeatables,
   });
 }
@@ -74,8 +67,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const form = await request.formData();
   const { id } = Object.fromEntries(form);
 
-  const { queue: queueName } = BullParams.parse(params);
-  const queue = QueueFromName[queueName];
+  const queue = await validateQueue(params.queue as string);
 
   await queue.removeRepeatableByKey(id as string);
 

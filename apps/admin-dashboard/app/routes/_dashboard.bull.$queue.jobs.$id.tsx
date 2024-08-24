@@ -5,6 +5,7 @@ import {
 } from '@remix-run/node';
 import {
   generatePath,
+  type Params,
   Form as RemixForm,
   useLoaderData,
   useParams,
@@ -17,16 +18,10 @@ import { z } from 'zod';
 
 import { IconButton, Modal, Text } from '@oyster/ui';
 
-import { QueueFromName } from '@/admin-dashboard.server';
-import { BullQueue } from '@/admin-dashboard.ui';
+import { validateQueue } from '@/routes/_dashboard.bull.$queue';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
-
-const BullParams = z.object({
-  queue: z.nativeEnum(BullQueue),
-  id: z.string(),
-});
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
@@ -106,12 +101,11 @@ export async function action({ params, request }: ActionFunctionArgs) {
     throw new Response(null, { status: 400 });
   }
 
+  const queue = await validateQueue(params.queue);
   const job = await getJobFromParams(params);
 
   await match(result.data)
     .with('duplicate', async () => {
-      const queue = QueueFromName[job.queueName as BullQueue];
-
       return queue.add(job.name, job.data);
     })
     .with('promote', async () => {
@@ -128,16 +122,10 @@ export async function action({ params, request }: ActionFunctionArgs) {
   return json({});
 }
 
-async function getJobFromParams(params: object) {
-  const result = BullParams.safeParse(params);
+async function getJobFromParams(params: Params<string>) {
+  const queue = await validateQueue(params.queue);
 
-  if (!result.success) {
-    throw new Response(null, { status: 404 });
-  }
-
-  const queue = QueueFromName[result.data.queue];
-
-  const job = await queue.getJob(result.data.id);
+  const job = await queue.getJob(params.id as string);
 
   if (!job) {
     throw new Response(null, { status: 404 });

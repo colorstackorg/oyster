@@ -3,6 +3,7 @@ import { Redis } from 'ioredis';
 
 import { run } from '@oyster/utils';
 
+import { redis } from '@/infrastructure/redis';
 import { ENV } from '@/shared/env';
 import { BullQueue } from './bull.types';
 
@@ -11,7 +12,7 @@ export const QueueFromName = run(() => {
 
   Object.values(BullQueue).forEach((name) => {
     result[name] = new Queue(name, {
-      connection: new Redis(ENV.REDIS_URL as string, {
+      connection: new Redis(ENV.REDIS_URL, {
         maxRetriesPerRequest: null,
       }),
       defaultJobOptions: {
@@ -25,3 +26,35 @@ export const QueueFromName = run(() => {
 
   return result;
 });
+
+export async function listQueues() {
+  const keys = await redis.keys('bull:*:meta');
+
+  const queues = keys.map((key) => {
+    return key.split(':')[1];
+  });
+
+  return queues.sort();
+}
+
+export async function initializeQueue(name: string) {
+  const queue = new Queue(name, {
+    connection: new Redis(ENV.REDIS_URL, {
+      maxRetriesPerRequest: null,
+    }),
+    defaultJobOptions: {
+      attempts: 5,
+      backoff: { delay: 5000, type: 'exponential' },
+      removeOnComplete: { age: 60 * 60 * 24 * 1 },
+      removeOnFail: { age: 60 * 60 * 24 * 7 },
+    },
+  });
+
+  return queue;
+}
+
+export async function isQueue(queue: string) {
+  const queues = await listQueues();
+
+  return queues.includes(queue);
+}

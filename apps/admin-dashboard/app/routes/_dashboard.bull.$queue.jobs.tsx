@@ -27,8 +27,8 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { QueueFromName } from '@/admin-dashboard.server';
-import { BullQueue, ListSearchParams } from '@/admin-dashboard.ui';
+import { ListSearchParams } from '@/admin-dashboard.ui';
+import { validateQueue } from '@/routes/_dashboard.bull.$queue';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
@@ -41,10 +41,6 @@ const BullStatus = {
 } as const;
 
 type BullStatus = ExtractValue<typeof BullStatus>;
-
-const BullParams = z.object({
-  queue: z.nativeEnum(BullQueue),
-});
 
 const BullSearchParams = ListSearchParams.pick({
   limit: true,
@@ -60,13 +56,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const url = new URL(request.url);
 
-  const { queue: queueName } = BullParams.parse(params);
-
   const { limit, page, status } = BullSearchParams.parse(
     Object.fromEntries(url.searchParams)
   );
 
-  const queue = QueueFromName[queueName];
+  const queue = await validateQueue(params.queue);
 
   const startIndex = (page - 1) * limit;
   const endIndex = startIndex + limit - 1;
@@ -124,7 +118,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     jobs,
     limit,
     page,
-    queue: queueName,
+    queue: queue.name,
     status,
     totalJobsOfStatus,
     waitingJobCount,

@@ -1,4 +1,8 @@
-export { QueueFromName } from './infrastructure/bull/bull';
+export {
+  listQueues,
+  isQueue,
+  initializeQueue,
+} from './infrastructure/bull/bull';
 export { job } from './infrastructure/bull/use-cases/job';
 export { getGoogleAuthUri } from './modules/authentication/shared/oauth.utils';
 export { sendOneTimeCode } from './modules/authentication/use-cases/send-one-time-code';

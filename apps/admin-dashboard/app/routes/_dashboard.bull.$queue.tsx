@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 import { type ExtractValue } from '@oyster/types';
 
-import { BullQueue } from '@/admin-dashboard.ui';
+import { initializeQueue, isQueue } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -16,25 +16,43 @@ const BullType = {
 
 type BullType = ExtractValue<typeof BullType>;
 
-const BullParams = z.object({
-  queue: z.nativeEnum(BullQueue),
+const BullQueueParams = z.object({
+  queue: z
+    .string()
+    .refine(async (value) => {
+      return isQueue(value);
+    })
+    .transform(async (value) => {
+      return initializeQueue(value);
+    }),
 });
+
+export async function validateQueue(queueName: unknown) {
+  queueName = queueName as string;
+
+  const result = await BullQueueParams.safeParseAsync({
+    queue: queueName,
+  });
+
+  if (!result.success) {
+    throw new Response(null, {
+      status: 404,
+      statusText: 'Queue not found.',
+    });
+  }
+
+  return result.data.queue;
+}
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
     minimumRole: 'owner',
   });
 
-  const paramsResult = BullParams.safeParse(params);
-
-  if (!paramsResult.success) {
-    throw new Response(null, { status: 404 });
-  }
-
-  const { queue } = paramsResult.data;
+  const queue = await validateQueue(params.queue);
 
   return json({
-    queue,
+    queue: queue.name,
   });
 }
 

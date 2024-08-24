@@ -21,18 +21,13 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { QueueFromName } from '@/admin-dashboard.server';
-import { BullQueue } from '@/admin-dashboard.ui';
+import { validateQueue } from '@/routes/_dashboard.bull.$queue';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
 } from '@/shared/session.server';
-
-const BullParams = z.object({
-  queue: z.nativeEnum(BullQueue),
-});
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
@@ -60,9 +55,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  const { queue: queueName } = BullParams.parse(params);
-
-  const queue = QueueFromName[queueName];
+  const queue = await validateQueue(params.queue as string);
 
   await queue.add(data.name, undefined, {
     repeat: {
@@ -76,7 +69,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 
   return redirect(
-    generatePath(Route['/bull/:queue/repeatables'], { queue: queueName }),
+    generatePath(Route['/bull/:queue/repeatables'], { queue: queue.name }),
     {
       headers: {
         'Set-Cookie': await commitSession(session),
