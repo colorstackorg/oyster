@@ -35,8 +35,6 @@ const QueueNameFromJobName: Record<BullJob['name'], BullQueue> = {
   'airtable.record.update': 'airtable',
   'airtable.record.update.bulk': 'airtable',
   'application.review': 'application',
-  'education.added': 'education_history',
-  'education.deleted': 'education_history',
   'email_marketing.opened': 'email_marketing',
   'email_marketing.remove': 'email_marketing',
   'email_marketing.sync': 'email_marketing',
@@ -87,8 +85,5 @@ const QueueNameFromJobName: Record<BullJob['name'], BullQueue> = {
   'student.removed': 'student',
   'student.statuses.backfill': 'student',
   'student.statuses.new': 'student',
-  'survey.responded': 'survey',
   'swag_pack.inventory.notify': 'swag_pack',
-  'work_experience.added': 'work_history',
-  'work_experience.deleted': 'work_history',
 };

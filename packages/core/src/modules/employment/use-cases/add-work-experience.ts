@@ -48,8 +48,8 @@ export async function addWorkExperience({
       .execute();
   });
 
-  job('work_experience.added', {
+  job('gamification.activity.completed', {
     studentId,
-    workExperienceId,
+    type: 'update_work_history',
   });
 }

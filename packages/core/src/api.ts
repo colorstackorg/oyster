@@ -7,27 +7,46 @@ dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-// This is only meant to be imported by the `api` application.
+import { airtableWorker } from './modules/airtable/airtable.core';
+import { applicationWorker } from './modules/application/application.core';
+import { oneTimeCodeWorker } from './modules/authentication/one-time-code.worker';
+import { eventWorker } from './modules/event/event.worker';
+import { feedWorker } from './modules/feed/feed';
+import { gamificationWorker } from './modules/gamification/gamification.core';
+import { emailMarketingWorker } from './modules/mailchimp/email-marketing.worker';
+import { memberEmailWorker } from './modules/member/member-email.worker';
+import { memberWorker } from './modules/member/member.worker';
+import { profileWorker } from './modules/member/profile.worker';
+import { notificationWorker } from './modules/notification/notification.worker';
+import { onboardingSessionWorker } from './modules/onboarding-session/onboarding-session.worker';
+import { slackWorker } from './modules/slack/slack.worker';
+import { swagPackWorker } from './modules/swag-pack/swag-pack.worker';
 
 export { job } from './infrastructure/bull/use-cases/job';
-export { airtableWorker } from './modules/airtable/airtable.core';
-export { applicationWorker } from './modules/application/application.core';
 export { OAuthCodeState } from './modules/authentication/authentication.types';
-export { oneTimeCodeWorker } from './modules/authentication/one-time-code.worker';
 export { loginWithOAuth } from './modules/authentication/use-cases/login-with-oauth';
-export { educationWorker } from './modules/education/education.worker';
-export { workExperienceWorker } from './modules/employment/employment.worker';
-export { eventWorker } from './modules/event/event.worker';
-export { feedWorker } from './modules/feed/feed';
-export { gamificationWorker } from './modules/gamification/gamification.core';
 export { saveGoogleDriveCredentials } from './modules/google-drive';
-export { emailMarketingWorker } from './modules/mailchimp/email-marketing.worker';
-export { memberEmailWorker } from './modules/member/member-email.worker';
-export { memberWorker } from './modules/member/member.worker';
-export { profileWorker } from './modules/member/profile.worker';
-export { notificationWorker } from './modules/notification/notification.worker';
-export { onboardingSessionWorker } from './modules/onboarding-session/onboarding-session.worker';
-export { slackWorker } from './modules/slack/slack.worker';
-export { surveyWorker } from './modules/survey/survey.worker';
-export { swagPackWorker } from './modules/swag-pack/swag-pack.worker';
 export { Environment } from './shared/types';
+
+/**
+ * Starts all Bull workers for various modules in the application.
+ *
+ * Each worker is responsible for processing jobs in its respective queue,
+ * allowing for distributed and asynchronous task execution.
+ */
+export function startBullWorkers(): void {
+  airtableWorker.run();
+  applicationWorker.run();
+  emailMarketingWorker.run();
+  eventWorker.run();
+  feedWorker.run();
+  gamificationWorker.run();
+  memberWorker.run();
+  memberEmailWorker.run();
+  notificationWorker.run();
+  onboardingSessionWorker.run();
+  oneTimeCodeWorker.run();
+  profileWorker.run();
+  slackWorker.run();
+  swagPackWorker.run();
+}

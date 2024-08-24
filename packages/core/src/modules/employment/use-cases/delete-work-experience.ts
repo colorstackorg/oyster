@@ -19,8 +19,8 @@ export async function deleteWorkExperience({
     .where('studentId', '=', studentId)
     .execute();
 
-  job('work_experience.deleted', {
+  job('gamification.activity.completed.undo', {
     studentId,
-    workExperienceId: id,
+    type: 'update_work_history',
   });
 }
