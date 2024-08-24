@@ -18,7 +18,6 @@ import {
   oneTimeCodeWorker,
   profileWorker,
   slackWorker,
-  surveyWorker,
   swagPackWorker,
 } from '@oyster/core/api';
 
@@ -92,7 +91,6 @@ function initializeBullWorkers() {
   oneTimeCodeWorker.run();
   profileWorker.run();
   slackWorker.run();
-  surveyWorker.run();
   swagPackWorker.run();
 }
 

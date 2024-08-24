@@ -26,6 +26,5 @@ export { profileWorker } from './modules/member/profile.worker';
 export { notificationWorker } from './modules/notification/notification.worker';
 export { onboardingSessionWorker } from './modules/onboarding-session/onboarding-session.worker';
 export { slackWorker } from './modules/slack/slack.worker';
-export { surveyWorker } from './modules/survey/survey.worker';
 export { swagPackWorker } from './modules/swag-pack/swag-pack.worker';
 export { Environment } from './shared/types';

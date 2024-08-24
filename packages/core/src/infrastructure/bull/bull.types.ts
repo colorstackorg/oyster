@@ -39,7 +39,6 @@ export const BullQueue = {
   PROFILE: 'profile',
   SLACK: 'slack',
   STUDENT: 'student',
-  SURVEY: 'survey',
   SWAG_PACK: 'swag_pack',
 } as const;
 
@@ -558,16 +557,6 @@ export const StudentBullJob = z.discriminatedUnion('name', [
   }),
 ]);
 
-export const SurveyBullJob = z.discriminatedUnion('name', [
-  z.object({
-    name: z.literal('survey.responded'),
-    data: z.object({
-      studentId: Student.shape.id,
-      surveyId: Survey.shape.id,
-    }),
-  }),
-]);
-
 export const SwagPackBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('swag_pack.inventory.notify'),
@@ -591,7 +580,6 @@ export const BullJob = z.union([
   ProfileBullJob,
   SlackBullJob,
   StudentBullJob,
-  SurveyBullJob,
   SwagPackBullJob,
 ]);
 

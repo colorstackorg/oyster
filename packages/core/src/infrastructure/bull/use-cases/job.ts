@@ -85,6 +85,5 @@ const QueueNameFromJobName: Record<BullJob['name'], BullQueue> = {
   'student.removed': 'student',
   'student.statuses.backfill': 'student',
   'student.statuses.new': 'student',
-  'survey.responded': 'survey',
   'swag_pack.inventory.notify': 'swag_pack',
 };

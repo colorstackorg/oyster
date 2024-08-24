@@ -61,9 +61,10 @@ export async function importSurveyResponses(
 
   responses.forEach((response) => {
     if (response.studentId) {
-      job('survey.responded', {
+      job('gamification.activity.completed', {
         studentId: response.studentId,
-        surveyId: response.surveyId,
+        surveyRespondedTo: response.surveyId,
+        type: 'respond_to_survey',
       });
     }
   });
