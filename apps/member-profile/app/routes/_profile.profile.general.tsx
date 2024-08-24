@@ -177,12 +177,13 @@ export default function UpdateGeneralInformationSection() {
         />
 
         <InputField
-          defaultValue={student.phoneNumber?.toString() || undefined}
+          defaultValue={student.phoneNumber || undefined}
           description="Enter your 10-digit phone number below (no formatting characters e.g. '-' or '(')."
           error={errors.phoneNumber}
           label="Phone Number"
           name={keys.phoneNumber}
           placeholder="1234567890"
+          type="number"
         />
 
         <Button.Group>

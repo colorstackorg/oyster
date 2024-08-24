@@ -125,7 +125,6 @@ async function seed(trx: Transaction<DB>) {
         otherDemographics: [],
         race: [],
         schoolId: schoolId1,
-        phoneNumber: 1234567890,
       },
     ])
     .execute();

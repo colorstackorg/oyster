@@ -135,10 +135,10 @@ export const Student = Entity.merge(StudentSocialLinks)
     joinedSlackAt: z.coerce.date().optional(),
     lastName: z.string().trim().min(1),
     phoneNumber: z
-      .number()
-      .int()
-      .gte(1000000000) // 10-digit numbers start from 1000000000
-      .lte(9999999999) // 10-digit numbers end at 9999999999
+      .string()
+      .trim()
+      .length(10, 'Phone Number must be a 10-digit number')
+      .regex(/^\d+$/, 'Phone Number must contain only digits')
       .optional(),
 
     /**
