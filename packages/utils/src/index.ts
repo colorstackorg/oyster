@@ -41,21 +41,14 @@ export function id() {
 }
 
 /**
- * @deprecated Use `run` instead.
- */
-export function iife<T>(fn: () => T): T {
-  return fn();
-}
-
-/**
- * Immediately invokes the given function and returns its result.
+ * Immediately invokes the given function (IIFE) and returns its result.
  *
  * This is helpful when we want to execute some logic within a particular
  * context, but we don't want to create a new scope for that logic.
  *
  * @example
  * ```ts
- * const result = iife(() => {
+ * const result = run(() => {
  *  return 1 + 1;
  * });
  *

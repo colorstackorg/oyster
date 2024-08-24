@@ -55,7 +55,7 @@ import {
   TooltipText,
   TooltipTrigger,
 } from '@oyster/ui/tooltip';
-import { iife } from '@oyster/utils';
+import { run } from '@oyster/utils';
 
 import { type DegreeType, FORMATTED_DEGREEE_TYPE } from '@/member-profile.ui';
 import { HometownField } from '@/shared/components/profile.personal';
@@ -150,7 +150,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       .tz(timezone)
       .format('dddd, MMMM DD, YYYY @ h:mm A (z)'),
 
-    status: iife(() => {
+    status: run(() => {
       const now = dayjs();
 
       if (now.isBefore(_resumeBook.startDate)) {
@@ -392,7 +392,7 @@ function ResumeBookForm() {
       encType="multipart/form-data"
     >
       <Form.Field
-        description={iife(() => {
+        description={run(() => {
           const emailLink = (
             <Link
               className="link"

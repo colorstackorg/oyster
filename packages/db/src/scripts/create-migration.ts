@@ -4,14 +4,14 @@ import path from 'path';
 import prompt from 'prompt-sync';
 import { fileURLToPath } from 'url';
 
-import { iife } from '@oyster/utils';
+import { run } from '@oyster/utils';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Copied this beautiful piece of code from knex's codebase, see here:
 // https://github.com/knex/knex/blob/master/lib/migrations/util/timestamp.js
-const timestamp = iife(() => {
+const timestamp = run(() => {
   const now = new Date();
 
   return (
@@ -33,7 +33,7 @@ writeFileSync(
     import { Kysely } from 'kysely';
 
     export async function up(db: Kysely<any>) {}
-    
+
     export async function down(db: Kysely<any>) {}\n
   `
 );

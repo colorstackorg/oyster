@@ -15,7 +15,7 @@ import { track } from '@oyster/core/mixpanel';
 import { listResources } from '@oyster/core/resources.server';
 import { listSlackMessages } from '@oyster/core/slack.server';
 import { Divider, Text } from '@oyster/ui';
-import { iife } from '@oyster/utils';
+import { run } from '@oyster/utils';
 
 import { listMembersInDirectory } from '@/member-profile.server';
 import { NavigationItem } from '@/shared/components/navigation';
@@ -101,7 +101,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }),
   ]);
 
-  const dateRange = iife(() => {
+  const dateRange = run(() => {
     const format = 'dddd, MMMM D, YYYY';
 
     const startRange = dayObject.startOf('week').format(format);
