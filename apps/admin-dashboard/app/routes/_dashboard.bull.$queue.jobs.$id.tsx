@@ -140,7 +140,7 @@ export default function JobPage() {
 
   return (
     <Modal
-      onCloseTo={generatePath(Route['/bull/:queue/jobs'], {
+      onCloseTo={generatePath(Route['/bull/:queue'], {
         queue: queue as string,
       })}
     >

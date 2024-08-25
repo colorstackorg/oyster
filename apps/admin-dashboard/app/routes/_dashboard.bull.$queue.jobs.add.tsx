@@ -78,14 +78,11 @@ export async function action({ params, request }: ActionFunctionArgs) {
     message: 'Added job.',
   });
 
-  return redirect(
-    generatePath(Route['/bull/:queue/jobs'], { queue: queue.name }),
-    {
-      headers: {
-        'Set-Cookie': await commitSession(session),
-      },
-    }
-  );
+  return redirect(generatePath(Route['/bull/:queue'], { queue: queue.name }), {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  });
 }
 
 export default function AddJobPage() {
@@ -93,7 +90,7 @@ export default function AddJobPage() {
 
   return (
     <Modal
-      onCloseTo={generatePath(Route['/bull/:queue/jobs'], {
+      onCloseTo={generatePath(Route['/bull/:queue'], {
         queue: queue as string,
       })}
     >

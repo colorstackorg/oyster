@@ -68,14 +68,11 @@ export async function action({ params, request }: ActionFunctionArgs) {
     message: 'Added repeatable.',
   });
 
-  return redirect(
-    generatePath(Route['/bull/:queue/repeatables'], { queue: queue.name }),
-    {
-      headers: {
-        'Set-Cookie': await commitSession(session),
-      },
-    }
-  );
+  return redirect(generatePath(Route['/bull/:queue'], { queue: queue.name }), {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  });
 }
 
 export default function AddRepeatablePage() {
@@ -83,7 +80,7 @@ export default function AddRepeatablePage() {
 
   return (
     <Modal
-      onCloseTo={generatePath(Route['/bull/:queue/repeatables'], {
+      onCloseTo={generatePath(Route['/bull/:queue'], {
         queue: queue as string,
       })}
     >

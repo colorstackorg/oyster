@@ -7,5 +7,5 @@ export async function loader({ request }: LoaderFunctionArgs) {
     minimumRole: 'owner',
   });
 
-  return redirect('/bull/airtable/jobs');
+  return redirect('/bull/airtable');
 }
