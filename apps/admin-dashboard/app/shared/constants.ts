@@ -12,7 +12,6 @@ const ROUTES = [
   '/bull/:queue/jobs/add',
   '/bull/:queue/jobs/:id',
   '/bull/:queue/repeatables/add',
-  '/bull/:queue/repeatables/:id/delete',
   '/events',
   '/events/create',
   '/events/sync-airmeet-event',

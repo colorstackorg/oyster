@@ -7,13 +7,14 @@ import {
 import {
   Link,
   Outlet,
+  Form as RemixForm,
   useLoaderData,
   useLocation,
   useNavigate,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { Menu, Plus, Repeat, Trash } from 'react-feather';
+import { Menu, Plus, Repeat, Trash2 } from 'react-feather';
 import { generatePath } from 'react-router';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
@@ -35,7 +36,11 @@ import { listQueues } from '@/admin-dashboard.server';
 import { validateQueue } from '@/shared/bull';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import {
+  commitSession,
+  ensureUserAuthenticated,
+  toast,
+} from '@/shared/session.server';
 
 const BullSearchParams = z.object({
   limit: z.coerce.number().min(10).max(100).catch(25),
@@ -139,50 +144,112 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 const QueueAction = {
+  CLEAN_QUEUE: 'clean_queue',
   DUPLICATE_JOB: 'duplicate_job',
   PROMOTE_JOB: 'promote_job',
   REMOVE_JOB: 'remove_job',
+  REMOVE_REPEATABLE: 'remove_repeatable',
   RETRY_JOB: 'retry_job',
 } as const;
 
+const QueueForm = z.discriminatedUnion('action', [
+  z.object({
+    action: z.literal(QueueAction.CLEAN_QUEUE),
+  }),
+  z.object({
+    action: z.literal(QueueAction.DUPLICATE_JOB),
+    id: z.string().trim().min(1),
+  }),
+  z.object({
+    action: z.literal(QueueAction.PROMOTE_JOB),
+    id: z.string().trim().min(1),
+  }),
+  z.object({
+    action: z.literal(QueueAction.REMOVE_JOB),
+    id: z.string().trim().min(1),
+  }),
+  z.object({
+    action: z.literal(QueueAction.REMOVE_REPEATABLE),
+    key: z.string().trim().min(1),
+  }),
+  z.object({
+    action: z.literal(QueueAction.RETRY_JOB),
+    id: z.string().trim().min(1),
+  }),
+]);
+
 export async function action({ params, request }: ActionFunctionArgs) {
-  await ensureUserAuthenticated(request, {
+  const session = await ensureUserAuthenticated(request, {
     minimumRole: 'owner',
   });
 
   const form = await request.formData();
 
-  const result = z
-    .nativeEnum(QueueAction)
-    .safeParse(Object.fromEntries(form).action);
+  const result = QueueForm.safeParse(Object.fromEntries(form));
 
   if (!result.success) {
     throw new Response(null, { status: 400 });
   }
 
   const queue = await validateQueue(params.queue);
-  const job = await queue.getJob(params.id as string);
-
-  if (!job) {
-    throw new Response(null, { status: 404 });
-  }
 
   await match(result.data)
-    .with('duplicate_job', async () => {
+    .with({ action: 'clean_queue' }, async () => {
+      return queue.clean(0, Infinity, 'completed');
+    })
+    .with({ action: 'duplicate_job' }, async ({ id }) => {
+      const job = await queue.getJob(id);
+
+      if (!job) {
+        throw new Response(null, { status: 404 });
+      }
+
       return queue.add(job.name, job.data);
     })
-    .with('promote_job', async () => {
+    .with({ action: 'promote_job' }, async ({ id }) => {
+      const job = await queue.getJob(id);
+
+      if (!job) {
+        throw new Response(null, { status: 404 });
+      }
+
       return job.promote();
     })
-    .with('remove_job', async () => {
+    .with({ action: 'remove_job' }, async ({ id }) => {
+      const job = await queue.getJob(id);
+
+      if (!job) {
+        throw new Response(null, { status: 404 });
+      }
+
       return job.remove();
     })
-    .with('retry_job', async () => {
+    .with({ action: 'remove_repeatable' }, async ({ key }) => {
+      return queue.removeRepeatableByKey(key);
+    })
+    .with({ action: 'retry_job' }, async ({ id }) => {
+      const job = await queue.getJob(id);
+
+      if (!job) {
+        throw new Response(null, { status: 404 });
+      }
+
       return job.retry();
     })
     .exhaustive();
 
-  return json({});
+  toast(session, {
+    message: 'Done!',
+  });
+
+  return json(
+    {},
+    {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    }
+  );
 }
 
 export default function QueuePage() {
@@ -284,6 +351,17 @@ function QueueDropdown() {
               >
                 <Repeat /> Add Repeatable
               </Link>
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <RemixForm method="post">
+                <button
+                  name="action"
+                  type="submit"
+                  value={QueueAction.CLEAN_QUEUE}
+                >
+                  <Trash2 /> Clean Queue
+                </button>
+              </RemixForm>
             </Dropdown.Item>
           </Dropdown.List>
         </Dropdown>
@@ -456,7 +534,6 @@ function RepeatablesTable() {
 }
 
 function RepeatableDropdown({ id }: RepeatableInView) {
-  const { queue } = useLoaderData<typeof loader>();
   const [open, setOpen] = useState<boolean>(false);
 
   function onClose() {
@@ -473,14 +550,17 @@ function RepeatableDropdown({ id }: RepeatableInView) {
         <Table.Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <Link
-                to={generatePath(Route['/bull/:queue/repeatables/:id/delete'], {
-                  id,
-                  queue,
-                })}
-              >
-                <Trash /> Delete Repeatable
-              </Link>
+              <RemixForm method="post">
+                <button
+                  name="action"
+                  type="submit"
+                  value={QueueAction.REMOVE_REPEATABLE}
+                >
+                  <Trash2 /> Remove Repeatable
+                </button>
+
+                <input type="hidden" name="key" value={id} />
+              </RemixForm>
             </Dropdown.Item>
           </Dropdown.List>
         </Table.Dropdown>
