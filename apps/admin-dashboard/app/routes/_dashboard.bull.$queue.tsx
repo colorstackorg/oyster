@@ -1,4 +1,5 @@
 import {
+  type ActionFunctionArgs,
   json,
   type LoaderFunctionArgs,
   type SerializeFrom,
@@ -135,6 +136,53 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     repeatables,
     status,
   });
+}
+
+const QueueAction = {
+  DUPLICATE_JOB: 'duplicate_job',
+  PROMOTE_JOB: 'promote_job',
+  REMOVE_JOB: 'remove_job',
+  RETRY_JOB: 'retry_job',
+} as const;
+
+export async function action({ params, request }: ActionFunctionArgs) {
+  await ensureUserAuthenticated(request, {
+    minimumRole: 'owner',
+  });
+
+  const form = await request.formData();
+
+  const result = z
+    .nativeEnum(QueueAction)
+    .safeParse(Object.fromEntries(form).action);
+
+  if (!result.success) {
+    throw new Response(null, { status: 400 });
+  }
+
+  const queue = await validateQueue(params.queue);
+  const job = await queue.getJob(params.id as string);
+
+  if (!job) {
+    throw new Response(null, { status: 404 });
+  }
+
+  await match(result.data)
+    .with('duplicate_job', async () => {
+      return queue.add(job.name, job.data);
+    })
+    .with('promote_job', async () => {
+      return job.promote();
+    })
+    .with('remove_job', async () => {
+      return job.remove();
+    })
+    .with('retry_job', async () => {
+      return job.retry();
+    })
+    .exhaustive();
+
+  return json({});
 }
 
 export default function QueuePage() {
