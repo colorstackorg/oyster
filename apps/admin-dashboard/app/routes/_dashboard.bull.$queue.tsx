@@ -97,9 +97,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const jobs = await Promise.all(
     _jobs.map(async (job) => {
-      const { delay, id, name, processedOn, timestamp } = job.toJSON();
+      const { attemptsMade, delay, id, name, processedOn, timestamp } =
+        job.toJSON();
 
       return {
+        attemptsMade,
         createdAt: dayjs(timestamp).tz(tz).format(format),
         id: id as string,
         name,
@@ -485,6 +487,11 @@ function JobsTable() {
           })
           .exhaustive();
       },
+    },
+    {
+      displayName: '# of Attempts',
+      size: '120',
+      render: (job) => job.attemptsMade,
     },
     {
       displayName: 'Created At',
