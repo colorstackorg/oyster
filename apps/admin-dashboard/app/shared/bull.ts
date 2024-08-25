@@ -1,33 +1,26 @@
-import { z } from 'zod';
-
 import { getQueue, listQueueNames } from '@/admin-dashboard.server';
 
-const BullQueueParams = z.object({
-  queue: z
-    .string()
-    .refine(async (value) => {
-      const queueNames = await listQueueNames();
-
-      return queueNames.includes(value);
-    })
-    .transform((value) => {
-      return getQueue(value);
-    }),
-});
-
+/**
+ * Validates a queue name and returns the corresponding queue instance.
+ *
+ * This is intended to be used within loaders/actions to validate the `queue`
+ * name parameter.
+ *
+ * @param queueName - The name of the queue to validate.
+ * @returns The corresponding queue instance.
+ */
 export async function validateQueue(queueName: unknown) {
-  queueName = queueName as string;
+  const name = queueName as string;
+  const queueNames = await listQueueNames();
 
-  const result = await BullQueueParams.safeParseAsync({
-    queue: queueName,
-  });
-
-  if (!result.success) {
+  if (!queueNames.includes(name)) {
     throw new Response(null, {
       status: 404,
       statusText: 'Queue not found.',
     });
   }
 
-  return result.data.queue;
+  const queue = getQueue(name);
+
+  return queue;
 }
