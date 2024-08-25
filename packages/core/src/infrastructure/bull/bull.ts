@@ -1,10 +1,8 @@
 import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
 
+import { redis } from '@/infrastructure/redis';
 import { ENV } from '@/shared/env';
-
-// We'll use a shared Redis connection for all queue instances.
-let _redis: Redis;
 
 // Instead of instantiating a new queue at the top-level which would produce
 // a side-effect, we'll use a global variable to store the queue instances which
@@ -23,8 +21,12 @@ const _queues: Record<string, Queue> = {};
  */
 export function getQueue(name: string) {
   if (!_queues[name]) {
+    const connection = new Redis(ENV.REDIS_URL, {
+      maxRetriesPerRequest: null,
+    });
+
     _queues[name] = new Queue(name, {
-      connection: getRedis(),
+      connection,
       defaultJobOptions: {
         attempts: 3,
         backoff: { delay: 5000, type: 'exponential' },
@@ -47,20 +49,9 @@ export function getQueue(name: string) {
  * @returns An array of sorted queue names.
  */
 export async function listQueueNames() {
-  const redis = getRedis();
   const keys = await redis.keys('bull:*:meta');
 
   const names = keys.map((key) => key.split(':')[1]).sort();
 
   return names;
-}
-
-function getRedis() {
-  if (!_redis) {
-    _redis = new Redis(ENV.REDIS_URL, {
-      maxRetriesPerRequest: null,
-    });
-  }
-
-  return _redis;
 }
