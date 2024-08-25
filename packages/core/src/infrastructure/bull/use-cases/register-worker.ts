@@ -1,4 +1,4 @@
-import { type Job, QueueEvents, Worker, type WorkerOptions } from 'bullmq';
+import { Worker, type WorkerOptions } from 'bullmq';
 import { Redis } from 'ioredis';
 import { type z, type ZodType } from 'zod';
 
@@ -27,42 +27,35 @@ export function registerWorker<Schema extends ZodType>(
 
   const worker = new Worker(
     name,
-    async (input) => {
-      const job = validateJob(schema, input);
+    async function handle(input) {
+      const result = schema.safeParse({
+        data: input.data,
+        name: input.name,
+      });
+
+      if (!result.success) {
+        throw new ZodParseError(result.error);
+      }
+
+      const job = result.data;
 
       return processor(job);
     },
     options
   );
 
-  const queueEvents = new QueueEvents(name, {
-    connection: redis,
-  });
+  worker.on('failed', (job, error) => {
+    if (error instanceof ErrorWithContext) {
+      error.context = {
+        ...error.context,
+        jobData: job?.data,
+        jobId: job?.id,
+        jobName: job?.name,
+      };
+    }
 
-  queueEvents.on('failed', ({ failedReason, jobId }) => {
-    reportException(
-      new BullJobFailedError(failedReason).withContext({
-        jobId,
-      })
-    );
+    reportException(error);
   });
 
   return worker;
 }
-
-function validateJob<Schema extends ZodType>(schema: Schema, job: Job) {
-  const result = schema.safeParse({
-    data: job.data,
-    name: job.name,
-  });
-
-  if (!result.success) {
-    throw new ZodParseError(result.error);
-  }
-
-  const data = result.data as z.infer<Schema>;
-
-  return data;
-}
-
-class BullJobFailedError extends ErrorWithContext {}
