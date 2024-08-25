@@ -1,8 +1,8 @@
 import { type JobsOptions } from 'bullmq';
 
 import { getQueue } from '@/infrastructure/bull/bull';
+import { BullJob, type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { reportException } from '@/modules/sentry/use-cases/report-exception';
-import { BullJob, type GetBullJobData } from '../bull.types';
 
 export function job<JobName extends BullJob['name']>(
   name: JobName,
