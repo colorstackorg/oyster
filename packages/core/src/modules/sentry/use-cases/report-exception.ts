@@ -24,5 +24,8 @@ export function reportException(error: unknown, context?: ErrorContext): void {
     extra,
   });
 
-  console.error(error, extra);
+  console.error({
+    error,
+    ...(extra && { extra }),
+  });
 }
