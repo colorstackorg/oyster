@@ -132,7 +132,7 @@ async function getMembersMessage(): Promise<string | null> {
   url.searchParams.set('joinedDirectoryDate', yesterday.format('YYYY-MM-DD'));
 
   return dedent`
-    Say hello to the <${url}|${members.length} members> who joined the Member Directory yesterday! 👋
+    Say hello to the <${url}|${members.length} ${members.length === 1 ? 'member' : 'members'}> who joined the Member Directory yesterday! 👋
   `;
 }
 
