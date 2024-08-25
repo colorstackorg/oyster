@@ -172,7 +172,7 @@ async function getResourcesMessage(): Promise<string | null> {
   url.searchParams.set('date', yesterday.format('YYYY-MM-DD'));
 
   return dedent`
-    Check out these <${url}|resources> posted yesterday 📚:
+    Check out ${items.length === 1 ? `this <${url}|resource>` : `these <${url}|resources>`} posted yesterday 📚:
     ${items}
   `;
 }
