@@ -4,9 +4,22 @@ import { type z, type ZodType } from 'zod';
 
 import { reportException } from '@/modules/sentry/use-cases/report-exception';
 import { ENV } from '@/shared/env';
-import { ErrorWithContext, ZodParseError } from '@/shared/errors';
+import { ZodParseError } from '@/shared/errors';
 import { type BullQueue } from '../bull.types';
 
+/**
+ * Registers a worker for processing jobs in a Bull queue.
+ *
+ * This validates the incoming job data against the provided Zod schema before
+ * processing. If validation fails, it throws a `ZodParseError`. Any errors are
+ * reported to Sentry.
+ *
+ * @param name - The name of the queue to process.
+ * @param schema - Zod schema for validating the job data.
+ * @param processor - The function to process each job.
+ * @param options - Optional configuration for the worker.
+ * @returns A `Worker` instance.
+ */
 export function registerWorker<Schema extends ZodType>(
   name: BullQueue,
   schema: Schema,
@@ -20,8 +33,8 @@ export function registerWorker<Schema extends ZodType>(
   options = {
     autorun: false,
     connection: redis,
-    removeOnComplete: { age: 60 * 60 * 24 * 1 },
-    removeOnFail: { age: 60 * 60 * 24 * 7 },
+    removeOnComplete: { age: 60 * 60 * 24 * 1, count: 100 },
+    removeOnFail: { age: 60 * 60 * 24 * 7, count: 1000 },
     ...options,
   };
 
@@ -45,16 +58,12 @@ export function registerWorker<Schema extends ZodType>(
   );
 
   worker.on('failed', (job, error) => {
-    if (error instanceof ErrorWithContext) {
-      error.context = {
-        ...error.context,
-        jobData: job?.data,
-        jobId: job?.id,
-        jobName: job?.name,
-      };
-    }
-
-    reportException(error);
+    reportException(error, {
+      jobData: job?.data,
+      jobId: job?.id,
+      jobName: job?.name,
+      queueName: job?.queueName,
+    });
   });
 
   return worker;

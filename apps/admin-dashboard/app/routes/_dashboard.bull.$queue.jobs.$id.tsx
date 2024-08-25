@@ -1,22 +1,14 @@
-import {
-  type ActionFunctionArgs,
-  json,
-  type LoaderFunctionArgs,
-} from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import {
   generatePath,
   type Params,
-  Form as RemixForm,
   useLoaderData,
   useParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren } from 'react';
-import { ArrowUp, Copy, RefreshCw, Trash } from 'react-feather';
-import { match } from 'ts-pattern';
-import { z } from 'zod';
 
-import { IconButton, Modal, Text } from '@oyster/ui';
+import { Modal, Text } from '@oyster/ui';
 
 import { validateQueue } from '@/shared/bull';
 import { Route } from '@/shared/constants';
@@ -79,49 +71,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 }
 
-const JobAction = {
-  DUPLICATE: 'duplicate',
-  PROMOTE: 'promote',
-  REMOVE: 'remove',
-  RETRY: 'retry',
-} as const;
-
-export async function action({ params, request }: ActionFunctionArgs) {
-  await ensureUserAuthenticated(request, {
-    minimumRole: 'owner',
-  });
-
-  const form = await request.formData();
-
-  const result = z
-    .nativeEnum(JobAction)
-    .safeParse(Object.fromEntries(form).action);
-
-  if (!result.success) {
-    throw new Response(null, { status: 400 });
-  }
-
-  const queue = await validateQueue(params.queue);
-  const job = await getJobFromParams(params);
-
-  await match(result.data)
-    .with('duplicate', async () => {
-      return queue.add(job.name, job.data);
-    })
-    .with('promote', async () => {
-      return job.promote();
-    })
-    .with('remove', async () => {
-      return job.remove();
-    })
-    .with('retry', async () => {
-      return job.retry();
-    })
-    .exhaustive();
-
-  return json({});
-}
-
 async function getJobFromParams(params: Params<string>) {
   const queue = await validateQueue(params.queue);
 
@@ -148,51 +97,6 @@ export default function JobPage() {
         <Modal.Title>Job Details</Modal.Title>
         <Modal.CloseButton />
       </Modal.Header>
-
-      <RemixForm className="ml-auto flex gap-2" method="post">
-        {general.state === 'delayed' && (
-          <IconButton
-            icon={<ArrowUp />}
-            backgroundColor="gray-100"
-            backgroundColorOnHover="gray-200"
-            name="action"
-            shape="square"
-            type="submit"
-            value={JobAction.PROMOTE}
-          />
-        )}
-        {general.state === 'failed' && (
-          <IconButton
-            icon={<RefreshCw />}
-            backgroundColor="gray-100"
-            backgroundColorOnHover="gray-200"
-            name="action"
-            shape="square"
-            type="submit"
-            value={JobAction.RETRY}
-          />
-        )}
-        {general.state === 'waiting' && (
-          <IconButton
-            icon={<Copy />}
-            backgroundColor="gray-100"
-            backgroundColorOnHover="gray-200"
-            name="action"
-            shape="square"
-            type="submit"
-            value={JobAction.DUPLICATE}
-          />
-        )}
-        <IconButton
-          icon={<Trash className="text-red-600" />}
-          backgroundColor="gray-100"
-          backgroundColorOnHover="gray-200"
-          name="action"
-          shape="square"
-          type="submit"
-          value={JobAction.REMOVE}
-        />
-      </RemixForm>
 
       <JobSection>
         <JobSectionTitle>General</JobSectionTitle>

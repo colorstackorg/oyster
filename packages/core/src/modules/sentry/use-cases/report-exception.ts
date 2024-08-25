@@ -2,16 +2,21 @@ import * as Sentry from '@sentry/node';
 
 import { type ErrorContext, ErrorWithContext } from '@/shared/errors';
 
-export function reportException(error: unknown): void {
-  let context: ErrorContext | undefined = undefined;
+export function reportException(error: unknown, context?: ErrorContext): void {
+  let extra: Record<string, unknown> | undefined;
 
-  if (error instanceof ErrorWithContext && error.context) {
-    context = error.context;
+  const isErrorWithContext = error instanceof ErrorWithContext;
+
+  if (context || isErrorWithContext) {
+    extra = {
+      ...context,
+      ...(isErrorWithContext && error.context),
+    };
   }
 
-  console.error(error);
-
   Sentry.captureException(error, {
-    extra: context,
+    extra,
   });
+
+  console.error(error, extra);
 }
