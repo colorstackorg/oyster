@@ -109,7 +109,7 @@ async function getCompanyReviewsMessage(): Promise<string | null> {
     .join('\n');
 
   return dedent`
-    Check out these company reviews posted yesterday 📝:
+    Check out ${items.length === 1 ? 'this company review' : 'these company reviews'} posted yesterday 📝:
     ${items}
   `;
 }
