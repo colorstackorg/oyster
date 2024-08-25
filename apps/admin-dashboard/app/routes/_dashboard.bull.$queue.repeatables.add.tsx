@@ -55,7 +55,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  const queue = await validateQueue(params.queue as string);
+  const queue = await validateQueue(params.queue);
 
   await queue.add(data.name, undefined, {
     repeat: {

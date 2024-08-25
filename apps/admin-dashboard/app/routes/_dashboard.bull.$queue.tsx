@@ -133,7 +133,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }, 0);
 
   return json({
-    allJobsCount,
     counts: [
       { status: 'all', count: allJobsCount },
       { status: 'active', count: counts.active },
@@ -198,6 +197,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
     minimumRole: 'owner',
   });
 
+  const queue = await validateQueue(params.queue);
+
   const form = await request.formData();
 
   const result = QueueForm.safeParse(Object.fromEntries(form));
@@ -207,8 +208,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
       status: 400,
     });
   }
-
-  const queue = await validateQueue(params.queue);
 
   await match(result.data)
     .with({ action: 'job.duplicate' }, async ({ id }) => {
@@ -398,6 +397,86 @@ function QueueDropdown() {
           </Dropdown.List>
         </Dropdown>
       )}
+    </Dropdown.Container>
+  );
+}
+
+type RepeatableInView = SerializeFrom<typeof loader>['repeatables'][number];
+
+function RepeatablesTable() {
+  const { repeatables } = useLoaderData<typeof loader>();
+
+  const columns: TableColumnProps<RepeatableInView>[] = [
+    {
+      displayName: 'Name',
+      size: '280',
+      render: (repeatable) => {
+        return <code className="text-sm">{repeatable.name}</code>;
+      },
+    },
+    {
+      displayName: 'Pattern',
+      size: '160',
+      render: (repeatable) => {
+        return <code className="text-sm">{repeatable.pattern}</code>;
+      },
+    },
+    {
+      displayName: 'Next Job',
+      size: '200',
+      render: (repeatable) => repeatable.next,
+    },
+    {
+      displayName: 'Timezone',
+      size: '200',
+      render: (repeatable) => repeatable.tz,
+    },
+  ];
+
+  return (
+    <Table
+      columns={columns}
+      data={repeatables}
+      Dropdown={RepeatableDropdown}
+      emptyMessage="No repeatables found."
+    />
+  );
+}
+
+function RepeatableDropdown({ id }: RepeatableInView) {
+  const [open, setOpen] = useState<boolean>(false);
+
+  function onClose() {
+    setOpen(false);
+  }
+
+  function onOpen() {
+    setOpen(true);
+  }
+
+  return (
+    <Dropdown.Container onClose={onClose}>
+      {open && (
+        <Table.Dropdown>
+          <Dropdown.List>
+            <Dropdown.Item>
+              <RemixForm method="post">
+                <button
+                  name="action"
+                  type="submit"
+                  value={QueueAction['repeatable.remove']}
+                >
+                  <Trash2 /> Remove Repeatable
+                </button>
+
+                <input type="hidden" name="key" value={id} />
+              </RemixForm>
+            </Dropdown.Item>
+          </Dropdown.List>
+        </Table.Dropdown>
+      )}
+
+      <Table.DropdownOpenButton onClick={onOpen} />
     </Dropdown.Container>
   );
 }
@@ -616,85 +695,5 @@ function JobsPagination() {
       pageSize={limit}
       totalCount={filteredJobsCount}
     />
-  );
-}
-
-type RepeatableInView = SerializeFrom<typeof loader>['repeatables'][number];
-
-function RepeatablesTable() {
-  const { repeatables } = useLoaderData<typeof loader>();
-
-  const columns: TableColumnProps<RepeatableInView>[] = [
-    {
-      displayName: 'Name',
-      size: '280',
-      render: (repeatable) => {
-        return <code className="text-sm">{repeatable.name}</code>;
-      },
-    },
-    {
-      displayName: 'Pattern',
-      size: '160',
-      render: (repeatable) => {
-        return <code className="text-sm">{repeatable.pattern}</code>;
-      },
-    },
-    {
-      displayName: 'Next Job',
-      size: '200',
-      render: (repeatable) => repeatable.next,
-    },
-    {
-      displayName: 'Timezone',
-      size: '200',
-      render: (repeatable) => repeatable.tz,
-    },
-  ];
-
-  return (
-    <Table
-      columns={columns}
-      data={repeatables}
-      Dropdown={RepeatableDropdown}
-      emptyMessage="No repeatables found."
-    />
-  );
-}
-
-function RepeatableDropdown({ id }: RepeatableInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onOpen() {
-    setOpen(true);
-  }
-
-  return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <RemixForm method="post">
-                <button
-                  name="action"
-                  type="submit"
-                  value={QueueAction['repeatable.remove']}
-                >
-                  <Trash2 /> Remove Repeatable
-                </button>
-
-                <input type="hidden" name="key" value={id} />
-              </RemixForm>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
-
-      <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
   );
 }
