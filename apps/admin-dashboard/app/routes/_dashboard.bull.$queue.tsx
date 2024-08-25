@@ -2,6 +2,7 @@ import {
   type ActionFunctionArgs,
   json,
   type LoaderFunctionArgs,
+  redirect,
   type SerializeFrom,
 } from '@remix-run/node';
 import {
@@ -14,7 +15,15 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { Menu, Plus, Repeat, Trash2 } from 'react-feather';
+import {
+  ArrowUp,
+  Copy,
+  Menu,
+  Plus,
+  RefreshCw,
+  Repeat,
+  Trash2,
+} from 'react-feather';
 import { generatePath } from 'react-router';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
@@ -144,37 +153,41 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 const QueueAction = {
-  CLEAN_QUEUE: 'clean_queue',
-  DUPLICATE_JOB: 'duplicate_job',
-  PROMOTE_JOB: 'promote_job',
-  REMOVE_JOB: 'remove_job',
-  REMOVE_REPEATABLE: 'remove_repeatable',
-  RETRY_JOB: 'retry_job',
+  'job.duplicate': 'job.duplicate',
+  'job.promote': 'job.promote',
+  'job.remove': 'job.remove',
+  'job.retry': 'job.retry',
+  'queue.clean': 'queue.clean',
+  'queue.obliterate': 'queue.obliterate',
+  'repeatable.remove': 'repeatable.remove',
 } as const;
 
 const QueueForm = z.discriminatedUnion('action', [
   z.object({
-    action: z.literal(QueueAction.CLEAN_QUEUE),
-  }),
-  z.object({
-    action: z.literal(QueueAction.DUPLICATE_JOB),
+    action: z.literal(QueueAction['job.duplicate']),
     id: z.string().trim().min(1),
   }),
   z.object({
-    action: z.literal(QueueAction.PROMOTE_JOB),
+    action: z.literal(QueueAction['job.promote']),
     id: z.string().trim().min(1),
   }),
   z.object({
-    action: z.literal(QueueAction.REMOVE_JOB),
+    action: z.literal(QueueAction['job.remove']),
     id: z.string().trim().min(1),
   }),
   z.object({
-    action: z.literal(QueueAction.REMOVE_REPEATABLE),
+    action: z.literal(QueueAction['job.retry']),
+    id: z.string().trim().min(1),
+  }),
+  z.object({
+    action: z.literal(QueueAction['queue.clean']),
+  }),
+  z.object({
+    action: z.literal(QueueAction['queue.obliterate']),
+  }),
+  z.object({
+    action: z.literal(QueueAction['repeatable.remove']),
     key: z.string().trim().min(1),
-  }),
-  z.object({
-    action: z.literal(QueueAction.RETRY_JOB),
-    id: z.string().trim().min(1),
   }),
 ]);
 
@@ -188,16 +201,15 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = QueueForm.safeParse(Object.fromEntries(form));
 
   if (!result.success) {
-    throw new Response(null, { status: 400 });
+    throw new Response(null, {
+      status: 400,
+    });
   }
 
   const queue = await validateQueue(params.queue);
 
   await match(result.data)
-    .with({ action: 'clean_queue' }, async () => {
-      return queue.clean(0, Infinity, 'completed');
-    })
-    .with({ action: 'duplicate_job' }, async ({ id }) => {
+    .with({ action: 'job.duplicate' }, async ({ id }) => {
       const job = await queue.getJob(id);
 
       if (!job) {
@@ -206,7 +218,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
       return queue.add(job.name, job.data);
     })
-    .with({ action: 'promote_job' }, async ({ id }) => {
+    .with({ action: 'job.promote' }, async ({ id }) => {
       const job = await queue.getJob(id);
 
       if (!job) {
@@ -215,7 +227,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
       return job.promote();
     })
-    .with({ action: 'remove_job' }, async ({ id }) => {
+    .with({ action: 'job.remove' }, async ({ id }) => {
       const job = await queue.getJob(id);
 
       if (!job) {
@@ -224,10 +236,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
       return job.remove();
     })
-    .with({ action: 'remove_repeatable' }, async ({ key }) => {
-      return queue.removeRepeatableByKey(key);
-    })
-    .with({ action: 'retry_job' }, async ({ id }) => {
+    .with({ action: 'job.retry' }, async ({ id }) => {
       const job = await queue.getJob(id);
 
       if (!job) {
@@ -236,20 +245,30 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
       return job.retry();
     })
+    .with({ action: 'queue.clean' }, async () => {
+      return queue.clean(0, 0, 'completed');
+    })
+    .with({ action: 'queue.obliterate' }, async () => {
+      await queue.obliterate();
+    })
+    .with({ action: 'repeatable.remove' }, async ({ key }) => {
+      return queue.removeRepeatableByKey(key);
+    })
     .exhaustive();
 
   toast(session, {
     message: 'Done!',
   });
 
-  return json(
-    {},
-    {
-      headers: {
-        'Set-Cookie': await commitSession(session),
-      },
-    }
-  );
+  const init: ResponseInit = {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  };
+
+  return result.data.action === 'queue.obliterate'
+    ? redirect(Route['/bull'], init)
+    : json({}, init);
 }
 
 export default function QueuePage() {
@@ -357,9 +376,20 @@ function QueueDropdown() {
                 <button
                   name="action"
                   type="submit"
-                  value={QueueAction.CLEAN_QUEUE}
+                  value={QueueAction['queue.clean']}
                 >
-                  <Trash2 /> Clean Queue
+                  <RefreshCw /> Clean Queue
+                </button>
+              </RemixForm>
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <RemixForm method="post">
+                <button
+                  name="action"
+                  type="submit"
+                  value={QueueAction['queue.obliterate']}
+                >
+                  <Trash2 /> Obliterate Queue
                 </button>
               </RemixForm>
             </Dropdown.Item>
@@ -474,7 +504,98 @@ function JobsTable() {
     },
   ];
 
-  return <Table columns={columns} data={jobs} emptyMessage="No jobs found." />;
+  return (
+    <Table
+      columns={columns}
+      data={jobs}
+      emptyMessage="No jobs found."
+      Dropdown={JobDropdown}
+    />
+  );
+}
+
+function JobDropdown({ id, status }: JobInView) {
+  const [open, setOpen] = useState<boolean>(false);
+
+  function onClose() {
+    setOpen(false);
+  }
+
+  function onOpen() {
+    setOpen(true);
+  }
+
+  return (
+    <Dropdown.Container onClose={onClose}>
+      {open && (
+        <Table.Dropdown>
+          <Dropdown.List>
+            {status === 'failed' && (
+              <Dropdown.Item>
+                <RemixForm method="post">
+                  <button
+                    name="action"
+                    type="submit"
+                    value={QueueAction['job.retry']}
+                  >
+                    <RefreshCw /> Retry Job
+                  </button>
+
+                  <input type="hidden" name="id" value={id} />
+                </RemixForm>
+              </Dropdown.Item>
+            )}
+
+            <Dropdown.Item>
+              <RemixForm method="post">
+                <button
+                  name="action"
+                  type="submit"
+                  value={QueueAction['job.duplicate']}
+                >
+                  <Copy /> Duplicate Job
+                </button>
+
+                <input type="hidden" name="id" value={id} />
+              </RemixForm>
+            </Dropdown.Item>
+
+            {(status === 'delayed' || status === 'waiting') && (
+              <Dropdown.Item>
+                <RemixForm method="post">
+                  <button
+                    name="action"
+                    type="submit"
+                    value={QueueAction['job.promote']}
+                  >
+                    <ArrowUp /> Promote Job
+                  </button>
+
+                  <input type="hidden" name="id" value={id} />
+                </RemixForm>
+              </Dropdown.Item>
+            )}
+
+            <Dropdown.Item>
+              <RemixForm method="post">
+                <button
+                  name="action"
+                  type="submit"
+                  value={QueueAction['job.remove']}
+                >
+                  <Trash2 /> Remove Job
+                </button>
+
+                <input type="hidden" name="id" value={id} />
+              </RemixForm>
+            </Dropdown.Item>
+          </Dropdown.List>
+        </Table.Dropdown>
+      )}
+
+      <Table.DropdownOpenButton onClick={onOpen} />
+    </Dropdown.Container>
+  );
 }
 
 function JobsPagination() {
@@ -554,7 +675,7 @@ function RepeatableDropdown({ id }: RepeatableInView) {
                 <button
                   name="action"
                   type="submit"
-                  value={QueueAction.REMOVE_REPEATABLE}
+                  value={QueueAction['repeatable.remove']}
                 >
                   <Trash2 /> Remove Repeatable
                 </button>

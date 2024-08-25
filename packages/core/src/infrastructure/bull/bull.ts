@@ -16,10 +16,10 @@ export const QueueFromName = run(() => {
         maxRetriesPerRequest: null,
       }),
       defaultJobOptions: {
-        attempts: 5,
+        attempts: 3,
         backoff: { delay: 5000, type: 'exponential' },
-        removeOnComplete: { age: 60 * 60 * 24 * 1 },
-        removeOnFail: { age: 60 * 60 * 24 * 7 },
+        removeOnComplete: { age: 60 * 60 * 24 * 1, count: 100 },
+        removeOnFail: { age: 60 * 60 * 24 * 7, count: 1000 },
       },
     });
   });
@@ -43,10 +43,10 @@ export async function initializeQueue(name: string) {
       maxRetriesPerRequest: null,
     }),
     defaultJobOptions: {
-      attempts: 5,
+      attempts: 3,
       backoff: { delay: 5000, type: 'exponential' },
-      removeOnComplete: { age: 60 * 60 * 24 * 1 },
-      removeOnFail: { age: 60 * 60 * 24 * 7 },
+      removeOnComplete: { age: 60 * 60 * 24 * 1, count: 100 },
+      removeOnFail: { age: 60 * 60 * 24 * 7, count: 1000 },
     },
   });
 
