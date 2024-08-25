@@ -28,6 +28,7 @@ import { generatePath } from 'react-router';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { listQueueNames } from '@oyster/core/admin-dashboard.server';
 import {
   cx,
   Dashboard,
@@ -41,7 +42,6 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { listQueues } from '@/admin-dashboard.server';
 import { validateQueue } from '@/shared/bull';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
@@ -74,7 +74,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const [queue, queues] = await Promise.all([
     validateQueue(params.queue),
-    listQueues(),
+    listQueueNames(),
   ]);
 
   const { searchParams } = new URL(request.url);

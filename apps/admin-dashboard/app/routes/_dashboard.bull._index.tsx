@@ -1,5 +1,6 @@
 import { type LoaderFunctionArgs, redirect } from '@remix-run/node';
 
+import { listQueueNames } from '@/admin-dashboard.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -7,5 +8,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     minimumRole: 'owner',
   });
 
-  return redirect('/bull/airtable');
+  const queues = await listQueueNames();
+
+  return redirect(`/bull/${queues[0]}`);
 }

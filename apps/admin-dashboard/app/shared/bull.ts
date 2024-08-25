@@ -1,15 +1,17 @@
 import { z } from 'zod';
 
-import { initializeQueue, isQueue } from '@/admin-dashboard.server';
+import { getQueue, listQueueNames } from '@/admin-dashboard.server';
 
 const BullQueueParams = z.object({
   queue: z
     .string()
     .refine(async (value) => {
-      return isQueue(value);
+      const queueNames = await listQueueNames();
+
+      return queueNames.includes(value);
     })
-    .transform(async (value) => {
-      return initializeQueue(value);
+    .transform((value) => {
+      return getQueue(value);
     }),
 });
 
