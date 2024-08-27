@@ -85,6 +85,7 @@ export async function updateSchool({
   addressZip,
   id,
   name,
+  tags,
 }: UpdateSchoolInput) {
   await db.transaction().execute(async (trx) => {
     await trx
@@ -94,6 +95,7 @@ export async function updateSchool({
         addressState,
         addressZip,
         name,
+        tags,
       })
       .where('id', '=', id)
       .execute();
