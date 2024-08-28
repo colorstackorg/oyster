@@ -39,3 +39,4 @@ export { reportException } from './modules/sentry/use-cases/report-exception';
 export { countMessagesSent } from './modules/slack/queries/count-messages-sent';
 export { getSwagPackInventory } from './modules/swag-pack/swag-pack.service';
 export { claimSwagPack } from './modules/swag-pack/use-cases/claim-swag-pack';
+export { hasReviewAccess } from './modules/member/use-cases/has-review-access';

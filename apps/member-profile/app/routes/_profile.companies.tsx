@@ -26,6 +26,7 @@ import {
   ExistingSearchParams,
   getButtonCn,
   getTextCn,
+  Modal,
   Pagination,
   Select,
   Text,
@@ -37,6 +38,7 @@ import {
   TooltipTrigger,
 } from '@oyster/ui/tooltip';
 
+import { hasReviewAccess } from '@/member-profile.server';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 import { PaginationSearchParams } from '@/shared/types';
@@ -47,6 +49,8 @@ const CompaniesSearchParams = PaginationSearchParams.merge(
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
+
+  const userHasReviewsAccess = await hasReviewAccess(user(session));
 
   const url = new URL(request.url);
 
@@ -82,27 +86,34 @@ export async function loader({ request }: LoaderFunctionArgs) {
     orderBy: searchParams.orderBy,
     page: searchParams.page,
     totalCount,
+    userHasReviewsAccess,
   });
 }
 
 export default function CompaniesPage() {
+  const { userHasReviewsAccess } = useLoaderData<typeof loader>();
+
   return (
     <>
       <header className="flex items-center justify-between gap-4">
         <Text variant="2xl">Companies 💼</Text>
         <AddReviewLink />
       </header>
-
       <section className="flex flex-wrap gap-4">
         <Dashboard.SearchForm>
           <ExistingSearchParams exclude={['page']} />
         </Dashboard.SearchForm>
         <SortCompaniesForm />
       </section>
-
-      <CompaniesList />
-      <CompaniesPagination />
-      <Outlet />
+      {userHasReviewsAccess ? (
+        <>
+          <CompaniesList />
+          <CompaniesPagination />
+          <Outlet />
+        </>
+      ) : (
+        <NoReviewsAccess />
+      )}
     </>
   );
 }
@@ -309,5 +320,26 @@ function AverageRating({
     >
       <span>{averageRating}</span> <Star className="fill-gray-50" size="16" />
     </Text>
+  );
+}
+
+function NoReviewsAccess() {
+  return (
+    <>
+      <Modal onCloseTo={Route['/profile/work']}>
+        <Modal.Header>
+          <Modal.Title>Oops! You missed a step</Modal.Title>
+          <Modal.CloseButton />
+        </Modal.Header>
+        <Modal.Description>
+          To view company reviews, you must first add a review of one of your
+          experiences. You can do so{' '}
+          <Link className="link" to={Route['/profile/work']}>
+            here
+          </Link>
+          {'!'}
+        </Modal.Description>
+      </Modal>
+    </>
   );
 }
