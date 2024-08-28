@@ -190,7 +190,9 @@ function SchoolsTable() {
                     .with(SchoolTag.HSI, () => {
                       return <Pill color="blue-100">HSI</Pill>;
                     })
-                    .otherwise(() => '')}
+                    .otherwise(() => {
+                      return <Pill color="gray-100">{tag}</Pill>;
+                    })}
                 </li>
               );
             })}
