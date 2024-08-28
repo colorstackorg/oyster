@@ -182,7 +182,7 @@ function SchoolsTable() {
           <ul className="flex gap-2">
             {school.tags.map((tag) => {
               return (
-                <li>
+                <li key={tag}>
                   {match(tag)
                     .with(SchoolTag.HBCU, () => {
                       return <Pill color="amber-100">HBCU</Pill>;
