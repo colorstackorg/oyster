@@ -9,7 +9,6 @@ import {
 } from '@oyster/core/employment';
 import {
   Button,
-  Checkbox,
   cx,
   Divider,
   type FieldProps,
@@ -242,7 +241,26 @@ function AnonymousField({ error, name, defaultValue }: FieldProps<boolean>) {
       label="Would you like to post this review anonymously?"
       labelFor={name}
     >
-      <Checkbox defaultChecked={defaultValue} id={name} name={name} value="0" />
+      <Radio.Group>
+        <Radio
+          color="lime-100"
+          defaultChecked={defaultValue === true}
+          id={name + '1'}
+          label="Yes"
+          name={name}
+          required
+          value="1"
+        />
+        <Radio
+          color="red-100"
+          defaultChecked={defaultValue === false}
+          id={name + '0'}
+          label="No"
+          name={name}
+          required
+          value="0"
+        />
+      </Radio.Group>
     </Form.Field>
   );
 }
