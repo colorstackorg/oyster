@@ -108,8 +108,13 @@ async function getCompanyReviewsMessage(): Promise<string | null> {
     })
     .join('\n');
 
+  const title =
+    items.length === 1
+      ? 'Check out this company review posted yesterday! 💼'
+      : 'Check out these company reviews posted yesterday! 💼';
+
   return dedent`
-    Check out ${items.length === 1 ? 'this company review' : 'these company reviews'} posted yesterday 📝:
+    ${title}
     ${items}
   `;
 }
@@ -131,8 +136,13 @@ async function getMembersMessage(): Promise<string | null> {
 
   url.searchParams.set('joinedDirectoryDate', yesterday.format('YYYY-MM-DD'));
 
+  const title =
+    members.length === 1
+      ? `Say hello to the <${url}|${members.length} member> who joined the Member Directory yesterday! 👋`
+      : `Say hello to the <${url}|${members.length} members> who joined the Member Directory yesterday! 👋`;
+
   return dedent`
-    Say hello to the <${url}|${members.length} ${members.length === 1 ? 'member' : 'members'}> who joined the Member Directory yesterday! 👋
+    ${title}
   `;
 }
 
@@ -171,8 +181,13 @@ async function getResourcesMessage(): Promise<string | null> {
   // Example: https://app.colorstack.io/resources?date=2024-08-15
   url.searchParams.set('date', yesterday.format('YYYY-MM-DD'));
 
+  const title =
+    items.length === 1
+      ? `Check out this <${url}|resource> posted yesterday! 📚`
+      : `Check out these <${url}|resources> posted yesterday! 📚`;
+
   return dedent`
-    Check out ${items.length === 1 ? `this <${url}|resource>` : `these <${url}|resources>`} posted yesterday 📚:
+    ${title}
     ${items}
   `;
 }
