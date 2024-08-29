@@ -1,7 +1,7 @@
 import { Link, useLocation } from '@remix-run/react';
 import { ChevronLeft, ChevronRight } from 'react-feather';
 
-import { iife } from '@oyster/utils';
+import { run } from '@oyster/utils';
 
 import { Text } from './text';
 import { cx } from '../utils/cx';
@@ -181,7 +181,7 @@ function getPaginationValues({
 
   // The first and last number are always displaying, we just need to find
   // what the middle numbers are...
-  const middleChunk = iife(() => {
+  const middleChunk = run(() => {
     // If the current page number is less than 5, then the middle chunk is
     // just the first 5 numbers (after the initial element).
     if (page <= 5) {

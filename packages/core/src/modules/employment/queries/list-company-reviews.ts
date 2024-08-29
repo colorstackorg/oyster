@@ -6,6 +6,7 @@ import { type ListCompanyReviewsWhere } from '@/modules/employment/employment.ty
 
 type ListCompanyReviewsOptions<Selection> = {
   includeCompanies?: boolean;
+  memberId: string;
   select: Selection[];
   where: ListCompanyReviewsWhere;
 };
@@ -15,7 +16,12 @@ export async function listCompanyReviews<
     DB,
     'companyReviews' | 'students' | 'workExperiences'
   >,
->({ includeCompanies, select, where }: ListCompanyReviewsOptions<Selection>) {
+>({
+  includeCompanies,
+  memberId,
+  select,
+  where,
+}: ListCompanyReviewsOptions<Selection>) {
   const reviews = await db
     .selectFrom('companyReviews')
     .leftJoin(
@@ -24,7 +30,34 @@ export async function listCompanyReviews<
       'companyReviews.workExperienceId'
     )
     .leftJoin('students', 'students.id', 'workExperiences.studentId')
-    .select(select)
+    .select([
+      ...select,
+      (eb) => {
+        return eb
+          .selectFrom('companyReviewUpvotes')
+          .select(eb.fn.countAll<string>().as('count'))
+          .whereRef(
+            'companyReviewUpvotes.companyReviewId',
+            '=',
+            'companyReviews.id'
+          )
+          .as('upvotes');
+      },
+      (eb) => {
+        return eb
+          .exists((eb) => {
+            return eb
+              .selectFrom('companyReviewUpvotes')
+              .whereRef(
+                'companyReviewUpvotes.companyReviewId',
+                '=',
+                'companyReviews.id'
+              )
+              .where('companyReviewUpvotes.studentId', '=', memberId);
+          })
+          .as('upvoted');
+      },
+    ])
     .$if(!!includeCompanies, (qb) => {
       return qb
         .leftJoin('companies', 'companies.id', 'workExperiences.companyId')

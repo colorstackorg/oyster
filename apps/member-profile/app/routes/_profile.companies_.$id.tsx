@@ -53,6 +53,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }),
 
     listCompanyReviews({
+      memberId: user(session),
       select: [
         'companyReviews.createdAt',
         'companyReviews.id',
@@ -253,6 +254,8 @@ function ReviewsList() {
                 date={review.date}
                 editable={review.editable}
                 employmentType={review.employmentType as EmploymentType}
+                hasUpvoted={review.upvoted as boolean}
+                id={review.id}
                 locationCity={review.locationCity}
                 locationState={review.locationState}
                 locationType={review.locationType as LocationType}
@@ -265,6 +268,7 @@ function ReviewsList() {
                 reviewerProfilePicture={review.reviewerProfilePicture}
                 text={review.text}
                 title={review.title || ''}
+                upvotesCount={review.upvotes}
                 workExperienceId={review.workExperienceId || ''}
                 anonymous={review.anonymous}
               />

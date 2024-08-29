@@ -1,9 +1,12 @@
-import { Form as RemixForm } from '@remix-run/react';
+import { generatePath, Link, Form as RemixForm } from '@remix-run/react';
+import { useState } from 'react';
+import { Trash } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import { type DB } from '@oyster/db';
 import {
   Button,
+  Dropdown,
   Form,
   Input,
   Pill,
@@ -78,8 +81,11 @@ export function AdminForm({ error, errors }: AdminFormProps) {
 
 type AdminInTable = Pick<
   DB['admins'],
-  'email' | 'firstName' | 'lastName' | 'role'
->;
+  'email' | 'firstName' | 'id' | 'lastName' | 'role'
+> & {
+  canRemove: boolean;
+  isDeleted: boolean;
+};
 
 type AdminTableProps = {
   admins: AdminInTable[];
@@ -99,7 +105,7 @@ export function AdminTable({ admins }: AdminTableProps) {
     },
     {
       displayName: 'Role',
-      size: '200',
+      size: '160',
       render: (admin) => {
         return match(admin.role as AdminRole)
           .with('admin', () => {
@@ -109,14 +115,66 @@ export function AdminTable({ admins }: AdminTableProps) {
             return <Pill color="pink-100">Ambassador</Pill>;
           })
           .with('owner', () => {
-            return <Pill color="lime-100">Owner</Pill>;
+            return <Pill color="purple-100">Owner</Pill>;
           })
           .exhaustive();
+      },
+    },
+    {
+      displayName: 'Status',
+      size: '160',
+      render: (admin) => {
+        return admin.isDeleted ? (
+          <Pill color="gray-100">Archived</Pill>
+        ) : (
+          <Pill color="lime-100">Active</Pill>
+        );
       },
     },
   ];
 
   return (
-    <Table columns={columns} data={admins} emptyMessage="No admins found." />
+    <Table
+      columns={columns}
+      data={admins}
+      emptyMessage="No admins found."
+      Dropdown={(row) => {
+        if (!row.canRemove) {
+          return null;
+        }
+
+        return <AdminDropdown {...row} />;
+      }}
+    />
+  );
+}
+
+function AdminDropdown({ id }: AdminInTable) {
+  const [open, setOpen] = useState<boolean>(false);
+
+  function onClose() {
+    setOpen(false);
+  }
+
+  function onOpen() {
+    setOpen(true);
+  }
+
+  return (
+    <Dropdown.Container onClose={onClose}>
+      {open && (
+        <Table.Dropdown>
+          <Dropdown.List>
+            <Dropdown.Item>
+              <Link to={generatePath('/admins/:id/remove', { id })}>
+                <Trash /> Remove Admin
+              </Link>
+            </Dropdown.Item>
+          </Dropdown.List>
+        </Table.Dropdown>
+      )}
+
+      <Table.DropdownOpenButton onClick={onOpen} />
+    </Dropdown.Container>
   );
 }

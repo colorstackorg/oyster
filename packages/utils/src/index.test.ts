@@ -1,4 +1,4 @@
-import { getCookie, iife, sleep, toEscapedString, toTitleCase } from '.';
+import { getCookie, run, sleep, toEscapedString, toTitleCase } from '.';
 
 describe(getCookie.name, () => {
   test('If the cookie string is empty...', () => {
@@ -26,9 +26,9 @@ describe(getCookie.name, () => {
   });
 });
 
-describe(iife.name, () => {
+describe(run.name, () => {
   test('Should immediately invoke the given function and return its result.', () => {
-    const result = iife(() => {
+    const result = run(() => {
       return 1 + 1;
     });
 

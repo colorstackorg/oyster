@@ -13,8 +13,6 @@ import {
 } from '@oyster/types';
 
 import { OneTimeCode } from '@/modules/authentication/authentication.types';
-import { Education } from '@/modules/education/education.types';
-import { WorkExperience } from '@/modules/employment/employment.types';
 import {
   ActivityType,
   CompletedActivity,
@@ -30,7 +28,6 @@ import { Survey } from '@/modules/survey/survey.types';
 export const BullQueue = {
   AIRTABLE: 'airtable',
   APPLICATION: 'application',
-  EDUCATION_HISTORY: 'education_history',
   EMAIL_MARKETING: 'email_marketing',
   EVENT: 'event',
   FEED: 'feed',
@@ -42,9 +39,7 @@ export const BullQueue = {
   PROFILE: 'profile',
   SLACK: 'slack',
   STUDENT: 'student',
-  SURVEY: 'survey',
   SWAG_PACK: 'swag_pack',
-  WORK_HISTORY: 'work_history',
 } as const;
 
 export type BullQueue = ExtractValue<typeof BullQueue>;
@@ -101,23 +96,6 @@ export const ApplicationBullJob = z.discriminatedUnion('name', [
     name: z.literal('application.review'),
     data: z.object({
       applicationId: Application.shape.id,
-    }),
-  }),
-]);
-
-export const EducationHistoryBullJob = z.discriminatedUnion('name', [
-  z.object({
-    name: z.literal('education.added'),
-    data: z.object({
-      educationId: Education.shape.id,
-      studentId: Student.shape.id,
-    }),
-  }),
-  z.object({
-    name: z.literal('education.deleted'),
-    data: z.object({
-      educationId: Education.shape.id,
-      studentId: Student.shape.id,
     }),
   }),
 ]);
@@ -579,37 +557,10 @@ export const StudentBullJob = z.discriminatedUnion('name', [
   }),
 ]);
 
-export const SurveyBullJob = z.discriminatedUnion('name', [
-  z.object({
-    name: z.literal('survey.responded'),
-    data: z.object({
-      studentId: Student.shape.id,
-      surveyId: Survey.shape.id,
-    }),
-  }),
-]);
-
 export const SwagPackBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('swag_pack.inventory.notify'),
     data: z.object({}),
-  }),
-]);
-
-export const WorkHistoryBullJob = z.discriminatedUnion('name', [
-  z.object({
-    name: z.literal('work_experience.added'),
-    data: z.object({
-      studentId: Student.shape.id,
-      workExperienceId: WorkExperience.shape.id,
-    }),
-  }),
-  z.object({
-    name: z.literal('work_experience.deleted'),
-    data: z.object({
-      studentId: Student.shape.id,
-      workExperienceId: WorkExperience.shape.id,
-    }),
   }),
 ]);
 
@@ -618,7 +569,6 @@ export const WorkHistoryBullJob = z.discriminatedUnion('name', [
 export const BullJob = z.union([
   AirtableBullJob,
   ApplicationBullJob,
-  EducationHistoryBullJob,
   EmailMarketingBullJob,
   EventBullJob,
   FeedBullJob,
@@ -630,9 +580,7 @@ export const BullJob = z.union([
   ProfileBullJob,
   SlackBullJob,
   StudentBullJob,
-  SurveyBullJob,
   SwagPackBullJob,
-  WorkHistoryBullJob,
 ]);
 
 // Types

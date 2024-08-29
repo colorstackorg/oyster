@@ -12,11 +12,12 @@ import {
   Form,
   Input,
   type InputProps,
+  Select,
   useDelayedValue,
 } from '@oyster/ui';
 import { toEscapedString, toTitleCase } from '@oyster/utils';
 
-import { School } from '@/modules/education/education.types';
+import { School, SchoolTag } from '@/modules/education/education.types';
 
 // School Form
 
@@ -80,6 +81,39 @@ export function SchoolStateField({
         placeholder="CA"
         required
       />
+    </Form.Field>
+  );
+}
+
+const SCHOOL_TAG_OPTIONS = [
+  { label: 'HBCU', value: SchoolTag.HBCU },
+  { label: 'HSI', value: SchoolTag.HSI },
+];
+
+export function SchoolTagsField({
+  defaultValue,
+  error,
+}: Omit<FieldProps<string>, 'name'>) {
+  return (
+    <Form.Field
+      description="Is this school an HBCU or HSI?"
+      error={error}
+      label="Tag(s)"
+      labelFor={schoolKeys.tags}
+    >
+      <Select
+        defaultValue={defaultValue}
+        id={schoolKeys.tags}
+        name={schoolKeys.tags}
+      >
+        {SCHOOL_TAG_OPTIONS.map(({ label, value }) => {
+          return (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          );
+        })}
+      </Select>
     </Form.Field>
   );
 }
