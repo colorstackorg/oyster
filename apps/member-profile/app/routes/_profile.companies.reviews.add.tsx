@@ -39,6 +39,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   await addCompanyReview({
+    anonymous: data.anonymous,
     rating: data.rating,
     recommend: data.recommend,
     studentId: data.studentId,

@@ -87,6 +87,7 @@ async function getCompanyReviewsMessage(): Promise<string | null> {
     .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
     .select([
       'companies.name as companyName',
+      'companyReviews.anonymous',
       'companyReviews.id',
       'companyReviews.rating',
       'students.slackId as posterSlackId',
@@ -101,10 +102,12 @@ async function getCompanyReviewsMessage(): Promise<string | null> {
   }
 
   const items = companyReviews
-    .map(({ companyId, companyName, posterSlackId, rating }) => {
+    .map(({ anonymous, companyId, companyName, posterSlackId, rating }) => {
       const url = new URL('/companies/' + companyId, ENV.STUDENT_PROFILE_URL);
 
-      return `• <${url}|*${companyName}*> (${rating}/10) by <@${posterSlackId}>`;
+      return anonymous
+        ? `• <${url}|*${companyName}*> (${rating}/10) by Anonymous (🫣)`
+        : `• <${url}|*${companyName}*> (${rating}/10) by <@${posterSlackId}>`;
     })
     .join('\n');
 
