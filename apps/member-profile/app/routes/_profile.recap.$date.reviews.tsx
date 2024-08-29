@@ -18,10 +18,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     includeCompanies: true,
     memberId: user(session),
     select: [
+      'companyReviews.anonymous',
       'companyReviews.createdAt',
       'companyReviews.id',
       'companyReviews.rating',
-      'companyReviews.anonymous',
       'companyReviews.recommend',
       'companyReviews.text',
       'students.id as reviewerId',

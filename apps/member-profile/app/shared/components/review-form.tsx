@@ -9,6 +9,7 @@ import {
 } from '@oyster/core/employment';
 import {
   Button,
+  Checkbox,
   cx,
   Divider,
   type FieldProps,
@@ -38,7 +39,7 @@ export function AddReviewForm({
   showExperienceField,
 }: AddReviewFormProps) {
   return (
-    <RemixForm className="form" method="post">
+    <RemixForm className="form" data-gap="2rem" method="post">
       {showExperienceField && (
         <ExperienceField
           error={errors.workExperienceId}
@@ -47,13 +48,10 @@ export function AddReviewForm({
       )}
 
       <TextField error={errors.text} name={keys.text} />
-
       <Divider />
-
       <RatingField error={errors.rating} name={keys.rating} />
       <RecommendField error={errors.recommend} name={keys.recommend} />
       <AnonymousField error={errors.anonymous} name={keys.anonymous} />
-
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
       <Button.Group>
@@ -66,13 +64,13 @@ export function AddReviewForm({
 type EditReviewFormProps = Omit<AddReviewFormProps, 'showExperienceField'> & {
   review: Pick<
     EditCompanyReviewInput,
-    'rating' | 'recommend' | 'text' | 'anonymous'
+    'anonymous' | 'rating' | 'recommend' | 'text'
   >;
 };
 
 export function EditReviewForm({ error, errors, review }: EditReviewFormProps) {
   return (
-    <RemixForm className="form" method="post">
+    <RemixForm className="form" data-gap="2rem" method="post">
       <TextField
         defaultValue={review.text}
         error={errors.text}
@@ -107,6 +105,26 @@ export function EditReviewForm({ error, errors, review }: EditReviewFormProps) {
 }
 
 // Fields
+
+function AnonymousField({ defaultValue, error, name }: FieldProps<boolean>) {
+  return (
+    <Form.Field
+      description="Your name will not be visible to the public."
+      error={error}
+      label="Would you like to post this review anonymously?"
+      labelFor={name}
+    >
+      <Checkbox
+        color="amber-100"
+        defaultChecked={defaultValue}
+        label="Post this review anonymously."
+        id={name}
+        name={name}
+        value="1"
+      />
+    </Form.Field>
+  );
+}
 
 function ExperienceField({ defaultValue, error, name }: FieldProps<string>) {
   const fetcher = useFetcher<GetWorkExperiencesResult>();
@@ -209,37 +227,6 @@ function RecommendField({ defaultValue, error, name }: FieldProps<boolean>) {
       label="Would you recommend this company to another ColorStack member?"
       labelFor={name}
       required
-    >
-      <Radio.Group>
-        <Radio
-          color="lime-100"
-          defaultChecked={defaultValue === true}
-          id={name + '1'}
-          label="Yes"
-          name={name}
-          required
-          value="1"
-        />
-        <Radio
-          color="red-100"
-          defaultChecked={defaultValue === false}
-          id={name + '0'}
-          label="No"
-          name={name}
-          required
-          value="0"
-        />
-      </Radio.Group>
-    </Form.Field>
-  );
-}
-
-function AnonymousField({ error, name, defaultValue }: FieldProps<boolean>) {
-  return (
-    <Form.Field
-      error={error}
-      label="Would you like to post this review anonymously?"
-      labelFor={name}
     >
       <Radio.Group>
         <Radio

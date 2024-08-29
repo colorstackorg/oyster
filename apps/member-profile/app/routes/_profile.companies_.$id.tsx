@@ -55,10 +55,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     listCompanyReviews({
       memberId: user(session),
       select: [
+        'companyReviews.anonymous',
         'companyReviews.createdAt',
         'companyReviews.id',
         'companyReviews.rating',
-        'companyReviews.anonymous',
         'companyReviews.recommend',
         'companyReviews.text',
         'students.id as reviewerId',
@@ -246,6 +246,7 @@ function ReviewsList() {
             return (
               <CompanyReview
                 key={review.id}
+                anonymous={review.anonymous}
                 company={{
                   id: review.companyId || '',
                   image: review.companyImage || '',
@@ -270,7 +271,6 @@ function ReviewsList() {
                 title={review.title || ''}
                 upvotesCount={review.upvotes}
                 workExperienceId={review.workExperienceId || ''}
-                anonymous={review.anonymous}
               />
             );
           })}

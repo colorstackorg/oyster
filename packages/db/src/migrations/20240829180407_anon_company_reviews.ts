@@ -3,7 +3,9 @@ import { type Kysely } from 'kysely';
 export async function up(db: Kysely<any>) {
   await db.schema
     .alterTable('company_reviews')
-    .addColumn('anonymous', 'boolean', (col) => col.notNull().defaultTo(false))
+    .addColumn('anonymous', 'boolean', (column) => {
+      return column.defaultTo(false).notNull();
+    })
     .execute();
 }
 
