@@ -239,7 +239,7 @@ function AnonymousField({ error, name, defaultValue }: FieldProps<boolean>) {
   return (
     <Form.Field
       error={error}
-      label="Would you like to remain anonymous?"
+      label="Would you like to post this review anonymously?"
       labelFor={name}
     >
       <Checkbox defaultChecked={defaultValue} id={name} name={name} value="0" />

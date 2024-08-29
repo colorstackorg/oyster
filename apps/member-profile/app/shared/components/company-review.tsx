@@ -82,7 +82,7 @@ export const CompanyReview = ({
       <header className="flex items-center gap-1">
         {anonymous ? (
           <Text color="gray-500" variant="sm">
-            Anonymous Member
+            Anonymous
           </Text>
         ) : (
           <CompanyReviewer
