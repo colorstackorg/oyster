@@ -7,6 +7,7 @@ export async function editCompanyReview({
   recommend,
   text,
   workExperienceId,
+  anonymous,
 }: EditCompanyReviewInput) {
   const review = await db.transaction().execute(async (trx) => {
     return trx
@@ -15,6 +16,7 @@ export async function editCompanyReview({
         rating,
         recommend,
         text,
+        anonymous,
       })
       .returning(['id'])
       .where('workExperienceId', '=', workExperienceId)

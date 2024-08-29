@@ -10,6 +10,7 @@ export async function addCompanyReview({
   studentId,
   text,
   workExperienceId,
+  anonymous,
 }: AddCompanyReviewInput) {
   const review = await db.transaction().execute(async (trx) => {
     return trx
@@ -21,6 +22,7 @@ export async function addCompanyReview({
         studentId,
         text,
         workExperienceId,
+        anonymous,
       })
       .returning(['id'])
       .executeTakeFirstOrThrow();
