@@ -11,6 +11,7 @@ import {
 import { sql } from 'kysely';
 import { z } from 'zod';
 
+import { updateMember } from '@oyster/core/member-profile/server';
 import { ISO8601Date, nullableField, Student } from '@oyster/types';
 import {
   Button,
@@ -20,7 +21,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { updateMember } from '@/member-profile.server';
 import {
   ProfileHeader,
   ProfileSection,

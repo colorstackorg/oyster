@@ -11,6 +11,7 @@ import {
 } from '@remix-run/react';
 import { type z } from 'zod';
 
+import { updateMemberEmail } from '@oyster/core/admin-dashboard/server';
 import { db } from '@oyster/db';
 import { Student } from '@oyster/types';
 import {
@@ -22,7 +23,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { updateMemberEmail } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
   commitSession,

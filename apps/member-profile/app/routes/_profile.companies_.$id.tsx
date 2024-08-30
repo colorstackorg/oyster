@@ -15,7 +15,7 @@ import {
   getCompany,
   listCompanyEmployees,
   listCompanyReviews,
-} from '@oyster/core/employment.server';
+} from '@oyster/core/employment/server';
 import { cx, Divider, getTextCn, ProfilePicture, Text } from '@oyster/ui';
 import {
   Tooltip,

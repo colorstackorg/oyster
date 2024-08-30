@@ -6,11 +6,11 @@ import {
 } from '@remix-run/node';
 import { Form as RemixForm, useLoaderData } from '@remix-run/react';
 
+import { job } from '@oyster/core/admin-dashboard/server';
 import { db } from '@oyster/db';
 import { BooleanInput } from '@oyster/types';
 import { Button, Checkbox, Modal } from '@oyster/ui';
 
-import { job } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
   commitSession,

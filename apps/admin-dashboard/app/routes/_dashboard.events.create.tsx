@@ -7,6 +7,7 @@ import {
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
+import { createEvent } from '@oyster/core/admin-dashboard/server';
 import { Event, EventType } from '@oyster/types';
 import {
   Button,
@@ -21,7 +22,6 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { createEvent } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
   commitSession,

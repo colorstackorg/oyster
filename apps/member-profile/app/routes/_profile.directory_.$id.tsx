@@ -5,6 +5,15 @@ import React, { type PropsWithChildren } from 'react';
 import { BookOpen, Calendar, Globe, Home, Link, MapPin } from 'react-feather';
 
 import { getTotalPoints } from '@oyster/core/gamification';
+import {
+  countEventAttendees,
+  countMessagesSent,
+  getActiveStreak,
+  getIcebreakerResponses,
+  job,
+  listWorkExperiences,
+} from '@oyster/core/member-profile/server';
+import { WorkExperienceItem } from '@oyster/core/member-profile/ui';
 import { type MixpanelEvent } from '@oyster/core/mixpanel';
 import {
   cx,
@@ -14,15 +23,6 @@ import {
   type TextProps,
 } from '@oyster/ui';
 
-import {
-  countEventAttendees,
-  countMessagesSent,
-  getActiveStreak,
-  getIcebreakerResponses,
-  job,
-  listWorkExperiences,
-} from '@/member-profile.server';
-import { WorkExperienceItem } from '@/member-profile.ui';
 import { Card } from '@/shared/components/card';
 import { EducationExperienceItem } from '@/shared/components/education-experience';
 import { ExperienceList } from '@/shared/components/profile';

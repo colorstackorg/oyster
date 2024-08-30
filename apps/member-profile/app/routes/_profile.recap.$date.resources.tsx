@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 
 import { getPresignedURL } from '@oyster/core/object-storage';
 import { type ResourceType } from '@oyster/core/resources';
-import { listResources } from '@oyster/core/resources.server';
+import { listResources } from '@oyster/core/resources/server';
 
 import { getDateRange, Recap } from '@/routes/_profile.recap.$date';
 import { Resource } from '@/shared/components/resource';

@@ -8,10 +8,10 @@ import { Form as RemixForm, useActionData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type z } from 'zod';
 
+import { addEducation } from '@oyster/core/member-profile/server';
+import { AddEducationInput } from '@oyster/core/member-profile/ui';
 import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
-import { addEducation } from '@/member-profile.server';
-import { AddEducationInput } from '@/member-profile.ui';
 import { EducationForm } from '@/shared/components/education-form';
 import { Route } from '@/shared/constants';
 import {

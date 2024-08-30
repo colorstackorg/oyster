@@ -10,14 +10,14 @@ import {
 import dayjs from 'dayjs';
 import { type PropsWithChildren } from 'react';
 
-import { listCompanyReviews } from '@oyster/core/employment.server';
+import { listCompanyReviews } from '@oyster/core/employment/server';
+import { listMembersInDirectory } from '@oyster/core/member-profile/server';
 import { track } from '@oyster/core/mixpanel';
-import { listResources } from '@oyster/core/resources.server';
-import { listSlackMessages } from '@oyster/core/slack.server';
+import { listResources } from '@oyster/core/resources/server';
+import { listSlackMessages } from '@oyster/core/slack/server';
 import { Divider, Text } from '@oyster/ui';
 import { run } from '@oyster/utils';
 
-import { listMembersInDirectory } from '@/member-profile.server';
 import { NavigationItem } from '@/shared/components/navigation';
 import { type Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';

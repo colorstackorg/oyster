@@ -7,10 +7,10 @@ import {
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
+import { uploadOnboardingSession } from '@oyster/core/admin-dashboard/server';
+import { OnboardingSession } from '@oyster/core/admin-dashboard/ui';
 import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
-import { uploadOnboardingSession } from '@/admin-dashboard.server';
-import { OnboardingSession } from '@/admin-dashboard.ui';
 import {
   OnboardingSessionAttendeesField,
   OnboardingSessionForm,

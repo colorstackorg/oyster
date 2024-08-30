@@ -14,7 +14,7 @@ import {
   ImportRecipientsInput,
   importScholarshipRecipients,
 } from '@oyster/core/scholarships';
-import { ScholarshipFileField } from '@oyster/core/scholarships.ui';
+import { ScholarshipFileField } from '@oyster/core/scholarships/ui';
 import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
