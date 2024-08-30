@@ -113,6 +113,12 @@ type ChatMessage = {
   role: 'assistant' | 'user';
 };
 
+type SystemPrompt = {
+  cache?: true;
+  text: string;
+  type: 'text';
+};
+
 type GetChatCompletionInput = {
   /**
    * The maximum number of tokens to generate. The maximum value is 8192.
@@ -132,7 +138,7 @@ type GetChatCompletionInput = {
    * The system prompt to use for the completion. This can be used to provide
    * additional context to the AI model, such as the role of the assistant.
    */
-  system?: string;
+  system: SystemPrompt[];
 
   /**
    * The temperature to use for the completion. This controls the randomness of
@@ -163,10 +169,22 @@ const AnthropicResponse = z.object({
 export async function getChatCompletion({
   maxTokens,
   messages,
-  system,
+  system: _system,
   temperature = 0.5,
 }: GetChatCompletionInput): Promise<Result<string>> {
   await anthropicRateLimiter.process();
+
+  const system = _system.map(({ cache, ...prompt }) => {
+    return {
+      text: prompt.text,
+      type: prompt.type,
+
+      // This will cache this prompt for 5 minutes...
+      ...(cache && {
+        cache_control: { type: 'ephemeral' },
+      }),
+    };
+  });
 
   const response = await fetch(ANTHROPIC_API_URL + '/messages', {
     body: JSON.stringify({

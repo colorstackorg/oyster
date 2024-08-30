@@ -556,18 +556,12 @@ export async function reviewResume({
       {
         role: 'user',
         content: [
-          {
-            type: 'text',
-            text: userPrompt,
-          },
-          {
-            type: 'text',
-            text: resumeText,
-          },
+          { type: 'text', text: userPrompt },
+          { type: 'text', text: resumeText },
         ],
       },
     ],
-    system: systemPrompt,
+    system: [{ type: 'text', text: systemPrompt, cache: true }],
     temperature: 0.25,
   });
 

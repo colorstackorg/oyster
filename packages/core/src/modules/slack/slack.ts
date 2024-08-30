@@ -4,14 +4,29 @@ import { db } from '@oyster/db';
 
 import { createEmbedding, getChatCompletion } from '@/modules/ai/ai';
 import { getPineconeIndex } from '@/modules/pinecone';
-import { fail, success } from '@/shared/utils/core.utils';
+import { fail, type Result, success } from '@/shared/utils/core.utils';
 
-export async function askQuestionToSlack(question: string) {
+/**
+ * Ask a question to the Slack workspace.
+ *
+ * This is a RAG (Retrieval Augmented Generation) implementation that works
+ * as follows:
+ * - Create an embedding for the question.
+ * - Query the vector database for the most similar Slack messages.
+ * - Pass the most similar Slack threads found to an LLM.
+ * - Return the answer.
+ *
+ * @param question - The question to ask.
+ * @returns The answer to the question.
+ */
+export async function askQuestionToSlack(
+  question: string
+): Promise<Result<string>> {
   const embeddingResult = await createEmbedding(question);
 
   if (!embeddingResult.ok) {
     return fail({
-      code: 500,
+      code: embeddingResult.code,
       error: embeddingResult.error,
     });
   }
@@ -24,32 +39,26 @@ export async function askQuestionToSlack(question: string) {
 
   const messages = await Promise.all(
     matches.map(async (match) => {
-      const threadId = (match.metadata?.threadId || match.id) as string;
+      const threadId = match.metadata?.threadId || match.id;
 
-      const thread = await db
-        .selectFrom('slackMessages')
-        .select(['channelId', 'id', 'text'])
-        .where('id', '=', threadId)
-        .executeTakeFirstOrThrow();
+      const [thread, replies] = await Promise.all([
+        db
+          .selectFrom('slackMessages')
+          .select(['text'])
+          .where('id', '=', threadId)
+          .executeTakeFirstOrThrow(),
 
-      const allMessagesInThread = await db
-        .selectFrom('slackMessages')
-        .select(['channelId', 'id', 'text'])
-        .where((eb) => {
-          return eb.or([
-            eb('id', '=', threadId),
-            eb('threadId', '=', threadId),
-          ]);
-        })
-        .orderBy('createdAt', 'asc')
-        .execute();
+        db
+          .selectFrom('slackMessages')
+          .select(['text'])
+          .where('threadId', '=', threadId)
+          .orderBy('createdAt', 'asc')
+          .execute(),
+      ]);
 
-      // concat all messages in thread into a single string
-      const formattedReplies = allMessagesInThread
+      const formattedReplies = replies
         .map((message) => message.text)
         .join('\n');
-
-      console.log(match.score, allMessagesInThread.length, thread.text);
 
       return {
         question: thread.text!,
@@ -59,20 +68,7 @@ export async function askQuestionToSlack(question: string) {
     })
   );
 
-  const userPrompt = dedent`
-    Given the following threads that we found in our Slack workspace, answer
-    the user's question. If you can't find the answer in the threads or are not
-    confident, please respond that you couldn't find the answer.
-
-    If you found something in a thread, be sure to include a reference by doing
-    something like <threadId>.
-
-    Question:
-    ${question}
-
-    Threads:
-    ${JSON.stringify(messages, null, 2)}
-  `;
+  const stringifiedMessages = JSON.stringify(messages, null, 2);
 
   const completionResult = await getChatCompletion({
     maxTokens: 4096,
@@ -82,20 +78,42 @@ export async function askQuestionToSlack(question: string) {
         content: [
           {
             type: 'text',
-            text: userPrompt,
+            text: dedent`
+              The question to answer:
+              ${question}
+
+              The Slack threads to use are:
+              ${stringifiedMessages}
+            `,
           },
         ],
       },
     ],
-    // system: systemPrompt,
+    system: [
+      {
+        cache: true,
+        type: 'text',
+        text: dedent`
+          You are a helpful assistant that can answer questions by utilizing
+          knowledge found in Slack threads. You will be given a question and a
+          set of threads that may contain the answer to the question.
+
+          Do your best to answer the question based on the threads. If you can't
+          find the answer in the threads or are not confident, please respond
+          that you don't know the answer. Don't mention that you are using the
+          threads to answer the question.
+
+          If you find something helpful in a thread, be sure to include a
+          reference by doing something like <THREAD_ID>.
+        `,
+      },
+    ],
     temperature: 0,
   });
 
-  console.log(completionResult);
-
   if (!completionResult.ok) {
     return fail({
-      code: 500,
+      code: completionResult.code,
       error: completionResult.error,
     });
   }
