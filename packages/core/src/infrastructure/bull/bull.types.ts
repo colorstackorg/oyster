@@ -328,10 +328,12 @@ export const NotificationBullJob = z.discriminatedUnion('name', [
       z.object({
         channel: z.string().trim().min(1),
         message: z.string().trim().min(1),
+        threadId: z.string().trim().min(1).optional(),
         workspace: z.literal('regular'),
       }),
       z.object({
         message: z.string().trim().min(1),
+        threadId: z.string().trim().min(1).optional(),
         workspace: z.literal('internal'),
       }),
     ]),
@@ -402,6 +404,15 @@ export const SlackBullJob = z.discriminatedUnion('name', [
     data: SlackChannel.pick({
       id: true,
     }),
+  }),
+  z.object({
+    name: z.literal('slack.chatbot.message'),
+    data: SlackMessage.pick({
+      channelId: true,
+      id: true,
+      text: true,
+      threadId: true,
+    }).required({ text: true }),
   }),
   z.object({
     name: z.literal('slack.deactivate'),

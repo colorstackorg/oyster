@@ -12,18 +12,16 @@ const pinecone = new Pinecone({
 
 // Types/Constants
 
-type SlackMessageMetadata = {
-  channelId: string;
-  id: string;
-  sentAt: string; // Date
-  threadId?: string;
+type PineconeMetadata = {
+  'slack-messages': {
+    channelId: string;
+    id: string;
+    sentAt: string; // Date
+    threadId?: string;
+  };
 };
 
-const PineconeIndex = {
-  'slack-messages': pinecone.index<SlackMessageMetadata>('slack-messages'),
-} as const;
-
-type PineconeIndexName = keyof typeof PineconeIndex;
+type PineconeIndexName = keyof PineconeMetadata;
 
 /**
  * Gets a Pinecone index by name.
@@ -36,6 +34,6 @@ type PineconeIndexName = keyof typeof PineconeIndex;
  *
  * @see https://docs.pinecone.io/guides/indexes/understanding-indexes
  */
-export function getPineconeIndex(name: PineconeIndexName) {
-  return PineconeIndex[name];
+export function getPineconeIndex<T extends PineconeIndexName>(name: T) {
+  return pinecone.index<PineconeMetadata[T]>(name);
 }

@@ -89,7 +89,7 @@ export async function createEmbedding(
 
   const embedding = json.data[0].embedding;
 
-  return embedding;
+  return success(embedding);
 }
 
 // "Get Chat Completion"
