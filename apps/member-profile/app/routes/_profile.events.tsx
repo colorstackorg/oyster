@@ -1,9 +1,12 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
 
+import {
+  countPastEvents,
+  countUpcomingEvents,
+} from '@oyster/core/member-profile/server';
 import { Text } from '@oyster/ui';
 
-import { countPastEvents, countUpcomingEvents } from '@/member-profile.server';
 import { NavigationItem } from '@/shared/components/navigation';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';

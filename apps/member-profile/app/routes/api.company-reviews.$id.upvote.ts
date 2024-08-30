@@ -1,6 +1,6 @@
 import { type ActionFunctionArgs, json } from '@remix-run/node';
 
-import { upvoteCompanyReview } from '@oyster/core/employment.server';
+import { upvoteCompanyReview } from '@oyster/core/employment/server';
 
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 

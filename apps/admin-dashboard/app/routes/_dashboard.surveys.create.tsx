@@ -11,6 +11,8 @@ import {
 } from '@remix-run/react';
 import { sql } from 'kysely';
 
+import { createSurvey, listEvents } from '@oyster/core/admin-dashboard/server';
+import { CreateSurveyInput } from '@oyster/core/admin-dashboard/ui';
 import {
   Button,
   Form,
@@ -22,8 +24,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { createSurvey, listEvents } from '@/admin-dashboard.server';
-import { CreateSurveyInput } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import {
   commitSession,

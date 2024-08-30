@@ -2,9 +2,9 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import QRCode from 'qrcode';
 
+import { getEvent } from '@oyster/core/admin-dashboard/server';
 import { Modal } from '@oyster/ui';
 
-import { getEvent } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';

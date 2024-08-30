@@ -4,7 +4,8 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 
-import { listWorkExperiences } from '@/member-profile.server';
+import { listWorkExperiences } from '@oyster/core/member-profile/server';
+
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {

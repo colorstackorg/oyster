@@ -15,6 +15,7 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
+import { importSurveyResponses } from '@oyster/core/admin-dashboard/server';
 import { db } from '@oyster/db';
 import {
   Button,
@@ -25,7 +26,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { importSurveyResponses } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
