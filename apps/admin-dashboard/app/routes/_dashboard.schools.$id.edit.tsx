@@ -11,14 +11,14 @@ import {
 } from '@remix-run/react';
 
 import { getSchool, updateSchool } from '@oyster/core/education';
-import { UpdateSchoolInput } from '@oyster/core/education.types';
+import { UpdateSchoolInput } from '@oyster/core/education/types';
 import {
   SchoolCityField,
   SchoolNameField,
   SchoolStateField,
   SchoolTagsField,
   SchoolZipField,
-} from '@oyster/core/education.ui';
+} from '@oyster/core/education/ui';
 import { Button, getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';

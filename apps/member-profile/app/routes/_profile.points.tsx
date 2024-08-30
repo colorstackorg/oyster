@@ -22,7 +22,7 @@ import {
   getTotalPoints,
   listActivities,
 } from '@oyster/core/gamification';
-import { type CompletedActivity } from '@oyster/core/gamification.types';
+import { type CompletedActivity } from '@oyster/core/gamification/types';
 import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
 import {

@@ -87,6 +87,7 @@ async function getCompanyReviewsMessage(): Promise<string | null> {
     .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
     .select([
       'companies.name as companyName',
+      'companyReviews.anonymous',
       'companyReviews.id',
       'companyReviews.rating',
       'students.slackId as posterSlackId',
@@ -101,15 +102,22 @@ async function getCompanyReviewsMessage(): Promise<string | null> {
   }
 
   const items = companyReviews
-    .map(({ companyId, companyName, posterSlackId, rating }) => {
+    .map(({ anonymous, companyId, companyName, posterSlackId, rating }) => {
       const url = new URL('/companies/' + companyId, ENV.STUDENT_PROFILE_URL);
 
-      return `• <${url}|*${companyName}*> (${rating}/10) by <@${posterSlackId}>`;
+      return anonymous
+        ? `• <${url}|*${companyName}*> (${rating}/10) by Anonymous (🫣)`
+        : `• <${url}|*${companyName}*> (${rating}/10) by <@${posterSlackId}>`;
     })
     .join('\n');
 
+  const title =
+    items.length === 1
+      ? 'Check out this company review posted yesterday! 💼'
+      : 'Check out these company reviews posted yesterday! 💼';
+
   return dedent`
-    Check out these company reviews posted yesterday 📝:
+    ${title}
     ${items}
   `;
 }
@@ -131,8 +139,13 @@ async function getMembersMessage(): Promise<string | null> {
 
   url.searchParams.set('joinedDirectoryDate', yesterday.format('YYYY-MM-DD'));
 
+  const title =
+    members.length === 1
+      ? `Say hello to the <${url}|${members.length} member> who joined the Member Directory yesterday! 👋`
+      : `Say hello to the <${url}|${members.length} members> who joined the Member Directory yesterday! 👋`;
+
   return dedent`
-    Say hello to the <${url}|${members.length} members> who joined the Member Directory yesterday! 👋
+    ${title}
   `;
 }
 
@@ -171,8 +184,13 @@ async function getResourcesMessage(): Promise<string | null> {
   // Example: https://app.colorstack.io/resources?date=2024-08-15
   url.searchParams.set('date', yesterday.format('YYYY-MM-DD'));
 
+  const title =
+    items.length === 1
+      ? `Check out this <${url}|resource> posted yesterday! 📚`
+      : `Check out these <${url}|resources> posted yesterday! 📚`;
+
   return dedent`
-    Check out these <${url}|resources> posted yesterday 📚:
+    ${title}
     ${items}
   `;
 }

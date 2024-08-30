@@ -1,10 +1,13 @@
 import { type ActionFunctionArgs, json, redirect } from '@remix-run/node';
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 
+import { sendOneTimeCode } from '@oyster/core/admin-dashboard/server';
+import {
+  OneTimeCodeForm,
+  SendOneTimeCodeInput,
+} from '@oyster/core/admin-dashboard/ui';
 import { Button, Form, getErrors, validateForm } from '@oyster/ui';
 
-import { sendOneTimeCode } from '@/admin-dashboard.server';
-import { OneTimeCodeForm, SendOneTimeCodeInput } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import { oneTimeCodeIdCookie } from '@/shared/cookies.server';
 

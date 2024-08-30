@@ -1,4 +1,4 @@
-import { getQueue, listQueueNames } from '@/admin-dashboard.server';
+import { getQueue, listQueueNames } from '@oyster/core/admin-dashboard/server';
 
 /**
  * Validates a queue name and returns the corresponding queue instance.

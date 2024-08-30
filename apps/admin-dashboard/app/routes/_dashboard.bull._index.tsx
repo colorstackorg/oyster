@@ -1,6 +1,7 @@
 import { type LoaderFunctionArgs, redirect } from '@remix-run/node';
 
-import { listQueueNames } from '@/admin-dashboard.server';
+import { listQueueNames } from '@oyster/core/admin-dashboard/server';
+
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {

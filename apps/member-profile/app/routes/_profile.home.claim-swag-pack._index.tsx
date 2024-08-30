@@ -13,6 +13,12 @@ import {
 } from '@remix-run/react';
 import { Suspense } from 'react';
 
+import {
+  claimSwagPack,
+  getSwagPackInventory,
+  reportException,
+} from '@oyster/core/member-profile/server';
+import { ClaimSwagPackInput } from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
 import {
   Address,
@@ -25,12 +31,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import {
-  claimSwagPack,
-  getSwagPackInventory,
-  reportException,
-} from '@/member-profile.server';
-import { ClaimSwagPackInput } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 

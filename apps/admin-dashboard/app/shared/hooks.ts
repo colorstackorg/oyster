@@ -1,7 +1,7 @@
 import { useFetcher, useMatches } from '@remix-run/react';
 import { z } from 'zod';
 
-import { AdminRole } from '@oyster/core/admins.types';
+import { AdminRole } from '@oyster/core/admins/types';
 import { type ToastProps } from '@oyster/ui';
 
 /**

@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { Edit, Plus, Trash } from 'react-feather';
 import { generatePath } from 'react-router';
 
+import { listFeatureFlags } from '@oyster/core/admin-dashboard/server';
 import {
   Dashboard,
   Dropdown,
@@ -17,7 +18,6 @@ import {
   type TableColumnProps,
 } from '@oyster/ui';
 
-import { listFeatureFlags } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 

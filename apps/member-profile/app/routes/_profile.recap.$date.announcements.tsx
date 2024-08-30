@@ -3,7 +3,7 @@ import { useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { emojify } from 'node-emoji';
 
-import { listSlackMessages } from '@oyster/core/slack.server';
+import { listSlackMessages } from '@oyster/core/slack/server';
 
 import { getDateRange, Recap } from '@/routes/_profile.recap.$date';
 import { SlackMessageCard } from '@/shared/components/slack-message';

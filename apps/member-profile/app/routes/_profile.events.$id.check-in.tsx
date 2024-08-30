@@ -11,7 +11,7 @@ import {
 import { Check } from 'react-feather';
 
 import { checkIntoEvent } from '@oyster/core/events';
-import { getEvent } from '@oyster/core/member-profile.server';
+import { getEvent } from '@oyster/core/member-profile/server';
 import { Button, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
