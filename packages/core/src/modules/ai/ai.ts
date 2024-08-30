@@ -12,7 +12,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
 
 // Instances
 
-// Rate Limiter
+// Generic Rate Limiter(s)
 
 /**
  * @see https://docs.anthropic.com/en/api/rate-limits#rate-limits
@@ -30,6 +30,11 @@ const OPENAI_API_URL = 'https://api.openai.com/v1';
 // Core
 
 // "Create Embedding"
+
+const createEmbeddingRateLimiter = new RateLimiter('openai:embeddings', {
+  rateLimit: 3000,
+  rateLimitWindow: 60,
+});
 
 /**
  * An embedding is a vector representation of a text that can be easily
@@ -54,6 +59,8 @@ type Embedding = number[];
 export async function createEmbedding(
   text: string
 ): Promise<Result<Embedding>> {
+  await createEmbeddingRateLimiter.process();
+
   const response = await fetch(OPENAI_API_URL + '/embeddings', {
     body: JSON.stringify({
       input: text,
