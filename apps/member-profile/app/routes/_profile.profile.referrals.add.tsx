@@ -7,7 +7,7 @@ import {
 import { useActionData } from '@remix-run/react';
 
 import { referFriend, ReferFriendInput } from '@oyster/core/referrals';
-import { ReferFriendForm } from '@oyster/core/referrals.ui';
+import { ReferFriendForm } from '@oyster/core/referrals/ui';
 import { getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';

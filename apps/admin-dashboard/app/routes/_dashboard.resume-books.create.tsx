@@ -8,12 +8,13 @@ import { Form as RemixForm, useActionData, useFetcher } from '@remix-run/react';
 import { useEffect } from 'react';
 
 import { createResumeBook } from '@oyster/core/resumes';
+import { CreateResumeBookInput } from '@oyster/core/resumes/types';
 import {
   ResumeBookEndDateField,
   ResumeBookHiddenField,
   ResumeBookNameField,
   ResumeBookStartDateField,
-} from '@oyster/core/resumes.ui';
+} from '@oyster/core/resumes/ui';
 import {
   Button,
   ComboboxPopover,
@@ -28,7 +29,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { CreateResumeBookInput } from '@/member-profile.ui';
 import { type SearchCompaniesResult } from '@/routes/api.companies.search';
 import { Route } from '@/shared/constants';
 import {

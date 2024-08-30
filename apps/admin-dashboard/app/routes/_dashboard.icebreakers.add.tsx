@@ -6,6 +6,8 @@ import {
 } from '@remix-run/node';
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 
+import { addIcebreakerPrompt } from '@oyster/core/admin-dashboard/server';
+import { AddIcebreakerPromptInput } from '@oyster/core/admin-dashboard/ui';
 import {
   Button,
   Form,
@@ -15,8 +17,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { addIcebreakerPrompt } from '@/admin-dashboard.server';
-import { AddIcebreakerPromptInput } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import {
   commitSession,

@@ -11,6 +11,7 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 
+import { updateMember } from '@oyster/core/member-profile/server';
 import { Student } from '@oyster/types';
 import {
   Button,
@@ -25,7 +26,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { updateMember } from '@/member-profile.server';
 import { JoinDirectoryNextButton } from '@/routes/_profile.directory.join';
 import { CurrentLocationField } from '@/shared/components/profile.general';
 import { Route } from '@/shared/constants';

@@ -11,7 +11,8 @@ import { Edit, Menu, Plus } from 'react-feather';
 import { generatePath } from 'react-router';
 import { match } from 'ts-pattern';
 
-import { SchoolTag } from '@oyster/core/education.types';
+import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
+import { SchoolTag } from '@oyster/core/education/types';
 import { db } from '@oyster/db';
 import {
   Dashboard,
@@ -24,7 +25,6 @@ import {
   useSearchParams,
 } from '@oyster/ui';
 
-import { ListSearchParams } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 

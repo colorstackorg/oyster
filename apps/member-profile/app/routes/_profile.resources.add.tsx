@@ -16,7 +16,7 @@ import {
 
 import { track } from '@oyster/core/mixpanel';
 import { AddResourceInput } from '@oyster/core/resources';
-import { addResource } from '@oyster/core/resources.server';
+import { addResource } from '@oyster/core/resources/server';
 import {
   Button,
   Divider,

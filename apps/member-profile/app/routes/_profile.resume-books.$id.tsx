@@ -21,6 +21,10 @@ import { useState } from 'react';
 import { match } from 'ts-pattern';
 
 import {
+  type DegreeType,
+  FORMATTED_DEGREEE_TYPE,
+} from '@oyster/core/member-profile/ui';
+import {
   getResumeBook,
   getResumeBookSubmission,
   listResumeBookSponsors,
@@ -31,7 +35,7 @@ import {
   RESUME_BOOK_JOB_SEARCH_STATUSES,
   RESUME_BOOK_ROLES,
   SubmitResumeInput,
-} from '@oyster/core/resumes.types';
+} from '@oyster/core/resumes/types';
 import { db } from '@oyster/db';
 import { FORMATTED_RACE, Race, WorkAuthorizationStatus } from '@oyster/types';
 import {
@@ -57,7 +61,6 @@ import {
 } from '@oyster/ui/tooltip';
 import { run } from '@oyster/utils';
 
-import { type DegreeType, FORMATTED_DEGREEE_TYPE } from '@/member-profile.ui';
 import { HometownField } from '@/shared/components/profile.personal';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';

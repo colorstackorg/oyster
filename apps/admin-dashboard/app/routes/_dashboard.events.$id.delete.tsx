@@ -10,10 +10,10 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 
+import { getEvent } from '@oyster/core/admin-dashboard/server';
 import { deleteEvent } from '@oyster/core/events';
 import { Button, Form, getErrors, Modal } from '@oyster/ui';
 
-import { getEvent } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
   commitSession,

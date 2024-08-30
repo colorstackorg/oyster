@@ -18,7 +18,7 @@ import {
   ListCompaniesOrderBy,
   ListCompaniesWhere,
 } from '@oyster/core/employment';
-import { listCompanies } from '@oyster/core/employment.server';
+import { listCompanies } from '@oyster/core/employment/server';
 import { track } from '@oyster/core/mixpanel';
 import {
   cx,

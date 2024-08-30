@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Environment } from '@/member-profile.ui';
+import { Environment } from '@oyster/core/member-profile/ui';
 
 const EnvironmentVariable = z.string().trim().min(1);
 

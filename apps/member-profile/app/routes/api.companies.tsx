@@ -8,7 +8,8 @@ import { z } from 'zod';
 import {
   reportException,
   searchCrunchbaseOrganizations,
-} from '@/member-profile.server';
+} from '@oyster/core/member-profile/server';
+
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const CompaniesSearchParams = z.object({

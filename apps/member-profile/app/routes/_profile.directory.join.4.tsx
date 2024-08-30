@@ -12,6 +12,16 @@ import {
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import {
+  getIcebreakerPrompts,
+  getIcebreakerResponses,
+  joinMemberDirectory,
+  upsertIcebreakerResponses,
+} from '@oyster/core/member-profile/server';
+import {
+  IcebreakerPrompt,
+  IcebreakerResponse,
+} from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
 import {
   Button,
@@ -23,13 +33,6 @@ import {
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import {
-  getIcebreakerPrompts,
-  getIcebreakerResponses,
-  joinMemberDirectory,
-  upsertIcebreakerResponses,
-} from '@/member-profile.server';
-import { IcebreakerPrompt, IcebreakerResponse } from '@/member-profile.ui';
 import {
   JoinDirectoryBackButton,
   JoinDirectoryNextButton,

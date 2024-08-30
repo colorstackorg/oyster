@@ -11,6 +11,7 @@ import dayjs from 'dayjs';
 import { Plus } from 'react-feather';
 
 import { isMemberAdmin } from '@oyster/core/admins';
+import { ListSearchParams } from '@oyster/core/member-profile/ui';
 import { track } from '@oyster/core/mixpanel';
 import { getPresignedURL } from '@oyster/core/object-storage';
 import {
@@ -18,7 +19,7 @@ import {
   ListResourcesWhere,
   type ResourceType,
 } from '@oyster/core/resources';
-import { listResources, listTags } from '@oyster/core/resources.server';
+import { listResources, listTags } from '@oyster/core/resources/server';
 import { ISO8601Date } from '@oyster/types';
 import {
   Dashboard,
@@ -31,7 +32,6 @@ import {
 } from '@oyster/ui';
 import { run } from '@oyster/utils';
 
-import { ListSearchParams } from '@/member-profile.ui';
 import { Resource } from '@/shared/components/resource';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';

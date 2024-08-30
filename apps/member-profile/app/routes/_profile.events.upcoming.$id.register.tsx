@@ -7,10 +7,10 @@ import {
 import { Form as RemixForm, useLoaderData } from '@remix-run/react';
 import { Calendar, Check, ExternalLink } from 'react-feather';
 
+import { getEvent, job } from '@oyster/core/member-profile/server';
 import { db } from '@oyster/db';
 import { Button, getButtonCn, Modal, Text } from '@oyster/ui';
 
-import { getEvent, job } from '@/member-profile.server';
 import { formatEventDate } from '@/shared/components/event';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
