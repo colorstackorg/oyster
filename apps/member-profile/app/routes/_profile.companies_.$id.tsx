@@ -55,6 +55,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     listCompanyReviews({
       memberId: user(session),
       select: [
+        'companyReviews.anonymous',
         'companyReviews.createdAt',
         'companyReviews.id',
         'companyReviews.rating',
@@ -245,6 +246,7 @@ function ReviewsList() {
             return (
               <CompanyReview
                 key={review.id}
+                anonymous={review.anonymous}
                 company={{
                   id: review.companyId || '',
                   image: review.companyImage || '',

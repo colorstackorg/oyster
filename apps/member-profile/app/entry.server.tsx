@@ -12,7 +12,7 @@ import isbot from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
 import { PassThrough } from 'stream';
 
-import { getCookie, iife } from '@oyster/utils';
+import { getCookie, run } from '@oyster/utils';
 
 import { ENV } from '@/shared/constants.server';
 
@@ -21,7 +21,7 @@ import { ENV } from '@/shared/constants.server';
 // and crash the application.
 import '@/shared/constants.server';
 
-iife(() => {
+run(() => {
   dayjs.extend(utc);
   dayjs.extend(relativeTime);
   dayjs.extend(timezone);

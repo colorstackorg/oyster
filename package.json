@@ -22,7 +22,6 @@
     "env:setup": "yarn workspace @oyster/scripts env:setup",
     "lint": "turbo run lint --cache-dir=.turbo",
     "lint:fix": "turbo run lint:fix --cache-dir=.turbo",
-    "prepare": "husky install",
     "prisma:setup": "yarn workspace @oyster/scripts prisma:setup",
     "prisma:studio": "yarn workspace @oyster/db prisma:studio",
     "start": "turbo run start --cache-dir=.turbo",
@@ -30,8 +29,6 @@
     "type-check": "turbo run type-check --cache-dir=.turbo"
   },
   "devDependencies": {
-    "husky": "^8.0.0",
-    "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
     "turbo": "latest",
     "typescript": "^5.4.2"

@@ -51,6 +51,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   }
 
   await editCompanyReview({
+    anonymous: data.anonymous,
     rating: data.rating,
     recommend: data.recommend,
     text: data.text,
