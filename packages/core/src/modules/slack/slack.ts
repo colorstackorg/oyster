@@ -32,7 +32,7 @@ type RespondToBotQuestionInput = {
  *
  * @param input - The question (ie: `text`) to respond to.
  */
-export async function respondToBotQuestion({
+export async function answerChatbotQuestion({
   channelId,
   id,
   text,
@@ -42,7 +42,7 @@ export async function respondToBotQuestion({
     return;
   }
 
-  const answerResult = await askQuestionToSlack(text);
+  const answerResult = await getAnswerFromSlackHistory(text);
 
   if (!answerResult.ok) {
     console.error(answerResult.error);
@@ -78,7 +78,9 @@ export async function respondToBotQuestion({
  * @param question - The question to ask.
  * @returns The answer to the question.
  */
-async function askQuestionToSlack(question: string): Promise<Result<string>> {
+async function getAnswerFromSlackHistory(
+  question: string
+): Promise<Result<string>> {
   const embeddingResult = await createEmbedding(question);
 
   if (!embeddingResult.ok) {

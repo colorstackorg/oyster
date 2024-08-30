@@ -3,7 +3,7 @@ import { match } from 'ts-pattern';
 import { SlackBullJob } from '@/infrastructure/bull/bull.types';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { onSlackUserInvited } from '@/modules/slack/events/slack-user-invited';
-import { respondToBotQuestion } from '@/modules/slack/slack';
+import { answerChatbotQuestion } from '@/modules/slack/slack';
 import { updateBirthdatesFromSlack } from '@/modules/slack/use-cases/update-birthdates-from-slack';
 import { onSlackMessageAdded } from './events/slack-message-added';
 import { onSlackProfilePictureChanged } from './events/slack-profile-picture-changed';
@@ -45,7 +45,7 @@ export const slackWorker = registerWorker(
         return unarchiveSlackChannel(data);
       })
       .with({ name: 'slack.chatbot.message' }, async ({ data }) => {
-        return respondToBotQuestion(data);
+        return answerChatbotQuestion(data);
       })
       .with({ name: 'slack.deactivate' }, async ({ data }) => {
         return deactivateSlackUser(data);
