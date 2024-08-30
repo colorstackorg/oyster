@@ -76,7 +76,6 @@
     "mixpanel": "^0.18.0",
     "nanoid": "^3.0.0",
     "nodemailer": "^6.9.13",
-    "openai": "^4.56.1",
     "pdfjs-dist": "^4.5.136",
     "postmark": "^3.0.15",
     "ua-parser-js": "^1.0.36",

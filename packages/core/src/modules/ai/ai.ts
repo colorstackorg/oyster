@@ -8,6 +8,9 @@ import { RateLimiter } from '@/shared/utils/rate-limiter';
 // Environment Variables
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY as string;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
+
+// Instances
 
 // Rate Limiter
 
@@ -19,7 +22,70 @@ const anthropicRateLimiter = new RateLimiter('anthropic:requests', {
   rateLimitWindow: 60,
 });
 
+// Constants
+
+const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1';
+const OPENAI_API_URL = 'https://api.openai.com/v1';
+
 // Core
+
+// "Create Embedding"
+
+/**
+ * An embedding is a vector representation of a text that can be easily
+ * consumed by ML models and algorithms. It can be used to represent the
+ * semantic meaning of the text.
+ */
+type Embedding = number[];
+
+/**
+ * Creates an embedding for a given text using OpenAI.
+ *
+ * By default, we use the `text-embedding-3-small` model, which outputs vectors
+ * with 1536 dimensions.
+ *
+ * @param text - The text to create an embedding for.
+ * @returns The embedding for the text.
+ *
+ * @see https://platform.openai.com/docs/api-reference/embeddings/create
+ * @see https://platform.openai.com/docs/guides/embeddings
+ * @see https://platform.openai.com/docs/models/embeddings
+ */
+export async function createEmbedding(
+  text: string
+): Promise<Result<Embedding>> {
+  const response = await fetch(OPENAI_API_URL + '/embeddings', {
+    body: JSON.stringify({
+      input: text,
+      model: 'text-embedding-3-small',
+    }),
+    headers: {
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+  });
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    const error = new ColorStackError()
+      .withMessage('Failed to create embedding with OpenAI.')
+      .withContext({ json, status: response.status })
+      .report();
+
+    return fail({
+      code: response.status,
+      error: error.message,
+    });
+  }
+
+  const embedding = json.data[0].embedding;
+
+  return embedding;
+}
+
+// "Get Chat Completion"
 
 type ContentBlock =
   | {
@@ -95,7 +161,7 @@ export async function getChatCompletion({
 }: GetChatCompletionInput): Promise<Result<string>> {
   await anthropicRateLimiter.process();
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await fetch(ANTHROPIC_API_URL + '/messages', {
     body: JSON.stringify({
       messages,
       model: 'claude-3-5-sonnet-20240620',
@@ -104,13 +170,12 @@ export async function getChatCompletion({
       temperature,
     }),
     headers: {
-      // This allows us to use up to 8192 tokens for a single completion.
-      'anthropic-beta': 'max-tokens-3-5-sonnet-2024-07-15',
+      'anthropic-beta': 'prompt-caching-2024-07-31',
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
       'x-api-key': ANTHROPIC_API_KEY,
     },
-    method: 'post',
+    method: 'POST',
   });
 
   const json = await response.json();

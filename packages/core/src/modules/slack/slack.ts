@@ -1,37 +1,29 @@
-import { Pinecone } from '@pinecone-database/pinecone';
 import dedent from 'dedent';
-import OpenAI from 'openai';
 
 import { db } from '@oyster/db';
 
-import { getChatCompletion } from '@/modules/ai/ai.core';
+import { createEmbedding, getChatCompletion } from '@/modules/ai/ai';
+import { getPineconeIndex } from '@/modules/pinecone';
 import { fail, success } from '@/shared/utils/core.utils';
 
-const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY as string,
-});
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export async function askQuestionToSlack(question: string) {
-  const response = await openai.embeddings.create({
-    input: question,
-    model: 'text-embedding-3-small',
-    encoding_format: 'float',
-  });
+  const embeddingResult = await createEmbedding(question);
 
-  const embedding = response.data[0].embedding;
+  if (!embeddingResult.ok) {
+    return fail({
+      code: 500,
+      error: embeddingResult.error,
+    });
+  }
 
-  const queryResponse = await pinecone.index('slack-messages').query({
+  const { matches } = await getPineconeIndex('slack-messages').query({
     includeMetadata: true,
     topK: 3,
-    vector: embedding,
+    vector: embeddingResult.data,
   });
 
   const messages = await Promise.all(
-    queryResponse.matches.map(async (match) => {
+    matches.map(async (match) => {
       const threadId = (match.metadata?.threadId || match.id) as string;
 
       const thread = await db
