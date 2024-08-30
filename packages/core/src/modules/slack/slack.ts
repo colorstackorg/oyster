@@ -25,6 +25,13 @@ type RespondToBotQuestionInput = {
   threadId?: string;
 };
 
+/**
+ * Answers the question asked by the user in its channel w/ the ColorStack bot.
+ * The uses the underlying `askQuestionToSlack` function to answer the question,
+ * and then sends the answer in the thread where the question was asked.
+ *
+ * @param input - The question (ie: `text`) to respond to.
+ */
 export async function respondToBotQuestion({
   channelId,
   id,
