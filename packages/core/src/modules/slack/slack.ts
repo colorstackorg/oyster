@@ -2,9 +2,61 @@ import dedent from 'dedent';
 
 import { db } from '@oyster/db';
 
+import { job } from '@/infrastructure/bull/use-cases/job';
 import { createEmbedding, getChatCompletion } from '@/modules/ai/ai';
 import { getPineconeIndex } from '@/modules/pinecone';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
+
+type RespondToBotQuestionInput = {
+  /**
+   * The ID of the channel where the message was sent. This should be the
+   * DM channel between the bot and the user.
+   */
+  channelId: string;
+
+  id: string;
+
+  text: string;
+
+  /**
+   * The ID of the thread where the message was sent, if present. Note that
+   * we don't support replying to threads yet.
+   */
+  threadId?: string;
+};
+
+export async function respondToBotQuestion({
+  channelId,
+  id,
+  text,
+  threadId,
+}: RespondToBotQuestionInput) {
+  if (threadId) {
+    return;
+  }
+
+  const answerResult = await askQuestionToSlack(text);
+
+  if (!answerResult.ok) {
+    console.error(answerResult.error);
+
+    return;
+  }
+
+  // Remove all <thread></thread> references and replace them with an actual
+  // Slack message link.
+  const answerWithLinks = answerResult.data.replace(
+    /<thread>(.*?):(.*?)<\/thread>/g,
+    `<https://colorstack-family.slack.com/archives/$1/p$2|thread>`
+  );
+
+  job('notification.slack.send', {
+    channel: channelId,
+    message: answerWithLinks,
+    threadId: id,
+    workspace: 'regular',
+  });
+}
 
 /**
  * Ask a question to the Slack workspace.
@@ -19,9 +71,7 @@ import { fail, type Result, success } from '@/shared/utils/core.utils';
  * @param question - The question to ask.
  * @returns The answer to the question.
  */
-export async function askQuestionToSlack(
-  question: string
-): Promise<Result<string>> {
+async function askQuestionToSlack(question: string): Promise<Result<string>> {
   const embeddingResult = await createEmbedding(question);
 
   if (!embeddingResult.ok) {
@@ -38,34 +88,37 @@ export async function askQuestionToSlack(
   });
 
   const messages = await Promise.all(
-    matches.map(async (match) => {
-      const threadId = match.metadata?.threadId || match.id;
+    matches
+      .filter((match) => match.score && match.score >= 0.5)
+      .map(async (match) => {
+        const threadId = match.metadata?.threadId || match.id;
 
-      const [thread, replies] = await Promise.all([
-        db
-          .selectFrom('slackMessages')
-          .select(['text'])
-          .where('id', '=', threadId)
-          .executeTakeFirstOrThrow(),
+        const [thread, replies] = await Promise.all([
+          db
+            .selectFrom('slackMessages')
+            .select(['channelId', 'text'])
+            .where('id', '=', threadId)
+            .executeTakeFirstOrThrow(),
 
-        db
-          .selectFrom('slackMessages')
-          .select(['text'])
-          .where('threadId', '=', threadId)
-          .orderBy('createdAt', 'asc')
-          .execute(),
-      ]);
+          db
+            .selectFrom('slackMessages')
+            .select(['text'])
+            .where('threadId', '=', threadId)
+            .orderBy('createdAt', 'asc')
+            .execute(),
+        ]);
 
-      const formattedReplies = replies
-        .map((message) => message.text)
-        .join('\n');
+        const formattedReplies = replies
+          .map((message) => message.text)
+          .join('\n');
 
-      return {
-        question: thread.text!,
-        replies: formattedReplies,
-        threadId,
-      };
-    })
+        return {
+          channelId: thread.channelId,
+          question: thread.text!,
+          replies: formattedReplies,
+          threadId,
+        };
+      })
   );
 
   const stringifiedMessages = JSON.stringify(messages, null, 2);
@@ -104,7 +157,9 @@ export async function askQuestionToSlack(
           threads to answer the question.
 
           If you find something helpful in a thread, be sure to include a
-          reference by doing something like <THREAD_ID>.
+          reference by doing <thread>channel_id:thread_id</thread>.
+          These threads will be formatted as links (with the display text
+          "thread"), so be sure to take that into account.
         `,
       },
     ],
