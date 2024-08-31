@@ -8,6 +8,7 @@ import { RateLimiter } from '@/shared/utils/rate-limiter';
 // Environment Variables
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY as string;
+const COHERE_API_KEY = process.env.COHERE_API_KEY as string;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
 
 // Instances
@@ -25,6 +26,7 @@ const anthropicRateLimiter = new RateLimiter('anthropic:requests', {
 // Constants
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1';
+const COHERE_API_URL = 'https://api.cohere.com/v1';
 const OPENAI_API_URL = 'https://api.openai.com/v1';
 
 // Core
@@ -247,4 +249,59 @@ export async function getChatCompletion({
   const message = result.content[0].text;
 
   return success(message);
+}
+
+// "Rerank Documents"
+
+type RerankDocumentsOptions = Partial<{
+  topK: number;
+}>;
+
+type RankedDocument = {
+  index: number;
+  relevance_score: number;
+  text: string;
+};
+
+export async function rerankDocuments(
+  query: string,
+  documents: string[],
+  options: RerankDocumentsOptions
+): Promise<Result<RankedDocument[]>> {
+  options = {
+    topK: 10,
+    ...options,
+  };
+
+  const response = await fetch(COHERE_API_URL + '/rerank', {
+    body: JSON.stringify({
+      documents,
+      query,
+      model: 'rerank-english-v3.0',
+      return_documents: true,
+      top_n: options.topK,
+    }),
+    headers: {
+      Accept: 'application/json',
+      authorization: `Bearer ${COHERE_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+  });
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    const error = new ColorStackError()
+      .withMessage('Failed to rerank documents with Cohere.')
+      .withContext({ ...json, status: response.status })
+      .report();
+
+    return fail({
+      code: response.status,
+      error: error.message,
+    });
+  }
+
+  return success(json.results);
 }

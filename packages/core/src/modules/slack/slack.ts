@@ -3,7 +3,11 @@ import dedent from 'dedent';
 import { db } from '@oyster/db';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { createEmbedding, getChatCompletion } from '@/modules/ai/ai';
+import {
+  createEmbedding,
+  getChatCompletion,
+  rerankDocuments,
+} from '@/modules/ai/ai';
 import { getPineconeIndex } from '@/modules/pinecone';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 
@@ -154,46 +158,85 @@ async function getAnswerFromSlackHistory(
 
   const { matches } = await getPineconeIndex('slack-messages').query({
     includeMetadata: true,
-    topK: 5,
+    topK: 50,
     vector: embeddingResult.data,
   });
 
   const messages = await Promise.all(
-    matches
-      .filter((match) => match.score && match.score >= 0.5)
-      .map(async (match) => {
-        const [thread, replies] = await Promise.all([
-          db
-            .selectFrom('slackMessages')
-            .select(['channelId', 'createdAt', 'text'])
-            .where('id', '=', match.id)
-            .executeTakeFirstOrThrow(),
+    matches.map(async (match) => {
+      const [thread, replies] = await Promise.all([
+        db
+          .selectFrom('slackMessages')
+          .select(['channelId', 'createdAt', 'text'])
+          .where('id', '=', match.id)
+          .executeTakeFirst(),
 
-          db
-            .selectFrom('slackMessages')
-            .select(['text'])
-            .where('threadId', '=', match.id)
-            .orderBy('createdAt', 'asc')
-            .limit(25)
-            .execute(),
-        ]);
+        db
+          .selectFrom('slackMessages')
+          .select(['text'])
+          .where('threadId', '=', match.id)
+          .orderBy('createdAt', 'asc')
+          .limit(50)
+          .execute(),
+      ]);
 
-        const formattedReplies = replies
-          .map((message) => message.text)
-          .join('\n');
+      const formattedReplies = replies
+        .map((message) => message.text)
+        .join('\n');
 
-        return {
-          channelId: thread.channelId,
-          createdAt: thread.createdAt.toISOString(),
-          question: thread.text!,
-          replies: formattedReplies,
-          score: match.score,
-          threadId: match.id,
-        };
-      })
+      return {
+        channelId: thread?.channelId,
+        createdAt: thread?.createdAt.toISOString(),
+        question: thread?.text || '',
+        replies: formattedReplies,
+        threadId: match.id,
+      };
+    })
   );
 
-  const stringifiedMessages = JSON.stringify(messages, null, 2);
+  const documents = messages.map((message) => {
+    return message.createdAt + '\n' + message.question + '\n' + message.replies;
+  });
+
+  const rankingsResult = await rerankDocuments(question, documents, {
+    topK: 5,
+  });
+
+  if (!rankingsResult.ok) {
+    return fail(rankingsResult);
+  }
+
+  const rerankedMessages = rankingsResult.data.map((document) => {
+    const message = messages[document.index];
+
+    const parts = [];
+
+    if (message.createdAt) {
+      parts.push(`[Relevance Score]: ${document.relevance_score}`);
+    }
+
+    if (message.createdAt) {
+      parts.push(`[Timestamp]: ${message.createdAt}`);
+    }
+
+    if (message.channelId) {
+      parts.push(`[Channel ID]: ${message.channelId}`);
+    }
+
+    if (message.threadId) {
+      parts.push(`[Thread ID]: ${message.threadId}`);
+    }
+
+    if (message.question) {
+      parts.push(`[Message]: ${message.question}`);
+    }
+
+    if (message.replies) {
+      parts.push(`[Replies]: ${message.replies}`);
+    }
+
+    return parts.join('\n');
+  });
 
   const completionResult = await getChatCompletion({
     maxTokens: 1000,
@@ -208,7 +251,7 @@ async function getAnswerFromSlackHistory(
               ${question}
 
               The Slack threads to use are:
-              ${stringifiedMessages}
+              ${rerankedMessages.join('\n\n')}
             `,
           },
         ],
@@ -255,6 +298,10 @@ async function getAnswerFromSlackHistory(
             Just get to the answer and link the threads wherever they're used.
           - If the question is not actually a question, respond that you can
             only answer questions, and that's not a question.
+
+          The higher the relevance score, the more confident you should be in
+          your answer (ie: > 0.9). If the relevance score is low (ie: < 0.5),
+          you should be less confident in your answer.
         `,
       },
     ],
