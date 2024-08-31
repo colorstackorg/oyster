@@ -1,10 +1,10 @@
-export default async ({ github, context }) => {
+module.exports = async ({ github, context }) => {
   const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
   const threeWeeksAgo = new Date(Date.now() - 21 * 24 * 60 * 60 * 1000);
   const botLogin = 'github-actions[bot]';
 
-  const MAX_PAGES = 10; // Maximum number of pages to fetch for any paginated request
-  const ITEMS_PER_PAGE = 100; // Maximum items per page allowed by GitHub API
+  const MAX_PAGES = 5; // max number of pages to fetch for any paginated request (can change this to fetch more/less pages)
+  const ITEMS_PER_PAGE = 100; // max number of items per page allowed by GitHub API (max is 100 - DON'T CHANGE THIS)
 
   try {
     const allIssues = await github.paginate(
@@ -95,24 +95,7 @@ export default async ({ github, context }) => {
             comment.body.includes('This issue has been inactive')
         );
 
-        if (lastNonBotActivity < threeWeeksAgo) {
-          console.log(
-            `Unassigning issue #${issue.number} due to 3 weeks of inactivity`
-          );
-          await github.rest.issues.removeAssignees({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: issue.number,
-            assignees: issue.assignees.map((assignee) => assignee.login),
-          });
-
-          await github.rest.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: issue.number,
-            body: "This issue has been inactive for 3 weeks and has been unassigned. Feel free to pick it up again when you're ready to work on it.",
-          });
-        } else if (lastNonBotActivity < twoWeeksAgo && !warningAlreadyGiven) {
+        if (lastNonBotActivity < twoWeeksAgo && !warningAlreadyGiven) {
           console.log(
             `Warning on issue #${issue.number} due to 2 weeks of inactivity`
           );
@@ -121,6 +104,23 @@ export default async ({ github, context }) => {
             repo: context.repo.repo,
             issue_number: issue.number,
             body: 'This issue has been inactive for 2 weeks. Please provide an update or it may be unassigned in 1 week.',
+          });
+        } else if (lastNonBotActivity < threeWeeksAgo) {
+          console.log(
+            `Unassigning issue #${issue.number} due to 3 weeks of inactivity`
+          );
+          await github.rest.issues.removeAssignees({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: issue.number,
+            assignees: issue.assignees.map((a) => a.login),
+          });
+
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: issue.number,
+            body: "This issue has been inactive for 3 weeks and has been unassigned. Feel free to pick it up again when you're ready to work on it.",
           });
         }
       } catch (error) {
