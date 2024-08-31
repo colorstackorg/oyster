@@ -1,6 +1,7 @@
 import { useFetcher } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 
+import { type Company } from '@oyster/core/member-profile/ui';
 import {
   Combobox,
   ComboboxInput,
@@ -10,7 +11,6 @@ import {
   useDelayedValue,
 } from '@oyster/ui';
 
-import { type Company } from '@/member-profile.ui';
 import type { SearchCompaniesResult } from '@/routes/api.companies';
 
 type CompanyComboboxProps = FieldProps<Pick<Company, 'crunchbaseId' | 'name'>>;

@@ -80,7 +80,7 @@ export async function orderSwagPack(input: OrderSwagPackInput) {
       shipping_address1: input.contact.address.line1,
       shipping_address2: input.contact.address.line2,
       shipping_city: input.contact.address.city,
-      shipping_country: 'US',
+      shipping_country: input.contact.address.country,
       shipping_state: input.contact.address.state,
       shipping_zip: input.contact.address.zip,
     },

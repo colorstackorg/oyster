@@ -11,6 +11,11 @@ import {
 } from '@remix-run/react';
 
 import {
+  editFeatureFlag,
+  getFeatureFlag,
+} from '@oyster/core/admin-dashboard/server';
+import { EditFeatureFlagInput } from '@oyster/core/admin-dashboard/ui';
+import {
   Button,
   Checkbox,
   Form,
@@ -21,8 +26,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { editFeatureFlag, getFeatureFlag } from '@/admin-dashboard.server';
-import { EditFeatureFlagInput } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import {
   commitSession,

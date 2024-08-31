@@ -9,19 +9,22 @@ import { sql } from 'kysely';
 import { useState } from 'react';
 import { Edit, Menu, Plus } from 'react-feather';
 import { generatePath } from 'react-router';
+import { match } from 'ts-pattern';
 
+import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
+import { SchoolTag } from '@oyster/core/education/types';
 import { db } from '@oyster/db';
 import {
   Dashboard,
   Dropdown,
   IconButton,
   Pagination,
+  Pill,
   Table,
   type TableColumnProps,
   useSearchParams,
 } from '@oyster/ui';
 
-import { ListSearchParams } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -58,6 +61,7 @@ async function listSchools({ limit, page, search }: ListSearchParams) {
         'addressState',
         'id',
         'name',
+        'tags',
         (eb) => {
           return eb
             .selectFrom('students')
@@ -165,6 +169,36 @@ function SchoolsTable() {
     {
       displayName: '# of Students',
       render: (school) => school.students,
+      size: '120',
+    },
+    {
+      displayName: 'Tag(s)',
+      render: (school) => {
+        if (!school.tags?.length) {
+          return '';
+        }
+
+        return (
+          <ul className="flex gap-2">
+            {school.tags.map((tag) => {
+              return (
+                <li key={tag}>
+                  {match(tag)
+                    .with(SchoolTag.HBCU, () => {
+                      return <Pill color="amber-100">HBCU</Pill>;
+                    })
+                    .with(SchoolTag.HSI, () => {
+                      return <Pill color="blue-100">HSI</Pill>;
+                    })
+                    .otherwise(() => {
+                      return <Pill color="gray-100">{tag}</Pill>;
+                    })}
+                </li>
+              );
+            })}
+          </ul>
+        );
+      },
       size: '120',
     },
   ];

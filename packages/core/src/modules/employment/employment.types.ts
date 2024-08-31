@@ -71,6 +71,7 @@ export const Company = Entity.merge(BaseCompany);
 export type Company = z.infer<typeof Company>;
 
 const CompanyReview = z.object({
+  anonymous: BooleanInput,
   rating: z.coerce.number().int().min(0).max(10),
   recommend: BooleanInput,
   studentId: Student.shape.id,
@@ -189,6 +190,10 @@ export const UploadJobOfferInput = JobOffer.omit({
   updatedAt: true,
 });
 
+export const UpvoteCompanyReviewInput = z.object({
+  memberId: z.string().trim().min(1),
+});
+
 export type AddCompanyReviewInput = z.infer<typeof AddCompanyReviewInput>;
 export type AddWorkExperienceInput = z.infer<typeof AddWorkExperienceInput>;
 export type DeleteWorkExperienceInput = z.infer<
@@ -197,3 +202,4 @@ export type DeleteWorkExperienceInput = z.infer<
 export type EditCompanyReviewInput = z.infer<typeof EditCompanyReviewInput>;
 export type EditWorkExperienceInput = z.infer<typeof EditWorkExperienceInput>;
 export type UploadJobOfferInput = z.infer<typeof UploadJobOfferInput>;
+export type UpvoteCompanyReviewInput = z.infer<typeof UpvoteCompanyReviewInput>;

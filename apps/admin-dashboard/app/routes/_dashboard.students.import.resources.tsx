@@ -17,6 +17,7 @@ import {
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
+import { parseCsv } from '@oyster/core/admin-dashboard/server';
 import { db } from '@oyster/db';
 import { Email, Resource, ResourceUser } from '@oyster/types';
 import {
@@ -32,7 +33,6 @@ import {
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import { parseCsv } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import { findStudentByEmail } from '@/shared/queries/student';
 import {

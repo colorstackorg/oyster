@@ -12,6 +12,7 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
+import { emojify } from 'node-emoji';
 import { Award, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
@@ -21,7 +22,7 @@ import {
   getTotalPoints,
   listActivities,
 } from '@oyster/core/gamification';
-import { type CompletedActivity } from '@oyster/core/gamification.types';
+import { type CompletedActivity } from '@oyster/core/gamification/types';
 import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
 import {
@@ -41,6 +42,7 @@ import {
   EmptyStateContainer,
 } from '@/shared/components/empty-state';
 import { Leaderboard } from '@/shared/components/leaderboard';
+import { SlackMessage } from '@/shared/components/slack-message';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -79,7 +81,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const id = user(session);
 
   const [
-    { completedActivities, totalActivitiesCompleted },
+    { completedActivities: _completedActivities, totalActivitiesCompleted },
     points,
     pointsLeaderboard,
     activities,
@@ -107,6 +109,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     properties: { Page: 'Points' },
     request,
     user: id,
+  });
+
+  const completedActivities = _completedActivities.map((activity) => {
+    if (activity.messageReactedToText) {
+      activity.messageReactedToText = emojify(activity.messageReactedToText);
+    }
+
+    if (activity.threadRepliedToText) {
+      activity.threadRepliedToText = emojify(activity.threadRepliedToText);
+    }
+
+    return activity;
   });
 
   return json({
@@ -595,12 +609,12 @@ function ActivityHistoryItemDescription({
           <div className="flex gap-2">
             <div className="border-r-2 border-r-gray-300" />
 
-            <Text
-              className="line-clamp-5 whitespace-pre-wrap [word-break:break-word]"
+            <SlackMessage
+              className="line-clamp-10 [word-break:break-word]"
               color="gray-500"
             >
               {activity.messageReactedToText}
-            </Text>
+            </SlackMessage>
           </div>
         </div>
       );
@@ -624,12 +638,12 @@ function ActivityHistoryItemDescription({
           <div className="flex gap-2">
             <div className="border-r-2 border-r-gray-300" />
 
-            <Text
-              className="line-clamp-5 whitespace-pre-wrap [word-break:break-word]"
+            <SlackMessage
+              className="line-clamp-10 [word-break:break-word]"
               color="gray-500"
             >
               {activity.threadRepliedToText}
-            </Text>
+            </SlackMessage>
           </div>
         </div>
       );

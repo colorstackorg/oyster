@@ -10,14 +10,21 @@ import {
   Form as RemixForm,
   useLoaderData,
 } from '@remix-run/react';
+import dayjs from 'dayjs';
 import { useState } from 'react';
 import { Filter, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
+import { type z } from 'zod';
 
-import { SchoolCombobox } from '@oyster/core/education.ui';
-import { CityCombobox } from '@oyster/core/location.ui';
+import { SchoolCombobox } from '@oyster/core/education/ui';
+import { CityCombobox } from '@oyster/core/location/ui';
+import { listMembersInDirectory } from '@oyster/core/member-profile/server';
+import {
+  ListMembersInDirectoryWhere,
+  ListSearchParams,
+} from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
-import { type ExtractValue } from '@oyster/types';
+import { type ExtractValue, ISO8601Date } from '@oyster/types';
 import {
   Button,
   Dashboard,
@@ -30,13 +37,8 @@ import {
   Text,
   useSearchParams,
 } from '@oyster/ui';
-import { toTitleCase } from '@oyster/utils';
+import { run, toTitleCase } from '@oyster/utils';
 
-import { listMembersInDirectory } from '@/member-profile.server';
-import {
-  ListMembersInDirectoryWhere,
-  ListSearchParams,
-} from '@/member-profile.ui';
 import { CompanyCombobox } from '@/shared/components/company-combobox';
 import { EthnicityCombobox } from '@/shared/components/ethnicity-combobox';
 import { Route } from '@/shared/constants';
@@ -59,7 +61,11 @@ type DirectoryFilterKey = ExtractValue<typeof DirectoryFilterKey>;
 const DirectorySearchParams = ListSearchParams.pick({
   limit: true,
   page: true,
-}).merge(ListMembersInDirectoryWhere);
+})
+  .merge(ListMembersInDirectoryWhere)
+  .extend({ joinedDirectoryDate: ISO8601Date.optional().catch(undefined) });
+
+type DirectorySearchParams = z.infer<typeof DirectorySearchParams>;
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -74,7 +80,25 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const [filters, { members, totalCount }] = await Promise.all([
     getAppliedFilters(searchParams),
-    listMembersInDirectory({ limit, page, where }),
+    listMembersInDirectory({
+      limit,
+      page,
+      where: {
+        ...where,
+        ...(searchParams.joinedDirectoryDate &&
+          run(() => {
+            const date = dayjs(searchParams.joinedDirectoryDate).tz(
+              'America/Los_Angeles',
+              true
+            );
+
+            return {
+              joinedDirectoryAfter: date.startOf('day').toDate(),
+              joinedDirectoryBefore: date.endOf('day').toDate(),
+            };
+          })),
+      },
+    }),
   ]);
 
   return json({
@@ -89,11 +113,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 async function getAppliedFilters(
   searchParams: Pick<
-    ListMembersInDirectoryWhere,
+    DirectorySearchParams,
     | 'company'
     | 'ethnicity'
     | 'graduationYear'
     | 'hometown'
+    | 'joinedDirectoryDate'
     | 'location'
     | 'school'
   >
@@ -139,14 +164,35 @@ async function getAppliedFilters(
       .exhaustive(),
   ]);
 
-  return {
-    company,
-    ethnicity,
-    graduationYear: searchParams.graduationYear,
-    hometown: searchParams.hometown,
-    location: searchParams.location,
-    school,
-  };
+  const result: Array<{
+    name: string;
+    param: string;
+    value: string | number | null | undefined;
+  }> = [
+    { name: 'Company', param: keys.company, value: company },
+    { name: 'Ethnicity', param: keys.ethnicity, value: ethnicity },
+    {
+      name: 'Graduation Year',
+      param: keys.graduationYear,
+      value: searchParams.graduationYear,
+    },
+    { name: 'Hometown', param: keys.hometown, value: searchParams.hometown },
+    {
+      name: 'Joined Directory On',
+      param: 'joinedDirectoryDate',
+      value: searchParams.joinedDirectoryDate
+        ? dayjs(searchParams.joinedDirectoryDate)
+            .tz('America/Los_Angeles', true)
+            .format('M/D/YY')
+        : undefined,
+    },
+    { name: 'Location', param: keys.location, value: searchParams.location },
+    { name: 'School', param: keys.school, value: school },
+  ].filter((item) => {
+    return !!item.value;
+  });
+
+  return result;
 }
 
 const keys = ListMembersInDirectoryWhere.keyof().enum;
@@ -349,35 +395,33 @@ function AppliedFilterGroup() {
 
   return (
     <ul className="flex flex-wrap items-center gap-2">
-      {Object.entries(filters)
-        .filter(([_, value]) => !!value)
-        .map(([key, value]) => {
-          const url = new URL(_url);
+      {filters.map(({ name, param, value }) => {
+        const url = new URL(_url);
 
-          url.searchParams.delete(key);
+        url.searchParams.delete(param);
 
-          if (key === keys.hometown) {
-            url.searchParams.delete(keys.hometownLatitude);
-            url.searchParams.delete(keys.hometownLongitude);
-          }
+        if (param === keys.hometown) {
+          url.searchParams.delete(keys.hometownLatitude);
+          url.searchParams.delete(keys.hometownLongitude);
+        }
 
-          if (key === keys.location) {
-            url.searchParams.delete(keys.locationLatitude);
-            url.searchParams.delete(keys.locationLongitude);
-          }
+        if (param === keys.location) {
+          url.searchParams.delete(keys.locationLatitude);
+          url.searchParams.delete(keys.locationLongitude);
+        }
 
-          // When the origin is included, it is an absolute URL but we need it
-          // to be relative so that the whole page doesn't refresh.
-          const href = url.href.replace(url.origin, '');
+        // When the origin is included, it is an absolute URL but we need it
+        // to be relative so that the whole page doesn't refresh.
+        const href = url.href.replace(url.origin, '');
 
-          return (
-            <li>
-              <Pill color="pink-100" key={key} onCloseHref={href}>
-                {toTitleCase(key)}: {value}
-              </Pill>
-            </li>
-          );
-        })}
+        return (
+          <li>
+            <Pill color="pink-100" key={param} onCloseHref={href}>
+              {name}: {value}
+            </Pill>
+          </li>
+        );
+      })}
     </ul>
   );
 }

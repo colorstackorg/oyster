@@ -2,16 +2,30 @@ import * as Sentry from '@sentry/node';
 
 import { type ErrorContext, ErrorWithContext } from '@/shared/errors';
 
-export function reportException(error: unknown): void {
-  let context: ErrorContext | undefined = undefined;
+/**
+ * Reports an exception to Sentry and logs the error to the console.
+ *
+ * @param error - The error-like object to report.
+ * @param context - Additional context to report with the error.
+ */
+export function reportException(error: unknown, context?: ErrorContext): void {
+  let extra: ErrorContext | undefined;
 
-  if (error instanceof ErrorWithContext && error.context) {
-    context = error.context;
+  const isErrorWithContext = error instanceof ErrorWithContext;
+
+  if (context || isErrorWithContext) {
+    extra = {
+      ...context,
+      ...(isErrorWithContext && error.context),
+    };
   }
 
-  console.error(error);
-
   Sentry.captureException(error, {
-    extra: context,
+    extra,
+  });
+
+  console.error({
+    error,
+    ...(extra && { extra }),
   });
 }

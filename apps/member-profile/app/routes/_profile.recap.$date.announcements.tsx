@@ -3,10 +3,10 @@ import { useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { emojify } from 'node-emoji';
 
-import { listSlackMessages } from '@oyster/core/slack.server';
+import { listSlackMessages } from '@oyster/core/slack/server';
 
 import { getDateRange, Recap } from '@/routes/_profile.recap.$date';
-import { SlackMessage } from '@/shared/components/slack-message';
+import { SlackMessageCard } from '@/shared/components/slack-message';
 import { ENV } from '@/shared/constants.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -54,7 +54,7 @@ export default function RecapAnnouncements() {
       <ul className="flex flex-col gap-4">
         {announcements.map((announcement) => {
           return (
-            <SlackMessage
+            <SlackMessageCard
               key={announcement.id}
               channelId={announcement.channelId}
               messageId={announcement.id}

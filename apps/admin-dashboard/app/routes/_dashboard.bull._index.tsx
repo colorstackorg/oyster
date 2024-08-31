@@ -1,4 +1,6 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs, redirect } from '@remix-run/node';
+
+import { listQueueNames } from '@oyster/core/admin-dashboard/server';
 
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -7,9 +9,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     minimumRole: 'owner',
   });
 
-  return json({});
-}
+  const queues = await listQueueNames();
 
-export default function BullPage() {
-  return null;
+  return redirect(`/bull/${queues[0]}`);
 }

@@ -7,7 +7,7 @@ import {
 import { useActionData, useSearchParams } from '@remix-run/react';
 
 import { AddCompanyReviewInput } from '@oyster/core/employment';
-import { addCompanyReview } from '@oyster/core/employment.server';
+import { addCompanyReview } from '@oyster/core/employment/server';
 import { getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { AddReviewForm } from '@/shared/components/review-form';
@@ -39,6 +39,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   await addCompanyReview({
+    anonymous: data.anonymous,
     rating: data.rating,
     recommend: data.recommend,
     studentId: data.studentId,

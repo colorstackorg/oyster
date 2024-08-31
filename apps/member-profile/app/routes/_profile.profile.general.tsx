@@ -10,6 +10,7 @@ import {
 } from '@remix-run/react';
 import { type z } from 'zod';
 
+import { updateMember } from '@oyster/core/member-profile/server';
 import { track } from '@oyster/core/mixpanel';
 import { Student } from '@oyster/types';
 import {
@@ -20,7 +21,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { updateMember } from '@/member-profile.server';
 import {
   ProfileHeader,
   ProfileSection,

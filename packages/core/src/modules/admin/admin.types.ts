@@ -22,4 +22,10 @@ export const AddAdminInput = z.object({
   role: z.nativeEnum(AdminRole),
 });
 
+export const RemoveAdminInput = z.object({
+  actor: z.string().trim().min(1),
+  id: z.string().trim().min(1),
+});
+
 export type AddAdminInput = z.infer<typeof AddAdminInput>;
+export type RemoveAdminInput = z.infer<typeof RemoveAdminInput>;

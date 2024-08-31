@@ -7,13 +7,13 @@ import {
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 
 import { createSchool } from '@oyster/core/education';
-import { CreateSchoolInput } from '@oyster/core/education.types';
+import { CreateSchoolInput } from '@oyster/core/education/types';
 import {
   SchoolCityField,
   SchoolNameField,
   SchoolStateField,
   SchoolZipField,
-} from '@oyster/core/education.ui';
+} from '@oyster/core/education/ui';
 import { Button, getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';

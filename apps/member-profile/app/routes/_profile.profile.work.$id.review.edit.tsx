@@ -10,7 +10,7 @@ import { EditCompanyReviewInput } from '@oyster/core/employment';
 import {
   editCompanyReview,
   getCompanyReview,
-} from '@oyster/core/employment.server';
+} from '@oyster/core/employment/server';
 import { getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { EditReviewForm } from '@/shared/components/review-form';
@@ -51,6 +51,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   }
 
   await editCompanyReview({
+    anonymous: data.anonymous,
     rating: data.rating,
     recommend: data.recommend,
     text: data.text,

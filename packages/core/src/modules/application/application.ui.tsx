@@ -22,7 +22,7 @@ import {
   Textarea,
   type TextProps,
 } from '@oyster/ui';
-import { iife, toTitleCase } from '@oyster/utils';
+import { run, toTitleCase } from '@oyster/utils';
 
 import {
   type EducationLevel,
@@ -241,7 +241,7 @@ Application.GoalsField = function GoalsField({
   );
 };
 
-const GRADUATION_YEARS = iife(() => {
+const GRADUATION_YEARS = run(() => {
   const currentYear = new Date().getFullYear();
 
   const years: number[] = [];

@@ -6,6 +6,8 @@ import {
 } from '@remix-run/node';
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 
+import { createFeatureFlag } from '@oyster/core/admin-dashboard/server';
+import { CreateFeatureFlagInput } from '@oyster/core/admin-dashboard/ui';
 import {
   Button,
   Checkbox,
@@ -17,8 +19,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { createFeatureFlag } from '@/admin-dashboard.server';
-import { CreateFeatureFlagInput } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import {
   commitSession,

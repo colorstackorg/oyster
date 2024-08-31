@@ -11,17 +11,17 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 
-import { getResumeBook, updateResumeBook } from '@oyster/core/resume-books';
+import { getResumeBook, updateResumeBook } from '@oyster/core/resumes';
 import {
   RESUME_BOOK_TIMEZONE,
   UpdateResumeBookInput,
-} from '@oyster/core/resume-books.types';
+} from '@oyster/core/resumes/types';
 import {
   ResumeBookEndDateField,
   ResumeBookHiddenField,
   ResumeBookNameField,
   ResumeBookStartDateField,
-} from '@oyster/core/resume-books.ui';
+} from '@oyster/core/resumes/ui';
 import { Button, getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';

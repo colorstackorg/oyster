@@ -4,7 +4,7 @@ import { match } from 'ts-pattern';
 
 import { type DB, db } from '@oyster/db';
 import { type Application, OtherDemographic } from '@oyster/types';
-import { id, iife } from '@oyster/utils';
+import { id, run } from '@oyster/utils';
 
 import {
   ApplicationBullJob,
@@ -440,7 +440,7 @@ function queueRejectionEmail({
     },
     {
       delay: automated
-        ? iife(() => {
+        ? run(() => {
             const now = dayjs().tz('America/Los_Angeles');
             const tomorrowMorning = now.add(1, 'day').hour(9);
             const delay = tomorrowMorning.diff(now);

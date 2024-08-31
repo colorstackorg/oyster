@@ -11,13 +11,14 @@ import {
 } from '@remix-run/react';
 
 import { getSchool, updateSchool } from '@oyster/core/education';
-import { UpdateSchoolInput } from '@oyster/core/education.types';
+import { UpdateSchoolInput } from '@oyster/core/education/types';
 import {
   SchoolCityField,
   SchoolNameField,
   SchoolStateField,
+  SchoolTagsField,
   SchoolZipField,
-} from '@oyster/core/education.ui';
+} from '@oyster/core/education/ui';
 import { Button, getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
@@ -31,7 +32,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
   const school = await getSchool({
-    select: ['name', 'addressCity', 'addressState', 'addressZip'],
+    select: ['name', 'addressCity', 'addressState', 'addressZip', 'tags'],
     where: { id: params.id as string },
   });
 
@@ -47,8 +48,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
+  const form = await request.formData();
+
   const { data, errors, ok } = await validateForm(
-    request,
+    {
+      ...Object.fromEntries(form),
+      tags: form.getAll('tags').filter(Boolean),
+    },
     UpdateSchoolInput.omit({ id: true })
   );
 
@@ -62,6 +68,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     addressZip: data.addressZip,
     id: params.id as string,
     name: data.name,
+    tags: data.tags,
   });
 
   toast(session, {
@@ -88,6 +95,7 @@ export default function EditSchoolModal() {
 
       <RemixForm className="form" method="post">
         <SchoolNameField defaultValue={school.name} error={errors.name} />
+        <SchoolTagsField defaultValue={school.tags?.[0]} error={errors.tags} />
         <SchoolCityField
           defaultValue={school.addressCity}
           error={errors.addressCity}
