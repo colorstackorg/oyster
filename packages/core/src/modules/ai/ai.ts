@@ -205,6 +205,8 @@ export async function getChatCompletion({
 
   const json = await response.json();
 
+  console.log(json.usage);
+
   if (!response.ok) {
     const message = match(response.status)
       .with(429, () => {

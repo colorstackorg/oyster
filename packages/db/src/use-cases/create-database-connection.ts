@@ -4,8 +4,8 @@ import pg from 'pg';
 import { DATABASE_URL } from '../shared/env';
 import { type DB } from '../shared/types';
 
-export function createDatabaseConnection() {
-  if (!DATABASE_URL) {
+export function createDatabaseConnection(url: string = DATABASE_URL) {
+  if (!url) {
     throw new Error(
       '"DATABASE_URL" must be set to establish a connection to the database.'
     );
@@ -13,7 +13,7 @@ export function createDatabaseConnection() {
 
   const dialect = new PostgresDialect({
     pool: new pg.Pool({
-      connectionString: DATABASE_URL,
+      connectionString: url,
     }),
   });
 

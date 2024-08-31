@@ -83,6 +83,10 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
       });
     })
     .with({ type: 'message', channel_type: 'im' }, (event) => {
+      if (event.app_id) {
+        return;
+      }
+
       job('slack.chatbot.message', {
         channelId: event.channel!,
         id: event.ts!,
