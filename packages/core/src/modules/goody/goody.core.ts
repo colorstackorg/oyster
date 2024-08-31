@@ -73,7 +73,7 @@ export async function createGoodyOrder(id: string) {
 
     job('notification.slack.send', {
       channel: student.slackId || '',
-      message: `Thank you for your engagement in ColorStack's Fam Friday! You have been awared a Gift Card 🎉`,
+      message: `Thank you for your engagement in ColorStack's Fam Friday! You have been awarded a Gift Card 🎉`,
       workspace: 'regular',
     });
   }

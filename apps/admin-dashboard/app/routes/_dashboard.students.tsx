@@ -312,7 +312,7 @@ function StudentDropdown({
             </Dropdown.Item>
             <Dropdown.Item>
               <Link to={generatePath(Route['/students/:id/gift'], { id })}>
-                <Gift /> Send Gift
+                <Gift /> Send Goody Gift
               </Link>
             </Dropdown.Item>
 
