@@ -162,19 +162,17 @@ async function getAnswerFromSlackHistory(
     matches
       .filter((match) => match.score && match.score >= 0.5)
       .map(async (match) => {
-        const threadId = match.metadata?.threadId || match.id;
-
         const [thread, replies] = await Promise.all([
           db
             .selectFrom('slackMessages')
             .select(['channelId', 'createdAt', 'text'])
-            .where('id', '=', threadId)
+            .where('id', '=', match.id)
             .executeTakeFirstOrThrow(),
 
           db
             .selectFrom('slackMessages')
             .select(['text'])
-            .where('threadId', '=', threadId)
+            .where('threadId', '=', match.id)
             .orderBy('createdAt', 'asc')
             .limit(25)
             .execute(),
@@ -190,7 +188,7 @@ async function getAnswerFromSlackHistory(
           question: thread.text!,
           replies: formattedReplies,
           score: match.score,
-          threadId,
+          threadId: match.id,
         };
       })
   );
@@ -250,7 +248,9 @@ async function getAnswerFromSlackHistory(
           - Be kind.
           - Be concise.
           - Use numbers or bullet points to organize thoughts where appropriate.
-          - Reference numbers should always be after the terminal punctuation.
+          - Reference numbers should always be after the terminal punctuation
+            with a space in between. If you're using it in a bullet/number list,
+            put the reference number directly after the point.
           - Never use phrases like "Based on the provided Slack threads...".
             Just get to the answer and link the threads wherever they're used.
           - If the question is not actually a question, respond that you can
