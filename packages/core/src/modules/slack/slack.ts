@@ -92,6 +92,12 @@ export async function answerChatbotQuestion({
   // TODO: Delete the loading message after the answer is sent.
 }
 
+/**
+ * Determines if the given text is a question.
+ *
+ * @param question - The text to determine if it's a question.
+ * @returns Whether the text is a question.
+ */
 async function isQuestion(question: string): Promise<Result<boolean>> {
   const result = await getChatCompletion({
     maxTokens: 5,
