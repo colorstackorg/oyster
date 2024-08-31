@@ -225,13 +225,13 @@ export async function getChatCompletion({
     const message = match(response.status)
       .with(429, () => {
         return (
-          'We have reached the rate limit with the Anthropic API. Please try' +
+          'We have reached the rate limit with the Anthropic API. Please try ' +
           'again in 1-2 minutes.'
         );
       })
       .with(529, () => {
         return (
-          'The Anthropic API is temporarily overloaded down. Please try again' +
+          'The Anthropic API is temporarily overloaded down. Please try again ' +
           'in a bit.'
         );
       })
