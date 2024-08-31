@@ -3,7 +3,11 @@ import dedent from 'dedent';
 import { db } from '@oyster/db';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { createEmbedding, getChatCompletion } from '@/modules/ai/ai';
+import {
+  createEmbedding,
+  getChatCompletion,
+  rerankDocuments,
+} from '@/modules/ai/ai';
 import { getPineconeIndex } from '@/modules/pinecone';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 
@@ -146,126 +150,143 @@ async function getAnswerFromSlackHistory(
   const embeddingResult = await createEmbedding(question);
 
   if (!embeddingResult.ok) {
-    return fail({
-      code: embeddingResult.code,
-      error: embeddingResult.error,
-    });
+    return fail(embeddingResult);
   }
 
   const { matches } = await getPineconeIndex('slack-messages').query({
     includeMetadata: true,
-    topK: 5,
+    topK: 50,
     vector: embeddingResult.data,
   });
 
   const messages = await Promise.all(
-    matches
-      .filter((match) => match.score && match.score >= 0.5)
-      .map(async (match) => {
-        const [thread, replies] = await Promise.all([
-          db
-            .selectFrom('slackMessages')
-            .select(['channelId', 'createdAt', 'text'])
-            .where('id', '=', match.id)
-            .executeTakeFirstOrThrow(),
+    matches.map(async (match) => {
+      const [thread, replies] = await Promise.all([
+        db
+          .selectFrom('slackMessages')
+          .select(['channelId', 'createdAt', 'text'])
+          .where('id', '=', match.id)
+          .executeTakeFirst(),
 
-          db
-            .selectFrom('slackMessages')
-            .select(['text'])
-            .where('threadId', '=', match.id)
-            .orderBy('createdAt', 'asc')
-            .limit(25)
-            .execute(),
-        ]);
+        db
+          .selectFrom('slackMessages')
+          .select(['text'])
+          .where('threadId', '=', match.id)
+          .orderBy('createdAt', 'asc')
+          .limit(50)
+          .execute(),
+      ]);
 
-        const formattedReplies = replies
-          .map((message) => message.text)
-          .join('\n');
+      const formattedReplies = replies
+        .map((message) => message.text)
+        .join('\n');
 
-        return {
-          channelId: thread.channelId,
-          createdAt: thread.createdAt.toISOString(),
-          question: thread.text!,
-          replies: formattedReplies,
-          score: match.score,
-          threadId: match.id,
-        };
-      })
+      return {
+        channelId: thread?.channelId || '',
+        createdAt: thread?.createdAt.toISOString() || '',
+        message: thread?.text || '',
+        replies: formattedReplies,
+        threadId: match.id,
+      };
+    })
   );
 
-  const stringifiedMessages = JSON.stringify(messages, null, 2);
+  // This next step is an important one -- we're going to rerank the messages
+  // based on their relevance to the question. This helps us get the most
+  // relevant threads to the LLM. Reranking models are different from
+  // vector search which are optimized for fast retrieval. Reranking models are
+  // more accurate at assessing relevance, but they are slower and more
+  // expensive to compute.
+
+  const documents = messages.map((message) => {
+    return [message.createdAt, message.message, message.replies].join('\n');
+  });
+
+  const rerankingResult = await rerankDocuments(question, documents, {
+    topK: 5,
+  });
+
+  if (!rerankingResult.ok) {
+    return fail(rerankingResult);
+  }
+
+  const rerankedMessages = rerankingResult.data.map((document) => {
+    const message = messages[document.index];
+
+    const parts = [
+      '[Relevance Score]: ' + document.relevance_score,
+      '[Timestamp]: ' + message.createdAt,
+      '[Channel ID]: ' + message.channelId,
+      '[Thread ID]: ' + message.threadId,
+      '[Message]: ' + message.message,
+      '[Replies]: ' + message.replies,
+    ];
+
+    return parts.join('\n');
+  });
+
+  const userPrompt = [
+    `<question>${question}</question>`,
+    `<threads>${rerankedMessages.join('\n\n')}</threads>`,
+  ].join('\n');
+
+  const systemPrompt = dedent`
+    You are a helpful assistant that can answer questions by utilizing
+    knowledge found in Slack threads. You will be given a question and a
+    set of threads that MAY OR MAY NOT contain the answer to the question.
+    If there are no threads given, that means the question was not found
+    in the Slack history.
+
+    Do your best to answer the question based on the threads. If you can't
+    find the answer in the threads or are not confident, please respond
+    that you don't know the answer. If the question is extremeley vague,
+    don't try to answer it using the threads. If you can't answer the
+    question, do NOT mention any threads that you were given.
+
+    If you find something helpful in a thread, be sure to include a
+    reference by doing <thread>channel_id:thread_id:thread_number</thread>,
+    where thread_number is an autoincrementing number starting at 1. The
+    same thread_id should always have the same thread_number. These
+    threads will be formatted as links (with the display text
+    "<thread_number>", so put them AFTER the sentence that uses that
+    reference.
+
+    You should factor in the score AND the date of the thread when
+    answering the question. If a thread is very old, you should be less
+    confident in it's contents, unless you don't think time is super
+    relevant to the answer.
+
+    Other rules for responding:
+    - Be kind.
+    - Be concise.
+    - Use numbers or bullet points to organize thoughts where appropriate.
+    - Reference numbers should always be after the terminal punctuation
+      with a space in between. If you're using it in a bullet/number list,
+      put the reference number directly after the point.
+    - Never use phrases like "Based on the provided Slack threads...".
+      Just get to the answer and link the threads wherever they're used.
+    - If the question is not actually a question, respond that you can
+      only answer questions, and that's not a question.
+
+    The higher the relevance score, the more confident you should be in
+    your answer (ie: > 0.9). If the relevance score is low (ie: < 0.5),
+    you should be less confident in your answer.
+  `;
 
   const completionResult = await getChatCompletion({
     maxTokens: 1000,
     messages: [
       {
         role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: dedent`
-              The question to answer:
-              ${question}
-
-              The Slack threads to use are:
-              ${stringifiedMessages}
-            `,
-          },
-        ],
+        content: [{ type: 'text', text: userPrompt }],
       },
     ],
-    system: [
-      {
-        cache: true,
-        type: 'text',
-        text: dedent`
-          You are a helpful assistant that can answer questions by utilizing
-          knowledge found in Slack threads. You will be given a question and a
-          set of threads that MAY OR MAY NOT contain the answer to the question.
-          If there are no threads given, that means the question was not found
-          in the Slack history.
-
-          Do your best to answer the question based on the threads. If you can't
-          find the answer in the threads or are not confident, please respond
-          that you don't know the answer. If the question is extremeley vague,
-          don't try to answer it using the threads. If you can't answer the
-          question, do NOT mention any threads that you were given.
-
-          If you find something helpful in a thread, be sure to include a
-          reference by doing <thread>channel_id:thread_id:thread_number</thread>,
-          where thread_number is an autoincrementing number starting at 1. The
-          same thread_id should always have the same thread_number. These
-          threads will be formatted as links (with the display text
-          "<thread_number>", so put them AFTER the sentence that uses that
-          reference.
-
-          You should factor in the score AND the date of the thread when
-          answering the question. If a thread is very old, you should be less
-          confident in it's contents, unless you don't think time is super
-          relevant to the answer.
-
-          Other rules for responding:
-          - Be kind.
-          - Be concise.
-          - Use numbers or bullet points to organize thoughts where appropriate.
-          - Reference numbers should always be after the terminal punctuation
-            with a space in between. If you're using it in a bullet/number list,
-            put the reference number directly after the point.
-          - Never use phrases like "Based on the provided Slack threads...".
-            Just get to the answer and link the threads wherever they're used.
-          - If the question is not actually a question, respond that you can
-            only answer questions, and that's not a question.
-        `,
-      },
-    ],
+    system: [{ cache: true, type: 'text', text: systemPrompt }],
     temperature: 0,
   });
 
   if (!completionResult.ok) {
-    return fail({
-      code: completionResult.code,
-      error: completionResult.error,
-    });
+    return fail(completionResult);
   }
 
   return success(completionResult.data);
