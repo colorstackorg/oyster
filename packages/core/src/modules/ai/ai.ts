@@ -224,10 +224,16 @@ export async function getChatCompletion({
   if (!response.ok) {
     const message = match(response.status)
       .with(429, () => {
-        return 'We have reached the rate limit with the Anthropic API. Please try again in 1-2 minutes.';
+        return (
+          'We have reached the rate limit with the Anthropic API. Please try' +
+          'again in 1-2 minutes.'
+        );
       })
       .with(529, () => {
-        return 'The Anthropic API is temporarily overloaded down. Please try again in a bit.';
+        return (
+          'The Anthropic API is temporarily overloaded down. Please try again' +
+          'in a bit.'
+        );
       })
       .otherwise(() => {
         return 'Failed to fetch chat completion from Anthropic.';
@@ -254,22 +260,41 @@ export async function getChatCompletion({
 // "Rerank Documents"
 
 type RerankDocumentsOptions = Partial<{
+  /**
+   * The number of documents to return.
+   *
+   * @default 5
+   */
   topK: number;
 }>;
 
 type RankedDocument = {
   index: number;
   relevance_score: number;
-  text: string;
 };
 
+/**
+ * Reranks a list of documents using the Cohere API + models.
+ *
+ * Uses the `rerank-english-v3.0` model, which has a context length of 4096
+ * tokens.
+ *
+ * @param query - The query (question) to rerank the documents by.
+ * @param documents - The documents to rerank.
+ * @param options - The options to use for the reranking.
+ * @returns The reranked documents.
+ *
+ * @see https://docs.cohere.com/v1/docs/overview
+ * @see https://docs.cohere.com/v1/docs/reranking-best-practices
+ * @see https://docs.cohere.com/v1/docs/rerank-2
+ */
 export async function rerankDocuments(
   query: string,
   documents: string[],
   options: RerankDocumentsOptions
 ): Promise<Result<RankedDocument[]>> {
   options = {
-    topK: 10,
+    topK: 5,
     ...options,
   };
 
@@ -278,7 +303,7 @@ export async function rerankDocuments(
       documents,
       query,
       model: 'rerank-english-v3.0',
-      return_documents: true,
+      return_documents: false,
       top_n: options.topK,
     }),
     headers: {
