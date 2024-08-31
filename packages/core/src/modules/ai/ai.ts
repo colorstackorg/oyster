@@ -33,7 +33,7 @@ const OPENAI_API_URL = 'https://api.openai.com/v1';
 
 const createEmbeddingRateLimiter = new RateLimiter('openai:embeddings', {
   rateLimit: 3000,
-  rateLimitWindow: 60,
+  rateLimitWindow: 60 - 1,
 });
 
 /**
@@ -42,6 +42,14 @@ const createEmbeddingRateLimiter = new RateLimiter('openai:embeddings', {
  * semantic meaning of the text.
  */
 type Embedding = number[];
+
+/**
+ * The maximum length of a text that can be embedded. Typically a token is
+ * roughly ~4 characters, but we'll use 3 to be safe.
+ *
+ * @see https://platform.openai.com/docs/guides/embeddings/embedding-models
+ */
+const MAX_EMBEDDING_LENGTH = 8192 * 3;
 
 /**
  * Creates an embedding for a given text using OpenAI.
@@ -61,6 +69,10 @@ export async function createEmbedding(
 ): Promise<Result<Embedding>> {
   await createEmbeddingRateLimiter.process();
 
+  if (text.length > MAX_EMBEDDING_LENGTH) {
+    text = text.slice(0, MAX_EMBEDDING_LENGTH);
+  }
+
   const response = await fetch(OPENAI_API_URL + '/embeddings', {
     body: JSON.stringify({
       input: text,
@@ -78,7 +90,7 @@ export async function createEmbedding(
   if (!response.ok) {
     const error = new ColorStackError()
       .withMessage('Failed to create embedding with OpenAI.')
-      .withContext({ json, status: response.status })
+      .withContext({ ...json, status: response.status })
       .report();
 
     return fail({
