@@ -15,9 +15,7 @@ const pinecone = new Pinecone({
 type PineconeMetadata = {
   'slack-messages': {
     channelId: string;
-    id: string;
     sentAt: string; // Date
-    threadId?: string;
   };
 };
 
