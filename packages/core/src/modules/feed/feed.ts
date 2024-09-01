@@ -112,7 +112,7 @@ async function getCompanyReviewsMessage(): Promise<string | null> {
     .join('\n');
 
   const title =
-    items.length === 1
+    companyReviews.length === 1
       ? 'Check out this company review posted yesterday! 💼'
       : 'Check out these company reviews posted yesterday! 💼';
 
@@ -185,7 +185,7 @@ async function getResourcesMessage(): Promise<string | null> {
   url.searchParams.set('date', yesterday.format('YYYY-MM-DD'));
 
   const title =
-    items.length === 1
+    resources.length === 1
       ? `Check out this <${url}|resource> posted yesterday! 📚`
       : `Check out these <${url}|resources> posted yesterday! 📚`;
 
