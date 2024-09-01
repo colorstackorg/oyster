@@ -4,7 +4,7 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 
-import { listCompanies } from '@oyster/core/employment.server';
+import { listCompanies } from '@oyster/core/employment/server';
 
 import { ensureUserAuthenticated } from '@/shared/session.server';
 

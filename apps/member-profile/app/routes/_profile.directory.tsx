@@ -16,8 +16,13 @@ import { Filter, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { type z } from 'zod';
 
-import { SchoolCombobox } from '@oyster/core/education.ui';
-import { CityCombobox } from '@oyster/core/location.ui';
+import { SchoolCombobox } from '@oyster/core/education/ui';
+import { CityCombobox } from '@oyster/core/location/ui';
+import { listMembersInDirectory } from '@oyster/core/member-profile/server';
+import {
+  ListMembersInDirectoryWhere,
+  ListSearchParams,
+} from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
 import { type ExtractValue, ISO8601Date } from '@oyster/types';
 import {
@@ -34,11 +39,6 @@ import {
 } from '@oyster/ui';
 import { run, toTitleCase } from '@oyster/utils';
 
-import { listMembersInDirectory } from '@/member-profile.server';
-import {
-  ListMembersInDirectoryWhere,
-  ListSearchParams,
-} from '@/member-profile.ui';
 import { CompanyCombobox } from '@/shared/components/company-combobox';
 import { EthnicityCombobox } from '@/shared/components/ethnicity-combobox';
 import { Route } from '@/shared/constants';

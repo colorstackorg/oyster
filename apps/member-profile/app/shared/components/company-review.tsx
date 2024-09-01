@@ -27,6 +27,7 @@ import { Card } from '@/shared/components/card';
 import { Route } from '@/shared/constants';
 
 type CompanyReviewProps = {
+  anonymous: boolean;
   company?: {
     id: string;
     image: string;
@@ -54,6 +55,7 @@ type CompanyReviewProps = {
 };
 
 export const CompanyReview = ({
+  anonymous,
   company,
   date,
   editable,
@@ -79,11 +81,13 @@ export const CompanyReview = ({
     <Card>
       <header className="flex items-center gap-1">
         <CompanyReviewer
+          anonymous={anonymous}
           reviewerFirstName={reviewerFirstName}
           reviewerLastName={reviewerLastName}
           reviewerId={reviewerId}
           reviewerProfilePicture={reviewerProfilePicture}
         />
+
         <Text color="gray-500" variant="sm">
           &bull;
         </Text>
@@ -173,12 +177,14 @@ export const CompanyReview = ({
 };
 
 function CompanyReviewer({
+  anonymous,
   reviewerFirstName,
   reviewerId,
   reviewerLastName,
   reviewerProfilePicture,
 }: Pick<
   CompanyReviewProps,
+  | 'anonymous'
   | 'reviewerFirstName'
   | 'reviewerLastName'
   | 'reviewerId'
@@ -186,21 +192,31 @@ function CompanyReviewer({
 >) {
   return (
     <div className="flex w-fit items-center gap-2">
-      <ProfilePicture
-        initials={reviewerFirstName![0] + reviewerLastName![0]}
-        size="32"
-        src={reviewerProfilePicture || undefined}
-      />
+      {anonymous ? (
+        <ProfilePicture initials="" size="32" />
+      ) : (
+        <ProfilePicture
+          initials={reviewerFirstName[0] + reviewerLastName[0]}
+          size="32"
+          src={reviewerProfilePicture || undefined}
+        />
+      )}
 
-      <Link
-        className={cx(
-          getTextCn({ color: 'gray-500', variant: 'sm' }),
-          'hover:underline'
-        )}
-        to={generatePath(Route['/directory/:id'], { id: reviewerId })}
-      >
-        {reviewerFirstName} {reviewerLastName}
-      </Link>
+      {anonymous ? (
+        <Text color="gray-500" variant="sm">
+          Anonymous
+        </Text>
+      ) : (
+        <Link
+          className={cx(
+            getTextCn({ color: 'gray-500', variant: 'sm' }),
+            'hover:underline'
+          )}
+          to={generatePath(Route['/directory/:id'], { id: reviewerId })}
+        >
+          {reviewerFirstName} {reviewerLastName}
+        </Link>
+      )}
     </div>
   );
 }

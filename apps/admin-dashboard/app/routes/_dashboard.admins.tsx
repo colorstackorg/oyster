@@ -6,8 +6,8 @@ import {
   getAdmin,
   listAdmins,
 } from '@oyster/core/admins';
-import { type AdminRole } from '@oyster/core/admins.types';
-import { AdminTable } from '@oyster/core/admins.ui';
+import { type AdminRole } from '@oyster/core/admins/types';
+import { AdminTable } from '@oyster/core/admins/ui';
 import { Dashboard } from '@oyster/ui';
 
 import { ensureUserAuthenticated } from '@/shared/session.server';

@@ -1,20 +1,25 @@
+import { isFeatureFlagEnabled } from '@/modules/feature-flag/queries/is-feature-flag-enabled';
 import { internalSlack, slack } from '@/modules/slack/instances';
-import { ENV, IS_PRODUCTION } from '@/shared/env';
+import { ENV } from '@/shared/env';
 
 type SendNotificationInput =
   | {
       channel: string;
       message: string;
+      threadId?: string;
       workspace: 'regular';
     }
   | {
       channel?: string;
       message: string;
+      threadId?: string;
       workspace: 'internal';
     };
 
 export async function sendSlackNotification(input: SendNotificationInput) {
-  if (!IS_PRODUCTION) {
+  const enabled = await isFeatureFlagEnabled('send_slack_messages');
+
+  if (!enabled) {
     return;
   }
 
@@ -25,5 +30,6 @@ export async function sendSlackNotification(input: SendNotificationInput) {
   await client.chat.postMessage({
     channel,
     text: input.message,
+    thread_ts: input.threadId,
   });
 }

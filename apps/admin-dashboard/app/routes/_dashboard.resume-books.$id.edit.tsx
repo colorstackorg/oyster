@@ -15,13 +15,13 @@ import { getResumeBook, updateResumeBook } from '@oyster/core/resumes';
 import {
   RESUME_BOOK_TIMEZONE,
   UpdateResumeBookInput,
-} from '@oyster/core/resumes.types';
+} from '@oyster/core/resumes/types';
 import {
   ResumeBookEndDateField,
   ResumeBookHiddenField,
   ResumeBookNameField,
   ResumeBookStartDateField,
-} from '@oyster/core/resumes.ui';
+} from '@oyster/core/resumes/ui';
 import { Button, getErrors, Modal, validateForm } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';

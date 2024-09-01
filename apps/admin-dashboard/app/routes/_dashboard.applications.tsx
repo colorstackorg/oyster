@@ -16,8 +16,9 @@ import { Edit } from 'react-feather';
 import { generatePath } from 'react-router';
 import { z } from 'zod';
 
+import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
 import { listApplications } from '@oyster/core/applications';
-import { ApplicationStatus } from '@oyster/core/applications.ui';
+import { ApplicationStatus } from '@oyster/core/applications/ui';
 import { Application } from '@oyster/types';
 import {
   type AccentColor,
@@ -34,7 +35,6 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import { ListSearchParams } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';

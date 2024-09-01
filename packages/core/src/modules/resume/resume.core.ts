@@ -10,7 +10,7 @@ import { id, run } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { cache, ONE_WEEK_IN_SECONDS } from '@/infrastructure/redis';
-import { getChatCompletion } from '@/modules/ai/ai.core';
+import { getChatCompletion } from '@/modules/ai/ai';
 import {
   type AirtableField,
   createAirtableRecord,
@@ -556,18 +556,12 @@ export async function reviewResume({
       {
         role: 'user',
         content: [
-          {
-            type: 'text',
-            text: userPrompt,
-          },
-          {
-            type: 'text',
-            text: resumeText,
-          },
+          { type: 'text', text: userPrompt },
+          { type: 'text', text: resumeText },
         ],
       },
     ],
-    system: systemPrompt,
+    system: [{ type: 'text', text: systemPrompt, cache: true }],
     temperature: 0.25,
   });
 

@@ -14,7 +14,7 @@ import {
 } from 'react-feather';
 
 import { getAdmin } from '@oyster/core/admins';
-import { AdminRole } from '@oyster/core/admins.types';
+import { AdminRole } from '@oyster/core/admins/types';
 import { countPendingApplications } from '@oyster/core/applications';
 import { Dashboard, Divider } from '@oyster/ui';
 

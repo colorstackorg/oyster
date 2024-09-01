@@ -8,6 +8,11 @@ import { Form as RemixForm, useActionData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
+import { addWorkExperience } from '@oyster/core/member-profile/server';
+import {
+  AddWorkExperienceInput,
+  WorkForm,
+} from '@oyster/core/member-profile/ui';
 import {
   Address,
   Button,
@@ -17,8 +22,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { addWorkExperience } from '@/member-profile.server';
-import { AddWorkExperienceInput, WorkForm } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import {
   commitSession,

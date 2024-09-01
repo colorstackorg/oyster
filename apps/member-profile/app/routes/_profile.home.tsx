@@ -13,17 +13,17 @@ import {
 } from 'react-feather';
 import { match } from 'ts-pattern';
 
+import {
+  countEventAttendees,
+  countMessagesSent,
+  getActiveStreakLeaderboard,
+} from '@oyster/core/member-profile/server';
 import { getIpAddress, setMixpanelProfile, track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
 import { StudentActiveStatus, Timezone } from '@oyster/types';
 import { Button, cx, Divider, getButtonCn, Text } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import {
-  countEventAttendees,
-  countMessagesSent,
-  getActiveStreakLeaderboard,
-} from '@/member-profile.server';
 import { Card, type CardProps } from '@/shared/components/card';
 import { Leaderboard } from '@/shared/components/leaderboard';
 import { Route } from '@/shared/constants';

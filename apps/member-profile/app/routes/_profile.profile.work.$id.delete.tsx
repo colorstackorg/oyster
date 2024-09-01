@@ -10,12 +10,12 @@ import {
   useNavigate,
 } from '@remix-run/react';
 
-import { Button, Form, Modal } from '@oyster/ui';
-
 import {
   deleteWorkExperience,
   getWorkExperience,
-} from '@/member-profile.server';
+} from '@oyster/core/member-profile/server';
+import { Button, Form, Modal } from '@oyster/ui';
+
 import { Route } from '@/shared/constants';
 import {
   commitSession,

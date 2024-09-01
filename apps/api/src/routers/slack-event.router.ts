@@ -82,6 +82,18 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
         id: event.previous_message.ts,
       });
     })
+    .with({ type: 'message', channel_type: 'im' }, (event) => {
+      if (event.app_id) {
+        return;
+      }
+
+      job('slack.chatbot.message', {
+        channelId: event.channel!,
+        id: event.ts!,
+        text: event.text!,
+        threadId: event.thread_ts,
+      });
+    })
     .with({ type: 'message' }, (event) => {
       job('slack.message.add', {
         channelId: event.channel!,
@@ -133,7 +145,9 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
         });
       }
     })
-    .exhaustive();
+    .otherwise(() => {
+      console.error('Unknown event type!', body.event);
+    });
 
   return res.status(200).json({});
 });

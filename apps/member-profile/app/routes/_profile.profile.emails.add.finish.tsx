@@ -11,6 +11,11 @@ import {
 } from '@remix-run/react';
 import { type z } from 'zod';
 
+import { job } from '@oyster/core/member-profile/server';
+import {
+  OneTimeCode,
+  OneTimeCodePurpose,
+} from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
 import { StudentEmail } from '@oyster/types';
 import {
@@ -22,8 +27,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { job } from '@/member-profile.server';
-import { OneTimeCode, OneTimeCodePurpose } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { addEmailCookie } from '@/shared/cookies.server';
 import {
