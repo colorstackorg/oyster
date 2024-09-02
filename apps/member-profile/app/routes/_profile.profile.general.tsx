@@ -182,8 +182,7 @@ export default function UpdateGeneralInformationSection() {
           error={errors.phoneNumber}
           label="Phone Number"
           name={keys.phoneNumber}
-          placeholder="1234567890"
-          type="number"
+          placeholder="5551234567"
         />
 
         <Button.Group>

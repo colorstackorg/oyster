@@ -71,7 +71,7 @@ Form.Field = function FormField({
 
 type InputFieldProps = FieldProps<string> &
   Pick<FormFieldProps, 'description' | 'label' | 'required'> &
-  Pick<InputProps, 'disabled' | 'placeholder' | 'type'>;
+  Pick<InputProps, 'disabled' | 'placeholder'>;
 
 export function InputField({
   defaultValue,
@@ -82,7 +82,6 @@ export function InputField({
   name,
   placeholder,
   required,
-  type = 'text',
 }: InputFieldProps) {
   return (
     <Form.Field
@@ -99,7 +98,6 @@ export function InputField({
         name={name}
         placeholder={placeholder}
         required={required}
-        type={type}
       />
     </Form.Field>
   );
