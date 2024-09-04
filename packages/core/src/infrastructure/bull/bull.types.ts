@@ -412,6 +412,7 @@ export const SlackBullJob = z.discriminatedUnion('name', [
       id: true,
       text: true,
       threadId: true,
+      userId: true,
     }).required({ text: true }),
   }),
   z.object({

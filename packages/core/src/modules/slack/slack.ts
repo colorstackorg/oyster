@@ -9,6 +9,7 @@ import {
   getChatCompletion,
   rerankDocuments,
 } from '@/modules/ai/ai';
+import { track } from '@/modules/mixpanel';
 import { getPineconeIndex } from '@/modules/pinecone';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 
@@ -28,6 +29,11 @@ type RespondToBotQuestionInput = {
    * we don't support replying to threads yet.
    */
   threadId?: string;
+
+  /**
+   * The ID of the SLACK user who asked the question.
+   */
+  userId: string;
 };
 
 /**
@@ -43,10 +49,28 @@ export async function answerChatbotQuestion({
   id,
   text,
   threadId,
+  userId,
 }: RespondToBotQuestionInput) {
   if (threadId) {
     return;
   }
+
+  // Track the question asked by the user in Mixpanel but asychronously so that
+  // we don't block the Slack event from being processed.
+  db.selectFrom('students')
+    .select(['id'])
+    .where('slackId', '=', userId)
+    .executeTakeFirst()
+    .then((member) => {
+      if (member) {
+        track({
+          application: 'Slack',
+          event: 'Chatbot Question Asked',
+          properties: { Question: text },
+          user: member.id,
+        });
+      }
+    });
 
   const questionResult = await isQuestion(text);
 
@@ -81,7 +105,8 @@ export async function answerChatbotQuestion({
   }
 
   // Remove all <thread></thread> references and replace them with an actual
-  // Slack message link.
+  // Slack message link. TODO: Replace the Slack workspace URL with an
+  // environment variable.
   const answerWithLinks = answerResult.data.replace(
     /<thread>(.*?):(.*?):(.*?)<\/thread>/g,
     `<https://colorstack-family.slack.com/archives/$1/p$2|*[$3]*>`
