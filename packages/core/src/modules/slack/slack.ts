@@ -345,11 +345,35 @@ async function getAnswerFromSlackHistory(
 }
 
 type SyncThreadInput = {
+  /**
+   * The action that was performed on the thread.
+   * - `add`: A new thread or reply was added.
+   * - `delete`: A thread or reply was deleted.
+   * - `update`: A thread or reply was updated.
+   */
   action: 'add' | 'delete' | 'update';
+
+  /**
+   * The ID of the thread to sync.
+   */
   threadId: string;
 };
 
-export async function syncThreadInPinecone({
+/**
+ * Syncs a thread to Pinecone.
+ *
+ * This does the following:
+ * - Retrieves the thread and its replies from the database.
+ * - Creates an embedding for the thread and its replies.
+ * - Updates the thread in Pinecone.
+ *
+ * If the `action` is `delete` and the thread was deleted, this function
+ * will delete the embedding from Pinecone as well.
+ *
+ * @param input - The input to sync the thread.
+ * @returns The result of the sync.
+ */
+export async function syncThreadToPinecone({
   action,
   threadId,
 }: SyncThreadInput): Promise<Result> {
@@ -410,14 +434,17 @@ export async function syncThreadInPinecone({
 
   const timestamp = thread.createdAt.toISOString();
 
-  const result =
-    `[Channel]: ${thread.channelName}\n` +
-    `[Timestamp]: ${timestamp}\n` +
-    `[Thread]: ${thread.text}\n` +
-    `[# of Reactions]: ${totalReactions}\n` +
-    `[Replies]: ${replies.map((reply) => reply.text).join('\n')}`;
+  const parts = [
+    `[Channel]: ${thread.channelName}`,
+    `[Timestamp]: ${timestamp}`,
+    `[Thread]: ${thread.text}`,
+    `[# of Reactions]: ${totalReactions}`,
+    `[Replies]: ${replies.map((reply) => reply.text).join('\n')}`,
+  ];
 
-  const embeddingResult = await createEmbedding(result);
+  const text = parts.join('\n');
+
+  const embeddingResult = await createEmbedding(text);
 
   if (!embeddingResult.ok) {
     return fail(embeddingResult);

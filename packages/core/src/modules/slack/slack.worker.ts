@@ -5,7 +5,7 @@ import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker'
 import { onSlackUserInvited } from '@/modules/slack/events/slack-user-invited';
 import {
   answerChatbotQuestion,
-  syncThreadInPinecone,
+  syncThreadToPinecone,
 } from '@/modules/slack/slack';
 import { updateBirthdatesFromSlack } from '@/modules/slack/use-cases/update-birthdates-from-slack';
 import { onSlackProfilePictureChanged } from './events/slack-profile-picture-changed';
@@ -80,7 +80,7 @@ export const slackWorker = registerWorker(
         return removeSlackReaction(data);
       })
       .with({ name: 'slack.thread.sync_embedding' }, async ({ data }) => {
-        const result = await syncThreadInPinecone(data);
+        const result = await syncThreadToPinecone(data);
 
         if (!result.ok) {
           throw new Error(result.error);
