@@ -3,7 +3,10 @@ import { match } from 'ts-pattern';
 import { SlackBullJob } from '@/infrastructure/bull/bull.types';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { onSlackUserInvited } from '@/modules/slack/events/slack-user-invited';
-import { answerChatbotQuestion } from '@/modules/slack/slack';
+import {
+  answerChatbotQuestion,
+  updateThreadInPinecone,
+} from '@/modules/slack/slack';
 import { updateBirthdatesFromSlack } from '@/modules/slack/use-cases/update-birthdates-from-slack';
 import { onSlackMessageAdded } from './events/slack-message-added';
 import { onSlackProfilePictureChanged } from './events/slack-profile-picture-changed';
@@ -79,6 +82,15 @@ export const slackWorker = registerWorker(
       })
       .with({ name: 'slack.reaction.remove' }, async ({ data }) => {
         return removeSlackReaction(data);
+      })
+      .with({ name: 'slack.thread.update_embedding' }, async ({ data }) => {
+        const result = await updateThreadInPinecone(data.threadId);
+
+        if (!result.ok) {
+          throw new Error(result.error);
+        }
+
+        return result.data;
       })
       .exhaustive();
   }

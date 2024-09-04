@@ -502,6 +502,10 @@ export const SlackBullJob = z.discriminatedUnion('name', [
       slackId: Student.shape.slackId.unwrap(),
     }),
   }),
+  z.object({
+    name: z.literal('slack.thread.update_embedding'),
+    data: SlackMessage.pick({ threadId: true }).required(),
+  }),
 ]);
 
 export const StudentBullJob = z.discriminatedUnion('name', [
