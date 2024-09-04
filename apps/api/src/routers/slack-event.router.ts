@@ -92,6 +92,7 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
         id: event.ts!,
         text: event.text!,
         threadId: event.thread_ts,
+        userId: event.user!,
       });
     })
     .with({ type: 'message' }, (event) => {
