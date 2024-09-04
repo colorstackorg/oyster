@@ -12,7 +12,7 @@ export async function deleteSlackMessage({
     async () => {
       const message = await db
         .deleteFrom('slackMessages')
-        .returning(['studentId', 'threadId'])
+        .returning(['id', 'studentId', 'threadId'])
         .where('id', '=', id)
         .where('channelId', '=', channelId)
         .executeTakeFirstOrThrow();
@@ -25,6 +25,10 @@ export async function deleteSlackMessage({
           type: 'reply_to_thread',
         });
       }
+
+      job('slack.thread.sync_embedding', {
+        threadId: message.threadId || message.id,
+      });
 
       return true;
     },

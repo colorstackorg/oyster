@@ -11,15 +11,15 @@ export type Result<T = object> =
       ok: false;
     };
 
+type ErrorResult = Extract<Result, { ok: false }>;
+
 /**
  * Returns a "failed" result object, including the error code and message.
  *
  * This and the `success` function are intended to be used together to create a
  * standard way of returning results from core functions.
  */
-export function fail<T>(
-  input: Pick<Extract<Result, { ok: false }>, 'code' | 'error'>
-): Result<T> {
+export function fail<T>(input: Pick<ErrorResult, 'code' | 'error'>): Result<T> {
   return {
     code: input.code,
     error: input.error,

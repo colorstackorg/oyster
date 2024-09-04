@@ -1,6 +1,7 @@
 import { db } from '@oyster/db';
 
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { job } from '@/infrastructure/bull/use-cases/job';
 
 export async function changeSlackMessage({
   channelId,
@@ -8,10 +9,17 @@ export async function changeSlackMessage({
   id,
   text,
 }: GetBullJobData<'slack.message.change'>) {
-  await db
+  const message = await db
     .updateTable('slackMessages')
     .set({ deletedAt, text })
     .where('id', '=', id)
     .where('channelId', '=', channelId)
-    .execute();
+    .returning(['id', 'threadId'])
+    .executeTakeFirst();
+
+  if (message) {
+    job('slack.thread.sync_embedding', {
+      threadId: message.threadId || message.id,
+    });
+  }
 }

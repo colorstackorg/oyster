@@ -32,12 +32,23 @@ export async function addSlackMessage(
     .execute();
 
   if (student?.id) {
-    job('slack.message.added', {
-      channelId: data.channelId,
+    job('student.activation_requirement_completed', {
       studentId: student.id,
-      threadId: data.threadId,
     });
+
+    if (data.threadId) {
+      job('gamification.activity.completed', {
+        channelId: data.channelId,
+        studentId: student.id,
+        threadRepliedTo: data.threadId,
+        type: 'reply_to_thread',
+      });
+    }
   }
+
+  job('slack.thread.sync_embedding', {
+    threadId: data.threadId || data.id,
+  });
 }
 
 async function ensureThreadExistsIfNecessary(
