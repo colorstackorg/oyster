@@ -366,6 +366,8 @@ type SyncThreadInput = {
  * - Retrieves the thread and its replies from the database.
  * - Creates an embedding for the thread and its replies.
  * - Updates the thread in Pinecone.
+ * - Updates the `pineconeLastUpdatedAt` field in the database for the thread
+ *   and its replies.
  *
  * If the `action` is `delete` and the thread was deleted, this function
  * will delete the embedding from Pinecone as well.
