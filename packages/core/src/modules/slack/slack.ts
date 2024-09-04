@@ -1,6 +1,7 @@
 import dedent from 'dedent';
+import { type ExpressionBuilder } from 'kysely';
 
-import { db } from '@oyster/db';
+import { type DB, db } from '@oyster/db';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import {
@@ -290,4 +291,98 @@ async function getAnswerFromSlackHistory(
   }
 
   return success(completionResult.data);
+}
+
+export async function updateThreadInPinecone(
+  threadId: string
+): Promise<Result> {
+  const [thread, replies] = await Promise.all([
+    db
+      .selectFrom('slackMessages')
+      .leftJoin('slackChannels', 'slackChannels.id', 'slackMessages.channelId')
+      .select([
+        'slackChannels.name as channelName',
+        'slackMessages.channelId',
+        'slackMessages.createdAt',
+        'slackMessages.id',
+        'slackMessages.text',
+        getReactionsCount,
+      ])
+      .where('slackMessages.id', '=', threadId)
+      .where('slackMessages.text', 'is not', null)
+      .where('slackMessages.threadId', 'is', null)
+      .executeTakeFirst(),
+
+    db
+      .selectFrom('slackMessages')
+      .select([
+        'slackMessages.text',
+        'slackMessages.threadId',
+        getReactionsCount,
+      ])
+      .where('slackMessages.text', 'is not', null)
+      .where('slackMessages.threadId', '=', threadId)
+      .orderBy('slackMessages.createdAt', 'asc')
+      .execute(),
+  ]);
+
+  if (!thread) {
+    return fail({
+      code: 404,
+      error: 'Slack thread was not found, Pinecone update skipped.',
+    });
+  }
+
+  const totalReactions = replies.reduce(
+    (result, reply) => {
+      return result + Number(reply.reactions || 0);
+    },
+    Number(thread.reactions || 0)
+  );
+
+  const timestamp = thread.createdAt.toISOString();
+
+  const result =
+    `[Channel]: ${thread.channelName}\n` +
+    `[Timestamp]: ${timestamp}\n` +
+    `[Thread]: ${thread.text}\n` +
+    `[# of Reactions]: ${totalReactions}\n` +
+    `[Replies]: ${replies.map((reply) => reply.text).join('\n')}`;
+
+  const embeddingResult = await createEmbedding(result);
+
+  if (!embeddingResult.ok) {
+    return fail(embeddingResult);
+  }
+
+  const index = getPineconeIndex('slack-messages');
+
+  await index.upsert([
+    {
+      id: thread.id,
+      metadata: {
+        channelId: thread.channelId,
+        sentAt: timestamp,
+      },
+      values: embeddingResult.data,
+    },
+  ]);
+
+  return success({});
+}
+
+/**
+ * Add a `reactions` column to the query, which contains the number of reactions
+ * for a message.
+ *
+ * @param eb - The expression builder.
+ * @returns An expression builder with a `reactions` column.
+ */
+function getReactionsCount(eb: ExpressionBuilder<DB, 'slackMessages'>) {
+  return eb
+    .selectFrom('slackReactions')
+    .select((eb) => eb.fn.countAll<string>().as('count'))
+    .where('slackReactions.channelId', '=', 'slackMessages.channelId')
+    .where('slackReactions.messageId', '=', 'slackMessages.id')
+    .as('reactions');
 }
