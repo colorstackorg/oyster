@@ -397,6 +397,7 @@ export async function syncThreadToPinecone({
     db
       .selectFrom('slackMessages')
       .select([
+        'slackMessages.id',
         'slackMessages.text',
         'slackMessages.threadId',
         getReactionsCount,
@@ -460,6 +461,16 @@ export async function syncThreadToPinecone({
       values: embeddingResult.data,
     },
   ]);
+
+  // After upserting the thread to Pinecone, we need to update our DB to reflect
+  // when we last updated Pinecone.
+  const ids = [thread.id, ...replies.map((reply) => reply.id)];
+
+  await db
+    .updateTable('slackMessages')
+    .set({ pineconeLastUpdatedAt: new Date() })
+    .where('id', 'in', ids)
+    .execute();
 
   return success({});
 }
