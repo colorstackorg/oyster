@@ -47,6 +47,7 @@ export async function addSlackMessage(
   }
 
   job('slack.thread.sync_embedding', {
+    action: 'add',
     threadId: data.threadId || data.id,
   });
 }

@@ -80,7 +80,7 @@ export const slackWorker = registerWorker(
         return removeSlackReaction(data);
       })
       .with({ name: 'slack.thread.sync_embedding' }, async ({ data }) => {
-        const result = await syncThreadInPinecone(data.threadId);
+        const result = await syncThreadInPinecone(data);
 
         if (!result.ok) {
           throw new Error(result.error);

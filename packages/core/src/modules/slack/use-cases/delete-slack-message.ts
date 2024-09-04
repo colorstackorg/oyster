@@ -27,6 +27,7 @@ export async function deleteSlackMessage({
       }
 
       job('slack.thread.sync_embedding', {
+        action: 'delete',
         threadId: message.threadId || message.id,
       });
 

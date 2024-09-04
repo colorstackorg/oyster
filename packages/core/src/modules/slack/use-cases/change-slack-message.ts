@@ -19,6 +19,7 @@ export async function changeSlackMessage({
 
   if (message) {
     job('slack.thread.sync_embedding', {
+      action: 'update',
       threadId: message.threadId || message.id,
     });
   }

@@ -494,7 +494,10 @@ export const SlackBullJob = z.discriminatedUnion('name', [
   }),
   z.object({
     name: z.literal('slack.thread.sync_embedding'),
-    data: SlackMessage.pick({ threadId: true }).required(),
+    data: z.object({
+      action: z.enum(['add', 'delete', 'update']),
+      threadId: z.string().trim().min(1),
+    }),
   }),
 ]);
 

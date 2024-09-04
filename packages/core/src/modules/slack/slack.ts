@@ -293,7 +293,15 @@ async function getAnswerFromSlackHistory(
   return success(completionResult.data);
 }
 
-export async function syncThreadInPinecone(threadId: string): Promise<Result> {
+type SyncThreadInput = {
+  action: 'add' | 'delete' | 'update';
+  threadId: string;
+};
+
+export async function syncThreadInPinecone({
+  action,
+  threadId,
+}: SyncThreadInput): Promise<Result> {
   const [thread, replies] = await Promise.all([
     db
       .selectFrom('slackMessages')
@@ -326,20 +334,20 @@ export async function syncThreadInPinecone(threadId: string): Promise<Result> {
 
   const index = getPineconeIndex('slack-messages');
 
-  if (!thread) {
-    try {
-      // If the thread doesn't exist in our DB, then it shouldn't exist in
-      // Pinecone either. This covers the case when we we call this function
-      // after a THREAD has been deleted.
-      await index.deleteOne(threadId);
+  if (!thread && action === 'delete') {
+    // If the thread doesn't exist in our DB, then it shouldn't exist in
+    // Pinecone either. This covers the case when we we call this function
+    // after a THREAD has been deleted.
+    await index.deleteOne(threadId);
 
-      return success({});
-    } catch (e) {
-      return fail({
-        code: 500,
-        error: (e as Error).message,
-      });
-    }
+    return success({});
+  }
+
+  if (!thread) {
+    return fail({
+      code: 404,
+      error: 'Slack thread not found, skipping Pinecone embedding update.',
+    });
   }
 
   const totalReactions = replies.reduce(
