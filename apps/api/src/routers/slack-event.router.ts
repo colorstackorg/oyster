@@ -83,7 +83,13 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
       });
     })
     .with({ type: 'message', channel_type: 'im' }, (event) => {
-      if (event.app_id) {
+      // Ignore any message sent by a Slack app or bot.
+      if (event.app_id || event.bot_id) {
+        return;
+      }
+
+      // If the channel is not a direct message, ignore it.
+      if (!event.channel.startsWith('D')) {
         return;
       }
 
@@ -92,6 +98,7 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
         id: event.ts!,
         text: event.text!,
         threadId: event.thread_ts,
+        userId: event.user!,
       });
     })
     .with({ type: 'message' }, (event) => {

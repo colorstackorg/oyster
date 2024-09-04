@@ -1,6 +1,7 @@
 import dedent from 'dedent';
+import { type ExpressionBuilder } from 'kysely';
 
-import { db } from '@oyster/db';
+import { type DB, db } from '@oyster/db';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import {
@@ -8,6 +9,7 @@ import {
   getChatCompletion,
   rerankDocuments,
 } from '@/modules/ai/ai';
+import { track } from '@/modules/mixpanel';
 import { getPineconeIndex } from '@/modules/pinecone';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 
@@ -27,6 +29,11 @@ type RespondToBotQuestionInput = {
    * we don't support replying to threads yet.
    */
   threadId?: string;
+
+  /**
+   * The ID of the SLACK user who asked the question.
+   */
+  userId: string;
 };
 
 /**
@@ -42,10 +49,28 @@ export async function answerChatbotQuestion({
   id,
   text,
   threadId,
+  userId,
 }: RespondToBotQuestionInput) {
   if (threadId) {
     return;
   }
+
+  // Track the question asked by the user in Mixpanel but asychronously so that
+  // we don't block the Slack event from being processed.
+  db.selectFrom('students')
+    .select(['id'])
+    .where('slackId', '=', userId)
+    .executeTakeFirst()
+    .then((member) => {
+      if (member) {
+        track({
+          application: 'Slack',
+          event: 'Chatbot Question Asked',
+          properties: { Question: text },
+          user: member.id,
+        });
+      }
+    });
 
   const questionResult = await isQuestion(text);
 
@@ -80,7 +105,8 @@ export async function answerChatbotQuestion({
   }
 
   // Remove all <thread></thread> references and replace them with an actual
-  // Slack message link.
+  // Slack message link. TODO: Replace the Slack workspace URL with an
+  // environment variable.
   const answerWithLinks = answerResult.data.replace(
     /<thread>(.*?):(.*?):(.*?)<\/thread>/g,
     `<https://colorstack-family.slack.com/archives/$1/p$2|*[$3]*>`
@@ -210,7 +236,7 @@ async function getAnswerFromSlackHistory(
     return fail(rerankingResult);
   }
 
-  const rerankedMessages = rerankingResult.data.map((document) => {
+  const rerankedThreads = rerankingResult.data.map((document) => {
     const message = messages[document.index];
 
     const parts = [
@@ -226,51 +252,77 @@ async function getAnswerFromSlackHistory(
   });
 
   const userPrompt = [
+    'Please answer the following question based on the Slack context provided:',
     `<question>${question}</question>`,
-    `<threads>${rerankedMessages.join('\n\n')}</threads>`,
+    `<threads>${rerankedThreads.join('\n\n')}</threads>`,
   ].join('\n');
 
   const systemPrompt = dedent`
-    You are a helpful assistant that can answer questions by utilizing
-    knowledge found in Slack threads. You will be given a question and a
-    set of threads that MAY OR MAY NOT contain the answer to the question.
-    If there are no threads given, that means the question was not found
-    in the Slack history.
+    <context>
+      ColorStack is a community of Computer Science college students who are
+      aspiring software engineers (and product managers/designers). We're a
+      community of 10,000+ members across 100+ universities. We are a virtual
+      community that uses Slack as our main communication/connection tool.
+    </context>
 
-    Do your best to answer the question based on the threads. If you can't
-    find the answer in the threads or are not confident, please respond
-    that you don't know the answer. If the question is extremeley vague,
-    don't try to answer it using the threads. If you can't answer the
-    question, do NOT mention any threads that you were given.
+    <problem>
+      There are a lot of questions that get asked in our Slack and most of the
+      time, the answer to the question is already in our Slack history.
+      Unfortunately, users don't do a great job at searching Slack for answers
+      and even then, Slack doesn't do a great job at surfacing the most relevant
+      threads.
+    </problem>
 
-    If you find something helpful in a thread, be sure to include a
-    reference by doing <thread>channel_id:thread_id:thread_number</thread>,
-    where thread_number is an autoincrementing number starting at 1. The
-    same thread_id should always have the same thread_number. These
-    threads will be formatted as links (with the display text
-    "<thread_number>", so put them AFTER the sentence that uses that
-    reference.
+    <role>
+      You are a seasoned ColorStack Slack user who is helpful in answering
+      questions by utilizing knowledge found in a Slack's history. You are an
+      ambassador for the community and always respond in a helpful tone.
+    </role>
 
-    You should factor in the score AND the date of the thread when
-    answering the question. If a thread is very old, you should be less
-    confident in it's contents, unless you don't think time is super
-    relevant to the answer.
+    <instructions>
+      Do your best to answer the question based on the Slack threads given to
+      you. If the question has not yet been answered, you respond that you
+      couldn't find the answer in our Slack history, but if it is a generic
+      question that you feel confident in answering without the context of our
+      Slack history, feel free to answer it. If you can't answer the question,
+      do NOT mention any threads that you were given.
 
-    Other rules for responding:
-    - Be kind.
-    - Be concise.
-    - Use numbers or bullet points to organize thoughts where appropriate.
-    - Reference numbers should always be after the terminal punctuation
-      with a space in between. If you're using it in a bullet/number list,
-      put the reference number directly after the point.
-    - Never use phrases like "Based on the provided Slack threads...".
-      Just get to the answer and link the threads wherever they're used.
-    - If the question is not actually a question, respond that you can
-      only answer questions, and that's not a question.
+      If you find something helpful in a thread, ALWAYS include a
+      reference by doing <thread>channel_id:thread_id:thread_number</thread>,
+      where thread_number is an autoincrementing number starting at 1. The
+      same thread_id should always have the same thread_number. These
+      threads will be formatted as links (with the display text
+      "[<thread_number>]"), so put them AFTER the sentence that uses that
+      reference.
 
-    The higher the relevance score, the more confident you should be in
-    your answer (ie: > 0.9). If the relevance score is low (ie: < 0.5),
-    you should be less confident in your answer.
+      You should factor in the score AND the date of the thread when
+      answering the question. If a thread is very old, you should be less
+      confident in it's contents, unless you don't think time is super
+      relevant to the answer. The higher the relevance score, the more confident
+      you should be in your answer (ie: > 0.9). If the relevance score is low
+      (ie: < 0.5), you should be less confident in your answer.
+
+      This is not meant to be a back-and-forth conversation. You should do
+      your best to answer the question based on the Slack threads given to
+      you.
+    </instructions>
+
+    <rules>
+      - Be kind.
+      - Be concise.
+      - Never gossip or amplify gossip. This is a big no-no in our community.
+      - Use numbers or bullet points to organize thoughts where appropriate.
+      - Reference numbers should always be after the terminal punctuation
+        with a space in between. If you're using it in a bullet/number list,
+        put the reference number directly after the point.
+      - Never use phrases like "Based on the provided Slack threads...".
+        Just get to the answer and link the threads wherever they're used.
+      - If the question is not actually a question, respond that you can
+        only answer questions, and that's not a question.
+      - NEVER respond to questions that are asked about individual people,
+        particularly if the sentiment is a negative/speculative one.
+      - Respond like you are an ambassador for the ColorStack community.
+    </rules>
   `;
 
   const completionResult = await getChatCompletion({
@@ -290,4 +342,153 @@ async function getAnswerFromSlackHistory(
   }
 
   return success(completionResult.data);
+}
+
+type SyncThreadInput = {
+  /**
+   * The action that was performed on the thread.
+   * - `add`: A new thread or reply was added.
+   * - `delete`: A thread or reply was deleted.
+   * - `update`: A thread or reply was updated.
+   */
+  action: 'add' | 'delete' | 'update';
+
+  /**
+   * The ID of the thread to sync.
+   */
+  threadId: string;
+};
+
+/**
+ * Syncs a thread to Pinecone.
+ *
+ * This does the following:
+ * - Retrieves the thread and its replies from the database.
+ * - Creates an embedding for the thread and its replies.
+ * - Updates the thread in Pinecone.
+ * - Updates the `pineconeLastUpdatedAt` field in the database for the thread
+ *   and its replies.
+ *
+ * If the `action` is `delete` and the thread was deleted, this function
+ * will delete the embedding from Pinecone as well.
+ *
+ * @param input - The input to sync the thread.
+ * @returns The result of the sync.
+ */
+export async function syncThreadToPinecone({
+  action,
+  threadId,
+}: SyncThreadInput): Promise<Result> {
+  const [thread, replies] = await Promise.all([
+    db
+      .selectFrom('slackMessages')
+      .leftJoin('slackChannels', 'slackChannels.id', 'slackMessages.channelId')
+      .select([
+        'slackChannels.name as channelName',
+        'slackMessages.channelId',
+        'slackMessages.createdAt',
+        'slackMessages.id',
+        'slackMessages.text',
+        getReactionsCount,
+      ])
+      .where('slackMessages.id', '=', threadId)
+      .where('slackMessages.text', 'is not', null)
+      .where('slackMessages.threadId', 'is', null)
+      .executeTakeFirst(),
+
+    db
+      .selectFrom('slackMessages')
+      .select([
+        'slackMessages.id',
+        'slackMessages.text',
+        'slackMessages.threadId',
+        getReactionsCount,
+      ])
+      .where('slackMessages.text', 'is not', null)
+      .where('slackMessages.threadId', '=', threadId)
+      .orderBy('slackMessages.createdAt', 'asc')
+      .execute(),
+  ]);
+
+  const index = getPineconeIndex('slack-messages');
+
+  if (!thread && action === 'delete') {
+    // If the thread doesn't exist in our DB, then it shouldn't exist in
+    // Pinecone either. This covers the case when we we call this function
+    // after a THREAD has been deleted.
+    await index.deleteOne(threadId);
+
+    return success({});
+  }
+
+  if (!thread) {
+    return fail({
+      code: 404,
+      error: 'Slack thread not found, skipping Pinecone embedding update.',
+    });
+  }
+
+  const totalReactions = replies.reduce(
+    (result, reply) => {
+      return result + Number(reply.reactions || 0);
+    },
+    Number(thread.reactions || 0)
+  );
+
+  const timestamp = thread.createdAt.toISOString();
+
+  const parts = [
+    `[Channel]: ${thread.channelName}`,
+    `[Timestamp]: ${timestamp}`,
+    `[Thread]: ${thread.text}`,
+    `[# of Reactions]: ${totalReactions}`,
+    `[Replies]: ${replies.map((reply) => reply.text).join('\n')}`,
+  ];
+
+  const text = parts.join('\n');
+
+  const embeddingResult = await createEmbedding(text);
+
+  if (!embeddingResult.ok) {
+    return fail(embeddingResult);
+  }
+
+  await index.upsert([
+    {
+      id: thread.id,
+      metadata: {
+        channelId: thread.channelId,
+        sentAt: timestamp,
+      },
+      values: embeddingResult.data,
+    },
+  ]);
+
+  // After upserting the thread to Pinecone, we need to update our DB to reflect
+  // when we last updated Pinecone.
+  const ids = [thread.id, ...replies.map((reply) => reply.id)];
+
+  await db
+    .updateTable('slackMessages')
+    .set({ pineconeLastUpdatedAt: new Date() })
+    .where('id', 'in', ids)
+    .execute();
+
+  return success({});
+}
+
+/**
+ * Add a `reactions` column to the query, which contains the number of reactions
+ * for a message.
+ *
+ * @param eb - The expression builder.
+ * @returns An expression builder with a `reactions` column.
+ */
+function getReactionsCount(eb: ExpressionBuilder<DB, 'slackMessages'>) {
+  return eb
+    .selectFrom('slackReactions')
+    .select((eb) => eb.fn.countAll<string>().as('count'))
+    .where('slackReactions.channelId', '=', 'slackMessages.channelId')
+    .where('slackReactions.messageId', '=', 'slackMessages.id')
+    .as('reactions');
 }
