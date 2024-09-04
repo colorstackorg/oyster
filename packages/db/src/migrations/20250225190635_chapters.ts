@@ -6,10 +6,12 @@ export async function up(db: Kysely<any>) {
     .addColumn('created_at', 'timestamptz', (column) => {
       return column.notNull().defaultTo(sql`now()`);
     })
-    .addColumn('school_id', 'text', (column) => {
-      return column.notNull().references('schools.id');
+    .addColumn('id', 'text', (column) => {
+      return column.primaryKey();
     })
-    .addPrimaryKeyConstraint('school_chapter_pkey', ['school_id'])
+    .addColumn('school_id', 'text', (column) => {
+      return column.notNull().unique().references('schools.id');
+    })
     .execute();
 }
 

@@ -38,6 +38,7 @@ const ROUTES = [
   '/resume-books/:id/edit',
   '/schools',
   '/schools/create',
+  '/schools/:id/chapter/create',
   '/schools/:id/edit',
   '/students',
   '/students/:id/activate',
