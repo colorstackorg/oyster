@@ -412,6 +412,7 @@ export const SlackBullJob = z.discriminatedUnion('name', [
       id: true,
       text: true,
       threadId: true,
+      userId: true,
     }).required({ text: true }),
   }),
   z.object({
@@ -449,16 +450,6 @@ export const SlackBullJob = z.discriminatedUnion('name', [
       text: true,
       threadId: true,
       userId: true,
-    }),
-  }),
-  z.object({
-    name: z.literal('slack.message.added'),
-    data: SlackMessage.pick({
-      channelId: true,
-      studentId: true,
-      threadId: true,
-    }).required({
-      studentId: true,
     }),
   }),
   z.object({
@@ -500,6 +491,13 @@ export const SlackBullJob = z.discriminatedUnion('name', [
     data: z.object({
       profilePicture: Student.shape.profilePicture,
       slackId: Student.shape.slackId.unwrap(),
+    }),
+  }),
+  z.object({
+    name: z.literal('slack.thread.sync_embedding'),
+    data: z.object({
+      action: z.enum(['add', 'delete', 'update']),
+      threadId: z.string().trim().min(1),
     }),
   }),
 ]);
