@@ -137,8 +137,10 @@ export const Student = Entity.merge(StudentSocialLinks)
     phoneNumber: z
       .string()
       .trim()
-      .length(10, 'Phone Number must be a 10-digit number')
-      .regex(/^\d+$/, 'Phone Number must contain only digits')
+      .regex(
+        /^\(\d{3}\)-\d{3}-\d{4}$/,
+        'Phone Number must be in the format (555)-123-4567'
+      )
       .optional(),
 
     /**

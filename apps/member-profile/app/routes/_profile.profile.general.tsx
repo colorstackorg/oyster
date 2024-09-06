@@ -28,6 +28,7 @@ import {
 } from '@/shared/components/profile';
 import {
   CurrentLocationField,
+  PhoneNumberField,
   PreferredNameField,
 } from '@/shared/components/profile.general';
 import { getMember } from '@/shared/queries/index';
@@ -176,13 +177,10 @@ export default function UpdateGeneralInformationSection() {
           longitudeName={keys.currentLocationLongitude}
         />
 
-        <InputField
+        <PhoneNumberField
           defaultValue={student.phoneNumber || undefined}
-          description="Enter your 10-digit phone number below (no formatting characters e.g. '-' or '(')."
           error={errors.phoneNumber}
-          label="Phone Number"
           name={keys.phoneNumber}
-          placeholder="5551234567"
         />
 
         <Button.Group>

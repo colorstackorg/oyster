@@ -22,8 +22,9 @@ export type InputProps = Pick<
   | 'required'
   | 'type'
   | 'value'
+  | 'pattern'
 > & {
-  type?: Extract<HTMLInputTypeAttribute, 'email' | 'number' | 'text'>;
+  type?: Extract<HTMLInputTypeAttribute, 'email' | 'number' | 'text' | 'tel'>;
 };
 
 export const Input = React.forwardRef(
