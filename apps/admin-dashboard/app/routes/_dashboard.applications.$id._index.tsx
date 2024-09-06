@@ -14,8 +14,6 @@ import dayjs from 'dayjs';
 import { type PropsWithChildren, useState } from 'react';
 import { Info } from 'react-feather';
 
-import { acceptApplication, getApplication } from '@oyster/core/applications';
-import { Application } from '@oyster/core/applications.ui';
 import { type EducationLevel } from '@oyster/core/admin-dashboard/ui';
 import {
   acceptApplication,

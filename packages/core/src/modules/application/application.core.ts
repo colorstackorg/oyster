@@ -370,7 +370,6 @@ export async function rejectApplication(
         rejectedAt: new Date(),
         reviewedById: adminId,
         status: ApplicationStatus.REJECTED,
-        // rejectionReason: reason || null,
         rejectionReason: reason,
       })
       .where('id', '=', applicationId)
@@ -387,8 +386,6 @@ export async function rejectApplication(
 
     return application;
   });
-
-  console.log('Rejection Reason: ' + reason);
 
   queueRejectionEmail({
     automated: false,

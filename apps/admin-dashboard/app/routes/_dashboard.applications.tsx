@@ -199,8 +199,6 @@ function ApplicationsTable() {
         return `${reviewedByFirstName} ${reviewedByLastName}`;
       },
     },
-    // TODO: Show the "Rejection Reason" in the "Applications" table in the Admin Dashboard. Note that this should only be in the "Rejected" and "All" views.
-    // Have to add a column of the rejection reason in the database
     {
       displayName: 'Rejection Reason',
       render: (application) => application.rejectionReason || '-',
