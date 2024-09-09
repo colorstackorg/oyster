@@ -136,6 +136,15 @@ export const EventBullJob = z.discriminatedUnion('name', [
   }),
 ]);
 
+export const PreEventNotificationBullJob = z.discriminatedUnion('name', [
+  z.object({
+    name: z.literal('pre_event_notification.created'),
+    data: z.object({
+      eventID: Event.shape.id,
+    }),
+  }),
+]);
+
 export const FeedBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('feed.slack.recurring'),
@@ -698,6 +707,7 @@ export const BullJob = z.union([
   ApplicationBullJob,
   EventBullJob,
   FeedBullJob,
+  PreEventNotificationBullJob,
   GamificationBullJob,
   MailchimpBullJob,
   MemberEmailBullJob,
