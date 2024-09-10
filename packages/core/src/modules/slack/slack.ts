@@ -13,7 +13,7 @@ import { track } from '@/modules/mixpanel';
 import { getPineconeIndex } from '@/modules/pinecone';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 
-type RespondToBotQuestionInput = {
+type AnswerChatbotQuestionInput = {
   /**
    * The ID of the channel where the message was sent. This should be the
    * DM channel between the bot and the user.
@@ -31,7 +31,7 @@ type RespondToBotQuestionInput = {
   threadId?: string;
 
   /**
-   * The ID of the SLACK user who asked the question.
+   * The ID of the Slack user who asked the question.
    */
   userId: string;
 };
@@ -50,7 +50,7 @@ export async function answerChatbotQuestion({
   text,
   threadId,
   userId,
-}: RespondToBotQuestionInput) {
+}: AnswerChatbotQuestionInput) {
   if (threadId) {
     return;
   }
@@ -66,7 +66,10 @@ export async function answerChatbotQuestion({
         track({
           application: 'Slack',
           event: 'Chatbot Question Asked',
-          properties: { Question: text },
+          properties: {
+            Question: text,
+            Type: 'DM',
+          },
           user: member.id,
         });
       }
@@ -104,22 +107,124 @@ export async function answerChatbotQuestion({
     throw new Error(answerResult.error);
   }
 
-  // Remove all <thread></thread> references and replace them with an actual
-  // Slack message link. TODO: Replace the Slack workspace URL with an
-  // environment variable.
-  const answerWithLinks = answerResult.data.replace(
-    /<thread>(.*?):(.*?):(.*?)<\/thread>/g,
-    `<https://colorstack-family.slack.com/archives/$1/p$2|*[$3]*>`
-  );
+  const answerWithReferences = addThreadReferences(answerResult.data);
 
   job('notification.slack.send', {
     channel: channelId,
-    message: answerWithLinks,
+    message: answerWithReferences,
     threadId: id,
     workspace: 'regular',
   });
 
   // TODO: Delete the loading message after the answer is sent.
+}
+
+type AnswerPublicQuestionInput = {
+  /**
+   * The ID of the channel where the message is located. This is typically
+   * a public channel since that's what our Slack App has access to.
+   */
+  channelId: string;
+
+  /**
+   * The text of the public message (potentially a question).
+   */
+  text: string;
+
+  /**
+   * The ID of the thread where the public message is located.
+   */
+  threadId: string;
+
+  /**
+   * The ID of the Slack user who triggered the action, not necessarily the
+   * author of the public message.
+   */
+  userId: string;
+};
+
+/**
+ * Answers a question asked in a public Slack message.
+ *
+ * This uses the underlying `getAnswerFromSlackHistory` function to answer the
+ * question, and then sends the answer to that thread.
+ *
+ * @param input - The message (public question) to answer.
+ * @returns The result of the answer.
+ */
+export async function answerPublicQuestion({
+  channelId,
+  text,
+  threadId,
+  userId,
+}: AnswerPublicQuestionInput): Promise<Result> {
+  // Track the question asked by the user in Mixpanel but asychronously so that
+  // we don't block the Slack event from being processed.
+  db.selectFrom('students')
+    .select(['id'])
+    .where('slackId', '=', userId)
+    .executeTakeFirst()
+    .then((member) => {
+      if (member) {
+        track({
+          application: 'Slack',
+          event: 'Chatbot Question Asked',
+          properties: {
+            Question: text as string,
+            Type: 'Public',
+          },
+          user: member.id,
+        });
+      }
+    });
+
+  const questionResult = await isQuestion(text);
+
+  if (!questionResult.ok) {
+    return questionResult;
+  }
+
+  const isValidQuestion = questionResult.data;
+
+  if (!isValidQuestion) {
+    // Though it's not a valid question, this is still a "success" b/c we
+    // gracefully/respectfully decided not to answer the question.
+    return success({});
+  }
+
+  const answerResult = await getAnswerFromSlackHistory(text);
+
+  if (!answerResult.ok) {
+    return answerResult;
+  }
+
+  const answerWithReferences = addThreadReferences(answerResult.data);
+
+  job('notification.slack.send', {
+    channel: channelId,
+    message: answerWithReferences,
+    threadId,
+    workspace: 'regular',
+  });
+
+  return success({});
+}
+
+/**
+ * Removes all <thread></thread> references and replace them with an actual
+ * Slack message link and the display text (ie: `[1]`, `[2]`, etc).
+ *
+ *
+ * @param text - The text to add thread references to.
+ * @returns The text with thread references added.
+ *
+ * @todo Replace the Slack workspace URL with an environment variable.
+ */
+function addThreadReferences(text: string): string {
+  return text.replace(
+    /<thread>(.*?):(.*?):(.*?)<\/thread>/g,
+    `<https://colorstack-family.slack.com/archives/$1/p$2|*[$3]*>`
+  );
 }
 
 /**
@@ -142,7 +247,9 @@ async function isQuestion(question: string): Promise<Result<boolean>> {
         cache: true,
         type: 'text',
         text: dedent`
-          Your only job is to determine if the user's question is a question.
+          Determine if the user's question is a question. It does not need to
+          have the appropriate tone/punctuation, but it should be a question.
+
           If it is, respond with "true". If it is not, respond with "false".
         `,
       },

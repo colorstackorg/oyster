@@ -453,6 +453,15 @@ export const SlackBullJob = z.discriminatedUnion('name', [
     }),
   }),
   z.object({
+    name: z.literal('slack.message.answer'),
+    data: z.object({
+      channelId: z.string().trim().min(1),
+      text: z.string().trim().min(1),
+      threadId: z.string().trim().min(1),
+      userId: z.string().trim().min(1), // Slack user who triggered the action.
+    }),
+  }),
+  z.object({
     name: z.literal('slack.message.change'),
     data: SlackMessage.pick({
       channelId: true,
