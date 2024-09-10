@@ -5,6 +5,7 @@ import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker'
 import { onSlackUserInvited } from '@/modules/slack/events/slack-user-invited';
 import {
   answerChatbotQuestion,
+  answerPublicQuestion,
   syncThreadToPinecone,
 } from '@/modules/slack/slack';
 import { updateBirthdatesFromSlack } from '@/modules/slack/use-cases/update-birthdates-from-slack';
@@ -63,6 +64,15 @@ export const slackWorker = registerWorker(
       })
       .with({ name: 'slack.message.add' }, async ({ data }) => {
         return addSlackMessage(data);
+      })
+      .with({ name: 'slack.message.answer' }, async ({ data }) => {
+        const result = await answerPublicQuestion(data);
+
+        if (!result.ok) {
+          throw new Error(result.error);
+        }
+
+        return result.data;
       })
       .with({ name: 'slack.message.change' }, async ({ data }) => {
         return changeSlackMessage(data);
