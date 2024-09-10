@@ -60,6 +60,8 @@ type SlackMessageDeletedEvent = {
  * @see https://api.slack.com/events/message
  */
 type SlackMessageSentEvent = {
+  app_id?: string;
+  bot_id?: string;
   channel: string;
   subtype: undefined;
   text: string;

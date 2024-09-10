@@ -8,6 +8,7 @@ import { RateLimiter } from '@/shared/utils/rate-limiter';
 // Environment Variables
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY as string;
+const COHERE_API_KEY = process.env.COHERE_API_KEY as string;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
 
 // Instances
@@ -25,6 +26,7 @@ const anthropicRateLimiter = new RateLimiter('anthropic:requests', {
 // Constants
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1';
+const COHERE_API_URL = 'https://api.cohere.com/v1';
 const OPENAI_API_URL = 'https://api.openai.com/v1';
 
 // Core
@@ -33,7 +35,7 @@ const OPENAI_API_URL = 'https://api.openai.com/v1';
 
 const createEmbeddingRateLimiter = new RateLimiter('openai:embeddings', {
   rateLimit: 3000,
-  rateLimitWindow: 60,
+  rateLimitWindow: 60 - 1,
 });
 
 /**
@@ -42,6 +44,14 @@ const createEmbeddingRateLimiter = new RateLimiter('openai:embeddings', {
  * semantic meaning of the text.
  */
 type Embedding = number[];
+
+/**
+ * The maximum length of a text that can be embedded. Typically a token is
+ * roughly ~4 characters, but we'll use 3 to be safe.
+ *
+ * @see https://platform.openai.com/docs/guides/embeddings/embedding-models
+ */
+const MAX_EMBEDDING_LENGTH = 8192 * 3;
 
 /**
  * Creates an embedding for a given text using OpenAI.
@@ -61,6 +71,10 @@ export async function createEmbedding(
 ): Promise<Result<Embedding>> {
   await createEmbeddingRateLimiter.process();
 
+  if (text.length > MAX_EMBEDDING_LENGTH) {
+    text = text.slice(0, MAX_EMBEDDING_LENGTH);
+  }
+
   const response = await fetch(OPENAI_API_URL + '/embeddings', {
     body: JSON.stringify({
       input: text,
@@ -78,7 +92,7 @@ export async function createEmbedding(
   if (!response.ok) {
     const error = new ColorStackError()
       .withMessage('Failed to create embedding with OpenAI.')
-      .withContext({ json, status: response.status })
+      .withContext({ ...json, status: response.status })
       .report();
 
     return fail({
@@ -205,13 +219,21 @@ export async function getChatCompletion({
 
   const json = await response.json();
 
+  console.log(json.usage);
+
   if (!response.ok) {
     const message = match(response.status)
       .with(429, () => {
-        return 'We have reached the rate limit with the Anthropic API. Please try again in 1-2 minutes.';
+        return (
+          'We have reached the rate limit with the Anthropic API. Please try ' +
+          'again in 1-2 minutes.'
+        );
       })
       .with(529, () => {
-        return 'The Anthropic API is temporarily overloaded down. Please try again in a bit.';
+        return (
+          'The Anthropic API is temporarily overloaded down. Please try again ' +
+          'in a bit.'
+        );
       })
       .otherwise(() => {
         return 'Failed to fetch chat completion from Anthropic.';
@@ -233,4 +255,78 @@ export async function getChatCompletion({
   const message = result.content[0].text;
 
   return success(message);
+}
+
+// "Rerank Documents"
+
+type RerankDocumentsOptions = Partial<{
+  /**
+   * The number of documents to return.
+   *
+   * @default 5
+   */
+  topK: number;
+}>;
+
+type RankedDocument = {
+  index: number;
+  relevance_score: number;
+};
+
+/**
+ * Reranks a list of documents using the Cohere API + models.
+ *
+ * Uses the `rerank-english-v3.0` model, which has a context length of 4096
+ * tokens.
+ *
+ * @param query - The query (question) to rerank the documents by.
+ * @param documents - The documents to rerank.
+ * @param options - The options to use for the reranking.
+ * @returns The reranked documents.
+ *
+ * @see https://docs.cohere.com/v1/docs/overview
+ * @see https://docs.cohere.com/v1/docs/reranking-best-practices
+ * @see https://docs.cohere.com/v1/docs/rerank-2
+ */
+export async function rerankDocuments(
+  query: string,
+  documents: string[],
+  options: RerankDocumentsOptions
+): Promise<Result<RankedDocument[]>> {
+  options = {
+    topK: 5,
+    ...options,
+  };
+
+  const response = await fetch(COHERE_API_URL + '/rerank', {
+    body: JSON.stringify({
+      documents,
+      query,
+      model: 'rerank-english-v3.0',
+      return_documents: false,
+      top_n: options.topK,
+    }),
+    headers: {
+      Accept: 'application/json',
+      authorization: `Bearer ${COHERE_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+  });
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    const error = new ColorStackError()
+      .withMessage('Failed to rerank documents with Cohere.')
+      .withContext({ ...json, status: response.status })
+      .report();
+
+    return fail({
+      code: response.status,
+      error: error.message,
+    });
+  }
+
+  return success(json.results);
 }
