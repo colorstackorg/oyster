@@ -76,6 +76,7 @@ export function EthnicityCombobox({ name }: EthnicityComboboxProps) {
           <ul style={{ maxHeight: height, overflowY: 'auto' }}>
             {countries.map((country) => {
               const label = `${country.flagEmoji} ${country.demonym}`;
+
               return (
                 <ComboboxItem key={country.code} value={country.code}>
                   {label}
