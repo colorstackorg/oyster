@@ -35,10 +35,12 @@ export function EthnicityCombobox({ name }: EthnicityComboboxProps) {
     if (!name) return;
 
     const inputElement = document.getElementById(name);
+
     if (inputElement) {
       const rect = inputElement.getBoundingClientRect();
       const availableHeight =
         window.innerHeight - rect.bottom - SPACE_FROM_BOTTOM_OF_WINDOW;
+
       setHeight(availableHeight > 0 ? availableHeight : 0);
     }
   };
@@ -107,10 +109,12 @@ export function EthnicityMultiCombobox({
     if (!name) return;
 
     const inputElement = document.getElementById(name);
+
     if (inputElement) {
       const rect = inputElement.getBoundingClientRect();
       const availableHeight =
         window.innerHeight - rect.bottom - SPACE_FROM_BOTTOM_OF_WINDOW;
+
       setHeight(availableHeight > 0 ? availableHeight : 0);
     }
   };
