@@ -307,16 +307,6 @@ async function isQuestion(question: string): Promise<Result<boolean>> {
   return success(result.data === 'true');
 }
 
-type GetAnswerFromSlackHistoryOptions = {
-  /**
-   * The IDs of the threads to exclude from the search.
-   *
-   * The common use case for this is that if we are answering a question in a
-   * thread, we don't want to include the current thread in the search.
-   */
-  exclude?: string[];
-};
-
 /**
  * Ask a question to the Slack workspace.
  *
@@ -328,13 +318,9 @@ type GetAnswerFromSlackHistoryOptions = {
  * @returns The answer to the question.
  */
 async function getAnswerFromSlackHistory(
-  question: string,
-  options: GetAnswerFromSlackHistoryOptions = {}
+  question: string
 ): Promise<Result<string>> {
-  const exclude = options.exclude || undefined;
-
   const threadsResult = await getMostRelevantThreads(question, {
-    exclude,
     topK: 5,
   });
 
@@ -454,6 +440,12 @@ async function getAnswerFromSlackHistory(
 }
 
 type GetMostRelevantThreadsOptions = {
+  /**
+   * The IDs of the threads to exclude from the search.
+   *
+   * The common use case for this is that if we are answering a question in a
+   * thread, we don't want to include the current thread in the search.
+   */
   exclude?: string[];
 
   /**
