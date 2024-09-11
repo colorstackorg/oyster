@@ -202,33 +202,32 @@ export async function answerPublicQuestion({
   }
 
   const threads = threadsResult.data
-    .filter((thread) => {
-      return thread.score >= 0.75;
+    .map((thread) => {
+      const daysSinceCreation = dayjs().diff(thread.createdAt, 'day');
+
+      // There's a maximum of a 2 point boost based on when the thread was
+      // posted. If the thread is older than 2 years, it will not be boosted.
+      const recencyBoost = Math.max(0, 2 - daysSinceCreation / 365);
+
+      return {
+        ...thread,
+        score: thread.score * 100 + recencyBoost,
+      };
     })
+    .filter((thread) => thread.score >= 85)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
     .map((thread, i) => {
       const date = dayjs(thread.createdAt)
         .tz('America/Los_Angeles')
         .format('M/D/YY');
-
-      const emoji = match(i + 1)
-        .with(1, () => '1️⃣')
-        .with(2, () => '2️⃣')
-        .with(3, () => '3️⃣')
-        .with(4, () => '4️⃣')
-        .with(5, () => '5️⃣')
-        .with(6, () => '6️⃣')
-        .with(7, () => '7️⃣')
-        .with(8, () => '8️⃣')
-        .with(9, () => '9️⃣')
-        .with(10, () => '🔟')
-        .otherwise(() => '');
 
       const message =
         thread.message.length > 100
           ? thread.message.slice(0, 100) + '...'
           : thread.message;
 
-      return `${emoji}. [${date}] <https://colorstack-family.slack.com/archives/${thread.channelId}/p${thread.id}|*${message}*>`;
+      return `${i + 1}. [${date}] <https://colorstack-family.slack.com/archives/${thread.channelId}/p${thread.id}|*${message}*>`;
     });
 
   if (!threads.length) {
@@ -539,9 +538,13 @@ async function getMostRelevantThreads(
   // more accurate at assessing relevance, but they are slower and more
   // expensive to compute.
 
-  const documents = messages.map((message) => {
-    return [message.createdAt, message.message, message.replies].join('\n');
-  });
+  const documents = messages
+    .filter((message) => {
+      return !!message.replies.length;
+    })
+    .map((message) => {
+      return [message.createdAt, message.message, message.replies].join('\n');
+    });
 
   const rerankingResult = await rerankDocuments(question, documents, {
     topK: options.topK,
