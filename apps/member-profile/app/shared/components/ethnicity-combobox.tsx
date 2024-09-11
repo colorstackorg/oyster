@@ -1,5 +1,5 @@
 import { useFetcher } from '@remix-run/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   Combobox,
@@ -19,14 +19,38 @@ import type { SearchCountriesResult } from '@/routes/api.countries.search';
 
 type EthnicityComboboxProps = Pick<InputProps, 'name' | 'required'>;
 
+const SPACE_FROM_BOTTOM_OF_WINDOW = 30;
+
 export function EthnicityCombobox({ name }: EthnicityComboboxProps) {
   const fetcher = useFetcher<SearchCountriesResult>();
+  const [height, setHeight] = useState<number>(0);
 
   useEffect(() => {
     fetcher.load('/api/countries/search');
   }, []);
 
   const countries = fetcher.data?.countries || [];
+
+  const calculateDropdownHeight = () => {
+    if (!name) return;
+
+    const inputElement = document.getElementById(name);
+    if (inputElement) {
+      const rect = inputElement.getBoundingClientRect();
+      const availableHeight =
+        window.innerHeight - rect.bottom - SPACE_FROM_BOTTOM_OF_WINDOW;
+      setHeight(availableHeight > 0 ? availableHeight : 0);
+    }
+  };
+
+  useEffect(() => {
+    calculateDropdownHeight();
+    window.addEventListener('resize', calculateDropdownHeight);
+
+    return () => {
+      window.removeEventListener('resize', calculateDropdownHeight);
+    };
+  }, []);
 
   return (
     <Combobox>
@@ -47,10 +71,9 @@ export function EthnicityCombobox({ name }: EthnicityComboboxProps) {
 
       {!!countries.length && (
         <ComboboxPopover>
-          <ul>
+          <ul style={{ maxHeight: height, overflowY: 'auto' }}>
             {countries.map((country) => {
               const label = `${country.flagEmoji} ${country.demonym}`;
-
               return (
                 <ComboboxItem key={country.code} value={country.code}>
                   {label}
@@ -72,12 +95,34 @@ export function EthnicityMultiCombobox({
   name,
 }: EthnicityMultiComboboxProps) {
   const fetcher = useFetcher<SearchCountriesResult>();
+  const [height, setHeight] = useState<number>(0);
 
   useEffect(() => {
     fetcher.load('/api/countries/search');
   }, []);
 
   const countries = fetcher.data?.countries || [];
+
+  const calculateDropdownHeight = () => {
+    if (!name) return;
+
+    const inputElement = document.getElementById(name);
+    if (inputElement) {
+      const rect = inputElement.getBoundingClientRect();
+      const availableHeight =
+        window.innerHeight - rect.bottom - SPACE_FROM_BOTTOM_OF_WINDOW;
+      setHeight(availableHeight > 0 ? availableHeight : 0);
+    }
+  };
+
+  useEffect(() => {
+    calculateDropdownHeight();
+    window.addEventListener('resize', calculateDropdownHeight);
+
+    return () => {
+      window.removeEventListener('resize', calculateDropdownHeight);
+    };
+  }, []);
 
   return (
     <MultiCombobox defaultValues={defaultValues}>
@@ -99,7 +144,7 @@ export function EthnicityMultiCombobox({
 
       {!!countries.length && (
         <ComboboxPopover>
-          <ul>
+          <ul style={{ maxHeight: height, overflowY: 'auto' }}>
             {countries.map((country) => {
               const label = `${country.flagEmoji} ${country.demonym}`;
 
