@@ -164,7 +164,7 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
 type SlackShortcutPayload = {
   callback_id: 'ask_colorstack_ai';
   channel: { id: string };
-  message: { text: string; thread_ts: string };
+  message: { text: string; thread_ts?: string; ts: string };
   type: 'message_action';
   user: { id: string };
 };
@@ -198,7 +198,7 @@ slackShortcutsRouter.post(
             job('slack.message.answer', {
               channelId: payload.channel.id,
               text: payload.message.text,
-              threadId: payload.message.thread_ts,
+              threadId: payload.message.thread_ts || payload.message.ts,
               userId: payload.user.id,
             });
           }
