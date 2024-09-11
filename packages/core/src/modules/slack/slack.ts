@@ -192,6 +192,13 @@ export async function answerPublicQuestion({
     return success({});
   }
 
+  job('notification.slack.send', {
+    channel: channelId,
+    message: 'Searching our Slack history...',
+    threadId,
+    workspace: 'regular',
+  });
+
   const answerResult = await getAnswerFromSlackHistory(text);
 
   if (!answerResult.ok) {
