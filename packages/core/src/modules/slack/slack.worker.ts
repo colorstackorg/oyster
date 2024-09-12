@@ -3,9 +3,12 @@ import { match } from 'ts-pattern';
 import { SlackBullJob } from '@/infrastructure/bull/bull.types';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { onSlackUserInvited } from '@/modules/slack/events/slack-user-invited';
-import { answerChatbotQuestion } from '@/modules/slack/slack';
+import {
+  answerChatbotQuestion,
+  answerPublicQuestion,
+  syncThreadToPinecone,
+} from '@/modules/slack/slack';
 import { updateBirthdatesFromSlack } from '@/modules/slack/use-cases/update-birthdates-from-slack';
-import { onSlackMessageAdded } from './events/slack-message-added';
 import { onSlackProfilePictureChanged } from './events/slack-profile-picture-changed';
 import { onSlackWorkspaceJoined } from './events/slack-workspace-joined';
 import { addSlackMessage } from './use-cases/add-slack-message';
@@ -62,8 +65,14 @@ export const slackWorker = registerWorker(
       .with({ name: 'slack.message.add' }, async ({ data }) => {
         return addSlackMessage(data);
       })
-      .with({ name: 'slack.message.added' }, async ({ data }) => {
-        return onSlackMessageAdded(data);
+      .with({ name: 'slack.message.answer' }, async ({ data }) => {
+        const result = await answerPublicQuestion(data);
+
+        if (!result.ok) {
+          throw new Error(result.error);
+        }
+
+        return result.data;
       })
       .with({ name: 'slack.message.change' }, async ({ data }) => {
         return changeSlackMessage(data);
@@ -79,6 +88,15 @@ export const slackWorker = registerWorker(
       })
       .with({ name: 'slack.reaction.remove' }, async ({ data }) => {
         return removeSlackReaction(data);
+      })
+      .with({ name: 'slack.thread.sync_embedding' }, async ({ data }) => {
+        const result = await syncThreadToPinecone(data);
+
+        if (!result.ok) {
+          throw new Error(result.error);
+        }
+
+        return result.data;
       })
       .exhaustive();
   }

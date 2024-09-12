@@ -18,11 +18,12 @@ if (MIXPANEL_TOKEN) {
 
 // Core
 
-const defaultProperties = {
-  Application: 'Member Profile',
-};
-
 export type MixpanelEvent = {
+  'Chatbot Question Asked': {
+    Question: string;
+    Type: 'DM' | 'Public';
+  };
+
   'Directory - CTA Clicked': {
     CTA:
       | 'Calendly'
@@ -61,6 +62,7 @@ export type MixpanelEvent = {
 };
 
 export type TrackInput<Event extends keyof MixpanelEvent> = {
+  application?: 'Member Profile' | 'Slack';
   event: Event;
   properties: MixpanelEvent[Event];
   request?: Request;
@@ -68,6 +70,7 @@ export type TrackInput<Event extends keyof MixpanelEvent> = {
 };
 
 export function track<Event extends keyof MixpanelEvent>({
+  application = 'Member Profile',
   event,
   properties,
   request,
@@ -79,8 +82,8 @@ export function track<Event extends keyof MixpanelEvent>({
 
   if (!request) {
     mixpanel.track(event, {
-      ...defaultProperties,
       ...properties,
+      Application: application,
       distinct_id: user,
     });
 
@@ -95,8 +98,8 @@ export function track<Event extends keyof MixpanelEvent>({
   const ip = getIpAddress(request);
 
   mixpanel.track(event, {
-    ...defaultProperties,
     ...properties,
+    Application: application,
     $browser: result.browser.name,
     $browser_version: result.browser.version,
     $device: result.device.model,

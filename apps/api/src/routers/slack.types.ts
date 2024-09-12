@@ -61,6 +61,7 @@ type SlackMessageDeletedEvent = {
  */
 type SlackMessageSentEvent = {
   app_id?: string;
+  bot_id?: string;
   channel: string;
   subtype: undefined;
   text: string;
