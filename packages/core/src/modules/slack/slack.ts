@@ -219,14 +219,11 @@ export async function answerPublicQuestion({
     .map((thread, i) => {
       const date = dayjs(thread.createdAt)
         .tz('America/Los_Angeles')
-        .format('M/D/YY');
+        .format("MMM. 'YY");
 
-      const message =
-        thread.message.length > 100
-          ? thread.message.slice(0, 100) + '...'
-          : thread.message;
+      const uri = `https://colorstack-family.slack.com/archives/${thread.channelId}/p${thread.id}`;
 
-      return `${i + 1}. [${date}] <https://colorstack-family.slack.com/archives/${thread.channelId}/p${thread.id}|*${message}*>`;
+      return `• <${uri}|*Thread #${i + 1}*> [${date}]`;
     });
 
   if (!threads.length) {
