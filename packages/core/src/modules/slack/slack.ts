@@ -1,7 +1,6 @@
 import dayjs from 'dayjs';
 import dedent from 'dedent';
 import { type ExpressionBuilder } from 'kysely';
-import { match } from 'ts-pattern';
 
 import { type DB, db } from '@oyster/db';
 
