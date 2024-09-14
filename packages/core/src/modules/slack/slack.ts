@@ -200,9 +200,19 @@ export async function answerPublicQuestion({
     return threadsResult;
   }
 
-  const threads = threadsResult.data.filter((thread) => {
-    return thread.score >= 0.98;
-  });
+  const threads = threadsResult.data
+    .filter((thread) => {
+      return thread.score >= 0.98;
+    })
+    .map((thread, i) => {
+      const date = dayjs(thread.createdAt)
+        .tz('America/Los_Angeles')
+        .format("MMM. 'YY");
+
+      const uri = `https://colorstack-family.slack.com/archives/${thread.channelId}/p${thread.id}`;
+
+      return `• <${uri}|*Thread #${i + 1}*> [${date}]`;
+    });
 
   if (!threads.length) {
     // Though we didn't find any relevant threads, this is still a "success".
@@ -211,20 +221,10 @@ export async function answerPublicQuestion({
     return success({});
   }
 
-  const items = threadsResult.data.map((thread, i) => {
-    const date = dayjs(thread.createdAt)
-      .tz('America/Los_Angeles')
-      .format("MMM. 'YY");
-
-    const uri = `https://colorstack-family.slack.com/archives/${thread.channelId}/p${thread.id}`;
-
-    return `• <${uri}|*Thread #${i + 1}*> [${date}]`;
-  });
-
   const message =
     'I found some threads in our workspace that _may_ be relevant to your question! 🧵' +
     '\n\n' +
-    items.join('\n') +
+    threads.join('\n') +
     '\n\n' +
     `_I'm a ColorStack AI assistant! DM me a question <https://colorstack-family.slack.com/app_redirect?app=A04UHP3CKUZ|*here*> and I'll answer it using the full context of our Slack workspace!_`;
 
