@@ -485,7 +485,7 @@ async function getMostRelevantThreads(
     return !options.exclude?.includes(match.id);
   });
 
-  const messages = await Promise.all(
+  let messages = await Promise.all(
     filteredMatches.map(async (match) => {
       const [thread, replies] = await Promise.all([
         db
@@ -517,6 +517,12 @@ async function getMostRelevantThreads(
     })
   );
 
+  // We filter out any messages that don't have replies, since this
+  // is most likely a question that never got answered.
+  messages = messages.filter((message) => {
+    return !!message.replies.length;
+  });
+
   // This next step is an important one -- we're going to rerank the messages
   // based on their relevance to the question. This helps us get the most
   // relevant threads to the LLM. Reranking models are different from
@@ -524,15 +530,9 @@ async function getMostRelevantThreads(
   // more accurate at assessing relevance, but they are slower and more
   // expensive to compute.
 
-  const documents = messages
-    .filter((message) => {
-      // We filter out any messages that don't have replies, since this
-      // is most likely a question that never got answered.
-      return !!message.replies.length;
-    })
-    .map((message) => {
-      return [message.createdAt, message.message, message.replies].join('\n');
-    });
+  const documents = messages.map((message) => {
+    return [message.createdAt, message.message, message.replies].join('\n');
+  });
 
   const rerankingResult = await rerankDocuments(question, documents, {
     topK: options.topK,
