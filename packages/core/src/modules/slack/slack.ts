@@ -193,50 +193,40 @@ export async function answerPublicQuestion({
 
   const threadsResult = await getMostRelevantThreads(text, {
     exclude: [threadId],
-    topK: 10,
+    topK: 5,
   });
 
   if (!threadsResult.ok) {
     return threadsResult;
   }
 
-  const threads = threadsResult.data
-    .map((thread) => {
-      const daysSinceCreation = dayjs().diff(thread.createdAt, 'day');
-
-      // There's a maximum of a 2 point boost based on when the thread was
-      // posted. If the thread is older than 2 years, it will not be boosted.
-      const recencyBoost = Math.max(0, 2 - daysSinceCreation / 365);
-
-      return {
-        ...thread,
-        score: thread.score * 100 + recencyBoost,
-      };
-    })
-    .filter((thread) => thread.score >= 85)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5)
-    .map((thread, i) => {
-      const date = dayjs(thread.createdAt)
-        .tz('America/Los_Angeles')
-        .format("MMM. 'YY");
-
-      const uri = `https://colorstack-family.slack.com/archives/${thread.channelId}/p${thread.id}`;
-
-      return `• <${uri}|*Thread #${i + 1}*> [${date}]`;
-    });
+  const threads = threadsResult.data.filter((thread) => {
+    return thread.score >= 0.98;
+  });
 
   if (!threads.length) {
     // Though we didn't find any relevant threads, this is still a "success".
+    // TODO: Send an ephemeral message to the user to acknowledge that we've
+    // processed their question.
     return success({});
   }
 
+  const items = threadsResult.data.map((thread, i) => {
+    const date = dayjs(thread.createdAt)
+      .tz('America/Los_Angeles')
+      .format("MMM. 'YY");
+
+    const uri = `https://colorstack-family.slack.com/archives/${thread.channelId}/p${thread.id}`;
+
+    return `• <${uri}|*Thread #${i + 1}*> [${date}]`;
+  });
+
   const message =
-    'I found some threads in our workspace that _may_ be relevant to your question! 🔎' +
+    'I found some threads in our workspace that _may_ be relevant to your question! 🧵' +
     '\n\n' +
-    threads.join('\n') +
+    items.join('\n') +
     '\n\n' +
-    `_I'm a ColorStack AI assistant with the full context of our Slack workspace! I can answer your questions in detail -- just send me a DM <https://colorstack-family.slack.com/app_redirect?app=A04UHP3CKUZ|*here*>!_`;
+    `_I'm a ColorStack AI assistant! DM me a question <https://colorstack-family.slack.com/app_redirect?app=A04UHP3CKUZ|*here*> and I'll answer it using the full context of our Slack workspace!_`;
 
   job('notification.slack.send', {
     channel: channelId,
@@ -536,6 +526,8 @@ async function getMostRelevantThreads(
 
   const documents = messages
     .filter((message) => {
+      // We filter out any messages that don't have replies, since this
+      // is most likely a question that never got answered.
       return !!message.replies.length;
     })
     .map((message) => {
