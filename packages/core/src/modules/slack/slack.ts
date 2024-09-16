@@ -177,6 +177,31 @@ export async function answerPublicQuestion({
       }
     });
 
+  const slackMessage = await db
+    .selectFrom('slackMessages')
+    .select(['autoRepliedAt'])
+    .where('channelId', '=', channelId)
+    .where('id', '=', threadId)
+    .executeTakeFirst();
+
+  if (!slackMessage) {
+    return fail({
+      code: 404,
+      error: 'Could not auto reply to Slack message b/c it was not found.',
+    });
+  }
+
+  if (slackMessage.autoRepliedAt) {
+    job('notification.slack.ephemeral.send', {
+      channel: channelId,
+      text: 'I already replied to this question!',
+      threadId,
+      userId,
+    });
+
+    return success({});
+  }
+
   const questionResult = await isQuestion(text);
 
   if (!questionResult.ok) {
@@ -259,6 +284,15 @@ export async function answerPublicQuestion({
     message,
     threadId,
     workspace: 'regular',
+  });
+
+  await db.transaction().execute(async (trx) => {
+    await trx
+      .updateTable('slackMessages')
+      .set({ autoRepliedAt: new Date() })
+      .where('channelId', '=', channelId)
+      .where('id', '=', threadId)
+      .execute();
   });
 
   return success({});
