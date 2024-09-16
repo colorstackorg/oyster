@@ -323,6 +323,15 @@ export const NotificationBullJob = z.discriminatedUnion('name', [
     data: EmailTemplate,
   }),
   z.object({
+    name: z.literal('notification.slack.ephemeral.send'),
+    data: z.object({
+      channel: z.string().trim().min(1),
+      text: z.string().trim().min(1),
+      threadId: z.string().trim().min(1).optional(),
+      userId: z.string().trim().min(1),
+    }),
+  }),
+  z.object({
     name: z.literal('notification.slack.send'),
     data: z.discriminatedUnion('workspace', [
       z.object({
