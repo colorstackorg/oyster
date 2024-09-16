@@ -33,18 +33,16 @@ export async function sendSlackNotification(input: SendNotificationInput) {
 
   const client = input.workspace === 'internal' ? internalSlack : slack;
 
-  const channel = input.channel || ENV.INTERNAL_SLACK_NOTIFICATIONS_CHANNEL_ID;
-
   if ('ephemeral' in input && input.ephemeral) {
     await client.chat.postEphemeral({
-      channel,
+      channel: input.channel,
       text: input.message,
       thread_ts: input.threadId,
       user: input.userId,
     });
   } else {
     await client.chat.postMessage({
-      channel,
+      channel: input.channel || ENV.INTERNAL_SLACK_NOTIFICATIONS_CHANNEL_ID,
       text: input.message,
       thread_ts: input.threadId,
     });
