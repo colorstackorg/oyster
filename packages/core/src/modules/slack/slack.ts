@@ -180,12 +180,26 @@ export async function answerPublicQuestion({
   const questionResult = await isQuestion(text);
 
   if (!questionResult.ok) {
+    job('notification.slack.ephemeral.send', {
+      channel: channelId,
+      text: questionResult.error,
+      threadId,
+      userId,
+    });
+
     return questionResult;
   }
 
   const isValidQuestion = questionResult.data;
 
   if (!isValidQuestion) {
+    job('notification.slack.ephemeral.send', {
+      channel: channelId,
+      text: 'I can only respond to questions. Please try again on a different message!',
+      threadId,
+      userId,
+    });
+
     // Though it's not a valid question, this is still a "success" b/c we
     // gracefully/respectfully decided not to answer the question.
     return success({});
@@ -197,6 +211,13 @@ export async function answerPublicQuestion({
   });
 
   if (!threadsResult.ok) {
+    job('notification.slack.ephemeral.send', {
+      channel: channelId,
+      text: threadsResult.error,
+      threadId,
+      userId,
+    });
+
     return threadsResult;
   }
 
@@ -215,9 +236,14 @@ export async function answerPublicQuestion({
     });
 
   if (!threads.length) {
+    job('notification.slack.ephemeral.send', {
+      channel: channelId,
+      text: "I couldn't find any relevant threads in our workspace. Sorry!",
+      threadId,
+      userId,
+    });
+
     // Though we didn't find any relevant threads, this is still a "success".
-    // TODO: Send an ephemeral message to the user to acknowledge that we've
-    // processed their question.
     return success({});
   }
 

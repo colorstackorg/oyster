@@ -10,14 +10,6 @@ type SendNotificationInput =
       workspace: 'regular';
     }
   | {
-      channel: string;
-      ephemeral: true;
-      message: string;
-      threadId?: string;
-      workspace: 'regular';
-      userId: string;
-    }
-  | {
       channel?: string;
       message: string;
       threadId?: string;
@@ -33,18 +25,11 @@ export async function sendSlackNotification(input: SendNotificationInput) {
 
   const client = input.workspace === 'internal' ? internalSlack : slack;
 
-  if ('ephemeral' in input && input.ephemeral) {
-    await client.chat.postEphemeral({
-      channel: input.channel,
-      text: input.message,
-      thread_ts: input.threadId,
-      user: input.userId,
-    });
-  } else {
-    await client.chat.postMessage({
-      channel: input.channel || ENV.INTERNAL_SLACK_NOTIFICATIONS_CHANNEL_ID,
-      text: input.message,
-      thread_ts: input.threadId,
-    });
-  }
+  const channel = input.channel || ENV.INTERNAL_SLACK_NOTIFICATIONS_CHANNEL_ID;
+
+  await client.chat.postMessage({
+    channel,
+    text: input.message,
+    thread_ts: input.threadId,
+  });
 }
