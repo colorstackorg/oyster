@@ -396,14 +396,14 @@ export async function answerPublicQuestion({
     return success({});
   }
 
-  const { team_id } = await slack.auth.test();
+  const { team_id, user_id } = await slack.auth.test();
 
   const message =
     'I found some threads in our workspace that _may_ be relevant to your question! 🧵' +
     '\n\n' +
     threads.join('\n') +
     '\n\n' +
-    `_I'm a ColorStack AI assistant! DM me a question <slack://user?team=${team_id}&id=U04TYGYMKQE|*here*> and I'll answer it using the full context of our Slack workspace!_`;
+    `_I'm a ColorStack AI assistant! DM me a question <slack://user?team=${team_id}&id=${user_id}|*here*> and I'll answer it using the full context of our Slack workspace!_`;
 
   job('notification.slack.send', {
     channel: channelId,
