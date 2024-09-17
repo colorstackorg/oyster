@@ -6,6 +6,7 @@ import { onSlackUserInvited } from '@/modules/slack/events/slack-user-invited';
 import {
   answerChatbotQuestion,
   answerPublicQuestion,
+  answerPublicQuestionInPrivate,
   syncThreadToPinecone,
 } from '@/modules/slack/slack';
 import { updateBirthdatesFromSlack } from '@/modules/slack/use-cases/update-birthdates-from-slack';
@@ -82,6 +83,15 @@ export const slackWorker = registerWorker(
       })
       .with({ name: 'slack.profile_picture.changed' }, async ({ data }) => {
         return onSlackProfilePictureChanged(data);
+      })
+      .with({ name: 'slack.question.answer.private' }, async ({ data }) => {
+        const result = await answerPublicQuestionInPrivate(data);
+
+        if (!result.ok) {
+          throw new Error(result.error);
+        }
+
+        return result.data;
       })
       .with({ name: 'slack.reaction.add' }, async ({ data }) => {
         return addSlackReaction(data);
