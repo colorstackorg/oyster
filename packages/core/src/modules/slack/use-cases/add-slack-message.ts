@@ -2,6 +2,7 @@ import { db } from '@oyster/db';
 
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
+import { redis } from '@/infrastructure/redis';
 import { ErrorWithContext } from '@/shared/errors';
 import { retryWithBackoff } from '@/shared/utils/core.utils';
 import { getSlackMessage } from '../services/slack-message.service';
@@ -50,6 +51,23 @@ export async function addSlackMessage(
     action: 'add',
     threadId: data.threadId || data.id,
   });
+
+  // We track channels that are "auto-reply" channels in Redis. If a message is
+  // sent to one of those channels, we should attempt to answer the question
+  // using AI in private (DM).
+  const isAutoReplyChannel = await redis.sismember(
+    'slack:auto_reply_channels',
+    data.channelId
+  );
+
+  if (isAutoReplyChannel && !data.threadId) {
+    job('slack.question.answer.private', {
+      channelId: data.channelId,
+      question: data.text as string,
+      threadId: data.id,
+      userId: data.userId,
+    });
+  }
 }
 
 async function ensureThreadExistsIfNecessary(
