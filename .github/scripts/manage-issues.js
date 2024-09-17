@@ -20,6 +20,7 @@ module.exports = async function manageIssues({ context, github }) {
   console.log(`Processing ${issues.length} open issues.`);
 
   for (const issue of issues) {
+    console.log(); // Newline for readability.
     await processIssue({ context, github, issue });
   }
 };
@@ -131,5 +132,9 @@ async function processIssue({ context, github, issue }) {
       owner: context.repo.owner,
       repo: context.repo.repo,
     });
+
+    return;
   }
+
+  console.log(`Issue #${issue.number} is up to date.`);
 }
