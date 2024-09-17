@@ -20,7 +20,7 @@ module.exports = async function manageIssues({ context, github }) {
   console.log(`Processing ${issues.length} open issues.`);
 
   for (const issue of issues) {
-    await processIssue(issue, context);
+    await processIssue({ context, github, issue });
   }
 };
 
@@ -32,7 +32,7 @@ module.exports = async function manageIssues({ context, github }) {
  *
  * @param {Object} issue - GitHub issue to check.
  */
-async function processIssue(issue, context) {
+async function processIssue({ context, github, issue }) {
   console.log(`Processing issue #${issue.number}.`);
 
   const now = Date.now();
