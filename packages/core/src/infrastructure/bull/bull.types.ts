@@ -487,6 +487,22 @@ export const SlackBullJob = z.discriminatedUnion('name', [
     }),
   }),
   z.object({
+    name: z.literal('slack.profile_picture.changed'),
+    data: z.object({
+      profilePicture: Student.shape.profilePicture,
+      slackId: Student.shape.slackId.unwrap(),
+    }),
+  }),
+  z.object({
+    name: z.literal('slack.question.answer.private'),
+    data: z.object({
+      channelId: z.string().trim().min(1),
+      question: z.string().trim().min(1),
+      threadId: z.string().trim().min(1),
+      userId: z.string().trim().min(1),
+    }),
+  }),
+  z.object({
     name: z.literal('slack.reaction.add'),
     data: SlackReaction.pick({
       channelId: true,
@@ -502,13 +518,6 @@ export const SlackBullJob = z.discriminatedUnion('name', [
       messageId: true,
       reaction: true,
       userId: true,
-    }),
-  }),
-  z.object({
-    name: z.literal('slack.profile_picture.changed'),
-    data: z.object({
-      profilePicture: Student.shape.profilePicture,
-      slackId: Student.shape.slackId.unwrap(),
     }),
   }),
   z.object({
