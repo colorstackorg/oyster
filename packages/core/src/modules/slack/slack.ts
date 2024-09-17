@@ -13,6 +13,7 @@ import {
 import { track } from '@/modules/mixpanel';
 import { sendSlackNotification } from '@/modules/notification/use-cases/send-slack-notification';
 import { getPineconeIndex } from '@/modules/pinecone';
+import { slack } from '@/modules/slack/instances';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 
 // Constants
@@ -212,9 +213,10 @@ export async function answerPublicQuestionInPrivate({
   }
 
   const message = [
-    `I saw your question in <#${channelId}>:`,
+    `You asked a great question in <#${channelId}>!`,
     `>${question}`,
-    "I'll respond in this thread shortly! 🧵",
+    'Take a look at my answer in this thread! 👀',
+    "_I'm a ColorStack AI assistant! DM me a question in this channel and I'll answer it using the full history of our Slack workspace!_",
   ].join(BLANK_LINE);
 
   // We're doing this synchronously so that we can get the ID of the message
@@ -225,18 +227,12 @@ export async function answerPublicQuestionInPrivate({
     workspace: 'regular',
   });
 
-  job(
-    'notification.slack.send',
-    {
-      channel: userId,
-      message: answerResult.data,
-      threadId: notificationTs,
-      workspace: 'regular',
-    },
-    {
-      delay: 1000 * 2, // Give the impression that we're "thinking"...
-    }
-  );
+  job('notification.slack.send', {
+    channel: userId,
+    message: answerResult.data,
+    threadId: notificationTs,
+    workspace: 'regular',
+  });
 
   track({
     application: 'Slack',
@@ -400,12 +396,14 @@ export async function answerPublicQuestion({
     return success({});
   }
 
+  const { team_id } = await slack.auth.test();
+
   const message =
     'I found some threads in our workspace that _may_ be relevant to your question! 🧵' +
     '\n\n' +
     threads.join('\n') +
     '\n\n' +
-    `_I'm a ColorStack AI assistant! DM me a question <https://colorstack-family.slack.com/app_redirect?app=A04UHP3CKUZ|*here*> and I'll answer it using the full context of our Slack workspace!_`;
+    `_I'm a ColorStack AI assistant! DM me a question <slack://user?team=${team_id}&id=U04TYGYMKQE|*here*> and I'll answer it using the full context of our Slack workspace!_`;
 
   job('notification.slack.send', {
     channel: channelId,
