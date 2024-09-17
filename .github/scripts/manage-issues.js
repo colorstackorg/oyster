@@ -20,7 +20,8 @@ module.exports = async function manageIssues({ context, github }) {
   console.log(`Processing ${issues.length} open issues.`);
 
   for (const issue of issues) {
-    await processIssue(issue, context);
+    console.log(''); // Newline for readability.
+    await processIssue({ context, github, issue });
   }
 };
 
@@ -32,7 +33,7 @@ module.exports = async function manageIssues({ context, github }) {
  *
  * @param {Object} issue - GitHub issue to check.
  */
-async function processIssue(issue, context) {
+async function processIssue({ context, github, issue }) {
   console.log(`Processing issue #${issue.number}.`);
 
   const now = Date.now();
@@ -131,5 +132,9 @@ async function processIssue(issue, context) {
       owner: context.repo.owner,
       repo: context.repo.repo,
     });
+
+    return;
   }
+
+  console.log(`Issue #${issue.number} is up to date.`);
 }
