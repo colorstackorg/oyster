@@ -1,0 +1,20 @@
+name: Issue Management
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at midnight UTC.
+  workflow_dispatch: # Allows us to manually trigger the action.
+
+jobs:
+  manage-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Manage inactive issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const manageIssues = require('./.github/scripts/manage-issues.js');
+            await manageIssues({ context, github });

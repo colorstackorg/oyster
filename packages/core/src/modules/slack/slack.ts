@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import dedent from 'dedent';
 import { type ExpressionBuilder } from 'kysely';
 
@@ -10,10 +11,18 @@ import {
   rerankDocuments,
 } from '@/modules/ai/ai';
 import { track } from '@/modules/mixpanel';
+import { sendSlackNotification } from '@/modules/notification/use-cases/send-slack-notification';
 import { getPineconeIndex } from '@/modules/pinecone';
+import { slack } from '@/modules/slack/instances';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 
-type RespondToBotQuestionInput = {
+// Constants
+
+const BLANK_LINE = '\n\n';
+
+// Core
+
+type AnswerChatbotQuestionInput = {
   /**
    * The ID of the channel where the message was sent. This should be the
    * DM channel between the bot and the user.
@@ -31,7 +40,7 @@ type RespondToBotQuestionInput = {
   threadId?: string;
 
   /**
-   * The ID of the SLACK user who asked the question.
+   * The ID of the Slack user who asked the question.
    */
   userId: string;
 };
@@ -50,7 +59,7 @@ export async function answerChatbotQuestion({
   text,
   threadId,
   userId,
-}: RespondToBotQuestionInput) {
+}: AnswerChatbotQuestionInput) {
   if (threadId) {
     return;
   }
@@ -66,7 +75,10 @@ export async function answerChatbotQuestion({
         track({
           application: 'Slack',
           event: 'Chatbot Question Asked',
-          properties: { Question: text },
+          properties: {
+            Question: text,
+            Type: 'DM',
+          },
           user: member.id,
         });
       }
@@ -98,28 +110,318 @@ export async function answerChatbotQuestion({
     workspace: 'regular',
   });
 
-  const answerResult = await getAnswerFromSlackHistory(text);
+  const threadsResult = await getMostRelevantThreads(text, {
+    threshold: 0.5,
+    topK: 5,
+  });
+
+  if (!threadsResult.ok) {
+    return threadsResult;
+  }
+
+  const threads = threadsResult.data;
+
+  const answerResult = await getAnswerFromSlackHistory(text, threads);
 
   if (!answerResult.ok) {
     throw new Error(answerResult.error);
   }
 
-  // Remove all <thread></thread> references and replace them with an actual
-  // Slack message link. TODO: Replace the Slack workspace URL with an
-  // environment variable.
-  const answerWithLinks = answerResult.data.replace(
-    /<thread>(.*?):(.*?):(.*?)<\/thread>/g,
-    `<https://colorstack-family.slack.com/archives/$1/p$2|*[$3]*>`
-  );
-
   job('notification.slack.send', {
     channel: channelId,
-    message: answerWithLinks,
+    message: answerResult.data,
     threadId: id,
     workspace: 'regular',
   });
 
   // TODO: Delete the loading message after the answer is sent.
+}
+
+type AnswerPublicQuestionInPrivateInput = {
+  /**
+   * The ID of the channel where the question was asked (ie: public channel).
+   */
+  channelId: string;
+
+  /**
+   * The text of the question that was asked.
+   */
+  question: string;
+
+  /**
+   * The ID of the message in which the question was asked. This should be a
+   * top-level message (ie: start of a thread).
+   */
+  threadId: string;
+
+  /**
+   * The ID of the Slack user who asked the question.
+   */
+  userId: string;
+};
+
+/**
+ * Answers a question asked in a public Slack message in a private DM to the
+ * user who asked the question.
+ *
+ * This uses the underlying `getAnswerFromSlackHistory` function to answer
+ * the question, so this is a full RAG implementation.
+ *
+ * @param input - The message (public question) to answer.
+ * @returns The result of the answer.
+ */
+export async function answerPublicQuestionInPrivate({
+  channelId,
+  question,
+  threadId,
+  userId,
+}: AnswerPublicQuestionInPrivateInput) {
+  const questionResult = await isQuestion(question);
+
+  if (!questionResult.ok) {
+    return questionResult;
+  }
+
+  // If the question is not actually a question, then we can't answer it and
+  // we should gracefully exit.
+  if (!questionResult.data) {
+    return success({});
+  }
+
+  const threadsResult = await getMostRelevantThreads(question, {
+    exclude: [threadId], // Don't include the thread where question was asked.
+    threshold: 0.95, // High threshold for high confidence.
+    topK: 5,
+  });
+
+  if (!threadsResult.ok) {
+    return threadsResult;
+  }
+
+  const threads = threadsResult.data;
+
+  // If we can't find any relevant threads, then we should gracefully exit
+  // instead of asking the LLM to answer the question.
+  if (!threads.length) {
+    return success({});
+  }
+
+  const answerResult = await getAnswerFromSlackHistory(question, threads);
+
+  if (!answerResult.ok) {
+    return answerResult;
+  }
+
+  const message = [
+    `You asked a great question in <#${channelId}>!`,
+    `>${question}`,
+    'Take a look at my answer in this thread! 👀',
+    "_I'm a ColorStack AI assistant! DM me a question in this channel and I'll answer it using the full history of our Slack workspace!_",
+  ].join(BLANK_LINE);
+
+  // We're doing this synchronously so that we can get the ID of the message
+  // that was just sent, which is needed in order to "reply" to the thread.
+  const notificationTs = await sendSlackNotification({
+    channel: userId, // Sending a DM, not responding in public thread.
+    message,
+    workspace: 'regular',
+  });
+
+  job('notification.slack.send', {
+    channel: userId,
+    message: answerResult.data,
+    threadId: notificationTs,
+    workspace: 'regular',
+  });
+
+  track({
+    application: 'Slack',
+    event: 'Public Question Answered',
+    properties: {
+      '# of Threads Found': threads.length,
+      Question: question,
+      Where: 'DM',
+    },
+  });
+
+  return success({});
+}
+
+type AnswerPublicQuestionInput = {
+  /**
+   * The ID of the channel where the message is located. This is typically
+   * a public channel since that's what our Slack App has access to.
+   */
+  channelId: string;
+
+  /**
+   * The text of the public message (potentially a question).
+   */
+  text: string;
+
+  /**
+   * The ID of the thread where the public message is located.
+   */
+  threadId: string;
+
+  /**
+   * The ID of the Slack user who triggered the action, not necessarily the
+   * author of the public message.
+   */
+  userId: string;
+};
+
+/**
+ * Answers a question asked in a public Slack message by linking to relevant
+ * threads in our Slack workspace.
+ *
+ * @param input - The message (public question) to answer.
+ * @returns The result of the answer.
+ */
+export async function answerPublicQuestion({
+  channelId,
+  text,
+  threadId,
+  userId,
+}: AnswerPublicQuestionInput): Promise<Result> {
+  // Track the question asked by the user in Mixpanel but asychronously so that
+  // we don't block the Slack event from being processed.
+  db.selectFrom('students')
+    .select(['id'])
+    .where('slackId', '=', userId)
+    .executeTakeFirst()
+    .then((member) => {
+      if (member) {
+        track({
+          application: 'Slack',
+          event: 'Chatbot Question Asked',
+          properties: {
+            Question: text as string,
+            Type: 'Public',
+          },
+          user: member.id,
+        });
+      }
+    });
+
+  const slackMessage = await db
+    .selectFrom('slackMessages')
+    .select(['autoRepliedAt'])
+    .where('channelId', '=', channelId)
+    .where('id', '=', threadId)
+    .executeTakeFirst();
+
+  if (!slackMessage) {
+    return fail({
+      code: 404,
+      error: 'Could not auto reply to Slack message b/c it was not found.',
+    });
+  }
+
+  if (slackMessage.autoRepliedAt) {
+    job('notification.slack.ephemeral.send', {
+      channel: channelId,
+      text: 'I already replied to this question!',
+      threadId,
+      userId,
+    });
+
+    return success({});
+  }
+
+  const questionResult = await isQuestion(text);
+
+  if (!questionResult.ok) {
+    job('notification.slack.ephemeral.send', {
+      channel: channelId,
+      text: questionResult.error,
+      threadId,
+      userId,
+    });
+
+    return questionResult;
+  }
+
+  const isValidQuestion = questionResult.data;
+
+  if (!isValidQuestion) {
+    job('notification.slack.ephemeral.send', {
+      channel: channelId,
+      text: 'I can only respond to questions. Please try again on a different message!',
+      threadId,
+      userId,
+    });
+
+    // Though it's not a valid question, this is still a "success" b/c we
+    // gracefully/respectfully decided not to answer the question.
+    return success({});
+  }
+
+  const threadsResult = await getMostRelevantThreads(text, {
+    exclude: [threadId],
+    threshold: 0.98,
+    topK: 5,
+  });
+
+  if (!threadsResult.ok) {
+    job('notification.slack.ephemeral.send', {
+      channel: channelId,
+      text: threadsResult.error,
+      threadId,
+      userId,
+    });
+
+    return threadsResult;
+  }
+
+  const threads = threadsResult.data.map((thread, i) => {
+    const date = dayjs(thread.createdAt)
+      .tz('America/Los_Angeles')
+      .format("MMM. 'YY");
+
+    const uri = `https://colorstack-family.slack.com/archives/${thread.channelId}/p${thread.id}`;
+
+    return `• <${uri}|*Thread #${i + 1}*> [${date}]`;
+  });
+
+  if (!threads.length) {
+    job('notification.slack.ephemeral.send', {
+      channel: channelId,
+      text: "I couldn't find any relevant threads in our workspace. Sorry!",
+      threadId,
+      userId,
+    });
+
+    // Though we didn't find any relevant threads, this is still a "success".
+    return success({});
+  }
+
+  const { team_id, user_id } = await slack.auth.test();
+
+  const message =
+    'I found some threads in our workspace that _may_ be relevant to your question! 🧵' +
+    '\n\n' +
+    threads.join('\n') +
+    '\n\n' +
+    `_I'm a ColorStack AI assistant! DM me a question <slack://user?team=${team_id}&id=${user_id}|*here*> and I'll answer it using the full context of our Slack workspace!_`;
+
+  job('notification.slack.send', {
+    channel: channelId,
+    message,
+    threadId,
+    workspace: 'regular',
+  });
+
+  await db.transaction().execute(async (trx) => {
+    await trx
+      .updateTable('slackMessages')
+      .set({ autoRepliedAt: new Date() })
+      .where('channelId', '=', channelId)
+      .where('id', '=', threadId)
+      .execute();
+  });
+
+  return success({});
 }
 
 /**
@@ -142,7 +444,9 @@ async function isQuestion(question: string): Promise<Result<boolean>> {
         cache: true,
         type: 'text',
         text: dedent`
-          Your only job is to determine if the user's question is a question.
+          Determine if the user's question is a question. It does not need to
+          have the appropriate tone/punctuation, but it should be a question.
+
           If it is, respond with "true". If it is not, respond with "false".
         `,
       },
@@ -161,91 +465,25 @@ async function isQuestion(question: string): Promise<Result<boolean>> {
  * Ask a question to the Slack workspace.
  *
  * This is a RAG (Retrieval Augmented Generation) implementation that works
- * as follows:
- * - Create an embedding for the question.
- * - Query the vector database for the most similar Slack messages.
- * - Pass the most similar Slack threads found to an LLM.
- * - Return the answer.
+ * by finding the most relevant Slack threads to the question and passing them
+ * to an LLM with additional instructions for answering.
  *
  * @param question - The question to ask.
+ * @param threads - The most relevant threads to the question.
  * @returns The answer to the question.
  */
 async function getAnswerFromSlackHistory(
-  question: string
+  question: string,
+  threads: RelevantThread[]
 ): Promise<Result<string>> {
-  const embeddingResult = await createEmbedding(question);
-
-  if (!embeddingResult.ok) {
-    return fail(embeddingResult);
-  }
-
-  const { matches } = await getPineconeIndex('slack-messages').query({
-    includeMetadata: true,
-    topK: 50,
-    vector: embeddingResult.data,
-  });
-
-  const messages = await Promise.all(
-    matches.map(async (match) => {
-      const [thread, replies] = await Promise.all([
-        db
-          .selectFrom('slackMessages')
-          .select(['channelId', 'createdAt', 'text'])
-          .where('id', '=', match.id)
-          .executeTakeFirst(),
-
-        db
-          .selectFrom('slackMessages')
-          .select(['text'])
-          .where('threadId', '=', match.id)
-          .orderBy('createdAt', 'asc')
-          .limit(50)
-          .execute(),
-      ]);
-
-      const formattedReplies = replies
-        .map((message) => message.text)
-        .join('\n');
-
-      return {
-        channelId: thread?.channelId || '',
-        createdAt: thread?.createdAt.toISOString() || '',
-        message: thread?.text || '',
-        replies: formattedReplies,
-        threadId: match.id,
-      };
-    })
-  );
-
-  // This next step is an important one -- we're going to rerank the messages
-  // based on their relevance to the question. This helps us get the most
-  // relevant threads to the LLM. Reranking models are different from
-  // vector search which are optimized for fast retrieval. Reranking models are
-  // more accurate at assessing relevance, but they are slower and more
-  // expensive to compute.
-
-  const documents = messages.map((message) => {
-    return [message.createdAt, message.message, message.replies].join('\n');
-  });
-
-  const rerankingResult = await rerankDocuments(question, documents, {
-    topK: 5,
-  });
-
-  if (!rerankingResult.ok) {
-    return fail(rerankingResult);
-  }
-
-  const rerankedThreads = rerankingResult.data.map((document) => {
-    const message = messages[document.index];
-
+  const formattedThreads = threads.map((thread) => {
     const parts = [
-      '[Relevance Score]: ' + document.relevance_score,
-      '[Timestamp]: ' + message.createdAt,
-      '[Channel ID]: ' + message.channelId,
-      '[Thread ID]: ' + message.threadId,
-      '[Message]: ' + message.message,
-      '[Replies]: ' + message.replies,
+      '[Relevance Score]: ' + thread.score,
+      '[Timestamp]: ' + thread.createdAt,
+      '[Channel ID]: ' + thread.channelId,
+      '[Thread ID]: ' + thread.id,
+      '[Message]: ' + thread.message,
+      '[Replies]: ' + thread.replies,
     ];
 
     return parts.join('\n');
@@ -254,7 +492,7 @@ async function getAnswerFromSlackHistory(
   const userPrompt = [
     'Please answer the following question based on the Slack context provided:',
     `<question>${question}</question>`,
-    `<threads>${rerankedThreads.join('\n\n')}</threads>`,
+    `<threads>${formattedThreads.join('\n\n')}</threads>`,
   ].join('\n');
 
   const systemPrompt = dedent`
@@ -323,6 +561,11 @@ async function getAnswerFromSlackHistory(
         particularly if the sentiment is a negative/speculative one.
       - Respond like you are an ambassador for the ColorStack community.
     </rules>
+
+    <IMPORTANT>
+      - MAINTAIN CONSISTENT THREAD NUMBERING: Each unique thread should always
+        be assigned the same reference number throughout the response.
+    </IMPORTANT>
   `;
 
   const completionResult = await getChatCompletion({
@@ -341,7 +584,171 @@ async function getAnswerFromSlackHistory(
     return fail(completionResult);
   }
 
-  return success(completionResult.data);
+  const answer = completionResult.data;
+  const answerWithReferences = addThreadReferences(answer);
+
+  return success(answerWithReferences);
+}
+
+/**
+ * Removes all <thread></thread> references and replace them with an actual
+ * Slack message link and the display text (ie: `[1]`, `[2]`, etc).
+ *
+ *
+ * @param text - The text to add thread references to.
+ * @returns The text with thread references added.
+ *
+ * @todo Replace the Slack workspace URL with an environment variable.
+ */
+function addThreadReferences(text: string): string {
+  return text.replace(
+    /<thread>(.*?):(.*?):(.*?)<\/thread>/g,
+    `<https://colorstack-family.slack.com/archives/$1/p$2|*[$3]*>`
+  );
+}
+
+type GetMostRelevantThreadsOptions = {
+  /**
+   * The IDs of the threads to exclude from the search.
+   *
+   * The common use case for this is that if we are answering a question in a
+   * thread, we don't want to include the current thread in the search.
+   */
+  exclude?: string[];
+
+  /**
+   * The minimum relevance score to include in the results. This is useful if
+   * we want to filter out threads that are too low of a relevance score.
+   *
+   * Must be between 0 and 1.
+   *
+   * @example 0.5
+   * @example 0.95
+   * @example 0.98
+   */
+  threshold?: number;
+
+  /**
+   * The maximum number of threads to return. Note that this refers to the final
+   * number of threads AFTER reranking, not the initial vector database
+   * retrieval.
+   */
+  topK: number;
+};
+
+type RelevantThread = {
+  channelId: string;
+  createdAt: string;
+  id: string;
+  message: string;
+  replies: string;
+  score: number;
+};
+
+/**
+ * Finds the most relevant threads to a question.
+ *
+ * This works by:
+ * - Creating an embedding for the question.
+ * - Querying the vector database for the most similar Slack messages.
+ * - Populating the results with more metadata.
+ * - Reranking the results using an different model.
+ *
+ * @param question - The question to get the most relevant threads for.
+ * @param options - The options for the query.
+ * @returns The most relevant threads to the question.
+ */
+async function getMostRelevantThreads(
+  question: string,
+  options: GetMostRelevantThreadsOptions
+): Promise<Result<RelevantThread[]>> {
+  const embeddingResult = await createEmbedding(question);
+
+  if (!embeddingResult.ok) {
+    return embeddingResult;
+  }
+
+  const embedding = embeddingResult.data;
+
+  const { matches } = await getPineconeIndex('slack-messages').query({
+    includeMetadata: true,
+    topK: 50,
+    vector: embedding,
+  });
+
+  const filteredMatches = matches.filter((match) => {
+    return !options.exclude?.includes(match.id);
+  });
+
+  let messages = await Promise.all(
+    filteredMatches.map(async (match) => {
+      const [thread, replies] = await Promise.all([
+        db
+          .selectFrom('slackMessages')
+          .select(['channelId', 'createdAt', 'text'])
+          .where('id', '=', match.id)
+          .executeTakeFirst(),
+
+        db
+          .selectFrom('slackMessages')
+          .select(['text'])
+          .where('threadId', '=', match.id)
+          .orderBy('createdAt', 'asc')
+          .limit(50)
+          .execute(),
+      ]);
+
+      const formattedReplies = replies
+        .map((message) => message.text)
+        .join('\n');
+
+      return {
+        channelId: thread?.channelId || '',
+        createdAt: thread?.createdAt.toISOString() || '',
+        id: match.id,
+        message: thread?.text || '',
+        replies: formattedReplies,
+      };
+    })
+  );
+
+  // We filter out any messages that don't have replies, since this
+  // is most likely a question that never got answered.
+  messages = messages.filter((message) => {
+    return !!message.replies.length;
+  });
+
+  // This next step is an important one -- we're going to rerank the messages
+  // based on their relevance to the question. This helps us get the most
+  // relevant threads to the LLM. Reranking models are different from
+  // vector search which are optimized for fast retrieval. Reranking models are
+  // more accurate at assessing relevance, but they are slower and more
+  // expensive to compute.
+
+  const documents = messages.map((message) => {
+    return [message.createdAt, message.message, message.replies].join('\n');
+  });
+
+  const rerankingResult = await rerankDocuments(question, documents, {
+    topK: options.topK,
+  });
+
+  if (!rerankingResult.ok) {
+    return rerankingResult;
+  }
+
+  const threads = rerankingResult.data
+    .map((document) => {
+      return {
+        ...messages[document.index],
+        score: document.relevance_score,
+      };
+    })
+    .filter((document) => {
+      return options.threshold ? document.score >= options.threshold : true;
+    });
+
+  return success(threads);
 }
 
 type SyncThreadInput = {
