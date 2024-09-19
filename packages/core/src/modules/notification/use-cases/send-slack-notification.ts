@@ -27,9 +27,11 @@ export async function sendSlackNotification(input: SendNotificationInput) {
 
   const channel = input.channel || ENV.INTERNAL_SLACK_NOTIFICATIONS_CHANNEL_ID;
 
-  await client.chat.postMessage({
+  const { ts } = await client.chat.postMessage({
     channel,
     text: input.message,
     thread_ts: input.threadId,
   });
+
+  return ts;
 }
