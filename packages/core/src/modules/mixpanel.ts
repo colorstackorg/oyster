@@ -53,6 +53,12 @@ export type MixpanelEvent = {
       | 'Resources';
   };
 
+  'Public Question Answered': {
+    '# of Threads Found': number;
+    Question: string;
+    Where: 'DM';
+  };
+
   'Resource Added': undefined;
   'Resource Link Copied': undefined;
   'Resource Tag Added': undefined;
@@ -66,7 +72,7 @@ export type TrackInput<Event extends keyof MixpanelEvent> = {
   event: Event;
   properties: MixpanelEvent[Event];
   request?: Request;
-  user: string;
+  user?: string;
 };
 
 export function track<Event extends keyof MixpanelEvent>({
@@ -83,8 +89,8 @@ export function track<Event extends keyof MixpanelEvent>({
   if (!request) {
     mixpanel.track(event, {
       ...properties,
+      ...(user && { distinct_id: user }),
       Application: application,
-      distinct_id: user,
     });
 
     return;
@@ -99,6 +105,7 @@ export function track<Event extends keyof MixpanelEvent>({
 
   mixpanel.track(event, {
     ...properties,
+    ...(user && { distinct_id: user }),
     Application: application,
     $browser: result.browser.name,
     $browser_version: result.browser.version,
@@ -106,7 +113,6 @@ export function track<Event extends keyof MixpanelEvent>({
     $referrer: referrer,
     $os: result.os.name,
     $os_version: result.os.version,
-    distinct_id: user,
     ip,
   });
 }
