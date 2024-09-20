@@ -3,13 +3,13 @@ import { type Kysely } from 'kysely';
 export async function up(db: Kysely<any>) {
   await db.schema
     .alterTable('applications')
-    .addColumn('rejectionReason', 'varchar(255)')
+    .addColumn('rejection_reason', 'text')
     .execute();
 }
 
 export async function down(db: Kysely<any>) {
   await db.schema
     .alterTable('applications')
-    .dropColumn('rejectionReason')
+    .dropColumn('rejection_reason')
     .execute();
 }

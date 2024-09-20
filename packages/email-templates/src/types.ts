@@ -17,7 +17,10 @@ export const EmailTemplate = z.discriminatedUnion('name', [
   }),
   BaseEmail.extend({
     name: z.literal('application-rejected'),
-    data: Application.pick({ firstName: true, rejectionReason: true }),
+    data: z.object({
+      firstName: z.string(),
+      reason: z.string(),
+    }),
   }),
   BaseEmail.extend({
     name: z.literal('one-time-code-sent'),

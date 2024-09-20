@@ -14,10 +14,12 @@ import {
 import { useState } from 'react';
 import { Edit } from 'react-feather';
 import { generatePath } from 'react-router';
+import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
 import { listApplications } from '@oyster/core/applications';
+import { type ApplicationRejectionReason } from '@oyster/core/applications/types';
 import { ApplicationStatus } from '@oyster/core/applications/ui';
 import { Application } from '@oyster/types';
 import {
@@ -59,10 +61,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const { applications, totalCount } = await listApplications(searchParams);
 
-  console.log(applications);
-
   return json({
     applications,
+    status: searchParams.status,
     totalCount,
   });
 }
@@ -131,11 +132,9 @@ function FilterApplicationsForm() {
 type ApplicationInView = SerializeFrom<typeof loader>['applications'][number];
 
 function ApplicationsTable() {
-  const { applications } = useLoaderData<typeof loader>();
+  const { applications, status } = useLoaderData<typeof loader>();
 
   const { search } = useLocation();
-
-  const [searchParams] = useSearchParams(ApplicationsSearchParams);
 
   const columns: TableColumnProps<ApplicationInView>[] = [
     {
@@ -182,6 +181,24 @@ function ApplicationsTable() {
       size: '160',
     },
     {
+      displayName: 'Rejection Reason',
+      render: (application) => {
+        return match(application.rejectionReason as ApplicationRejectionReason)
+          .with('bad_linkedin', () => 'Incorrect or suspicious LinkedIn')
+          .with('email_already_used', () => 'Email already used')
+          .with('email_bounced', () => 'Email bounced')
+          .with('ineligible_major', () => 'Not the right major')
+          .with('is_international', () => 'Not enrolled in US or Canada')
+          .with('not_undergraduate', () => 'Not an undergrad student')
+          .with('other', () => 'Other')
+          .otherwise(() => '-');
+      },
+      size: '400',
+      show: () => {
+        return status === 'all' || status === 'rejected';
+      },
+    },
+    {
       displayName: 'Applied On',
       size: '240',
       render: (application) => application.createdAt,
@@ -199,13 +216,6 @@ function ApplicationsTable() {
         return `${reviewedByFirstName} ${reviewedByLastName}`;
       },
     },
-    {
-      displayName: 'Rejection Reason',
-      render: (application) => application.rejectionReason || '-',
-      size: '400',
-      show: () =>
-        searchParams.status === 'rejected' || searchParams.status === 'all',
-    },
   ];
 
   return (
@@ -213,7 +223,7 @@ function ApplicationsTable() {
       columns={columns}
       data={applications}
       emptyMessage="No pending applications left to review."
-      {...(['pending', 'rejected'].includes(searchParams.status) && {
+      {...(['pending', 'rejected'].includes(status) && {
         Dropdown: ApplicationDropdown,
       })}
     />

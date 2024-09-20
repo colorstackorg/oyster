@@ -5,7 +5,7 @@ import { type EmailTemplateData } from '../src/types';
 
 export function ApplicationRejectedEmail({
   firstName,
-  rejectionReason,
+  reason,
 }: EmailTemplateData<'application-rejected'>) {
   return (
     <Email.Template>
@@ -23,7 +23,7 @@ export function ApplicationRejectedEmail({
           into our community at this time.
         </Email.Text>
 
-        <Email.Text>Rejection Reason: {rejectionReason}</Email.Text>
+        {!!reason && <Email.Text>{reason}</Email.Text>}
 
         <Email.Text>
           If you are interested in attending any of our public events, please
