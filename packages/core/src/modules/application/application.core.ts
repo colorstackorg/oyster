@@ -13,6 +13,7 @@ import {
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import {
+  type ApplicationRejectionReason,
   ApplicationStatus,
   type ApplyInput,
 } from '@/modules/application/application.types';
@@ -117,6 +118,7 @@ export async function listApplications({
         'applications.firstName',
         'applications.id',
         'applications.lastName',
+        'applications.rejectionReason',
         'applications.status',
         'admins.firstName as reviewedByFirstName',
         'admins.lastName as reviewedByLastName',
@@ -359,13 +361,15 @@ export async function apply(input: ApplyInput) {
 
 export async function rejectApplication(
   applicationId: string,
-  adminId: string
+  adminId: string,
+  reason: ApplicationRejectionReason
 ) {
   const application = await db.transaction().execute(async (trx) => {
     const application = await trx
       .updateTable('applications')
       .set({
         rejectedAt: new Date(),
+        rejectionReason: reason,
         reviewedById: adminId,
         status: ApplicationStatus.REJECTED,
       })
@@ -388,6 +392,7 @@ export async function rejectApplication(
     automated: false,
     email: application.email,
     firstName: application.firstName,
+    reason,
   });
 }
 
@@ -416,15 +421,46 @@ export async function updateEmailApplication({
 
 // Helpers
 
+const ExpandedRejectionReason: Record<ApplicationRejectionReason, string> = {
+  bad_linkedin:
+    'Your LinkedIn profile is either incomplete or ' +
+    'does not match the information you provided in your application.',
+
+  email_already_used:
+    'There is already a ColorStack member with this email address.',
+
+  // We're not going to email them again since they've already bounced...
+  email_bounced: '',
+
+  ineligible_major: 'We only admit Computer Science (and related) majors.',
+
+  is_international: 'We only admit students enrolled in the US or Canada.',
+
+  not_undergraduate: 'We only admit undergraduate students.',
+
+  other:
+    'Due to the volume of applications we receive, we will not be able to ' +
+    'provide additional feedback on your application.',
+};
+
+type QueueRejectionEmailInput = Pick<Application, 'email' | 'firstName'> & {
+  automated: boolean;
+  reason: ApplicationRejectionReason;
+};
+
 function queueRejectionEmail({
   automated,
   email,
   firstName,
-}: Pick<Application, 'email' | 'firstName'> & { automated: boolean }) {
+  reason,
+}: QueueRejectionEmailInput) {
   job(
     'notification.email.send',
     {
-      data: { firstName },
+      data: {
+        firstName,
+        reason: ExpandedRejectionReason[reason],
+      },
       name: 'application-rejected',
       to: email,
     },
@@ -482,7 +518,9 @@ async function reviewApplication({
     return;
   }
 
-  const reject = await shouldReject(application as ApplicationForDecision);
+  const [reject, reason] = await shouldReject(
+    application as ApplicationForDecision
+  );
 
   if (!reject) {
     return;
@@ -493,6 +531,7 @@ async function reviewApplication({
       .updateTable('applications')
       .set({
         rejectedAt: new Date(),
+        rejectionReason: reason,
         status: ApplicationStatus.REJECTED,
       })
       .where('id', '=', application.id)
@@ -507,10 +546,15 @@ async function reviewApplication({
     }
   });
 
+  if (reason === 'email_bounced') {
+    return;
+  }
+
   queueRejectionEmail({
     automated: true,
     email: application.email,
     firstName: application.firstName,
+    reason,
   });
 }
 
@@ -529,9 +573,9 @@ type ApplicationForDecision = Pick<
 
 async function shouldReject(
   application: ApplicationForDecision
-): Promise<boolean> {
+): Promise<[true, ApplicationRejectionReason] | [false]> {
   if (application.educationLevel !== 'undergraduate') {
-    return true;
+    return [true, 'not_undergraduate'];
   }
 
   const currentYear = new Date().getFullYear();
@@ -540,7 +584,7 @@ async function shouldReject(
     application.graduationYear < currentYear ||
     application.graduationYear > currentYear + 5
   ) {
-    return true;
+    return [true, 'not_undergraduate'];
   }
 
   const memberWithSameEmail = await db
@@ -549,7 +593,7 @@ async function shouldReject(
     .executeTakeFirst();
 
   if (memberWithSameEmail) {
-    return true;
+    return [true, 'email_already_used'];
   }
 
   const postmark = getPostmarkInstance();
@@ -561,8 +605,8 @@ async function shouldReject(
   });
 
   if (bounces.TotalCount >= 1) {
-    return true;
+    return [true, 'email_bounced'];
   }
 
-  return false;
+  return [false];
 }
