@@ -424,9 +424,8 @@ export async function updateEmailApplication({
 const ExpandedRejectionReason: Record<ApplicationRejectionReason, string> = {
   bad_linkedin:
     'We were unable to admit you because of your LinkedIn profile. This could be because ' +
-    '1) your LinkedIn is incomplete, ' +
-    '2) there is a mismatch of information on your LinkedIn and your application, or ' +
-    '3) your LinkedIn is suspicious.',
+    '1) your LinkedIn is incomplete or ' +
+    '2) there is a mismatch of information on your LinkedIn and your application.',
 
   email_already_used:
     'We were unable to admit you because a ColorStack member already exists ' +
@@ -450,15 +449,17 @@ const ExpandedRejectionReason: Record<ApplicationRejectionReason, string> = {
   other: '',
 };
 
+type QueueRejectionEmailInput = Pick<Application, 'email' | 'firstName'> & {
+  automated: boolean;
+  reason: ApplicationRejectionReason;
+};
+
 function queueRejectionEmail({
   automated,
   email,
   firstName,
   reason,
-}: Pick<Application, 'email' | 'firstName'> & {
-  automated: boolean;
-  reason: ApplicationRejectionReason;
-}) {
+}: QueueRejectionEmailInput) {
   job(
     'notification.email.send',
     {
