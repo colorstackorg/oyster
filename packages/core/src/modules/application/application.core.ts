@@ -427,7 +427,7 @@ const ExpandedRejectionReason: Record<ApplicationRejectionReason, string> = {
     'does not match the information you provided in your application.',
 
   email_already_used:
-    'This is because a ColorStack member already exists with this email address.',
+    'There is already a ColorStack member with this email address.',
 
   // We're not going to email them again since they've already bounced...
   email_bounced: '',
