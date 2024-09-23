@@ -20,10 +20,8 @@ export function ApplicationRejectedEmail({
         <Email.Text>
           We hope this email finds you well. We are reaching out regarding the
           status of your application. Unfortunately, we're unable to admit you
-          into our community at this time.
+          into our community at this time. {!!reason && <>{reason}</>}
         </Email.Text>
-
-        {!!reason && <Email.Text>{reason}</Email.Text>}
 
         <Email.Text>
           If you are interested in attending any of our public events, please

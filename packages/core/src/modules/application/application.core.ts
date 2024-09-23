@@ -423,30 +423,24 @@ export async function updateEmailApplication({
 
 const ExpandedRejectionReason: Record<ApplicationRejectionReason, string> = {
   bad_linkedin:
-    'We were unable to admit you because of your LinkedIn profile. This could be because ' +
-    '1) your LinkedIn is incomplete or ' +
-    '2) there is a mismatch of information on your LinkedIn and your application.',
+    'Your LinkedIn profile is either incomplete or ' +
+    'does not match the information you provided in your application.',
 
   email_already_used:
-    'We were unable to admit you because a ColorStack member already exists ' +
-    'with this email address.',
+    'This is because a ColorStack member already exists with this email address.',
 
   // We're not going to email them again since they've already bounced...
   email_bounced: '',
 
-  ineligible_major:
-    'We were unable to admit you because of your major. We primarily serve ' +
-    'Computer Science (and related) majors.',
+  ineligible_major: 'We only admit Computer Science (and related) majors.',
 
-  is_international:
-    'We were unable to admit you because you are not enrolled as a student ' +
-    'in the US or Canada.',
+  is_international: 'We only admit students enrolled in the US or Canada.',
 
-  not_undergraduate:
-    'We were unable to admit you because you are not currently an ' +
-    'undergraduate student.',
+  not_undergraduate: 'We only admit undergraduate students.',
 
-  other: '',
+  other:
+    'Due to the volume of applications we receive, we will not be able to ' +
+    'provide additional feedback on your application.',
 };
 
 type QueueRejectionEmailInput = Pick<Application, 'email' | 'firstName'> & {
