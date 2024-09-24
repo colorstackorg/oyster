@@ -47,6 +47,7 @@ const ROUTES = [
   '/students/import/scholarships',
   '/students/:id/activate',
   '/students/:id/email',
+  '/students/:id/gift',
   '/students/:id/points/grant',
   '/students/:id/remove',
   '/surveys',
