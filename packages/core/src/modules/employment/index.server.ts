@@ -1,5 +1,6 @@
 export { getCompany } from './queries/get-company';
 export { getCompanyReview } from './queries/get-company-review';
+export { hasReviewAccess } from './queries/has-review-access';
 export { listCompanies } from './queries/list-companies';
 export { listCompanyEmployees } from './queries/list-company-employees';
 export { listCompanyReviews } from './queries/list-company-reviews';
