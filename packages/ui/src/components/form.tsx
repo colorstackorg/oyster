@@ -71,11 +71,11 @@ Form.Field = function FormField({
 
 type InputFieldProps = FieldProps<string> &
   Pick<FormFieldProps, 'description' | 'label' | 'required'> &
-  Pick<
-    InputProps,
-    'disabled' | 'placeholder' | 'type' | 'pattern' | 'onChange' | 'value'
-  >;
+  Pick<InputProps, 'disabled' | 'placeholder'>;
 
+/**
+ * @deprecated Instead, just compose the `Form.Field` and `Input` together.
+ */
 export function InputField({
   defaultValue,
   description,
@@ -85,10 +85,6 @@ export function InputField({
   name,
   placeholder,
   required,
-  pattern,
-  type = 'text',
-  onChange,
-  value,
 }: InputFieldProps) {
   return (
     <Form.Field
@@ -105,10 +101,6 @@ export function InputField({
         name={name}
         placeholder={placeholder}
         required={required}
-        type={type}
-        pattern={pattern}
-        onChange={onChange}
-        value={value}
       />
     </Form.Field>
   );

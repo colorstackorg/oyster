@@ -134,14 +134,6 @@ export const Student = Entity.merge(StudentSocialLinks)
     joinedMemberDirectoryAt: z.coerce.date().nullable(),
     joinedSlackAt: z.coerce.date().optional(),
     lastName: z.string().trim().min(1),
-    phoneNumber: z
-      .string()
-      .trim()
-      .regex(
-        /^\(\d{3}\)-\d{3}-\d{4}$/,
-        'Phone Number must be in the format (555)-123-4567'
-      )
-      .optional(),
 
     /**
      * Enum that represents all of the accepted majors from the ColorStack
@@ -166,6 +158,21 @@ export const Student = Entity.merge(StudentSocialLinks)
       .transform((demographics) => demographics.sort()),
     otherMajor: z.string().optional(),
     otherSchool: z.string().optional(),
+
+    /**
+     * A 10-digit phone number without any formatting. Note that since we only
+     * serve US and Canadian students, we will not worry about asking for nor
+     * storing the country code, it is by default +1. We will only store
+     * 10-digit values without any formatting (ie: parentheses, dashes, etc).
+     *
+     * @example "1112223333"
+     * @example "1234567890"
+     */
+    phoneNumber: z
+      .string()
+      .trim()
+      .regex(/^\d{10}$/, 'Must be a 10-digit number.')
+      .optional(),
 
     /**
      * The preferred name that a member would like to go by. This will typically

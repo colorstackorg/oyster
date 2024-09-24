@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { CityCombobox, type CityComboboxProps } from '@oyster/core/location/ui';
-import { type FieldProps, Form, Input, InputField, Text } from '@oyster/ui';
+import { type FieldProps, Form, Input, Text } from '@oyster/ui';
 
 export function CurrentLocationField({
   defaultValue,
@@ -62,44 +62,3 @@ export function PreferredNameField({
     </Form.Field>
   );
 }
-
-const formatPhoneNumber = (input: string) => {
-  const cleaned = input.replace(/\D/g, '');
-
-  if (cleaned.length == 0) {
-    return '';
-  } else if (cleaned.length <= 3) {
-    return `(${cleaned}`;
-  } else if (cleaned.length <= 6) {
-    return `(${cleaned.slice(0, 3)})-${cleaned.slice(3)}`;
-  } else {
-    return `(${cleaned.slice(0, 3)})-${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
-  }
-};
-
-export const PhoneNumberField = ({
-  defaultValue,
-  error,
-  name,
-}: FieldProps<string>) => {
-  const [phoneNumber, setPhoneNumber] = useState(defaultValue || '');
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
-
-    setPhoneNumber(formatted);
-  };
-
-  return (
-    <InputField
-      value={phoneNumber}
-      onChange={handleChange}
-      error={error}
-      label="Phone Number"
-      name={name}
-      description="Enter your 10-digit phone number."
-      placeholder="(555)-123-4567"
-      type="tel"
-    />
-  );
-};

@@ -16,8 +16,10 @@ import { Student } from '@oyster/types';
 import {
   Button,
   Divider,
+  Form,
   getErrors,
   InputField,
+  PhoneNumberInput,
   validateForm,
 } from '@oyster/ui';
 
@@ -28,7 +30,6 @@ import {
 } from '@/shared/components/profile';
 import {
   CurrentLocationField,
-  PhoneNumberField,
   PreferredNameField,
 } from '@/shared/components/profile.general';
 import { getMember } from '@/shared/queries/index';
@@ -53,8 +54,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       'genderPronouns',
       'headline',
       'lastName',
-      'preferredName',
       'phoneNumber',
+      'preferredName',
     ])
     .executeTakeFirstOrThrow();
 
@@ -177,11 +178,18 @@ export default function UpdateGeneralInformationSection() {
           longitudeName={keys.currentLocationLongitude}
         />
 
-        <PhoneNumberField
-          defaultValue={student.phoneNumber || undefined}
+        <Form.Field
+          description="Enter your 10-digit phone number. We'll use this to send you important ColorStack updates."
           error={errors.phoneNumber}
-          name={keys.phoneNumber}
-        />
+          label="Phone Number"
+          labelFor={keys.phoneNumber}
+        >
+          <PhoneNumberInput
+            defaultValue={student.phoneNumber || undefined}
+            id={keys.phoneNumber}
+            name={keys.phoneNumber}
+          />
+        </Form.Field>
 
         <Button.Group>
           <Button.Submit>Save</Button.Submit>
