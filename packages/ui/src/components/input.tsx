@@ -62,7 +62,7 @@ export function PhoneNumberInput({
         className={getInputCn()}
         onChange={(e) => setValue(e.target.value)}
         pattern="\(\d{3}\) \d{3}-\d{4}"
-        placeholder="(123) 456-7890"
+        placeholder="(555) 123-4567"
         type="tel"
         value={formattedValue}
         {...rest}
