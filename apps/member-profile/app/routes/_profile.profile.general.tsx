@@ -16,8 +16,10 @@ import { Student } from '@oyster/types';
 import {
   Button,
   Divider,
+  Form,
   getErrors,
   InputField,
+  PhoneNumberInput,
   validateForm,
 } from '@oyster/ui';
 
@@ -52,6 +54,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       'genderPronouns',
       'headline',
       'lastName',
+      'phoneNumber',
       'preferredName',
     ])
     .executeTakeFirstOrThrow();
@@ -73,6 +76,7 @@ const UpdateGeneralInformation = Student.pick({
   headline: true,
   lastName: true,
   preferredName: true,
+  phoneNumber: true,
 }).extend({
   currentLocation: Student.shape.currentLocation.unwrap(),
   currentLocationLatitude: Student.shape.currentLocationLatitude.unwrap(),
@@ -173,6 +177,19 @@ export default function UpdateGeneralInformationSection() {
           latitudeName={keys.currentLocationLatitude}
           longitudeName={keys.currentLocationLongitude}
         />
+
+        <Form.Field
+          description="Enter your 10-digit phone number. We'll use this to send you important ColorStack updates."
+          error={errors.phoneNumber}
+          label="Phone Number"
+          labelFor={keys.phoneNumber}
+        >
+          <PhoneNumberInput
+            defaultValue={student.phoneNumber || undefined}
+            id={keys.phoneNumber}
+            name={keys.phoneNumber}
+          />
+        </Form.Field>
 
         <Button.Group>
           <Button.Submit>Save</Button.Submit>
