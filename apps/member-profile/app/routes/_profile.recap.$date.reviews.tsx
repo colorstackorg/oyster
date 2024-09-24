@@ -91,6 +91,7 @@ export default function RecapReviews() {
               }}
               date={review.date}
               employmentType={review.employmentType as EmploymentType}
+              hasAccess={true} // We'll allow access to all reviews in recaps.
               hasUpvoted={review.upvoted as boolean}
               id={review.id}
               locationCity={review.locationCity}

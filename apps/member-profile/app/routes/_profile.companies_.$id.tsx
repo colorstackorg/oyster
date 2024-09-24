@@ -13,6 +13,7 @@ import {
 } from '@oyster/core/employment';
 import {
   getCompany,
+  hasReviewAccess,
   listCompanyEmployees,
   listCompanyReviews,
 } from '@oyster/core/employment/server';
@@ -33,8 +34,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const id = params.id as string;
+  const memberId = user(session);
 
-  const [company, _employees, _reviews] = await Promise.all([
+  const [company, hasAccess, _employees, _reviews] = await Promise.all([
     getCompany({
       include: ['averageRating', 'employees', 'reviews'],
       select: [
@@ -48,12 +50,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       where: { id },
     }),
 
+    hasReviewAccess(memberId),
+
     listCompanyEmployees({
       where: { companyId: id },
     }),
 
     listCompanyReviews({
-      memberId: user(session),
+      memberId,
       select: [
         'companyReviews.anonymous',
         'companyReviews.createdAt',
@@ -122,6 +126,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   return json({
     company,
     currentEmployees,
+    hasAccess,
     pastEmployees,
     reviews,
   });
@@ -228,7 +233,7 @@ function AverageRating({
 }
 
 function ReviewsList() {
-  const { reviews } = useLoaderData<typeof loader>();
+  const { hasAccess, reviews } = useLoaderData<typeof loader>();
 
   if (!reviews.length) {
     return null;
@@ -242,7 +247,7 @@ function ReviewsList() {
         </Text>
 
         <CompanyReview.List>
-          {reviews.map((review) => {
+          {reviews.map((review, i) => {
             return (
               <CompanyReview
                 key={review.id}
@@ -255,6 +260,7 @@ function ReviewsList() {
                 date={review.date}
                 editable={review.editable}
                 employmentType={review.employmentType as EmploymentType}
+                hasAccess={hasAccess}
                 hasUpvoted={review.upvoted as boolean}
                 id={review.id}
                 locationCity={review.locationCity}
@@ -267,6 +273,7 @@ function ReviewsList() {
                 reviewerId={review.reviewerId || ''}
                 reviewerLastName={review.reviewerLastName || ''}
                 reviewerProfilePicture={review.reviewerProfilePicture}
+                showAccessWarning={!hasAccess && i === 0}
                 text={review.text}
                 title={review.title || ''}
                 upvotesCount={review.upvotes}
