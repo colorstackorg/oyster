@@ -4,11 +4,25 @@ import { Application, BooleanInput, type ExtractValue } from '@oyster/types';
 
 // Enums
 
+export const ApplicationRejectionReason = {
+  BAD_LINKEDIN: 'bad_linkedin',
+  EMAIL_ALREADY_USED: 'email_already_used',
+  EMAIL_BOUNCED: 'email_bounced',
+  INELIGIBLE_MAJOR: 'ineligible_major',
+  IS_INTERNATIONAL: 'is_international',
+  NOT_UNDERGRADUATE: 'not_undergraduate',
+  OTHER: 'other',
+} as const;
+
 export const ApplicationStatus = {
   ACCEPTED: 'accepted',
   PENDING: 'pending',
   REJECTED: 'rejected',
 } as const;
+
+export type ApplicationRejectionReason = ExtractValue<
+  typeof ApplicationRejectionReason
+>;
 
 export type ApplicationStatus = ExtractValue<typeof ApplicationStatus>;
 
