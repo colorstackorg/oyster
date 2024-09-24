@@ -4,16 +4,13 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-} from '@remix-run/react';
+import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { z } from 'zod';
 
+import { createGoodyOrder } from '@oyster/core/goody';
 import { db } from '@oyster/db';
-import { Button, Form, Modal, Select } from '@oyster/ui';
+import { Button, Form, Modal, Textarea, validateForm } from '@oyster/ui';
 
-import { createGoodyOrder } from '@/modules/goody/goody.core';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -23,83 +20,105 @@ import {
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
-  const student = await getStudent(params.id as string);
 
-  if (!student) {
+  const member = await db
+    .selectFrom('students')
+    .where('id', '=', params.id as string)
+    .executeTakeFirst();
+
+  if (!member) {
     return redirect(Route['/students']);
   }
 
-  return json({ student });
-}
-
-async function getStudent(id: string) {
-  const row = await db
-    .selectFrom('students')
-    .select(['firstName', 'lastName'])
-    .where('id', '=', id)
-    .execute();
-
-  return row;
+  return json({});
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  try {
-    await createGoodyOrder(params.id as string);
+  const {
+    data,
+    errors: _,
+    ok,
+  } = await validateForm(
+    request,
+    z.object({ message: z.string().trim().min(1) })
+  );
 
-    toast(session, {
-      message: 'Gift Sent.',
-    });
-
-    return redirect(Route['/students'], {
-      headers: {
-        'Set-Cookie': await commitSession(session),
-      },
-    });
-  } catch (e) {
-    return json({ error: (e as Error).message }, { status: 500 });
+  if (!ok) {
+    return json({ error: 'Please enter a message.' }, { status: 400 });
   }
+
+  const member = await db
+    .selectFrom('students')
+    .select(['email', 'firstName', 'lastName'])
+    .where('id', '=', params.id as string)
+    .executeTakeFirst();
+
+  if (!member) {
+    return redirect(Route['/students']);
+  }
+
+  const result = await createGoodyOrder({
+    message: data.message,
+    recipients: [
+      {
+        email: member.email,
+        first_name: member.firstName,
+        last_name: member.lastName,
+      },
+    ],
+  });
+
+  if (!result.ok) {
+    return json({ error: result.error }, { status: result.code });
+  }
+
+  toast(session, {
+    message: 'Sent Goody gift! 🎁',
+  });
+
+  return redirect(Route['/students'], {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  });
 }
 
-export default function SendGiftPage() {
+export default function SendGiftModal() {
   const { error } = useActionData<typeof action>() || {};
-
-  const navigate = useNavigate();
-
-  const giftOptions = [{ id: 0, name: 'DoorDash Gift Card' }];
-
-  function onBack() {
-    navigate(-1);
-  }
 
   return (
     <Modal onCloseTo={Route['/students']}>
       <Modal.Header>
-        <Modal.Title>Send Gift</Modal.Title>
+        <Modal.Title>Send Goody Gift</Modal.Title>
         <Modal.CloseButton />
       </Modal.Header>
 
-      <Modal.Description>What gift would you like to send?</Modal.Description>
+      <Modal.Description>
+        This will send a DoorDash gift card to this member.
+      </Modal.Description>
 
       <RemixForm className="form" method="post">
+        <Form.Field
+          description="Add a message to the gift so the member knows why they are receiving this."
+          label="Message"
+          labelFor="message"
+          required
+        >
+          <Textarea
+            id="message"
+            minRows={3}
+            name="message"
+            placeholder="Congratulations..."
+            required
+          />
+        </Form.Field>
+
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
-        <Select placeholder="Select a gift...">
-          {giftOptions.map((gift) => {
-            return (
-              <option key={gift.id} value={gift.id}>
-                {gift.name}
-              </option>
-            );
-          })}
-        </Select>
 
-        <Button.Group flexDirection="row-reverse">
-          <Button type="submit">Send Gift</Button>
-
-          <Button onClick={onBack} type="button" variant="secondary">
-            Back
-          </Button>
+        <Button.Group>
+          <Button.Submit>Send</Button.Submit>
         </Button.Group>
       </RemixForm>
     </Modal>
