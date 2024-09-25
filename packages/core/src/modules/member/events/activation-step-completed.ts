@@ -5,6 +5,7 @@ import { db } from '@oyster/db';
 import { ActivationRequirement, type Student } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
+import { activateMember } from '@/modules/member/use-cases/activate-member';
 import { ENV } from '@/shared/env';
 import { ErrorWithContext } from '@/shared/errors';
 
@@ -78,7 +79,7 @@ export async function onActivationStepCompleted(
   });
 
   if (activated) {
-    await activateStudent(studentId);
+    await activateMember(studentId);
   }
 
   const [newRequirementCompleted] = updatedCompletedRequirements.filter(
@@ -210,18 +211,6 @@ async function updateCompletedRequirements(studentId: string) {
     .executeTakeFirstOrThrow();
 
   return updatedRequirements;
-}
-
-async function activateStudent(id: string) {
-  await db
-    .updateTable('students')
-    .set({ activatedAt: new Date() })
-    .where('id', '=', id)
-    .execute();
-
-  job('student.activated', {
-    studentId: id,
-  });
 }
 
 async function sendProgressNotification({
