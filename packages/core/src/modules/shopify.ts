@@ -17,12 +17,28 @@ const SHOPIFY_HEADERS = {
 
 // Core
 
+/**
+ * The Customer resource stores information about a shop's customers, such as
+ * their contact details, their order history, and whether they've agreed to
+ * receive email marketing.
+ *
+ * @see https://shopify.dev/docs/api/admin-rest/2024-07/resources/customer#resource-object
+ */
 type Customer = {
   email: string;
   firstName: string;
   lastName: string;
 };
 
+/**
+ * A gift card is an alternative payment method. Each gift card has a unique
+ * code that is entered during checkout. Its balance can be redeemed over
+ * multiple checkouts. Optionally, a gift card can assigned to a specific
+ * customer. Gift card codes cannot be retrieved after they're created—only the
+ * last four characters can be retrieved.
+ *
+ * @see https://shopify.dev/docs/api/admin-rest/2024-07/resources/gift-card#resource-object
+ */
 type GiftCard = {
   code: string;
   customer: Customer;
@@ -32,6 +48,14 @@ type GiftCard = {
   sendEmailAt: string;
 };
 
+/**
+ * Creates a new gift card and assigns it to a customer.
+ *
+ * @param card - The gift card to create.
+ * @returns A result indicating the success or failure of the operation.
+ *
+ * @see https://shopify.dev/docs/api/admin-rest/2024-07/resources/gift-card#post-gift-cards
+ */
 export async function createGiftCard(card: GiftCard): Promise<Result> {
   const customerResult = await createCustomer(card.customer);
 
@@ -79,6 +103,14 @@ export async function createGiftCard(card: GiftCard): Promise<Result> {
 
 type CreateCustomerResult = Result<{ id: number }>;
 
+/**
+ * Creates a new customer.
+ *
+ * @param customer - The customer to create.
+ * @returns A result object w/ the customer's ID, if successful.
+ *
+ * @see https://shopify.dev/docs/api/admin-rest/2024-07/resources/customer#post-customers
+ */
 async function createCustomer(
   customer: Customer
 ): Promise<CreateCustomerResult> {
