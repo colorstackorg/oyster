@@ -192,7 +192,7 @@ function getSubject(input: EmailTemplate): string {
       return `Confirmation: ${data.resumeBookName} Resume Book! ✅`;
     })
     .with({ name: 'student-activated' }, () => {
-      return 'Swag Pack 😜';
+      return 'Activated! 🎉';
     })
     .with({ name: 'student-attended-onboarding' }, () => {
       return "Onboarding Session, ✅! What's Next?";

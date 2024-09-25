@@ -68,7 +68,6 @@ export const EmailTemplate = z.discriminatedUnion('name', [
     name: z.literal('student-activated'),
     data: z.object({
       firstName: Student.shape.firstName,
-      studentProfileUrl: z.string().url(),
     }),
   }),
   BaseEmail.extend({

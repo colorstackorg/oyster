@@ -113,14 +113,7 @@ export default function ActivationModal() {
 function ActivatedState() {
   return (
     <>
-      <Text color="gray-500">
-        Great news -- you're activated and eligible to{' '}
-        <Link className="link" to={Route['/home/claim-swag-pack']}>
-          claim your FREE swag pack
-        </Link>
-        ! 🎉
-      </Text>
-
+      <Text color="gray-500">Great news -- you're activated! 🎉</Text>
       <ActivationList />
     </>
   );

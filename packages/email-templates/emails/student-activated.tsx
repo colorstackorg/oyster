@@ -5,7 +5,6 @@ import { type EmailTemplateData } from '../src/types';
 
 export function StudentActivatedEmail({
   firstName,
-  studentProfileUrl,
 }: EmailTemplateData<'student-activated'>) {
   return (
     <Email.Template>
@@ -26,31 +25,6 @@ export function StudentActivatedEmail({
           <br />
           You'll need to do the following to claim your swag pack:
         </Email.Text>
-
-        <ol>
-          <li>
-            <Email.Text>Click the link below.</Email.Text>
-          </li>
-          <li>
-            <Email.Text>
-              Enter your email address to receive a one-time passcode.
-            </Email.Text>
-          </li>
-          <li>
-            <Email.Text>
-              Enter the six-digit passcode that we sent to your email.
-            </Email.Text>
-          </li>
-          <li>
-            <Email.Text>
-              Submit your mailing address for the swag pack. 🎉
-            </Email.Text>
-          </li>
-        </ol>
-
-        <Email.Button href={`${studentProfileUrl}/home/claim-swag-pack`}>
-          Claim Swag Pack
-        </Email.Button>
 
         <Email.Signature />
       </Email.Main>
