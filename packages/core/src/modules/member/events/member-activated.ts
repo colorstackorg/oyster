@@ -16,14 +16,14 @@ export async function onMemberActivated({
     .executeTakeFirstOrThrow();
 
   const giftCardResult = await createGiftCard({
-    customer: {
+    expiresOn: dayjs().add(1, 'week').format('YYYY-MM-DD'),
+    initialValue: '50.00',
+    note: 'This is for member activation.',
+    recipient: {
       email: member.email,
       firstName: member.firstName,
       lastName: member.lastName,
     },
-    expiresOn: dayjs().add(1, 'week').format('YYYY-MM-DD'),
-    initialValue: '50.00',
-    note: 'This is for member activation.',
   });
 
   if (!giftCardResult.ok) {

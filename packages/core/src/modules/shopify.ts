@@ -155,10 +155,11 @@ async function getCustomerByEmail(
  * @see https://shopify.dev/docs/api/admin-rest/2024-07/resources/gift-card#resource-object
  */
 type GiftCard = {
-  customer: Customer;
   expiresOn: string;
   initialValue: string;
+  message?: string;
   note?: string;
+  recipient: Customer;
 };
 
 type CreateGiftCardResult = Result<{}>;
@@ -174,7 +175,7 @@ type CreateGiftCardResult = Result<{}>;
 export async function createGiftCard(
   card: GiftCard
 ): Promise<CreateGiftCardResult> {
-  const customerResult = await getOrCreateCustomer(card.customer);
+  const customerResult = await getOrCreateCustomer(card.recipient);
 
   if (!customerResult.ok) {
     return fail(customerResult);
@@ -182,10 +183,11 @@ export async function createGiftCard(
 
   const body = JSON.stringify({
     gift_card: {
-      customer_id: customerResult.data.id,
       expires_on: card.expiresOn,
       initial_value: card.initialValue,
+      message: card.message,
       note: card.note,
+      recipient_id: customerResult.data.id,
     },
   });
 
@@ -200,7 +202,7 @@ export async function createGiftCard(
   const data = await response.json();
 
   if (!response.ok) {
-    const error = new Error('Failed to create Goody order.');
+    const error = new Error('Failed to create Shopify gift card.');
 
     reportException(error, {
       data,
