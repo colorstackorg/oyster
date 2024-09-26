@@ -6,6 +6,7 @@ import { ActivationRequirement, type Student } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { activateMember } from '@/modules/member/use-cases/activate-member';
+import { getSwagPackInventory } from '@/modules/swag-pack/swag-pack.service';
 import { ENV } from '@/shared/env';
 import { ErrorWithContext } from '@/shared/errors';
 
@@ -225,12 +226,19 @@ async function sendProgressNotification({
   let message: string;
 
   if (completedRequirements === totalRequirements) {
+    const inventory = await getSwagPackInventory();
+
+    const action =
+      inventory >= 1
+        ? 'You can now claim a free swag pack in your <https://app.colorstack.io/home/claim-swag-pack|*Member Profile*>! 🎁'
+        : 'Look out for an email for a $50 gift card to the <ColorStack Merch Store|https://colorstackmerch.org>! 🤑';
+
     message = dedent`
       Congratulations, ${firstName}! 🎉
 
       You've completed all of your activation requirements, which means...you are now an *activated* ColorStack member.
 
-      You can now claim your free swag pack in your <https://app.colorstack.io/home|*Member Profile*>! 🎁
+      ${action}
     `;
   } else {
     message = dedent`

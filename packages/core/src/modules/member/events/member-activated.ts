@@ -6,7 +6,6 @@ import { id } from '@oyster/utils';
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { createGiftCard } from '@/modules/shopify';
-import { ENV } from '@/shared/env';
 
 export async function onMemberActivated({
   studentId,
@@ -37,14 +36,5 @@ export async function onMemberActivated({
   job('gamification.activity.completed', {
     studentId: member.id,
     type: 'get_activated',
-  });
-
-  job('notification.email.send', {
-    data: {
-      firstName: member.firstName,
-      studentProfileUrl: ENV.STUDENT_PROFILE_URL,
-    },
-    name: 'student-activated',
-    to: member.email,
   });
 }
