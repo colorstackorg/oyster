@@ -12,7 +12,7 @@ import {
 } from './types';
 import { normalizeUri } from '../../../utils/src/index';
 import { type ExtractValue } from '../shared/types';
-import { NullishString } from '../shared/zod';
+import { EmptyStringToNull, NullishString } from '../shared/zod';
 
 // Enums
 
@@ -172,7 +172,7 @@ export const Student = Entity.merge(StudentSocialLinks)
       .string()
       .trim()
       .regex(/^\d{10}$/, 'Must be a 10-digit number.')
-      .optional(),
+      .or(EmptyStringToNull),
 
     /**
      * The preferred name that a member would like to go by. This will typically
