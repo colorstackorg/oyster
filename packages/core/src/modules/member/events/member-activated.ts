@@ -1,7 +1,6 @@
 import dayjs from 'dayjs';
 
 import { db } from '@oyster/db';
-import { id } from '@oyster/utils';
 
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
@@ -17,7 +16,6 @@ export async function onMemberActivated({
     .executeTakeFirstOrThrow();
 
   const giftCardResult = await createGiftCard({
-    code: id() + 'oyst',
     customer: {
       email: member.email,
       firstName: member.firstName,
@@ -25,8 +23,7 @@ export async function onMemberActivated({
     },
     expiresOn: dayjs().add(1, 'week').format('YYYY-MM-DD'),
     initialValue: '50.00',
-    note: 'Created via the Oyster API integration.',
-    sendEmailAt: new Date().toISOString(),
+    note: 'This is for member activation.',
   });
 
   if (!giftCardResult.ok) {

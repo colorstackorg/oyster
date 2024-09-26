@@ -1,5 +1,6 @@
 import { reportException } from '@/modules/sentry/use-cases/report-exception';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
+import { RateLimiter } from '@/shared/utils/rate-limiter';
 
 // Environment Variables
 
@@ -14,6 +15,14 @@ const SHOPIFY_HEADERS = {
   'Content-Type': 'application/json',
   'X-Shopify-Access-Token': SHOPIFY_ACCESS_TOKEN,
 };
+
+/**
+ * @see https://docs.anthropic.com/en/api/rate-limits#rate-limits
+ */
+const shopifyRateLimiter = new RateLimiter('shopify:requests', {
+  rateLimit: 2,
+  rateLimitWindow: 1,
+});
 
 // Core
 
@@ -63,6 +72,8 @@ async function getOrCreateCustomer(
     },
   });
 
+  await shopifyRateLimiter.process();
+
   const response = await fetch(SHOPIFY_API_URL + '/customers.json', {
     body,
     headers: SHOPIFY_HEADERS,
@@ -97,6 +108,8 @@ type GetCustomerByEmailResult = Result<{ id: number } | null>;
 async function getCustomerByEmail(
   email: string
 ): Promise<GetCustomerByEmailResult> {
+  await shopifyRateLimiter.process();
+
   const response = await fetch(
     SHOPIFY_API_URL + `/customers/search.json?query=email:${email}`,
     {
@@ -142,12 +155,10 @@ async function getCustomerByEmail(
  * @see https://shopify.dev/docs/api/admin-rest/2024-07/resources/gift-card#resource-object
  */
 type GiftCard = {
-  code: string;
   customer: Customer;
   expiresOn: string;
   initialValue: string;
-  note: string;
-  sendEmailAt: string;
+  note?: string;
 };
 
 type CreateGiftCardResult = Result<{}>;
@@ -171,14 +182,14 @@ export async function createGiftCard(
 
   const body = JSON.stringify({
     gift_card: {
-      code: card.code,
       customer_id: customerResult.data.id,
       expires_on: card.expiresOn,
       initial_value: card.initialValue,
       note: card.note,
-      send_email_at: card.sendEmailAt,
     },
   });
+
+  await shopifyRateLimiter.process();
 
   const response = await fetch(SHOPIFY_API_URL + '/gift_cards.json', {
     body,
