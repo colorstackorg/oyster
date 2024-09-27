@@ -16,6 +16,16 @@ import { generatePath } from 'react-router';
 import { z } from 'zod';
 
 import {
+  editWorkExperience,
+  getWorkExperience,
+} from '@oyster/core/member-profile/server';
+import {
+  EditWorkExperienceInput,
+  type EmploymentType,
+  type LocationType,
+  WorkForm,
+} from '@oyster/core/member-profile/ui';
+import {
   Address,
   Button,
   Form,
@@ -24,13 +34,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { editWorkExperience, getWorkExperience } from '@/member-profile.server';
-import {
-  EditWorkExperienceInput,
-  type EmploymentType,
-  type LocationType,
-  WorkForm,
-} from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import {
   commitSession,

@@ -14,6 +14,7 @@ import {
   ExternalLink,
   Gift,
   Hash,
+  Star,
   Trash,
   Upload,
   Users,
@@ -21,6 +22,7 @@ import {
 } from 'react-feather';
 import { generatePath } from 'react-router';
 
+import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
 import { db } from '@oyster/db';
 import {
   Dashboard,
@@ -32,7 +34,6 @@ import {
   useSearchParams,
 } from '@oyster/ui';
 
-import { ListSearchParams } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
 import { getTimezone } from '@/shared/cookies.server';
@@ -286,7 +287,7 @@ function StudentDropdown({
               <Link
                 to={generatePath(Route['/students/:id/points/grant'], { id })}
               >
-                <Gift /> Grant Points
+                <Star /> Grant Points
               </Link>
             </Dropdown.Item>
 
@@ -307,6 +308,12 @@ function StudentDropdown({
             <Dropdown.Item>
               <Link target="_blank" to={airtableUri} rel="noopener noreferrer">
                 <ExternalLink /> View Airtable Record
+              </Link>
+            </Dropdown.Item>
+
+            <Dropdown.Item>
+              <Link to={generatePath(Route['/students/:id/gift'], { id })}>
+                <Gift /> Send Goody Gift
               </Link>
             </Dropdown.Item>
 

@@ -6,9 +6,12 @@ import {
 } from '@remix-run/node';
 import { Form as RemixForm, useLoaderData } from '@remix-run/react';
 
+import {
+  deleteFeatureFlag,
+  getFeatureFlag,
+} from '@oyster/core/admin-dashboard/server';
 import { Button, Modal } from '@oyster/ui';
 
-import { deleteFeatureFlag, getFeatureFlag } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
   commitSession,

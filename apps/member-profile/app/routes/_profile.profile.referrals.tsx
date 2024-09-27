@@ -4,7 +4,7 @@ import { Send } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import { listReferrals } from '@oyster/core/referrals';
-import { type ReferralStatus } from '@oyster/core/referrals.ui';
+import { type ReferralStatus } from '@oyster/core/referrals/ui';
 import { Button, getButtonCn, Pill, Text } from '@oyster/ui';
 
 import {

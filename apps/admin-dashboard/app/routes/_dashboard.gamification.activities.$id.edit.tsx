@@ -11,8 +11,8 @@ import {
   type ActivityPeriod,
   type ActivityType,
   EditActivityInput,
-} from '@oyster/core/gamification.types';
-import { ActivityForm } from '@oyster/core/gamification.ui';
+} from '@oyster/core/gamification/types';
+import { ActivityForm } from '@oyster/core/gamification/ui';
 import { db } from '@oyster/db';
 import { getErrors, Modal, validateForm } from '@oyster/ui';
 

@@ -11,6 +11,11 @@ import {
 } from '@remix-run/react';
 
 import {
+  changePrimaryEmail,
+  listEmails,
+} from '@oyster/core/member-profile/server';
+import { ChangePrimaryEmailInput } from '@oyster/core/member-profile/ui';
+import {
   Button,
   Form,
   getErrors,
@@ -19,8 +24,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { changePrimaryEmail, listEmails } from '@/member-profile.server';
-import { ChangePrimaryEmailInput } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import {
   commitSession,

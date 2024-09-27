@@ -71,6 +71,7 @@ export const Company = Entity.merge(BaseCompany);
 export type Company = z.infer<typeof Company>;
 
 const CompanyReview = z.object({
+  anonymous: BooleanInput,
   rating: z.coerce.number().int().min(0).max(10),
   recommend: BooleanInput,
   studentId: Student.shape.id,

@@ -15,6 +15,10 @@ import {
 import { Edit, Plus } from 'react-feather';
 import { z } from 'zod';
 
+import {
+  listEmails,
+  updateAllowEmailShare,
+} from '@oyster/core/member-profile/server';
 import { buildMeta } from '@oyster/core/remix';
 import { db } from '@oyster/db';
 import {
@@ -27,7 +31,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { listEmails, updateAllowEmailShare } from '@/member-profile.server';
 import {
   ProfileDescription,
   ProfileHeader,

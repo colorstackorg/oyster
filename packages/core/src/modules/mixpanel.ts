@@ -18,11 +18,12 @@ if (MIXPANEL_TOKEN) {
 
 // Core
 
-const defaultProperties = {
-  Application: 'Member Profile',
-};
-
 export type MixpanelEvent = {
+  'Chatbot Question Asked': {
+    Question: string;
+    Type: 'DM' | 'Public';
+  };
+
   'Directory - CTA Clicked': {
     CTA:
       | 'Calendly'
@@ -52,6 +53,12 @@ export type MixpanelEvent = {
       | 'Resources';
   };
 
+  'Public Question Answered': {
+    '# of Threads Found': number;
+    Question: string;
+    Where: 'DM';
+  };
+
   'Resource Added': undefined;
   'Resource Link Copied': undefined;
   'Resource Tag Added': undefined;
@@ -61,13 +68,15 @@ export type MixpanelEvent = {
 };
 
 export type TrackInput<Event extends keyof MixpanelEvent> = {
+  application?: 'Member Profile' | 'Slack';
   event: Event;
   properties: MixpanelEvent[Event];
   request?: Request;
-  user: string;
+  user?: string;
 };
 
 export function track<Event extends keyof MixpanelEvent>({
+  application = 'Member Profile',
   event,
   properties,
   request,
@@ -79,9 +88,9 @@ export function track<Event extends keyof MixpanelEvent>({
 
   if (!request) {
     mixpanel.track(event, {
-      ...defaultProperties,
       ...properties,
-      distinct_id: user,
+      ...(user && { distinct_id: user }),
+      Application: application,
     });
 
     return;
@@ -95,15 +104,15 @@ export function track<Event extends keyof MixpanelEvent>({
   const ip = getIpAddress(request);
 
   mixpanel.track(event, {
-    ...defaultProperties,
     ...properties,
+    ...(user && { distinct_id: user }),
+    Application: application,
     $browser: result.browser.name,
     $browser_version: result.browser.version,
     $device: result.device.model,
     $referrer: referrer,
     $os: result.os.name,
     $os_version: result.os.version,
-    distinct_id: user,
     ip,
   });
 }

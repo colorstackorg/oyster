@@ -1,6 +1,6 @@
 import { type ActionFunctionArgs, json } from '@remix-run/node';
 
-import { downvoteResource } from '@oyster/core/resources.server';
+import { downvoteResource } from '@oyster/core/resources/server';
 
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 

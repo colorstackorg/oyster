@@ -4,14 +4,16 @@ import { match } from 'ts-pattern';
 
 import { job } from '@oyster/core/api';
 
-import {
-  type SlackRequestBody,
-  SlackRequestHeaders,
-} from './slack-event.types';
+import { type SlackRequestBody, SlackRequestHeaders } from './slack.types';
 import { ENV } from '../shared/env';
 import { type RawBodyRequest } from '../shared/types';
 
+// Routers
+
 export const slackEventRouter = express.Router();
+export const slackShortcutsRouter = express.Router();
+
+// Handlers
 
 slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
   const body = req.body as SlackRequestBody;
@@ -82,6 +84,25 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
         id: event.previous_message.ts,
       });
     })
+    .with({ type: 'message', channel_type: 'im' }, (event) => {
+      // Ignore any message sent by a Slack app or bot.
+      if (event.app_id || event.bot_id) {
+        return;
+      }
+
+      // If the channel is not a direct message, ignore it.
+      if (!event.channel.startsWith('D')) {
+        return;
+      }
+
+      job('slack.chatbot.message', {
+        channelId: event.channel!,
+        id: event.ts!,
+        text: event.text!,
+        threadId: event.thread_ts,
+        userId: event.user!,
+      });
+    })
     .with({ type: 'message' }, (event) => {
       job('slack.message.add', {
         channelId: event.channel!,
@@ -133,10 +154,69 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
         });
       }
     })
-    .exhaustive();
+    .otherwise(() => {
+      console.error('Unknown event type!', body.event);
+    });
 
   return res.status(200).json({});
 });
+
+type SlackShortcutPayload = {
+  callback_id: 'ask_colorstack_ai';
+  channel: { id: string };
+  message: { text: string; thread_ts?: string; ts: string };
+  type: 'message_action';
+  user: { id: string };
+};
+
+slackShortcutsRouter.post(
+  '/slack/shortcuts',
+  async (req: RawBodyRequest, res) => {
+    const headersResult = SlackRequestHeaders.safeParse(req.headers);
+
+    if (!headersResult.success) {
+      return res.status(400).json({
+        message: 'Failed to verify Slack request headers.',
+      });
+    }
+
+    const verified = verifyRequest(req.rawBody, headersResult.data);
+
+    if (!verified) {
+      return res.status(400).json({
+        message: 'Failed to verify Slack request.',
+      });
+    }
+
+    try {
+      const payload = JSON.parse(req.body.payload) as SlackShortcutPayload;
+
+      match(payload)
+        .with(
+          { type: 'message_action', callback_id: 'ask_colorstack_ai' },
+          (payload) => {
+            job('slack.message.answer', {
+              channelId: payload.channel.id,
+              text: payload.message.text,
+              threadId: payload.message.thread_ts || payload.message.ts,
+              userId: payload.user.id,
+            });
+          }
+        )
+        .otherwise(() => {
+          console.error('Unknown interactivity type!', payload);
+        });
+
+      return res.status(200).json({});
+    } catch (e) {
+      return res.status(500).json({
+        message: 'Failed to process Slack request.',
+      });
+    }
+  }
+);
+
+// Helpers
 
 /**
  * We need to verify that the Slack request is actually coming from Slack and

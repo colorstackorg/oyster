@@ -11,7 +11,7 @@ import {
 } from '@remix-run/react';
 
 import { grantPoints } from '@oyster/core/gamification';
-import { GrantPointsInput } from '@oyster/core/gamification.types';
+import { GrantPointsInput } from '@oyster/core/gamification/types';
 import { db } from '@oyster/db';
 import {
   Button,

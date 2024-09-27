@@ -11,6 +11,11 @@ import {
 } from '@remix-run/react';
 
 import {
+  addEventRecordingLink,
+  getEvent,
+} from '@oyster/core/admin-dashboard/server';
+import { AddEventRecordingLinkInput } from '@oyster/core/admin-dashboard/ui';
+import {
   Button,
   Form,
   getErrors,
@@ -19,8 +24,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { addEventRecordingLink, getEvent } from '@/admin-dashboard.server';
-import { AddEventRecordingLinkInput } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import {
   commitSession,

@@ -11,6 +11,7 @@ import { Plus } from 'react-feather';
 import { generatePath } from 'react-router';
 import { type z } from 'zod';
 
+import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
 import { db } from '@oyster/db';
 import {
   ACCENT_COLORS,
@@ -25,7 +26,6 @@ import {
   useSearchParams,
 } from '@oyster/ui';
 
-import { ListSearchParams } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';

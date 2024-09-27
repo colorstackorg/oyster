@@ -13,6 +13,12 @@ import {
 } from '@remix-run/react';
 import { Suspense } from 'react';
 
+import {
+  claimSwagPack,
+  getSwagPackInventory,
+  reportException,
+} from '@oyster/core/member-profile/server';
+import { ClaimSwagPackInput } from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
 import {
   Address,
@@ -25,12 +31,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import {
-  claimSwagPack,
-  getSwagPackInventory,
-  reportException,
-} from '@/member-profile.server';
-import { ClaimSwagPackInput } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -99,23 +99,32 @@ export default function ClaimSwagPack() {
 
   return (
     <>
-      <Modal.Header>
-        <Modal.Title>Claim Your Swag Pack 🎁</Modal.Title>
-        <Modal.CloseButton />
-      </Modal.Header>
-
       <Suspense fallback={<LoadingState />}>
         <Await resolve={inventoryPromise}>
           {(inventory) => {
             return inventory > 0 ? (
-              <ClaimSwagPackForm />
+              <>
+                <Modal.Header>
+                  <Modal.Title>Claim Your Swag Pack 🎁</Modal.Title>
+                  <Modal.CloseButton />
+                </Modal.Header>
+
+                <ClaimSwagPackForm />
+              </>
             ) : (
-              <Modal.Description>
-                Unfortunately, we ran out of swag pack inventory. However, we're
-                restocking ASAP and you should be able to claim a pack in the
-                next 2-4 weeks. Sorry about any inconvenience and thank you for
-                your patience!
-              </Modal.Description>
+              <>
+                <Modal.Header>
+                  <Modal.Title>
+                    Sit tight, we're sending you a gift card! 🤑
+                  </Modal.Title>
+                  <Modal.CloseButton />
+                </Modal.Header>
+
+                <Modal.Description>
+                  We're changing the way we send out swag. Give us 2 business
+                  days and we'll send you a gift card to our Merch Store!
+                </Modal.Description>
+              </>
             );
           }}
         </Await>

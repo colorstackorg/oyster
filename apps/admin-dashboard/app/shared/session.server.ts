@@ -5,7 +5,7 @@ import {
 } from '@remix-run/node';
 
 import { doesAdminHavePermission, getAdmin } from '@oyster/core/admins';
-import { type AdminRole } from '@oyster/core/admins.types';
+import { type AdminRole } from '@oyster/core/admins/types';
 import { type ToastProps } from '@oyster/ui';
 import { id } from '@oyster/utils';
 

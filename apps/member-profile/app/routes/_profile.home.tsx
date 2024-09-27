@@ -13,17 +13,17 @@ import {
 } from 'react-feather';
 import { match } from 'ts-pattern';
 
+import {
+  countEventAttendees,
+  countMessagesSent,
+  getActiveStreakLeaderboard,
+} from '@oyster/core/member-profile/server';
 import { getIpAddress, setMixpanelProfile, track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
 import { StudentActiveStatus, Timezone } from '@oyster/types';
 import { Button, cx, Divider, getButtonCn, Text } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
-import {
-  countEventAttendees,
-  countMessagesSent,
-  getActiveStreakLeaderboard,
-} from '@/member-profile.server';
 import { Card, type CardProps } from '@/shared/components/card';
 import { Leaderboard } from '@/shared/components/leaderboard';
 import { Route } from '@/shared/constants';
@@ -233,20 +233,14 @@ export default function HomeLayout() {
   const showOnboardingCard =
     !!student.joinedAfterActivation && !student.onboardedAt;
 
-  const showSwagCard =
-    !!student.joinedAfterActivation &&
-    !!student.activatedAt &&
-    !student.claimedSwagPackAt;
-
   return (
     <>
       <Text variant="2xl">Hey, {student.firstName}! 👋</Text>
 
-      {(showActivationCard || showOnboardingCard || showSwagCard) && (
+      {(showActivationCard || showOnboardingCard) && (
         <>
           <div className="grid grid-cols-1 items-start gap-4 @[1000px]:grid-cols-2 @[1500px]:grid-cols-3">
             {showActivationCard && <ActivationCard />}
-            {showSwagCard && <ClaimSwagPackCard />}
             {showOnboardingCard && <OnboardingSessionCard />}
           </div>
 
@@ -344,29 +338,6 @@ function ActiveStatusCard() {
           </div>
         </div>
       </div>
-    </Card>
-  );
-}
-
-function ClaimSwagPackCard() {
-  return (
-    <Card>
-      <Card.Title>Claim Swag Pack 🎁</Card.Title>
-
-      <Card.Description>
-        Congratulations on becoming an activated ColorStack member! As a thank
-        you for engaging in the community, we would love to send you a
-        ColorStack swag pack.
-      </Card.Description>
-
-      <Button.Group>
-        <Link
-          className={getButtonCn({ variant: 'primary' })}
-          to={Route['/home/claim-swag-pack']}
-        >
-          Claim Swag Pack
-        </Link>
-      </Button.Group>
     </Card>
   );
 }

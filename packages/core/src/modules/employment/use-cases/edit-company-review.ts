@@ -3,6 +3,7 @@ import { db } from '@oyster/db';
 import { type EditCompanyReviewInput } from '../employment.types';
 
 export async function editCompanyReview({
+  anonymous,
   rating,
   recommend,
   text,
@@ -12,6 +13,7 @@ export async function editCompanyReview({
     return trx
       .updateTable('companyReviews')
       .set({
+        anonymous,
         rating,
         recommend,
         text,
