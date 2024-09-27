@@ -5,6 +5,7 @@ import { db } from '@oyster/db';
 import { ActivationRequirement, type Student } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
+import { activateMember } from '@/modules/member/use-cases/activate-member';
 import { ENV } from '@/shared/env';
 import { ErrorWithContext } from '@/shared/errors';
 
@@ -78,7 +79,7 @@ export async function onActivationStepCompleted(
   });
 
   if (activated) {
-    await activateStudent(studentId);
+    await activateMember(studentId);
   }
 
   const [newRequirementCompleted] = updatedCompletedRequirements.filter(
@@ -212,18 +213,6 @@ async function updateCompletedRequirements(studentId: string) {
   return updatedRequirements;
 }
 
-async function activateStudent(id: string) {
-  await db
-    .updateTable('students')
-    .set({ activatedAt: new Date() })
-    .where('id', '=', id)
-    .execute();
-
-  job('student.activated', {
-    studentId: id,
-  });
-}
-
 async function sendProgressNotification({
   activationRequirementsCompleted,
   firstName,
@@ -241,7 +230,7 @@ async function sendProgressNotification({
 
       You've completed all of your activation requirements, which means...you are now an *activated* ColorStack member.
 
-      You can now claim your free swag pack in your <https://app.colorstack.io/home|*Member Profile*>! 🎁
+      You can now claim your free ColorStack merch <https://app.colorstack.io/home/claim-swag-pack|*here*>! 🎁
     `;
   } else {
     message = dedent`
