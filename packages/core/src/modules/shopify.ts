@@ -17,7 +17,7 @@ const SHOPIFY_HEADERS = {
 };
 
 /**
- * @see https://docs.anthropic.com/en/api/rate-limits#rate-limits
+ * @see https://shopify.dev/docs/api/admin-rest#rate_limits
  */
 const shopifyRateLimiter = new RateLimiter('shopify:requests', {
   rateLimit: 2,

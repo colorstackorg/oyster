@@ -45,6 +45,7 @@
     "./resumes/ui": "./src/modules/resume/resume.ui.tsx",
     "./scholarships": "./src/modules/scholarship/scholarship.core.ts",
     "./scholarships/ui": "./src/modules/scholarship/scholarship.ui.tsx",
+    "./shopify": "./src/modules/shopify.ts",
     "./slack/server": "./src/modules/slack/index.server.ts"
   },
   "scripts": {
