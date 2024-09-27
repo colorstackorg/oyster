@@ -230,7 +230,7 @@ async function sendProgressNotification({
 
       You've completed all of your activation requirements, which means...you are now an *activated* ColorStack member.
 
-      You can now claim your free ColorStack merch <https://app.colorstack.io/home/claim-swag-pack|*here*>! 🎁
+      Look out for an email that includes a GIFT CARD to the <ColorStack Merch Store|https://colorstackmerch.org>!
     `;
   } else {
     message = dedent`
