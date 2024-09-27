@@ -16,12 +16,4 @@ export async function onMemberActivated({
     studentId: student.id,
     type: 'get_activated',
   });
-
-  job('notification.email.send', {
-    data: {
-      firstName: student.firstName,
-    },
-    name: 'student-activated',
-    to: student.email,
-  });
 }
