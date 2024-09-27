@@ -105,6 +105,15 @@ async function getOrCreateCustomer(
 
 type GetCustomerByEmailResult = Result<{ id: number } | null>;
 
+/**
+ * Retrieves a Shopify customer by email. This uses the underlying "search"
+ * endpoint w/ a custom query based on email.
+ *
+ * @param email - The email of the customer to retrieve.
+ * @returns A result object with the customer's ID, if found.
+ *
+ * @see https://shopify.dev/docs/api/admin-rest/2024-07/resources/customer#get-customers-search
+ */
 async function getCustomerByEmail(
   email: string
 ): Promise<GetCustomerByEmailResult> {

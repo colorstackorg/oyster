@@ -6,14 +6,14 @@ import { job } from '@/infrastructure/bull/use-cases/job';
 export async function onMemberActivated({
   studentId,
 }: GetBullJobData<'student.activated'>) {
-  const member = await db
+  const student = await db
     .selectFrom('students')
-    .select(['email', 'firstName', 'id', 'lastName'])
+    .select(['email', 'firstName', 'id'])
     .where('id', '=', studentId)
     .executeTakeFirstOrThrow();
 
   job('gamification.activity.completed', {
-    studentId: member.id,
+    studentId: student.id,
     type: 'get_activated',
   });
 }
