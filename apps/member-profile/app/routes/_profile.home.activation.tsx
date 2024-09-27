@@ -160,8 +160,8 @@ function NotActivatedState() {
     <>
       <Text color="gray-500">
         You've completed {requirementsCompleted.length}/6 activation
-        requirements. Once you hit all 6, you will be eligible to claim your
-        FREE swag pack! 👀
+        requirements. Once you hit all 6, you will get a gift card to claim your
+        FREE merch! 👀
       </Text>
 
       <ActivationList />
