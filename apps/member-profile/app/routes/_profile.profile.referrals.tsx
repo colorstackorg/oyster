@@ -1,11 +1,12 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
-import { Send } from 'react-feather';
+import { Info, Send } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import { listReferrals } from '@oyster/core/referrals';
 import { type ReferralStatus } from '@oyster/core/referrals/ui';
 import { Button, getButtonCn, Pill, Text } from '@oyster/ui';
+import { formatRejectionReason } from '@/shared/utils/format.utils';
 
 import {
   EmptyState,
@@ -19,6 +20,13 @@ import {
 } from '@/shared/components/profile';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipText,
+  TooltipTrigger,
+} from '@oyster/ui/tooltip';
+import { ReferralAcceptedEmail } from '@oyster/email-templates';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -30,6 +38,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       'referrals.id',
       'referrals.lastName',
       'referrals.status',
+      'applications.rejectionReason',
     ],
     where: { referrerId: user(session) },
   });
@@ -86,7 +95,30 @@ export default function Referrals() {
                       return <Pill color="orange-100">Applied</Pill>;
                     })
                     .with('rejected', () => {
-                      return <Pill color="red-100">Rejected</Pill>;
+                      return referral.rejectionReason ? (
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <div className="flex">
+                              <Pill color="red-100">
+                                <div className="group flex items-center gap-1">
+                                  Rejected
+                                  <Info
+                                    size={16}
+                                    className="text-red-500 transition-colors duration-300 group-hover:text-gray-600"
+                                  />
+                                </div>
+                              </Pill>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <TooltipText>
+                              {formatRejectionReason(referral.rejectionReason)}
+                            </TooltipText>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <Pill color="red-100">Rejected</Pill>
+                      );
                     })
                     .with('sent', () => {
                       return <Pill color="amber-100">Sent</Pill>;
