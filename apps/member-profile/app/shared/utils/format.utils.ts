@@ -1,3 +1,5 @@
+import { ApplicationRejectionReason } from '@/modules/application/application.types';
+
 export function formatHeadline({
   graduationYear,
   headline,
@@ -24,4 +26,34 @@ export function formatName({
   return preferredName
     ? `${firstName} (${preferredName}) ${lastName}`
     : `${firstName} ${lastName}`;
+}
+
+/**
+ * Formats a rejection reason into a user-friendly message.
+ *
+ * @param {string} reason - The raw rejection reason.
+ * @returns {string} A formatted, user-friendly explanation of the rejection reason.
+ *
+ * @example
+ * // Returns "This referral was rejected because an ineligible major."
+ * formatRejectionReason('ineligible_major');
+ *
+ **/
+export function formatRejectionReason(reason: string) {
+  if (!reason) return 'Something happened.';
+
+  switch (reason) {
+    case ApplicationRejectionReason.BAD_LINKEDIN:
+      return 'Incorrect or suspicious LinkedIn';
+    case ApplicationRejectionReason.IS_INTERNATIONAL:
+      return 'Not enrolled in US or Canada';
+    case ApplicationRejectionReason.INELIGIBLE_MAJOR:
+      return 'Not the right major';
+    case ApplicationRejectionReason.NOT_UNDERGRADUATE:
+      return 'Not an undergrad student';
+    case ApplicationRejectionReason.OTHER:
+      return 'Other reason';
+    default:
+      return reason || 'Other Reason';
+  }
 }
