@@ -39,7 +39,6 @@ export const BullQueue = {
   PROFILE: 'profile',
   SLACK: 'slack',
   STUDENT: 'student',
-  SWAG_PACK: 'swag_pack',
 } as const;
 
 export type BullQueue = ExtractValue<typeof BullQueue>;
@@ -593,13 +592,6 @@ export const StudentBullJob = z.discriminatedUnion('name', [
   }),
 ]);
 
-export const SwagPackBullJob = z.discriminatedUnion('name', [
-  z.object({
-    name: z.literal('swag_pack.inventory.notify'),
-    data: z.object({}),
-  }),
-]);
-
 // Combination
 
 export const BullJob = z.union([
@@ -616,7 +608,6 @@ export const BullJob = z.union([
   ProfileBullJob,
   SlackBullJob,
   StudentBullJob,
-  SwagPackBullJob,
 ]);
 
 // Types
