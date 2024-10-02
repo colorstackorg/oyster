@@ -142,7 +142,6 @@ export function ResourceTagsField({ error, name }: FieldProps<string>) {
   // const tags = listFetcher.data?.tags || [];
 
   // function reset() {
-  //   setSearch('');
   //   setNewTagId(id());
   // }
 

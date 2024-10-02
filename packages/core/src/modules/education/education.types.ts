@@ -46,6 +46,11 @@ export const FORMATTED_EDUCATION_LEVEL: Record<EducationLevel, string> = {
   undergraduate: 'Undergraduate',
 };
 
+export const SchoolTag = {
+  HBCU: 'hbcu',
+  HSI: 'hsi',
+} as const;
+
 // Schemas
 
 export const Education = Entity.extend({
@@ -66,6 +71,7 @@ export const School = Entity.extend({
   addressState: Address.shape.state,
   addressZip: Address.shape.zip,
   name: z.string().min(1),
+  tags: z.array(z.nativeEnum(SchoolTag)).optional(),
 });
 
 // Use Cases
@@ -94,6 +100,7 @@ export const UpdateSchoolInput = School.pick({
   addressZip: true,
   id: true,
   name: true,
+  tags: true,
 });
 
 // Types

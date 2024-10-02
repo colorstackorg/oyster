@@ -4,15 +4,13 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
-import { type z } from 'zod';
+import { useActionData } from '@remix-run/react';
 
-import { db } from '@oyster/db';
-import { Activity } from '@oyster/types';
-import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
-import { id } from '@oyster/utils';
+import { addActivity } from '@oyster/core/gamification';
+import { CreateActivityInput } from '@oyster/core/gamification/types';
+import { ActivityForm } from '@oyster/core/gamification/ui';
+import { getErrors, Modal, validateForm } from '@oyster/ui';
 
-import { ActivityForm } from '@/shared/components/activity-form';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -25,16 +23,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return json({});
 }
-
-const CreateActivityInput = Activity.pick({
-  description: true,
-  name: true,
-  period: true,
-  points: true,
-  type: true,
-});
-
-type CreateActivityInput = z.infer<typeof CreateActivityInput>;
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -58,23 +46,7 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 }
 
-async function addActivity(input: CreateActivityInput) {
-  await db
-    .insertInto('activities')
-    .values({
-      description: input.description,
-      name: input.name,
-      period: input.period,
-      points: input.points,
-      id: id(),
-      type: input.type,
-    })
-    .execute();
-}
-
-const keys = CreateActivityInput.keyof().enum;
-
-export default function AddActivityPage() {
+export default function AddActivity() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
@@ -84,22 +56,7 @@ export default function AddActivityPage() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
-        <ActivityForm.NameField error={errors.name} name={keys.name} />
-        <ActivityForm.DescriptionField
-          error={errors.description}
-          name={keys.description}
-        />
-        <ActivityForm.TypeField error={errors.type} name={keys.type} />
-        <ActivityForm.PeriodField error={errors.period} name={keys.period} />
-        <ActivityForm.PointsField error={errors.points} name={keys.points} />
-
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
-
-        <Button.Group>
-          <Button type="submit">Add</Button>
-        </Button.Group>
-      </RemixForm>
+      <ActivityForm error={error} errors={errors} />
     </Modal>
   );
 }

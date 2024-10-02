@@ -11,6 +11,7 @@ import { Plus } from 'react-feather';
 import { generatePath } from 'react-router';
 import { type z } from 'zod';
 
+import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
 import { db } from '@oyster/db';
 import {
   ACCENT_COLORS,
@@ -25,7 +26,6 @@ import {
   useSearchParams,
 } from '@oyster/ui';
 
-import { ListSearchParams } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
@@ -40,7 +40,7 @@ type OnboardingSessionsSearchParams = z.infer<
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
-    allowAmbassador: true,
+    minimumRole: 'ambassador',
   });
 
   const url = new URL(request.url);

@@ -2,7 +2,7 @@ import { type ActionFunctionArgs, json } from '@remix-run/node';
 
 import { track } from '@oyster/core/mixpanel';
 import { CreateTagInput } from '@oyster/core/resources';
-import { createTag } from '@oyster/core/resources.server';
+import { createTag } from '@oyster/core/resources/server';
 import { validateForm } from '@oyster/ui';
 
 import { ensureUserAuthenticated, user } from '@/shared/session.server';

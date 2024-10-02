@@ -10,11 +10,14 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 
+import { verifyOneTimeCode } from '@oyster/core/member-profile/server';
+import {
+  OneTimeCodeForm,
+  VerifyOneTimeCodeInput,
+} from '@oyster/core/member-profile/ui';
 import { track } from '@oyster/core/mixpanel';
 import { Button, Form, getErrors, validateForm } from '@oyster/ui';
 
-import { verifyOneTimeCode } from '@/member-profile.server';
-import { OneTimeCodeForm, VerifyOneTimeCodeInput } from '@/member-profile.ui';
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
 import { oneTimeCodeIdCookie } from '@/shared/cookies.server';

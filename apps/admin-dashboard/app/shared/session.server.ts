@@ -4,6 +4,8 @@ import {
   type Session,
 } from '@remix-run/node';
 
+import { doesAdminHavePermission, getAdmin } from '@oyster/core/admins';
+import { type AdminRole } from '@oyster/core/admins/types';
 import { type ToastProps } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
@@ -31,7 +33,6 @@ export async function getSession(request: Request) {
 }
 
 export const SESSION = {
-  IS_AMBASSADOR: 'is_ambassador',
   REDIRECT_URL: 'redirect_url',
   TOAST: 'toast',
   USER_ID: 'user_id',
@@ -40,7 +41,7 @@ export const SESSION = {
 // Authentication
 
 type EnsureUserAuthenticatedOptions = {
-  allowAmbassador?: boolean;
+  minimumRole?: AdminRole;
 };
 
 export async function ensureUserAuthenticated(
@@ -49,9 +50,16 @@ export async function ensureUserAuthenticated(
 ) {
   const session = await getSession(request);
 
-  const authenticated = isUserAuthenticated(session, options);
+  // In order to determine if the user is authenticated, we'll query the DB
+  // for the admin record and check the admin's role.
+  const { authenticated, authorized } = await getAuthenticationStatus(
+    session,
+    options
+  );
 
+  // If the user isn't authenticated, they'll need to log in.
   if (!authenticated) {
+    session.unset(SESSION.USER_ID);
     session.flash(SESSION.REDIRECT_URL, request.url);
 
     throw redirect(Route['/login'], {
@@ -61,32 +69,74 @@ export async function ensureUserAuthenticated(
     });
   }
 
+  // If the user isn't authorized, they'll just get a 403. We don't redirect to
+  // the login page because they're already logged in!
+  if (!authorized) {
+    throw new Response(null, {
+      status: 403,
+      statusText: 'You are not authorized to access this page.',
+    });
+  }
+
   return session;
 }
 
-function isUserAuthenticated(
+/**
+ * Returns both the authentication and authorization status of the user.
+ *
+ * An admin will be considered authenticated if they have a valid user_id set
+ * in the session (checked against the DB). They will be considered authorized
+ * if their role is at least the `minimumRole` provided.
+ */
+export async function getAuthenticationStatus(
   session: Session,
   options: EnsureUserAuthenticatedOptions = {}
 ) {
-  if (!admin(session)) {
-    return false;
+  const adminId = user(session);
+
+  if (!adminId) {
+    return {
+      authenticated: false,
+      authorized: false,
+    };
   }
 
-  if (!options.allowAmbassador && !!isAmbassador(session)) {
-    return false;
+  const admin = await getAdmin({
+    select: ['admins.role'],
+    where: { id: adminId },
+  });
+
+  // This is the case in which the admin record was deleted and went back to
+  // the Admin Dashboard.
+  if (!admin) {
+    return {
+      authenticated: false,
+      authorized: false,
+    };
   }
 
-  return true;
+  const hasPermission = doesAdminHavePermission({
+    minimumRole: options.minimumRole || 'admin',
+    role: admin.role as AdminRole,
+  });
+
+  if (!hasPermission) {
+    return {
+      authenticated: true,
+      authorized: false,
+    };
+  }
+
+  return {
+    authenticated: true,
+    authorized: true,
+  };
 }
 
 // Session Helpers
 
-export function admin(session: Session) {
+export function user(session: Session) {
   return session.get(SESSION.USER_ID) as string;
-}
-
-export function isAmbassador(session: Session) {
-  return session.get(SESSION.IS_AMBASSADOR) as boolean;
 }
 
 export function toast(session: Session, toast: ToastProps) {

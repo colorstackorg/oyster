@@ -7,6 +7,7 @@ import {
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
+import { job } from '@oyster/core/admin-dashboard/server';
 import {
   Button,
   Form,
@@ -16,7 +17,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { job } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
   commitSession,

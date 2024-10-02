@@ -1,11 +1,11 @@
 import dayjs from 'dayjs';
 import dedent from 'dedent';
 
+import { db } from '@oyster/db';
 import { ActivationRequirement, type Student } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { db } from '@/infrastructure/database';
-import { ACTIVATION_FLOW_LAUNCH_DATE } from '@/shared/constants';
+import { activateMember } from '@/modules/member/use-cases/activate-member';
 import { ENV } from '@/shared/env';
 import { ErrorWithContext } from '@/shared/errors';
 
@@ -79,7 +79,7 @@ export async function onActivationStepCompleted(
   });
 
   if (activated) {
-    await activateStudent(studentId);
+    await activateMember(studentId);
   }
 
   const [newRequirementCompleted] = updatedCompletedRequirements.filter(
@@ -121,7 +121,7 @@ async function shouldProcess({
     return false;
   }
 
-  if (dayjs(acceptedAt).isBefore(ACTIVATION_FLOW_LAUNCH_DATE)) {
+  if (dayjs(acceptedAt).isBefore('2023-06-09')) {
     return false;
   }
 
@@ -213,18 +213,6 @@ async function updateCompletedRequirements(studentId: string) {
   return updatedRequirements;
 }
 
-async function activateStudent(id: string) {
-  await db
-    .updateTable('students')
-    .set({ activatedAt: new Date() })
-    .where('id', '=', id)
-    .execute();
-
-  job('student.activated', {
-    studentId: id,
-  });
-}
-
 async function sendProgressNotification({
   activationRequirementsCompleted,
   firstName,
@@ -239,10 +227,10 @@ async function sendProgressNotification({
   if (completedRequirements === totalRequirements) {
     message = dedent`
       Congratulations, ${firstName}! 🎉
-      
+
       You've completed all of your activation requirements, which means...you are now an *activated* ColorStack member.
-      
-      You can now claim your free swag pack in your <https://app.colorstack.io/home|*Member Profile*>! 🎁
+
+      Look out for an email that includes a GIFT CARD to the <https://colorstackmerch.org|*ColorStack Merch Store*>! 🎁
     `;
   } else {
     message = dedent`
@@ -250,7 +238,7 @@ async function sendProgressNotification({
 
       You're making some great progress on your activation! You've now completed ${completedRequirements}/${totalRequirements} requirements.
 
-      See an updated checklist in your <https://app.colorstack.io/home|*Member Profile*>! 👀
+      See an updated checklist in your <https://app.colorstack.io/home/activation|*Member Profile*>! 👀
     `;
   }
 

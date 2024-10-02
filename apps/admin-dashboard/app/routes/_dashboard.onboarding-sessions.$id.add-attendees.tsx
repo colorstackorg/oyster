@@ -7,10 +7,10 @@ import {
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
+import { addOnboardingSessionAttendees } from '@oyster/core/admin-dashboard/server';
 import { db } from '@oyster/db';
 import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
-import { addOnboardingSessionAttendees } from '@/admin-dashboard.server';
 import { OnboardingSessionAttendeesField } from '@/shared/components/onboarding-session-form';
 import { Route } from '@/shared/constants';
 import {
@@ -21,7 +21,7 @@ import {
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
-    allowAmbassador: true,
+    minimumRole: 'ambassador',
   });
 
   const onboardingSession = await db
@@ -50,7 +50,7 @@ type AddOnboardingSessionAttendeesInput = z.infer<
 
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request, {
-    allowAmbassador: true,
+    minimumRole: 'ambassador',
   });
 
   const { data, errors, ok } = await validateForm(

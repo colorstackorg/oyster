@@ -5,13 +5,23 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
+  Link,
   Form as RemixForm,
   useLoaderData,
   useNavigation,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren, useState } from 'react';
+import { ChevronDown, Info } from 'react-feather';
 
+import { type EducationLevel } from '@oyster/core/admin-dashboard/ui';
+import {
+  acceptApplication,
+  getApplication,
+  rejectApplication,
+} from '@oyster/core/applications';
+import { ApplicationRejectionReason } from '@oyster/core/applications/types';
+import { Application } from '@oyster/core/applications/ui';
 import {
   Application as ApplicationType,
   type Gender,
@@ -19,25 +29,20 @@ import {
   type OtherDemographic,
   type Race,
 } from '@oyster/types';
-import { Button, Text } from '@oyster/ui';
+import { Button, Dropdown, Form, Select, Text } from '@oyster/ui';
 
-import {
-  acceptApplication,
-  getApplication,
-  rejectApplication,
-} from '@/admin-dashboard.server';
-import { Application, type EducationLevel } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
+import { ENV } from '@/shared/constants.server';
 import {
-  admin,
   commitSession,
   ensureUserAuthenticated,
   toast,
+  user,
 } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
-    allowAmbassador: true,
+    minimumRole: 'ambassador',
   });
 
   const application = await getApplication(
@@ -60,7 +65,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'applications.race',
       'applications.status',
     ],
-    { withSchool: true }
+    {
+      withReferrer: true,
+      withSchool: true,
+    }
   );
 
   if (!application) {
@@ -68,23 +76,28 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   return json({
-    application,
+    application: {
+      ...application,
+      ...(application.referrerId && {
+        referrerUri: `${ENV.MEMBER_PROFILE_URL}/directory/${application.referrerId}`,
+      }),
+    },
   });
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request, {
-    allowAmbassador: true,
+    minimumRole: 'ambassador',
   });
 
   const form = await request.formData();
 
-  const { action } = Object.fromEntries(form);
+  const { action, reason } = Object.fromEntries(form);
 
   try {
     switch (action) {
       case 'accept': {
-        await acceptApplication(params.id as string, admin(session));
+        await acceptApplication(params.id as string, user(session));
 
         toast(session, {
           message: 'Application has been accepted.',
@@ -94,7 +107,11 @@ export async function action({ params, request }: ActionFunctionArgs) {
       }
 
       case 'reject': {
-        await rejectApplication(params.id as string, admin(session));
+        await rejectApplication(
+          params.id as string,
+          user(session),
+          reason as ApplicationRejectionReason
+        );
 
         toast(session, {
           message: 'Application has been rejected.',
@@ -142,9 +159,6 @@ export default function ApplicationPage() {
 
   const acceptButtonSubmitting =
     state === 'submitting' && formData?.get('action') === 'accept';
-
-  const rejectButtonSubmitting =
-    state === 'submitting' && formData?.get('action') === 'reject';
 
   const { application } = useLoaderData<typeof loader>();
 
@@ -194,19 +208,31 @@ export default function ApplicationPage() {
                 Accept
               </Button>
 
-              <Button
-                color="error"
-                name="action"
-                submitting={rejectButtonSubmitting}
-                type="submit"
-                value="reject"
-              >
-                Reject
-              </Button>
+              <RejectDropdown />
             </Button.Group>
           </RemixForm>
         )}
       </header>
+
+      {!!application.referrerUri && (
+        <div className="flex gap-2 rounded-lg border border-primary border-opacity-25 bg-primary bg-opacity-10 px-2 py-4">
+          <span>
+            <Info className="text-primary" />
+          </span>
+
+          <Text color="primary">
+            {' '}
+            This applicant was referred by:{' '}
+            <Link
+              className="link font-semibold"
+              target="_blank"
+              to={application.referrerUri}
+            >
+              {application.referrerFirstName} {application.referrerLastName}
+            </Link>
+          </Text>
+        </div>
+      )}
 
       <button
         className="w-fit text-sm text-gray-500 underline"
@@ -220,6 +246,68 @@ export default function ApplicationPage() {
         <ApplicationFieldGroup showAll={showAll} />
       </div>
     </div>
+  );
+}
+
+function RejectDropdown() {
+  const [open, setOpen] = useState<boolean>(false);
+
+  const { formData, state } = useNavigation();
+
+  const submitting =
+    state === 'submitting' && formData?.get('action') === 'reject';
+
+  return (
+    <Dropdown.Container onClose={() => setOpen(false)}>
+      <Button
+        color="error"
+        onClick={() => setOpen(true)}
+        type="button"
+        variant="secondary"
+      >
+        Reject <ChevronDown size={16} />
+      </Button>
+
+      {open && (
+        <Dropdown className="p-2">
+          <RemixForm className="form" method="post">
+            <Form.Field
+              description="Select a reason for rejecting this application."
+              label="Rejection Reason"
+              required
+            >
+              <Select id="reason" name="reason" required>
+                <option value={ApplicationRejectionReason.BAD_LINKEDIN}>
+                  Incorrect or suspicious LinkedIn
+                </option>
+                <option value={ApplicationRejectionReason.IS_INTERNATIONAL}>
+                  Not enrolled in US or Canada
+                </option>
+                <option value={ApplicationRejectionReason.INELIGIBLE_MAJOR}>
+                  Not the right major
+                </option>
+                <option value={ApplicationRejectionReason.NOT_UNDERGRADUATE}>
+                  Not an undergrad student
+                </option>
+                <option value={ApplicationRejectionReason.OTHER}>Other</option>
+              </Select>
+            </Form.Field>
+
+            <Button
+              color="error"
+              fill
+              name="action"
+              size="small"
+              submitting={submitting}
+              type="submit"
+              value="reject"
+            >
+              Reject
+            </Button>
+          </RemixForm>
+        </Dropdown>
+      )}
+    </Dropdown.Container>
   );
 }
 

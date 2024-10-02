@@ -17,7 +17,10 @@ export const EmailTemplate = z.discriminatedUnion('name', [
   }),
   BaseEmail.extend({
     name: z.literal('application-rejected'),
-    data: Application.pick({ firstName: true }),
+    data: z.object({
+      firstName: z.string(),
+      reason: z.string(),
+    }),
   }),
   BaseEmail.extend({
     name: z.literal('one-time-code-sent'),
@@ -35,19 +38,30 @@ export const EmailTemplate = z.discriminatedUnion('name', [
     }),
   }),
   BaseEmail.extend({
+    name: z.literal('referral-accepted'),
+    data: z.object({
+      firstName: z.string().trim().min(1),
+      referralsUri: z.string().url(),
+      referredFirstName: z.string().trim().min(1),
+      referredLastName: z.string().trim().min(1),
+    }),
+  }),
+  BaseEmail.extend({
+    name: z.literal('referral-sent'),
+    data: z.object({
+      applicationUri: z.string().url(),
+      firstName: z.string().trim().min(1),
+      referrerFirstName: z.string().trim().min(1),
+      referrerLastName: z.string().trim().min(1),
+    }),
+  }),
+  BaseEmail.extend({
     name: z.literal('resume-submitted'),
     data: z.object({
       edited: z.boolean(),
       firstName: Student.shape.firstName,
       resumeBookName: z.string().trim().min(1),
       resumeBookUri: z.string().url(),
-    }),
-  }),
-  BaseEmail.extend({
-    name: z.literal('student-activated'),
-    data: z.object({
-      firstName: Student.shape.firstName,
-      studentProfileUrl: z.string().url(),
     }),
   }),
   BaseEmail.extend({

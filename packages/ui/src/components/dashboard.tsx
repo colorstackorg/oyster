@@ -73,8 +73,14 @@ Dashboard.ColorStackLogo = function ColorStackLogo() {
   );
 };
 
+Dashboard.Header = function Header({ children }: PropsWithChildren) {
+  return (
+    <div className="flex items-center justify-between gap-4">{children}</div>
+  );
+};
+
 const itemClassName = cx(
-  'box-border flex w-full items-center gap-3 rounded-2xl p-3 transition-colors',
+  'box-border flex w-full items-center gap-2 rounded-xl p-3 transition-colors',
   'hover:bg-primary hover:bg-opacity-10',
   'aria-[current="page"]:bg-primary aria-[current="page"]:text-white aria-[current="page"]:hover:text-white'
 );
@@ -141,7 +147,7 @@ Dashboard.NavigationLink = function NavigationLink({
         prefetch={prefetch}
         to={pathname}
       >
-        {icon} {label}{' '}
+        {React.cloneElement(icon, { className: 'h-5 w-5' })} {label}{' '}
         {isNew && (
           <span className="rounded bg-green-100 px-1 text-xs text-green-700">
             New
@@ -158,17 +164,13 @@ Dashboard.NavigationList = function NavigationList({
   return <ul className="flex flex-col gap-2">{children}</ul>;
 };
 
-Dashboard.Page = function Page({
-  children,
-  className,
-}: PropsWithChildren<{ className?: string }>) {
+Dashboard.Page = function Page({ children }: PropsWithChildren) {
   return (
     <section
       className={cx(
         'box-border flex min-h-screen flex-col gap-4 @container',
         'p-4 pb-24',
-        'md:ml-[270px] md:p-6 md:pb-16',
-        className
+        'md:ml-[270px] md:p-6'
       )}
     >
       {children}

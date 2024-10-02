@@ -22,8 +22,7 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { QueueFromName } from '@/admin-dashboard.server';
-import { BullQueue } from '@/admin-dashboard.ui';
+import { validateQueue } from '@/shared/bull';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -31,12 +30,10 @@ import {
   toast,
 } from '@/shared/session.server';
 
-const BullParams = z.object({
-  queue: z.nativeEnum(BullQueue),
-});
-
 export async function loader({ request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  await ensureUserAuthenticated(request, {
+    minimumRole: 'owner',
+  });
 
   return json({});
 }
@@ -63,7 +60,9 @@ const AddJobInput = z.object({
 type AddJobInput = z.infer<typeof AddJobInput>;
 
 export async function action({ params, request }: ActionFunctionArgs) {
-  const session = await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request, {
+    minimumRole: 'owner',
+  });
 
   const { data, errors, ok } = await validateForm(request, AddJobInput);
 
@@ -71,9 +70,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  const { queue: queueName } = BullParams.parse(params);
-
-  const queue = QueueFromName[queueName];
+  const queue = await validateQueue(params.queue);
 
   await queue.add(data.name, data.data);
 
@@ -81,14 +78,11 @@ export async function action({ params, request }: ActionFunctionArgs) {
     message: 'Added job.',
   });
 
-  return redirect(
-    generatePath(Route['/bull/:queue/jobs'], { queue: queueName }),
-    {
-      headers: {
-        'Set-Cookie': await commitSession(session),
-      },
-    }
-  );
+  return redirect(generatePath(Route['/bull/:queue'], { queue: queue.name }), {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  });
 }
 
 export default function AddJobPage() {
@@ -96,7 +90,7 @@ export default function AddJobPage() {
 
   return (
     <Modal
-      onCloseTo={generatePath(Route['/bull/:queue/jobs'], {
+      onCloseTo={generatePath(Route['/bull/:queue'], {
         queue: queue as string,
       })}
     >

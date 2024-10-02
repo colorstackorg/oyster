@@ -57,6 +57,8 @@ export async function listResources<
         return eb.or([
           eb('title', 'ilike', `%${search}%`),
           eb(sql`word_similarity(title, ${search})`, '>=', 0.25),
+          eb('description', 'ilike', `%${search}%`),
+          eb(sql`word_similarity(description, ${search})`, '>=', 0.25),
         ]);
       });
     })

@@ -13,25 +13,34 @@ import {
   Video,
 } from 'react-feather';
 
+import { getAdmin } from '@oyster/core/admins';
+import { AdminRole } from '@oyster/core/admins/types';
+import { countPendingApplications } from '@oyster/core/applications';
 import { Dashboard, Divider } from '@oyster/ui';
 
-import { countPendingApplications } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
-import { getSession, isAmbassador } from '@/shared/session.server';
+import { getSession, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);
 
-  const pendingApplications = await countPendingApplications();
+  const [pendingApplications, admin] = await Promise.all([
+    countPendingApplications(),
+
+    getAdmin({
+      select: ['admins.role'],
+      where: { id: user(session) },
+    }),
+  ]);
 
   return json({
-    isAmbassador: isAmbassador(session),
     pendingApplications,
+    role: admin?.role, // This is tied to the "useRole" hook!
   });
 }
 
 export default function DashboardLayout() {
-  const { isAmbassador, pendingApplications } = useLoaderData<typeof loader>();
+  const { pendingApplications, role } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -43,7 +52,7 @@ export default function DashboardLayout() {
 
         <Dashboard.Navigation>
           <Dashboard.NavigationList>
-            {isAmbassador ? (
+            {role === AdminRole.AMBASSADOR ? (
               <>
                 <Dashboard.NavigationLink
                   icon={<Layers />}
@@ -65,23 +74,8 @@ export default function DashboardLayout() {
                 />
                 <Dashboard.NavigationLink
                   icon={<User />}
-                  label="Students"
+                  label="Members"
                   pathname={Route['/students']}
-                />
-                <Dashboard.NavigationLink
-                  icon={<User />}
-                  label="Admins"
-                  pathname={Route['/admins']}
-                />
-                <Dashboard.NavigationLink
-                  icon={<Gift />}
-                  label="Gamification"
-                  pathname={Route['/gamification/activities']}
-                />
-                <Dashboard.NavigationLink
-                  icon={<Video />}
-                  label="Onboarding Sessions"
-                  pathname={Route['/onboarding-sessions']}
                 />
                 <Dashboard.NavigationLink
                   icon={<Calendar />}
@@ -94,30 +88,47 @@ export default function DashboardLayout() {
                   pathname={Route['/resume-books']}
                 />
                 <Dashboard.NavigationLink
-                  icon={<HelpCircle />}
-                  label="Surveys"
-                  pathname={Route['/surveys']}
+                  icon={<Video />}
+                  label="Onboarding Sessions"
+                  pathname={Route['/onboarding-sessions']}
+                />
+                <Dashboard.NavigationLink
+                  icon={<Gift />}
+                  label="Gamification"
+                  pathname={Route['/gamification/activities']}
+                />
+                <Dashboard.NavigationLink
+                  icon={<User />}
+                  label="Admins"
+                  pathname={Route['/admins']}
                 />
                 <Dashboard.NavigationLink
                   icon={<MapPin />}
                   label="Schools"
                   pathname={Route['/schools']}
                 />
-
-                <div className="my-2">
-                  <Divider />
-                </div>
-
                 <Dashboard.NavigationLink
-                  icon={<ToggleRight />}
-                  label="Feature Flags"
-                  pathname={Route['/feature-flags']}
+                  icon={<HelpCircle />}
+                  label="Surveys"
+                  pathname={Route['/surveys']}
                 />
-                <Dashboard.NavigationLink
-                  icon={<Target />}
-                  label="Bull"
-                  pathname={Route['/bull']}
-                />
+
+                {role === AdminRole.OWNER && (
+                  <>
+                    <Divider my="2" />
+
+                    <Dashboard.NavigationLink
+                      icon={<ToggleRight />}
+                      label="Feature Flags"
+                      pathname={Route['/feature-flags']}
+                    />
+                    <Dashboard.NavigationLink
+                      icon={<Target />}
+                      label="Bull"
+                      pathname={Route['/bull']}
+                    />
+                  </>
+                )}
               </>
             )}
           </Dashboard.NavigationList>
@@ -126,7 +137,7 @@ export default function DashboardLayout() {
         <Dashboard.LogoutForm />
       </Dashboard.Sidebar>
 
-      <Dashboard.Page className="max-h-screen overflow-auto">
+      <Dashboard.Page>
         <Dashboard.MenuButton />
         <Outlet />
       </Dashboard.Page>

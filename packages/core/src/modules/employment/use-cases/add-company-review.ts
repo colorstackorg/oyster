@@ -5,6 +5,7 @@ import { job } from '@/infrastructure/bull/use-cases/job';
 import { type AddCompanyReviewInput } from '../employment.types';
 
 export async function addCompanyReview({
+  anonymous,
   rating,
   recommend,
   studentId,
@@ -15,6 +16,7 @@ export async function addCompanyReview({
     return trx
       .insertInto('companyReviews')
       .values({
+        anonymous,
         id: id(),
         rating,
         recommend,

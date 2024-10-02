@@ -1,7 +1,7 @@
+import { db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { db } from '@/infrastructure/database';
 import { checkMostRecentEducation } from './check-most-recent-education';
 import { type AddEducationInput } from '../education.types';
 
@@ -25,8 +25,8 @@ export async function addEducation(input: AddEducationInput) {
 
   checkMostRecentEducation(input.studentId);
 
-  job('education.added', {
-    educationId,
+  job('gamification.activity.completed', {
     studentId: input.studentId,
+    type: 'update_education_history',
   });
 }

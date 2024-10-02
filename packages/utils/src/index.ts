@@ -41,14 +41,14 @@ export function id() {
 }
 
 /**
- * Immediately invokes the given function and returns its result.
+ * Immediately invokes the given function (IIFE) and returns its result.
  *
  * This is helpful when we want to execute some logic within a particular
  * context, but we don't want to create a new scope for that logic.
  *
  * @example
  * ```ts
- * const result = iife(() => {
+ * const result = run(() => {
  *  return 1 + 1;
  * });
  *
@@ -57,7 +57,7 @@ export function id() {
  *
  * @param fn - The function to invoke.
  */
-export function iife<T>(fn: () => T): T {
+export function run<T>(fn: () => T): T {
   return fn();
 }
 
@@ -142,6 +142,31 @@ export function order<T extends string>(map: Record<T, number>): T[] {
  */
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Splits an array into multiple smaller arrays of a specified maximum size.
+ *
+ * @param array - The array to be split.
+ * @param size - The maximum size of each sub-array.
+ * @returns An array of sub-arrays, each with a maximum length of `size`.
+ *
+ * @example
+ * ```ts
+ * splitArray([1, 2, 3, 4, 5], 2); // => [[1, 2], [3, 4], [5]]
+ * splitArray([1, 2, 3, 4, 5], 3); // => [[1, 2, 3], [4, 5]]
+ * splitArray([1, 2, 3, 4, 5], 5); // => [[1, 2, 3, 4, 5]]
+ * splitArray([1, 2, 3, 4, 5], 10); // => [[1, 2, 3, 4, 5]]
+ * ```
+ */
+export function splitArray<T>(array: T[], size: number): T[][] {
+  const result: T[][] = [];
+
+  for (let i = 0; i < array.length; i += size) {
+    result.push(array.slice(i, i + size));
+  }
+
+  return result;
 }
 
 /**

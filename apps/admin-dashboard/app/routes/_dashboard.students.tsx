@@ -8,11 +8,13 @@ import dayjs from 'dayjs';
 import { sql } from 'kysely';
 import { useState } from 'react';
 import {
+  CornerUpLeft,
   DollarSign,
   Edit,
   ExternalLink,
   Gift,
   Hash,
+  Star,
   Trash,
   Upload,
   Users,
@@ -20,6 +22,7 @@ import {
 } from 'react-feather';
 import { generatePath } from 'react-router';
 
+import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
 import { db } from '@oyster/db';
 import {
   Dashboard,
@@ -31,7 +34,6 @@ import {
   useSearchParams,
 } from '@oyster/ui';
 
-import { ListSearchParams } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
 import { getTimezone } from '@/shared/cookies.server';
@@ -80,6 +82,7 @@ async function listStudents({
       .select([
         'students.activatedAt',
         'students.airtableId',
+        'students.applicationId',
         'students.email',
         'students.firstName',
         'students.id',
@@ -102,13 +105,19 @@ async function listStudents({
       .executeTakeFirstOrThrow(),
   ]);
 
-  const students = rows.map((row) => {
-    return {
-      ...row,
-      airtableUri: `https://airtable.com/${ENV.AIRTABLE_FAMILY_BASE_ID}/${ENV.AIRTABLE_MEMBERS_TABLE_ID}/${row.airtableId}`,
-      joinedAt: dayjs(row.joinedAt).tz(timezone).format('MM/DD/YY @ h:mm A'),
-    };
-  });
+  const students = rows.map(
+    ({ airtableId, applicationId, joinedAt, ...row }) => {
+      return {
+        ...row,
+        ...(applicationId && {
+          applicationUri: `/applications/${applicationId}`,
+        }),
+        airtableUri: `https://airtable.com/${ENV.AIRTABLE_FAMILY_BASE_ID}/${ENV.AIRTABLE_MEMBERS_TABLE_ID}/${airtableId}`,
+        directoryUri: `${ENV.MEMBER_PROFILE_URL}/directory/${row.id}`,
+        joinedAt: dayjs(joinedAt).tz(timezone).format('MM/DD/YY @ h:mm A'),
+      };
+    }
+  );
 
   return {
     students,
@@ -191,14 +200,15 @@ function StudentsTable() {
 
   const columns: TableColumnProps<StudentInView>[] = [
     {
-      displayName: 'First Name',
-      size: '200',
-      render: (student) => student.firstName,
-    },
-    {
-      displayName: 'Last Name',
-      size: '200',
-      render: (student) => student.lastName,
+      displayName: 'Full Name',
+      render: (student) => {
+        return (
+          <Link className="link" target="_blank" to={student.directoryUri}>
+            {student.firstName} {student.lastName}
+          </Link>
+        );
+      },
+      size: '240',
     },
     {
       displayName: 'Email',
@@ -242,7 +252,12 @@ function StudentsPagination() {
   );
 }
 
-function StudentDropdown({ activatedAt, airtableUri, id }: StudentInView) {
+function StudentDropdown({
+  activatedAt,
+  airtableUri,
+  applicationUri,
+  id,
+}: StudentInView) {
   const [open, setOpen] = useState<boolean>(false);
 
   function onClose() {
@@ -272,7 +287,7 @@ function StudentDropdown({ activatedAt, airtableUri, id }: StudentInView) {
               <Link
                 to={generatePath(Route['/students/:id/points/grant'], { id })}
               >
-                <Gift /> Grant Points
+                <Star /> Grant Points
               </Link>
             </Dropdown.Item>
 
@@ -282,9 +297,23 @@ function StudentDropdown({ activatedAt, airtableUri, id }: StudentInView) {
               </Link>
             </Dropdown.Item>
 
+            {applicationUri && (
+              <Dropdown.Item>
+                <Link target="_blank" to={applicationUri}>
+                  <CornerUpLeft /> View Application
+                </Link>
+              </Dropdown.Item>
+            )}
+
             <Dropdown.Item>
               <Link target="_blank" to={airtableUri} rel="noopener noreferrer">
                 <ExternalLink /> View Airtable Record
+              </Link>
+            </Dropdown.Item>
+
+            <Dropdown.Item>
+              <Link to={generatePath(Route['/students/:id/gift'], { id })}>
+                <Gift /> Send Goody Gift
               </Link>
             </Dropdown.Item>
 

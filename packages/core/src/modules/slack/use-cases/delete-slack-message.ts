@@ -1,6 +1,7 @@
+import { db } from '@oyster/db';
+
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { db } from '@/infrastructure/database';
 import { retryWithBackoff } from '@/shared/utils/core.utils';
 
 export async function deleteSlackMessage({
@@ -11,7 +12,7 @@ export async function deleteSlackMessage({
     async () => {
       const message = await db
         .deleteFrom('slackMessages')
-        .returning(['studentId', 'threadId'])
+        .returning(['id', 'studentId', 'threadId'])
         .where('id', '=', id)
         .where('channelId', '=', channelId)
         .executeTakeFirstOrThrow();
@@ -24,6 +25,11 @@ export async function deleteSlackMessage({
           type: 'reply_to_thread',
         });
       }
+
+      job('slack.thread.sync_embedding', {
+        action: 'delete',
+        threadId: message.threadId || message.id,
+      });
 
       return true;
     },

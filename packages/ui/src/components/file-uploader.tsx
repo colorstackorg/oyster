@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { type ChangeEvent, type HTMLProps } from 'react';
 import { File, UploadCloud, X } from 'react-feather';
 
-import { iife } from '@oyster/utils';
+import { run } from '@oyster/utils';
 
 import { IconButton } from './icon-button';
 import { Text } from './text';
@@ -82,7 +82,7 @@ export function FileUploader({
             your file.
           </Text>
 
-          {iife(() => {
+          {run(() => {
             const formattedAccept = accept
               .map(formatFileType)
               .sort()

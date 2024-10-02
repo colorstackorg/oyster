@@ -21,17 +21,21 @@ import { useState } from 'react';
 import { match } from 'ts-pattern';
 
 import {
+  type DegreeType,
+  FORMATTED_DEGREEE_TYPE,
+} from '@oyster/core/member-profile/ui';
+import {
   getResumeBook,
   getResumeBookSubmission,
   listResumeBookSponsors,
   submitResume,
-} from '@oyster/core/resume-books';
+} from '@oyster/core/resumes';
 import {
   RESUME_BOOK_CODING_LANGUAGES,
   RESUME_BOOK_JOB_SEARCH_STATUSES,
   RESUME_BOOK_ROLES,
   SubmitResumeInput,
-} from '@oyster/core/resume-books.types';
+} from '@oyster/core/resumes/types';
 import { db } from '@oyster/db';
 import { FORMATTED_RACE, Race, WorkAuthorizationStatus } from '@oyster/types';
 import {
@@ -49,9 +53,14 @@ import {
   useRevalidateOnFocus,
   validateForm,
 } from '@oyster/ui';
-import { iife } from '@oyster/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipText,
+  TooltipTrigger,
+} from '@oyster/ui/tooltip';
+import { run } from '@oyster/utils';
 
-import { type DegreeType, FORMATTED_DEGREEE_TYPE } from '@/member-profile.ui';
 import { HometownField } from '@/shared/components/profile.personal';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
@@ -144,7 +153,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       .tz(timezone)
       .format('dddd, MMMM DD, YYYY @ h:mm A (z)'),
 
-    status: iife(() => {
+    status: run(() => {
       const now = dayjs();
 
       if (now.isBefore(_resumeBook.startDate)) {
@@ -318,9 +327,59 @@ export default function ResumeBook() {
             </button>
           </div>
         ) : (
-          <ResumeBookForm />
+          <>
+            <ResumeBookSponsors />
+            <ResumeBookForm />
+          </>
         ))}
     </section>
+  );
+}
+
+function ResumeBookSponsors() {
+  const { sponsors } = useLoaderData<typeof loader>();
+
+  return (
+    <div className="border-y border-gray-100 py-4">
+      <Text variant="lg">Sponsors</Text>
+
+      <div className="mb-4 mt-1">
+        <Text color="gray-500" variant="sm">
+          A list of our incredible partner companies who are sponsoring this
+          resume book and looking to hire YOU! 👀
+        </Text>
+      </div>
+
+      <ul className="flex flex-wrap gap-2">
+        {sponsors.map((sponsor) => {
+          return (
+            <li key={sponsor.id}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <a
+                    className="cursor-pointer"
+                    href={'https://' + sponsor.domain}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    <div className="h-10 w-10 rounded-lg border border-gray-200 p-1">
+                      <img
+                        className="aspect-square h-full w-full rounded-md"
+                        src={sponsor.imageUrl as string}
+                      />
+                    </div>
+                  </a>
+                </TooltipTrigger>
+
+                <TooltipContent>
+                  <TooltipText>{sponsor.name}</TooltipText>
+                </TooltipContent>
+              </Tooltip>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 
@@ -336,7 +395,7 @@ function ResumeBookForm() {
       encType="multipart/form-data"
     >
       <Form.Field
-        description={iife(() => {
+        description={run(() => {
           const emailLink = (
             <Link
               className="link"
@@ -377,8 +436,6 @@ function ResumeBookForm() {
           value="1"
         />
       </Form.Field>
-
-      <Divider />
 
       <Form.Field
         error={errors.firstName}
@@ -629,7 +686,19 @@ function ResumeBookForm() {
       <PreferredSponsorsField />
 
       <Form.Field
-        description="Please upload your resume."
+        description={
+          <Text>
+            Before you submit your resume, you can get feedback from our{' '}
+            <Link
+              className="link font-semibold"
+              target="_blank"
+              to={Route['/resume/review']}
+            >
+              Resume Review
+            </Link>{' '}
+            tool in the Member Profile!
+          </Text>
+        }
         error={errors.resume}
         label="Resume"
         labelFor={keys.resume}

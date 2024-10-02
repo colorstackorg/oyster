@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import { Email } from '@oyster/types';
 import { id } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { db } from '@/infrastructure/database';
 import { getMemberByEmail } from '@/modules/member/queries/get-member-by-email';
 import { parseCsv } from '@/shared/utils/csv.utils';
 import { AddSurveyResponseInput, SurveyResponse } from '../survey.types';
@@ -61,9 +61,10 @@ export async function importSurveyResponses(
 
   responses.forEach((response) => {
     if (response.studentId) {
-      job('survey.responded', {
+      job('gamification.activity.completed', {
         studentId: response.studentId,
-        surveyId: response.surveyId,
+        surveyRespondedTo: response.surveyId,
+        type: 'respond_to_survey',
       });
     }
   });

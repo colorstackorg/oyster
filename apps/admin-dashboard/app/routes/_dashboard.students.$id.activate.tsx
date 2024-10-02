@@ -11,10 +11,10 @@ import {
   useNavigate,
 } from '@remix-run/react';
 
+import { activateMember } from '@oyster/core/admin-dashboard/server';
 import { db } from '@oyster/db';
 import { Button, Form, Modal } from '@oyster/ui';
 
-import { activateMember } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -86,8 +86,8 @@ export default function ActivateStudentPage() {
 
       <Modal.Description>
         Just confirming - do you want to activate {student.firstName}{' '}
-        {student.lastName}? They will receive an email with the ability to claim
-        a swag pack in their profile.
+        {student.lastName}? They will receive an email with a gift card to the
+        merch store.
       </Modal.Description>
 
       <RemixForm className="form" method="post">

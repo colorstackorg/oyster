@@ -1,6 +1,3 @@
-export { Application } from './modules/application/ui/application-form';
-export { MajorCombobox } from './modules/application/ui/major-combobox';
-export { SchoolCombobox } from './modules/application/ui/school-combobox';
 export {
   OneTimeCode,
   OneTimeCodePurpose,
@@ -41,6 +38,5 @@ export {
   ChangePrimaryEmailInput,
   ListMembersInDirectoryWhere,
 } from './modules/member/member.types';
-export { CreateResumeBookInput } from './modules/resume-book/resume-book.types';
-export { ClaimSwagPackInput } from './modules/swag-pack/swag-pack.types';
+export { CreateResumeBookInput } from './modules/resume/resume.types';
 export { Environment, ListSearchParams } from './shared/types';

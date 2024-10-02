@@ -23,6 +23,7 @@ module.exports = {
   plugins: ['@typescript-eslint', 'import'],
   root: true,
   rules: {
+    '@typescript-eslint/ban-types': ['off'],
     '@typescript-eslint/consistent-type-exports': [
       'error',
       { fixMixedExportsWithInlineTypeSpecifier: true },

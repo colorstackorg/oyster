@@ -1,6 +1,7 @@
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { db } from '@oyster/db';
 import {
   FORMATTED_DEMOGRAPHICS,
   FORMATTED_GENDER,
@@ -13,7 +14,6 @@ import {
   type GetBullJobData,
 } from '@/infrastructure/bull/bull.types';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
-import { db } from '@/infrastructure/database';
 import { IS_PRODUCTION } from '@/shared/env';
 import { ColorStackError, ErrorWithContext } from '@/shared/errors';
 import { RateLimiter } from '@/shared/utils/rate-limiter';
@@ -70,6 +70,9 @@ export const airtableWorker = registerWorker(
       })
       .with({ name: 'airtable.record.update' }, ({ data }) => {
         return updateAirtableRecord(data);
+      })
+      .with({ name: 'airtable.record.update.bulk' }, ({ data }) => {
+        return bulkUpdateAirtableRecord(data);
       })
       .exhaustive();
   }
@@ -295,7 +298,7 @@ type AirtableFieldOptions = {
   }[];
 };
 
-type AirtableField = { name: string } & (
+export type AirtableField = { name: string } & (
   | { type: 'email' }
   | { type: 'multipleAttachments' }
   | { type: 'multipleSelects'; options: AirtableFieldOptions }
@@ -439,4 +442,57 @@ export async function updateAirtableRecord({
   const json = await response.json();
 
   return json.id as string;
+}
+
+/**
+ * @see https://airtable.com/developers/web/api/update-multiple-records
+ */
+export async function bulkUpdateAirtableRecord({
+  airtableBaseId,
+  airtableTableId,
+  records,
+}: GetBullJobData<'airtable.record.update.bulk'>) {
+  if (!IS_PRODUCTION) {
+    return;
+  }
+
+  await airtableRateLimiter.process();
+
+  const body = JSON.stringify({
+    records: records.map((record) => {
+      return {
+        id: record.id,
+        fields: record.data,
+      };
+    }),
+
+    typecast: true,
+  });
+
+  const response = await fetch(
+    `${AIRTABLE_API_URI}/${airtableBaseId}/${airtableTableId}`,
+    {
+      body,
+      headers: getAirtableHeaders({ includeContentType: true }),
+      method: 'PATCH',
+    }
+  );
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    throw new ColorStackError()
+      .withMessage('Failed to bulk update records in Airtable.')
+      .withContext({ json, records, status: response.status })
+      .report();
+  }
+
+  console.log({
+    code: 'airtable_record_bulk_updated',
+    message: 'Airtable records were bulk updated.',
+    data: {
+      airtableBaseId,
+      airtableTableId,
+    },
+  });
 }

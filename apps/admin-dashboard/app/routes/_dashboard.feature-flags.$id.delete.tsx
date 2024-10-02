@@ -6,9 +6,12 @@ import {
 } from '@remix-run/node';
 import { Form as RemixForm, useLoaderData } from '@remix-run/react';
 
+import {
+  deleteFeatureFlag,
+  getFeatureFlag,
+} from '@oyster/core/admin-dashboard/server';
 import { Button, Modal } from '@oyster/ui';
 
-import { deleteFeatureFlag, getFeatureFlag } from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -17,7 +20,9 @@ import {
 } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  await ensureUserAuthenticated(request, {
+    minimumRole: 'owner',
+  });
 
   const flag = await getFeatureFlag({
     select: ['displayName'],
@@ -34,7 +39,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
-  const session = await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request, {
+    minimumRole: 'owner',
+  });
 
   await deleteFeatureFlag(params.id as string);
 

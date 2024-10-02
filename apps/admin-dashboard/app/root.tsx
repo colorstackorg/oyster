@@ -10,6 +10,7 @@ import {
 } from '@remix-run/react';
 import { withSentry } from '@sentry/remix';
 
+import { buildMeta } from '@oyster/core/remix';
 import { Toast } from '@oyster/ui';
 import uiStylesheet from '@oyster/ui/index.css?url';
 
@@ -25,17 +26,10 @@ export const links: LinksFunction = () => {
 };
 
 export const meta: MetaFunction = () => {
-  const title = 'Admin Dashboard';
-
-  const description =
-    'Your home for all things ColorStack administration. Manage applications, events and more!';
-
-  return [
-    { title },
-    { name: 'description', content: description },
-    { property: 'og:title', content: title },
-    { property: 'og:description', content: description },
-  ];
+  return buildMeta({
+    description: `Your home for all things ColorStack administration. Manage applications, events and more!`,
+    title: 'Admin Dashboard',
+  });
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {

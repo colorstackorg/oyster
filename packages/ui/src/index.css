@@ -16,7 +16,7 @@ select {
 
 /* Classes */
 
-.dropdown-item :is(a, button):only-child {
+.dropdown-item :is(a, button) {
   align-items: center;
   display: flex;
   gap: 0.5rem;
@@ -25,12 +25,12 @@ select {
   width: 100%;
 }
 
-.dropdown-item :is(a, button):only-child:hover,
-.dropdown-item :is(a, button):only-child:focus-within {
+.dropdown-item :is(a, button):hover,
+.dropdown-item :is(a, button):focus-within {
   background-color: theme('colors.gray.100');
 }
 
-.dropdown-item :is(a, button):only-child > svg {
+.dropdown-item :is(a, button) > svg {
   height: 1.125rem;
   width: 1.125rem;
 }

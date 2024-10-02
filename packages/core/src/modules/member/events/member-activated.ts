@@ -1,28 +1,40 @@
+import dayjs from 'dayjs';
+
+import { db } from '@oyster/db';
+
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { db } from '@/infrastructure/database';
-import { ENV } from '@/shared/env';
+import { createGiftCard } from '@/modules/shopify';
 
 export async function onMemberActivated({
   studentId,
 }: GetBullJobData<'student.activated'>) {
-  const student = await db
+  const member = await db
     .selectFrom('students')
-    .select(['email', 'firstName', 'id'])
+    .select(['email', 'firstName', 'id', 'lastName'])
     .where('id', '=', studentId)
     .executeTakeFirstOrThrow();
 
-  job('gamification.activity.completed', {
-    studentId: student.id,
-    type: 'get_activated',
+  const giftCardResult = await createGiftCard({
+    expiresOn: dayjs().add(1, 'week').format('YYYY-MM-DD'),
+    initialValue: '50.00',
+    message:
+      'Congratulations on becoming an activated ColorStack member! 🎉 ' +
+      'From the team at ColorStack, we hope you enjoy your new merch! 🔥',
+    note: 'This was awarded for member activation.',
+    recipient: {
+      email: member.email,
+      firstName: member.firstName,
+      lastName: member.lastName,
+    },
   });
 
-  job('notification.email.send', {
-    data: {
-      firstName: student.firstName,
-      studentProfileUrl: ENV.STUDENT_PROFILE_URL,
-    },
-    name: 'student-activated',
-    to: student.email,
+  if (!giftCardResult.ok) {
+    throw new Error(giftCardResult.error);
+  }
+
+  job('gamification.activity.completed', {
+    studentId: member.id,
+    type: 'get_activated',
   });
 }

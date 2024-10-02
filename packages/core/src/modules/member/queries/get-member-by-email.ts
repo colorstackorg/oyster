@@ -1,4 +1,4 @@
-import { db } from '@/infrastructure/database';
+import { db } from '@oyster/db';
 
 export function getMemberByEmail(email: string) {
   return db

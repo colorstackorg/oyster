@@ -19,6 +19,7 @@ export const ENV = {
   MAILCHIMP_API_KEY: process.env.MAILCHIMP_API_KEY as string,
   MAILCHIMP_AUDIENCE_ID: process.env.MAILCHIMP_AUDIENCE_ID as string,
   MAILCHIMP_SERVER_PREFIX: process.env.MAILCHIMP_SERVER_PREFIX as string,
+  MEMBER_PROFILE_URL: process.env.MEMBER_PROFILE_URL as string,
   REDIS_URL: process.env.REDIS_URL as string,
   SENTRY_DSN: process.env.SENTRY_DSN as string,
   SLACK_ANNOUNCEMENTS_CHANNEL_ID: process.env
@@ -32,8 +33,6 @@ export const ENV = {
     .SLACK_INTRODUCTIONS_CHANNEL_ID as string,
   SLACK_SIGNING_SECRET: process.env.SLACK_SIGNING_SECRET as string,
   STUDENT_PROFILE_URL: process.env.STUDENT_PROFILE_URL as string,
-  SWAG_UP_CLIENT_ID: process.env.SWAG_UP_CLIENT_ID as string,
-  SWAG_UP_CLIENT_SECRET: process.env.SWAG_UP_CLIENT_SECRET as string,
 };
 
 // TODO: Below are the only variables that we need to process in the core,

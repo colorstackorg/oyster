@@ -7,25 +7,25 @@ import {
 import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
+import { uploadOnboardingSession } from '@oyster/core/admin-dashboard/server';
+import { OnboardingSession } from '@oyster/core/admin-dashboard/ui';
 import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
 
-import { uploadOnboardingSession } from '@/admin-dashboard.server';
-import { OnboardingSession } from '@/admin-dashboard.ui';
 import {
   OnboardingSessionAttendeesField,
   OnboardingSessionForm,
 } from '@/shared/components/onboarding-session-form';
 import { Route } from '@/shared/constants';
 import {
-  admin,
   commitSession,
   ensureUserAuthenticated,
   toast,
+  user,
 } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
-    allowAmbassador: true,
+    minimumRole: 'ambassador',
   });
 
   return json({});
@@ -48,12 +48,12 @@ type UploadOnboardingSessionInput = z.infer<
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request, {
-    allowAmbassador: true,
+    minimumRole: 'ambassador',
   });
 
   const form = await request.formData();
 
-  form.set('uploadedById', admin(session));
+  form.set('uploadedById', user(session));
 
   const { data, errors, ok } = await validateForm(
     form,

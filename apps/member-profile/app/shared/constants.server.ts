@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Environment } from '@/member-profile.ui';
+import { Environment } from '@oyster/core/member-profile/ui';
 
 const EnvironmentVariable = z.string().trim().min(1);
 
@@ -8,6 +8,7 @@ const BaseEnvironmentConfig = z.object({
   AIRTABLE_API_KEY: EnvironmentVariable,
   AIRTABLE_FAMILY_BASE_ID: EnvironmentVariable,
   AIRTABLE_MEMBERS_TABLE_ID: EnvironmentVariable,
+  ANTHROPIC_API_KEY: EnvironmentVariable,
   API_URL: EnvironmentVariable,
   CRUNCHBASE_BASIC_API_KEY: EnvironmentVariable,
   DATABASE_URL: EnvironmentVariable,
@@ -30,8 +31,6 @@ const BaseEnvironmentConfig = z.object({
   SLACK_CLIENT_ID: EnvironmentVariable,
   SLACK_TEAM_ID: EnvironmentVariable,
   STUDENT_PROFILE_URL: EnvironmentVariable,
-  SWAG_UP_CLIENT_ID: EnvironmentVariable,
-  SWAG_UP_CLIENT_SECRET: EnvironmentVariable,
 });
 
 const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
@@ -39,6 +38,7 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     AIRTABLE_API_KEY: true,
     AIRTABLE_FAMILY_BASE_ID: true,
     AIRTABLE_MEMBERS_TABLE_ID: true,
+    ANTHROPIC_API_KEY: true,
     CRUNCHBASE_BASIC_API_KEY: true,
     GITHUB_OAUTH_CLIENT_ID: true,
     GITHUB_OAUTH_CLIENT_SECRET: true,
@@ -54,8 +54,6 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     SLACK_ANNOUNCEMENTS_CHANNEL_ID: true,
     SLACK_CLIENT_ID: true,
     SLACK_TEAM_ID: true,
-    SWAG_UP_CLIENT_ID: true,
-    SWAG_UP_CLIENT_SECRET: true,
   }).extend({
     ENVIRONMENT: z.literal(Environment.DEVELOPMENT),
     SMTP_HOST: EnvironmentVariable.optional(),

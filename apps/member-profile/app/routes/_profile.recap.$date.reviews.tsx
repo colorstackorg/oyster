@@ -2,21 +2,26 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 
-import { listCompanyReviews } from '@oyster/core/employment.server';
+import { listCompanyReviews } from '@oyster/core/employment/server';
+import {
+  type EmploymentType,
+  type LocationType,
+} from '@oyster/core/member-profile/ui';
 
-import { type EmploymentType, type LocationType } from '@/member-profile.ui';
 import { getDateRange, Recap } from '@/routes/_profile.recap.$date';
 import { CompanyReview } from '@/shared/components/company-review';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
   const { endOfWeek, startOfWeek } = getDateRange(params.date);
 
   const _reviews = await listCompanyReviews({
     includeCompanies: true,
+    memberId: user(session),
     select: [
+      'companyReviews.anonymous',
       'companyReviews.createdAt',
       'companyReviews.id',
       'companyReviews.rating',
@@ -78,6 +83,7 @@ export default function RecapReviews() {
           return (
             <CompanyReview
               key={review.id}
+              anonymous={review.anonymous}
               company={{
                 id: review.companyId || '',
                 image: review.companyImage || '',
@@ -85,6 +91,9 @@ export default function RecapReviews() {
               }}
               date={review.date}
               employmentType={review.employmentType as EmploymentType}
+              hasAccess={true} // We'll allow access to all reviews in recaps.
+              hasUpvoted={review.upvoted as boolean}
+              id={review.id}
               locationCity={review.locationCity}
               locationState={review.locationState}
               locationType={review.locationType as LocationType}
@@ -97,6 +106,7 @@ export default function RecapReviews() {
               reviewerProfilePicture={review.reviewerProfilePicture}
               text={review.text}
               title={review.title as string}
+              upvotesCount={review.upvotes}
             />
           );
         })}

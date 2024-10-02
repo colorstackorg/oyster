@@ -1,35 +1,29 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { type PropsWithChildren, type PropsWithoutRef } from 'react';
+import { type PropsWithChildren } from 'react';
 import {
-  CheckCircle,
   ExternalLink,
   GitHub,
   type Icon,
   Instagram,
   Linkedin,
   Twitter,
-  XCircle,
   Youtube,
 } from 'react-feather';
 import { match } from 'ts-pattern';
-
-import { getIpAddress, setMixpanelProfile, track } from '@oyster/core/mixpanel';
-import { db } from '@oyster/db';
-import {
-  type ActivationRequirement,
-  StudentActiveStatus,
-  Timezone,
-} from '@oyster/types';
-import { Button, cx, Divider, getButtonCn, Text } from '@oyster/ui';
-import { toTitleCase } from '@oyster/utils';
 
 import {
   countEventAttendees,
   countMessagesSent,
   getActiveStreakLeaderboard,
-} from '@/member-profile.server';
+} from '@oyster/core/member-profile/server';
+import { getIpAddress, setMixpanelProfile, track } from '@oyster/core/mixpanel';
+import { db } from '@oyster/db';
+import { StudentActiveStatus, Timezone } from '@oyster/types';
+import { Button, cx, Divider, getButtonCn, Text } from '@oyster/ui';
+import { toTitleCase } from '@oyster/utils';
+
 import { Card, type CardProps } from '@/shared/components/card';
 import { Leaderboard } from '@/shared/components/leaderboard';
 import { Route } from '@/shared/constants';
@@ -231,22 +225,22 @@ async function getTotalStudentsCount() {
 export default function HomeLayout() {
   const { student } = useLoaderData<typeof loader>();
 
+  const showActivationCard =
+    !!student.joinedAfterActivation &&
+    !student.activatedAt &&
+    !student.claimedSwagPackAt;
+
   const showOnboardingCard =
     !!student.joinedAfterActivation && !student.onboardedAt;
-
-  const showSwagCard =
-    !!student.joinedAfterActivation &&
-    !!student.activatedAt &&
-    !student.claimedSwagPackAt;
 
   return (
     <>
       <Text variant="2xl">Hey, {student.firstName}! 👋</Text>
 
-      {(showOnboardingCard || showSwagCard) && (
+      {(showActivationCard || showOnboardingCard) && (
         <>
           <div className="grid grid-cols-1 items-start gap-4 @[1000px]:grid-cols-2 @[1500px]:grid-cols-3">
-            {showSwagCard && <ClaimSwagPackCard />}
+            {showActivationCard && <ActivationCard />}
             {showOnboardingCard && <OnboardingSessionCard />}
           </div>
 
@@ -266,8 +260,6 @@ export default function HomeLayout() {
               <MessagesSentCard />
             </div>
           </div>
-
-          {student.joinedAfterActivation && <ActivationCard />}
 
           <LeaderboardCard className="@[1500px]:hidden" />
         </Home.Column>
@@ -350,33 +342,10 @@ function ActiveStatusCard() {
   );
 }
 
-function ClaimSwagPackCard() {
-  return (
-    <Card>
-      <Card.Title>Claim Swag Pack 🎁</Card.Title>
-
-      <Card.Description>
-        Congratulations on becoming an activated ColorStack member! As a thank
-        you for engaging in the community, we would love to send you a
-        ColorStack swag pack.
-      </Card.Description>
-
-      <Button.Group>
-        <Link
-          className={getButtonCn({ variant: 'primary' })}
-          to={Route['/home/claim-swag-pack']}
-        >
-          Claim Swag Pack
-        </Link>
-      </Button.Group>
-    </Card>
-  );
-}
-
 function OnboardingSessionCard() {
   return (
     <Card>
-      <Card.Title>Attend an Onboarding Session</Card.Title>
+      <Card.Title>Attend an Onboarding Session 📆</Card.Title>
 
       <Card.Description>
         Attend an onboarding session to learn more about ColorStack and meet
@@ -385,9 +354,9 @@ function OnboardingSessionCard() {
 
       <Button.Group>
         <a
+          className={getButtonCn({ size: 'small', variant: 'primary' })}
           href="https://calendly.com/colorstack-onboarding-ambassador/onboarding"
           target="_blank"
-          className={getButtonCn({ variant: 'primary' })}
         >
           Book Onboarding Session <ExternalLink size={20} />
         </a>
@@ -396,63 +365,28 @@ function OnboardingSessionCard() {
   );
 }
 
-const ActivationRequirementTitle: Record<ActivationRequirement, string> = {
-  attend_event: 'Attend an Event',
-  attend_onboarding: 'Attend an Onboarding Session',
-  open_email_campaign: 'Open a Weekly Newsletter',
-  reply_to_announcement_message: 'Answer a QOTD in #announcements',
-  reply_to_other_messages: 'Reply to 2 Other Threads',
-  send_introduction_message: 'Introduce Yourself in #introductions',
-};
-
 function ActivationCard() {
   const { student } = useLoaderData<typeof loader>();
 
-  const formattedActivatedAt = dayjs(student.activatedAt).format(
-    'MMMM D, YYYY'
-  );
-
   return (
     <Card>
-      <Card.Title>Activation</Card.Title>
+      <Card.Title>Activation ✅</Card.Title>
 
       <Card.Description>
-        You are considered activated when you have completed the following
-        checklist.
+        You've completed {student.activationRequirementsCompleted.length}/6
+        activation requirements. Once you hit all 6, you will get a gift card to
+        claim your FREE merch! 👀
       </Card.Description>
 
-      <ul className="flex flex-col gap-2">
-        <ActivationChecklistItem requirement="attend_event" />
-        <ActivationChecklistItem requirement="attend_onboarding" />
-        <ActivationChecklistItem requirement="open_email_campaign" />
-        <ActivationChecklistItem requirement="send_introduction_message" />
-        <ActivationChecklistItem requirement="reply_to_announcement_message" />
-        <ActivationChecklistItem requirement="reply_to_other_messages" />
-      </ul>
-
-      {student.activatedAt && (
-        <Text>
-          You became activated on{' '}
-          <span className="font-semibold">{formattedActivatedAt}</span>.
-        </Text>
-      )}
+      <Button.Group>
+        <Link
+          className={getButtonCn({ size: 'small', variant: 'primary' })}
+          to={Route['/home/activation']}
+        >
+          See Progress
+        </Link>
+      </Button.Group>
     </Card>
-  );
-}
-
-function ActivationChecklistItem({
-  requirement,
-}: PropsWithoutRef<{ requirement: ActivationRequirement }>) {
-  const { student } = useLoaderData<typeof loader>();
-
-  const complete =
-    student.activationRequirementsCompleted.includes(requirement);
-
-  return (
-    <li className="flex items-center gap-2">
-      {complete ? <CheckCircle color="green" /> : <XCircle color="red" />}
-      <Text>{ActivationRequirementTitle[requirement]}</Text>
-    </li>
   );
 }
 

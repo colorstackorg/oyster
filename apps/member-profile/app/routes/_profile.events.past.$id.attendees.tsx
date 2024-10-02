@@ -1,13 +1,13 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, Link, useLoaderData } from '@remix-run/react';
 
-import { type Student } from '@oyster/types';
-import { Modal, ProfilePicture } from '@oyster/ui';
-
 import {
   countEventAttendees,
   listEventAttendees,
-} from '@/member-profile.server';
+} from '@oyster/core/member-profile/server';
+import { type Student } from '@oyster/types';
+import { Modal, ProfilePicture } from '@oyster/ui';
+
 import { Route } from '@/shared/constants';
 
 export async function loader({ params }: LoaderFunctionArgs) {

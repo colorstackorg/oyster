@@ -1,6 +1,7 @@
+import { db } from '@oyster/db';
+
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { db } from '@/infrastructure/database';
 import { getSlackUserByEmail } from '@/modules/slack/services/slack-user.service';
 
 type BackfillEngagementRecordsInput =
@@ -194,9 +195,10 @@ export async function backfillEngagementRecords(
   });
 
   surveyResponses.forEach((response) => {
-    job('survey.responded', {
+    job('gamification.activity.completed', {
       studentId: student.id,
-      surveyId: response.surveyId,
+      surveyRespondedTo: response.surveyId,
+      type: 'respond_to_survey',
     });
   });
 

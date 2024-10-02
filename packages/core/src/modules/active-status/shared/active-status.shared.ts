@@ -11,3 +11,5 @@ export const LeaderboardPosition = Student.pick({
   position: z.coerce.number().min(1),
   value: z.coerce.number().min(0),
 });
+
+export type LeaderboardPosition = z.infer<typeof LeaderboardPosition>;

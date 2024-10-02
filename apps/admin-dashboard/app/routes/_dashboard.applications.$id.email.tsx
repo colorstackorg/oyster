@@ -11,6 +11,10 @@ import {
 } from '@remix-run/react';
 import { type z } from 'zod';
 
+import {
+  getApplication,
+  updateEmailApplication,
+} from '@oyster/core/applications';
 import { Application } from '@oyster/types';
 import {
   Button,
@@ -21,10 +25,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import {
-  getApplication,
-  updateEmailApplication,
-} from '@/admin-dashboard.server';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -34,7 +34,7 @@ import {
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request, {
-    allowAmbassador: true,
+    minimumRole: 'ambassador',
   });
 
   const application = await getApplication(params.id as string, [
@@ -59,7 +59,7 @@ type UpdateApplicationEmailInput = z.infer<typeof UpdateApplicationEmailInput>;
 
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request, {
-    allowAmbassador: true,
+    minimumRole: 'ambassador',
   });
 
   const { data, errors, ok } = await validateForm(

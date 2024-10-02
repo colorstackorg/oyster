@@ -1,18 +1,16 @@
 import { z, type ZodError } from 'zod';
 
-export const FileLike = z.union([
-  z.string().trim().min(1),
-  z.custom((value) => {
-    return (
-      !!value &&
-      typeof value === 'object' &&
-      'arrayBuffer' in value &&
-      'name' in value &&
-      'size' in value &&
-      'type' in value
-    );
-  }),
-]);
+export const FileLike = z.custom<File>((value) => {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'arrayBuffer' in value &&
+    'name' in value &&
+    'size' in value &&
+    'text' in value &&
+    'type' in value
+  );
+}, 'This is not a valid file object.');
 
 /**
  * Returns the error message that lives within the `error`. Note that even if

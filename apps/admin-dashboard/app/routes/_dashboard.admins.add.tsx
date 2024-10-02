@@ -4,26 +4,19 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
-import { z } from 'zod';
+import { useActionData } from '@remix-run/react';
 
-import {
-  Button,
-  Checkbox,
-  Form,
-  getErrors,
-  Input,
-  Modal,
-  validateForm,
-} from '@oyster/ui';
+import { addAdmin } from '@oyster/core/admins';
+import { AddAdminInput } from '@oyster/core/admins/types';
+import { AdminForm } from '@oyster/core/admins/ui';
+import { getErrors, Modal, validateForm } from '@oyster/ui';
 
-import { addAdmin } from '@/admin-dashboard.server';
-import { AddAdminInput } from '@/admin-dashboard.ui';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
+  user,
 } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -37,24 +30,23 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const { data, errors, ok } = await validateForm(
     request,
-    AddAdminInput.extend({
-      isAmbassador: z.preprocess(
-        (value) => value === '1',
-        AddAdminInput.shape.isAmbassador
-      ),
-    })
+    AddAdminInput.omit({ actor: true })
   );
 
   if (!ok) {
     return json({ errors }, { status: 400 });
   }
 
-  const result = await addAdmin(data);
+  const result = await addAdmin({
+    actor: user(session),
+    email: data.email,
+    firstName: data.firstName,
+    lastName: data.lastName,
+    role: data.role,
+  });
 
-  if (result instanceof Error) {
-    return json({
-      error: result.message,
-    });
+  if (!result.ok) {
+    return json({ error: result.error }, { status: result.code });
   }
 
   toast(session, {
@@ -68,74 +60,17 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 }
 
-export default function AddAdminPage() {
+export default function AddAdmin() {
+  const { error, errors } = getErrors(useActionData<typeof action>());
+
   return (
-    <Modal onCloseTo={Route['/']}>
+    <Modal onCloseTo={Route['/admins']}>
       <Modal.Header>
         <Modal.Title>Add Admin</Modal.Title>
         <Modal.CloseButton />
       </Modal.Header>
 
-      <AddAdminForm />
+      <AdminForm error={error} errors={errors} />
     </Modal>
-  );
-}
-
-const keys = AddAdminInput.keyof().enum;
-
-function AddAdminForm() {
-  const { error, errors } = getErrors(useActionData<typeof action>());
-
-  return (
-    <RemixForm className="form" method="post">
-      <Form.Field
-        error={errors.firstName}
-        label="First Name"
-        labelFor={keys.firstName}
-        required
-      >
-        <Input id={keys.firstName} name={keys.firstName} required />
-      </Form.Field>
-
-      <Form.Field
-        error={errors.lastName}
-        label="Last Name"
-        labelFor={keys.lastName}
-        required
-      >
-        <Input id={keys.lastName} name={keys.lastName} required />
-      </Form.Field>
-
-      <Form.Field
-        error={errors.email}
-        label="Email"
-        labelFor={keys.email}
-        required
-      >
-        <Input id={keys.email} name={keys.email} required />
-      </Form.Field>
-
-      <Form.Field
-        description="Is this admin an ambassador? Ambassadors will have limited access."
-        error={errors.isAmbassador}
-        label="Ambassador"
-        labelFor={keys.isAmbassador}
-        required
-      >
-        <Checkbox
-          color="orange-100"
-          label="Yes"
-          id={keys.isAmbassador}
-          name={keys.isAmbassador}
-          value="1"
-        />
-      </Form.Field>
-
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
-
-      <Button.Group>
-        <Button.Submit>Add</Button.Submit>
-      </Button.Group>
-    </RemixForm>
   );
 }

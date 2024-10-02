@@ -1,75 +1,76 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
 
-import { Dashboard, Pill, Table, type TableColumnProps } from '@oyster/ui';
+import {
+  doesAdminHavePermission,
+  getAdmin,
+  listAdmins,
+} from '@oyster/core/admins';
+import { type AdminRole } from '@oyster/core/admins/types';
+import { AdminTable } from '@oyster/core/admins/ui';
+import { Dashboard } from '@oyster/ui';
 
-import { listAdmins } from '@/admin-dashboard.server';
 import { ensureUserAuthenticated } from '@/shared/session.server';
+import { user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
-  const admins = await listAdmins();
+  const [admin, _admins] = await Promise.all([
+    getAdmin({
+      select: ['admins.id', 'admins.role'],
+      where: { id: user(session) },
+    }),
+    listAdmins({
+      select: [
+        'admins.deletedAt',
+        'admins.firstName',
+        'admins.lastName',
+        'admins.email',
+        'admins.id',
+        'admins.role',
+      ],
+    }),
+  ]);
+
+  if (!admin) {
+    throw new Response(null, { status: 404 });
+  }
+
+  const admins = _admins.map(({ deletedAt, ...row }) => {
+    return {
+      ...row,
+
+      // Admins can't delete themselves nor can they delete other admins with
+      // a higher role.
+      canRemove:
+        !deletedAt &&
+        row.id !== admin.id &&
+        doesAdminHavePermission({
+          minimumRole: row.role as AdminRole,
+          role: admin.role as AdminRole,
+        }),
+
+      isDeleted: !!deletedAt,
+    };
+  });
 
   return json({
     admins,
   });
 }
 
-export default function AdminsPage() {
-  return (
-    <>
-      <div className="flex items-center justify-between gap-4">
-        <Dashboard.Title>Admins</Dashboard.Title>
-      </div>
-
-      <AdminsTable />
-      <Outlet />
-    </>
-  );
-}
-
-type AdminInView = SerializeFrom<typeof loader>['admins'][number];
-
-function AdminsTable() {
+export default function Admins() {
   const { admins } = useLoaderData<typeof loader>();
 
-  const columns: TableColumnProps<AdminInView>[] = [
-    {
-      displayName: 'First Name',
-      size: '200',
-      render: (admin) => admin.firstName,
-    },
-    {
-      displayName: 'Last Name',
-      size: '200',
-      render: (admin) => admin.lastName,
-    },
-    {
-      displayName: 'Email',
-      size: '320',
-      render: (admin) => admin.email,
-    },
-    {
-      displayName: 'Status',
-      size: '200',
-      render: (admin) => {
-        return admin.isArchived ? (
-          <Pill color="gray-100">Archived</Pill>
-        ) : admin.isAmbassador ? (
-          <Pill color="lime-100">Ambassador</Pill>
-        ) : (
-          <Pill color="blue-100">Full</Pill>
-        );
-      },
-    },
-  ];
-
   return (
-    <Table columns={columns} data={admins} emptyMessage="No admins found." />
+    <>
+      <Dashboard.Header>
+        <Dashboard.Title>Admins</Dashboard.Title>
+      </Dashboard.Header>
+
+      <AdminTable admins={admins} />
+      <Outlet />
+    </>
   );
 }

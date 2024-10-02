@@ -19,8 +19,7 @@ const ROUTES = [
   '/events/upcoming/:id/register',
   '/events/upcoming/:id/registrations',
   '/home',
-  '/home/claim-swag-pack',
-  '/home/claim-swag-pack/confirmation',
+  '/home/activation',
   '/login',
   '/login/otp/send',
   '/login/otp/verify',
@@ -38,6 +37,8 @@ const ROUTES = [
   '/profile/icebreakers',
   '/profile/integrations',
   '/profile/personal',
+  '/profile/referrals',
+  '/profile/referrals/add',
   '/profile/socials',
   '/profile/work',
   '/profile/work/add',
@@ -53,6 +54,7 @@ const ROUTES = [
   '/resources',
   '/resources/add',
   '/resources/:id/edit',
+  '/resume/review',
   '/resume-books/:id',
 ] as const;
 

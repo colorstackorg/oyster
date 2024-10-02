@@ -1,9 +1,9 @@
 import mailchimp, { type Mailchimp } from '@mailchimp/mailchimp_marketing';
 
+import { db } from '@oyster/db';
 import { type EmailCampaign, type EmailList } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { db } from '@/infrastructure/database';
 import { ENV } from '@/shared/env';
 import { NotFoundError } from '@/shared/errors';
 
