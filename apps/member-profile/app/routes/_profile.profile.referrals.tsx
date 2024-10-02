@@ -97,16 +97,12 @@ export default function Referrals() {
                       return referral.rejectionReason ? (
                         <Tooltip>
                           <TooltipTrigger>
-                            <div className="flex">
-                              <Pill color="red-100">
-                                <div className="group flex items-center gap-1">
-                                  Rejected
-                                  <Info
-                                    size={16}
-                                    className="text-red-500 transition-colors duration-300 group-hover:text-gray-600"
-                                  />
-                                </div>
-                              </Pill>
+                            <div className="group flex items-center gap-0.5">
+                              <Pill color="red-100">Rejected</Pill>
+                              <Info
+                                size={14}
+                                className="text-red-500 transition-colors duration-300 group-hover:text-gray-600"
+                              />
                             </div>
                           </TooltipTrigger>
                           <TooltipContent>
