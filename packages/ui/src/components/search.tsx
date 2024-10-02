@@ -14,6 +14,7 @@ import {
 import { X } from 'react-feather';
 
 import { Divider } from './divider';
+import { type InputProps } from './input';
 import { getPillCn } from './pill';
 import { useOnClickOutside } from '../hooks/use-on-click-outside';
 import { cx } from '../utils/cx';
@@ -138,7 +139,7 @@ export const SearchComponent = ({ children }: PropsWithChildren) => {
   );
 };
 
-export function SearchValues() {
+export function SearchValues({ name }: Pick<InputProps, 'name'>) {
   const { selectedItems } = useContext(SearchComponentContext);
 
   return (
@@ -146,7 +147,7 @@ export function SearchValues() {
       {selectedItems.length > 0 && (
         <>
           <input
-            name={'Label'}
+            name={name}
             type="hidden"
             value={selectedItems.map((element) => element.name).join(',')}
           />
