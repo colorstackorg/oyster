@@ -5,7 +5,6 @@ import { match } from 'ts-pattern';
 
 import { listReferrals } from '@oyster/core/referrals';
 import { type ReferralStatus } from '@oyster/core/referrals/ui';
-import { ReferralAcceptedEmail } from '@oyster/email-templates';
 import { Button, getButtonCn, Pill, Text } from '@oyster/ui';
 import {
   Tooltip,
