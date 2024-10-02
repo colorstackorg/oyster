@@ -5,8 +5,14 @@ import { match } from 'ts-pattern';
 
 import { listReferrals } from '@oyster/core/referrals';
 import { type ReferralStatus } from '@oyster/core/referrals/ui';
+import { ReferralAcceptedEmail } from '@oyster/email-templates';
 import { Button, getButtonCn, Pill, Text } from '@oyster/ui';
-import { formatRejectionReason } from '@/shared/utils/format.utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipText,
+  TooltipTrigger,
+} from '@oyster/ui/tooltip';
 
 import {
   EmptyState,
@@ -20,13 +26,7 @@ import {
 } from '@/shared/components/profile';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipText,
-  TooltipTrigger,
-} from '@oyster/ui/tooltip';
-import { ReferralAcceptedEmail } from '@oyster/email-templates';
+import { formatRejectionReason } from '@/shared/utils/format.utils';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
