@@ -377,7 +377,10 @@ export function SearchResultItem({ item, idx }: SearchResultItemType) {
       onMouseOut={() => {
         setSelectedIdx(-1);
       }}
-      onClick={(event) => handleClickItem(event)}
+      onKeyDown={(event) => handleClickItem(event)}
+      onMouseDown={(event) => {
+        handleClickItem(event);
+      }}
       id={item.id.toString()}
       ref={selectedIdx === idx ? ref : null}
     >
