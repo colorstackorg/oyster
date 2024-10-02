@@ -337,8 +337,8 @@ export function SearchResultItem({ item, idx }: SearchResultItemType) {
   const handleScroll = () => {
     if (ref.current)
       ref.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
+        behavior: 'instant' as ScrollBehavior,
+        block: 'nearest',
       });
   };
 
