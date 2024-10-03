@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+import { sql } from 'kysely';
 import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
@@ -76,19 +78,49 @@ async function updatePointTotals() {
     .with('updatedPoints', (db) => {
       return db
         .selectFrom('completedActivities')
-        .select(['studentId', (eb) => eb.fn.sum<number>('points').as('points')])
+        .select([
+          'studentId',
+          (eb) => {
+            return eb.fn.sum<number>('points').as('pointsAllTime');
+          },
+          (eb) => {
+            const ninetyDaysAgo = dayjs().subtract(90, 'day').toDate();
+
+            return eb.fn
+              .sum<number>('points')
+              .filterWhere('occurredAt', '>=', ninetyDaysAgo)
+              .as('pointsInLast90Days');
+          },
+        ])
         .groupBy('studentId');
     })
     .updateTable('students')
     .from('updatedPoints')
     .set((eb) => {
       return {
-        points: eb.ref('updatedPoints.points'),
+        points: eb.ref('updatedPoints.pointsAllTime'),
       };
     })
     .whereRef('students.id', '=', 'updatedPoints.studentId')
-    .whereRef('students.points', '!=', 'updatedPoints.points')
-    .returning(['students.airtableId', 'students.id', 'students.points'])
+    .returning([
+      'students.airtableId',
+      'students.id',
+      'updatedPoints.pointsAllTime',
+      'updatedPoints.pointsInLast90Days',
+      (eb) => {
+        const secondsSinceAccepted = sql<number>`
+          extract(
+            epoch from (
+              current_timestamp - ${eb.ref('acceptedAt')}
+            )
+          )
+        `;
+
+        return sql<number>`
+          ${eb.ref('pointsAllTime')} / (${secondsSinceAccepted} / 86400)
+        `.as('pointsPerDay');
+      },
+    ])
     .execute();
 
   // The Airtable API only allows us to update 10 records at a time, so we need
@@ -106,7 +138,9 @@ async function updatePointTotals() {
         return {
           id: member.airtableId as string,
           data: {
-            Points: member.points,
+            Points: member.pointsAllTime,
+            'Points (Per Day)': member.pointsPerDay,
+            'Points (in Last 90 Days)': member.pointsInLast90Days,
           },
         };
       }),
