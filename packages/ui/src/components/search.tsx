@@ -20,14 +20,14 @@ import { useOnClickOutside } from '../hooks/use-on-click-outside';
 import { cx } from '../utils/cx';
 
 type ItemType = {
-  id: number;
-  name: string;
+  value: string;
+  label: string;
   action: (event?: SyntheticEvent, cb?: () => void) => void | undefined; // onClick || onEnter
 };
 
 type selectedItemsType = {
-  id: number;
-  name: string;
+  value: string;
+  label: string;
 };
 
 /*
@@ -76,14 +76,13 @@ export const SearchComponent = ({ children }: PropsWithChildren) => {
     listFetcher.load('/api/tags/search');
 
     if (listFetcher.data) {
-      const rawData: { tags: selectedItemsType[] } =
-        listFetcher.data as unknown as {
-          tags: selectedItemsType[];
-        };
+      const rawData: { tags: any } = listFetcher.data as unknown as {
+        tags: any;
+      };
 
-      const filteredData = rawData.tags.filter((item) => {
-        return !selectedItems.some((selectedItem: selectedItemsType) => {
-          return selectedItem.id === item.id;
+      const filteredData = rawData.tags.filter((item: any) => {
+        return !selectedItems.some((selectedItem) => {
+          return selectedItem.value === item.value;
         });
       });
 
@@ -92,7 +91,8 @@ export const SearchComponent = ({ children }: PropsWithChildren) => {
       });
 
       const convertedData = queryData.map((item) => ({
-        ...item,
+        value: item.id,
+        label: item.name,
         action: (event?: SyntheticEvent, cb?: () => void) => {
           if (event) {
             // Handle mouse click (e.g., call cb directly)
@@ -100,7 +100,10 @@ export const SearchComponent = ({ children }: PropsWithChildren) => {
           } else {
             setSelectedItems([
               ...selectedItems,
-              { id: results[selectedIdx].id, name: results[selectedIdx].name },
+              {
+                value: results[selectedIdx].value,
+                label: results[selectedIdx].label,
+              },
             ]);
             setTextValue('');
             setResultsBoxOpen(false);
@@ -149,12 +152,12 @@ export function SearchValues({ name }: Pick<InputProps, 'name'>) {
           <input
             name={name}
             type="hidden"
-            value={selectedItems.map((element) => element.name).join(',')}
+            value={selectedItems.map((item) => item.value).join(',')}
           />
 
           <ul className="flex flex-wrap gap-1">
             {selectedItems.map((item) => {
-              return <SearchValuesItem key={item.id} item={item} />;
+              return <SearchValuesItem key={item.value} item={item} />;
             })}
           </ul>
 
@@ -180,16 +183,16 @@ export function SearchValuesItem({ item }: SearchValuesItemType) {
         getPillCn({ color: 'pink-100' }),
         'flex items-center gap-1'
       )}
-      key={item.id}
+      key={item.value}
     >
-      {item.name}
+      {item.label}
 
       <button
         onClick={(event) => {
           event.stopPropagation();
           setSelectedItems(
             selectedItems.filter((selectedItem) => {
-              return selectedItem.id !== item.id;
+              return selectedItem.value !== item.value;
             })
           );
         }}
@@ -219,8 +222,8 @@ export function SearchBox() {
     setSelectedItems([
       ...selectedItems,
       {
-        id: results[selectedIdx].id,
-        name: results[selectedIdx].name,
+        value: results[selectedIdx].value,
+        label: results[selectedIdx].label,
       },
     ]);
     setTextValue('');
@@ -308,7 +311,7 @@ export function SearchResults() {
     >
       <ul>
         {results.map((item, idx) => {
-          return <SearchResultItem key={item.id} item={item} idx={idx} />;
+          return <SearchResultItem key={item.value} item={item} idx={idx} />;
         })}
       </ul>
     </div>
@@ -354,8 +357,8 @@ export function SearchResultItem({ item, idx }: SearchResultItemType) {
       setSelectedItems([
         ...selectedItems,
         {
-          id: results[selectedIdx].id,
-          name: results[selectedIdx].name,
+          value: results[selectedIdx].value,
+          label: results[selectedIdx].label,
         },
       ]);
       setTextValue('');
@@ -381,7 +384,7 @@ export function SearchResultItem({ item, idx }: SearchResultItemType) {
       onMouseDown={(event) => {
         handleClickItem(event);
       }}
-      id={item.id.toString()}
+      value={item.value}
       ref={selectedIdx === idx ? ref : null}
     >
       <p
@@ -390,7 +393,7 @@ export function SearchResultItem({ item, idx }: SearchResultItemType) {
           'flex items-center gap-1'
         )}
       >
-        {item.name}
+        {item.label}
       </p>
     </li>
   );
