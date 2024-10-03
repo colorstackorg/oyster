@@ -67,57 +67,68 @@ export const memberWorker = registerWorker(
 
 /**
  * This is a weekly job that runs and updates the point totals for all members.
- * The query only updates the points for a member if they've actually changed,
- * to avoid unnecessary updates to the database.
+ * We also calculate (but don't store) the points per day and points in the last
+ * 90 days.
  *
- * For any member that has had their points updated, we also update their
- * Airtable record with the new point total.
+ * We update all of these values in their respective columns in Airtable.
  */
 async function updatePointTotals() {
+  const zero = sql<number>`0`;
+
   const members = await db
     .with('updatedPoints', (db) => {
       return db
-        .selectFrom('completedActivities')
+        .selectFrom('students')
+        .leftJoin(
+          'completedActivities',
+          'completedActivities.studentId',
+          'students.id'
+        )
         .select([
-          'studentId',
+          'students.id as studentId',
+
           (eb) => {
-            return eb.fn.sum<number>('points').as('pointsAllTime');
+            return eb.fn
+              .coalesce(eb.fn.sum<number>('completedActivities.points'), zero)
+              .as('pointsAllTime');
           },
+
           (eb) => {
             const ninetyDaysAgo = dayjs().subtract(90, 'day').toDate();
 
-            return eb.fn
-              .sum<number>('points')
-              .filterWhere('occurredAt', '>=', ninetyDaysAgo)
-              .as('pointsInLast90Days');
+            const sum = eb.fn
+              .sum<number>('completedActivities.points')
+              .filterWhere('occurredAt', '>=', ninetyDaysAgo);
+
+            return eb.fn.coalesce(sum, zero).as('pointsInLast90Days');
           },
         ])
-        .groupBy('studentId');
+        .groupBy('students.id');
     })
     .updateTable('students')
     .from('updatedPoints')
-    .set((eb) => {
+    .set(({ ref }) => {
       return {
-        points: eb.ref('updatedPoints.pointsAllTime'),
+        points: ref('updatedPoints.pointsAllTime'),
       };
     })
     .whereRef('students.id', '=', 'updatedPoints.studentId')
     .returning([
       'students.airtableId',
-      'students.id',
       'updatedPoints.pointsAllTime',
       'updatedPoints.pointsInLast90Days',
-      (eb) => {
-        const secondsSinceAccepted = sql<number>`
+
+      ({ ref }) => {
+        const daysSinceAccepted = sql<number>`
           extract(
-            epoch from (
-              current_timestamp - ${eb.ref('acceptedAt')}
+            day from (
+              current_timestamp - ${ref('acceptedAt')}
             )
           )
         `;
 
         return sql<number>`
-          ${eb.ref('pointsAllTime')} / (${secondsSinceAccepted} / 86400)
+          round(${ref('pointsAllTime')} / ${daysSinceAccepted}, 2)
         `.as('pointsPerDay');
       },
     ])
