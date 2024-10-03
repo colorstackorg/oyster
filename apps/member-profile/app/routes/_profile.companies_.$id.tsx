@@ -157,7 +157,7 @@ export default function CompanyPage() {
             )}
 
             {company.leetcodeTagged && (
-              <LeetcodeTaggedLink leetcode_tagged={company.leetcodeTagged} />
+              <LeetcodeTaggedLink slug={company.leetcodeTagged} />
             )}
           </div>
 
@@ -222,16 +222,16 @@ function LevelsFyiLink({ slug }: LevelsFyiLinkProps) {
 }
 
 type LeetcodeTaggedLinkProps = {
-  leetcode_tagged: string;
+  slug: string;
 };
 
-function LeetcodeTaggedLink({ leetcode_tagged }: LeetcodeTaggedLinkProps) {
+function LeetcodeTaggedLink({ slug }: LeetcodeTaggedLinkProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <a
           className="mt-1"
-          href={leetcode_tagged}
+          href={slug}
           rel="noopener noreferrer"
           target="_blank"
         >
