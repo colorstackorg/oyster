@@ -1,6 +1,6 @@
 ## Description ✏️
 
-Closes #xxx
+Resolves issue #xxx
 
 Describe what this PR does.
 
@@ -9,12 +9,12 @@ Describe what this PR does.
 
 ## Type of Change 🐞
 
-- [ ] Feature - A non-breaking change which adds functionality.
-- [ ] Fix - A non-breaking change which fixes an issue.
-- [ ] Refactor - A change that neither fixes a bug nor adds a feature.
-- [ ] Documentation - A change only to in-code or markdown documentation.
-- [ ] Tests - A change that adds missing unit/integration tests.
-- [ ] Chore - A change that is likely none of the above.
+- [ ] Feature - Adds a feature.
+- [ ] Fix - Fixes an bug.
+- [ ] Refactor - Enhances existing code.
+- [ ] Documentation - Adds inline or markdown documentation.
+- [ ] Tests -Adds missing unit/integration tests.
+- [ ] Chore - General repository upkeep or dependency updates.
 
 ## Checklist ✅
 
