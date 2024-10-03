@@ -20,7 +20,6 @@ import { profileWorker } from './modules/member/profile.worker';
 import { notificationWorker } from './modules/notification/notification.worker';
 import { onboardingSessionWorker } from './modules/onboarding-session/onboarding-session.worker';
 import { slackWorker } from './modules/slack/slack.worker';
-import { swagPackWorker } from './modules/swag-pack/swag-pack.worker';
 
 export { job } from './infrastructure/bull/use-cases/job';
 export { OAuthCodeState } from './modules/authentication/authentication.types';
@@ -48,5 +47,4 @@ export function startBullWorkers(): void {
   oneTimeCodeWorker.run();
   profileWorker.run();
   slackWorker.run();
-  swagPackWorker.run();
 }

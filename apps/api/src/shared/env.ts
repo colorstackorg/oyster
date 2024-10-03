@@ -43,6 +43,8 @@ const BaseEnvironmentConfig = z.object({
   R2_SECRET_ACCESS_KEY: EnvironmentVariable,
   REDIS_URL: EnvironmentVariable,
   SENTRY_DSN: EnvironmentVariable,
+  SHOPIFY_ACCESS_TOKEN: EnvironmentVariable,
+  SHOPIFY_STORE_NAME: EnvironmentVariable,
   SLACK_ANNOUNCEMENTS_CHANNEL_ID: EnvironmentVariable,
   SLACK_ADMIN_TOKEN: EnvironmentVariable,
   SLACK_BIRTHDATE_FIELD_ID: EnvironmentVariable,
@@ -54,8 +56,6 @@ const BaseEnvironmentConfig = z.object({
   SLACK_INTRODUCTIONS_CHANNEL_ID: EnvironmentVariable,
   SLACK_SIGNING_SECRET: EnvironmentVariable,
   STUDENT_PROFILE_URL: EnvironmentVariable,
-  SWAG_UP_CLIENT_ID: EnvironmentVariable,
-  SWAG_UP_CLIENT_SECRET: EnvironmentVariable,
 });
 
 const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
@@ -84,6 +84,8 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     R2_BUCKET_NAME: true,
     R2_SECRET_ACCESS_KEY: true,
     SENTRY_DSN: true,
+    SHOPIFY_ACCESS_TOKEN: true,
+    SHOPIFY_STORE_NAME: true,
     SLACK_ANNOUNCEMENTS_CHANNEL_ID: true,
     SLACK_ADMIN_TOKEN: true,
     SLACK_BIRTHDATE_FIELD_ID: true,
@@ -94,8 +96,6 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     SLACK_FEED_CHANNEL_ID: true,
     SLACK_INTRODUCTIONS_CHANNEL_ID: true,
     SLACK_SIGNING_SECRET: true,
-    SWAG_UP_CLIENT_ID: true,
-    SWAG_UP_CLIENT_SECRET: true,
   }).extend({
     ENVIRONMENT: z.literal(Environment.DEVELOPMENT),
     SMTP_HOST: EnvironmentVariable.optional(),
