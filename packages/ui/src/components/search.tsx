@@ -305,15 +305,18 @@ export function SearchBox({ name }: { name: string }) {
   );
 }
 
+// todo: attach 'create' list item to end of results list
 export function SearchResults() {
-  const { resultsBoxOpen, results } = useContext(SearchComponentContext);
+  const { resultsBoxOpen, results, textValue } = useContext(
+    SearchComponentContext
+  );
   const SearchResultsRef = useRef(null);
 
   return (
     <div
       className={cx(
         'absolute z-10 mt-1 max-h-40 w-full overflow-auto rounded-lg border border-gray-300 bg-white',
-        (results.length === 0 || !resultsBoxOpen) && 'hidden'
+        !resultsBoxOpen && 'hidden'
       )}
       ref={SearchResultsRef}
     >
@@ -321,6 +324,20 @@ export function SearchResults() {
         {results.map((item, idx) => {
           return <SearchResultItem key={item.value} item={item} idx={idx} />;
         })}
+
+        {!!textValue.length && (
+          <SearchResultItem
+            key={textValue}
+            item={{
+              value: textValue,
+              label: `Create ${textValue}`,
+              action: (event?: SyntheticEvent, cb?: () => void) => {
+                console.log('Create A NEW TAG');
+              },
+            }}
+            idx={34250}
+          ></SearchResultItem>
+        )}
       </ul>
     </div>
   );
