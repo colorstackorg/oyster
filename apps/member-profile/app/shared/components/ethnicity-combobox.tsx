@@ -1,4 +1,5 @@
 import { useFetcher } from '@remix-run/react';
+
 import { useEffect } from 'react';
 
 import {
@@ -17,6 +18,7 @@ import {
 
 import type { SearchCountriesResult } from '@/routes/api.countries.search';
 
+// Ethnicity Combobox
 type EthnicityComboboxProps = Pick<InputProps, 'name' | 'required'>;
 
 export function EthnicityCombobox({ name }: EthnicityComboboxProps) {
@@ -24,96 +26,78 @@ export function EthnicityCombobox({ name }: EthnicityComboboxProps) {
 
   useEffect(() => {
     fetcher.load('/api/countries/search');
-  }, []);
+  }, [fetcher]);
 
   const countries = fetcher.data?.countries || [];
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    fetcher.submit(
+      { search: e.currentTarget.value },
+      {
+        action: '/api/countries/search',
+        method: 'get',
+      }
+    );
+  };
+
   return (
     <Combobox>
-      <ComboboxInput
-        id={name}
-        name={name}
-        onChange={(e) => {
-          fetcher.submit(
-            { search: e.currentTarget.value },
-            {
-              action: '/api/countries/search',
-              method: 'get',
-            }
-          );
-        }}
-        required
-      />
+      <ComboboxInput id={name} name={name} onChange={handleInputChange} required />
 
       {!!countries.length && (
         <ComboboxPopover>
-          <ul>
-            {countries.map((country) => {
-              const label = `${country.flagEmoji} ${country.demonym}`;
-
-              return (
-                <ComboboxItem key={country.code} value={country.code}>
-                  {label}
-                </ComboboxItem>
-              );
-            })}
-          </ul>
+          <div className="max-h-48 overflow-y-auto">
+            {countries.map((country) => (
+              <ComboboxItem key={country.code} value={country.code}>
+                {`${country.flagEmoji} ${country.demonym}`}
+              </ComboboxItem>
+            ))}
+          </div>
         </ComboboxPopover>
       )}
     </Combobox>
   );
 }
 
+// Ethnicity MultiCombobox
 type EthnicityMultiComboboxProps = Pick<MultiComboboxProps, 'defaultValues'> &
   Pick<InputProps, 'name' | 'required'>;
 
-export function EthnicityMultiCombobox({
-  defaultValues,
-  name,
-}: EthnicityMultiComboboxProps) {
+export function EthnicityMultiCombobox({ defaultValues, name }: EthnicityMultiComboboxProps) {
   const fetcher = useFetcher<SearchCountriesResult>();
 
   useEffect(() => {
     fetcher.load('/api/countries/search');
-  }, []);
+  }, [fetcher]);
 
   const countries = fetcher.data?.countries || [];
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    fetcher.submit(
+      { search: e.currentTarget.value },
+      {
+        action: '/api/countries/search',
+        method: 'get',
+      }
+    );
+  };
 
   return (
     <MultiCombobox defaultValues={defaultValues}>
       <MultiComboboxDisplay>
         <MultiComboboxValues name={name} />
-        <MultiComboboxSearch
-          id={name}
-          onChange={(e) => {
-            fetcher.submit(
-              { search: e.currentTarget.value },
-              {
-                action: '/api/countries/search',
-                method: 'get',
-              }
-            );
-          }}
-        />
+        <MultiComboboxSearch id={name} onChange={handleSearchChange} />
       </MultiComboboxDisplay>
 
       {!!countries.length && (
         <ComboboxPopover>
-          <ul>
-            {countries.map((country) => {
-              const label = `${country.flagEmoji} ${country.demonym}`;
-
-              return (
-                <MultiComboboxItem
-                  key={country.code}
-                  label={label}
-                  value={country.code}
-                >
-                  {label}
-                </MultiComboboxItem>
-              );
-            })}
-          </ul>
+          <div className="max-h-48 overflow-y-auto">
+            {countries.map((country) => (
+              <MultiComboboxItem key={country.code} label={`${country.flagEmoji} ${country.demonym}`} value={country.code}>
+                {`${country.flagEmoji} ${country.demonym}`}
+              </MultiComboboxItem>
+            ))}
+          </div>
         </ComboboxPopover>
       )}
     </MultiCombobox>

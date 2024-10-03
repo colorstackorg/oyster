@@ -49,11 +49,10 @@ type AnswerChatbotQuestionInput = {
  * Answers the question asked by the user in its channel w/ the ColorStack bot.
  * The uses the underlying `getAnswerFromSlackHistory` function to answer the
  * question, and then sends the answer in the thread where the question was
- * asked.
+ * asked. In addition to the newly added reaction functionality
  *
  * @param input - The question (ie: `text`) to respond to.
- */
-export async function answerChatbotQuestion({
+ */export async function answerChatbotQuestion({
   channelId,
   id,
   text,
@@ -85,11 +84,9 @@ export async function answerChatbotQuestion({
     });
 
   const questionResult = await isQuestion(text);
-
   if (!questionResult.ok) {
     throw new Error(questionResult.error);
   }
-
   if (!questionResult.ok || !questionResult.data) {
     job('notification.slack.send', {
       channel: channelId,
@@ -99,11 +96,10 @@ export async function answerChatbotQuestion({
       threadId: id,
       workspace: 'regular',
     });
-
     return;
   }
 
-  job('notification.slack.send', {
+  const loadingMessage = await job('notification.slack.send', {
     channel: channelId,
     message: 'Searching our Slack history...',
     threadId: id,
@@ -120,7 +116,6 @@ export async function answerChatbotQuestion({
   }
 
   const threads = threadsResult.data;
-
   const answerResult = await getAnswerFromSlackHistory(text, threads);
 
   if (!answerResult.ok) {
@@ -134,8 +129,23 @@ export async function answerChatbotQuestion({
     workspace: 'regular',
   });
 
-  // TODO: Delete the loading message after the answer is sent.
+  // Delete the loading message after the answer is sent
+  await job('slack.message.delete', {
+    channel: channelId,
+    messageId: loadingMessage.id,
+  });
+
+  // Added Slack reaction function call!!
+  await addSlackReaction({
+    channelId: channelId,
+    messageId: id, // ID of  initial message
+    reaction: 'colorstack-logo',
+    userId: userId,
+  });
+
+  //TODO: DELETE LOADING MESSAGE AFTER ANSWER IS SENT
 }
+
 
 type AnswerPublicQuestionInPrivateInput = {
   /**
