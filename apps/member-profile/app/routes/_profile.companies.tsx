@@ -9,6 +9,7 @@ import {
   Outlet,
   Form as RemixForm,
   useLoaderData,
+  useParams,
   useSearchParams,
   useSubmit,
 } from '@remix-run/react';
@@ -86,6 +87,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function CompaniesPage() {
+  const id = useParams().id;
+
+  if (id) {
+    return (
+      <>
+        <Outlet />
+      </>
+    );
+  }
+
   return (
     <>
       <header className="flex items-center justify-between gap-4">
