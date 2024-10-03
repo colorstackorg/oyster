@@ -135,8 +135,6 @@ async function updatePointTotals() {
     ])
     .execute();
 
-  console.log(members);
-
   // The Airtable API only allows us to update 10 records at a time, so we need
   // to chunk the members into smaller groups.
   const memberChunks = splitArray(
