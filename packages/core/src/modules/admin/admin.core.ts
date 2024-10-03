@@ -107,7 +107,7 @@ export async function addAdmin({
 
   const hasPermission = doesAdminHavePermission({
     minimumRole: role,
-    role: actingAdmin.role as AdminRole,
+    actorsRole: actingAdmin.role as AdminRole,
   });
 
   if (!hasPermission) {
@@ -199,7 +199,7 @@ export async function removeAdmin({
 
   const hasPermission = doesAdminHavePermission({
     minimumRole: adminToRemove.role as AdminRole,
-    role: actingAdmin.role as AdminRole,
+    actorsRole: actingAdmin.role as AdminRole,
   });
 
   if (!hasPermission) {
@@ -222,7 +222,7 @@ export async function removeAdmin({
 
 type DoesAdminHavePermissionInput = {
   minimumRole: AdminRole;
-  role: AdminRole;
+  actorsRole: AdminRole;
 };
 
 /**
@@ -230,7 +230,7 @@ type DoesAdminHavePermissionInput = {
  * action.
  *
  * @param minimumRole - The minimum role required to perform the action.
- * @param role - The role of the acting admin.
+ * @param actorsRole - The role of the acting admin.
  *
  * @example
  * ```ts
@@ -261,12 +261,12 @@ type DoesAdminHavePermissionInput = {
  */
 export function doesAdminHavePermission({
   minimumRole,
-  role,
+  actorsRole,
 }: DoesAdminHavePermissionInput) {
   const roles = [AdminRole.AMBASSADOR, AdminRole.ADMIN, AdminRole.OWNER];
 
   const minimumRoleIndex = roles.indexOf(minimumRole);
-  const roleIndex = roles.indexOf(role);
+  const roleIndex = roles.indexOf(actorsRole);
 
   return roleIndex >= minimumRoleIndex;
 }

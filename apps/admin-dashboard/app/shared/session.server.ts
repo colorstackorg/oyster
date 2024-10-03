@@ -117,7 +117,7 @@ export async function getAuthenticationStatus(
 
   const hasPermission = doesAdminHavePermission({
     minimumRole: options.minimumRole || 'admin',
-    role: admin.role as AdminRole,
+    actorsRole: admin.role as AdminRole,
   });
 
   if (!hasPermission) {

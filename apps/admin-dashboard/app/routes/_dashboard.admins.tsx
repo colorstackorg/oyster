@@ -48,7 +48,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         row.id !== admin.id &&
         doesAdminHavePermission({
           minimumRole: row.role as AdminRole,
-          role: admin.role as AdminRole,
+          actorsRole: admin.role as AdminRole,
         }),
 
       isDeleted: !!deletedAt,
