@@ -153,10 +153,10 @@ export function ResourceTagsField({ error, name }: FieldProps<string>) {
       labelFor={name}
       required
     >
-      <SearchComponent>
+      <SearchComponent endpoint={'/api/tags/search'}>
         <div className="flex flex-col gap-2 rounded-lg border border-gray-300 p-2 focus:border-primary disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500">
           <SearchValues name={name} />
-          <SearchBox />
+          <SearchBox name={name} />
         </div>
         <SearchResults />
       </SearchComponent>

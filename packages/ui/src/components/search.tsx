@@ -54,7 +54,14 @@ const SearchComponentContext = createContext({
   setKeyboardMode: (_: boolean) => {},
 });
 
-export const SearchComponent = ({ children }: PropsWithChildren) => {
+type SearchComponentProps = PropsWithChildren<{
+  endpoint: string;
+}>;
+
+export const SearchComponent = ({
+  endpoint,
+  children,
+}: SearchComponentProps) => {
   const containerRef: MutableRefObject<HTMLDivElement | null> = useRef(null);
   const searchRef = useRef<HTMLInputElement | null>(null);
   const [selectedItems, setSelectedItems] = useState<selectedItemsType[]>([]);
@@ -73,7 +80,7 @@ export const SearchComponent = ({ children }: PropsWithChildren) => {
   });
 
   useEffect(() => {
-    listFetcher.load('/api/tags/search');
+    listFetcher.load(endpoint);
 
     if (listFetcher.data) {
       const rawData: { tags: any } = listFetcher.data as unknown as {
@@ -204,7 +211,7 @@ export function SearchValuesItem({ item }: SearchValuesItemType) {
   );
 }
 
-export function SearchBox() {
+export function SearchBox({ name }: { name: string }) {
   const {
     searchRef,
     setResultsBoxOpen,
@@ -275,6 +282,7 @@ export function SearchBox() {
 
   return (
     <input
+      id={name}
       autoComplete="off"
       onChange={(event) => {
         setTextValue(event.target.value);
