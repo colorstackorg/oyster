@@ -1,12 +1,26 @@
-import React, { type PropsWithChildren, useContext, useState } from 'react';
+import React, {
+  type PropsWithChildren,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 
 import { ResourceType } from '@oyster/core/resources';
 import {
+  ComboboxPopover,
   type FieldProps,
   FileUploader,
   Form,
   Input,
   MB_IN_BYTES,
+  MultiCombobox,
+  MultiComboboxDisplay,
+  MultiComboboxItem,
+  MultiComboboxList,
+  MultiComboboxProps,
+  MultiComboboxSearch,
+  MultiComboboxValues,
+  Pill,
   Select,
   Textarea,
 } from '@oyster/ui';
@@ -16,6 +30,9 @@ import {
   SearchResults,
   SearchValues,
 } from '@oyster/ui';
+import { SearchTagsResult } from '@/routes/api.tags.search';
+import { id } from '@oyster/utils';
+import { useFetcher } from '@remix-run/react';
 
 type ResourceFormContext = {
   setType(type: ResourceType): void;
@@ -127,23 +144,26 @@ export function ResourceLinkField({
   );
 }
 
-export function ResourceTagsField({ error, name }: FieldProps<string>) {
-  // defaultValue,
-  // const createFetcher = useFetcher<unknown>();
-  // const listFetcher = useFetcher<SearchTagsResult>();
+export function ResourceTagsField({
+  defaultValue,
+  error,
+  name,
+}: FieldProps<MultiComboboxProps['defaultValues']>) {
+  const createFetcher = useFetcher<unknown>();
+  const listFetcher = useFetcher<SearchTagsResult>();
 
-  // const [newTagId, setNewTagId] = useState<string>(id());
-  // const [search, setSearch] = useState<string>('');
+  const [newTagId, setNewTagId] = useState<string>(id());
+  const [search, setSearch] = useState<string>('');
 
-  // useEffect(() => {
-  //   listFetcher.load('/api/tags/search');
-  // }, []);
+  useEffect(() => {
+    listFetcher.load('/api/tags/search');
+  }, []);
 
-  // const tags = listFetcher.data?.tags || [];
+  const tags = listFetcher.data?.tags || [];
 
-  // function reset() {
-  //   setNewTagId(id());
-  // }
+  function reset() {
+    setNewTagId(id());
+  }
 
   return (
     <Form.Field
@@ -153,13 +173,45 @@ export function ResourceTagsField({ error, name }: FieldProps<string>) {
       labelFor={name}
       required
     >
-      <SearchComponent endpoint={'/api/tags/search'}>
-        <div className="flex flex-col gap-2 rounded-lg border border-gray-300 p-2 focus:border-primary disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500">
-          <SearchValues name={name} />
-          <SearchBox name={name} />
-        </div>
-        <SearchResults />
-      </SearchComponent>
+      <MultiCombobox defaultValues={defaultValue}>
+        {({ values }) => {
+          const filteredTags = tags.filter((tag) => {
+            return values.every((value) => {
+              return value.value !== tag.id;
+            });
+          });
+
+          return (
+            <>
+              <MultiComboboxDisplay>
+                <MultiComboboxValues name={name} />
+                <MultiComboboxSearch
+                  id={name}
+                  onChange={(e) => {
+                    setSearch(e.currentTarget.value);
+                    console.log(e.currentTarget.value);
+
+                    listFetcher.submit(
+                      { search: e.currentTarget.value },
+                      {
+                        action: '/api/tags/search',
+                        method: 'get',
+                      }
+                    );
+                  }}
+                  items={filteredTags}
+                />
+              </MultiComboboxDisplay>
+
+              {(!!filteredTags.length || !!search.length) && (
+                <ComboboxPopover>
+                  <MultiComboboxList items={filteredTags}></MultiComboboxList>
+                </ComboboxPopover>
+              )}
+            </>
+          );
+        }}
+      </MultiCombobox>
     </Form.Field>
   );
 }
