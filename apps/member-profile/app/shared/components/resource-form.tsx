@@ -15,20 +15,12 @@ import {
   MB_IN_BYTES,
   MultiCombobox,
   MultiComboboxDisplay,
-  MultiComboboxItem,
   MultiComboboxList,
   MultiComboboxProps,
   MultiComboboxSearch,
   MultiComboboxValues,
-  Pill,
   Select,
   Textarea,
-} from '@oyster/ui';
-import {
-  SearchBox,
-  SearchComponent,
-  SearchResults,
-  SearchValues,
 } from '@oyster/ui';
 import { SearchTagsResult } from '@/routes/api.tags.search';
 import { id } from '@oyster/utils';
