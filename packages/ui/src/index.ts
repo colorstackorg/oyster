@@ -24,6 +24,7 @@ export {
   MultiComboboxItem,
   MultiComboboxSearch,
   MultiComboboxValues,
+  MultiComboboxList,
 } from './components/multi-combobox';
 export type { MultiComboboxProps } from './components/multi-combobox';
 export { Pagination } from './components/pagination';
