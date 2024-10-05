@@ -51,10 +51,3 @@ export { useSearchParams } from './hooks/use-search-params';
 export { ACCENT_COLORS } from './utils/constants';
 export type { AccentColor } from './utils/constants';
 export { cx } from './utils/cx';
-
-export {
-  SearchComponent,
-  SearchValues,
-  SearchBox,
-  SearchResults,
-} from './components/search';
