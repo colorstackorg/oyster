@@ -2,7 +2,7 @@ import React, {
   createContext,
   createRef,
   type KeyboardEvent,
-  MutableRefObject,
+  type MutableRefObject,
   type PropsWithChildren,
   useContext,
   useEffect,
@@ -20,7 +20,6 @@ import { getInputCn, type InputProps } from './input';
 import { getPillCn, Pill } from './pill';
 import { setInputValue } from '../utils/core';
 import { cx } from '../utils/cx';
-import { id } from '@oyster/utils';
 
 type ComboboxValueItem = {
   label: string;
@@ -43,7 +42,7 @@ const MultiComboboxContext = createContext<MultiComboboxContext>({
   searchRef: createRef() as MultiComboboxContext['searchRef'],
   setValues: (_: ComboboxValueItem[]) => {},
   values: [] as ComboboxValueItem[],
-  selectedIdx: -1 as number,
+  selectedIdx: 0 as number,
   setSelectedIdx: (_: number) => {},
   results: [] as ComboboxValueItem[],
   setResults: (_: ComboboxValueItem[]) => {},
@@ -64,7 +63,7 @@ export function MultiCombobox({
   defaultValues = [],
 }: MultiComboboxProps) {
   const [values, setValues] = useState<ComboboxValueItem[]>(defaultValues);
-  const [selectedIdx, setSelectedIdx] = useState<number>(-1);
+  const [selectedIdx, setSelectedIdx] = useState<number>(0);
   const [results, setResults] = useState<ComboboxValueItem[]>([]);
   const [keyDown, setKeyDown] = useState(false);
 
@@ -152,7 +151,9 @@ export function MultiComboboxSearch({
   id,
   onChange,
   items,
-}: Pick<InputProps, 'id' | 'onChange'> & { items: any }) {
+}: Pick<InputProps, 'id' | 'onChange'> & {
+  items: { name: string; id: string }[];
+}) {
   const {
     searchRef,
     selectedIdx,
@@ -160,10 +161,22 @@ export function MultiComboboxSearch({
     setKeyDown,
     values,
     setValues,
+    results,
   } = useContext(MultiComboboxContext);
   const { setPopoverOpen } = useComboboxPopover();
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (!results.length) return;
+
+    if (results.length <= selectedIdx) {
+      setSelectedIdx(results.length - 1);
+    }
+
+    const searchElement = searchRef.current!;
+    const alreadySelected = values.some((element) => {
+      return element.value === items[selectedIdx].id;
+    });
+
     setKeyDown(true);
 
     switch (event.key) {
@@ -171,9 +184,6 @@ export function MultiComboboxSearch({
         event.stopPropagation();
         event.preventDefault();
         // Add tag to MultiComboboxValues
-        const alreadySelected = values.some((element) => {
-          return element.value === items[selectedIdx].id;
-        });
 
         if (!alreadySelected) {
           setValues([
@@ -181,6 +191,14 @@ export function MultiComboboxSearch({
             { label: items[selectedIdx].name, value: items[selectedIdx].id },
           ]);
         }
+
+        // After an item is selected, we should reset the search value
+        // and focus the search input.
+        setInputValue(searchElement, '');
+
+        setPopoverOpen(false);
+        setSelectedIdx(0);
+        searchRef.current!.blur();
         break;
       case 'ArrowUp':
         event.stopPropagation();
@@ -196,7 +214,7 @@ export function MultiComboboxSearch({
         event.stopPropagation();
         event.preventDefault();
         setPopoverOpen(false);
-        setSelectedIdx(-1);
+        setSelectedIdx(0);
         searchRef.current && searchRef.current.blur();
         break;
       case 'Tab':
@@ -204,6 +222,7 @@ export function MultiComboboxSearch({
         event.preventDefault();
         setPopoverOpen(false);
         break;
+
       default:
         event.stopPropagation();
     }
@@ -224,6 +243,7 @@ export function MultiComboboxSearch({
       }}
       onFocus={() => {
         setPopoverOpen(true);
+        setSelectedIdx(0);
       }}
       onKeyDown={handleKeyDown}
       onKeyUp={handleKeyUp}
@@ -239,8 +259,10 @@ type MultiComboboxListProps = PropsWithChildren<{
     name: string;
   }[];
 }>;
-export function MultiComboboxList({ children, items }: MultiComboboxListProps) {
-  const { setResults, searchRef } = useContext(MultiComboboxContext);
+
+export function MultiComboboxList({ items }: MultiComboboxListProps) {
+  const { setResults } = useContext(MultiComboboxContext);
+
   // const [newTagId, setNewTagId] = useState<string>(id());
 
   useEffect(() => {
@@ -280,12 +302,12 @@ type MultiComboboxItemProps = PropsWithChildren<{
 export function MultiComboboxItem({
   children,
   label,
-  onSelect,
   value,
   idx,
 }: MultiComboboxItemProps) {
   const { searchRef, setValues, values, selectedIdx, setSelectedIdx, keyDown } =
     useContext(MultiComboboxContext);
+  const { setPopoverOpen } = useComboboxPopover();
   const ref: MutableRefObject<HTMLLIElement | null> = useRef(null);
 
   const handleScroll = () => {
@@ -312,7 +334,7 @@ export function MultiComboboxItem({
     >
       <button
         className="w-full px-2 py-3 text-left text-sm"
-        onClick={(e) => {
+        onClick={() => {
           // onSelect?.(e);
 
           const alreadySelected = values.some((element) => {
@@ -320,7 +342,7 @@ export function MultiComboboxItem({
           });
 
           if (!alreadySelected) {
-            setValues([...values, { label, value }]);
+            setValues([...values, { label: label, value: value }]);
           }
 
           const searchElement = searchRef.current!;
@@ -329,7 +351,10 @@ export function MultiComboboxItem({
           // and focus the search input.
           setInputValue(searchElement, '');
 
-          searchElement.focus();
+          // searchElement.focus();
+          setSelectedIdx(-1);
+          searchRef.current!.blur();
+          setPopoverOpen(false);
         }}
         type="button"
         value={value}
