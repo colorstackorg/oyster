@@ -1,4 +1,5 @@
 import { useFetcher } from '@remix-run/react';
+import { useEffect, useState } from 'react';
 
 import {
   ComboboxPopover,
@@ -6,7 +7,7 @@ import {
   Form,
   MultiCombobox,
   MultiComboboxDisplay,
-  MultiComboboxItem,
+  MultiComboboxList,
   MultiComboboxSearch,
   MultiComboboxValues,
 } from '@oyster/ui';
@@ -21,9 +22,23 @@ type FieldProps = {
 export const OnboardingSessionForm = () => {};
 
 export function OnboardingSessionAttendeesField({ error, name }: FieldProps) {
+  const [search, setSearch] = useState('');
   const fetcher = useFetcher<SearchMembersResult>();
 
+  useEffect(() => {
+    fetcher.load('/members/search');
+  }, []);
+
   const members = fetcher.data?.members || [];
+
+  const parsedMembers = members.map((item) => {
+    const label = `${item.firstName} ${item.lastName}`;
+
+    return {
+      name: label,
+      id: item.id,
+    };
+  });
 
   return (
     <Form.Field
@@ -34,39 +49,40 @@ export function OnboardingSessionAttendeesField({ error, name }: FieldProps) {
       required
     >
       <MultiCombobox>
-        <MultiComboboxDisplay>
-          <MultiComboboxValues name={name} />
-          <MultiComboboxSearch
-            id={name}
-            onChange={(e) => {
-              fetcher.submit(
-                { search: e.currentTarget.value },
-                {
-                  action: '/members/search',
-                  method: 'get',
-                }
-              );
-            }}
-          />
-        </MultiComboboxDisplay>
+        {({ values }) => {
+          const filteredMembers = parsedMembers.filter((item) => {
+            return values.every((value) => value.value !== item.id);
+          });
 
-        {!!members.length && (
-          <ComboboxPopover>
-            <ul>
-              {members.map((member) => {
-                return (
-                  <MultiComboboxItem
-                    key={member.id}
-                    label={`${member.firstName} ${member.lastName}`}
-                    value={member.id}
-                  >
-                    {member.firstName} {member.lastName} ({member.email})
-                  </MultiComboboxItem>
-                );
-              })}
-            </ul>
-          </ComboboxPopover>
-        )}
+          return (
+            <>
+              <MultiComboboxDisplay>
+                <MultiComboboxValues name={name} />
+                <MultiComboboxSearch
+                  id={name}
+                  onChange={(e) => {
+                    setSearch(e.currentTarget.value);
+
+                    fetcher.submit(
+                      { search: e.currentTarget.value },
+                      {
+                        action: '/api/countries/search',
+                        method: 'get',
+                      }
+                    );
+                  }}
+                  items={filteredMembers}
+                />
+              </MultiComboboxDisplay>
+
+              {(!!filteredMembers.length || !!search.length) && (
+                <ComboboxPopover>
+                  <MultiComboboxList items={filteredMembers} />
+                </ComboboxPopover>
+              )}
+            </>
+          );
+        }}
       </MultiCombobox>
     </Form.Field>
   );

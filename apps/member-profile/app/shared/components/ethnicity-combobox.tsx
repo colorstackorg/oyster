@@ -1,5 +1,5 @@
 import { useFetcher } from '@remix-run/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   Combobox,
@@ -9,7 +9,7 @@ import {
   type InputProps,
   MultiCombobox,
   MultiComboboxDisplay,
-  MultiComboboxItem,
+  MultiComboboxList,
   type MultiComboboxProps,
   MultiComboboxSearch,
   MultiComboboxValues,
@@ -72,6 +72,7 @@ export function EthnicityMultiCombobox({
   name,
 }: EthnicityMultiComboboxProps) {
   const fetcher = useFetcher<SearchCountriesResult>();
+  const [search, setSearch] = useState<string>('');
 
   useEffect(() => {
     fetcher.load('/api/countries/search');
@@ -79,43 +80,51 @@ export function EthnicityMultiCombobox({
 
   const countries = fetcher.data?.countries || [];
 
+  const parsedCountries = countries.map((item) => {
+    const label = `${item.flagEmoji} ${item.demonym}`;
+
+    return {
+      name: label,
+      id: item.code,
+    };
+  });
+
   return (
     <MultiCombobox defaultValues={defaultValues}>
-      <MultiComboboxDisplay>
-        <MultiComboboxValues name={name} />
-        <MultiComboboxSearch
-          id={name}
-          onChange={(e) => {
-            fetcher.submit(
-              { search: e.currentTarget.value },
-              {
-                action: '/api/countries/search',
-                method: 'get',
-              }
-            );
-          }}
-        />
-      </MultiComboboxDisplay>
+      {({ values }) => {
+        const filteredCountries = parsedCountries.filter((item) => {
+          return values.every((value) => value.value !== item.id);
+        });
 
-      {!!countries.length && (
-        <ComboboxPopover>
-          <ul>
-            {countries.map((country) => {
-              const label = `${country.flagEmoji} ${country.demonym}`;
+        return (
+          <>
+            <MultiComboboxDisplay>
+              <MultiComboboxValues name={name} />
+              <MultiComboboxSearch
+                id={name}
+                onChange={(e) => {
+                  setSearch(e.currentTarget.value);
 
-              return (
-                <MultiComboboxItem
-                  key={country.code}
-                  label={label}
-                  value={country.code}
-                >
-                  {label}
-                </MultiComboboxItem>
-              );
-            })}
-          </ul>
-        </ComboboxPopover>
-      )}
+                  fetcher.submit(
+                    { search: e.currentTarget.value },
+                    {
+                      action: '/api/countries/search',
+                      method: 'get',
+                    }
+                  );
+                }}
+                items={filteredCountries}
+              />
+            </MultiComboboxDisplay>
+
+            {(!!filteredCountries.length || !!search.length) && (
+              <ComboboxPopover>
+                <MultiComboboxList items={filteredCountries} />
+              </ComboboxPopover>
+            )}
+          </>
+        );
+      }}
     </MultiCombobox>
   );
 }

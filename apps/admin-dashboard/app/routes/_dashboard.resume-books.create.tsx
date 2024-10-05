@@ -5,7 +5,7 @@ import {
   redirect,
 } from '@remix-run/node';
 import { Form as RemixForm, useActionData, useFetcher } from '@remix-run/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { createResumeBook } from '@oyster/core/resumes';
 import { CreateResumeBookInput } from '@oyster/core/resumes/types';
@@ -24,6 +24,7 @@ import {
   MultiCombobox,
   MultiComboboxDisplay,
   MultiComboboxItem,
+  MultiComboboxList,
   MultiComboboxSearch,
   MultiComboboxValues,
   validateForm,
@@ -102,6 +103,7 @@ export default function CreateResumeBookModal() {
 }
 
 function SponsorsField() {
+  const [search, setSearch] = useState('');
   const fetcher = useFetcher<SearchCompaniesResult>();
   const { errors } = getErrors(useActionData<typeof action>());
 
@@ -110,6 +112,13 @@ function SponsorsField() {
   }, []);
 
   const companies = fetcher.data?.companies || [];
+
+  const parsedCompanies = companies.map((item) => {
+    return {
+      name: item.name,
+      id: item.id,
+    };
+  });
 
   return (
     <Form.Field
@@ -120,37 +129,40 @@ function SponsorsField() {
       required
     >
       <MultiCombobox>
-        <MultiComboboxDisplay>
-          <MultiComboboxValues name={keys.sponsors} />
-          <MultiComboboxSearch
-            id="search"
-            onChange={(e) => {
-              fetcher.submit(
-                { search: e.currentTarget.value },
-                {
-                  action: '/api/companies/search',
-                  method: 'get',
-                }
-              );
-            }}
-          />
-        </MultiComboboxDisplay>
+        {({ values }) => {
+          const filteredCompanies = parsedCompanies.filter((item) => {
+            return values.every((value) => value.value !== item.id);
+          });
 
-        <ComboboxPopover>
-          <ul>
-            {companies.map((company) => {
-              return (
-                <MultiComboboxItem
-                  key={company.id}
-                  label={company.name}
-                  value={company.id}
-                >
-                  {company.name}
-                </MultiComboboxItem>
-              );
-            })}
-          </ul>
-        </ComboboxPopover>
+          return (
+            <>
+              <MultiComboboxDisplay>
+                <MultiComboboxValues name={keys.sponsors} />
+                <MultiComboboxSearch
+                  id={keys.sponsors}
+                  onChange={(e) => {
+                    setSearch(e.currentTarget.value);
+
+                    fetcher.submit(
+                      { search: e.currentTarget.value },
+                      {
+                        action: '/api/companies/search',
+                        method: 'get',
+                      }
+                    );
+                  }}
+                  items={filteredCompanies}
+                />
+              </MultiComboboxDisplay>
+
+              {(!!filteredCompanies.length || !!search.length) && (
+                <ComboboxPopover>
+                  <MultiComboboxList items={filteredCompanies} />
+                </ComboboxPopover>
+              )}
+            </>
+          );
+        }}
       </MultiCombobox>
     </Form.Field>
   );
