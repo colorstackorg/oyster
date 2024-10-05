@@ -1,3 +1,4 @@
+import { useFetcher } from '@remix-run/react';
 import React, {
   type PropsWithChildren,
   useContext,
@@ -16,15 +17,14 @@ import {
   MultiCombobox,
   MultiComboboxDisplay,
   MultiComboboxList,
-  MultiComboboxProps,
+  type MultiComboboxProps,
   MultiComboboxSearch,
   MultiComboboxValues,
   Select,
   Textarea,
 } from '@oyster/ui';
-import { SearchTagsResult } from '@/routes/api.tags.search';
-import { id } from '@oyster/utils';
-import { useFetcher } from '@remix-run/react';
+
+import { type SearchTagsResult } from '@/routes/api.tags.search';
 
 type ResourceFormContext = {
   setType(type: ResourceType): void;
@@ -141,10 +141,8 @@ export function ResourceTagsField({
   error,
   name,
 }: FieldProps<MultiComboboxProps['defaultValues']>) {
-  const createFetcher = useFetcher<unknown>();
   const listFetcher = useFetcher<SearchTagsResult>();
 
-  const [newTagId, setNewTagId] = useState<string>(id());
   const [search, setSearch] = useState<string>('');
 
   useEffect(() => {
@@ -152,10 +150,6 @@ export function ResourceTagsField({
   }, []);
 
   const tags = listFetcher.data?.tags || [];
-
-  function reset() {
-    setNewTagId(id());
-  }
 
   return (
     <Form.Field
@@ -181,7 +175,6 @@ export function ResourceTagsField({
                   id={name}
                   onChange={(e) => {
                     setSearch(e.currentTarget.value);
-                    console.log(e.currentTarget.value);
 
                     listFetcher.submit(
                       { search: e.currentTarget.value },
