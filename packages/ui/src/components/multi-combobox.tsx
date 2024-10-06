@@ -247,6 +247,9 @@ export function MultiComboboxSearch({
       }}
       onKeyDown={handleKeyDown}
       onKeyUp={handleKeyUp}
+      onClick={() => {
+        setKeyDown(false);
+      }}
       ref={searchRef}
       type="text"
     />
