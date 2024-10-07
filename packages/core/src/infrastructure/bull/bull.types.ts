@@ -590,6 +590,10 @@ export const StudentBullJob = z.discriminatedUnion('name', [
     name: z.literal('student.statuses.new'),
     data: z.object({}),
   }),
+  z.object({
+    name: z.literal('student.company.review.notifications.weekly'),
+    data: z.object({}),
+  }),
 ]);
 
 // Combination
