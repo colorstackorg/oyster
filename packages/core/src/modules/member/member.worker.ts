@@ -121,9 +121,12 @@ async function updatePointTotals() {
 
       ({ ref }) => {
         const daysSinceAccepted = sql<number>`
-          extract(
-            day from (
-              current_timestamp - ${ref('acceptedAt')}
+          greatest(
+            1,
+            extract(
+              day from (
+                current_timestamp - ${ref('acceptedAt')}
+              )
             )
           )
         `;
