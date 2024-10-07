@@ -23,6 +23,7 @@ const ROUTES = [
   '/login',
   '/login/otp/send',
   '/login/otp/verify',
+  '/opportunities',
   '/points',
   '/profile',
   '/profile/education',
