@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+import { sql } from 'kysely';
 import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
@@ -65,30 +67,75 @@ export const memberWorker = registerWorker(
 
 /**
  * This is a weekly job that runs and updates the point totals for all members.
- * The query only updates the points for a member if they've actually changed,
- * to avoid unnecessary updates to the database.
+ * We also calculate (but don't store) the points per day and points in the last
+ * 90 days.
  *
- * For any member that has had their points updated, we also update their
- * Airtable record with the new point total.
+ * We update all of these values in their respective columns in Airtable.
  */
 async function updatePointTotals() {
+  const zero = sql<number>`0`;
+
   const members = await db
     .with('updatedPoints', (db) => {
       return db
-        .selectFrom('completedActivities')
-        .select(['studentId', (eb) => eb.fn.sum<number>('points').as('points')])
-        .groupBy('studentId');
+        .selectFrom('students')
+        .leftJoin(
+          'completedActivities',
+          'completedActivities.studentId',
+          'students.id'
+        )
+        .select([
+          'students.id as studentId',
+
+          (eb) => {
+            return eb.fn
+              .coalesce(eb.fn.sum<number>('completedActivities.points'), zero)
+              .as('pointsAllTime');
+          },
+
+          (eb) => {
+            const ninetyDaysAgo = dayjs().subtract(90, 'day').toDate();
+
+            const sum = eb.fn
+              .sum<number>('completedActivities.points')
+              .filterWhere('occurredAt', '>=', ninetyDaysAgo);
+
+            return eb.fn.coalesce(sum, zero).as('pointsInLast90Days');
+          },
+        ])
+        .groupBy('students.id');
     })
     .updateTable('students')
     .from('updatedPoints')
-    .set((eb) => {
+    .set(({ ref }) => {
       return {
-        points: eb.ref('updatedPoints.points'),
+        points: ref('updatedPoints.pointsAllTime'),
       };
     })
     .whereRef('students.id', '=', 'updatedPoints.studentId')
-    .whereRef('students.points', '!=', 'updatedPoints.points')
-    .returning(['students.airtableId', 'students.id', 'students.points'])
+    .where('updatedPoints.pointsAllTime', '>', 0)
+    .returning([
+      'students.airtableId',
+      'updatedPoints.pointsAllTime',
+      'updatedPoints.pointsInLast90Days',
+
+      ({ ref }) => {
+        const daysSinceAccepted = sql<number>`
+          greatest(
+            1,
+            extract(
+              day from (
+                current_timestamp - ${ref('acceptedAt')}
+              )
+            )
+          )
+        `;
+
+        return sql<number>`
+          round(${ref('pointsAllTime')} / ${daysSinceAccepted}, 2)
+        `.as('pointsPerDay');
+      },
+    ])
     .execute();
 
   // The Airtable API only allows us to update 10 records at a time, so we need
@@ -106,7 +153,9 @@ async function updatePointTotals() {
         return {
           id: member.airtableId as string,
           data: {
-            Points: member.points,
+            Points: member.pointsAllTime,
+            'Points (Per Day)': member.pointsPerDay,
+            'Points (in Last 90 Days)': member.pointsInLast90Days,
           },
         };
       }),

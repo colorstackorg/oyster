@@ -233,20 +233,14 @@ export default function HomeLayout() {
   const showOnboardingCard =
     !!student.joinedAfterActivation && !student.onboardedAt;
 
-  const showSwagCard =
-    !!student.joinedAfterActivation &&
-    !!student.activatedAt &&
-    !student.claimedSwagPackAt;
-
   return (
     <>
       <Text variant="2xl">Hey, {student.firstName}! 👋</Text>
 
-      {(showActivationCard || showOnboardingCard || showSwagCard) && (
+      {(showActivationCard || showOnboardingCard) && (
         <>
           <div className="grid grid-cols-1 items-start gap-4 @[1000px]:grid-cols-2 @[1500px]:grid-cols-3">
             {showActivationCard && <ActivationCard />}
-            {showSwagCard && <ClaimSwagPackCard />}
             {showOnboardingCard && <OnboardingSessionCard />}
           </div>
 
@@ -348,29 +342,6 @@ function ActiveStatusCard() {
   );
 }
 
-function ClaimSwagPackCard() {
-  return (
-    <Card>
-      <Card.Title>Claim Swag Pack 🎁</Card.Title>
-
-      <Card.Description>
-        Congratulations on becoming an activated ColorStack member! As a thank
-        you for engaging in the community, we would love to send you a
-        ColorStack swag pack.
-      </Card.Description>
-
-      <Button.Group>
-        <Link
-          className={getButtonCn({ variant: 'primary' })}
-          to={Route['/home/claim-swag-pack']}
-        >
-          Claim Swag Pack
-        </Link>
-      </Button.Group>
-    </Card>
-  );
-}
-
 function OnboardingSessionCard() {
   return (
     <Card>
@@ -403,8 +374,8 @@ function ActivationCard() {
 
       <Card.Description>
         You've completed {student.activationRequirementsCompleted.length}/6
-        activation requirements. Once you hit all 6, you will be eligible to
-        claim your FREE swag pack! 👀
+        activation requirements. Once you hit all 6, you will get a gift card to
+        claim your FREE merch! 👀
       </Card.Description>
 
       <Button.Group>
