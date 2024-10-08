@@ -20,8 +20,6 @@ const ROUTES = [
   '/events/upcoming/:id/registrations',
   '/home',
   '/home/activation',
-  '/home/claim-swag-pack',
-  '/home/claim-swag-pack/confirmation',
   '/login',
   '/login/otp/send',
   '/login/otp/verify',

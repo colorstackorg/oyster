@@ -149,19 +149,3 @@ To enable the **Slack** integration:
    SLACK_CLIENT_ID
    SLACK_TEAM_ID
    ```
-
-## SwagUp
-
-To enable the **SwagUp** integration:
-
-1.
-2. In `/api/.env`, set the following variables:
-   ```
-   SWAG_UP_CLIENT_ID
-   SWAG_UP_CLIENT_SECRET
-   ```
-3. In `/member-profile/.env`, set the following variables:
-   ```
-   SWAG_UP_CLIENT_ID
-   SWAG_UP_CLIENT_SECRET
-   ```
