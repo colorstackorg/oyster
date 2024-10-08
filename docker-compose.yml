@@ -2,8 +2,6 @@
 # development (this is not meant to be used in production), bypassing the need
 # to install and configure these services on our local machines.
 
-version: '3.9'
-
 services:
   postgres:
     container_name: oyster-postgres
