@@ -599,6 +599,7 @@ async function shouldReject(
   const applicationAcceptedWithSameEmail = await db
     .selectFrom('applications')
     .where('email', 'ilike', application.email)
+    .where('id', '!=', application.id)
     .where('status', '=', ApplicationStatus.ACCEPTED)
     .executeTakeFirst();
 
