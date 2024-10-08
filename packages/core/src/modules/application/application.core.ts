@@ -596,6 +596,16 @@ async function shouldReject(
     return [true, 'email_already_used'];
   }
 
+  const applicationAcceptedWithSameEmail = await db
+    .selectFrom('applications')
+    .where('email', 'ilike', application.email)
+    .where('status', '=', ApplicationStatus.ACCEPTED)
+    .executeTakeFirst();
+
+  if (applicationAcceptedWithSameEmail) {
+    return [true, 'email_already_used'];
+  }
+
   const postmark = getPostmarkInstance();
 
   const bounces = await postmark.getBounces({
