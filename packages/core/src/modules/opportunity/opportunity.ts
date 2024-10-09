@@ -26,8 +26,6 @@ type CreateOpportunityInput = Pick<
 >;
 
 async function createOpportunity(input: CreateOpportunityInput) {
-  // w/ AI, get the title, description, type, expires at...
-
   const slackMessage = await db
     .selectFrom('slackMessages')
     .select(['studentId', 'text'])
@@ -35,10 +33,19 @@ async function createOpportunity(input: CreateOpportunityInput) {
     .where('id', '=', input.slackMessageId)
     .executeTakeFirst();
 
-  if (!slackMessage) {
+  if (!slackMessage || !slackMessage.text) {
     return fail({
       code: 404,
       error: 'Slack message was not found.',
+    });
+  }
+
+  const hasLink = slackMessage.text.includes('http');
+
+  if (!hasLink) {
+    return fail({
+      code: 400,
+      error: 'This Slack message does not contain a link to an opportunity.',
     });
   }
 
