@@ -11,9 +11,9 @@ import { ENV } from '@/shared/env';
  * to all these students suggesting that they add a review of their experience.
  */
 export async function sendCompanyReviewNotifications() {
-  const oneWeekAgo = new Date();
+  const oneMonthAgo = new Date();
 
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 32);
+  oneMonthAgo.setDate(oneMonthAgo.getDate() - 32);
 
   const results = await db
     .selectFrom('workExperiences')
@@ -24,7 +24,7 @@ export async function sendCompanyReviewNotifications() {
       'students.firstName as studentName',
       'students.slackId as studentSlackId',
     ])
-    .where('endDate', '>=', oneWeekAgo)
+    .where('endDate', '>=', oneMonthAgo)
     .where('endDate', 'is not', null)
     .execute();
 
