@@ -13,7 +13,7 @@ import { ENV } from '@/shared/env';
 export async function sendCompanyReviewNotifications() {
   const oneWeekAgo = new Date();
 
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 32);
 
   const results = await db
     .selectFrom('workExperiences')
