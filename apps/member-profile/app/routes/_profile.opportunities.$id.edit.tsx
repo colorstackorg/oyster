@@ -1,12 +1,16 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs, redirect } from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
   useFetcher,
+  useLoaderData,
   useSearchParams,
 } from '@remix-run/react';
+import { sql } from 'kysely';
+import { jsonBuildObject } from 'kysely/helpers/postgres';
 import { useEffect, useState } from 'react';
 
+import { db } from '@oyster/db';
 import {
   Button,
   ComboboxPopover,
@@ -32,9 +36,56 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  // params.id
+  const opportunity = await db
+    .selectFrom('opportunities')
+    .select([
+      'description',
+      'expiresAt as closeDate',
+      'id',
+      'title',
+      'type',
 
-  return json({});
+      ({ ref }) => {
+        const field = ref('expiresAt');
+        const format = 'YYYY-MM-DD';
+
+        return sql<string>`to_char(${field}, ${format})`.as('closeDate');
+      },
+
+      (eb) => {
+        return eb
+          .selectFrom('opportunityTagAssociations')
+          .leftJoin(
+            'opportunityTags',
+            'opportunityTags.id',
+            'opportunityTagAssociations.tagId'
+          )
+          .whereRef('opportunityId', '=', 'opportunities.id')
+          .select(({ fn, ref }) => {
+            const object = jsonBuildObject({
+              id: ref('opportunityTags.id'),
+              name: ref('opportunityTags.name'),
+            });
+
+            return fn
+              .jsonAgg(sql`${object} order by ${ref('name')} asc`)
+              .$castTo<Array<{ id: string; name: string }>>()
+              .as('tags');
+          })
+          .as('tags');
+      },
+    ])
+    .where('id', '=', params.id as string)
+    .executeTakeFirst();
+
+  if (!opportunity) {
+    throw new Response(null, {
+      status: 404,
+      statusText: 'The opportunity you are trying to edit does not exist.',
+    });
+  }
+
+  return json({ opportunity });
 }
 
 export async function action() {
@@ -62,12 +113,13 @@ export default function EditOpportunity() {
 }
 
 function EditOpportunityForm() {
+  const { opportunity } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
       <Form.Field error="" label="Type" labelFor="type" required>
-        <Select defaultValue="" id="type" name="type" required>
+        <Select defaultValue={opportunity.type} id="type" name="type" required>
           <option value="job">Job (ie: Internship, Full-Time)</option>
           <option value="event">Event (ie: Conference, Workshop)</option>
           <option value="other">Other (ie: Program, Scholarship)</option>
@@ -75,12 +127,17 @@ function EditOpportunityForm() {
       </Form.Field>
 
       <Form.Field error="" label="Title" labelFor="title" required>
-        <Input defaultValue="" id="title" name="title" required />
+        <Input
+          defaultValue={opportunity.title}
+          id="title"
+          name="title"
+          required
+        />
       </Form.Field>
 
       <Form.Field error="" label="Description" labelFor="description">
         <Textarea
-          defaultValue=""
+          defaultValue={opportunity.description || ''}
           id="description"
           maxLength={200}
           minRows={2}
@@ -98,7 +155,7 @@ function EditOpportunityForm() {
         required
       >
         <DatePicker
-          defaultValue=""
+          defaultValue={opportunity.closeDate}
           id="closeDate"
           name="closeDate"
           required
@@ -116,6 +173,8 @@ function EditOpportunityForm() {
 }
 
 function TagsField() {
+  const { opportunity } = useLoaderData<typeof loader>();
+
   const createFetcher = useFetcher<unknown>();
   const listFetcher = useFetcher<{
     tags: Array<{ id: string; name: string }>;
@@ -142,7 +201,14 @@ function TagsField() {
       labelFor="tags"
       required
     >
-      <MultiCombobox defaultValues={[]}>
+      <MultiCombobox
+        defaultValues={(opportunity.tags || []).map((tag) => {
+          return {
+            label: tag.name,
+            value: tag.id,
+          };
+        })}
+      >
         {({ values }) => {
           const filteredTags = tags.filter((tag) => {
             return values.every((value) => {
