@@ -83,7 +83,11 @@ export function SlackMessage({
   ...rest
 }: SlackMessageProps) {
   return (
-    <Text className={cx('whitespace-pre-wrap', className)} {...rest}>
+    <Text
+      className={cx('whitespace-pre-wrap', className)}
+      variant="sm"
+      {...rest}
+    >
       {<>{toHTML(parseSlackMessage(children as string))}</>}
     </Text>
   );

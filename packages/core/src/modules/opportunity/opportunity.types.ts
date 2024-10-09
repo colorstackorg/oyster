@@ -14,7 +14,7 @@ export const EditOpportunityInput = z.object({
   //   .trim()
   //   .min(1)
   //   .transform((value) => value.split(',')),
-  description: z.string().trim().min(1).max(200),
+  description: z.string().trim().min(1).max(250),
   // expiresAt: z.string().trim().min(1),
   tags: z
     .string()

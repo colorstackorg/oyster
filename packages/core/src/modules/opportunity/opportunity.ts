@@ -208,6 +208,12 @@ export async function editOpportunity(id: string, input: EditOpportunityInput) {
       .executeTakeFirst();
 
     await trx
+      .deleteFrom('opportunityTagAssociations')
+      .where('opportunityId', '=', id)
+      .where('tagId', 'not in', input.tags)
+      .execute();
+
+    await trx
       .insertInto('opportunityTagAssociations')
       .values(
         input.tags.map((tag) => {

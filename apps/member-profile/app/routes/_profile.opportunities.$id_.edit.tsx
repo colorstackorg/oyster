@@ -171,7 +171,7 @@ function EditOpportunityForm() {
         <Textarea
           defaultValue={opportunity.description || ''}
           id="description"
-          maxLength={200}
+          maxLength={250}
           minRows={2}
           name="description"
         />

@@ -1,52 +1,55 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useFetcher,
-  useLoaderData,
-  useSearchParams,
-} from '@remix-run/react';
+import { useLoaderData, useSearchParams } from '@remix-run/react';
+import dayjs from 'dayjs';
 import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
-import { useEffect, useState } from 'react';
+import { emojify } from 'node-emoji';
 
 import { db } from '@oyster/db';
-import {
-  Button,
-  ComboboxPopover,
-  DatePicker,
-  Form,
-  getErrors,
-  Input,
-  Modal,
-  MultiCombobox,
-  MultiComboboxDisplay,
-  MultiComboboxItem,
-  MultiComboboxSearch,
-  MultiComboboxValues,
-  Pill,
-  Select,
-  Textarea,
-} from '@oyster/ui';
-import { id } from '@oyster/utils';
+import { Modal } from '@oyster/ui';
 
+import {
+  SlackMessage,
+  SlackMessageCard,
+} from '@/shared/components/slack-message';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
+  // channelId={opportunity.channelId}
+  // messageId={opportunity.id}
+  // postedAt={opportunity.postedAt}
+  // posterFirstName={opportunity.posterFirstName || ''}
+  // posterLastName={opportunity.posterLastName || ''}
+  // posterProfilePicture={opportunity.posterProfilePicture || ''}
+  // text={opportunity.text || ''}
+
   const opportunity = await db
     .selectFrom('opportunities')
+    .leftJoin('students', 'students.id', 'opportunities.postedBy')
+    .leftJoin('slackMessages', (join) => {
+      return join
+        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
+        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
+    })
     .select([
-      'description',
-      'expiresAt as closeDate',
-      'id',
-      'title',
-      'type',
+      'opportunities.description',
+      'opportunities.expiresAt as closeDate',
+      'opportunities.id',
+      'opportunities.title',
+      'opportunities.type',
+      'slackMessages.channelId as slackMessageChannelId',
+      'slackMessages.id as slackMessageId',
+      'slackMessages.createdAt as slackMessagePostedAt',
+      'slackMessages.text as slackMessageText',
+      'students.firstName as posterFirstName',
+      'students.lastName as posterLastName',
+      'students.profilePicture as posterProfilePicture',
 
       ({ ref }) => {
-        const field = ref('expiresAt');
+        const field = ref('opportunities.expiresAt');
         const format = 'YYYY-MM-DD';
 
         return sql<string>`to_char(${field}, ${format})`.as('closeDate');
@@ -75,7 +78,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           .as('tags');
       },
     ])
-    .where('id', '=', params.id as string)
+    .where('opportunities.id', '=', params.id as string)
     .executeTakeFirst();
 
   if (!opportunity) {
@@ -84,6 +87,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       statusText: 'The opportunity you are trying to edit does not exist.',
     });
   }
+
+  Object.assign(opportunity, {
+    slackMessageText: emojify(opportunity.slackMessageText || '', {
+      fallback: '',
+    }),
+    slackMessagePostedAt: dayjs().to(opportunity.slackMessagePostedAt),
+  });
 
   return json({ opportunity });
 }
@@ -107,6 +117,16 @@ export default function EditOpportunity() {
         <Modal.Title>{opportunity.title}</Modal.Title>
         <Modal.CloseButton />
       </Modal.Header>
+
+      <SlackMessageCard
+        channelId={opportunity.slackMessageChannelId || ''}
+        messageId={opportunity.id}
+        postedAt={opportunity.slackMessagePostedAt || ''}
+        posterFirstName={opportunity.posterFirstName || ''}
+        posterLastName={opportunity.posterLastName || ''}
+        posterProfilePicture={opportunity.posterProfilePicture || ''}
+        text={opportunity.slackMessageText || ''}
+      />
     </Modal>
   );
 }

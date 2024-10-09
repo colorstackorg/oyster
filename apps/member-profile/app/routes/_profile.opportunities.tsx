@@ -135,21 +135,22 @@ function OpportunitiesTable() {
 
   const columns: TableColumnProps<OpportunityInView>[] = [
     {
-      displayName: 'Company(s)',
+      displayName: 'Company',
       size: '120',
       render: (opportunity) => {
         return (
           <ul>
             {(opportunity.companies || []).map((company) => {
               return (
-                <li key={company.id}>
+                <li className="w-fit" key={company.id}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <a
-                        className="cursor-pointer"
-                        // href={'https://' + company.domain}
-                        rel="noopener noreferrer"
+                      <Link
+                        className="w-fit cursor-pointer"
                         target="_blank"
+                        to={generatePath(Route['/companies/:id'], {
+                          id: company.id,
+                        })}
                       >
                         <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
                           <img
@@ -158,7 +159,7 @@ function OpportunitiesTable() {
                             src={company.logo as string}
                           />
                         </div>
-                      </a>
+                      </Link>
                     </TooltipTrigger>
 
                     <TooltipContent align="start">
@@ -186,7 +187,18 @@ function OpportunitiesTable() {
     {
       displayName: 'Title',
       size: '400',
-      render: (opportunity) => opportunity.title,
+      render: (opportunity) => {
+        return (
+          <Link
+            className="link"
+            to={generatePath(Route['/opportunities/:id'], {
+              id: opportunity.id,
+            })}
+          >
+            {opportunity.title}
+          </Link>
+        );
+      },
     },
     {
       displayName: 'Tags',
