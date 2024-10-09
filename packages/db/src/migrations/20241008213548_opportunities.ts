@@ -55,9 +55,44 @@ export async function up(db: Kysely<any>) {
       'opportunity_id',
     ])
     .execute();
+
+  await db.schema
+    .createTable('opportunity_tags')
+    .addColumn('created_at', 'timestamptz', (column) => {
+      return column.notNull().defaultTo(sql`now()`);
+    })
+    .addColumn('id', 'text', (column) => {
+      return column.primaryKey();
+    })
+    .addColumn('name', 'text', (column) => {
+      return column.notNull().unique();
+    })
+    .execute();
+
+  await db.schema
+    .createTable('opportunity_tag_associations')
+    .addColumn('opportunity_id', 'text', (column) => {
+      return column
+        .notNull()
+        .references('opportunities.id')
+        .onDelete('cascade');
+    })
+    .addColumn('tag_id', 'text', (column) => {
+      return column
+        .notNull()
+        .references('opportunity_tags.id')
+        .onDelete('cascade');
+    })
+    .addPrimaryKeyConstraint('opportunity_tag_associations_pkey', [
+      'opportunity_id',
+      'tag_id',
+    ])
+    .execute();
 }
 
 export async function down(db: Kysely<any>) {
+  await db.schema.dropTable('opportunity_tag_associations').execute();
+  await db.schema.dropTable('opportunity_tags').execute();
   await db.schema.dropTable('opportunity_companies').execute();
   await db.schema.dropTable('opportunities').execute();
 }
