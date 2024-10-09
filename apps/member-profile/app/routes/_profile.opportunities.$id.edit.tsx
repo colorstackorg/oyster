@@ -1,22 +1,30 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import {
-  Outlet,
   Form as RemixForm,
   useActionData,
+  useFetcher,
   useSearchParams,
 } from '@remix-run/react';
+import { useEffect, useState } from 'react';
 
 import {
   Button,
-  Dashboard,
+  ComboboxPopover,
   DatePicker,
   Form,
   getErrors,
   Input,
   Modal,
+  MultiCombobox,
+  MultiComboboxDisplay,
+  MultiComboboxItem,
+  MultiComboboxSearch,
+  MultiComboboxValues,
+  Pill,
   Select,
   Textarea,
 } from '@oyster/ui';
+import { id } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
@@ -80,6 +88,8 @@ function EditOpportunityForm() {
         />
       </Form.Field>
 
+      <TagsField />
+
       <Form.Field
         description="This is the date that the opportunity will be marked as closed."
         error=""
@@ -102,5 +112,106 @@ function EditOpportunityForm() {
         <Button.Submit>Save</Button.Submit>
       </Button.Group>
     </RemixForm>
+  );
+}
+
+function TagsField() {
+  const createFetcher = useFetcher<unknown>();
+  const listFetcher = useFetcher<{
+    tags: Array<{ id: string; name: string }>;
+  }>();
+
+  const [newTagId, setNewTagId] = useState<string>(id());
+  const [search, setSearch] = useState<string>('');
+
+  useEffect(() => {
+    listFetcher.load('/api/opportunities/tags/search');
+  }, []);
+
+  const tags = listFetcher.data?.tags || [];
+
+  function reset() {
+    setNewTagId(id());
+  }
+
+  return (
+    <Form.Field
+      description="To categorize and help others find this opportunity."
+      error=""
+      label="Tags"
+      labelFor="tags"
+      required
+    >
+      <MultiCombobox defaultValues={[]}>
+        {({ values }) => {
+          const filteredTags = tags.filter((tag) => {
+            return values.every((value) => {
+              return value.value !== tag.id;
+            });
+          });
+
+          return (
+            <>
+              <MultiComboboxDisplay>
+                <MultiComboboxValues name="tags" />
+                <MultiComboboxSearch
+                  id="tags"
+                  onChange={(e) => {
+                    setSearch(e.currentTarget.value);
+
+                    listFetcher.submit(
+                      { search: e.currentTarget.value },
+                      {
+                        action: '/api/opportunities/tags/search',
+                        method: 'get',
+                      }
+                    );
+                  }}
+                />
+              </MultiComboboxDisplay>
+
+              {(!!filteredTags.length || !!search.length) && (
+                <ComboboxPopover>
+                  <ul>
+                    {filteredTags.map((tag) => {
+                      return (
+                        <MultiComboboxItem
+                          key={tag.id}
+                          label={tag.name}
+                          onSelect={reset}
+                          value={tag.id}
+                        >
+                          <Pill color="pink-100">{tag.name}</Pill>
+                        </MultiComboboxItem>
+                      );
+                    })}
+
+                    {!!search.length && (
+                      <MultiComboboxItem
+                        label={search}
+                        onSelect={(e) => {
+                          createFetcher.submit(
+                            { id: e.currentTarget.value, name: search },
+                            {
+                              action: '/api/opportunities/tags/add',
+                              method: 'post',
+                            }
+                          );
+
+                          reset();
+                        }}
+                        value={newTagId}
+                      >
+                        Create <Pill color="pink-100">{search}</Pill>
+                      </MultiComboboxItem>
+                    )}
+                  </ul>
+                </ComboboxPopover>
+              )}
+            </>
+          );
+        }}
+      </MultiCombobox>
+    </Form.Field>
   );
 }
