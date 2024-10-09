@@ -59,7 +59,7 @@ async function createOpportunity(input: CreateOpportunityInput) {
     Here's the Slack message you need to analyze:
 
     <slack_message>
-      ${input}
+      ${slackMessage.text}
     </slack_message>
 
     You need to extract the following information and format it as JSON:
@@ -106,23 +106,12 @@ async function createOpportunity(input: CreateOpportunityInput) {
     return completionResult;
   }
 
-  const outputMatch = completionResult.data.match(
-    /<output>([\s\S]*?)<\/output>/
-  );
-
-  if (!outputMatch) {
-    return fail({
-      code: 500,
-      error: 'Failed to parse output from AI.',
-    });
-  }
-
   // TODO: Should validate this w/ Zod...
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let aiObject: any;
 
   try {
-    aiObject = JSON.parse(outputMatch[1].trim());
+    aiObject = JSON.parse(completionResult.data);
   } catch (error) {
     return fail({
       code: 400,
