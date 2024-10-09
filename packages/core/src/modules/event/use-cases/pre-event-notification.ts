@@ -20,7 +20,9 @@ export async function sendPreEventNotification({
   eventId,
 }: GetBullJobData<'event.notification'>) {
   // sendPreEventNotificationEmails(eventID);
-  console.log('Pre event notifications for event with ID' + eventId + 'sent!');
+  console.log(
+    'Pre event notifications for event with ID ' + eventId + ' sent!'
+  );
 
   await db
     .updateTable('events')
@@ -29,21 +31,17 @@ export async function sendPreEventNotification({
     .execute();
 }
 
-export async function deletePreEventNotification({
-  preEventNotificationJobId,
-}: {
-  preEventNotificationJobId: string | null;
-}) {
-  if (preEventNotificationJobId) {
-    const queue = getQueue('event');
-    const job = await queue.getJob(preEventNotificationJobId);
+export async function deletePreEventNotification(
+  preEventNotificationJobId: string
+) {
+  const queue = getQueue('event');
+  const job = await queue.getJob(preEventNotificationJobId);
 
-    if (!job) {
-      throw new Response(null, { status: 404 });
-    }
-
-    return job.remove();
+  if (!job) {
+    throw new Response(null, { status: 404 });
   }
+
+  return job.remove();
 }
 
 export async function createPreEventNotificationJob({
