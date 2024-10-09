@@ -13,11 +13,8 @@ export async function up(db: Kysely<any>) {
     .addColumn('id', 'text', (column) => {
       return column.primaryKey();
     })
-    .addColumn('posted_by_id', 'text', (column) => {
+    .addColumn('posted_by', 'text', (column) => {
       return column.references('students.id').onDelete('set null');
-    })
-    .addColumn('posted_by_slack_id', 'text', (column) => {
-      return column.notNull();
     })
     .addColumn('slack_channel_id', 'text', (column) => {
       return column.notNull();
@@ -31,6 +28,15 @@ export async function up(db: Kysely<any>) {
     .addColumn('type', 'text', (column) => {
       return column.notNull();
     })
+    .addForeignKeyConstraint(
+      'opportunities_slack_message_fkey',
+      ['slack_channel_id', 'slack_message_id'],
+      'slack_messages',
+      ['channel_id', 'id'],
+      (constraint) => {
+        return constraint.onDelete('cascade');
+      }
+    )
     .execute();
 
   await db.schema

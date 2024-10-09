@@ -53,22 +53,29 @@ export async function addSlackMessage(
   });
 
   // 1. "Is this a thread?"
-  // 2. "Is this an auto-reply channel?"
+  // 2. "Is this an auto-reply or an opportunity channel?"
   if (!data.threadId) {
+    const [isAutoReplyChannel, isOpportunityChannel] = await Promise.all([
+      redis.sismember('slack:auto_reply_channels', data.channelId),
+      redis.sismember('slack:opportunity_channels', data.channelId),
+    ]);
+
     // We track channels that are "auto-reply" channels in Redis. If a message
     // is sent to one of those channels, we should attempt to answer the
     // question using AI in private (DM).
-    const isAutoReplyChannel = await redis.sismember(
-      'slack:auto_reply_channels',
-      data.channelId
-    );
-
     if (isAutoReplyChannel) {
       job('slack.question.answer.private', {
         channelId: data.channelId,
         question: data.text as string,
         threadId: data.id,
         userId: data.userId,
+      });
+    }
+
+    if (isOpportunityChannel) {
+      job('opportunity.create', {
+        slackChannelId: data.channelId,
+        slackMessageId: data.id,
       });
     }
   }
