@@ -134,13 +134,10 @@ export const EventBullJob = z.discriminatedUnion('name', [
       eventId: Event.shape.id,
     }),
   }),
-]);
-
-export const PreEventNotificationBullJob = z.discriminatedUnion('name', [
   z.object({
-    name: z.literal('pre_event_notification.created'),
+    name: z.literal('event.notification'),
     data: z.object({
-      eventID: Event.shape.id,
+      eventId: Event.shape.id,
     }),
   }),
 ]);
@@ -707,7 +704,6 @@ export const BullJob = z.union([
   ApplicationBullJob,
   EventBullJob,
   FeedBullJob,
-  PreEventNotificationBullJob,
   GamificationBullJob,
   MailchimpBullJob,
   MemberEmailBullJob,

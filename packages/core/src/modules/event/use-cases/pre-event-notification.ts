@@ -1,48 +1,31 @@
 import dayjs from 'dayjs';
-import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { getQueue } from '@/admin-dashboard.server';
-import {
-  type GetBullJobData,
-  PreEventNotificationBullJob,
-} from '@/infrastructure/bull/bull.types';
+import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 
 // Change the line below with the function from issue #477
 // import { sendPreEventNotificationEmails } from './send-pre-event-notification-emails';
 
-export const preEventNotificationWorker = registerWorker(
-  'pre_event_notification',
-  PreEventNotificationBullJob,
-  async (job) => {
-    return match(job)
-      .with({ name: 'pre_event_notification.created' }, ({ data }) => {
-        return sendPreEventNotification(data);
-      })
-      .exhaustive();
-  }
-);
-
 type createPreEventNotificationJobInput = {
-  eventID: string;
+  eventId: string;
   startDate: dayjs.Dayjs;
   timezone: string;
 };
 
-async function sendPreEventNotification({
-  eventID,
-}: GetBullJobData<'pre_event_notification.created'>) {
+export async function sendPreEventNotification({
+  eventId,
+}: GetBullJobData<'event.notification'>) {
   // sendPreEventNotificationEmails(eventID);
-  console.log('Pre event notifications for event with ID' + eventID + 'sent!');
+  console.log('Pre event notifications for event with ID' + eventId + 'sent!');
 
   await db
     .updateTable('events')
     .set({ preEventNotificationJobId: null })
-    .where('id', '=', eventID)
+    .where('id', '=', eventId)
     .execute();
 }
 
@@ -52,7 +35,7 @@ export async function deletePreEventNotification({
   preEventNotificationJobId: string | null;
 }) {
   if (preEventNotificationJobId) {
-    const queue = getQueue('pre_event_notification');
+    const queue = getQueue('event');
     const job = await queue.getJob(preEventNotificationJobId);
 
     if (!job) {
@@ -64,7 +47,7 @@ export async function deletePreEventNotification({
 }
 
 export async function createPreEventNotificationJob({
-  eventID,
+  eventId,
   startDate,
   timezone,
 }: createPreEventNotificationJobInput) {
@@ -77,16 +60,12 @@ export async function createPreEventNotificationJob({
 
     const customJobID = id();
 
-    job(
-      'pre_event_notification.created',
-      { eventID },
-      { delay, jobId: customJobID }
-    );
+    job('event.notification', { eventId }, { delay, jobId: customJobID });
 
     await db
       .updateTable('events')
       .set({ preEventNotificationJobId: customJobID })
-      .where('id', '=', eventID)
+      .where('id', '=', eventId)
       .execute();
   }
 }
