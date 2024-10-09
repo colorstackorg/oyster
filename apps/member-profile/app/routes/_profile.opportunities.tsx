@@ -18,6 +18,12 @@ import {
   Table,
   type TableColumnProps,
 } from '@oyster/ui';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipText,
+  TooltipTrigger,
+} from '@oyster/ui/tooltip';
 
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
@@ -98,9 +104,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
           .as('companies');
       },
     ])
+    .orderBy('opportunities.createdAt', 'desc')
     .execute();
 
-  console.log(opportunities);
+  // console.log(opportunities);
 
   return json({
     opportunities,
@@ -135,14 +142,29 @@ function OpportunitiesTable() {
           <ul>
             {(opportunity.companies || []).map((company) => {
               return (
-                <li className="h-8 w-8 rounded-lg border border-gray-200 p-1">
-                  <img
-                    alt={company.name}
-                    className="aspect-square h-full w-full rounded-md"
-                    key={company.id}
-                    src={company.logo as string}
-                    title={company.name}
-                  />
+                <li key={company.id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <a
+                        className="cursor-pointer"
+                        // href={'https://' + company.domain}
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
+                          <img
+                            alt={company.name}
+                            className="aspect-square h-full w-full rounded-md"
+                            src={company.logo as string}
+                          />
+                        </div>
+                      </a>
+                    </TooltipTrigger>
+
+                    <TooltipContent align="start">
+                      <TooltipText>{company.name}</TooltipText>
+                    </TooltipContent>
+                  </Tooltip>
                 </li>
               );
             })}
@@ -171,7 +193,7 @@ function OpportunitiesTable() {
       size: '320',
       render: (opportunity) => {
         return (
-          <ul>
+          <ul className="overflow-scroll flex items-center gap-1">
             {(opportunity.tags || []).map((tag) => {
               return (
                 <li key={tag.id}>

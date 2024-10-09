@@ -12,7 +12,12 @@ import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker'
 import { getChatCompletion } from '@/modules/ai/ai';
 import { searchCrunchbaseOrganizations } from '@/modules/employment/queries/search-crunchbase-organizations';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
+import { type ListSearchParams, type SelectExpression } from '@/shared/types';
 import { fail, success } from '@/shared/utils/core.utils';
+import {
+  type CreateOpportunityTagInput,
+  type EditOpportunityInput,
+} from './opportunity.types';
 
 // Types
 
@@ -179,6 +184,72 @@ async function findOrCreateCompany(trx: Transaction<DB>, companyName: string) {
   }
 
   return companyId;
+}
+
+export async function createOpportunityTag(input: CreateOpportunityTagInput) {
+  await db.transaction().execute(async (trx) => {
+    await trx
+      .insertInto('opportunityTags')
+      .values({ id: input.id, name: input.name })
+      .execute();
+  });
+}
+
+export async function editOpportunity(id: string, input: EditOpportunityInput) {
+  const result = await db.transaction().execute(async (trx) => {
+    const result = await trx
+      .updateTable('opportunities')
+      .set({
+        description: input.description,
+        expiresAt: input.closeDate,
+        title: input.title,
+      })
+      .where('id', '=', id)
+      .executeTakeFirst();
+
+    await trx
+      .insertInto('opportunityTagAssociations')
+      .values(
+        input.tags.map((tag) => {
+          return {
+            opportunityId: id,
+            tagId: tag,
+          };
+        })
+      )
+      .onConflict((oc) => {
+        return oc.doNothing();
+      })
+      .execute();
+
+    return result;
+  });
+
+  return success(result);
+}
+
+type ListOpportunityTagsOptions<Selection> = {
+  pagination: Pick<ListSearchParams, 'limit' | 'page'>;
+  select: Selection[];
+  where: { ids?: string[]; search?: string };
+};
+
+export async function listOpportunityTags<
+  Selection extends SelectExpression<DB, 'opportunityTags'>,
+>({ pagination, select, where }: ListOpportunityTagsOptions<Selection>) {
+  return db
+    .selectFrom('opportunityTags')
+    .select(select)
+    .$if(!!where.ids, (qb) => {
+      return qb.where('opportunityTags.id', 'in', where.ids!);
+    })
+    .$if(!!where.search, (qb) => {
+      return qb.where('name', 'ilike', `%${where.search}%`);
+    })
+    .orderBy('name', 'asc')
+    .limit(pagination.limit)
+    .offset((pagination.page - 1) * pagination.limit)
+    .execute();
 }
 
 // Worker

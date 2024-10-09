@@ -35,6 +35,8 @@
     "./location/ui": "./src/modules/location/location.ui.tsx",
     "./mixpanel": "./src/modules/mixpanel.ts",
     "./object-storage": "./src/modules/object-storage/index.ts",
+    "./opportunities": "./src/modules/opportunity/opportunity.ts",
+    "./opportunities/types": "./src/modules/opportunity/opportunity.types.ts",
     "./referrals": "./src/modules/referral/referral.core.ts",
     "./referrals/ui": "./src/modules/referral/referral.ui.tsx",
     "./remix": "./src/modules/remix.ts",

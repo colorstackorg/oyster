@@ -24,6 +24,7 @@ const ROUTES = [
   '/login/otp/send',
   '/login/otp/verify',
   '/opportunities',
+  '/opportunities/:id',
   '/opportunities/:id/edit',
   '/points',
   '/profile',

@@ -1,5 +1,11 @@
-import { json, type LoaderFunctionArgs, redirect } from '@remix-run/node';
 import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+  redirect,
+} from '@remix-run/node';
+import {
+  generatePath,
   Form as RemixForm,
   useActionData,
   useFetcher,
@@ -10,6 +16,8 @@ import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
 import { useEffect, useState } from 'react';
 
+import { editOpportunity } from '@oyster/core/opportunities';
+import { EditOpportunityInput } from '@oyster/core/opportunities/types';
 import { db } from '@oyster/db';
 import {
   Button,
@@ -25,8 +33,8 @@ import {
   MultiComboboxSearch,
   MultiComboboxValues,
   Pill,
-  Select,
   Textarea,
+  validateForm,
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
@@ -88,8 +96,28 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   return json({ opportunity });
 }
 
-export async function action() {
-  return json({});
+export async function action({ params, request }: ActionFunctionArgs) {
+  const session = await ensureUserAuthenticated(request);
+
+  const { data, errors, ok } = await validateForm(
+    request,
+    EditOpportunityInput
+  );
+
+  if (!ok) {
+    return json({ errors }, { status: 400 });
+  }
+
+  const id = params.id as string;
+
+  await editOpportunity(id, {
+    closeDate: data.closeDate,
+    description: data.description,
+    tags: data.tags,
+    title: data.title,
+  });
+
+  return redirect(generatePath(Route['/opportunities/:id'], { id }));
 }
 
 export default function EditOpportunity() {
@@ -118,15 +146,15 @@ function EditOpportunityForm() {
 
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
-      <Form.Field error="" label="Type" labelFor="type" required>
+      {/* <Form.Field error="" label="Type" labelFor="type" required>
         <Select defaultValue={opportunity.type} id="type" name="type" required>
           <option value="job">Job (ie: Internship, Full-Time)</option>
           <option value="event">Event (ie: Conference, Workshop)</option>
           <option value="other">Other (ie: Program, Scholarship)</option>
         </Select>
-      </Form.Field>
+      </Form.Field> */}
 
-      <Form.Field error="" label="Title" labelFor="title" required>
+      <Form.Field error={errors.title} label="Title" labelFor="title" required>
         <Input
           defaultValue={opportunity.title}
           id="title"
@@ -135,7 +163,11 @@ function EditOpportunityForm() {
         />
       </Form.Field>
 
-      <Form.Field error="" label="Description" labelFor="description">
+      <Form.Field
+        error={errors.description}
+        label="Description"
+        labelFor="description"
+      >
         <Textarea
           defaultValue={opportunity.description || ''}
           id="description"
@@ -149,7 +181,7 @@ function EditOpportunityForm() {
 
       <Form.Field
         description="This is the date that the opportunity will be marked as closed."
-        error=""
+        error={errors.closeDate}
         label="Close Date"
         labelFor="closeDate"
         required
@@ -174,6 +206,7 @@ function EditOpportunityForm() {
 
 function TagsField() {
   const { opportunity } = useLoaderData<typeof loader>();
+  const { errors } = getErrors(useActionData<typeof action>());
 
   const createFetcher = useFetcher<unknown>();
   const listFetcher = useFetcher<{
@@ -196,7 +229,7 @@ function TagsField() {
   return (
     <Form.Field
       description="To categorize and help others find this opportunity."
-      error=""
+      error={errors.tags}
       label="Tags"
       labelFor="tags"
       required
