@@ -96,6 +96,8 @@ async function createOpportunity(input: CreateOpportunityInput) {
     </output>
 `;
 
+  // pull tag
+
   const completionResult = await getChatCompletion({
     maxTokens: 250,
     messages: [{ role: 'user', content: prompt }],
