@@ -44,6 +44,8 @@ export async function updateSlackEmail(id: string, email: string) {
  */
 
 export async function getMembersWithProfiles() {
+
+  try {
     const members = await db
     .selectFrom('students')
     .select(['id','email','joinedSlackAt','joinedMemberDirectoryAt'])
@@ -52,6 +54,11 @@ export async function getMembersWithProfiles() {
     .execute();
 
     return members
+  } catch (error) {
+    console.error('Failed to retrieve members with profiles', error )
+    return []
+  }
+
 
 }
 
@@ -72,9 +79,9 @@ export async function setMemberProfileToSlackUserProfile(id: string, memberDirec
         user: id,
       })
 
-      console.log('SuccessFully updated Slack Profile')
+      console.log(`SuccessFully updated Slack Profile${id}`)
     } catch (error) {
-      console.error('Failed To Update Slack Profile')
+      console.error(`Failed To Update Slack Profile ${id}`, error)
     }
 }
 
