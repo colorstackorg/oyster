@@ -3,7 +3,6 @@ import { ENV } from '@/shared/env';
 import { db } from '@oyster/db';
 import {generatePath} from '@remix-run/react'; 
 
-
 /**
  * @see https://api.slack.com/methods/users.lookupByEmail
  */
@@ -60,7 +59,7 @@ export async function setMemberProfileToSlackUserProfile(id: string, memberDirec
     try {
       const profile = {
         fields: {
-          X123: {
+          X123: { // unsure of what the field ID is called is it created?
             value: memberDirectoryURL,
             alt: 'Member Profile',
           }
@@ -79,3 +78,27 @@ export async function setMemberProfileToSlackUserProfile(id: string, memberDirec
     }
 }
 
+export async function updateSlackProfilesWithMemberURLS() {
+  const members = await getMembersWithProfiles();
+
+  for (const member of members) {
+    const {id, email} = member;
+
+    const slackUser = await getSlackUserByEmail(email)
+
+    if (slackUser && slackUser.id) {
+      const memberDirectoryURL = generatePath('/directory/:id', {id} )
+
+      await setMemberProfileToSlackUserProfile(slackUser.id, memberDirectoryURL);
+    } else {
+      console.log(`No Slack User Found for email: ${email}`)
+    }
+
+    await delay(10000);
+
+  }
+}
+
+function delay(ms: number) {
+  return new Promise( resolve => setTimeout (resolve, ms))
+}
