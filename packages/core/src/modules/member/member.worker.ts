@@ -14,6 +14,7 @@ import {
   AIRTABLE_FAMILY_BASE_ID,
   AIRTABLE_MEMBERS_TABLE_ID,
 } from '@/modules/airtable/airtable.core';
+import { sendCompanyReviewNotifications } from '@/modules/employment/use-cases/send-company-review-notifications';
 import { success } from '@/shared/utils/core.utils';
 import { onActivationStepCompleted } from './events/activation-step-completed';
 import { onMemberActivated } from './events/member-activated';
@@ -61,6 +62,12 @@ export const memberWorker = registerWorker(
       .with({ name: 'student.statuses.new' }, ({ data }) => {
         return createNewActiveStatuses(data);
       })
+      .with(
+        { name: 'student.company.review.notifications.weekly' },
+        ({ data: _ }) => {
+          return sendCompanyReviewNotifications();
+        }
+      )
       .exhaustive();
   }
 );
