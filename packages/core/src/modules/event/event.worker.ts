@@ -2,6 +2,7 @@ import { match } from 'ts-pattern';
 
 import { EventBullJob } from '@/infrastructure/bull/bull.types';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
+import { sendPreEventNotification } from '@/modules/event/use-cases/pre-event-notification';
 import { onEventAttended } from './events/event-attended';
 import { onRegisteredForEvent } from './events/event-registered';
 import { registerForEvent } from './use-cases/register-for-event';
@@ -27,6 +28,9 @@ export const eventWorker = registerWorker(
       })
       .with({ name: 'event.sync' }, ({ data }) => {
         return syncAirmeetEvent(data);
+      })
+      .with({ name: 'event.notification' }, ({ data }) => {
+        return sendPreEventNotification(data);
       })
       .exhaustive();
   }
