@@ -46,7 +46,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'companies.imageUrl',
         'companies.name',
         'companies.levelsFyiSlug',
-        'companies.leetcodeTagged',
+        'companies.leetcodeTaggedSlug',
       ],
       where: { id },
     }),
@@ -156,8 +156,8 @@ export default function CompanyPage() {
               <LevelsFyiLink slug={company.levelsFyiSlug} />
             )}
 
-            {company.leetcodeTagged && (
-              <LeetcodeTaggedLink slug={company.leetcodeTagged} />
+            {company.leetcodeTaggedSlug && (
+              <LeetcodeTaggedLink slug={company.leetcodeTaggedSlug} />
             )}
           </div>
 
