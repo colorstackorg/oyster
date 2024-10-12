@@ -46,6 +46,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'companies.imageUrl',
         'companies.name',
         'companies.levelsFyiSlug',
+        'companies.leetcodeTaggedSlug',
       ],
       where: { id },
     }),
@@ -154,6 +155,10 @@ export default function CompanyPage() {
             {company.levelsFyiSlug && (
               <LevelsFyiLink slug={company.levelsFyiSlug} />
             )}
+
+            {company.leetcodeTaggedSlug && (
+              <LeetcodeTaggedLink slug={company.leetcodeTaggedSlug} />
+            )}
           </div>
 
           <DomainLink domain={company.domain} />
@@ -211,6 +216,34 @@ function LevelsFyiLink({ slug }: LevelsFyiLinkProps) {
       </TooltipTrigger>
       <TooltipContent>
         <TooltipText>View Salary Information on Levels.fyi</TooltipText>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+type LeetcodeTaggedLinkProps = {
+  slug: string;
+};
+
+function LeetcodeTaggedLink({ slug }: LeetcodeTaggedLinkProps) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <a
+          className="mt-1"
+          href={slug}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <img
+            alt="Leetcode Logo"
+            className="h-4 w-4 cursor-pointer rounded-sm hover:opacity-90"
+            src="/images/leetcode.png"
+          />
+        </a>
+      </TooltipTrigger>
+      <TooltipContent>
+        <TooltipText>View Company Leetcode Problems</TooltipText>
       </TooltipContent>
     </Tooltip>
   );
