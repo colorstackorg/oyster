@@ -43,8 +43,7 @@ export async function updateSlackEmail(id: string, email: string) {
  * Retrieve all members with both Slack and Member Directory Profiles
  */
 
-export async function getMembersWithProfiles() {
-
+export async function getMembersWithProfilesandSlack() {
   try {
     const members = await db
     .selectFrom('students')
@@ -59,7 +58,6 @@ export async function getMembersWithProfiles() {
     return []
   }
 
-
 }
 
 export async function setMemberProfileToSlackUserProfile(id: string, memberDirectoryURL: string) {
@@ -68,7 +66,7 @@ export async function setMemberProfileToSlackUserProfile(id: string, memberDirec
         fields: {
           X123: { // unsure of what the field ID is called is it created?
             value: memberDirectoryURL,
-            alt: 'Member Profile',
+            alt: '',
           }
         }
       }
@@ -86,7 +84,7 @@ export async function setMemberProfileToSlackUserProfile(id: string, memberDirec
 }
 
 export async function updateSlackProfilesWithMemberURLS() {
-  const members = await getMembersWithProfiles();
+  const members = await getMembersWithProfilesandSlack();
 
   for (const member of members) {
     const {id, email} = member;
@@ -94,7 +92,7 @@ export async function updateSlackProfilesWithMemberURLS() {
     const slackUser = await getSlackUserByEmail(email)
 
     if (slackUser && slackUser.id) {
-      const memberDirectoryURL = generatePath('/directory/:id', {id} )
+      const memberDirectoryURL = generatePath(`/directory/:id`, {id} )
 
       await setMemberProfileToSlackUserProfile(slackUser.id, memberDirectoryURL);
     } else {
