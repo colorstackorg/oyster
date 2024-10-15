@@ -92,9 +92,12 @@ export async function updateSlackProfilesWithMemberURLS() {
     const slackUser = await getSlackUserByEmail(email)
 
     if (slackUser && slackUser.id) {
-      const memberDirectoryURL = generatePath(`/directory/:id`, {id} )
+      const baseURL = 'https://app.colorstack.io'
+      const memberDirectoryURL = `${baseURL}${generatePath(`/directory/:id`, {id})}`
 
       await setMemberProfileToSlackUserProfile(slackUser.id, memberDirectoryURL);
+
+      console.log(`Successfully updated Slack profile for user ${slackUser.id}`)
     } else {
       console.log(`No Slack User Found for email: ${email}`)
     }
