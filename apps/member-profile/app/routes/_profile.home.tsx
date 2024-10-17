@@ -374,8 +374,8 @@ function ActivationCard() {
 
       <Card.Description>
         You've completed {student.activationRequirementsCompleted.length}/6
-        activation requirements. Once you hit all 6, you will be eligible to
-        claim your FREE swag pack! 👀
+        activation requirements. Once you hit all 6, you will get a gift card to
+        claim your FREE merch! 👀
       </Card.Description>
 
       <Button.Group>

@@ -29,8 +29,8 @@ export async function checkMostRecentEducation(studentId: string) {
     ])
     .where('degreeType', '=', DegreeType.BACHELORS)
     .where('studentId', '=', studentId)
-    .orderBy('startDate', 'desc')
     .orderBy('endDate', 'desc')
+    .orderBy('startDate', 'desc')
     .executeTakeFirst();
 
   if (!education) {
