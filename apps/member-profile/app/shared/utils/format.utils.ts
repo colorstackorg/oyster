@@ -40,11 +40,11 @@ export function formatName({
  *
  **/
 export function formatRejectionReason(reason: string) {
-  if (!reason) return 'Something happened.';
+  if (!reason) return 'Requires argument `reason`';
 
   switch (reason) {
     case ApplicationRejectionReason.BAD_LINKEDIN:
-      return 'Incorrect or suspicious LinkedIn';
+      return 'Incomplete LinkedIn';
     case ApplicationRejectionReason.IS_INTERNATIONAL:
       return 'Not enrolled in US or Canada';
     case ApplicationRejectionReason.INELIGIBLE_MAJOR:
@@ -54,6 +54,6 @@ export function formatRejectionReason(reason: string) {
     case ApplicationRejectionReason.OTHER:
       return 'Other reason';
     default:
-      return reason || 'Other Reason';
+      return 'Invalid reason.';
   }
 }
