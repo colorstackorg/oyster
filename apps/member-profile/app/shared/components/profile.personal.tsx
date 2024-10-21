@@ -57,7 +57,7 @@ export function EthnicityField({
   name,
 }: FieldProps<Pick<Country, 'code' | 'demonym' | 'flagEmoji'>[]>) {
   return (
-    <Form.Field error={error} labelFor={name} label="Ethnicity/ies">
+    <Form.Field error={error} labelFor={name} label="Ethnicity">
       <EthnicityMultiCombobox
         defaultValues={defaultValue.map((ethnicity) => {
           return {
