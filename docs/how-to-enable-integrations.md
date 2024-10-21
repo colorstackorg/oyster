@@ -10,6 +10,7 @@ We have integrations with the following platforms:
 - Crunchbase (Company Database)
 - Google (Authentication)
 - Mailchimp (Email Marketing)
+- Pinecone (Vector Database)
 - Sentry (Error Monitoring)
 - Slack (Community Home, Authentication)
 - SwagUp (Swag Packs)
@@ -104,6 +105,18 @@ To enable the **Mailchimp** integration:
    MAILCHIMP_API_KEY
    MAILCHIMP_AUDIENCE_ID
    MAILCHIMP_SERVER_PREFIX
+   ```
+
+## Pinecone
+
+To enable the **Pinecone** integration:
+
+1. See
+   [this](https://docs.pinecone.io/guides/get-started/quickstart#2-get-an-api-key)
+   Pinecone documentation to generate an API key.
+2. In `/api/.env`, set the following variables:
+   ```
+   PINECONE_API_KEY
    ```
 
 ## Sentry
