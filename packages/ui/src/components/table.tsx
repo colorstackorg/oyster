@@ -68,6 +68,8 @@ type TableProps<T extends TableData = any> = {
    * @example 'No student found.'
    */
   emptyMessage?: string;
+
+  onRowClick?(row: T): void;
 };
 
 export const Table = ({
@@ -75,6 +77,7 @@ export const Table = ({
   columns,
   data,
   emptyMessage,
+  onRowClick,
 }: TableProps) => {
   return (
     <div className="overflow-auto rounded-lg border border-gray-200">
@@ -85,7 +88,12 @@ export const Table = ({
       ) : (
         <table className="w-full table-fixed border-separate border-spacing-0">
           <TableHead columns={columns} />
-          <TableBody columns={columns} data={data} Dropdown={Dropdown} />
+          <TableBody
+            columns={columns}
+            data={data}
+            Dropdown={Dropdown}
+            onRowClick={onRowClick}
+          />
         </table>
       )}
     </div>
@@ -139,9 +147,10 @@ function TableBody({
   columns,
   data,
   Dropdown,
-}: Pick<TableProps, 'columns' | 'data' | 'Dropdown'>) {
+  onRowClick,
+}: Pick<TableProps, 'columns' | 'data' | 'Dropdown' | 'onRowClick'>) {
   const dataCellCn = cx(
-    'whitespace-nowrap border-b border-b-gray-100 bg-white p-2'
+    'whitespace-nowrap border-b border-b-gray-100 p-2 group-hover:bg-gray-50'
   );
 
   return (
@@ -149,8 +158,32 @@ function TableBody({
       {data.map((row) => {
         return (
           <tr
-            className="border-b border-b-gray-100 last:border-b-0"
+            className="group border-b border-b-gray-100 last:border-b-0"
             key={row.id}
+            {...(onRowClick && {
+              'aria-label': 'View Details',
+              role: 'button',
+              tabIndex: 0,
+
+              onClick(e) {
+                const isInteractiveElement = (e.target as HTMLElement).closest(
+                  'a, button, [tabindex]:not([tabindex="-1"])'
+                );
+
+                // As long as the click target is actually the row, then we
+                // want to trigger the row click.
+                if (isInteractiveElement?.tagName === 'TR') {
+                  onRowClick(row);
+                }
+              },
+
+              onKeyDown(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onRowClick(row);
+                }
+              },
+            })}
           >
             {columns
               .filter((column) => !column.show || !!column.show())

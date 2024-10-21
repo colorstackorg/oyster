@@ -3,7 +3,13 @@ import {
   type LoaderFunctionArgs,
   type SerializeFrom,
 } from '@remix-run/node';
-import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
+import {
+  generatePath,
+  Link,
+  Outlet,
+  useLoaderData,
+  useNavigate,
+} from '@remix-run/react';
 import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
 import { useState } from 'react';
@@ -17,13 +23,8 @@ import {
   ProfilePicture,
   Table,
   type TableColumnProps,
+  Text,
 } from '@oyster/ui';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipText,
-  TooltipTrigger,
-} from '@oyster/ui/tooltip';
 
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
@@ -107,8 +108,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     .orderBy('opportunities.createdAt', 'desc')
     .execute();
 
-  // console.log(opportunities);
-
   return json({
     opportunities,
   });
@@ -132,40 +131,37 @@ type OpportunityInView = SerializeFrom<typeof loader>['opportunities'][number];
 
 function OpportunitiesTable() {
   const { opportunities } = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
 
   const columns: TableColumnProps<OpportunityInView>[] = [
     {
       displayName: 'Company',
-      size: '120',
+      size: '200',
       render: (opportunity) => {
         return (
           <ul>
             {(opportunity.companies || []).map((company) => {
               return (
                 <li className="w-fit" key={company.id}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Link
-                        className="w-fit cursor-pointer"
-                        target="_blank"
-                        to={generatePath(Route['/companies/:id'], {
-                          id: company.id,
-                        })}
-                      >
-                        <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
-                          <img
-                            alt={company.name}
-                            className="aspect-square h-full w-full rounded-md"
-                            src={company.logo as string}
-                          />
-                        </div>
-                      </Link>
-                    </TooltipTrigger>
+                  <Link
+                    className="w-fit cursor-pointer hover:underline"
+                    target="_blank"
+                    to={generatePath(Route['/companies/:id'], {
+                      id: company.id,
+                    })}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
+                        <img
+                          alt={company.name}
+                          className="aspect-square h-full w-full rounded-md"
+                          src={company.logo as string}
+                        />
+                      </div>
 
-                    <TooltipContent align="start">
-                      <TooltipText>{company.name}</TooltipText>
-                    </TooltipContent>
-                  </Tooltip>
+                      <Text variant="sm">{company.name}</Text>
+                    </div>
+                  </Link>
                 </li>
               );
             })}
@@ -187,18 +183,7 @@ function OpportunitiesTable() {
     {
       displayName: 'Title',
       size: '400',
-      render: (opportunity) => {
-        return (
-          <Link
-            className="link"
-            to={generatePath(Route['/opportunities/:id'], {
-              id: opportunity.id,
-            })}
-          >
-            {opportunity.title}
-          </Link>
-        );
-      },
+      render: (opportunity) => opportunity.title,
     },
     {
       displayName: 'Tags',
@@ -255,6 +240,9 @@ function OpportunitiesTable() {
       data={opportunities}
       emptyMessage="No opportunities found."
       Dropdown={OpportunityDropdown}
+      onRowClick={(row) => {
+        navigate(generatePath(Route['/opportunities/:id'], { id: row.id }));
+      }}
     />
   );
 }
