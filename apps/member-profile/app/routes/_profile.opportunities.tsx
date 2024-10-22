@@ -199,14 +199,8 @@ export default function OpportunitiesPage() {
 // TODO: Convert to popover.
 function TagFilter() {
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
   const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { tags: allTags } = useLoaderData<typeof loader>();
-
-  const filteredTags = allTags.filter((tag) => {
-    return tag.name.toLowerCase().startsWith(search.toLowerCase());
-  });
+  const [searchParams] = useSearchParams();
 
   useOnClickOutside(ref, () => {
     setOpen(false);
@@ -245,40 +239,64 @@ function TagFilter() {
         <ChevronDown className="ml-2 text-primary" size={16} />
       </button>
 
-      <div
-        className="absolute top-full z-10 mt-1 flex max-h-60 w-max flex-col gap-2 overflow-auto rounded-lg border border-gray-300 bg-white p-2 data-[open=false]:hidden"
-        data-open={open}
-      >
-        <input
-          autoComplete="off"
-          autoFocus
-          className="border-b border-b-gray-300 p-2 text-sm"
-          name="search"
-          onChange={(e) => {
-            setSearch(e.currentTarget.value);
-          }}
-          placeholder="Search..."
-          type="text"
-        />
+      {open && <TagPopover />}
+    </div>
+  );
+}
 
-        {filteredTags.length ? (
-          <ul>
-            {allTags
-              .filter((tag) => {
-                return tag.name.toLowerCase().includes(search.toLowerCase());
-              })
-              .map((tag) => {
-                return <TagItem key={tag.id} value={tag.name} />;
-              })}
-          </ul>
-        ) : (
-          <div className="p-2">
-            <Text color="gray-500" variant="sm">
-              No tags found.
-            </Text>
-          </div>
-        )}
-      </div>
+function TagPopover() {
+  const [search, setSearch] = useState('');
+  const { tags: allTags } = useLoaderData<typeof loader>();
+  const [searchParams] = useSearchParams();
+
+  const tagsFromSearch = searchParams.getAll('tag');
+
+  const filteredTags = allTags.filter((tag) => {
+    return tag.name.toLowerCase().startsWith(search.toLowerCase());
+  });
+
+  const selectedTags: typeof allTags = [];
+  const unselectedTags: typeof allTags = [];
+
+  filteredTags.forEach((tag) => {
+    if (tagsFromSearch.includes(tag.name)) {
+      selectedTags.push(tag);
+    } else {
+      unselectedTags.push(tag);
+    }
+  });
+
+  return (
+    <div className="absolute top-full z-10 mt-1 flex max-h-60 w-max flex-col gap-2 overflow-auto rounded-lg border border-gray-300 bg-white p-2">
+      <input
+        autoComplete="off"
+        autoFocus
+        className="border-b border-b-gray-300 p-2 text-sm"
+        name="search"
+        onChange={(e) => {
+          setSearch(e.currentTarget.value);
+        }}
+        placeholder="Search..."
+        type="text"
+      />
+
+      {filteredTags.length ? (
+        <ul>
+          {selectedTags.map((tag) => {
+            return <TagItem key={tag.id} value={tag.name} />;
+          })}
+
+          {unselectedTags.map((tag) => {
+            return <TagItem key={tag.id} value={tag.name} />;
+          })}
+        </ul>
+      ) : (
+        <div className="p-2">
+          <Text color="gray-500" variant="sm">
+            No tags found.
+          </Text>
+        </div>
+      )}
     </div>
   );
 }
