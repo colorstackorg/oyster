@@ -8,6 +8,7 @@ import { db, type DB } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { OpportunityBullJob } from '@/infrastructure/bull/bull.types';
+import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { getChatCompletion } from '@/modules/ai/ai';
 import { searchCrunchbaseOrganizations } from '@/modules/employment/queries/search-crunchbase-organizations';
@@ -33,7 +34,7 @@ type CreateOpportunityInput = Pick<
 async function createOpportunity(input: CreateOpportunityInput) {
   const slackMessage = await db
     .selectFrom('slackMessages')
-    .select(['studentId', 'text'])
+    .select(['studentId', 'text', 'userId as slackUserId'])
     .where('channelId', '=', input.slackChannelId)
     .where('id', '=', input.slackMessageId)
     .executeTakeFirst();
@@ -159,6 +160,19 @@ async function createOpportunity(input: CreateOpportunityInput) {
     }
 
     return opportunity;
+  });
+
+  const message = [
+    `Thank you for posting an opportunity in <#${input.slackChannelId}>, you're awesome! 🙂`,
+    `I've added it to our <https://app.colorstack.io/opportunities/${opportunity.id}|*opportunities*> board in the Member Profile, which will make it more discoverable for other members. 🔎 But I need your help...`,
+    `In order to automatically generate tags and a description of the opportunity, *can you please copy and paste the main content from the opportunity's website <https://app.colorstack.io/opportunities/${opportunity.id}/context|here>?*`,
+    'Thank you again!',
+  ].join('\n');
+
+  job('notification.slack.send', {
+    channel: slackMessage.slackUserId,
+    message,
+    workspace: 'regular',
   });
 
   return success(opportunity);
@@ -355,7 +369,7 @@ export async function updateOpportunityWithAI(
         title: aiObject.title,
       })
       .where('id', '=', opportunityId)
-      .returning(['id'])
+      .returning(['id', 'slackChannelId', 'slackMessageId'])
       .executeTakeFirstOrThrow();
 
     const tags = await trx
@@ -405,6 +419,18 @@ export async function updateOpportunityWithAI(
     }
 
     return opportunity;
+  });
+
+  const message = [
+    'I added this to our *Opportunities Database* in the Member Profile!',
+    `<https://app.colorstack.io/opportunities/${opportunity.id}>`,
+  ].join('\n\n');
+
+  job('notification.slack.send', {
+    channel: opportunity.slackChannelId,
+    message,
+    threadId: opportunity.slackMessageId,
+    workspace: 'regular',
   });
 
   return success(opportunity);

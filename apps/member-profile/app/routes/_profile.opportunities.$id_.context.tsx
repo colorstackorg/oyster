@@ -53,7 +53,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  const link = opportunity.text?.match(/<?(https?:\/\/[^\s>]+)>?/)?.[1];
+  const link = opportunity.text?.match(
+    /<(https?:\/\/[^\s|>]+)(?:\|[^>]+)?>/
+  )?.[1];
 
   if (!link) {
     throw new Response(null, {
@@ -150,7 +152,7 @@ function AddOpportunityContextForm() {
       >
         <Textarea
           id="content"
-          maxLength={5000}
+          maxLength={10000}
           minRows={10}
           name="content"
           required

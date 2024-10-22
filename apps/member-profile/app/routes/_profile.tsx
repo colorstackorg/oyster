@@ -81,6 +81,15 @@ export default function ProfileLayout() {
               pathname={Route['/directory']}
               prefetch="intent"
             />
+            {isOpportunitiesEnabled && (
+              <Dashboard.NavigationLink
+                icon={<DollarSign />}
+                isNew
+                label="Opportunities"
+                pathname={Route['/opportunities']}
+                prefetch="intent"
+              />
+            )}
             <Dashboard.NavigationLink
               icon={<Briefcase />}
               label="Companies"
@@ -93,17 +102,6 @@ export default function ProfileLayout() {
               pathname={Route['/resources']}
               prefetch="intent"
             />
-
-            {isOpportunitiesEnabled && (
-              <Dashboard.NavigationLink
-                icon={<DollarSign />}
-                isNew
-                label="Opportunities"
-                pathname={Route['/opportunities']}
-                prefetch="intent"
-              />
-            )}
-
             <Dashboard.NavigationLink
               icon={<Award />}
               label="Points"

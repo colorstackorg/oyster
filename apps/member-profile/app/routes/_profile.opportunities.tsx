@@ -566,7 +566,7 @@ function OpportunitiesTable() {
     },
     {
       displayName: 'Tags',
-      size: '320',
+      size: '360',
       render: (opportunity) => {
         const tags = opportunity.tags || [];
 
@@ -587,23 +587,25 @@ function OpportunitiesTable() {
         }
 
         return (
-          <ul className="overflow-scroll flex items-center gap-1">
-            {(opportunity.tags || []).map((tag) => {
-              return (
-                <li key={tag.id}>
-                  <Pill color="pink-100">{tag.name}</Pill>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="flex items-center gap-2">
+            <ul className="overflow-scroll line-clamp-1 flex items-center gap-1">
+              {tags.slice(0, 3).map((tag) => {
+                return (
+                  <li key={tag.id}>
+                    <Pill color="pink-100">{tag.name}</Pill>
+                  </li>
+                );
+              })}
+            </ul>
+
+            {tags.length > 3 ? (
+              <Text className="text-gray-500" variant="sm">
+                +{tags.length - 3} more...
+              </Text>
+            ) : null}
+          </div>
         );
       },
-    },
-
-    {
-      displayName: 'Date Posted',
-      size: '120',
-      render: (opportunity) => opportunity.createdAt,
     },
     {
       displayName: 'Posted By',
@@ -617,6 +619,11 @@ function OpportunitiesTable() {
           />
         );
       },
+    },
+    {
+      displayName: 'Date Posted',
+      size: '120',
+      render: (opportunity) => opportunity.createdAt,
     },
     {
       size: '80',
