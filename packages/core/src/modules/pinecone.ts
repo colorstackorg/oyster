@@ -6,9 +6,17 @@ const PINECONE_API_KEY = process.env.PINECONE_API_KEY as string;
 
 // Instances
 
-const pinecone = new Pinecone({
-  apiKey: PINECONE_API_KEY,
-});
+let pinecone: Pinecone;
+
+if (PINECONE_API_KEY) {
+  pinecone = new Pinecone({
+    apiKey: PINECONE_API_KEY,
+  });
+} else {
+  console.warn(
+    'PINECONE_API_KEY is not set. Vector database operations will not be available.'
+  );
+}
 
 // Types/Constants
 

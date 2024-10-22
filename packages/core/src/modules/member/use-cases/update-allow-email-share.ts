@@ -1,15 +1,32 @@
-import { type Transaction } from 'kysely';
+import { db } from '@oyster/db';
 
-import { type DB } from '@oyster/db';
+import { job } from '@/infrastructure/bull/use-cases/job';
+import {
+  AIRTABLE_FAMILY_BASE_ID,
+  AIRTABLE_MEMBERS_TABLE_ID,
+} from '@/modules/airtable/airtable.core';
 
 export async function updateAllowEmailShare(
-  trx: Transaction<DB>,
   id: string,
-  allowEmailShareBool: boolean
+  allowEmailShare: boolean
 ) {
-  await trx
-    .updateTable('students')
-    .set({ allowEmailShare: allowEmailShareBool })
-    .where('id', '=', id)
-    .execute();
+  const member = await db.transaction().execute(async (trx) => {
+    return trx
+      .updateTable('students')
+      .set({ allowEmailShare })
+      .where('id', '=', id)
+      .returning(['airtableId'])
+      .executeTakeFirstOrThrow();
+  });
+
+  if (member.airtableId) {
+    job('airtable.record.update', {
+      airtableBaseId: AIRTABLE_FAMILY_BASE_ID!,
+      airtableRecordId: member.airtableId,
+      airtableTableId: AIRTABLE_MEMBERS_TABLE_ID!,
+      data: {
+        'Share Email w/ Chapters': allowEmailShare,
+      },
+    });
+  }
 }

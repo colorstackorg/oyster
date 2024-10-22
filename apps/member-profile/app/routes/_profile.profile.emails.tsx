@@ -20,7 +20,6 @@ import {
   updateAllowEmailShare,
 } from '@oyster/core/member-profile/server';
 import { buildMeta } from '@oyster/core/remix';
-import { db } from '@oyster/db';
 import {
   Button,
   Checkbox,
@@ -87,9 +86,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  await db.transaction().execute(async (trx) => {
-    await updateAllowEmailShare(trx, user(session), data.allowEmailShare);
-  });
+  await updateAllowEmailShare(user(session), data.allowEmailShare);
 
   toast(session, {
     message: 'Updated!',
