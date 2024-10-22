@@ -39,135 +39,142 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const { searchParams } = new URL(request.url);
-  const tags = searchParams.getAll('tag');
-
-  console.log(tags);
-
   const memberId = user(session);
 
-  const opportunities = await db
-    .selectFrom('opportunities')
-    .leftJoin('slackMessages', (join) => {
-      return join
-        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
-        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
-    })
-    .leftJoin('students', 'students.id', 'opportunities.postedBy')
-    .select([
-      'opportunities.description',
-      'opportunities.id',
-      'opportunities.title',
-      'opportunities.type',
-      'slackMessages.text as slackMessage',
-      'students.id as posterId',
-      'students.firstName as posterFirstName',
-      'students.lastName as posterLastName',
-      'students.profilePicture as posterProfilePicture',
+  const tagsFromSearch = searchParams.getAll('tag');
 
-      ({ ref }) => {
-        const field = ref('opportunities.createdAt');
-        const format = 'MM/D/YY';
+  const [tags, opportunities] = await Promise.all([
+    db
+      .selectFrom('opportunityTags')
+      .select(['id', 'name'])
+      .orderBy('name', 'asc')
+      .execute(),
 
-        return sql<string>`to_char(${field}, ${format})`.as('createdAt');
-      },
+    db
+      .selectFrom('opportunities')
+      .leftJoin('slackMessages', (join) => {
+        return join
+          .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
+          .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
+      })
+      .leftJoin('students', 'students.id', 'opportunities.postedBy')
+      .select([
+        'opportunities.description',
+        'opportunities.id',
+        'opportunities.title',
+        'opportunities.type',
+        'slackMessages.text as slackMessage',
+        'students.id as posterId',
+        'students.firstName as posterFirstName',
+        'students.lastName as posterLastName',
+        'students.profilePicture as posterProfilePicture',
 
-      (eb) => {
-        return eb
-          .selectFrom('opportunityTags')
-          .leftJoin(
-            'opportunityTagAssociations as associations',
-            'associations.tagId',
-            'opportunityTags.id'
-          )
-          .whereRef('associations.opportunityId', '=', 'opportunities.id')
-          .select(({ fn, ref }) => {
-            const object = jsonBuildObject({
-              id: ref('opportunityTags.id'),
-              name: ref('opportunityTags.name'),
-            });
+        ({ ref }) => {
+          const field = ref('opportunities.createdAt');
+          const format = 'MM/D/YY';
 
-            return fn
-              .jsonAgg(sql`${object} order by ${ref('name')} asc`)
-              .$castTo<Array<{ id: string; name: string }>>()
-              .as('tags');
-          })
-          .as('tags');
-      },
+          return sql<string>`to_char(${field}, ${format})`.as('createdAt');
+        },
 
-      (eb) => {
-        return eb
-          .selectFrom('opportunityCompanies')
-          .leftJoin(
-            'companies',
-            'companies.id',
-            'opportunityCompanies.companyId'
-          )
-          .whereRef('opportunityId', '=', 'opportunities.id')
-          .select(({ fn, ref }) => {
-            const object = jsonBuildObject({
-              id: ref('companies.id'),
-              name: ref('companies.name'),
-              logo: ref('companies.imageUrl'),
-            });
-
-            return fn
-              .jsonAgg(object)
-              .$castTo<Array<{ id: string; name: string; logo: string }>>()
-              .as('companies');
-          })
-          .as('companies');
-      },
-
-      (eb) => {
-        return eb
-          .selectFrom('opportunityBookmarks')
-          .whereRef('opportunityId', '=', 'opportunities.id')
-          .select((eb) => {
-            return eb.fn.countAll<string>().as('count');
-          })
-          .as('bookmarks');
-      },
-
-      (eb) => {
-        return eb
-          .exists(() => {
-            return eb
-              .selectFrom('opportunityBookmarks')
-              .whereRef('opportunityId', '=', 'opportunities.id')
-              .where('opportunityBookmarks.studentId', '=', memberId);
-          })
-          .as('bookmarked');
-      },
-    ])
-    .$if(!!tags.length, (qb) => {
-      return qb.where((eb) => {
-        return eb.exists((eb) => {
+        (eb) => {
           return eb
-            .selectFrom('opportunityTagAssociations')
+            .selectFrom('opportunityTags')
             .leftJoin(
-              'opportunityTags',
-              'opportunityTags.id',
-              'opportunityTagAssociations.tagId'
+              'opportunityTagAssociations as associations',
+              'associations.tagId',
+              'opportunityTags.id'
             )
-            .whereRef(
-              'opportunityTagAssociations.opportunityId',
-              '=',
-              'opportunities.id'
+            .whereRef('associations.opportunityId', '=', 'opportunities.id')
+            .select(({ fn, ref }) => {
+              const object = jsonBuildObject({
+                id: ref('opportunityTags.id'),
+                name: ref('opportunityTags.name'),
+              });
+
+              return fn
+                .jsonAgg(sql`${object} order by ${ref('name')} asc`)
+                .$castTo<Array<{ id: string; name: string }>>()
+                .as('tags');
+            })
+            .as('tags');
+        },
+
+        (eb) => {
+          return eb
+            .selectFrom('opportunityCompanies')
+            .leftJoin(
+              'companies',
+              'companies.id',
+              'opportunityCompanies.companyId'
             )
-            .groupBy('opportunities.id')
-            .having(
-              sql`array_agg(opportunity_tags.name)`,
-              '@>',
-              sql<string[]>`${tags}`
-            );
+            .whereRef('opportunityId', '=', 'opportunities.id')
+            .select(({ fn, ref }) => {
+              const object = jsonBuildObject({
+                id: ref('companies.id'),
+                name: ref('companies.name'),
+                logo: ref('companies.imageUrl'),
+              });
+
+              return fn
+                .jsonAgg(object)
+                .$castTo<Array<{ id: string; name: string; logo: string }>>()
+                .as('companies');
+            })
+            .as('companies');
+        },
+
+        (eb) => {
+          return eb
+            .selectFrom('opportunityBookmarks')
+            .whereRef('opportunityId', '=', 'opportunities.id')
+            .select((eb) => {
+              return eb.fn.countAll<string>().as('count');
+            })
+            .as('bookmarks');
+        },
+
+        (eb) => {
+          return eb
+            .exists(() => {
+              return eb
+                .selectFrom('opportunityBookmarks')
+                .whereRef('opportunityId', '=', 'opportunities.id')
+                .where('opportunityBookmarks.studentId', '=', memberId);
+            })
+            .as('bookmarked');
+        },
+      ])
+      .$if(!!tagsFromSearch.length, (qb) => {
+        return qb.where((eb) => {
+          return eb.exists((eb) => {
+            return eb
+              .selectFrom('opportunityTagAssociations')
+              .leftJoin(
+                'opportunityTags',
+                'opportunityTags.id',
+                'opportunityTagAssociations.tagId'
+              )
+              .whereRef(
+                'opportunityTagAssociations.opportunityId',
+                '=',
+                'opportunities.id'
+              )
+              .groupBy('opportunities.id')
+              .having(
+                sql`array_agg(opportunity_tags.name)`,
+                '@>',
+                sql<string[]>`${tagsFromSearch}`
+              );
+          });
         });
-      });
-    })
-    .orderBy('opportunities.createdAt', 'desc')
-    .execute();
+      })
+      .orderBy('opportunities.createdAt', 'desc')
+      .execute(),
+  ]);
 
   return json({
     opportunities,
+    tags,
   });
 }
 
@@ -192,8 +199,14 @@ export default function OpportunitiesPage() {
 // TODO: Convert to popover.
 function TagFilter() {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
   const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const { tags: allTags } = useLoaderData<typeof loader>();
+
+  const filteredTags = allTags.filter((tag) => {
+    return tag.name.toLowerCase().startsWith(search.toLowerCase());
+  });
 
   useOnClickOutside(ref, () => {
     setOpen(false);
@@ -233,19 +246,38 @@ function TagFilter() {
       </button>
 
       <div
-        className="absolute top-full z-10 mt-1 max-h-60 w-max overflow-auto rounded-lg border border-gray-300 bg-white data-[open=false]:hidden"
+        className="absolute top-full z-10 mt-1 flex max-h-60 w-max flex-col gap-2 overflow-auto rounded-lg border border-gray-300 bg-white p-2 data-[open=false]:hidden"
         data-open={open}
       >
-        <div className="p-2">
-          <Input name="search" placeholder="Search..." type="text" />
-        </div>
+        <input
+          autoComplete="off"
+          autoFocus
+          className="border-b border-b-gray-300 p-2 text-sm"
+          name="search"
+          onChange={(e) => {
+            setSearch(e.currentTarget.value);
+          }}
+          placeholder="Search..."
+          type="text"
+        />
 
-        <ul>
-          <TagItem value="Data Science" />
-          <TagItem value="Internship" />
-          <TagItem value="New Grad" />
-          <TagItem value="SWE" />
-        </ul>
+        {filteredTags.length ? (
+          <ul>
+            {allTags
+              .filter((tag) => {
+                return tag.name.toLowerCase().includes(search.toLowerCase());
+              })
+              .map((tag) => {
+                return <TagItem key={tag.id} value={tag.name} />;
+              })}
+          </ul>
+        ) : (
+          <div className="p-2">
+            <Text color="gray-500" variant="sm">
+              No tags found.
+            </Text>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -257,7 +289,7 @@ function TagItem({ value }: { value: string }) {
   const tags = searchParams.getAll('tag');
 
   return (
-    <li className="hover:bg-gray-50">
+    <li className="rounded-lg hover:bg-gray-50">
       <button
         className="flex w-full items-center justify-between gap-4 px-2 py-3 text-left text-sm"
         onClick={(e) => {
