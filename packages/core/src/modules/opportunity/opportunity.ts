@@ -186,6 +186,30 @@ async function findOrCreateCompany(trx: Transaction<DB>, companyName: string) {
   return companyId;
 }
 
+export async function bookmarkOpportunity(
+  opportunityId: string,
+  memberId: string
+) {
+  await db.transaction().execute(async (trx) => {
+    const existingBookmark = await trx
+      .deleteFrom('opportunityBookmarks')
+      .where('opportunityId', '=', opportunityId)
+      .where('studentId', '=', memberId)
+      .executeTakeFirst();
+
+    if (existingBookmark.numDeletedRows) {
+      return;
+    }
+
+    await trx
+      .insertInto('opportunityBookmarks')
+      .values({ opportunityId, studentId: memberId })
+      .execute();
+  });
+
+  return success({});
+}
+
 export async function createOpportunityTag(input: CreateOpportunityTagInput) {
   await db.transaction().execute(async (trx) => {
     await trx

@@ -88,9 +88,27 @@ export async function up(db: Kysely<any>) {
       'tag_id',
     ])
     .execute();
+
+  await db.schema
+    .createTable('opportunity_bookmarks')
+    .addColumn('opportunity_id', 'text', (column) => {
+      return column
+        .notNull()
+        .references('opportunities.id')
+        .onDelete('cascade');
+    })
+    .addColumn('student_id', 'text', (column) => {
+      return column.notNull().references('students.id').onDelete('cascade');
+    })
+    .addPrimaryKeyConstraint('opportunity_bookmarks_pkey', [
+      'opportunity_id',
+      'student_id',
+    ])
+    .execute();
 }
 
 export async function down(db: Kysely<any>) {
+  await db.schema.dropTable('opportunity_bookmarks').execute();
   await db.schema.dropTable('opportunity_tag_associations').execute();
   await db.schema.dropTable('opportunity_tags').execute();
   await db.schema.dropTable('opportunity_companies').execute();

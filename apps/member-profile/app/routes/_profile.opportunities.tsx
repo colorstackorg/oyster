@@ -7,20 +7,21 @@ import {
   generatePath,
   Link,
   Outlet,
+  Form as RemixForm,
   useLoaderData,
   useNavigate,
 } from '@remix-run/react';
 import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
 import { useState } from 'react';
-import { Bookmark, Edit, Plus } from 'react-feather';
+import { Bookmark, Edit, Plus, Trash } from 'react-feather';
 
 import { db } from '@oyster/db';
 import {
-  Button,
   Dashboard,
   Dropdown,
   getButtonCn,
+  IconButton,
   Pill,
   ProfilePicture,
   Table,
@@ -29,10 +30,12 @@ import {
 } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
+
+  const memberId = user(session);
 
   const opportunities = await db
     .selectFrom('opportunities')
@@ -105,6 +108,27 @@ export async function loader({ request }: LoaderFunctionArgs) {
               .as('companies');
           })
           .as('companies');
+      },
+
+      (eb) => {
+        return eb
+          .selectFrom('opportunityBookmarks')
+          .whereRef('opportunityId', '=', 'opportunities.id')
+          .select((eb) => {
+            return eb.fn.countAll<string>().as('count');
+          })
+          .as('bookmarks');
+      },
+
+      (eb) => {
+        return eb
+          .exists(() => {
+            return eb
+              .selectFrom('opportunityBookmarks')
+              .whereRef('opportunityId', '=', 'opportunities.id')
+              .where('opportunityBookmarks.studentId', '=', memberId);
+          })
+          .as('bookmarked');
       },
     ])
     .orderBy('opportunities.createdAt', 'desc')
@@ -238,7 +262,44 @@ function OpportunitiesTable() {
         );
       },
     },
+    {
+      displayName: '',
+      size: '80',
+      render: (opportunity) => {
+        return (
+          <RemixForm
+            action={generatePath('/opportunities/:id/bookmark', {
+              id: opportunity.id,
+            })}
+            method="post"
+            navigate={false}
+          >
+            <Text
+              className="flex items-center gap-0.5 text-gray-300"
+              variant="sm"
+            >
+              <IconButton
+                className="hover:bg-gray-100 hover:text-amber-400 data-[bookmarked=true]:text-amber-400"
+                data-bookmarked={!!opportunity.bookmarked}
+                icon={
+                  <Bookmark
+                    color="currentColor"
+                    fill={opportunity.bookmarked ? 'currentColor' : 'none'}
+                    size={20}
+                  />
+                }
+                name="action"
+                type="submit"
+                value="bookmark"
+              />
+              {opportunity.bookmarks}
+            </Text>
 
+            <input type="hidden" name="opportunityId" value={opportunity.id} />
+          </RemixForm>
+        );
+      },
+    },
     // {
     //   displayName: 'Date',
     //   size: '160',
