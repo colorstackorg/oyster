@@ -13,12 +13,14 @@ import {
 import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
 import { useState } from 'react';
-import { Bookmark, Edit } from 'react-feather';
+import { Bookmark, Edit, Plus } from 'react-feather';
 
 import { db } from '@oyster/db';
 import {
+  Button,
   Dashboard,
   Dropdown,
+  getButtonCn,
   Pill,
   ProfilePicture,
   Table,
@@ -189,6 +191,21 @@ function OpportunitiesTable() {
       displayName: 'Tags',
       size: '320',
       render: (opportunity) => {
+        const tags = opportunity.tags || [];
+
+        if (!tags.length) {
+          return (
+            <Link
+              className={getButtonCn({ size: 'xs', variant: 'secondary' })}
+              to={generatePath(Route['/opportunities/:id/context'], {
+                id: opportunity.id,
+              })}
+            >
+              Add Tags <Plus size={16} />
+            </Link>
+          );
+        }
+
         return (
           <ul className="overflow-scroll flex items-center gap-1">
             {(opportunity.tags || []).map((tag) => {
@@ -268,6 +285,7 @@ function OpportunityDropdown({ id }: OpportunityInView) {
                 <Edit /> Edit Opportunity
               </Link>
             </Dropdown.Item>
+
             <Dropdown.Item>
               <Link to="">
                 <Bookmark /> Bookmark Opportunity

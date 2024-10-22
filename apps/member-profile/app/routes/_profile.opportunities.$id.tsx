@@ -1,12 +1,17 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, useSearchParams } from '@remix-run/react';
+import {
+  generatePath,
+  Link,
+  useLoaderData,
+  useSearchParams,
+} from '@remix-run/react';
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
 import { emojify } from 'node-emoji';
 
 import { db } from '@oyster/db';
-import { Modal } from '@oyster/ui';
+import { Divider, Modal, Pill, Text } from '@oyster/ui';
 
 import {
   SlackMessage,
@@ -77,6 +82,30 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           })
           .as('tags');
       },
+
+      (eb) => {
+        return eb
+          .selectFrom('opportunityCompanies')
+          .leftJoin(
+            'companies',
+            'companies.id',
+            'opportunityCompanies.companyId'
+          )
+          .whereRef('opportunityId', '=', 'opportunities.id')
+          .select(({ fn, ref }) => {
+            const object = jsonBuildObject({
+              id: ref('companies.id'),
+              name: ref('companies.name'),
+              logo: ref('companies.imageUrl'),
+            });
+
+            return fn
+              .jsonAgg(object)
+              .$castTo<Array<{ id: string; name: string; logo: string }>>()
+              .as('companies');
+          })
+          .as('companies');
+      },
     ])
     .where('opportunities.id', '=', params.id as string)
     .executeTakeFirst();
@@ -106,6 +135,8 @@ export default function EditOpportunity() {
   const { opportunity } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
 
+  const company = opportunity.companies?.[0];
+
   return (
     <Modal
       onCloseTo={{
@@ -114,9 +145,49 @@ export default function EditOpportunity() {
       }}
     >
       <Modal.Header>
-        <Modal.Title>{opportunity.title}</Modal.Title>
+        <div className="flex flex-col gap-2">
+          {company && (
+            <Link
+              className="w-fit cursor-pointer hover:underline"
+              target="_blank"
+              to={generatePath(Route['/companies/:id'], {
+                id: company.id,
+              })}
+            >
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
+                  <img
+                    alt={company.name}
+                    className="aspect-square h-full w-full rounded-md"
+                    src={company.logo as string}
+                  />
+                </div>
+
+                <Text variant="sm">{company.name}</Text>
+              </div>
+            </Link>
+          )}
+
+          <Text variant="lg">{opportunity.title}</Text>
+        </div>
         <Modal.CloseButton />
       </Modal.Header>
+
+      {opportunity.tags && (
+        <ul className="flex flex-wrap items-center gap-1">
+          {opportunity.tags.map((tag) => {
+            return (
+              <li key={tag.id}>
+                <Pill color="pink-100">{tag.name}</Pill>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {opportunity.description && (
+        <Text color="gray-500">{opportunity.description}</Text>
+      )}
 
       <SlackMessageCard
         channelId={opportunity.slackMessageChannelId || ''}
