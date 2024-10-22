@@ -13,13 +13,11 @@ import {
 } from '@remix-run/react';
 import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
-import { useState } from 'react';
-import { Bookmark, Edit, Plus, Trash } from 'react-feather';
+import { Bookmark, Plus } from 'react-feather';
 
 import { db } from '@oyster/db';
 import {
   Dashboard,
-  Dropdown,
   getButtonCn,
   IconButton,
   Pill,
@@ -263,53 +261,49 @@ function OpportunitiesTable() {
       },
     },
     {
-      displayName: '',
       size: '80',
+      sticky: true,
       render: (opportunity) => {
         return (
-          <RemixForm
-            action={generatePath('/opportunities/:id/bookmark', {
-              id: opportunity.id,
-            })}
-            method="post"
-            navigate={false}
-          >
-            <Text
-              className="flex items-center gap-0.5 text-gray-300"
-              variant="sm"
+          <div className="mx-auto flex w-fit items-center gap-2">
+            <RemixForm
+              action={generatePath('/opportunities/:id/bookmark', {
+                id: opportunity.id,
+              })}
+              method="post"
+              navigate={false}
             >
-              <IconButton
-                className="hover:bg-gray-100 hover:text-amber-400 data-[bookmarked=true]:text-amber-400"
-                data-bookmarked={!!opportunity.bookmarked}
-                icon={
-                  <Bookmark
-                    color="currentColor"
-                    fill={opportunity.bookmarked ? 'currentColor' : 'none'}
-                    size={20}
-                  />
-                }
-                name="action"
-                type="submit"
-                value="bookmark"
-              />
-              {opportunity.bookmarks}
-            </Text>
+              <Text
+                className="flex items-center gap-0.5 text-gray-300"
+                variant="sm"
+              >
+                <IconButton
+                  className="hover:bg-gray-100 hover:text-amber-400 data-[bookmarked=true]:text-amber-400"
+                  data-bookmarked={!!opportunity.bookmarked}
+                  icon={
+                    <Bookmark
+                      color="currentColor"
+                      fill={opportunity.bookmarked ? 'currentColor' : 'none'}
+                      size={20}
+                    />
+                  }
+                  name="action"
+                  type="submit"
+                  value="bookmark"
+                />
+                {opportunity.bookmarks}
+              </Text>
 
-            <input type="hidden" name="opportunityId" value={opportunity.id} />
-          </RemixForm>
+              <input
+                type="hidden"
+                name="opportunityId"
+                value={opportunity.id}
+              />
+            </RemixForm>
+          </div>
         );
       },
     },
-    // {
-    //   displayName: 'Date',
-    //   size: '160',
-    //   render: (event) => event.date,
-    // },
-    // {
-    //   displayName: 'Time',
-    //   render: (event) => `${event.startTime} - ${event.endTime}`,
-    //   size: '200',
-    // },
   ];
 
   return (
@@ -317,46 +311,9 @@ function OpportunitiesTable() {
       columns={columns}
       data={opportunities}
       emptyMessage="No opportunities found."
-      Dropdown={OpportunityDropdown}
       onRowClick={(row) => {
         navigate(generatePath(Route['/opportunities/:id'], { id: row.id }));
       }}
     />
-  );
-}
-
-function OpportunityDropdown({ id }: OpportunityInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onOpen() {
-    setOpen(true);
-  }
-
-  return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link to={generatePath(Route['/opportunities/:id/edit'], { id })}>
-                <Edit /> Edit Opportunity
-              </Link>
-            </Dropdown.Item>
-
-            <Dropdown.Item>
-              <Link to="">
-                <Bookmark /> Bookmark Opportunity
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
-
-      <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
   );
 }

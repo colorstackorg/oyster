@@ -89,13 +89,17 @@ function FeatureFlagsTable() {
       size: '800',
       render: (flag) => flag.description,
     },
+    {
+      size: '48',
+      sticky: true,
+      render: FeatureFlagsTableDropdown,
+    },
   ];
 
   return (
     <Table
       columns={columns}
       data={flags}
-      Dropdown={FeatureFlagsTableDropdown}
       emptyMessage="No feature flags found."
     />
   );

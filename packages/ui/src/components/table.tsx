@@ -10,7 +10,7 @@ import { cx } from '../utils/cx';
 type TableData = Record<string, unknown>;
 
 export type TableColumnProps<T extends TableData> = {
-  displayName: string;
+  displayName?: string;
 
   /**
    * Allows us to be flexible in rendering cells that aren't simply just
@@ -25,6 +25,7 @@ export type TableColumnProps<T extends TableData> = {
   show?(): boolean;
 
   size:
+    | '48'
     | '80'
     | '120'
     | '160'
@@ -35,16 +36,12 @@ export type TableColumnProps<T extends TableData> = {
     | '360'
     | '400'
     | '800';
-};
 
-type TableDropdownProps<T extends TableData> = T & {
-  onOpen(): void;
+  sticky?: boolean;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TableProps<T extends TableData = any> = {
-  Dropdown?(props: TableDropdownProps<T>): JSX.Element | null;
-
   /**
    * Array of columns that will be used to build the table's headers.
    *
@@ -73,7 +70,6 @@ type TableProps<T extends TableData = any> = {
 };
 
 export const Table = ({
-  Dropdown,
   columns,
   data,
   emptyMessage,
@@ -88,12 +84,7 @@ export const Table = ({
       ) : (
         <table className="w-full table-fixed border-separate border-spacing-0">
           <TableHead columns={columns} />
-          <TableBody
-            columns={columns}
-            data={data}
-            Dropdown={Dropdown}
-            onRowClick={onRowClick}
-          />
+          <TableBody columns={columns} data={data} onRowClick={onRowClick} />
         </table>
       )}
     </div>
@@ -102,22 +93,34 @@ export const Table = ({
 
 function TableHead({ columns }: Pick<TableProps, 'columns'>) {
   const headerCellCn = cx(
-    'top-0 z-10 border-b border-b-gray-200 bg-gray-50 p-2 py-3 text-left'
+    'top-0 border-b border-b-gray-200 bg-gray-50 p-2 py-3 text-left'
   );
+
+  const filteredColumns = columns.filter((column) => {
+    return !column.show || !!column.show();
+  });
+
+  const hasStickyColumn = filteredColumns[filteredColumns.length - 1].sticky;
+
+  const emptyColumn = <th className={headerCellCn} />;
 
   return (
     <thead>
       <tr>
-        {columns
-          .filter((column) => !column.show || !!column.show())
-          .map((column) => {
-            return (
+        {filteredColumns.map((column, i) => {
+          const key = column.displayName || i;
+
+          return (
+            <React.Fragment key={key}>
+              {column.sticky && emptyColumn}
+
               <th
-                key={column.displayName}
                 className={cx(
                   headerCellCn,
+                  column.sticky && 'sticky right-0',
                   'text-sm font-medium text-gray-700',
                   match(column.size)
+                    .with('48', () => 'w-[48px]')
                     .with('80', () => 'w-[80px]')
                     .with('120', () => 'w-[120px]')
                     .with('160', () => 'w-[160px]')
@@ -133,11 +136,11 @@ function TableHead({ columns }: Pick<TableProps, 'columns'>) {
               >
                 {column.displayName}
               </th>
-            );
-          })}
+            </React.Fragment>
+          );
+        })}
 
-        <th className={headerCellCn}></th>
-        <th className={cx(headerCellCn, 'right-0 w-12 px-0')} />
+        {!hasStickyColumn && emptyColumn}
       </tr>
     </thead>
   );
@@ -146,19 +149,27 @@ function TableHead({ columns }: Pick<TableProps, 'columns'>) {
 function TableBody({
   columns,
   data,
-  Dropdown,
   onRowClick,
-}: Pick<TableProps, 'columns' | 'data' | 'Dropdown' | 'onRowClick'>) {
+}: Pick<TableProps, 'columns' | 'data' | 'onRowClick'>) {
   const dataCellCn = cx(
-    'whitespace-nowrap border-b border-b-gray-100 bg-white p-2 group-hover:bg-gray-50'
+    'whitespace-nowrap border-b border-b-gray-100 bg-white p-2',
+    onRowClick && 'group-hover:bg-gray-50'
   );
+
+  const filteredColumns = columns.filter((column) => {
+    return !column.show || !!column.show();
+  });
+
+  const hasStickyColumn = filteredColumns[filteredColumns.length - 1].sticky;
+
+  const emptyColumn = <td className={dataCellCn} />;
 
   return (
     <tbody>
       {data.map((row) => {
         return (
           <tr
-            className="group border-b border-b-gray-100 last:border-b-0"
+            className="group cursor-default border-b border-b-gray-100 last:border-b-0"
             key={row.id}
             {...(onRowClick && {
               'aria-label': 'View Details',
@@ -187,25 +198,27 @@ function TableBody({
           >
             {columns
               .filter((column) => !column.show || !!column.show())
-              .map((column) => {
+              .map((column, i) => {
+                const key = (column.displayName || i) + row.id;
+
                 return (
-                  <td
-                    className={cx(
-                      dataCellCn,
-                      'overflow-hidden text-ellipsis text-left'
-                    )}
-                    key={column.displayName + row.id}
-                  >
-                    {column.render(row)}
-                  </td>
+                  <React.Fragment key={key}>
+                    {column.sticky && emptyColumn}
+
+                    <td
+                      className={cx(
+                        dataCellCn,
+                        column.sticky && 'sticky right-0',
+                        'overflow-hidden text-ellipsis text-left'
+                      )}
+                    >
+                      {column.render(row)}
+                    </td>
+                  </React.Fragment>
                 );
               })}
 
-            <td className={dataCellCn}></td>
-
-            <td className={cx(dataCellCn, 'sticky right-0')}>
-              {!!Dropdown && <Dropdown {...row} />}
-            </td>
+            {!hasStickyColumn && emptyColumn}
           </tr>
         );
       })}

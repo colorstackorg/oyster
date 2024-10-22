@@ -164,6 +164,11 @@ function ResumeBooksTable() {
         );
       },
     },
+    {
+      size: '48',
+      sticky: true,
+      render: ResumeBookDropdown,
+    },
   ];
 
   return (
@@ -171,7 +176,6 @@ function ResumeBooksTable() {
       columns={columns}
       data={resumeBooks}
       emptyMessage="No resume books found."
-      Dropdown={ResumeBookDropdown}
     />
   );
 }

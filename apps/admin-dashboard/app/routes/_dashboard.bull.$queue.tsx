@@ -431,13 +431,17 @@ function RepeatablesTable() {
       size: '200',
       render: (repeatable) => repeatable.tz,
     },
+    {
+      size: '48',
+      sticky: true,
+      render: RepeatableDropdown,
+    },
   ];
 
   return (
     <Table
       columns={columns}
       data={repeatables}
-      Dropdown={RepeatableDropdown}
       emptyMessage="No repeatables found."
     />
   );
@@ -588,16 +592,14 @@ function JobsTable() {
       size: '200',
       render: (job) => job.processedAt || '-',
     },
+    {
+      size: '48',
+      render: JobDropdown,
+      sticky: true,
+    },
   ];
 
-  return (
-    <Table
-      columns={columns}
-      data={jobs}
-      emptyMessage="No jobs found."
-      Dropdown={JobDropdown}
-    />
-  );
+  return <Table columns={columns} data={jobs} emptyMessage="No jobs found." />;
 }
 
 function JobDropdown({ id, status }: JobInView) {

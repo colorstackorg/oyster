@@ -189,15 +189,15 @@ function EventsTable() {
       render: (event) => `${event.startTime} - ${event.endTime}`,
       size: '200',
     },
+    {
+      size: '48',
+      sticky: true,
+      render: EventDropdown,
+    },
   ];
 
   return (
-    <Table
-      columns={columns}
-      data={events}
-      emptyMessage="No events found."
-      Dropdown={EventDropdown}
-    />
+    <Table columns={columns} data={events} emptyMessage="No events found." />
   );
 }
 

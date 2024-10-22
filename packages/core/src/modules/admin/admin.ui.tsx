@@ -131,21 +131,21 @@ export function AdminTable({ admins }: AdminTableProps) {
         );
       },
     },
-  ];
-
-  return (
-    <Table
-      columns={columns}
-      data={admins}
-      emptyMessage="No admins found."
-      Dropdown={(row) => {
-        if (!row.canRemove) {
+    {
+      size: '48',
+      render: (admin) => {
+        if (!admin.canRemove) {
           return null;
         }
 
-        return <AdminDropdown {...row} />;
-      }}
-    />
+        return <AdminDropdown {...admin} />;
+      },
+      sticky: true,
+    },
+  ];
+
+  return (
+    <Table columns={columns} data={admins} emptyMessage="No admins found." />
   );
 }
 
