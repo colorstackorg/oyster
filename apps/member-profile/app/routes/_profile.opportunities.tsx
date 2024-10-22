@@ -10,21 +10,26 @@ import {
   Form as RemixForm,
   useLoaderData,
   useNavigate,
+  useSearchParams,
 } from '@remix-run/react';
 import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
-import { Bookmark, Plus } from 'react-feather';
+import { useRef, useState } from 'react';
+import { Bookmark, Check, ChevronDown, Plus, Tag } from 'react-feather';
 
 import { db } from '@oyster/db';
 import {
+  cx,
   Dashboard,
   getButtonCn,
   IconButton,
+  Input,
   Pill,
   ProfilePicture,
   Table,
   type TableColumnProps,
   Text,
+  useOnClickOutside,
 } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
@@ -32,6 +37,11 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
+
+  const { searchParams } = new URL(request.url);
+  const tags = searchParams.getAll('tag');
+
+  console.log(tags);
 
   const memberId = user(session);
 
@@ -129,6 +139,30 @@ export async function loader({ request }: LoaderFunctionArgs) {
           .as('bookmarked');
       },
     ])
+    .$if(!!tags.length, (qb) => {
+      return qb.where((eb) => {
+        return eb.exists((eb) => {
+          return eb
+            .selectFrom('opportunityTagAssociations')
+            .leftJoin(
+              'opportunityTags',
+              'opportunityTags.id',
+              'opportunityTagAssociations.tagId'
+            )
+            .whereRef(
+              'opportunityTagAssociations.opportunityId',
+              '=',
+              'opportunities.id'
+            )
+            .groupBy('opportunities.id')
+            .having(
+              sql`array_agg(opportunity_tags.name)`,
+              '@>',
+              sql<string[]>`${tags}`
+            );
+        });
+      });
+    })
     .orderBy('opportunities.createdAt', 'desc')
     .execute();
 
@@ -144,10 +178,109 @@ export default function OpportunitiesPage() {
         <Dashboard.Title>Opportunities 💰</Dashboard.Title>
       </Dashboard.Header>
 
+      <Dashboard.Subheader>
+        <TagFilter />
+      </Dashboard.Subheader>
+
       <OpportunitiesTable />
 
       <Outlet />
     </>
+  );
+}
+
+// TODO: Convert to popover.
+function TagFilter() {
+  const [open, setOpen] = useState(false);
+  const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useOnClickOutside(ref, () => {
+    setOpen(false);
+  });
+
+  const tags = searchParams.getAll('tag');
+
+  const currentTagElements = tags.length ? (
+    <ul className="flex items-center gap-1">
+      {tags.map((tag) => {
+        return (
+          <li key={tag}>
+            <Pill color="pink-100">{tag}</Pill>
+          </li>
+        );
+      })}
+    </ul>
+  ) : null;
+
+  // sort the checked ones to the top
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        className={cx(
+          'flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm',
+          'focus:border-primary'
+        )}
+        onClick={() => {
+          setOpen((value) => !value);
+        }}
+        type="button"
+      >
+        <Tag className="text-primary" size={16} /> <span>Tags</span>
+        {!!tags.length && currentTagElements}
+        <ChevronDown className="ml-2 text-primary" size={16} />
+      </button>
+
+      <div
+        className="absolute top-full z-10 mt-1 max-h-60 w-max overflow-auto rounded-lg border border-gray-300 bg-white data-[open=false]:hidden"
+        data-open={open}
+      >
+        <div className="p-2">
+          <Input name="search" placeholder="Search..." type="text" />
+        </div>
+
+        <ul>
+          <TagItem value="Data Science" />
+          <TagItem value="Internship" />
+          <TagItem value="New Grad" />
+          <TagItem value="SWE" />
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function TagItem({ value }: { value: string }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const tags = searchParams.getAll('tag');
+
+  return (
+    <li className="hover:bg-gray-50">
+      <button
+        className="flex w-full items-center justify-between gap-4 px-2 py-3 text-left text-sm"
+        onClick={(e) => {
+          setSearchParams((params) => {
+            if (params.getAll('tag').includes(e.currentTarget.value)) {
+              params.delete('tag', e.currentTarget.value);
+            } else {
+              params.append('tag', e.currentTarget.value);
+            }
+
+            return params;
+          });
+        }}
+        value={value}
+      >
+        {value}{' '}
+        <Check
+          className="text-primary data-[checked=false]:invisible"
+          data-checked={tags.includes(value)}
+          size={20}
+        />
+      </button>
+    </li>
   );
 }
 
