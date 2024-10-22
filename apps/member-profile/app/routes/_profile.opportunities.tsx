@@ -12,10 +12,19 @@ import {
   useNavigate,
   useSearchParams,
 } from '@remix-run/react';
+import dayjs from 'dayjs';
 import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
 import { useRef, useState } from 'react';
-import { Bookmark, Check, ChevronDown, Plus, Tag } from 'react-feather';
+import {
+  Bookmark,
+  Calendar,
+  Check,
+  ChevronDown,
+  Plus,
+  Tag,
+} from 'react-feather';
+import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
 import {
@@ -23,7 +32,6 @@ import {
   Dashboard,
   getButtonCn,
   IconButton,
-  Input,
   Pill,
   ProfilePicture,
   Table,
@@ -33,6 +41,7 @@ import {
 } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -41,6 +50,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url);
   const memberId = user(session);
 
+  const bookmarked = searchParams.has('bookmarked');
+  const date = searchParams.get('date');
   const tagsFromSearch = searchParams.getAll('tag');
 
   const [tags, opportunities] = await Promise.all([
@@ -168,6 +179,58 @@ export async function loader({ request }: LoaderFunctionArgs) {
           });
         });
       })
+      .$if(!!bookmarked, (qb) => {
+        return qb.where((eb) => {
+          return eb.exists(() => {
+            return eb
+              .selectFrom('opportunityBookmarks')
+              .whereRef(
+                'opportunityBookmarks.opportunityId',
+                '=',
+                'opportunities.id'
+              )
+              .where('opportunityBookmarks.studentId', '=', memberId);
+          });
+        });
+      })
+      .$if(!!date, (qb) => {
+        if (
+          ![
+            'Today',
+            'Last Week',
+            'Last Month',
+            'Last 3 Months',
+            'Last 6 Months',
+          ].includes(date as string)
+        ) {
+          return qb;
+        }
+
+        const tz = getTimezone(request);
+        const startOfToday = dayjs().tz(tz).startOf('day');
+
+        const comparison = match(date)
+          .with('Today', () => {
+            return startOfToday.toDate();
+          })
+          .with('Last Week', () => {
+            return startOfToday.subtract(1, 'week').toDate();
+          })
+          .with('Last Month', () => {
+            return startOfToday.subtract(1, 'month').toDate();
+          })
+          .with('Last 3 Months', () => {
+            return startOfToday.subtract(3, 'month').toDate();
+          })
+          .with('Last 6 Months', () => {
+            return startOfToday.subtract(6, 'month').toDate();
+          })
+          .otherwise(() => {
+            return startOfToday.toDate();
+          });
+
+        return qb.where('opportunities.createdAt', '>=', comparison);
+      })
       .orderBy('opportunities.createdAt', 'desc')
       .execute(),
   ]);
@@ -185,9 +248,11 @@ export default function OpportunitiesPage() {
         <Dashboard.Title>Opportunities 💰</Dashboard.Title>
       </Dashboard.Header>
 
-      <Dashboard.Subheader>
+      <div className="flex items-center gap-2">
+        <BookmarkFilter />
         <TagFilter />
-      </Dashboard.Subheader>
+        <DateFilter />
+      </div>
 
       <OpportunitiesTable />
 
@@ -196,7 +261,113 @@ export default function OpportunitiesPage() {
   );
 }
 
+function BookmarkFilter() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const bookmarked = searchParams.has('bookmarked');
+
+  return (
+    <button
+      className={cx(
+        'flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm',
+        bookmarked && 'border-primary bg-primary text-white'
+      )}
+      onClick={() => {
+        setSearchParams((params) => {
+          if (params.has('bookmarked')) {
+            params.delete('bookmarked');
+          } else {
+            params.set('bookmarked', '1');
+          }
+
+          return params;
+        });
+      }}
+      type="button"
+    >
+      <Bookmark className={bookmarked ? '' : 'text-primary'} size={16} />{' '}
+      <span>Bookmarked</span>
+    </button>
+  );
+}
+
 // TODO: Convert to popover.
+function DateFilter() {
+  const [open, setOpen] = useState(false);
+  const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
+  const [searchParams] = useSearchParams();
+
+  useOnClickOutside(ref, () => {
+    setOpen(false);
+  });
+
+  const date = searchParams.get('date');
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        className={cx(
+          'flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm',
+          'focus:border-primary'
+        )}
+        onClick={() => {
+          setOpen((value) => !value);
+        }}
+        type="button"
+      >
+        <Calendar className="text-primary" size={16} /> <span>Date Posted</span>
+        {!!date && <Pill color="pink-100">{date}</Pill>}
+        <ChevronDown className="ml-2 text-primary" size={16} />
+      </button>
+
+      {open && (
+        <div className="absolute top-full z-10 mt-1 flex max-h-60 w-max flex-col gap-2 overflow-auto rounded-lg border border-gray-300 bg-white p-2">
+          <ul>
+            <DateItem value="Today" />
+            <DateItem value="Last Week" />
+            <DateItem value="Last Month" />
+            <DateItem value="Last 3 Months" />
+            <DateItem value="Last 6 Months" />
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DateItem({ value }: { value: string }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const date = searchParams.get('date');
+
+  return (
+    <li className="rounded-lg hover:bg-gray-50">
+      <button
+        className="flex w-full items-center justify-between gap-4 px-2 py-3 text-left text-sm"
+        onClick={(e) => {
+          setSearchParams((params) => {
+            if (params.get('date') === e.currentTarget.value) {
+              params.delete('date');
+            } else {
+              params.set('date', e.currentTarget.value);
+            }
+
+            return params;
+          });
+        }}
+        value={value}
+      >
+        {value}{' '}
+        <Check
+          className="text-primary data-[checked=false]:invisible"
+          data-checked={date === value}
+          size={20}
+        />
+      </button>
+    </li>
+  );
+}
+
 function TagFilter() {
   const [open, setOpen] = useState(false);
   const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
@@ -338,6 +509,7 @@ type OpportunityInView = SerializeFrom<typeof loader>['opportunities'][number];
 
 function OpportunitiesTable() {
   const { opportunities } = useLoaderData<typeof loader>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const columns: TableColumnProps<OpportunityInView>[] = [
@@ -402,9 +574,12 @@ function OpportunitiesTable() {
           return (
             <Link
               className={getButtonCn({ size: 'xs', variant: 'secondary' })}
-              to={generatePath(Route['/opportunities/:id/context'], {
-                id: opportunity.id,
-              })}
+              to={{
+                pathname: generatePath(Route['/opportunities/:id/context'], {
+                  id: opportunity.id,
+                }),
+                search: searchParams.toString(),
+              }}
             >
               Add Tags <Plus size={16} />
             </Link>
@@ -495,7 +670,10 @@ function OpportunitiesTable() {
       data={opportunities}
       emptyMessage="No opportunities found."
       onRowClick={(row) => {
-        navigate(generatePath(Route['/opportunities/:id'], { id: row.id }));
+        navigate({
+          pathname: generatePath(Route['/opportunities/:id'], { id: row.id }),
+          search: searchParams.toString(),
+        });
       }}
     />
   );
