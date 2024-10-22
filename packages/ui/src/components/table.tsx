@@ -150,7 +150,7 @@ function TableBody({
   onRowClick,
 }: Pick<TableProps, 'columns' | 'data' | 'Dropdown' | 'onRowClick'>) {
   const dataCellCn = cx(
-    'whitespace-nowrap border-b border-b-gray-100 p-2 group-hover:bg-gray-50'
+    'whitespace-nowrap border-b border-b-gray-100 bg-white p-2 group-hover:bg-gray-50'
   );
 
   return (
