@@ -3,6 +3,7 @@ import {
   Link,
   Outlet,
   Form as RemixForm,
+  useFetcher,
   useLoaderData,
   useSearchParams,
   useSubmit,
@@ -36,6 +37,9 @@ import { Resource } from '@/shared/components/resource';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
+import { type SearchTagsResult } from '@/routes/api.tags.search';
+import { getAllTags } from '@/modules/resource/queries/list-tags';
+import { useEffect, useState } from 'react';
 
 const whereKeys = ListResourcesWhere.keyof().enum;
 
@@ -196,6 +200,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return result;
   });
 
+  const allTags = await listTags({
+    pagination: { limit: 50, page: 1 }, // hardcoded limit
+    select: ['tags.name', 'tags.id'],
+    where: {},
+  });
+
   track({
     event: 'Page Viewed',
     properties: { Page: 'Resources' },
@@ -210,6 +220,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     resources,
     tags,
     totalCount,
+    allTags,
   });
 }
 
@@ -226,6 +237,7 @@ export default function ResourcesPage() {
           <ExistingSearchParams exclude={['page']} />
         </Dashboard.SearchForm>
         <SortResourcesForm />
+        <SortTagsResourcesForm />
       </section>
 
       <CurrentTagsList />
@@ -274,6 +286,47 @@ function SortResourcesForm() {
       >
         <option value={sortKeys.newest}>Newest</option>
         <option value={sortKeys.most_upvotes}>Most Upvotes</option>
+      </Select>
+
+      <ExistingSearchParams exclude={['orderBy']} />
+    </RemixForm>
+  );
+}
+
+// WORK FROM HERE HERE HERE _____---------------=================================
+function SortTagsResourcesForm() {
+  // const listFetcher = useFetcher<SearchTagsResult>();
+  const { allTags } = useLoaderData<typeof loader>();
+  const [currentTag, setCurrentTag] = useState('');
+  console.log(allTags);
+  // console.log(allTags);
+
+  const submit = useSubmit();
+  // useEffect(() => {
+  //   listFetcher.load('/api/tags/search');
+  // }, []);
+  // console.log(listFetcher);
+  // const tags = listFetcher.data?.tags || [];
+  // console.log(tags, 'tags');
+
+  return (
+    <RemixForm
+      className="flex min-w-[12rem] items-center gap-4"
+      method="get"
+      onChange={(e) => submit(e.currentTarget)}
+    >
+      <Select
+        name="findByTag "
+        id="findByTag"
+        placeholder="Find by tags"
+        required
+        width="fit"
+      >
+        {allTags.map((tag) => (
+          <option value={tag.id} color="pink-100" key={tag.id}>
+            {tag.name}
+          </option>
+        ))}
       </Select>
 
       <ExistingSearchParams exclude={['orderBy']} />
