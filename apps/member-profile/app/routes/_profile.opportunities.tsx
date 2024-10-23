@@ -20,6 +20,7 @@ import {
   Calendar,
   Check,
   ChevronDown,
+  Circle,
   Plus,
   Tag,
 } from 'react-feather';
@@ -54,6 +55,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const bookmarked = searchParams.has('bookmarked');
   const date = searchParams.get('date');
+  const status = searchParams.get('status');
   const tagsFromSearch = searchParams.getAll('tag');
 
   const [tags, opportunities] = await Promise.all([
@@ -87,6 +89,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
           const format = 'MM/DD/YY';
 
           return sql<string>`to_char(${field}, ${format})`.as('createdAt');
+        },
+
+        ({ ref }) => {
+          const field = ref('opportunities.expiresAt');
+          const format = 'MM/DD/YY';
+
+          return sql<string>`to_char(${field}, ${format})`.as('expiresAt');
         },
 
         (eb) => {
@@ -233,6 +242,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
         return qb.where('opportunities.createdAt', '>=', comparison);
       })
+      .$if(!!status, (qb) => {
+        return match(status)
+          .with('All', () => {
+            return qb;
+          })
+          .with('Open', () => {
+            return qb.where('opportunities.expiresAt', '>', sql<Date>`now()`);
+          })
+          .with('Expired', () => {
+            return qb.where('opportunities.expiresAt', '<', sql<Date>`now()`);
+          })
+          .otherwise(() => {
+            return qb;
+          });
+      })
       .orderBy('opportunities.createdAt', 'desc')
       .execute(),
   ]);
@@ -250,10 +274,11 @@ export default function OpportunitiesPage() {
         <Dashboard.Title>Opportunities 💰</Dashboard.Title>
       </Dashboard.Header>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <BookmarkFilter />
         <TagFilter />
         <DateFilter />
+        <StatusFilter />
       </div>
 
       <OpportunitiesTable />
@@ -290,6 +315,80 @@ function BookmarkFilter() {
       <Bookmark className={bookmarked ? '' : 'text-primary'} size={16} />{' '}
       <span>Bookmarked</span>
     </button>
+  );
+}
+
+function StatusFilter() {
+  const [open, setOpen] = useState(false);
+  const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
+  const [searchParams] = useSearchParams();
+
+  useOnClickOutside(ref, () => {
+    setOpen(false);
+  });
+
+  const status = searchParams.get('status');
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        className={cx(
+          'flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm',
+          'focus:border-primary'
+        )}
+        onClick={() => {
+          setOpen((value) => !value);
+        }}
+        type="button"
+      >
+        <Circle className="text-primary" size={16} /> <span>Status</span>
+        {!!status && <Pill color="pink-100">{status}</Pill>}
+        <ChevronDown className="ml-2 text-primary" size={16} />
+      </button>
+
+      {open && (
+        <div className="absolute top-full z-10 mt-1 flex max-h-60 w-max flex-col gap-2 overflow-auto rounded-lg border border-gray-300 bg-white p-2">
+          <ul>
+            <StatusItem value="All" />
+            <StatusItem value="Open" />
+            <StatusItem value="Expired" />
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatusItem({ value }: { value: string }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const status = searchParams.get('status');
+
+  return (
+    <li className="rounded-lg hover:bg-gray-50">
+      <button
+        className="flex w-full items-center justify-between gap-4 px-2 py-3 text-left text-sm"
+        onClick={(e) => {
+          setSearchParams((params) => {
+            if (params.get('status') === e.currentTarget.value) {
+              params.delete('status');
+            } else {
+              params.set('status', e.currentTarget.value);
+            }
+
+            return params;
+          });
+        }}
+        value={value}
+      >
+        {value}{' '}
+        <Check
+          className="text-primary data-[checked=false]:invisible"
+          data-checked={status === value}
+          size={20}
+        />
+      </button>
+    </li>
   );
 }
 
@@ -623,9 +722,14 @@ function OpportunitiesTable() {
       },
     },
     {
-      displayName: 'Date Posted',
+      displayName: 'Posted On',
       size: '120',
       render: (opportunity) => opportunity.createdAt,
+    },
+    {
+      displayName: 'Expires On',
+      size: '120',
+      render: (opportunity) => opportunity.expiresAt,
     },
     {
       size: '80',
