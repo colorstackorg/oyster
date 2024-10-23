@@ -17,6 +17,7 @@ import { jsonBuildObject } from 'kysely/helpers/postgres';
 import { useRef, useState } from 'react';
 import {
   Bookmark,
+  Briefcase,
   Calendar,
   Check,
   ChevronDown,
@@ -59,7 +60,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const status = searchParams.get('status');
   const tagsFromSearch = searchParams.getAll('tag');
 
-  const [tags, opportunities] = await Promise.all([
+  const [filteredCompany, companies, tags, opportunities] = await Promise.all([
+    company
+      ? db
+          .selectFrom('companies')
+          .select(['name'])
+          .where('companies.id', '=', company)
+          .executeTakeFirst()
+      : null,
+
+    db
+      .selectFrom('companies')
+      .select(['id', 'name', 'imageUrl'])
+      .orderBy('name', 'asc')
+      .execute(),
+
     db
       .selectFrom('opportunityTags')
       .select(['id', 'name'])
@@ -246,6 +261,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   ]);
 
   return json({
+    companies,
+    filteredCompany,
     opportunities,
     tags,
   });
@@ -261,6 +278,7 @@ export default function OpportunitiesPage() {
       <div className="flex flex-wrap items-center gap-2">
         <BookmarkFilter />
         <TagFilter />
+        <CompanyFilter />
         <DateFilter />
         <StatusFilter />
       </div>
@@ -299,6 +317,117 @@ function BookmarkFilter() {
       <Bookmark className={bookmarked ? '' : 'text-primary'} size={16} />{' '}
       <span>Bookmarked</span>
     </button>
+  );
+}
+
+function CompanyFilter() {
+  const [open, setOpen] = useState(false);
+  const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
+  const [searchParams] = useSearchParams();
+  const { filteredCompany } = useLoaderData<typeof loader>();
+
+  useOnClickOutside(ref, () => {
+    setOpen(false);
+  });
+
+  const company = searchParams.get('company');
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        className={cx(
+          'flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm',
+          'focus:border-primary'
+        )}
+        onClick={() => {
+          setOpen((value) => !value);
+        }}
+        type="button"
+      >
+        <Briefcase className="text-primary" size={16} /> <span>Company</span>
+        {!!filteredCompany && (
+          <Pill color="pink-100">{filteredCompany.name}</Pill>
+        )}
+        <ChevronDown className="ml-2 text-primary" size={16} />
+      </button>
+
+      {open && <CompanyPopover />}
+    </div>
+  );
+}
+
+function CompanyPopover() {
+  const [search, setSearch] = useState('');
+  const [searchParams] = useSearchParams();
+  const { companies } = useLoaderData<typeof loader>();
+
+  return (
+    <div className="absolute top-full z-10 mt-1 flex max-h-60 w-max flex-col gap-2 overflow-auto rounded-lg border border-gray-300 bg-white p-2">
+      <input
+        autoComplete="off"
+        autoFocus
+        className="border-b border-b-gray-300 p-2 text-sm"
+        name="search"
+        onChange={(e) => {
+          setSearch(e.currentTarget.value);
+        }}
+        placeholder="Search..."
+        type="text"
+      />
+
+      {companies.length ? (
+        <ul>
+          {companies.map((company) => {
+            return (
+              <CompanyItem
+                key={company.id}
+                id={company.id}
+                name={company.name}
+              />
+            );
+          })}
+        </ul>
+      ) : (
+        <div className="p-2">
+          <Text color="gray-500" variant="sm">
+            No companies found.
+          </Text>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CompanyItem({ id, name }: { id: string; name: string }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const tags = searchParams.getAll('tag');
+
+  return (
+    <li className="rounded-lg hover:bg-gray-50">
+      <button
+        className="flex w-full items-center justify-between gap-4 px-2 py-3 text-left text-sm"
+        onClick={(e) => {
+          setSearchParams((params) => {
+            if (params.get('company') === e.currentTarget.value) {
+              params.delete('company');
+            } else {
+              params.set('company', e.currentTarget.value);
+            }
+
+            return params;
+          });
+        }}
+        value={id}
+      >
+        {name}{' '}
+        <Check
+          className="text-primary data-[checked=false]:invisible"
+          data-checked={tags.includes(id)}
+          size={20}
+        />
+      </button>
+    </li>
   );
 }
 

@@ -27,6 +27,23 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const memberId = user(session);
 
+  // either was posted by the member or the member is an admin
+  const hasEditPermission = await db
+    .selectFrom('opportunities')
+    .where('opportunities.id', '=', params.id as string)
+    .where((eb) => {
+      return eb.or([
+        eb('opportunities.postedBy', '=', memberId),
+        eb.exists(() => {
+          return eb
+            .selectFrom('admins')
+            .where('admins.memberId', '=', memberId)
+            .where('admins.deletedAt', 'is not', null);
+        }),
+      ]);
+    })
+    .executeTakeFirst();
+
   const opportunity = await db
     .selectFrom('opportunities')
     .leftJoin('companies', 'companies.id', 'opportunities.companyId')
@@ -128,7 +145,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     slackMessagePostedAt: dayjs().to(opportunity.slackMessagePostedAt),
   });
 
-  return json({ opportunity });
+  return json({ hasEditPermission, opportunity });
 }
 
 export async function action() {
@@ -136,7 +153,7 @@ export async function action() {
 }
 
 export default function EditOpportunity() {
-  const { opportunity } = useLoaderData<typeof loader>();
+  const { hasEditPermission, opportunity } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
 
   return (
@@ -188,19 +205,23 @@ export default function EditOpportunity() {
         </div>
 
         <div className="flex items-center gap-[inherit]">
-          <Link
-            className={getIconButtonCn({
-              backgroundColor: 'gray-100',
-              backgroundColorOnHover: 'gray-200',
-            })}
-            to={generatePath(Route['/opportunities/:id/edit'], {
-              id: opportunity.id,
-            })}
-          >
-            <Edit />
-          </Link>
+          {hasEditPermission && (
+            <>
+              <Link
+                className={getIconButtonCn({
+                  backgroundColor: 'gray-100',
+                  backgroundColorOnHover: 'gray-200',
+                })}
+                to={generatePath(Route['/opportunities/:id/edit'], {
+                  id: opportunity.id,
+                })}
+              >
+                <Edit />
+              </Link>
 
-          <div className="h-6 w-[1px] bg-gray-100" />
+              <div className="h-6 w-[1px] bg-gray-100" />
+            </>
+          )}
 
           <Modal.CloseButton />
         </div>

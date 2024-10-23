@@ -40,10 +40,35 @@ import { id } from '@oyster/utils';
 
 import { CompanyCombobox } from '@/shared/components/company-combobox';
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
+
+  const memberId = user(session);
+
+  const hasEditPermission = await db
+    .selectFrom('opportunities')
+    .where('opportunities.id', '=', params.id as string)
+    .where((eb) => {
+      return eb.or([
+        eb('opportunities.postedBy', '=', memberId),
+        eb.exists(() => {
+          return eb
+            .selectFrom('admins')
+            .where('admins.memberId', '=', memberId)
+            .where('admins.deletedAt', 'is not', null);
+        }),
+      ]);
+    })
+    .executeTakeFirst();
+
+  if (!hasEditPermission) {
+    throw new Response(null, {
+      status: 403,
+      statusText: 'You do not have permission to edit this opportunity.',
+    });
+  }
 
   const opportunity = await db
     .selectFrom('opportunities')
@@ -51,11 +76,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     .select([
       'companies.crunchbaseId as companyCrunchbaseId',
       'companies.name as companyName',
-      'description',
-      'expiresAt as closeDate',
-      'id',
-      'title',
-      'type',
+      'opportunities.description',
+      'opportunities.expiresAt as closeDate',
+      'opportunities.id',
+      'opportunities.title',
+      'opportunities.type',
 
       ({ ref }) => {
         const field = ref('expiresAt');
@@ -87,7 +112,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           .as('tags');
       },
     ])
-    .where('id', '=', params.id as string)
+    .where('opportunities.id', '=', params.id as string)
     .executeTakeFirst();
 
   if (!opportunity) {
