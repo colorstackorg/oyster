@@ -3,6 +3,9 @@ import { type Kysely, sql } from 'kysely';
 export async function up(db: Kysely<any>) {
   await db.schema
     .createTable('opportunities')
+    .addColumn('company_id', 'text', (column) => {
+      return column.references('companies.id').onDelete('set null');
+    })
     .addColumn('created_at', 'timestamptz', (column) => {
       return column.notNull().defaultTo(sql`now()`);
     })
@@ -111,6 +114,5 @@ export async function down(db: Kysely<any>) {
   await db.schema.dropTable('opportunity_bookmarks').execute();
   await db.schema.dropTable('opportunity_tag_associations').execute();
   await db.schema.dropTable('opportunity_tags').execute();
-  await db.schema.dropTable('opportunity_companies').execute();
   await db.schema.dropTable('opportunities').execute();
 }

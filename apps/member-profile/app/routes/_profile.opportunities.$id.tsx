@@ -29,6 +29,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const opportunity = await db
     .selectFrom('opportunities')
+    .leftJoin('companies', 'companies.id', 'opportunities.companyId')
     .leftJoin('students', 'students.id', 'opportunities.postedBy')
     .leftJoin('slackMessages', (join) => {
       return join
@@ -36,6 +37,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
     })
     .select([
+      'companies.id as companyId',
+      'companies.imageUrl as companyLogo',
+      'companies.name as companyName',
       'opportunities.description',
       'opportunities.expiresAt as closeDate',
       'opportunities.id',
@@ -88,30 +92,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
       (eb) => {
         return eb
-          .selectFrom('opportunityCompanies')
-          .leftJoin(
-            'companies',
-            'companies.id',
-            'opportunityCompanies.companyId'
-          )
-          .whereRef('opportunityId', '=', 'opportunities.id')
-          .select(({ fn, ref }) => {
-            const object = jsonBuildObject({
-              id: ref('companies.id'),
-              name: ref('companies.name'),
-              logo: ref('companies.imageUrl'),
-            });
-
-            return fn
-              .jsonAgg(object)
-              .$castTo<Array<{ id: string; name: string; logo: string }>>()
-              .as('companies');
-          })
-          .as('companies');
-      },
-
-      (eb) => {
-        return eb
           .selectFrom('opportunityBookmarks')
           .whereRef('opportunityId', '=', 'opportunities.id')
           .select((eb) => {
@@ -159,8 +139,6 @@ export default function EditOpportunity() {
   const { opportunity } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
 
-  const company = opportunity.companies?.[0];
-
   return (
     <Modal
       onCloseTo={{
@@ -170,24 +148,24 @@ export default function EditOpportunity() {
     >
       <Modal.Header>
         <div className="flex flex-col gap-2">
-          {company && (
+          {opportunity.companyId && opportunity.companyName && (
             <Link
               className="w-fit cursor-pointer hover:underline"
               target="_blank"
               to={generatePath(Route['/companies/:id'], {
-                id: company.id,
+                id: opportunity.companyId,
               })}
             >
               <div className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
                   <img
-                    alt={company.name}
+                    alt={opportunity.companyName}
                     className="aspect-square h-full w-full rounded-md"
-                    src={company.logo as string}
+                    src={opportunity.companyLogo as string}
                   />
                 </div>
 
-                <Text variant="sm">{company.name}</Text>
+                <Text variant="sm">{opportunity.companyName}</Text>
               </div>
             </Link>
           )}

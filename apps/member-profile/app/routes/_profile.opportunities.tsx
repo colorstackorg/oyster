@@ -67,6 +67,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     db
       .selectFrom('opportunities')
+      .leftJoin('companies', 'companies.id', 'opportunities.companyId')
       .leftJoin('slackMessages', (join) => {
         return join
           .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
@@ -74,6 +75,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
       })
       .leftJoin('students', 'students.id', 'opportunities.postedBy')
       .select([
+        'companies.id as companyId',
+        'companies.name as companyName',
+        'companies.imageUrl as companyLogo',
         'opportunities.description',
         'opportunities.id',
         'opportunities.title',
@@ -119,30 +123,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
                 .as('tags');
             })
             .as('tags');
-        },
-
-        (eb) => {
-          return eb
-            .selectFrom('opportunityCompanies')
-            .leftJoin(
-              'companies',
-              'companies.id',
-              'opportunityCompanies.companyId'
-            )
-            .whereRef('opportunityId', '=', 'opportunities.id')
-            .select(({ fn, ref }) => {
-              const object = jsonBuildObject({
-                id: ref('companies.id'),
-                name: ref('companies.name'),
-                logo: ref('companies.imageUrl'),
-              });
-
-              return fn
-                .jsonAgg(object)
-                .$castTo<Array<{ id: string; name: string; logo: string }>>()
-                .as('companies');
-            })
-            .as('companies');
         },
 
         (eb) => {
@@ -619,33 +599,25 @@ function OpportunitiesTable() {
       size: '200',
       render: (opportunity) => {
         return (
-          <ul>
-            {(opportunity.companies || []).map((company) => {
-              return (
-                <li className="w-fit" key={company.id}>
-                  <Link
-                    className="w-fit cursor-pointer hover:underline"
-                    target="_blank"
-                    to={generatePath(Route['/companies/:id'], {
-                      id: company.id,
-                    })}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
-                        <img
-                          alt={company.name}
-                          className="aspect-square h-full w-full rounded-md"
-                          src={company.logo as string}
-                        />
-                      </div>
-
-                      <Text variant="sm">{company.name}</Text>
-                    </div>
-                  </Link>
-                </li>
-              );
+          <Link
+            className="w-fit cursor-pointer hover:underline"
+            target="_blank"
+            to={generatePath(Route['/companies/:id'], {
+              id: opportunity.companyId,
             })}
-          </ul>
+          >
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
+                <img
+                  alt={opportunity.companyName as string}
+                  className="aspect-square h-full w-full rounded-md"
+                  src={opportunity.companyLogo as string}
+                />
+              </div>
+
+              <Text variant="sm">{opportunity.companyName}</Text>
+            </div>
+          </Link>
         );
       },
     },

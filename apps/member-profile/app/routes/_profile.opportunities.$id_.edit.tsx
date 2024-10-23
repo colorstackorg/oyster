@@ -47,7 +47,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const opportunity = await db
     .selectFrom('opportunities')
+    .leftJoin('companies', 'companies.id', 'opportunities.companyId')
     .select([
+      'companies.crunchbaseId as companyCrunchbaseId',
+      'companies.name as companyName',
       'description',
       'expiresAt as closeDate',
       'id',
@@ -59,29 +62,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         const format = 'YYYY-MM-DD';
 
         return sql<string>`to_char(${field}, ${format})`.as('closeDate');
-      },
-
-      (eb) => {
-        return eb
-          .selectFrom('opportunityCompanies')
-          .leftJoin(
-            'companies',
-            'companies.id',
-            'opportunityCompanies.companyId'
-          )
-          .whereRef('opportunityId', '=', 'opportunities.id')
-          .select(({ fn, ref }) => {
-            const object = jsonBuildObject({
-              crunchbaseId: ref('companies.crunchbaseId'),
-              name: ref('companies.name'),
-            });
-
-            return fn
-              .jsonAgg(object)
-              .$castTo<Array<{ crunchbaseId: string; name: string }>>()
-              .as('companies');
-          })
-          .as('companies');
       },
 
       (eb) => {
@@ -169,18 +149,8 @@ function EditOpportunityForm() {
   const { opportunity } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
 
-  const company = opportunity.companies?.[0];
-
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
-      {/* <Form.Field error="" label="Type" labelFor="type" required>
-        <Select defaultValue={opportunity.type} id="type" name="type" required>
-          <option value="job">Job (ie: Internship, Full-Time)</option>
-          <option value="event">Event (ie: Conference, Workshop)</option>
-          <option value="other">Other (ie: Program, Scholarship)</option>
-        </Select>
-      </Form.Field> */}
-
       <Form.Field
         error={errors.title}
         label="Company"
@@ -189,8 +159,8 @@ function EditOpportunityForm() {
       >
         <CompanyCombobox
           defaultValue={{
-            crunchbaseId: company?.crunchbaseId || '',
-            name: company?.name || '',
+            crunchbaseId: opportunity.companyCrunchbaseId || '',
+            name: opportunity.companyName || '',
           }}
           name="companyCrunchbaseId"
           error=""

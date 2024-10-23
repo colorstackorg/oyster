@@ -128,6 +128,8 @@ async function createOpportunity(input: CreateOpportunityInput) {
   }
 
   const opportunity = await db.transaction().execute(async (trx) => {
+    const companyId = await findOrCreateCompany(trx, aiObject.company);
+
     const opportunityId = id();
 
     const expiresAt = aiObject.expiresAt
@@ -137,6 +139,7 @@ async function createOpportunity(input: CreateOpportunityInput) {
     const opportunity = await trx
       .insertInto('opportunities')
       .values({
+        companyId,
         createdAt: new Date(),
         description: aiObject.description,
         expiresAt,
@@ -149,15 +152,6 @@ async function createOpportunity(input: CreateOpportunityInput) {
       })
       .returning(['id'])
       .executeTakeFirstOrThrow();
-
-    const companyId = await findOrCreateCompany(trx, aiObject.company);
-
-    if (companyId) {
-      await trx
-        .insertInto('opportunityCompanies')
-        .values({ companyId, opportunityId })
-        .execute();
-    }
 
     return opportunity;
   });
@@ -243,6 +237,7 @@ export async function editOpportunity(id: string, input: EditOpportunityInput) {
     const result = await trx
       .updateTable('opportunities')
       .set({
+        companyId,
         description: input.description,
         expiresAt: input.closeDate,
         title: input.title,
@@ -255,18 +250,6 @@ export async function editOpportunity(id: string, input: EditOpportunityInput) {
       .where('opportunityId', '=', id)
       .where('tagId', 'not in', input.tags)
       .execute();
-
-    if (companyId) {
-      await trx
-        .deleteFrom('opportunityCompanies')
-        .where('opportunityId', '=', id)
-        .execute();
-
-      await trx
-        .insertInto('opportunityCompanies')
-        .values({ companyId, opportunityId: id })
-        .execute();
-    }
 
     await trx
       .insertInto('opportunityTagAssociations')
@@ -374,6 +357,8 @@ export async function updateOpportunityWithAI(
   }
 
   const opportunity = await db.transaction().execute(async (trx) => {
+    const companyId = await findOrCreateCompany(trx, aiObject.company);
+
     const expiresAt = aiObject.expiresAt
       ? new Date(aiObject.expiresAt)
       : undefined;
@@ -381,6 +366,7 @@ export async function updateOpportunityWithAI(
     const opportunity = await trx
       .updateTable('opportunities')
       .set({
+        companyId,
         description: aiObject.description,
         expiresAt,
         title: aiObject.title,
@@ -420,20 +406,6 @@ export async function updateOpportunityWithAI(
         })
       )
       .execute();
-
-    const companyId = await findOrCreateCompany(trx, aiObject.company);
-
-    if (companyId) {
-      await trx
-        .deleteFrom('opportunityCompanies')
-        .where('opportunityId', '=', opportunityId)
-        .execute();
-
-      await trx
-        .insertInto('opportunityCompanies')
-        .values({ companyId, opportunityId })
-        .execute();
-    }
 
     return opportunity;
   });
