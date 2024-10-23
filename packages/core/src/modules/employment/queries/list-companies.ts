@@ -78,6 +78,14 @@ export async function listCompanies<
 
         (eb) => {
           return eb
+            .selectFrom('opportunities')
+            .select(eb.fn.countAll<string>().as('count'))
+            .whereRef('opportunities.companyId', '=', 'companies.id')
+            .as('opportunities');
+        },
+
+        (eb) => {
+          return eb
             .selectFrom('companyReviews')
             .leftJoin(
               'workExperiences',
