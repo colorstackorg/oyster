@@ -23,12 +23,20 @@ export async function listCompanies<
     .selectFrom('companies')
     .where((eb) => {
       // We only want to return companies that have at least one employee (past
-      // or present).
-      return eb.exists(
-        eb
-          .selectFrom('workExperiences')
-          .whereRef('workExperiences.companyId', '=', 'companies.id')
-      );
+      // or present) or opportunity.
+      return eb.or([
+        eb.exists(() => {
+          return eb
+            .selectFrom('workExperiences')
+            .whereRef('workExperiences.companyId', '=', 'companies.id');
+        }),
+
+        eb.exists(() => {
+          return eb
+            .selectFrom('opportunities')
+            .whereRef('opportunities.companyId', '=', 'companies.id');
+        }),
+      ]);
     })
     .$if(!!where.search, (qb) => {
       const { search } = where;

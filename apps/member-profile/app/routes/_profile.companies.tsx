@@ -204,7 +204,7 @@ type CompanyInView = SerializeFrom<typeof loader>['companies'][number];
 
 function CompanyItem({ company }: { company: CompanyInView }) {
   return (
-    <li className="flex flex-col gap-3 rounded-3xl border border-gray-200 p-4">
+    <li className="flex flex-col gap-3 rounded-2xl border border-gray-200 p-4">
       <header className="flex items-center gap-2">
         <CompanyLogo imageUrl={company.imageUrl} />
         <CompanyTitle id={company.id} name={company.name} />
