@@ -5,7 +5,7 @@ import { db, type DB } from '@oyster/db';
 import { type GetCompanyWhere } from '@/modules/employment/employment.types';
 
 type GetCompanyOptions<Selection> = {
-  include?: ('averageRating' | 'employees' | 'reviews')[];
+  include?: ('averageRating' | 'employees' | 'openOpportunities' | 'reviews')[];
   select: Selection[];
   where: GetCompanyWhere;
 };
@@ -46,6 +46,16 @@ export async function getCompany<
           })
           .whereRef('workExperiences.companyId', '=', 'companies.id')
           .as('employees');
+      });
+    })
+    .$if(!!include.includes('openOpportunities'), (qb) => {
+      return qb.select((eb) => {
+        return eb
+          .selectFrom('opportunities')
+          .select(eb.fn.countAll<string>().as('count'))
+          .whereRef('opportunities.companyId', '=', 'companies.id')
+          .where('opportunities.expiresAt', '>', sql<Date>`now()`)
+          .as('openOpportunities');
       });
     })
     .$if(!!include.includes('reviews'), (qb) => {

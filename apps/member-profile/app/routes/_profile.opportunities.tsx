@@ -54,6 +54,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const memberId = user(session);
 
   const bookmarked = searchParams.has('bookmarked');
+  const company = searchParams.get('company');
   const date = searchParams.get('date');
   const status = searchParams.get('status');
   const tagsFromSearch = searchParams.getAll('tag');
@@ -183,6 +184,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
               .where('opportunityBookmarks.studentId', '=', memberId);
           });
         });
+      })
+      .$if(!!company, (qb) => {
+        return qb.where('opportunities.companyId', '=', company);
       })
       .$if(!!date, (qb) => {
         if (

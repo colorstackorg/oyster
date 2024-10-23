@@ -17,7 +17,14 @@ import {
   listCompanyEmployees,
   listCompanyReviews,
 } from '@oyster/core/employment/server';
-import { cx, Divider, getTextCn, ProfilePicture, Text } from '@oyster/ui';
+import {
+  cx,
+  Divider,
+  getButtonCn,
+  getTextCn,
+  ProfilePicture,
+  Text,
+} from '@oyster/ui';
 import {
   Tooltip,
   TooltipContent,
@@ -38,7 +45,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const [company, hasAccess, _employees, _reviews] = await Promise.all([
     getCompany({
-      include: ['averageRating', 'employees', 'reviews'],
+      include: ['averageRating', 'employees', 'openOpportunities', 'reviews'],
       select: [
         'companies.description',
         'companies.domain',
@@ -163,6 +170,27 @@ export default function CompanyPage() {
       </header>
 
       <Text color="gray-500">{company.description}</Text>
+
+      {Number(company.openOpportunities) > 0 && (
+        <div className="flex w-full items-center justify-between gap-4 rounded-lg border border-primary border-opacity-30 bg-primary bg-opacity-5 p-2">
+          <Text className="line-clamp-1" variant="sm">
+            {company.openOpportunities === '1'
+              ? `${company.openOpportunities} open opportunity found at ${company.name}.`
+              : `${company.openOpportunities} open opportunities found at ${company.name}.`}
+          </Text>
+
+          <Link
+            className={getButtonCn({ size: 'small', variant: 'primary' })}
+            to={{
+              pathname: Route['/opportunities'],
+              search: `?company=${company.id}`,
+            }}
+          >
+            View
+          </Link>
+        </div>
+      )}
+
       <ReviewsList />
       <CurrentEmployees />
       <PastEmployees />
