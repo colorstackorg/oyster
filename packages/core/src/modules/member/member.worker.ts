@@ -62,12 +62,9 @@ export const memberWorker = registerWorker(
       .with({ name: 'student.statuses.new' }, ({ data }) => {
         return createNewActiveStatuses(data);
       })
-      .with(
-        { name: 'student.company.review.notifications.weekly' },
-        ({ data: _ }) => {
-          return sendCompanyReviewNotifications();
-        }
-      )
+      .with({ name: 'student.company_review_notifications' }, ({ data: _ }) => {
+        return sendCompanyReviewNotifications();
+      })
       .exhaustive();
   }
 );
