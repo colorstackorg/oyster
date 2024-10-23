@@ -50,8 +50,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'students.profilePicture as posterProfilePicture',
 
       ({ ref }) => {
+        const field = ref('opportunities.createdAt');
+        const format = 'MM/DD/YY';
+
+        return sql<string>`to_char(${field}, ${format})`.as('createdDate');
+      },
+
+      ({ ref }) => {
         const field = ref('opportunities.expiresAt');
-        const format = 'YYYY-MM-DD';
+        const format = 'MM/DD/YY';
 
         return sql<string>`to_char(${field}, ${format})`.as('closeDate');
       },
@@ -185,14 +192,21 @@ export default function EditOpportunity() {
             </Link>
           )}
 
-          <BookmarkForm id={opportunity.id}>
-            <Text className="inline" variant="lg">
-              <span className="mr-2">{opportunity.title}</span>
-              <span className="inline-flex align-top">
-                <BookmarkButton bookmarked={!!opportunity.bookmarked} />
-              </span>
+          <div className="flex flex-col gap-1">
+            <BookmarkForm id={opportunity.id}>
+              <Text className="inline" variant="lg">
+                <span className="mr-2">{opportunity.title}</span>
+                <span className="inline-flex align-top">
+                  <BookmarkButton bookmarked={!!opportunity.bookmarked} />
+                </span>
+              </Text>
+            </BookmarkForm>
+
+            <Text color="gray-500" variant="sm">
+              Posted: {opportunity.createdDate} &bull; Expires:{' '}
+              {opportunity.closeDate}
             </Text>
-          </BookmarkForm>
+          </div>
         </div>
 
         <div className="flex items-center gap-[inherit]">
