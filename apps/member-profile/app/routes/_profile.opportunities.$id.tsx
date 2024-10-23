@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
 import { emojify } from 'node-emoji';
-import { Bookmark, Edit } from 'react-feather';
+import { Edit } from 'react-feather';
 
 import { db } from '@oyster/db';
 import { getIconButtonCn, Modal, Pill, Text } from '@oyster/ui';
@@ -212,9 +212,12 @@ export default function EditOpportunity() {
                   backgroundColor: 'gray-100',
                   backgroundColorOnHover: 'gray-200',
                 })}
-                to={generatePath(Route['/opportunities/:id/edit'], {
-                  id: opportunity.id,
-                })}
+                to={{
+                  pathname: generatePath(Route['/opportunities/:id/edit'], {
+                    id: opportunity.id,
+                  }),
+                  search: searchParams.toString(),
+                }}
               >
                 <Edit />
               </Link>

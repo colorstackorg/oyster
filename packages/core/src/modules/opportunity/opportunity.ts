@@ -227,6 +227,14 @@ export async function createOpportunityTag(input: CreateOpportunityTagInput) {
   });
 }
 
+export async function deleteOpportunity(id: string) {
+  await db.transaction().execute(async (trx) => {
+    await trx.deleteFrom('opportunities').where('id', '=', id).execute();
+  });
+
+  return success({ id });
+}
+
 export async function editOpportunity(id: string, input: EditOpportunityInput) {
   const result = await db.transaction().execute(async (trx) => {
     const companyId = await saveCompanyIfNecessary(

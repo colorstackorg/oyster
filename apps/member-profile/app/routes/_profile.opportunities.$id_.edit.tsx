@@ -6,10 +6,12 @@ import {
 } from '@remix-run/node';
 import {
   generatePath,
+  Link,
   Form as RemixForm,
   useActionData,
   useFetcher,
   useLoaderData,
+  useParams,
   useSearchParams,
 } from '@remix-run/react';
 import { sql } from 'kysely';
@@ -24,6 +26,7 @@ import {
   ComboboxPopover,
   DatePicker,
   Form,
+  getButtonCn,
   getErrors,
   Input,
   Modal,
@@ -126,7 +129,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
-  const session = await ensureUserAuthenticated(request);
+  await ensureUserAuthenticated(request);
 
   const { data, errors, ok } = await validateForm(
     request,
@@ -172,6 +175,7 @@ export default function EditOpportunity() {
 
 function EditOpportunityForm() {
   const { opportunity } = useLoaderData<typeof loader>();
+  const { id } = useParams();
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
@@ -235,8 +239,17 @@ function EditOpportunityForm() {
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
-      <Button.Group>
+      <Button.Group flexDirection="row-reverse" spacing="between">
         <Button.Submit>Save</Button.Submit>
+
+        <Link
+          className={getButtonCn({ color: 'error', variant: 'secondary' })}
+          to={generatePath(Route['/opportunities/:id/delete'], {
+            id: id as string,
+          })}
+        >
+          Delete
+        </Link>
       </Button.Group>
     </RemixForm>
   );

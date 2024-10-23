@@ -169,7 +169,7 @@ function TableBody({
       {data.map((row) => {
         return (
           <tr
-            className="group cursor-default border-b border-b-gray-100 last:border-b-0"
+            className="group border-b border-b-gray-100 last:border-b-0"
             key={row.id}
             {...(onRowClick && {
               'aria-label': 'View Details',
