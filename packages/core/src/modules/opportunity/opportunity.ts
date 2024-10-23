@@ -198,7 +198,7 @@ export async function bookmarkOpportunity(
   opportunityId: string,
   memberId: string
 ) {
-  await db.transaction().execute(async (trx) => {
+  const action = await db.transaction().execute(async (trx) => {
     const existingBookmark = await trx
       .deleteFrom('opportunityBookmarks')
       .where('opportunityId', '=', opportunityId)
@@ -206,14 +206,33 @@ export async function bookmarkOpportunity(
       .executeTakeFirst();
 
     if (existingBookmark.numDeletedRows) {
-      return;
+      return 'deleted';
     }
 
     await trx
       .insertInto('opportunityBookmarks')
       .values({ opportunityId, studentId: memberId })
       .execute();
+
+    return 'created';
   });
+
+  if (action === 'created') {
+    const opportunity = await db
+      .selectFrom('opportunities')
+      .select('postedBy')
+      .where('id', '=', opportunityId)
+      .executeTakeFirst();
+
+    if (opportunity && opportunity.postedBy) {
+      job('gamification.activity.completed', {
+        opportunityBookmarkedBy: memberId,
+        opportunityId,
+        studentId: opportunity.postedBy,
+        type: 'get_opportunity_bookmark',
+      });
+    }
+  }
 
   return success({});
 }

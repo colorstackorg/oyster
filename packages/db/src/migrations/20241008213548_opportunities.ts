@@ -108,9 +108,37 @@ export async function up(db: Kysely<any>) {
       'student_id',
     ])
     .execute();
+
+  await db.schema
+    .alterTable('completed_activities')
+    .addColumn('opportunity_bookmarked_by', 'text')
+    .addColumn('opportunity_id', 'text')
+    .execute();
+
+  await db.schema
+    .alterTable('completed_activities')
+    .addForeignKeyConstraint(
+      'completed_activities_opportunity_bookmark_fkey',
+      ['opportunity_id', 'opportunity_bookmarked_by'],
+      'opportunity_bookmarks',
+      ['opportunity_id', 'student_id']
+    )
+    .onDelete('cascade')
+    .execute();
 }
 
 export async function down(db: Kysely<any>) {
+  await db.schema
+    .alterTable('completed_activities')
+    .dropConstraint('completed_activities_opportunity_bookmark_fkey')
+    .execute();
+
+  await db.schema
+    .alterTable('completed_activities')
+    .dropColumn('opportunity_bookmarked_by')
+    .dropColumn('opportunity_id')
+    .execute();
+
   await db.schema.dropTable('opportunity_bookmarks').execute();
   await db.schema.dropTable('opportunity_tag_associations').execute();
   await db.schema.dropTable('opportunity_tags').execute();
