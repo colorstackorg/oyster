@@ -235,6 +235,11 @@ export async function createOpportunityTag(input: CreateOpportunityTagInput) {
 
 export async function editOpportunity(id: string, input: EditOpportunityInput) {
   const result = await db.transaction().execute(async (trx) => {
+    const companyId = await saveCompanyIfNecessary(
+      trx,
+      input.companyCrunchbaseId
+    );
+
     const result = await trx
       .updateTable('opportunities')
       .set({
@@ -250,6 +255,18 @@ export async function editOpportunity(id: string, input: EditOpportunityInput) {
       .where('opportunityId', '=', id)
       .where('tagId', 'not in', input.tags)
       .execute();
+
+    if (companyId) {
+      await trx
+        .deleteFrom('opportunityCompanies')
+        .where('opportunityId', '=', id)
+        .execute();
+
+      await trx
+        .insertInto('opportunityCompanies')
+        .values({ companyId, opportunityId: id })
+        .execute();
+    }
 
     await trx
       .insertInto('opportunityTagAssociations')

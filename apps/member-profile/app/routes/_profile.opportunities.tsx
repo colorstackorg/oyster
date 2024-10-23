@@ -7,7 +7,6 @@ import {
   generatePath,
   Link,
   Outlet,
-  Form as RemixForm,
   useLoaderData,
   useNavigate,
   useSearchParams,
@@ -31,7 +30,6 @@ import {
   cx,
   Dashboard,
   getButtonCn,
-  IconButton,
   Pill,
   ProfilePicture,
   Table,
@@ -40,6 +38,10 @@ import {
   useOnClickOutside,
 } from '@oyster/ui';
 
+import {
+  BookmarkButton,
+  BookmarkForm,
+} from '@/routes/_profile.opportunities.$id_.bookmark';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -82,7 +84,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
         ({ ref }) => {
           const field = ref('opportunities.createdAt');
-          const format = 'MM/D/YY';
+          const format = 'MM/DD/YY';
 
           return sql<string>`to_char(${field}, ${format})`.as('createdAt');
         },
@@ -630,42 +632,14 @@ function OpportunitiesTable() {
       sticky: true,
       render: (opportunity) => {
         return (
-          <div className="mx-auto flex w-fit items-center gap-2">
-            <RemixForm
-              action={generatePath('/opportunities/:id/bookmark', {
-                id: opportunity.id,
-              })}
-              method="post"
-              navigate={false}
-            >
-              <Text
-                className="flex items-center gap-0.5 text-gray-300"
-                variant="sm"
-              >
-                <IconButton
-                  className="hover:bg-gray-100 hover:text-amber-400 data-[bookmarked=true]:text-amber-400"
-                  data-bookmarked={!!opportunity.bookmarked}
-                  icon={
-                    <Bookmark
-                      color="currentColor"
-                      fill={opportunity.bookmarked ? 'currentColor' : 'none'}
-                      size={20}
-                    />
-                  }
-                  name="action"
-                  type="submit"
-                  value="bookmark"
-                />
-                {opportunity.bookmarks}
-              </Text>
-
-              <input
-                type="hidden"
-                name="opportunityId"
-                value={opportunity.id}
-              />
-            </RemixForm>
-          </div>
+          <BookmarkForm id={opportunity.id}>
+            <BookmarkButton
+              bookmarked={!!opportunity.bookmarked}
+              className="mx-auto"
+              // bookmarks={opportunity.bookmarks || 0}
+              // id={opportunity.id}
+            />
+          </BookmarkForm>
         );
       },
     },

@@ -9,6 +9,7 @@ export const CreateOpportunityTagInput = z.object({
 
 export const EditOpportunityInput = z.object({
   closeDate: ISO8601Date,
+  companyCrunchbaseId: z.string().trim().min(1),
   // companies: z
   //   .string()
   //   .trim()

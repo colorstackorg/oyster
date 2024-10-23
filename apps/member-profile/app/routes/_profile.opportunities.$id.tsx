@@ -9,27 +9,23 @@ import dayjs from 'dayjs';
 import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
 import { emojify } from 'node-emoji';
+import { Bookmark, Edit } from 'react-feather';
 
 import { db } from '@oyster/db';
-import { Divider, Modal, Pill, Text } from '@oyster/ui';
+import { getIconButtonCn, Modal, Pill, Text } from '@oyster/ui';
 
 import {
-  SlackMessage,
-  SlackMessageCard,
-} from '@/shared/components/slack-message';
+  BookmarkButton,
+  BookmarkForm,
+} from '@/routes/_profile.opportunities.$id_.bookmark';
+import { SlackMessageCard } from '@/shared/components/slack-message';
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
-  // channelId={opportunity.channelId}
-  // messageId={opportunity.id}
-  // postedAt={opportunity.postedAt}
-  // posterFirstName={opportunity.posterFirstName || ''}
-  // posterLastName={opportunity.posterLastName || ''}
-  // posterProfilePicture={opportunity.posterProfilePicture || ''}
-  // text={opportunity.text || ''}
+  const memberId = user(session);
 
   const opportunity = await db
     .selectFrom('opportunities')
@@ -106,6 +102,27 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           })
           .as('companies');
       },
+
+      (eb) => {
+        return eb
+          .selectFrom('opportunityBookmarks')
+          .whereRef('opportunityId', '=', 'opportunities.id')
+          .select((eb) => {
+            return eb.fn.countAll<string>().as('count');
+          })
+          .as('bookmarks');
+      },
+
+      (eb) => {
+        return eb
+          .exists(() => {
+            return eb
+              .selectFrom('opportunityBookmarks')
+              .whereRef('opportunityId', '=', 'opportunities.id')
+              .where('opportunityBookmarks.studentId', '=', memberId);
+          })
+          .as('bookmarked');
+      },
     ])
     .where('opportunities.id', '=', params.id as string)
     .executeTakeFirst();
@@ -168,9 +185,33 @@ export default function EditOpportunity() {
             </Link>
           )}
 
-          <Text variant="lg">{opportunity.title}</Text>
+          <BookmarkForm id={opportunity.id}>
+            <Text className="inline" variant="lg">
+              <span className="mr-2">{opportunity.title}</span>
+              <span className="inline-flex align-top">
+                <BookmarkButton bookmarked={!!opportunity.bookmarked} />
+              </span>
+            </Text>
+          </BookmarkForm>
         </div>
-        <Modal.CloseButton />
+
+        <div className="flex items-center gap-[inherit]">
+          <Link
+            className={getIconButtonCn({
+              backgroundColor: 'gray-100',
+              backgroundColorOnHover: 'gray-200',
+            })}
+            to={generatePath(Route['/opportunities/:id/edit'], {
+              id: opportunity.id,
+            })}
+          >
+            <Edit />
+          </Link>
+
+          <div className="h-6 w-[1px] bg-gray-100" />
+
+          <Modal.CloseButton />
+        </div>
       </Modal.Header>
 
       {opportunity.tags && (

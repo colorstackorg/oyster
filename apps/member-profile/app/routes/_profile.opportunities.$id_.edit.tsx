@@ -38,6 +38,7 @@ import {
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
+import { CompanyCombobox } from '@/shared/components/company-combobox';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -58,6 +59,29 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         const format = 'YYYY-MM-DD';
 
         return sql<string>`to_char(${field}, ${format})`.as('closeDate');
+      },
+
+      (eb) => {
+        return eb
+          .selectFrom('opportunityCompanies')
+          .leftJoin(
+            'companies',
+            'companies.id',
+            'opportunityCompanies.companyId'
+          )
+          .whereRef('opportunityId', '=', 'opportunities.id')
+          .select(({ fn, ref }) => {
+            const object = jsonBuildObject({
+              crunchbaseId: ref('companies.crunchbaseId'),
+              name: ref('companies.name'),
+            });
+
+            return fn
+              .jsonAgg(object)
+              .$castTo<Array<{ crunchbaseId: string; name: string }>>()
+              .as('companies');
+          })
+          .as('companies');
       },
 
       (eb) => {
@@ -112,6 +136,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   await editOpportunity(id, {
     closeDate: data.closeDate,
+    companyCrunchbaseId: data.companyCrunchbaseId,
     description: data.description,
     tags: data.tags,
     title: data.title,
@@ -144,6 +169,8 @@ function EditOpportunityForm() {
   const { opportunity } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
 
+  const company = opportunity.companies?.[0];
+
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
       {/* <Form.Field error="" label="Type" labelFor="type" required>
@@ -153,6 +180,22 @@ function EditOpportunityForm() {
           <option value="other">Other (ie: Program, Scholarship)</option>
         </Select>
       </Form.Field> */}
+
+      <Form.Field
+        error={errors.title}
+        label="Company"
+        labelFor="companyCrunchbaseId"
+        required
+      >
+        <CompanyCombobox
+          defaultValue={{
+            crunchbaseId: company?.crunchbaseId || '',
+            name: company?.name || '',
+          }}
+          name="companyCrunchbaseId"
+          error=""
+        />
+      </Form.Field>
 
       <Form.Field error={errors.title} label="Title" labelFor="title" required>
         <Input
