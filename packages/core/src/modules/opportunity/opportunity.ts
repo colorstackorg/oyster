@@ -14,6 +14,7 @@ import { getChatCompletion } from '@/modules/ai/ai';
 import { searchCrunchbaseOrganizations } from '@/modules/employment/queries/search-crunchbase-organizations';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { ENV } from '@/shared/env';
+import { getRandomAccentColor } from '@/shared/utils/color.utils';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 
 // Types
@@ -317,7 +318,7 @@ export async function refineOpportunity(input: RefineOpportunityInput) {
       .values(
         data.tags.map((tag) => {
           return {
-            color: '', // TODO: choose random color
+            color: getRandomAccentColor(),
             id: id(),
             name: tag,
           };
@@ -353,7 +354,7 @@ export async function refineOpportunity(input: RefineOpportunityInput) {
   });
 
   const message =
-    'I added this to our opportunities board!' +
+    'I added this to our opportunities board! 📌' +
     '\n\n' +
     `<${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}>`;
 
