@@ -189,6 +189,47 @@ async function createOpportunity(
   return success(opportunity);
 }
 
+// "Delete Opportunity"
+
+type DeleteOpportunityInput = {
+  memberId: string;
+  opportunityId: string;
+};
+
+/**
+ * Deletes an opportunity from the database, only if the given member has
+ * permission to do so. The database will cascade delete any associated records
+ * (ie: tags, bookmarks, etc).
+ *
+ * @param input - The opportunity to delete and the member deleting it.
+ * @returns Result indicating the success or failure of the operation.
+ */
+export async function deleteOpportunity({
+  memberId,
+  opportunityId,
+}: DeleteOpportunityInput): Promise<Result> {
+  const hasPermission = await hasOpportunityWritePermission({
+    memberId,
+    opportunityId,
+  });
+
+  if (!hasPermission) {
+    return fail({
+      code: 403,
+      error: 'You do not have permission to delete this opportunity.',
+    });
+  }
+
+  await db.transaction().execute(async (trx) => {
+    await trx
+      .deleteFrom('opportunities')
+      .where('opportunities.id', '=', opportunityId)
+      .execute();
+  });
+
+  return success({ id: opportunityId });
+}
+
 // "Refine Opportunity"
 
 const REFINE_OPPORTUNITY_SYSTEM_PROMPT = dedent`
@@ -521,14 +562,6 @@ export async function createOpportunityTag(input: CreateOpportunityTagInput) {
   });
 }
 
-export async function deleteOpportunity(id: string) {
-  await db.transaction().execute(async (trx) => {
-    await trx.deleteFrom('opportunities').where('id', '=', id).execute();
-  });
-
-  return success({ id });
-}
-
 export async function editOpportunity(id: string, input: EditOpportunityInput) {
   const result = await db.transaction().execute(async (trx) => {
     const companyId = await saveCompanyIfNecessary(
@@ -596,6 +629,61 @@ export async function listOpportunityTags<
     .limit(pagination.limit)
     .offset((pagination.page - 1) * pagination.limit)
     .execute();
+}
+
+// "Get Opportunity"
+
+export async function getOpportunity(opportunityId: string) {
+  const opportunity = await db
+    .selectFrom('opportunities')
+    .leftJoin('companies', 'companies.id', 'opportunities.companyId')
+    .select([
+      'companies.name as companyName',
+      'opportunities.description',
+      'opportunities.title',
+    ])
+    .where('opportunities.id', '=', opportunityId)
+    .executeTakeFirst();
+
+  return opportunity;
+}
+
+// "Has Edit Permission"
+
+type HasEditPermissionInput = {
+  memberId: string;
+  opportunityId: string;
+};
+
+/**
+ * Checks if the given member has write (ie: create/edit/delete) permission for
+ * the opportunity. Returns `true` if the member is the creator of the
+ * opportunity or if the member is an admin.
+ *
+ * @param input - Member ID and opportunity ID.
+ * @returns Whether the member has write permission for the opportunity.
+ */
+export async function hasOpportunityWritePermission({
+  memberId,
+  opportunityId,
+}: HasEditPermissionInput): Promise<boolean> {
+  const opportunity = await db
+    .selectFrom('opportunities')
+    .where('opportunities.id', '=', opportunityId)
+    .where((eb) => {
+      return eb.or([
+        eb('opportunities.postedBy', '=', memberId),
+        eb.exists(() => {
+          return eb
+            .selectFrom('admins')
+            .where('admins.memberId', '=', memberId)
+            .where('admins.deletedAt', 'is not', null);
+        }),
+      ]);
+    })
+    .executeTakeFirst();
+
+  return !!opportunity;
 }
 
 // Worker

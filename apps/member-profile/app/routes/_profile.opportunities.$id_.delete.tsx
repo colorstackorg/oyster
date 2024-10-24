@@ -11,8 +11,11 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 
-import { deleteOpportunity } from '@oyster/core/opportunities';
-import { db } from '@oyster/db';
+import {
+  deleteOpportunity,
+  getOpportunity,
+  hasOpportunityWritePermission,
+} from '@oyster/core/opportunities';
 import { Button, Form, getErrors, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
@@ -21,41 +24,7 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const memberId = user(session);
-
-  const hasEditPermission = await db
-    .selectFrom('opportunities')
-    .where('opportunities.id', '=', params.id as string)
-    .where((eb) => {
-      return eb.or([
-        eb('opportunities.postedBy', '=', memberId),
-        eb.exists(() => {
-          return eb
-            .selectFrom('admins')
-            .where('admins.memberId', '=', memberId)
-            .where('admins.deletedAt', 'is not', null);
-        }),
-      ]);
-    })
-    .executeTakeFirst();
-
-  if (!hasEditPermission) {
-    throw new Response(null, {
-      status: 403,
-      statusText: 'You do not have permission to delete this opportunity.',
-    });
-  }
-
-  const opportunity = await db
-    .selectFrom('opportunities')
-    .leftJoin('companies', 'companies.id', 'opportunities.companyId')
-    .select([
-      'companies.name as companyName',
-      'opportunities.description',
-      'opportunities.title',
-    ])
-    .where('opportunities.id', '=', params.id as string)
-    .executeTakeFirst();
+  const opportunity = await getOpportunity(params.id as string);
 
   if (!opportunity) {
     throw new Response(null, {
@@ -64,23 +33,44 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
+  const hasPermission = await hasOpportunityWritePermission({
+    memberId: user(session),
+    opportunityId: params.id as string,
+  });
+
+  if (!hasPermission) {
+    throw new Response(null, {
+      status: 403,
+      statusText: 'You do not have permission to delete this opportunity.',
+    });
+  }
+
   return json({ opportunity });
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
-  const id = params.id as string;
+  const result = await deleteOpportunity({
+    memberId: user(session),
+    opportunityId: params.id as string,
+  });
 
-  await deleteOpportunity(id);
+  if (!result.ok) {
+    return json({ error: result.error }, { status: result.code });
+  }
 
-  return redirect('/opportunities');
+  const url = new URL(request.url);
+
+  url.pathname = Route['/opportunities'];
+
+  return redirect(url.toString());
 }
 
 export default function DeleteOpportunity() {
-  const [searchParams] = useSearchParams();
   const { opportunity } = useLoaderData<typeof loader>();
   const { error } = getErrors(useActionData<typeof action>());
+  const [searchParams] = useSearchParams();
 
   return (
     <Modal
