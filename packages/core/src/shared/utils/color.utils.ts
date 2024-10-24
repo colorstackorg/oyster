@@ -11,7 +11,7 @@ export type AccentColor =
   | 'purple-100'
   | 'red-100';
 
-const ACCENT_COLORS: AccentColor[] = [
+export const ACCENT_COLORS: AccentColor[] = [
   'amber-100',
   'blue-100',
   'cyan-100',

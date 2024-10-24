@@ -13,12 +13,13 @@ import {
 } from './combobox-popover';
 import { Divider } from './divider';
 import { getInputCn, type InputProps } from './input';
-import { getPillCn, type PillProps } from './pill';
+import { getPillCn } from './pill';
+import { type AccentColor } from '../utils/constants';
 import { setInputValue } from '../utils/core';
 import { cx } from '../utils/cx';
 
 type ComboboxValue = {
-  color?: PillProps['color'];
+  color?: AccentColor;
   label: string;
   value: string;
 };
@@ -96,7 +97,7 @@ export function MultiComboboxSearch({
 }
 
 type MultiComboboxItemProps = PropsWithChildren<{
-  color?: PillProps['color'];
+  color?: AccentColor;
   label: string;
   onSelect?(e: React.MouseEvent<HTMLButtonElement>): void;
   value: string;
