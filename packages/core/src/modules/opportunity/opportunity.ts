@@ -14,6 +14,7 @@ import { getChatCompletion } from '@/modules/ai/ai';
 import { searchCrunchbaseOrganizations } from '@/modules/employment/queries/search-crunchbase-organizations';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { ENV } from '@/shared/env';
+import { getRandomAccentColor } from '@/shared/utils/color.utils';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 
 // Types
@@ -22,13 +23,15 @@ type OpportunityRecord = DB['opportunities'];
 
 // Use Case(s)
 
-const OPPORTUNITY_SYSTEM_PROMPT = dedent`
+const CREATE_OPPORTUNITY_SYSTEM_PROMPT = dedent`
   You are a helpful assistant that extracts structured data from Slack messages
   in a tech-focused workspace. Members share opportunities for internships,
   full-time positions, events, and other programs to help them get their first
   role in tech. Your job is to analyze the given Slack message and extract
   specific information in a JSON format.
 `;
+
+// "Create Opportunity"
 
 const CREATE_OPPORTUNITY_PROMPT = dedent`
   Here's the Slack message you need to analyze:
@@ -120,7 +123,7 @@ async function createOpportunity(
   const completionResult = await getChatCompletion({
     maxTokens: 250,
     messages: [{ role: 'user', content: prompt }],
-    system: [{ type: 'text', text: OPPORTUNITY_SYSTEM_PROMPT }],
+    system: [{ type: 'text', text: CREATE_OPPORTUNITY_SYSTEM_PROMPT }],
     temperature: 0,
   });
 
@@ -168,7 +171,7 @@ async function createOpportunity(
   const message =
     `Thanks for sharing an opportunity in <#${input.slackChannelId}> -- I added it to our <${ENV.STUDENT_PROFILE_URL}/opportunities|opportunities board>! 🙂` +
     '\n\n' +
-    `To generate tags and a description, please paste the opportunity's website content <${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}/context|*HERE*>.` +
+    `To generate tags and a description, please paste the opportunity's website content <${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}/refine|*HERE*>.` +
     '\n\n' +
     'Thanks again!';
 
@@ -180,6 +183,211 @@ async function createOpportunity(
 
   return success(opportunity);
 }
+
+// "Refine Opportunity"
+
+const REFINE_OPPORTUNITY_SYSTEM_PROMPT = dedent`
+  You are a helpful assistant that extracts structured data from a website's
+  (likely a job posting) text content.
+`;
+
+const REFINE_OPPORTUNITY_PROMPT = dedent`
+  Your job is to analyze the given webpage and extract the following information
+  and format it as JSON:
+
+  1. "company": The name of the company offering the opportunity.
+  2. "title": The title of the opportunity, max 75 characters. Do not include
+     the company name in the title.
+  3. "description": A brief description of the opportunity, max 400 characters.
+     Extract the most relevant information including what the opportunity is,
+     who it's for, when, potential compensation and any other relevant details
+     to someone open to the opportunity.
+  4. "expiresAt": The date that the opportunity is no longer relevant, in
+     'YYYY-MM-DD' format. If the opportunity seemingly never "closes", set this
+     to null.
+  5. "tags": A list of tags that fit this opportunity, maximum 10 tags. We have
+     a list of existing tags in our database that are available to associate
+     with this opportunity. If there are no relevant tags, create a NEW tag that
+     you think we should add to the opportunity. If you create a new tag, be
+     sure it is different enough from the existing tags, and use sentence
+     case. Must return at least one tag. THIS IS THE MOST IMPORTANT PART OF
+     THIS JOB.
+
+  Here's the webpage you need to analyze:
+
+  <website_content>
+    $WEBSITE_CONTENT
+  </website_content>
+
+  Here are some existing tags in our database that you can choose from:
+
+  <tags>
+    $TAGS
+  </tags>
+
+  Follow these guidelines:
+  - If you cannot confidently infer a field, set it to null.
+
+  Your output should be a single JSON object containing these fields. Do not
+  provide any explanation or text outside of the JSON object. Ensure your JSON
+  is properly formatted and valid.
+
+  <output>
+    {
+      "company": "string",
+      "description": "string",
+      "expiresAt": "string | null",
+      "tags": "string[]",
+      "title": "string"
+    }
+  </output>
+`;
+
+const RefineOpportunityResponse = z.object({
+  company: z.string().trim().min(1),
+  description: z.string().trim().min(1).max(500),
+  expiresAt: z.string().nullable(),
+  tags: z.array(z.string().trim().min(1)).min(1),
+  title: z.string().trim().min(1).max(100),
+});
+
+type RefineOpportunityResponse = z.infer<typeof RefineOpportunityResponse>;
+
+export const RefineOpportunityInput = z.object({
+  content: z.string().trim().min(1).max(10_000),
+  opportunityId: z.string().trim().min(1),
+});
+
+type RefineOpportunityInput = z.infer<typeof RefineOpportunityInput>;
+
+/**
+ * Refines an opportunity by extracting structured data from the given
+ * webpage content.
+ *
+ * The most important piece is extracting the tags w/ AI. We try our best to
+ * use existing tags in our database, but if there are no relevant tags, we'll
+ * create a new one.
+ *
+ * @param input - The content of the webpage to extract data from.
+ * @returns Result indicating the success or failure of the operation.
+ */
+export async function refineOpportunity(
+  input: RefineOpportunityInput
+): Promise<Result> {
+  const tags = await db
+    .selectFrom('opportunityTags')
+    .select(['id', 'name'])
+    .orderBy('name', 'asc')
+    .execute();
+
+  const prompt = REFINE_OPPORTUNITY_PROMPT
+    //
+    .replace('$WEBSITE_CONTENT', input.content)
+    .replace('$TAGS', tags.map((tag) => tag.name).join('\n'));
+
+  const completionResult = await getChatCompletion({
+    maxTokens: 500,
+    messages: [{ role: 'user', content: prompt }],
+    system: [{ type: 'text', text: REFINE_OPPORTUNITY_SYSTEM_PROMPT }],
+    temperature: 0,
+  });
+
+  if (!completionResult.ok) {
+    return completionResult;
+  }
+
+  let data: RefineOpportunityResponse;
+
+  try {
+    data = RefineOpportunityResponse.parse(JSON.parse(completionResult.data));
+  } catch (error) {
+    return fail({
+      code: 400,
+      error: 'Failed to parse or validate JSON from AI response.',
+    });
+  }
+
+  const opportunity = await db.transaction().execute(async (trx) => {
+    const companyId = await getMostRelevantCompany(trx, data.company);
+
+    const expiresAt = data.expiresAt ? new Date(data.expiresAt) : undefined;
+
+    const opportunity = await trx
+      .updateTable('opportunities')
+      .set({
+        companyId,
+        description: data.description,
+        expiresAt,
+        title: data.title,
+      })
+      .where('id', '=', input.opportunityId)
+      .returning(['id', 'slackChannelId', 'slackMessageId'])
+      .executeTakeFirstOrThrow();
+
+    // We only want to set this once so that we can evaluate the time it takes
+    // from creation to refinement of an opportunity.
+    await trx
+      .updateTable('opportunities')
+      .set({ refinedAt: new Date() })
+      .where('id', '=', input.opportunityId)
+      .where('refinedAt', 'is', null)
+      .executeTakeFirst();
+
+    const upsertedTags = await trx
+      .insertInto('opportunityTags')
+      .values(
+        data.tags.map((tag) => {
+          return {
+            color: getRandomAccentColor(),
+            id: id(),
+            name: tag,
+          };
+        })
+      )
+      .onConflict((oc) => {
+        // Typically we would just "do nothing", but since we're returning the
+        // "id", we need to update something, even if it's not actually changing
+        // anything.
+        return oc.column('name').doUpdateSet((eb) => {
+          return {
+            name: eb.ref('excluded.name'),
+          };
+        });
+      })
+      .returning(['id'])
+      .execute();
+
+    await trx
+      .insertInto('opportunityTagAssociations')
+      .values(
+        upsertedTags.map((tag) => {
+          return {
+            opportunityId: opportunity.id,
+            tagId: tag.id,
+          };
+        })
+      )
+      .onConflict((oc) => oc.doNothing())
+      .execute();
+
+    return opportunity;
+  });
+
+  const message =
+    'I added this to our opportunities board! 📌\n\n' +
+    `<${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}>`;
+
+  job('notification.slack.send', {
+    channel: opportunity.slackChannelId,
+    message,
+    threadId: opportunity.slackMessageId,
+    workspace: 'regular',
+  });
+
+  return success(opportunity);
+}
+
+// Helpers
 
 /**
  * Finds the most relevant company ID based on the given name.
@@ -216,6 +424,44 @@ async function getMostRelevantCompany(
   }
 
   return null;
+}
+
+// Queries
+
+// "Get Link From Opportunity"
+
+/**
+ * Extracts the first URL found in the Slack message associated with the
+ * opportunity.
+ *
+ * @param opportunityId - ID of the opportunity to get the link from.
+ * @returns First URL of the opportunity or `null` if it doesn't exist.
+ */
+export async function getLinkFromOpportunity(opportunityId: string) {
+  const opportunity = await db
+    .selectFrom('opportunities')
+    .leftJoin('slackMessages', (join) => {
+      return join
+        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
+        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
+    })
+    .select('slackMessages.text')
+    .where('opportunities.id', '=', opportunityId)
+    .executeTakeFirst();
+
+  if (!opportunity) {
+    return null;
+  }
+
+  const link = opportunity.text?.match(
+    /<(https?:\/\/[^\s|>]+)(?:\|[^>]+)?>/
+  )?.[1];
+
+  if (!link) {
+    return null;
+  }
+
+  return link;
 }
 
 // Worker
