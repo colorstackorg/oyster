@@ -26,6 +26,7 @@ const ROUTES = [
   '/opportunities',
   '/opportunities/:id',
   '/opportunities/:id/delete',
+  '/opportunities/:id/edit',
   '/opportunities/:id/refine',
   '/points',
   '/profile',

@@ -643,10 +643,7 @@ function ActivityHistoryItemDescription({
           <div className="flex gap-2">
             <div className="border-r-2 border-r-gray-300" />
 
-            <SlackMessage
-              className="line-clamp-10 [word-break:break-word]"
-              color="gray-500"
-            >
+            <SlackMessage className="line-clamp-10" color="gray-500">
               {activity.messageReactedToText}
             </SlackMessage>
           </div>
