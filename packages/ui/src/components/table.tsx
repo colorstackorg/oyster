@@ -99,12 +99,6 @@ export const Table = ({ columns, data, emptyMessage, rowTo }: TableProps) => {
   );
 };
 
-function getFilteredColumns(columns: TableProps['columns']) {
-  return columns.filter((column) => {
-    return !column.show || !!column.show();
-  });
-}
-
 function TableHead({ columns }: Pick<TableProps, 'columns'>) {
   const headerCellCn = cx(
     'top-0 border-b border-b-gray-200 bg-gray-50 p-2 py-3 text-left'
@@ -241,6 +235,12 @@ function TableBody({
       })}
     </tbody>
   );
+}
+
+function getFilteredColumns(columns: TableProps['columns']) {
+  return columns.filter((column) => {
+    return !column.show || !!column.show();
+  });
 }
 
 // Dropdown
