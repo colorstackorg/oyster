@@ -13,7 +13,6 @@ import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker'
 import { getChatCompletion } from '@/modules/ai/ai';
 import { searchCrunchbaseOrganizations } from '@/modules/employment/queries/search-crunchbase-organizations';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
-import { type RefineOpportunityInput } from '@/modules/opportunity/opportunity.types';
 import { ENV } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 
@@ -31,7 +30,7 @@ const CREATE_OPPORTUNITY_SYSTEM_PROMPT = dedent`
   specific information in a JSON format.
 `;
 
-// Create Opportunity
+// "Create Opportunity"
 
 const CREATE_OPPORTUNITY_PROMPT = dedent`
   Here's the Slack message you need to analyze:
@@ -184,7 +183,7 @@ async function createOpportunity(
   return success(opportunity);
 }
 
-// Refine Opportunity
+// "Refine Opportunity"
 
 const REFINE_OPPORTUNITY_SYSTEM_PROMPT = dedent`
   You are a helpful assistant that extracts structured data from a website's
@@ -205,14 +204,13 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
   4. "expiresAt": The date that the opportunity is no longer relevant, in
      'YYYY-MM-DD' format. If the opportunity seemingly never "closes", set this
      to null.
-  5. "tags": A list of tags that fit this opportunity, maximum 10 tags. If
-     there are no relevant tags, create a NEW tag that you think we should add
-     to the opportunity. Must return at least one tag.
-
-  The most important part of this job is to extract the tags. We have a list
-  in our database that are available to associate with this opportunity. You
-  just need to determine which tags fit this opportunity best (even if it's
-  not one of the existing tags).
+  5. "tags": A list of tags that fit this opportunity, maximum 10 tags. We have
+     a list of existing tags in our database that are available to associate
+     with this opportunity. If there are no relevant tags, create a NEW tag that
+     you think we should add to the opportunity. If you create a new tag, be
+     sure it is different enough from the existing tags, and use sentence
+     case. Must return at least one tag. THIS IS THE MOST IMPORTANT PART OF
+     THIS JOB.
 
   Here's the webpage you need to analyze:
 
@@ -253,6 +251,13 @@ const RefineOpportunityResponse = z.object({
 });
 
 type RefineOpportunityResponse = z.infer<typeof RefineOpportunityResponse>;
+
+export const RefineOpportunityInput = z.object({
+  content: z.string().trim().min(1).max(10_000),
+  opportunityId: z.string().trim().min(1),
+});
+
+type RefineOpportunityInput = z.infer<typeof RefineOpportunityInput>;
 
 export async function refineOpportunity(input: RefineOpportunityInput) {
   const tags = await db
@@ -399,6 +404,44 @@ async function getMostRelevantCompany(
   }
 
   return null;
+}
+
+// Queries
+
+// "Get Link From Opportunity"
+
+/**
+ * Extracts the first URL found in the Slack message associated with the
+ * opportunity.
+ *
+ * @param opportunityId - ID of the opportunity to get the link from.
+ * @returns First URL of the opportunity or `null` if it doesn't exist.
+ */
+export async function getLinkFromOpportunity(opportunityId: string) {
+  const opportunity = await db
+    .selectFrom('opportunities')
+    .leftJoin(
+      'slackMessages',
+      'slackMessages.id',
+      'opportunities.slackMessageId'
+    )
+    .select('slackMessages.text')
+    .where('opportunities.id', '=', opportunityId)
+    .executeTakeFirst();
+
+  if (!opportunity) {
+    return null;
+  }
+
+  const link = opportunity.text?.match(
+    /<(https?:\/\/[^\s|>]+)(?:\|[^>]+)?>/
+  )?.[1];
+
+  if (!link) {
+    return null;
+  }
+
+  return link;
 }
 
 // Worker
