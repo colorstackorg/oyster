@@ -868,11 +868,11 @@ function OpportunitiesTable() {
       columns={columns}
       data={opportunities}
       emptyMessage="No opportunities found."
-      onRowClick={(row) => {
-        navigate({
+      rowTo={(row) => {
+        return {
           pathname: generatePath(Route['/opportunities/:id'], { id: row.id }),
           search: searchParams.toString(),
-        });
+        };
       }}
     />
   );
