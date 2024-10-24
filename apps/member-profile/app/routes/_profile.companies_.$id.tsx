@@ -264,10 +264,7 @@ function OpportunitiesAlert({
       </Text>
 
       <Link
-        className={getButtonCn({
-          size: 'small',
-          variant: 'primary',
-        })}
+        className={getButtonCn({ size: 'small' })}
         to={{
           pathname: Route['/opportunities'],
           search: `?company=${id}`,
