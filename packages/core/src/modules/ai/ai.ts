@@ -152,7 +152,7 @@ type GetChatCompletionInput = {
    * The system prompt to use for the completion. This can be used to provide
    * additional context to the AI model, such as the role of the assistant.
    */
-  system?: SystemPrompt[];
+  system: SystemPrompt[];
 
   /**
    * The temperature to use for the completion. This controls the randomness of
@@ -183,7 +183,7 @@ const AnthropicResponse = z.object({
 export async function getChatCompletion({
   maxTokens,
   messages,
-  system: _system = [],
+  system: _system,
   temperature = 0.5,
 }: GetChatCompletionInput): Promise<Result<string>> {
   await anthropicRateLimiter.process();
@@ -202,10 +202,10 @@ export async function getChatCompletion({
 
   const response = await fetch(ANTHROPIC_API_URL + '/messages', {
     body: JSON.stringify({
-      ...(!!system.length && { system }),
       messages,
       model: 'claude-3-5-sonnet-20240620',
       max_tokens: maxTokens,
+      system,
       temperature,
     }),
     headers: {
