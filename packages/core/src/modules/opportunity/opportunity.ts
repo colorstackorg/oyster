@@ -23,6 +23,68 @@ type OpportunityRecord = DB['opportunities'];
 
 // Use Case(s)
 
+// "Bookmark Opportunity"
+
+type BookmarkOpportunityInput = {
+  memberId: string;
+  opportunityId: string;
+};
+
+/**
+ * Bookmarks an opportunity for a member.
+ *
+ * If the member already bookmarked the opportunity, this function will remove
+ * the bookmark. Otherwise, it will create a new bookmark and give points to
+ * the member who _posted_ the opportunity.
+ *
+ * @param input - The opportunity to bookmark and the member bookmarking it.
+ * @returns Result indicating the success or failure of the operation.
+ */
+export async function bookmarkOpportunity({
+  memberId,
+  opportunityId,
+}: BookmarkOpportunityInput): Promise<Result> {
+  const action = await db.transaction().execute(async (trx) => {
+    const existingBookmark = await trx
+      .deleteFrom('opportunityBookmarks')
+      .where('opportunityId', '=', opportunityId)
+      .where('studentId', '=', memberId)
+      .executeTakeFirst();
+
+    if (existingBookmark.numDeletedRows) {
+      return 'deleted';
+    }
+
+    await trx
+      .insertInto('opportunityBookmarks')
+      .values({ opportunityId, studentId: memberId })
+      .execute();
+
+    return 'created';
+  });
+
+  if (action === 'created') {
+    const opportunity = await db
+      .selectFrom('opportunities')
+      .select('postedBy')
+      .where('id', '=', opportunityId)
+      .executeTakeFirst();
+
+    if (opportunity && opportunity.postedBy) {
+      job('gamification.activity.completed', {
+        opportunityBookmarkedBy: memberId,
+        opportunityId,
+        studentId: opportunity.postedBy,
+        type: 'get_opportunity_bookmark',
+      });
+    }
+  }
+
+  return success({});
+}
+
+// "Create Opportunity"
+
 const CREATE_OPPORTUNITY_SYSTEM_PROMPT = dedent`
   You are a helpful assistant that extracts structured data from Slack messages
   in a tech-focused workspace. Members share opportunities for internships,
@@ -30,8 +92,6 @@ const CREATE_OPPORTUNITY_SYSTEM_PROMPT = dedent`
   role in tech. Your job is to analyze the given Slack message and extract
   specific information in a JSON format.
 `;
-
-// "Create Opportunity"
 
 const CREATE_OPPORTUNITY_PROMPT = dedent`
   Here's the Slack message you need to analyze:

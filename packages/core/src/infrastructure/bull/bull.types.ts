@@ -196,6 +196,12 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         type: z.literal('get_activated'),
       }),
       z.object({
+        opportunityBookmarkedBy: z.string().trim().min(1),
+        opportunityId: z.string().trim().min(1),
+        studentId: CompletedActivity.shape.studentId,
+        type: z.literal('get_opportunity_bookmark'),
+      }),
+      z.object({
         resourceId: z.string().trim().min(1),
         studentId: CompletedActivity.shape.studentId,
         type: z.literal(ActivityType.GET_RESOURCE_UPVOTE),
