@@ -24,6 +24,7 @@ import {
   Circle,
   Plus,
   Tag,
+  X,
 } from 'react-feather';
 import { match } from 'ts-pattern';
 
@@ -61,202 +62,216 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const status = searchParams.get('status');
   const tagsFromSearch = searchParams.getAll('tag');
 
-  const [filteredCompany, companies, tags, opportunities] = await Promise.all([
-    company
-      ? db
-          .selectFrom('companies')
-          .select(['name'])
-          .where('companies.id', '=', company)
-          .executeTakeFirst()
-      : null,
+  const [filteredCompany, filteredTags, companies, tags, opportunities] =
+    await Promise.all([
+      company
+        ? db
+            .selectFrom('companies')
+            .select(['name'])
+            .where('companies.id', '=', company)
+            .executeTakeFirst()
+        : null,
 
-    db
-      .selectFrom('companies')
-      .select(['id', 'name', 'imageUrl'])
-      .orderBy('name', 'asc')
-      .execute(),
-
-    db
-      .selectFrom('opportunityTags')
-      .select(['id', 'name'])
-      .orderBy('name', 'asc')
-      .execute(),
-
-    db
-      .selectFrom('opportunities')
-      .leftJoin('companies', 'companies.id', 'opportunities.companyId')
-      .leftJoin('slackMessages', (join) => {
-        return join
-          .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
-          .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
-      })
-      .leftJoin('students', 'students.id', 'opportunities.postedBy')
-      .select([
-        'companies.id as companyId',
-        'companies.name as companyName',
-        'companies.imageUrl as companyLogo',
-        'opportunities.description',
-        'opportunities.id',
-        'opportunities.title',
-        'opportunities.type',
-        'slackMessages.text as slackMessage',
-        'students.id as posterId',
-        'students.firstName as posterFirstName',
-        'students.lastName as posterLastName',
-        'students.profilePicture as posterProfilePicture',
-
-        (eb) => {
-          return eb
+      tagsFromSearch.length
+        ? db
             .selectFrom('opportunityTags')
-            .leftJoin(
-              'opportunityTagAssociations as associations',
-              'associations.tagId',
-              'opportunityTags.id'
+            .select(['color', 'id', 'name'])
+            .where('opportunityTags.name', 'in', tagsFromSearch)
+            .execute()
+        : null,
+
+      db
+        .selectFrom('companies')
+        .select(['id', 'name', 'imageUrl'])
+        .orderBy('name', 'asc')
+        .execute(),
+
+      db
+        .selectFrom('opportunityTags')
+        .select(['color', 'id', 'name'])
+        .orderBy('name', 'asc')
+        .execute(),
+
+      db
+        .selectFrom('opportunities')
+        .leftJoin('companies', 'companies.id', 'opportunities.companyId')
+        .leftJoin('slackMessages', (join) => {
+          return join
+            .onRef(
+              'slackMessages.channelId',
+              '=',
+              'opportunities.slackChannelId'
             )
-            .whereRef('associations.opportunityId', '=', 'opportunities.id')
-            .select(({ fn, ref }) => {
-              const object = jsonBuildObject({
-                color: ref('opportunityTags.color'),
-                id: ref('opportunityTags.id'),
-                name: ref('opportunityTags.name'),
-              });
+            .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
+        })
+        .leftJoin('students', 'students.id', 'opportunities.postedBy')
+        .select([
+          'companies.id as companyId',
+          'companies.name as companyName',
+          'companies.imageUrl as companyLogo',
+          'opportunities.description',
+          'opportunities.id',
+          'opportunities.title',
+          'opportunities.type',
+          'slackMessages.text as slackMessage',
+          'students.id as posterId',
+          'students.firstName as posterFirstName',
+          'students.lastName as posterLastName',
+          'students.profilePicture as posterProfilePicture',
 
-              return fn
-                .jsonAgg(sql`${object} order by ${ref('name')} asc`)
-                .$castTo<
-                  Array<{
-                    color: PillProps['color'];
-                    id: string;
-                    name: string;
-                  }>
-                >()
-                .as('tags');
-            })
-            .as('tags');
-        },
-
-        (eb) => {
-          return eb
-            .selectFrom('opportunityBookmarks')
-            .whereRef('opportunityId', '=', 'opportunities.id')
-            .select((eb) => {
-              return eb.fn.countAll<string>().as('count');
-            })
-            .as('bookmarks');
-        },
-
-        (eb) => {
-          return eb
-            .exists(() => {
-              return eb
-                .selectFrom('opportunityBookmarks')
-                .whereRef('opportunityId', '=', 'opportunities.id')
-                .where('opportunityBookmarks.studentId', '=', memberId);
-            })
-            .as('bookmarked');
-        },
-      ])
-      .$if(!!tagsFromSearch.length, (qb) => {
-        return qb.where((eb) => {
-          return eb.exists((eb) => {
+          (eb) => {
             return eb
-              .selectFrom('opportunityTagAssociations')
+              .selectFrom('opportunityTags')
               .leftJoin(
-                'opportunityTags',
-                'opportunityTags.id',
-                'opportunityTagAssociations.tagId'
+                'opportunityTagAssociations as associations',
+                'associations.tagId',
+                'opportunityTags.id'
               )
-              .whereRef(
-                'opportunityTagAssociations.opportunityId',
-                '=',
-                'opportunities.id'
-              )
-              .groupBy('opportunities.id')
-              .having(
-                sql`array_agg(opportunity_tags.name)`,
-                '@>',
-                sql<string[]>`${tagsFromSearch}`
-              );
-          });
-        });
-      })
-      .$if(!!bookmarked, (qb) => {
-        return qb.where((eb) => {
-          return eb.exists(() => {
+              .whereRef('associations.opportunityId', '=', 'opportunities.id')
+              .select(({ fn, ref }) => {
+                const object = jsonBuildObject({
+                  color: ref('opportunityTags.color'),
+                  id: ref('opportunityTags.id'),
+                  name: ref('opportunityTags.name'),
+                });
+
+                return fn
+                  .jsonAgg(sql`${object} order by ${ref('name')} asc`)
+                  .$castTo<
+                    Array<{
+                      color: PillProps['color'];
+                      id: string;
+                      name: string;
+                    }>
+                  >()
+                  .as('tags');
+              })
+              .as('tags');
+          },
+
+          (eb) => {
             return eb
               .selectFrom('opportunityBookmarks')
-              .whereRef(
-                'opportunityBookmarks.opportunityId',
-                '=',
-                'opportunities.id'
-              )
-              .where('opportunityBookmarks.studentId', '=', memberId);
+              .whereRef('opportunityId', '=', 'opportunities.id')
+              .select((eb) => {
+                return eb.fn.countAll<string>().as('count');
+              })
+              .as('bookmarks');
+          },
+
+          (eb) => {
+            return eb
+              .exists(() => {
+                return eb
+                  .selectFrom('opportunityBookmarks')
+                  .whereRef('opportunityId', '=', 'opportunities.id')
+                  .where('opportunityBookmarks.studentId', '=', memberId);
+              })
+              .as('bookmarked');
+          },
+        ])
+        .$if(!!tagsFromSearch.length, (qb) => {
+          return qb.where((eb) => {
+            return eb.exists((eb) => {
+              return eb
+                .selectFrom('opportunityTagAssociations')
+                .leftJoin(
+                  'opportunityTags',
+                  'opportunityTags.id',
+                  'opportunityTagAssociations.tagId'
+                )
+                .whereRef(
+                  'opportunityTagAssociations.opportunityId',
+                  '=',
+                  'opportunities.id'
+                )
+                .groupBy('opportunities.id')
+                .having(
+                  sql`array_agg(opportunity_tags.name)`,
+                  '@>',
+                  sql<string[]>`${tagsFromSearch}`
+                );
+            });
           });
-        });
-      })
-      .$if(!!company, (qb) => {
-        return qb.where('opportunities.companyId', '=', company);
-      })
-      .$if(!!date, (qb) => {
-        if (
-          ![
-            'Today',
-            'Last Week',
-            'Last Month',
-            'Last 3 Months',
-            'Last 6 Months',
-          ].includes(date as string)
-        ) {
-          return qb;
-        }
-
-        const tz = getTimezone(request);
-        const startOfToday = dayjs().tz(tz).startOf('day');
-
-        const comparison = match(date)
-          .with('Today', () => {
-            return startOfToday.toDate();
-          })
-          .with('Last Week', () => {
-            return startOfToday.subtract(1, 'week').toDate();
-          })
-          .with('Last Month', () => {
-            return startOfToday.subtract(1, 'month').toDate();
-          })
-          .with('Last 3 Months', () => {
-            return startOfToday.subtract(3, 'month').toDate();
-          })
-          .with('Last 6 Months', () => {
-            return startOfToday.subtract(6, 'month').toDate();
-          })
-          .otherwise(() => {
-            return startOfToday.toDate();
+        })
+        .$if(!!bookmarked, (qb) => {
+          return qb.where((eb) => {
+            return eb.exists(() => {
+              return eb
+                .selectFrom('opportunityBookmarks')
+                .whereRef(
+                  'opportunityBookmarks.opportunityId',
+                  '=',
+                  'opportunities.id'
+                )
+                .where('opportunityBookmarks.studentId', '=', memberId);
+            });
           });
-
-        return qb.where('opportunities.createdAt', '>=', comparison);
-      })
-      .$if(!!status, (qb) => {
-        return match(status)
-          .with('All', () => {
+        })
+        .$if(!!company, (qb) => {
+          return qb.where('opportunities.companyId', '=', company);
+        })
+        .$if(!!date, (qb) => {
+          if (
+            ![
+              'Today',
+              'Last Week',
+              'Last Month',
+              'Last 3 Months',
+              'Last 6 Months',
+            ].includes(date as string)
+          ) {
             return qb;
-          })
-          .with('Open', () => {
-            return qb.where('opportunities.expiresAt', '>', new Date());
-          })
-          .with('Expired', () => {
-            return qb.where('opportunities.expiresAt', '<', new Date());
-          })
-          .otherwise(() => {
-            return qb;
-          });
-      })
-      .orderBy('opportunities.createdAt', 'desc')
-      .execute(),
-  ]);
+          }
+
+          const tz = getTimezone(request);
+          const startOfToday = dayjs().tz(tz).startOf('day');
+
+          const comparison = match(date)
+            .with('Today', () => {
+              return startOfToday.toDate();
+            })
+            .with('Last Week', () => {
+              return startOfToday.subtract(1, 'week').toDate();
+            })
+            .with('Last Month', () => {
+              return startOfToday.subtract(1, 'month').toDate();
+            })
+            .with('Last 3 Months', () => {
+              return startOfToday.subtract(3, 'month').toDate();
+            })
+            .with('Last 6 Months', () => {
+              return startOfToday.subtract(6, 'month').toDate();
+            })
+            .otherwise(() => {
+              return startOfToday.toDate();
+            });
+
+          return qb.where('opportunities.createdAt', '>=', comparison);
+        })
+        .$if(!!status, (qb) => {
+          return match(status)
+            .with('All', () => {
+              return qb;
+            })
+            .with('Open', () => {
+              return qb.where('opportunities.expiresAt', '>', new Date());
+            })
+            .with('Expired', () => {
+              return qb.where('opportunities.expiresAt', '<', new Date());
+            })
+            .otherwise(() => {
+              return qb;
+            });
+        })
+        .orderBy('opportunities.createdAt', 'desc')
+        .execute(),
+    ]);
 
   return json({
     companies,
     filteredCompany,
+    filteredTags,
     opportunities,
     tags,
   });
@@ -269,18 +284,40 @@ export default function OpportunitiesPage() {
         <Dashboard.Title>Opportunities 💰</Dashboard.Title>
       </Dashboard.Header>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <BookmarkFilter />
-        <TagFilter />
-        <CompanyFilter />
-        <DateFilter />
-        <StatusFilter />
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <BookmarkFilter />
+          <TagFilter />
+          <CompanyFilter />
+          <DateFilter />
+          <StatusFilter />
+        </div>
+
+        <ClearFiltersButton />
       </div>
 
       <OpportunitiesTable />
 
       <Outlet />
     </>
+  );
+}
+
+function ClearFiltersButton() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  return (
+    <button
+      className="flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm"
+      onClick={() => {
+        setSearchParams((params) => {
+          return {};
+        });
+      }}
+      type="button"
+    >
+      Clear Filters
+    </button>
   );
 }
 
@@ -580,6 +617,7 @@ function TagFilter() {
   const [open, setOpen] = useState(false);
   const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
   const [searchParams] = useSearchParams();
+  const { filteredTags } = useLoaderData<typeof loader>();
 
   useOnClickOutside(ref, () => {
     setOpen(false);
@@ -587,17 +625,18 @@ function TagFilter() {
 
   const tags = searchParams.getAll('tag');
 
-  const currentTagElements = tags.length ? (
-    <ul className="flex items-center gap-1">
-      {tags.map((tag) => {
-        return (
-          <li key={tag}>
-            <Pill color="pink-100">{tag}</Pill>
-          </li>
-        );
-      })}
-    </ul>
-  ) : null;
+  const currentTagElements =
+    filteredTags && filteredTags.length ? (
+      <ul className="flex items-center gap-1">
+        {filteredTags.map((tag) => {
+          return (
+            <li key={tag.id}>
+              <Pill color={tag.color as PillProps['color']}>{tag.name}</Pill>
+            </li>
+          );
+        })}
+      </ul>
+    ) : null;
 
   // sort the checked ones to the top
 
@@ -662,11 +701,11 @@ function TagPopover() {
       {filteredTags.length ? (
         <ul>
           {selectedTags.map((tag) => {
-            return <TagItem key={tag.id} value={tag.name} />;
+            return <TagItem key={tag.id} color={tag.color} value={tag.name} />;
           })}
 
           {unselectedTags.map((tag) => {
-            return <TagItem key={tag.id} value={tag.name} />;
+            return <TagItem key={tag.id} color={tag.color} value={tag.name} />;
           })}
         </ul>
       ) : (
@@ -680,7 +719,7 @@ function TagPopover() {
   );
 }
 
-function TagItem({ value }: { value: string }) {
+function TagItem({ color, value }: { color: string; value: string }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const tags = searchParams.getAll('tag');
@@ -702,7 +741,7 @@ function TagItem({ value }: { value: string }) {
         }}
         value={value}
       >
-        {value}{' '}
+        <Pill color={color as PillProps['color']}>{value}</Pill>{' '}
         <Check
           className="text-primary data-[checked=false]:invisible"
           data-checked={tags.includes(value)}
