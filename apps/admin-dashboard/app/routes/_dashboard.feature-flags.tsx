@@ -92,7 +92,7 @@ function FeatureFlagsTable() {
     {
       size: '48',
       sticky: true,
-      render: FeatureFlagsTableDropdown,
+      render: (flag) => <FeatureFlagsTableDropdown {...flag} />,
     },
   ];
 

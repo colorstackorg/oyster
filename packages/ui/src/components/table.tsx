@@ -1,3 +1,4 @@
+import { type LinkProps, useNavigate } from '@remix-run/react';
 import React, { type PropsWithChildren } from 'react';
 import { MoreVertical } from 'react-feather';
 import { match } from 'ts-pattern';
@@ -37,6 +38,11 @@ export type TableColumnProps<T extends TableData> = {
     | '400'
     | '800';
 
+  /**
+   * If true, this column will be sticky to the right. Only one column
+   * can/should be sticky. This replaces what used to be the `Dropdown` column,
+   * and is now more flexible.
+   */
   sticky?: boolean;
 };
 
@@ -66,15 +72,17 @@ type TableProps<T extends TableData = any> = {
    */
   emptyMessage?: string;
 
-  onRowClick?(row: T): void;
+  /**
+   * Function that allows us to generate a URL from a row. When this is
+   * provided, the row will be clickable and will navigate to the generated
+   * URL.
+   *
+   * @param row - The row of data that we are generating a URL for.
+   */
+  rowTo?(row: T): LinkProps['to'];
 };
 
-export const Table = ({
-  columns,
-  data,
-  emptyMessage,
-  onRowClick,
-}: TableProps) => {
+export const Table = ({ columns, data, emptyMessage, rowTo }: TableProps) => {
   return (
     <div className="overflow-auto rounded-lg border border-gray-200">
       {!data.length ? (
@@ -84,7 +92,7 @@ export const Table = ({
       ) : (
         <table className="w-full table-fixed border-separate border-spacing-0">
           <TableHead columns={columns} />
-          <TableBody columns={columns} data={data} onRowClick={onRowClick} />
+          <TableBody columns={columns} data={data} rowTo={rowTo} />
         </table>
       )}
     </div>
@@ -96,23 +104,22 @@ function TableHead({ columns }: Pick<TableProps, 'columns'>) {
     'top-0 border-b border-b-gray-200 bg-gray-50 p-2 py-3 text-left'
   );
 
-  const filteredColumns = columns.filter((column) => {
-    return !column.show || !!column.show();
-  });
-
+  const filteredColumns = getFilteredColumns(columns);
   const hasStickyColumn = filteredColumns[filteredColumns.length - 1].sticky;
 
-  const emptyColumn = <th className={headerCellCn} />;
+  // This empty column is used to ensure that all the columns widths are
+  // consistent regardless of the screen size.
+  const emptyCell = <th className={headerCellCn} />;
 
   return (
     <thead>
       <tr>
         {filteredColumns.map((column, i) => {
-          const key = column.displayName || i;
+          const key = column.displayName || i + column.size;
 
           return (
             <React.Fragment key={key}>
-              {column.sticky && emptyColumn}
+              {column.sticky && emptyCell}
 
               <th
                 className={cx(
@@ -140,7 +147,7 @@ function TableHead({ columns }: Pick<TableProps, 'columns'>) {
           );
         })}
 
-        {!hasStickyColumn && emptyColumn}
+        {!hasStickyColumn && emptyCell}
       </tr>
     </thead>
   );
@@ -149,20 +156,21 @@ function TableHead({ columns }: Pick<TableProps, 'columns'>) {
 function TableBody({
   columns,
   data,
-  onRowClick,
-}: Pick<TableProps, 'columns' | 'data' | 'onRowClick'>) {
+  rowTo,
+}: Pick<TableProps, 'columns' | 'data' | 'rowTo'>) {
+  const navigate = useNavigate();
+
   const dataCellCn = cx(
     'whitespace-nowrap border-b border-b-gray-100 bg-white p-2',
-    onRowClick && 'group-hover:bg-gray-50'
+    rowTo && 'group-hover:bg-gray-50'
   );
 
-  const filteredColumns = columns.filter((column) => {
-    return !column.show || !!column.show();
-  });
-
+  const filteredColumns = getFilteredColumns(columns);
   const hasStickyColumn = filteredColumns[filteredColumns.length - 1].sticky;
 
-  const emptyColumn = <td className={dataCellCn} />;
+  // This empty column is used to ensure that all the columns widths are
+  // consistent regardless of the screen size.
+  const emptyCell = <td className={dataCellCn} />;
 
   return (
     <tbody>
@@ -171,12 +179,17 @@ function TableBody({
           <tr
             className="group border-b border-b-gray-100 last:border-b-0"
             key={row.id}
-            {...(onRowClick && {
+            // We'll provide some additional props to make the row interactive
+            // if we have a `rowTo` function.
+            {...(rowTo && {
               'aria-label': 'View Details',
               role: 'button',
               tabIndex: 0,
 
               onClick(e) {
+                // We find the closest interactive element to the click target
+                // to ensure that we don't trigger the row click if the user
+                // clicked on a button or link inside of the row.
                 const isInteractiveElement = (e.target as HTMLElement).closest(
                   'a, button, [tabindex]:not([tabindex="-1"])'
                 );
@@ -184,46 +197,50 @@ function TableBody({
                 // As long as the click target is actually the row, then we
                 // want to trigger the row click.
                 if (isInteractiveElement?.tagName === 'TR') {
-                  onRowClick(row);
+                  navigate(rowTo(row));
                 }
               },
 
               onKeyDown(e) {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  onRowClick(row);
+                  navigate(rowTo(row));
                 }
               },
             })}
           >
-            {columns
-              .filter((column) => !column.show || !!column.show())
-              .map((column, i) => {
-                const key = (column.displayName || i) + row.id;
+            {filteredColumns.map((column, i) => {
+              const key = row.id + (column.displayName || i + column.size);
 
-                return (
-                  <React.Fragment key={key}>
-                    {column.sticky && emptyColumn}
+              return (
+                <React.Fragment key={key}>
+                  {column.sticky && emptyCell}
 
-                    <td
-                      className={cx(
-                        dataCellCn,
-                        column.sticky && 'sticky right-0',
-                        'overflow-hidden text-ellipsis text-left'
-                      )}
-                    >
-                      {column.render(row)}
-                    </td>
-                  </React.Fragment>
-                );
-              })}
+                  <td
+                    className={cx(
+                      dataCellCn,
+                      column.sticky && 'sticky right-0',
+                      'overflow-hidden text-ellipsis text-left'
+                    )}
+                  >
+                    {column.render(row)}
+                  </td>
+                </React.Fragment>
+              );
+            })}
 
-            {!hasStickyColumn && emptyColumn}
+            {!hasStickyColumn && emptyCell}
           </tr>
         );
       })}
     </tbody>
   );
+}
+
+function getFilteredColumns(columns: TableProps['columns']) {
+  return columns.filter((column) => {
+    return !column.show || !!column.show();
+  });
 }
 
 // Dropdown

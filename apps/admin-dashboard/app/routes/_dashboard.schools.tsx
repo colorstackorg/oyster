@@ -204,7 +204,7 @@ function SchoolsTable() {
     {
       size: '48',
       sticky: true,
-      render: SchoolsTableDropdown,
+      render: (school) => <SchoolsTableDropdown {...school} />,
     },
   ];
 

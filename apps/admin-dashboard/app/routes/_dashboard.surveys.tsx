@@ -154,7 +154,7 @@ function SurveysTable() {
     {
       size: '48',
       sticky: true,
-      render: SurveyDropdown,
+      render: (survey) => <SurveyDropdown {...survey} />,
     },
   ];
 

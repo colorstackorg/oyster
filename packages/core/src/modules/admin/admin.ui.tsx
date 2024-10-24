@@ -133,6 +133,7 @@ export function AdminTable({ admins }: AdminTableProps) {
     },
     {
       size: '48',
+      sticky: true,
       render: (admin) => {
         if (!admin.canRemove) {
           return null;
@@ -140,7 +141,6 @@ export function AdminTable({ admins }: AdminTableProps) {
 
         return <AdminDropdown {...admin} />;
       },
-      sticky: true,
     },
   ];
 

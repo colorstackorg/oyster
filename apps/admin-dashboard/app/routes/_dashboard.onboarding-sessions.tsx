@@ -181,7 +181,7 @@ function OnboardingSessionsTable() {
     {
       size: '48',
       sticky: true,
-      render: OnboardingSessionsDropdown,
+      render: (session) => <OnboardingSessionsDropdown {...session} />,
     },
   ];
 

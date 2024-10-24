@@ -228,7 +228,7 @@ function StudentsTable() {
     {
       size: '48',
       sticky: true,
-      render: StudentDropdown,
+      render: (student) => <StudentDropdown {...student} />,
     },
   ];
 

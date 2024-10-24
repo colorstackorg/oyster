@@ -434,7 +434,7 @@ function RepeatablesTable() {
     {
       size: '48',
       sticky: true,
-      render: RepeatableDropdown,
+      render: (repeatable) => <RepeatableDropdown {...repeatable} />,
     },
   ];
 
@@ -521,22 +521,7 @@ function JobsTable() {
     {
       displayName: 'ID',
       size: '120',
-      render: (job) => {
-        return (
-          <Link
-            className="link"
-            to={{
-              pathname: generatePath(Route['/bull/:queue/jobs/:id'], {
-                id: job.id,
-                queue,
-              }),
-              search,
-            }}
-          >
-            {job.id}
-          </Link>
-        );
-      },
+      render: (job) => job.id,
     },
     {
       displayName: 'Name',
@@ -594,12 +579,27 @@ function JobsTable() {
     },
     {
       size: '48',
-      render: JobDropdown,
+      render: (job) => <JobDropdown {...job} />,
       sticky: true,
     },
   ];
 
-  return <Table columns={columns} data={jobs} emptyMessage="No jobs found." />;
+  return (
+    <Table
+      columns={columns}
+      data={jobs}
+      emptyMessage="No jobs found."
+      rowTo={(job) => {
+        return {
+          pathname: generatePath(Route['/bull/:queue/jobs/:id'], {
+            id: job.id,
+            queue,
+          }),
+          search,
+        };
+      }}
+    />
+  );
 }
 
 function JobDropdown({ id, status }: JobInView) {

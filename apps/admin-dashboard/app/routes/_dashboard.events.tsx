@@ -192,7 +192,7 @@ function EventsTable() {
     {
       size: '48',
       sticky: true,
-      render: EventDropdown,
+      render: (event) => <EventDropdown {...event} />,
     },
   ];
 

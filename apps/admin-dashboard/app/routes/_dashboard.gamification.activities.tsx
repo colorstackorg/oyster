@@ -119,7 +119,7 @@ function ActivitiesTable() {
     {
       size: '48',
       sticky: true,
-      render: ActivitiesTableDropdown,
+      render: (activity) => <ActivitiesTableDropdown {...activity} />,
     },
   ];
 

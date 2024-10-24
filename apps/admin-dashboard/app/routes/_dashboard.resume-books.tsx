@@ -167,7 +167,7 @@ function ResumeBooksTable() {
     {
       size: '48',
       sticky: true,
-      render: ResumeBookDropdown,
+      render: (resumeBook) => <ResumeBookDropdown {...resumeBook} />,
     },
   ];
 
