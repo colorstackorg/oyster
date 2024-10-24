@@ -11,56 +11,52 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const id = params.id as string;
-
-  await bookmarkOpportunity(id, user(session));
+  await bookmarkOpportunity({
+    memberId: user(session),
+    opportunityId: params.id as string,
+  });
 
   return json({});
 }
 
-type BookmarkProps = {
+// Components
+
+type BookmarkButtonProps = {
   bookmarked: boolean;
-  bookmarks: number | string;
-  id: string;
+  className?: string;
 };
 
-export function BookmarkForm({
-  children,
-  id,
-}: PropsWithChildren<Pick<BookmarkProps, 'id'>>) {
-  return (
-    <RemixForm
-      action={generatePath('/opportunities/:id/bookmark', { id })}
-      method="post"
-      navigate={false}
-    >
-      <input type="hidden" name="opportunityId" value={id} />
-      {children}
-    </RemixForm>
-  );
-}
-
-export function BookmarkButton({
-  bookmarked,
-  className,
-}: Pick<BookmarkProps, 'bookmarked'> & { className?: string }) {
+export function BookmarkButton({ bookmarked, className }: BookmarkButtonProps) {
   return (
     <IconButton
       className={cx(
-        'text-gray-300 hover:bg-gray-100 hover:text-amber-400 data-[bookmarked=true]:text-amber-400',
+        bookmarked ? 'text-amber-400' : 'text-gray-300 hover:text-amber-400',
         className
       )}
-      data-bookmarked={!!bookmarked}
-      icon={
-        <Bookmark
-          color="currentColor"
-          fill={bookmarked ? 'currentColor' : 'none'}
-          size={20}
-        />
-      }
+      icon={<Bookmark fill={bookmarked ? 'currentColor' : 'none'} size={20} />}
+      backgroundColorOnHover="gray-100"
       name="action"
       type="submit"
       value="bookmark"
     />
+  );
+}
+
+type BookmarkFormProps = PropsWithChildren<{
+  opportunityId: string;
+}>;
+
+export function BookmarkForm({ children, opportunityId }: BookmarkFormProps) {
+  return (
+    <RemixForm
+      action={generatePath('/opportunities/:id/bookmark', {
+        id: opportunityId,
+      })}
+      method="post"
+      navigate={false}
+    >
+      <input type="hidden" name="opportunityId" value={opportunityId} />
+      {children}
+    </RemixForm>
   );
 }

@@ -447,7 +447,7 @@ async function queueSlackNotification({
 }: Pick<CompletedActivity, 'points' | 'studentId'>) {
   // We'll only send Slack notifications for activities that grant 10 or more
   // points.
-  if (points < 10) {
+  if (points <= 10) {
     return;
   }
 
