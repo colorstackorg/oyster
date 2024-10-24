@@ -1,3 +1,6 @@
+// NOTE: If something here is changed, then the `getRandomAccentColor` function
+// in the core package needs to be updated to match.
+
 export type AccentColor =
   | 'amber-100'
   | 'blue-100'

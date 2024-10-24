@@ -802,7 +802,7 @@ function OpportunitiesTable() {
             <Link
               className={getButtonCn({ size: 'xs', variant: 'secondary' })}
               to={{
-                pathname: generatePath(Route['/opportunities/:id/context'], {
+                pathname: generatePath(Route['/opportunities/:id/refine'], {
                   id: opportunity.id,
                 }),
                 search: searchParams.toString(),

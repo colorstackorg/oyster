@@ -58,7 +58,6 @@ export default function ProfileLayout() {
               <>
                 <Dashboard.NavigationLink
                   icon={<Book />}
-                  isNew
                   label="Resume Book"
                   pathname={generatePath(Route['/resume-books/:id'], {
                     id: resumeBook.id,
