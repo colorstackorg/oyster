@@ -36,6 +36,7 @@ export const BullQueue = {
   NOTIFICATION: 'notification',
   ONBOARDING_SESSION: 'onboarding_session',
   ONE_TIME_CODE: 'one_time_code',
+  OPPORTUNITY: 'opportunity',
   PROFILE: 'profile',
   SLACK: 'slack',
   STUDENT: 'student',
@@ -367,6 +368,16 @@ export const OneTimeCodeBullJob = z.discriminatedUnion('name', [
   }),
 ]);
 
+export const OpportunityBullJob = z.discriminatedUnion('name', [
+  z.object({
+    name: z.literal('opportunity.create'),
+    data: z.object({
+      slackChannelId: z.string().trim().min(1),
+      slackMessageId: z.string().trim().min(1),
+    }),
+  }),
+]);
+
 export const ProfileBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('profile.views.notification.monthly'),
@@ -605,6 +616,7 @@ export const BullJob = z.union([
   NotificationBullJob,
   OnboardingSessionBullJob,
   OneTimeCodeBullJob,
+  OpportunityBullJob,
   ProfileBullJob,
   SlackBullJob,
   StudentBullJob,
