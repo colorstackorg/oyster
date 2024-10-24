@@ -54,7 +54,7 @@ export async function getCompany<
           .selectFrom('opportunities')
           .select(eb.fn.countAll<string>().as('count'))
           .whereRef('opportunities.companyId', '=', 'companies.id')
-          .where('opportunities.expiresAt', '>', sql<Date>`now()`)
+          .where('opportunities.expiresAt', '>', new Date())
           .as('openOpportunities');
       });
     })

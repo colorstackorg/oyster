@@ -105,20 +105,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
         'students.lastName as posterLastName',
         'students.profilePicture as posterProfilePicture',
 
-        ({ ref }) => {
-          const field = ref('opportunities.createdAt');
-          const format = 'MM/DD/YY';
-
-          return sql<string>`to_char(${field}, ${format})`.as('createdAt');
-        },
-
-        ({ ref }) => {
-          const field = ref('opportunities.expiresAt');
-          const format = 'MM/DD/YY';
-
-          return sql<string>`to_char(${field}, ${format})`.as('expiresAt');
-        },
-
         (eb) => {
           return eb
             .selectFrom('opportunityTags')
@@ -255,10 +241,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
             return qb;
           })
           .with('Open', () => {
-            return qb.where('opportunities.expiresAt', '>', sql<Date>`now()`);
+            return qb.where('opportunities.expiresAt', '>', new Date());
           })
           .with('Expired', () => {
-            return qb.where('opportunities.expiresAt', '<', sql<Date>`now()`);
+            return qb.where('opportunities.expiresAt', '<', new Date());
           })
           .otherwise(() => {
             return qb;
@@ -824,16 +810,6 @@ function OpportunitiesTable() {
       },
     },
     {
-      displayName: 'Posted On',
-      size: '120',
-      render: (opportunity) => opportunity.createdAt,
-    },
-    {
-      displayName: 'Expires On',
-      size: '120',
-      render: (opportunity) => opportunity.expiresAt,
-    },
-    {
       size: '80',
       sticky: true,
       render: (opportunity) => {
@@ -842,8 +818,6 @@ function OpportunitiesTable() {
             <BookmarkButton
               bookmarked={!!opportunity.bookmarked}
               className="mx-auto"
-              // bookmarks={opportunity.bookmarks || 0}
-              // id={opportunity.id}
             />
           </BookmarkForm>
         );

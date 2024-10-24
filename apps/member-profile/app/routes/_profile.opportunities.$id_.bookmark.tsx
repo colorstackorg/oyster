@@ -4,8 +4,7 @@ import { type PropsWithChildren } from 'react';
 import { Bookmark } from 'react-feather';
 
 import { bookmarkOpportunity } from '@oyster/core/opportunities';
-import { cx, IconButton, Text } from '@oyster/ui';
-import { sleep } from '@oyster/utils';
+import { cx, IconButton } from '@oyster/ui';
 
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 

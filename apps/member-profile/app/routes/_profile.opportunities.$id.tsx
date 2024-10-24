@@ -57,8 +57,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'companies.id as companyId',
       'companies.imageUrl as companyLogo',
       'companies.name as companyName',
+      'opportunities.createdAt',
       'opportunities.description',
-      'opportunities.expiresAt as closeDate',
+      'opportunities.expiresAt',
       'opportunities.id',
       'opportunities.title',
       'opportunities.type',
@@ -69,20 +70,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'students.firstName as posterFirstName',
       'students.lastName as posterLastName',
       'students.profilePicture as posterProfilePicture',
-
-      ({ ref }) => {
-        const field = ref('opportunities.createdAt');
-        const format = 'MM/DD/YY';
-
-        return sql<string>`to_char(${field}, ${format})`.as('createdDate');
-      },
-
-      ({ ref }) => {
-        const field = ref('opportunities.expiresAt');
-        const format = 'MM/DD/YY';
-
-        return sql<string>`to_char(${field}, ${format})`.as('closeDate');
-      },
 
       (eb) => {
         return eb
@@ -145,7 +132,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
+  // console.log(opportunity.expiresAt, dayjs().to(dayjs(opportunity.expiresAt)));
+
   Object.assign(opportunity, {
+    createdAt: dayjs().to(opportunity.createdAt),
+    expiresAt:
+      opportunity.expiresAt > new Date()
+        ? dayjs(opportunity.expiresAt).to(new Date())
+        : dayjs().to(opportunity.expiresAt),
+
     slackMessageText: emojify(opportunity.slackMessageText || '', {
       fallback: '',
     }),
@@ -205,8 +200,8 @@ export default function EditOpportunity() {
             </BookmarkForm>
 
             <Text color="gray-500" variant="sm">
-              Posted: {opportunity.createdDate} &bull; Expires:{' '}
-              {opportunity.closeDate}
+              Posted {opportunity.createdAt} ago &bull; Expires in{' '}
+              {opportunity.expiresAt}
             </Text>
           </div>
         </div>
@@ -252,6 +247,8 @@ export default function EditOpportunity() {
       {opportunity.description && (
         <Text color="gray-500">{opportunity.description}</Text>
       )}
+
+      <div />
 
       <SlackMessageCard
         channelId={opportunity.slackMessageChannelId || ''}

@@ -34,7 +34,8 @@ export async function listCompanies<
         eb.exists(() => {
           return eb
             .selectFrom('opportunities')
-            .whereRef('opportunities.companyId', '=', 'companies.id');
+            .whereRef('opportunities.companyId', '=', 'companies.id')
+            .where('opportunities.expiresAt', '>', new Date());
         }),
       ]);
     })
@@ -89,6 +90,7 @@ export async function listCompanies<
             .selectFrom('opportunities')
             .select(eb.fn.countAll<string>().as('count'))
             .whereRef('opportunities.companyId', '=', 'companies.id')
+            .where('opportunities.expiresAt', '>', new Date())
             .as('opportunities');
         },
 
