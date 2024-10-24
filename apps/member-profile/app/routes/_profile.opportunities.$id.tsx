@@ -6,13 +6,11 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { sql } from 'kysely';
-import { jsonBuildObject } from 'kysely/helpers/postgres';
 import { emojify } from 'node-emoji';
 import { Edit } from 'react-feather';
 
-import { db } from '@oyster/db';
-import { getIconButtonCn, Modal, Pill, type PillProps, Text } from '@oyster/ui';
+import { getOpportunityDetails } from '@oyster/core/opportunities';
+import { getIconButtonCn, Modal, Pill, Text } from '@oyster/ui';
 
 import {
   BookmarkButton,
@@ -26,115 +24,23 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const memberId = user(session);
+  const opportunityId = params.id as string;
 
-  // either was posted by the member or the member is an admin
-  const hasEditPermission = await db
-    .selectFrom('opportunities')
-    .where('opportunities.id', '=', params.id as string)
-    .where((eb) => {
-      return eb.or([
-        eb('opportunities.postedBy', '=', memberId),
-        eb.exists(() => {
-          return eb
-            .selectFrom('admins')
-            .where('admins.memberId', '=', memberId)
-            .where('admins.deletedAt', 'is not', null);
-        }),
-      ]);
-    })
-    .executeTakeFirst();
-
-  const opportunity = await db
-    .selectFrom('opportunities')
-    .leftJoin('companies', 'companies.id', 'opportunities.companyId')
-    .leftJoin('students', 'students.id', 'opportunities.postedBy')
-    .leftJoin('slackMessages', (join) => {
-      return join
-        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
-        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
-    })
-    .select([
-      'companies.id as companyId',
-      'companies.imageUrl as companyLogo',
-      'companies.name as companyName',
-      'opportunities.createdAt',
-      'opportunities.description',
-      'opportunities.expiresAt',
-      'opportunities.id',
-      'opportunities.title',
-      'slackMessages.channelId as slackMessageChannelId',
-      'slackMessages.id as slackMessageId',
-      'slackMessages.createdAt as slackMessagePostedAt',
-      'slackMessages.text as slackMessageText',
-      'students.firstName as posterFirstName',
-      'students.lastName as posterLastName',
-      'students.profilePicture as posterProfilePicture',
-
-      (eb) => {
-        return eb
-          .selectFrom('opportunityTagAssociations')
-          .leftJoin(
-            'opportunityTags',
-            'opportunityTags.id',
-            'opportunityTagAssociations.tagId'
-          )
-          .whereRef('opportunityId', '=', 'opportunities.id')
-          .select(({ fn, ref }) => {
-            const object = jsonBuildObject({
-              color: ref('opportunityTags.color'),
-              id: ref('opportunityTags.id'),
-              name: ref('opportunityTags.name'),
-            });
-
-            return fn
-              .jsonAgg(sql`${object} order by ${ref('name')} asc`)
-              .$castTo<
-                Array<{
-                  color: PillProps['color'];
-                  id: string;
-                  name: string;
-                }>
-              >()
-              .as('tags');
-          })
-          .as('tags');
-      },
-
-      (eb) => {
-        return eb
-          .selectFrom('opportunityBookmarks')
-          .whereRef('opportunityId', '=', 'opportunities.id')
-          .select((eb) => {
-            return eb.fn.countAll<string>().as('count');
-          })
-          .as('bookmarks');
-      },
-
-      (eb) => {
-        return eb
-          .exists(() => {
-            return eb
-              .selectFrom('opportunityBookmarks')
-              .whereRef('opportunityId', '=', 'opportunities.id')
-              .where('opportunityBookmarks.studentId', '=', memberId);
-          })
-          .as('bookmarked');
-      },
-    ])
-    .where('opportunities.id', '=', params.id as string)
-    .executeTakeFirst();
+  const opportunity = await getOpportunityDetails({
+    memberId,
+    opportunityId,
+  });
 
   if (!opportunity) {
     throw new Response(null, {
       status: 404,
-      statusText: 'The opportunity you are trying to edit does not exist.',
+      statusText: 'The opportunity you are looking for does not exist.',
     });
   }
 
-  // console.log(opportunity.expiresAt, dayjs().to(dayjs(opportunity.expiresAt)));
-
   Object.assign(opportunity, {
     createdAt: dayjs().to(opportunity.createdAt),
+
     expiresAt:
       opportunity.expiresAt > new Date()
         ? dayjs(opportunity.expiresAt).to(new Date())
@@ -143,18 +49,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     slackMessageText: emojify(opportunity.slackMessageText || '', {
       fallback: '',
     }),
+
     slackMessagePostedAt: dayjs().to(opportunity.slackMessagePostedAt),
   });
 
-  return json({ hasEditPermission, opportunity });
+  return json(opportunity);
 }
 
-export async function action() {
-  return json({});
-}
-
-export default function EditOpportunity() {
-  const { hasEditPermission, opportunity } = useLoaderData<typeof loader>();
+export default function Opportunity() {
   const [searchParams] = useSearchParams();
 
   return (
@@ -166,98 +68,153 @@ export default function EditOpportunity() {
     >
       <Modal.Header>
         <div className="flex flex-col gap-2">
-          {opportunity.companyId && opportunity.companyName && (
-            <Link
-              className="w-fit cursor-pointer hover:underline"
-              target="_blank"
-              to={generatePath(Route['/companies/:id'], {
-                id: opportunity.companyId,
-              })}
-            >
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
-                  <img
-                    alt={opportunity.companyName}
-                    className="aspect-square h-full w-full rounded-md"
-                    src={opportunity.companyLogo as string}
-                  />
-                </div>
-
-                <Text variant="sm">{opportunity.companyName}</Text>
-              </div>
-            </Link>
-          )}
-
-          <div className="flex flex-col gap-1">
-            <BookmarkForm id={opportunity.id}>
-              <Text className="inline" variant="lg">
-                <span className="mr-2">{opportunity.title}</span>
-                <span className="inline-flex align-top">
-                  <BookmarkButton bookmarked={!!opportunity.bookmarked} />
-                </span>
-              </Text>
-            </BookmarkForm>
-
-            <Text color="gray-500" variant="sm">
-              Posted {opportunity.createdAt} ago &bull; Expires in{' '}
-              {opportunity.expiresAt}
-            </Text>
-          </div>
+          <CompanyLink />
+          <OpportunityTitle />
         </div>
 
         <div className="flex items-center gap-[inherit]">
-          {hasEditPermission && (
-            <>
-              <Link
-                className={getIconButtonCn({
-                  backgroundColor: 'gray-100',
-                  backgroundColorOnHover: 'gray-200',
-                })}
-                to={{
-                  pathname: generatePath(Route['/opportunities/:id/edit'], {
-                    id: opportunity.id,
-                  }),
-                  search: searchParams.toString(),
-                }}
-              >
-                <Edit />
-              </Link>
-
-              <div className="h-6 w-[1px] bg-gray-100" />
-            </>
-          )}
-
+          <EditOpportunityButton />
           <Modal.CloseButton />
         </div>
       </Modal.Header>
 
-      {opportunity.tags && (
-        <ul className="flex flex-wrap items-center gap-1">
-          {opportunity.tags.map((tag) => {
-            return (
-              <li key={tag.id}>
-                <Pill color={tag.color}>{tag.name}</Pill>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      {opportunity.description && (
-        <Text color="gray-500">{opportunity.description}</Text>
-      )}
-
+      <OpportunityTags />
+      <OpportunityDescription />
       <div />
-
-      <SlackMessageCard
-        channelId={opportunity.slackMessageChannelId || ''}
-        messageId={opportunity.id}
-        postedAt={opportunity.slackMessagePostedAt || ''}
-        posterFirstName={opportunity.posterFirstName || ''}
-        posterLastName={opportunity.posterLastName || ''}
-        posterProfilePicture={opportunity.posterProfilePicture || ''}
-        text={opportunity.slackMessageText || ''}
-      />
+      <OpportunitySlackMessage />
     </Modal>
+  );
+}
+
+function CompanyLink() {
+  const { companyId, companyLogo, companyName } =
+    useLoaderData<typeof loader>();
+
+  if (!companyId || !companyName) {
+    return null;
+  }
+
+  return (
+    <Link
+      className="w-fit cursor-pointer hover:underline"
+      target="_blank"
+      to={generatePath(Route['/companies/:id'], { id: companyId })}
+    >
+      <div className="flex items-center gap-2">
+        <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
+          <img
+            alt={companyName}
+            className="aspect-square h-full w-full rounded-md"
+            src={companyLogo as string}
+          />
+        </div>
+
+        <Text variant="sm">{companyName}</Text>
+      </div>
+    </Link>
+  );
+}
+
+function OpportunityTitle() {
+  const { bookmarked, createdAt, expiresAt, id, title } =
+    useLoaderData<typeof loader>();
+
+  return (
+    <div className="flex flex-col gap-1">
+      <BookmarkForm opportunityId={id}>
+        <Text className="inline" variant="lg">
+          <span className="mr-2">{title}</span>
+          <span className="inline-flex align-top">
+            <BookmarkButton bookmarked={!!bookmarked} />
+          </span>
+        </Text>
+      </BookmarkForm>
+
+      <Text color="gray-500" variant="sm">
+        Posted {createdAt} ago &bull; Expires in {expiresAt}
+      </Text>
+    </div>
+  );
+}
+
+function EditOpportunityButton() {
+  const { hasWritePermission, id } = useLoaderData<typeof loader>();
+  const [searchParams] = useSearchParams();
+
+  if (!hasWritePermission) {
+    return null;
+  }
+
+  return (
+    <>
+      <Link
+        className={getIconButtonCn({
+          backgroundColor: 'gray-100',
+          backgroundColorOnHover: 'gray-200',
+        })}
+        to={{
+          pathname: generatePath(Route['/opportunities/:id/edit'], { id }),
+          search: searchParams.toString(),
+        }}
+      >
+        <Edit />
+      </Link>
+
+      <div className="h-6 w-[1px] bg-gray-100" />
+    </>
+  );
+}
+
+function OpportunityTags() {
+  const { tags } = useLoaderData<typeof loader>();
+
+  if (!tags) {
+    return null;
+  }
+
+  return (
+    <ul className="flex flex-wrap items-center gap-1">
+      {tags.map((tag) => {
+        return (
+          <li key={tag.id}>
+            <Pill color={tag.color}>{tag.name}</Pill>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function OpportunityDescription() {
+  const { description } = useLoaderData<typeof loader>();
+
+  if (!description) {
+    return null;
+  }
+
+  return <Text color="gray-500">{description}</Text>;
+}
+
+function OpportunitySlackMessage() {
+  const {
+    id,
+    posterFirstName,
+    posterLastName,
+    posterProfilePicture,
+    slackMessageChannelId,
+    slackMessagePostedAt,
+    slackMessageText,
+  } = useLoaderData<typeof loader>();
+
+  return (
+    <SlackMessageCard
+      channelId={slackMessageChannelId || ''}
+      messageId={id}
+      postedAt={slackMessagePostedAt || ''}
+      posterFirstName={posterFirstName || ''}
+      posterLastName={posterLastName || ''}
+      posterProfilePicture={posterProfilePicture || ''}
+      text={slackMessageText || ''}
+    />
   );
 }
