@@ -13,7 +13,13 @@ import {
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
-import { useRef, useState } from 'react';
+import React, {
+  createContext,
+  type PropsWithChildren,
+  useContext,
+  useRef,
+  useState,
+} from 'react';
 import {
   Bookmark,
   Briefcase,
@@ -22,18 +28,21 @@ import {
   ChevronDown,
   Circle,
   Tag,
+  X,
   Zap,
 } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
 import {
+  type AccentColor,
   cx,
   Dashboard,
   getButtonCn,
   Pill,
   type PillProps,
   ProfilePicture,
+  setInputValue,
   Table,
   type TableColumnProps,
   Text,
@@ -71,7 +80,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       company
         ? db
             .selectFrom('companies')
-            .select(['name'])
+            .select(['id', 'name'])
             .where('companies.id', '=', company)
             .executeTakeFirst()
         : null,
@@ -466,13 +475,11 @@ function ClearFiltersButton() {
     <button
       className="flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm"
       onClick={() => {
-        setSearchParams(() => {
-          return {};
-        });
+        setSearchParams({});
       }}
       type="button"
     >
-      Clear Filters
+      Clear Filters <X className="text-gray-500" size={16} />
     </button>
   );
 }
@@ -483,11 +490,9 @@ function BookmarkFilter() {
   const bookmarked = searchParams.has('bookmarked');
 
   return (
-    <button
-      className={cx(
-        'flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm',
-        bookmarked && 'border-primary bg-primary text-white'
-      )}
+    <FilterButton
+      active={bookmarked}
+      icon={<Bookmark />}
       onClick={() => {
         setSearchParams((params) => {
           if (params.has('bookmarked')) {
@@ -499,408 +504,403 @@ function BookmarkFilter() {
           return params;
         });
       }}
-      type="button"
     >
-      <Bookmark className={bookmarked ? '' : 'text-primary'} size={16} />{' '}
-      <span>Bookmarked</span>
-    </button>
+      Bookmarked
+    </FilterButton>
   );
 }
 
 function CompanyFilter() {
-  const [open, setOpen] = useState(false);
-  const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
-  const [searchParams] = useSearchParams();
-  const { filteredCompany } = useLoaderData<typeof loader>();
+  return (
+    <FilterContainer>
+      <FilterButton icon={<Briefcase />} popover>
+        Company
+      </FilterButton>
 
-  useOnClickOutside(ref, () => {
-    setOpen(false);
+      <FilterPopover>
+        <FilterSearch />
+        <CompanyList />
+      </FilterPopover>
+    </FilterContainer>
+  );
+}
+
+function CompanyList() {
+  const { companies, filteredCompany } = useLoaderData<typeof loader>();
+  const { search } = useContext(FilterContext);
+
+  const matchedCompanies = companies.filter((company) => {
+    return company.name.toLowerCase().startsWith(search.toLowerCase());
   });
 
-  const company = searchParams.get('company');
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        className={cx(
-          'flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm',
-          'focus:border-primary'
-        )}
-        onClick={() => {
-          setOpen((value) => !value);
-        }}
-        type="button"
-      >
-        <Briefcase className="text-primary" size={16} /> <span>Company</span>
-        {!!filteredCompany && (
-          <Pill color="pink-100">{filteredCompany.name}</Pill>
-        )}
-        <ChevronDown className="ml-2 text-primary" size={16} />
-      </button>
-
-      {open && <CompanyPopover />}
+  return matchedCompanies.length ? (
+    <ul className="overflow-auto">
+      {matchedCompanies.map((company) => {
+        return (
+          <PopoverItem
+            checked={company.id === filteredCompany?.id}
+            key={company.id}
+            name="company"
+            value={company.name}
+          />
+        );
+      })}
+    </ul>
+  ) : (
+    <div className="p-2">
+      <Text color="gray-500" variant="sm">
+        No companies found.
+      </Text>
     </div>
-  );
-}
-
-function CompanyPopover() {
-  const [search, setSearch] = useState('');
-  const [searchParams] = useSearchParams();
-  const { companies } = useLoaderData<typeof loader>();
-
-  return (
-    <div className="absolute top-full z-10 mt-1 flex max-h-60 w-max flex-col gap-2 overflow-auto rounded-lg border border-gray-300 bg-white p-2">
-      <input
-        autoComplete="off"
-        autoFocus
-        className="border-b border-b-gray-300 p-2 text-sm"
-        name="search"
-        onChange={(e) => {
-          setSearch(e.currentTarget.value);
-        }}
-        placeholder="Search..."
-        type="text"
-      />
-
-      {companies.length ? (
-        <ul>
-          {companies.map((company) => {
-            return (
-              <CompanyItem
-                key={company.id}
-                id={company.id}
-                name={company.name}
-              />
-            );
-          })}
-        </ul>
-      ) : (
-        <div className="p-2">
-          <Text color="gray-500" variant="sm">
-            No companies found.
-          </Text>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function CompanyItem({ id, name }: { id: string; name: string }) {
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const tags = searchParams.getAll('tag');
-
-  return (
-    <li className="rounded-lg hover:bg-gray-50">
-      <button
-        className="flex w-full items-center justify-between gap-4 px-2 py-3 text-left text-sm"
-        onClick={(e) => {
-          setSearchParams((params) => {
-            if (params.get('company') === e.currentTarget.value) {
-              params.delete('company');
-            } else {
-              params.set('company', e.currentTarget.value);
-            }
-
-            return params;
-          });
-        }}
-        value={id}
-      >
-        {name}{' '}
-        <Check
-          className="text-primary data-[checked=false]:invisible"
-          data-checked={tags.includes(id)}
-          size={20}
-        />
-      </button>
-    </li>
   );
 }
 
 function StatusFilter() {
-  const [open, setOpen] = useState(false);
-  const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
   const [searchParams] = useSearchParams();
 
-  useOnClickOutside(ref, () => {
-    setOpen(false);
+  const status = searchParams.get('status');
+
+  const options: FilterValue[] = [
+    { color: 'red-100', label: 'All' },
+    { color: 'pink-100', label: 'Open' },
+    { color: 'lime-100', label: 'Expired' },
+  ];
+
+  const selectedValues = options.filter((option) => {
+    return status === option.label;
   });
 
-  const status = searchParams.get('status');
-
   return (
-    <div className="relative" ref={ref}>
-      <button
-        className={cx(
-          'flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm',
-          'focus:border-primary'
-        )}
-        onClick={() => {
-          setOpen((value) => !value);
-        }}
-        type="button"
-      >
-        <Circle className="text-primary" size={16} /> <span>Status</span>
-        {!!status && <Pill color="pink-100">{status}</Pill>}
-        <ChevronDown className="ml-2 text-primary" size={16} />
-      </button>
+    <FilterContainer>
+      <FilterButton icon={<Circle />} popover selectedValues={selectedValues}>
+        Status
+      </FilterButton>
 
-      {open && (
-        <div className="absolute top-full z-10 mt-1 flex max-h-60 w-max flex-col gap-2 overflow-auto rounded-lg border border-gray-300 bg-white p-2">
-          <ul>
-            <StatusItem value="All" />
-            <StatusItem value="Open" />
-            <StatusItem value="Expired" />
-          </ul>
-        </div>
-      )}
-    </div>
+      <FilterPopover>
+        <ul>
+          {options.map((option) => {
+            return (
+              <PopoverItem
+                checked={status === option.label}
+                color={option.color}
+                key={option.label}
+                name="status"
+                value={option.label}
+              />
+            );
+          })}
+        </ul>
+      </FilterPopover>
+    </FilterContainer>
   );
 }
 
-function StatusItem({ value }: { value: string }) {
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const status = searchParams.get('status');
-
-  return (
-    <li className="rounded-lg hover:bg-gray-50">
-      <button
-        className="flex w-full items-center justify-between gap-4 px-2 py-3 text-left text-sm"
-        onClick={(e) => {
-          setSearchParams((params) => {
-            if (params.get('status') === e.currentTarget.value) {
-              params.delete('status');
-            } else {
-              params.set('status', e.currentTarget.value);
-            }
-
-            return params;
-          });
-        }}
-        value={value}
-      >
-        {value}{' '}
-        <Check
-          className="text-primary data-[checked=false]:invisible"
-          data-checked={status === value}
-          size={20}
-        />
-      </button>
-    </li>
-  );
-}
-
-// TODO: Convert to popover.
 function DateFilter() {
-  const [open, setOpen] = useState(false);
-  const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
   const [searchParams] = useSearchParams();
 
-  useOnClickOutside(ref, () => {
-    setOpen(false);
+  const date = searchParams.get('date');
+
+  const options: FilterValue[] = [
+    { color: 'red-100', label: 'Today' },
+    { color: 'pink-100', label: 'Last Week' },
+    { color: 'lime-100', label: 'Last Month' },
+    { color: 'green-100', label: 'Last 3 Months' },
+    { color: 'amber-100', label: 'Last 6 Months' },
+  ];
+
+  const selectedValues = options.filter((option) => {
+    return date === option.label;
   });
 
-  const date = searchParams.get('date');
-
   return (
-    <div className="relative" ref={ref}>
-      <button
-        className={cx(
-          'flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm',
-          'focus:border-primary'
-        )}
-        onClick={() => {
-          setOpen((value) => !value);
-        }}
-        type="button"
-      >
-        <Calendar className="text-primary" size={16} /> <span>Date Posted</span>
-        {!!date && <Pill color="pink-100">{date}</Pill>}
-        <ChevronDown className="ml-2 text-primary" size={16} />
-      </button>
+    <FilterContainer>
+      <FilterButton icon={<Calendar />} popover selectedValues={selectedValues}>
+        Date Posted
+      </FilterButton>
 
-      {open && (
-        <div className="absolute top-full z-10 mt-1 flex max-h-60 w-max flex-col gap-2 overflow-auto rounded-lg border border-gray-300 bg-white p-2">
-          <ul>
-            <DateItem value="Today" />
-            <DateItem value="Last Week" />
-            <DateItem value="Last Month" />
-            <DateItem value="Last 3 Months" />
-            <DateItem value="Last 6 Months" />
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function DateItem({ value }: { value: string }) {
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const date = searchParams.get('date');
-
-  return (
-    <li className="rounded-lg hover:bg-gray-50">
-      <button
-        className="flex w-full items-center justify-between gap-4 px-2 py-3 text-left text-sm"
-        onClick={(e) => {
-          setSearchParams((params) => {
-            if (params.get('date') === e.currentTarget.value) {
-              params.delete('date');
-            } else {
-              params.set('date', e.currentTarget.value);
-            }
-
-            return params;
-          });
-        }}
-        value={value}
-      >
-        {value}{' '}
-        <Check
-          className="text-primary data-[checked=false]:invisible"
-          data-checked={date === value}
-          size={20}
-        />
-      </button>
-    </li>
+      <FilterPopover>
+        <ul>
+          {options.map((option) => {
+            return (
+              <PopoverItem
+                checked={date === option.label}
+                color={option.color}
+                key={option.label}
+                name="date"
+                value={option.label}
+              />
+            );
+          })}
+        </ul>
+      </FilterPopover>
+    </FilterContainer>
   );
 }
 
 function TagFilter() {
-  const [open, setOpen] = useState(false);
-  const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
-  const [searchParams] = useSearchParams();
   const { filteredTags } = useLoaderData<typeof loader>();
+
+  return (
+    <FilterContainer multiple>
+      <FilterButton
+        icon={<Tag />}
+        popover
+        selectedValues={filteredTags?.map((tag) => {
+          return {
+            color: tag.color as AccentColor,
+            label: tag.name,
+          };
+        })}
+      >
+        Tags
+      </FilterButton>
+
+      <FilterPopover>
+        <FilterSearch />
+        <TagList />
+      </FilterPopover>
+    </FilterContainer>
+  );
+}
+
+function TagList() {
+  const { tags: allTags } = useLoaderData<typeof loader>();
+  const { search } = useContext(FilterContext);
+  const [searchParams] = useSearchParams();
+
+  const tagsFromSearch = searchParams.getAll('tag');
+
+  const matchedTags = allTags.filter((tag) => {
+    return tag.name.toLowerCase().startsWith(search.toLowerCase());
+  });
+
+  return matchedTags.length ? (
+    <ul className="overflow-auto">
+      {matchedTags.map((tag) => {
+        return (
+          <PopoverItem
+            checked={tagsFromSearch.includes(tag.name)}
+            color={tag.color as PillProps['color']}
+            key={tag.id}
+            name="tag"
+            value={tag.name}
+          />
+        );
+      })}
+    </ul>
+  ) : (
+    <div className="p-2">
+      <Text color="gray-500" variant="sm">
+        No tags found.
+      </Text>
+    </div>
+  );
+}
+
+// Filter Components
+
+type FilterContext = {
+  multiple?: boolean;
+  open: boolean;
+  search: string;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setSearch: React.Dispatch<React.SetStateAction<string>>;
+};
+
+const FilterContext = createContext<FilterContext>({
+  multiple: false,
+  open: false,
+  search: '',
+  setOpen: () => {},
+  setSearch: () => {},
+});
+
+function FilterContainer({
+  children,
+  multiple,
+}: PropsWithChildren<Pick<FilterContext, 'multiple'>>) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
 
   useOnClickOutside(ref, () => {
     setOpen(false);
   });
 
-  const tags = searchParams.getAll('tag');
+  return (
+    <FilterContext.Provider
+      value={{
+        multiple,
+        open,
+        search,
+        setOpen,
+        setSearch,
+      }}
+    >
+      <div className="relative" ref={ref}>
+        {children}
+      </div>
+    </FilterContext.Provider>
+  );
+}
 
-  const currentTagElements =
-    filteredTags && filteredTags.length ? (
+type FilterValue = {
+  color: PillProps['color'];
+  label: string;
+};
+
+type FilterButtonProps = PropsWithChildren<{
+  active?: boolean;
+  className?: string;
+  icon: React.ReactElement;
+  onClick?(): void;
+  popover?: boolean;
+  selectedValues?: FilterValue[];
+}>;
+
+function FilterButton({
+  active,
+  children,
+  className,
+  icon,
+  onClick,
+  popover,
+  selectedValues = [],
+}: FilterButtonProps) {
+  const { setOpen } = useContext(FilterContext);
+
+  icon = React.cloneElement(icon, {
+    className: active ? '' : 'text-primary',
+    size: 16,
+  });
+
+  const selectedList =
+    selectedValues && selectedValues.length ? (
       <ul className="flex items-center gap-1">
-        {filteredTags.map((tag) => {
+        {selectedValues.map((value) => {
           return (
-            <li key={tag.id}>
-              <Pill color={tag.color as PillProps['color']}>{tag.name}</Pill>
+            <li key={value.label}>
+              <Pill color={value.color}>{value.label}</Pill>
             </li>
           );
         })}
       </ul>
     ) : null;
 
-  // sort the checked ones to the top
-
   return (
-    <div className="relative" ref={ref}>
-      <button
-        className={cx(
-          'flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm',
-          'focus:border-primary'
-        )}
-        onClick={() => {
-          setOpen((value) => !value);
-        }}
-        type="button"
-      >
-        <Tag className="text-primary" size={16} /> <span>Tags</span>
-        {!!tags.length && currentTagElements}
-        <ChevronDown className="ml-2 text-primary" size={16} />
-      </button>
-
-      {open && <TagPopover />}
-    </div>
-  );
-}
-
-function TagPopover() {
-  const [search, setSearch] = useState('');
-  const { tags: allTags } = useLoaderData<typeof loader>();
-  const [searchParams] = useSearchParams();
-
-  const tagsFromSearch = searchParams.getAll('tag');
-
-  const filteredTags = allTags.filter((tag) => {
-    return tag.name.toLowerCase().startsWith(search.toLowerCase());
-  });
-
-  const selectedTags: typeof allTags = [];
-  const unselectedTags: typeof allTags = [];
-
-  filteredTags.forEach((tag) => {
-    if (tagsFromSearch.includes(tag.name)) {
-      selectedTags.push(tag);
-    } else {
-      unselectedTags.push(tag);
-    }
-  });
-
-  return (
-    <div className="absolute top-full z-10 mt-1 flex max-h-60 w-max flex-col gap-2 overflow-auto rounded-lg border border-gray-300 bg-white p-2">
-      <input
-        autoComplete="off"
-        autoFocus
-        className="border-b border-b-gray-300 p-2 text-sm"
-        name="search"
-        onChange={(e) => {
-          setSearch(e.currentTarget.value);
-        }}
-        placeholder="Search..."
-        type="text"
-      />
-
-      {filteredTags.length ? (
-        <ul>
-          {selectedTags.map((tag) => {
-            return <TagItem key={tag.id} color={tag.color} value={tag.name} />;
-          })}
-
-          {unselectedTags.map((tag) => {
-            return <TagItem key={tag.id} color={tag.color} value={tag.name} />;
-          })}
-        </ul>
-      ) : (
-        <div className="p-2">
-          <Text color="gray-500" variant="sm">
-            No tags found.
-          </Text>
-        </div>
+    <button
+      className={cx(
+        'flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm',
+        'focus:border-primary',
+        active && 'border-primary bg-primary text-white',
+        className
       )}
+      onClick={() => {
+        if (onClick) {
+          onClick();
+        } else {
+          setOpen((value) => !value);
+        }
+      }}
+      type="button"
+    >
+      {icon} {children} {selectedList}{' '}
+      {popover && <ChevronDown className="ml-2 text-primary" size={16} />}
+    </button>
+  );
+}
+
+function FilterPopover({ children }: PropsWithChildren) {
+  const { open } = useContext(FilterContext);
+
+  if (!open) {
+    return null;
+  }
+
+  return (
+    <div
+      className="absolute top-full z-10 mt-1 flex max-h-60 w-max flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2"
+      id="popover"
+    >
+      {children}
     </div>
   );
 }
 
-function TagItem({ color, value }: { color: string; value: string }) {
-  const [searchParams, setSearchParams] = useSearchParams();
+function FilterSearch() {
+  const { setSearch } = useContext(FilterContext);
 
-  const tags = searchParams.getAll('tag');
+  return (
+    <input
+      autoComplete="off"
+      className="border-b border-b-gray-300 p-2 text-sm"
+      name="search"
+      onChange={(e) => {
+        setSearch(e.currentTarget.value);
+      }}
+      placeholder="Search..."
+      type="text"
+    />
+  );
+}
+
+type PopoverItemProps = PropsWithChildren<{
+  checked: boolean;
+  color?: PillProps['color'];
+  name: string;
+  value: string;
+}>;
+
+function PopoverItem({ checked, color, name, value }: PopoverItemProps) {
+  const [_, setSearchParams] = useSearchParams();
+  const { multiple, setOpen } = useContext(FilterContext);
 
   return (
     <li className="rounded-lg hover:bg-gray-50">
       <button
-        className="flex w-full items-center justify-between gap-4 px-2 py-3 text-left text-sm"
+        className="flex w-full items-center justify-between gap-4 p-2 text-left text-sm"
         onClick={(e) => {
+          if (!multiple) {
+            setOpen(false);
+          }
+
           setSearchParams((params) => {
-            if (params.getAll('tag').includes(e.currentTarget.value)) {
-              params.delete('tag', e.currentTarget.value);
+            if (multiple) {
+              if (params.getAll(name).includes(e.currentTarget.value)) {
+                params.delete(name, e.currentTarget.value);
+              } else {
+                params.append(name, e.currentTarget.value);
+              }
+
+              return params;
+            }
+
+            if (params.get(name) === e.currentTarget.value) {
+              params.delete(name);
             } else {
-              params.append('tag', e.currentTarget.value);
+              params.set(name, e.currentTarget.value);
             }
 
             return params;
           });
+
+          const popoverElement = (e.target as Element).closest('#popover');
+
+          const searchElement = popoverElement?.querySelector(
+            'input[name="search"]'
+          );
+
+          if (searchElement) {
+            setInputValue(searchElement as HTMLInputElement, '');
+          }
         }}
         value={value}
       >
-        <Pill color={color as PillProps['color']}>{value}</Pill>{' '}
+        {color ? <Pill color={color}>{value}</Pill> : value}
         <Check
           className="text-primary data-[checked=false]:invisible"
-          data-checked={tags.includes(value)}
+          data-checked={checked}
           size={20}
         />
       </button>
