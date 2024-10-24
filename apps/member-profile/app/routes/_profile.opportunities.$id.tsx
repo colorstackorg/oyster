@@ -62,7 +62,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'opportunities.expiresAt',
       'opportunities.id',
       'opportunities.title',
-      'opportunities.type',
       'slackMessages.channelId as slackMessageChannelId',
       'slackMessages.id as slackMessageId',
       'slackMessages.createdAt as slackMessagePostedAt',

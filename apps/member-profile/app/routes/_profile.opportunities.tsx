@@ -112,7 +112,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
           'opportunities.description',
           'opportunities.id',
           'opportunities.title',
-          'opportunities.type',
           'slackMessages.text as slackMessage',
           'students.id as posterId',
           'students.firstName as posterFirstName',

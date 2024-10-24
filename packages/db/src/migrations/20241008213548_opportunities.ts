@@ -9,7 +9,9 @@ export async function up(db: Kysely<any>) {
     .addColumn('created_at', 'timestamptz', (column) => {
       return column.notNull().defaultTo(sql`now()`);
     })
-    .addColumn('description', 'text')
+    .addColumn('description', 'text', (column) => {
+      return column.notNull();
+    })
     .addColumn('expires_at', 'timestamptz', (column) => {
       return column.notNull();
     })
@@ -28,9 +30,6 @@ export async function up(db: Kysely<any>) {
     .addColumn('title', 'text', (column) => {
       return column.notNull();
     })
-    .addColumn('type', 'text', (column) => {
-      return column.notNull();
-    })
     .addForeignKeyConstraint(
       'opportunities_slack_message_fkey',
       ['slack_channel_id', 'slack_message_id'],
@@ -42,21 +41,25 @@ export async function up(db: Kysely<any>) {
     )
     .execute();
 
+  // This will help when querying opportunities by company.
   await db.schema
-    .createTable('opportunity_companies')
-    .addColumn('company_id', 'text', (column) => {
-      return column.notNull().references('companies.id');
-    })
-    .addColumn('opportunity_id', 'text', (column) => {
-      return column
-        .notNull()
-        .references('opportunities.id')
-        .onDelete('cascade');
-    })
-    .addPrimaryKeyConstraint('opportunity_companies_pkey', [
-      'company_id',
-      'opportunity_id',
-    ])
+    .createIndex('opportunities_company_id_idx')
+    .on('opportunities')
+    .column('company_id')
+    .execute();
+
+  // This will help when querying opportunities by expiration date.
+  await db.schema
+    .createIndex('opportunities_expires_at_idx')
+    .on('opportunities')
+    .column('expires_at')
+    .execute();
+
+  // This will help when looking up opportunities by the student who posted them.
+  await db.schema
+    .createIndex('opportunities_posted_by_idx')
+    .on('opportunities')
+    .column('posted_by')
     .execute();
 
   await db.schema
@@ -95,6 +98,20 @@ export async function up(db: Kysely<any>) {
     ])
     .execute();
 
+  // This will help when querying associations by opportunity.
+  await db.schema
+    .createIndex('opportunity_tag_associations_opportunity_id_idx')
+    .on('opportunity_tag_associations')
+    .column('opportunity_id')
+    .execute();
+
+  // This will help when querying associations by tag.
+  await db.schema
+    .createIndex('opportunity_tag_associations_tag_id_idx')
+    .on('opportunity_tag_associations')
+    .column('tag_id')
+    .execute();
+
   await db.schema
     .createTable('opportunity_bookmarks')
     .addColumn('opportunity_id', 'text', (column) => {
@@ -110,6 +127,20 @@ export async function up(db: Kysely<any>) {
       'opportunity_id',
       'student_id',
     ])
+    .execute();
+
+  // This will help when querying bookmarks by opportunity.
+  await db.schema
+    .createIndex('opportunity_bookmarks_opportunity_id_idx')
+    .on('opportunity_bookmarks')
+    .column('opportunity_id')
+    .execute();
+
+  // This will help when querying bookmarks by student.
+  await db.schema
+    .createIndex('opportunity_bookmarks_student_id_idx')
+    .on('opportunity_bookmarks')
+    .column('student_id')
     .execute();
 
   await db.schema
@@ -131,6 +162,23 @@ export async function up(db: Kysely<any>) {
 }
 
 export async function down(db: Kysely<any>) {
+  await db.schema.dropIndex('opportunities_company_id_idx').execute();
+  await db.schema.dropIndex('opportunities_expires_at_idx').execute();
+  await db.schema.dropIndex('opportunities_posted_by_idx').execute();
+  await db.schema.dropIndex('opportunity_bookmarks_student_id_idx').execute();
+
+  await db.schema
+    .dropIndex('opportunity_bookmarks_opportunity_id_idx')
+    .execute();
+
+  await db.schema
+    .dropIndex('opportunity_tag_associations_opportunity_id_idx')
+    .execute();
+
+  await db.schema
+    .dropIndex('opportunity_tag_associations_tag_id_idx')
+    .execute();
+
   await db.schema
     .alterTable('completed_activities')
     .dropConstraint('completed_activities_opportunity_bookmark_fkey')

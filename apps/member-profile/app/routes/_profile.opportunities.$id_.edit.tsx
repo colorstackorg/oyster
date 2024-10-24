@@ -84,7 +84,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'opportunities.expiresAt as closeDate',
       'opportunities.id',
       'opportunities.title',
-      'opportunities.type',
 
       ({ ref }) => {
         const field = ref('expiresAt');

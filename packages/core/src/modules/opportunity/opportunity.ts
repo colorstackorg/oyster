@@ -96,7 +96,6 @@ async function createOpportunity(input: CreateOpportunityInput) {
         "company": "string",
         "description": "string | null",
         "expiresAt": "string | null",
-        "type": "'job' | 'event' | 'other'",
         "title": "string"
       }
     </output>
@@ -148,7 +147,6 @@ async function createOpportunity(input: CreateOpportunityInput) {
         slackChannelId: input.slackChannelId,
         slackMessageId: input.slackMessageId,
         title: aiObject.title,
-        type: aiObject.type,
       })
       .returning(['id'])
       .executeTakeFirstOrThrow();
