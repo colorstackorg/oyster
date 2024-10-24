@@ -36,6 +36,7 @@ import {
   MultiComboboxSearch,
   MultiComboboxValues,
   Pill,
+  type PillProps,
   Textarea,
   validateForm,
 } from '@oyster/ui';
@@ -103,13 +104,20 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           .whereRef('opportunityId', '=', 'opportunities.id')
           .select(({ fn, ref }) => {
             const object = jsonBuildObject({
+              color: ref('opportunityTags.color'),
               id: ref('opportunityTags.id'),
               name: ref('opportunityTags.name'),
             });
 
             return fn
               .jsonAgg(sql`${object} order by ${ref('name')} asc`)
-              .$castTo<Array<{ id: string; name: string }>>()
+              .$castTo<
+                Array<{
+                  color: PillProps['color'];
+                  id: string;
+                  name: string;
+                }>
+              >()
               .as('tags');
           })
           .as('tags');
@@ -255,14 +263,32 @@ function EditOpportunityForm() {
   );
 }
 
+const colors: PillProps['color'][] = [
+  'amber-100',
+  'blue-100',
+  'cyan-100',
+  'gold-100',
+  'gray-100',
+  'green-100',
+  'lime-100',
+  'orange-100',
+  'pink-100',
+  'purple-100',
+  'red-100',
+];
+
 function TagsField() {
   const { opportunity } = useLoaderData<typeof loader>();
   const { errors } = getErrors(useActionData<typeof action>());
 
   const createFetcher = useFetcher<unknown>();
   const listFetcher = useFetcher<{
-    tags: Array<{ id: string; name: string }>;
+    tags: Array<{ color: PillProps['color']; id: string; name: string }>;
   }>();
+
+  const [newColor, setNewColor] = useState<PillProps['color']>(
+    colors[Math.floor(Math.random() * colors.length)]
+  );
 
   const [newTagId, setNewTagId] = useState<string>(id());
   const [search, setSearch] = useState<string>('');
@@ -274,6 +300,7 @@ function TagsField() {
   const tags = listFetcher.data?.tags || [];
 
   function reset() {
+    setNewColor(colors[Math.floor(Math.random() * colors.length)]);
     setNewTagId(id());
   }
 
@@ -288,6 +315,7 @@ function TagsField() {
       <MultiCombobox
         defaultValues={(opportunity.tags || []).map((tag) => {
           return {
+            color: tag.color,
             label: tag.name,
             value: tag.id,
           };
@@ -327,21 +355,29 @@ function TagsField() {
                       return (
                         <MultiComboboxItem
                           key={tag.id}
+                          color={tag.color}
                           label={tag.name}
                           onSelect={reset}
                           value={tag.id}
                         >
-                          <Pill color="pink-100">{tag.name}</Pill>
+                          <Pill color={tag.color || 'pink-100'}>
+                            {tag.name}
+                          </Pill>
                         </MultiComboboxItem>
                       );
                     })}
 
                     {!!search.length && (
                       <MultiComboboxItem
+                        color={newColor}
                         label={search}
                         onSelect={(e) => {
                           createFetcher.submit(
-                            { id: e.currentTarget.value, name: search },
+                            {
+                              color: newColor,
+                              id: e.currentTarget.value,
+                              name: search,
+                            },
                             {
                               action: '/api/opportunities/tags/add',
                               method: 'post',
@@ -352,7 +388,7 @@ function TagsField() {
                         }}
                         value={newTagId}
                       >
-                        Create <Pill color="pink-100">{search}</Pill>
+                        Create <Pill color={newColor}>{search}</Pill>
                       </MultiComboboxItem>
                     )}
                   </ul>

@@ -12,7 +12,7 @@ import { emojify } from 'node-emoji';
 import { Edit } from 'react-feather';
 
 import { db } from '@oyster/db';
-import { getIconButtonCn, Modal, Pill, Text } from '@oyster/ui';
+import { getIconButtonCn, Modal, Pill, type PillProps, Text } from '@oyster/ui';
 
 import {
   BookmarkButton,
@@ -95,13 +95,20 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           .whereRef('opportunityId', '=', 'opportunities.id')
           .select(({ fn, ref }) => {
             const object = jsonBuildObject({
+              color: ref('opportunityTags.color'),
               id: ref('opportunityTags.id'),
               name: ref('opportunityTags.name'),
             });
 
             return fn
               .jsonAgg(sql`${object} order by ${ref('name')} asc`)
-              .$castTo<Array<{ id: string; name: string }>>()
+              .$castTo<
+                Array<{
+                  color: PillProps['color'];
+                  id: string;
+                  name: string;
+                }>
+              >()
               .as('tags');
           })
           .as('tags');
@@ -235,7 +242,7 @@ export default function EditOpportunity() {
           {opportunity.tags.map((tag) => {
             return (
               <li key={tag.id}>
-                <Pill color="pink-100">{tag.name}</Pill>
+                <Pill color={tag.color}>{tag.name}</Pill>
               </li>
             );
           })}

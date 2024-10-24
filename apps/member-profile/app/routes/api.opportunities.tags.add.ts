@@ -16,6 +16,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   await createOpportunityTag({
+    color: data.color,
     id: data.id,
     name: data.name,
   });

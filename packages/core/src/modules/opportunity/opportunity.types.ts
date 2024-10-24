@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { ISO8601Date } from '@oyster/types';
 
 export const CreateOpportunityTagInput = z.object({
+  color: z.string().trim().min(1),
   id: z.string().trim().min(1),
   name: z.string().trim().min(1),
 });

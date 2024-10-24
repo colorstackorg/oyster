@@ -241,7 +241,7 @@ export async function createOpportunityTag(input: CreateOpportunityTagInput) {
   await db.transaction().execute(async (trx) => {
     await trx
       .insertInto('opportunityTags')
-      .values({ id: input.id, name: input.name })
+      .values({ color: input.color, id: input.id, name: input.name })
       .execute();
   });
 }

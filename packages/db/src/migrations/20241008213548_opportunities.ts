@@ -61,6 +61,9 @@ export async function up(db: Kysely<any>) {
 
   await db.schema
     .createTable('opportunity_tags')
+    .addColumn('color', 'text', (column) => {
+      return column.notNull();
+    })
     .addColumn('created_at', 'timestamptz', (column) => {
       return column.notNull().defaultTo(sql`now()`);
     })

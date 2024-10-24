@@ -33,6 +33,7 @@ import {
   Dashboard,
   getButtonCn,
   Pill,
+  type PillProps,
   ProfilePicture,
   Table,
   type TableColumnProps,
@@ -129,13 +130,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
             .whereRef('associations.opportunityId', '=', 'opportunities.id')
             .select(({ fn, ref }) => {
               const object = jsonBuildObject({
+                color: ref('opportunityTags.color'),
                 id: ref('opportunityTags.id'),
                 name: ref('opportunityTags.name'),
               });
 
               return fn
                 .jsonAgg(sql`${object} order by ${ref('name')} asc`)
-                .$castTo<Array<{ id: string; name: string }>>()
+                .$castTo<
+                  Array<{
+                    color: PillProps['color'];
+                    id: string;
+                    name: string;
+                  }>
+                >()
                 .as('tags');
             })
             .as('tags');
@@ -754,17 +762,6 @@ function OpportunitiesTable() {
         );
       },
     },
-    // {
-    //   displayName: 'Type',
-    //   size: '120',
-    //   render: (opportunity) => {
-    //     return opportunity.type === 'job' ? (
-    //       <Pill color="lime-100">Job</Pill>
-    //     ) : (
-    //       <Pill color="purple-100">{opportunity.type}</Pill>
-    //     );
-    //   },
-    // },
     {
       displayName: 'Title',
       size: '400',
@@ -798,7 +795,7 @@ function OpportunitiesTable() {
               {tags.slice(0, 3).map((tag) => {
                 return (
                   <li key={tag.id}>
-                    <Pill color="pink-100">{tag.name}</Pill>
+                    <Pill color={tag.color}>{tag.name}</Pill>
                   </li>
                 );
               })}

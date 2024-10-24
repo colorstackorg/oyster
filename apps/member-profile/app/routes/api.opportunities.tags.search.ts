@@ -11,7 +11,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const tags = await listOpportunityTags({
     pagination: { limit: 25, page: 1 },
-    select: ['opportunityTags.id', 'opportunityTags.name'],
+    select: [
+      'opportunityTags.color',
+      'opportunityTags.id',
+      'opportunityTags.name',
+    ],
     where: { search },
   });
 
