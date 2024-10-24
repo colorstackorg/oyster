@@ -92,6 +92,8 @@ export function SlackMessage({
   );
 }
 
+// TODO: Need to add "key" for each rendered element.
+
 function toHTML(node: Node) {
   const result = match(node)
     .with(
