@@ -31,13 +31,7 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const tags = await listOpportunityTags({
-    select: [
-      'opportunityTags.color',
-      'opportunityTags.id',
-      'opportunityTags.name',
-    ],
-  });
+  const tags = await listOpportunityTags();
 
   return json(tags);
 }
@@ -51,7 +45,11 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({}, { status: 400 });
   }
 
-  await createOpportunityTag(data);
+  const result = await createOpportunityTag(data);
+
+  if (!result.ok) {
+    return json({ error: result.error }, { status: result.code });
+  }
 
   return json({});
 }
