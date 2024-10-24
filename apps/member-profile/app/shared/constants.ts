@@ -25,6 +25,7 @@ const ROUTES = [
   '/login/otp/verify',
   '/opportunities',
   '/opportunities/:id',
+  '/opportunities/:id/delete',
   '/opportunities/:id/refine',
   '/points',
   '/profile',
