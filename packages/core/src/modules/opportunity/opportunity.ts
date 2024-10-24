@@ -313,6 +313,13 @@ export async function refineOpportunity(input: RefineOpportunityInput) {
       .returning(['id', 'slackChannelId', 'slackMessageId'])
       .executeTakeFirstOrThrow();
 
+    await trx
+      .updateTable('opportunities')
+      .set({ refinedAt: new Date() })
+      .where('id', '=', input.opportunityId)
+      .where('refinedAt', 'is', null)
+      .executeTakeFirst();
+
     const upsertedTags = await trx
       .insertInto('opportunityTags')
       .values(
