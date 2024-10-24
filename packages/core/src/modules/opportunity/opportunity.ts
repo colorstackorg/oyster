@@ -431,6 +431,44 @@ async function getMostRelevantCompany(
   return null;
 }
 
+// Queries
+
+// "Get Link From Opportunity"
+
+/**
+ * Extracts the first URL found in the Slack message associated with the
+ * opportunity.
+ *
+ * @param opportunityId - ID of the opportunity to get the link from.
+ * @returns First URL of the opportunity or `null` if it doesn't exist.
+ */
+export async function getLinkFromOpportunity(opportunityId: string) {
+  const opportunity = await db
+    .selectFrom('opportunities')
+    .leftJoin('slackMessages', (join) => {
+      return join
+        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
+        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
+    })
+    .select('slackMessages.text')
+    .where('opportunities.id', '=', opportunityId)
+    .executeTakeFirst();
+
+  if (!opportunity) {
+    return null;
+  }
+
+  const link = opportunity.text?.match(
+    /<(https?:\/\/[^\s|>]+)(?:\|[^>]+)?>/
+  )?.[1];
+
+  if (!link) {
+    return null;
+  }
+
+  return link;
+}
+
 export async function bookmarkOpportunity(
   opportunityId: string,
   memberId: string
@@ -534,159 +572,6 @@ export async function editOpportunity(id: string, input: EditOpportunityInput) {
   });
 
   return success(result);
-}
-
-export async function updateOpportunityWithAI(
-  opportunityId: string,
-  content: string
-) {
-  const tags = await db
-    .selectFrom('opportunityTags')
-    .select(['id', 'name'])
-    .orderBy('name', 'asc')
-    .execute();
-
-  const prompt = dedent`
-    You are tasked with extracting structured data from a webpage, which is
-    likely a job posting or something similar. We have a list of tags that we
-    want to associate with this opportunity. Your job is to analyze the given
-    webpage and extract the most relevant tags that fit this opportunity. If
-    there are no relevant tags, feel free to create a new tag that you think
-    we should add to the opportunity.
-
-    Here's the webpage you need to analyze:
-
-    <webpage>
-      ${content}
-    </webpage>
-
-    Here are the tags we have available (though you're not limited to only these):
-
-    <tags>
-      ${tags.map((tag) => tag.name).join(', ')}
-    </tags>
-
-    You need to extract the following information and format it as JSON:
-
-    1. Company: The name of the company offering the opportunity
-    2. Title: The title of the opportunity
-    3. Description: A brief description, maximum 200 characters
-    4. Expires At: The expiration date in YYYY-MM-DD format, or null if not
-       specified.
-    5. Tags: A list of tags that fit this opportunity.
-
-    Follow these guidelines:
-    - If any information is not explicitly stated in the message, use your best
-      judgment to infer it or leave it as null.
-    - Limit the "Description" to 500 characters, focusing on the most relevant
-      information.
-    - If an expiration date is not provided, set "Expires At" to null.
-
-    Your output should be a single JSON object containing these five fields. Do
-    not provide any explanation or additional text outside of the JSON object.
-    Ensure your JSON is properly formatted and valid.
-
-    <output>
-      {
-        "company": "string",
-        "description": "string | null",
-        "expiresAt": "string | null",
-        "tags": "string[]",
-        "title": "string"
-      }
-    </output>
-  `;
-
-  const completionResult = await getChatCompletion({
-    maxTokens: 500,
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0,
-  });
-
-  if (!completionResult.ok) {
-    return completionResult;
-  }
-
-  // TODO: Should validate this w/ Zod...
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let aiObject: any;
-
-  try {
-    aiObject = JSON.parse(completionResult.data);
-  } catch (error) {
-    return fail({
-      code: 400,
-      error: 'Failed to parse JSON from AI response.',
-    });
-  }
-
-  const opportunity = await db.transaction().execute(async (trx) => {
-    const companyId = await getMostRelevantCompany(trx, aiObject.company);
-
-    const expiresAt = aiObject.expiresAt
-      ? new Date(aiObject.expiresAt)
-      : undefined;
-
-    const opportunity = await trx
-      .updateTable('opportunities')
-      .set({
-        companyId,
-        description: aiObject.description,
-        expiresAt,
-        title: aiObject.title,
-      })
-      .where('id', '=', opportunityId)
-      .returning(['id', 'slackChannelId', 'slackMessageId'])
-      .executeTakeFirstOrThrow();
-
-    const tags = await trx
-      .insertInto('opportunityTags')
-      .values(
-        aiObject.tags.map((tag: string) => {
-          return {
-            id: id(),
-            name: tag,
-          };
-        })
-      )
-      .onConflict((oc) => {
-        return oc.column('name').doUpdateSet((eb) => {
-          return {
-            name: eb.ref('excluded.name'),
-          };
-        });
-      })
-      .returning(['id'])
-      .execute();
-
-    await trx
-      .insertInto('opportunityTagAssociations')
-      .values(
-        tags.map((tag) => {
-          return {
-            opportunityId,
-            tagId: tag.id,
-          };
-        })
-      )
-      .execute();
-
-    return opportunity;
-  });
-
-  const message = [
-    'I added this to our *Opportunities Database* in the Member Profile!',
-    `<https://app.colorstack.io/opportunities/${opportunity.id}>`,
-  ].join('\n\n');
-
-  job('notification.slack.send', {
-    channel: opportunity.slackChannelId,
-    message,
-    threadId: opportunity.slackMessageId,
-    workspace: 'regular',
-  });
-
-  return success(opportunity);
 }
 
 type ListOpportunityTagsOptions<Selection> = {
