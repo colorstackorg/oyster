@@ -260,7 +260,20 @@ export const RefineOpportunityInput = z.object({
 
 type RefineOpportunityInput = z.infer<typeof RefineOpportunityInput>;
 
-export async function refineOpportunity(input: RefineOpportunityInput) {
+/**
+ * Refines an opportunity by extracting structured data from the given
+ * webpage content.
+ *
+ * The most important piece is extracting the tags w/ AI. We try our best to
+ * use existing tags in our database, but if there are no relevant tags, we'll
+ * create a new one.
+ *
+ * @param input - The content of the webpage to extract data from.
+ * @returns Result indicating the success or failure of the operation.
+ */
+export async function refineOpportunity(
+  input: RefineOpportunityInput
+): Promise<Result> {
   const tags = await db
     .selectFrom('opportunityTags')
     .select(['id', 'name'])
@@ -295,9 +308,7 @@ export async function refineOpportunity(input: RefineOpportunityInput) {
   }
 
   const opportunity = await db.transaction().execute(async (trx) => {
-    const companyId = data.company
-      ? await getMostRelevantCompany(trx, data.company)
-      : null;
+    const companyId = await getMostRelevantCompany(trx, data.company);
 
     const expiresAt = data.expiresAt ? new Date(data.expiresAt) : undefined;
 
@@ -313,6 +324,8 @@ export async function refineOpportunity(input: RefineOpportunityInput) {
       .returning(['id', 'slackChannelId', 'slackMessageId'])
       .executeTakeFirstOrThrow();
 
+    // We only want to set this once so that we can evaluate the time it takes
+    // from creation to refinement of an opportunity.
     await trx
       .updateTable('opportunities')
       .set({ refinedAt: new Date() })
@@ -361,8 +374,7 @@ export async function refineOpportunity(input: RefineOpportunityInput) {
   });
 
   const message =
-    'I added this to our opportunities board! 📌' +
-    '\n\n' +
+    'I added this to our opportunities board! 📌\n\n' +
     `<${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}>`;
 
   job('notification.slack.send', {
@@ -428,11 +440,11 @@ async function getMostRelevantCompany(
 export async function getLinkFromOpportunity(opportunityId: string) {
   const opportunity = await db
     .selectFrom('opportunities')
-    .leftJoin(
-      'slackMessages',
-      'slackMessages.id',
-      'opportunities.slackMessageId'
-    )
+    .leftJoin('slackMessages', (join) => {
+      return join
+        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
+        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
+    })
     .select('slackMessages.text')
     .where('opportunities.id', '=', opportunityId)
     .executeTakeFirst();
