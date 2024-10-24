@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import dedent from 'dedent';
-import { type Insertable, type Transaction } from 'kysely';
+import { type Insertable, sql, type Transaction } from 'kysely';
+import { jsonBuildObject } from 'kysely/helpers/postgres';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
@@ -14,7 +15,10 @@ import { getChatCompletion } from '@/modules/ai/ai';
 import { searchCrunchbaseOrganizations } from '@/modules/employment/queries/search-crunchbase-organizations';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { ENV } from '@/shared/env';
-import { getRandomAccentColor } from '@/shared/utils/color.utils';
+import {
+  type AccentColor,
+  getRandomAccentColor,
+} from '@/shared/utils/color.utils';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 
 // Types
@@ -575,6 +579,112 @@ export async function getOpportunity(opportunityId: string) {
       'companies.name as companyName',
       'opportunities.description',
       'opportunities.title',
+    ])
+    .where('opportunities.id', '=', opportunityId)
+    .executeTakeFirst();
+
+  return opportunity;
+}
+
+// "Get Opportunity Details"
+
+type GetOpportunityDetailsInput = {
+  memberId: string;
+  opportunityId: string;
+};
+
+export async function getOpportunityDetails({
+  memberId,
+  opportunityId,
+}: GetOpportunityDetailsInput) {
+  const opportunity = await db
+    .selectFrom('opportunities')
+    .leftJoin('companies', 'companies.id', 'opportunities.companyId')
+    .leftJoin('students', 'students.id', 'opportunities.postedBy')
+    .leftJoin('slackMessages', (join) => {
+      return join
+        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
+        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
+    })
+    .select([
+      'companies.id as companyId',
+      'companies.imageUrl as companyLogo',
+      'companies.name as companyName',
+      'opportunities.createdAt',
+      'opportunities.description',
+      'opportunities.expiresAt',
+      'opportunities.id',
+      'opportunities.title',
+      'slackMessages.channelId as slackMessageChannelId',
+      'slackMessages.createdAt as slackMessagePostedAt',
+      'slackMessages.id as slackMessageId',
+      'slackMessages.text as slackMessageText',
+      'students.firstName as posterFirstName',
+      'students.lastName as posterLastName',
+      'students.profilePicture as posterProfilePicture',
+
+      (eb) => {
+        return eb
+          .selectFrom('opportunityBookmarks')
+          .whereRef('opportunityId', '=', 'opportunities.id')
+          .select((eb) => eb.fn.countAll<string>().as('count'))
+          .as('bookmarks');
+      },
+
+      (eb) => {
+        return eb
+          .exists(() => {
+            return eb
+              .selectFrom('opportunityBookmarks')
+              .whereRef('opportunityId', '=', 'opportunities.id')
+              .where('opportunityBookmarks.studentId', '=', memberId);
+          })
+          .as('bookmarked');
+      },
+
+      (eb) => {
+        return eb
+          .or([
+            eb('opportunities.postedBy', '=', memberId),
+            eb.exists(() => {
+              return eb
+                .selectFrom('admins')
+                .where('admins.memberId', '=', memberId)
+                .where('admins.deletedAt', 'is not', null);
+            }),
+          ])
+          .as('hasWritePermission');
+      },
+
+      (eb) => {
+        return eb
+          .selectFrom('opportunityTagAssociations')
+          .leftJoin(
+            'opportunityTags',
+            'opportunityTags.id',
+            'opportunityTagAssociations.tagId'
+          )
+          .whereRef('opportunityId', '=', 'opportunities.id')
+          .select(({ fn, ref }) => {
+            const object = jsonBuildObject({
+              color: ref('opportunityTags.color'),
+              id: ref('opportunityTags.id'),
+              name: ref('opportunityTags.name'),
+            });
+
+            type TagObject = {
+              color: AccentColor;
+              id: string;
+              name: string;
+            };
+
+            return fn
+              .jsonAgg(sql`${object} order by ${ref('name')} asc`)
+              .$castTo<TagObject[]>()
+              .as('tags');
+          })
+          .as('tags');
+      },
     ])
     .where('opportunities.id', '=', opportunityId)
     .executeTakeFirst();
