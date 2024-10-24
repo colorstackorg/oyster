@@ -17,7 +17,14 @@ import {
   listCompanyEmployees,
   listCompanyReviews,
 } from '@oyster/core/employment/server';
-import { cx, Divider, getTextCn, ProfilePicture, Text } from '@oyster/ui';
+import {
+  cx,
+  Divider,
+  getButtonCn,
+  getTextCn,
+  ProfilePicture,
+  Text,
+} from '@oyster/ui';
 import {
   Tooltip,
   TooltipContent,
@@ -38,7 +45,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const [company, hasAccess, _employees, _reviews] = await Promise.all([
     getCompany({
-      include: ['averageRating', 'employees', 'reviews'],
+      include: ['averageRating', 'employees', 'opportunities', 'reviews'],
       select: [
         'companies.description',
         'companies.domain',
@@ -163,6 +170,10 @@ export default function CompanyPage() {
       </header>
 
       <Text color="gray-500">{company.description}</Text>
+      <OpportunitiesAlert
+        id={company.id}
+        opportunities={company.opportunities}
+      />
       <ReviewsList />
       <CurrentEmployees />
       <PastEmployees />
@@ -228,6 +239,42 @@ function AverageRating({
       <Text>
         <span className="text-2xl">{averageRating}</span>/10
       </Text>
+    </div>
+  );
+}
+
+function OpportunitiesAlert({
+  id,
+  opportunities: _opportunities,
+}: Pick<CompanyInView, 'id' | 'opportunities'>) {
+  const opportunities = Number(_opportunities);
+
+  if (!opportunities) {
+    return null;
+  }
+
+  // TODO: Need to extract this into a shared component.
+
+  return (
+    <div className="flex w-full items-center justify-between gap-4 rounded-lg border border-primary border-opacity-30 bg-primary bg-opacity-5 p-2">
+      <Text className="line-clamp-1" variant="sm">
+        {opportunities === 1
+          ? `${opportunities} open opportunity found.`
+          : `${opportunities} open opportunities found.`}
+      </Text>
+
+      <Link
+        className={getButtonCn({
+          size: 'small',
+          variant: 'primary',
+        })}
+        to={{
+          pathname: Route['/opportunities'],
+          search: `?company=${id}`,
+        }}
+      >
+        View
+      </Link>
     </div>
   );
 }
