@@ -202,7 +202,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const allTags = await listTags({
     pagination: { limit: 50, page: 1 }, // hardcoded limit
-    select: ['tags.name', 'tags.id'],
+    select: ['tags.id', 'tags.name'],
     where: {},
   });
 
@@ -295,17 +295,14 @@ function SortResourcesForm() {
 
 // WORK FROM HERE HERE HERE _____---------------=================================
 function SortTagsResourcesForm() {
-  // const listFetcher = useFetcher<SearchTagsResult>();
   const { allTags } = useLoaderData<typeof loader>();
-  const [currentTag, setCurrentTag] = useState('');
-  console.log(allTags);
-  // console.log(allTags);
-
+  const [_searchParams] = useSearchParams();
   const submit = useSubmit();
+
+  const listFetcher = useFetcher<SearchTagsResult>();
   // useEffect(() => {
   //   listFetcher.load('/api/tags/search');
   // }, []);
-  // console.log(listFetcher);
   // const tags = listFetcher.data?.tags || [];
   // console.log(tags, 'tags');
 
@@ -316,20 +313,22 @@ function SortTagsResourcesForm() {
       onChange={(e) => submit(e.currentTarget)}
     >
       <Select
-        name="findByTag "
-        id="findByTag"
+        name="tags"
+        id="tags"
         placeholder="Find by tags"
         required
         width="fit"
       >
-        {allTags.map((tag) => (
-          <option value={tag.id} color="pink-100" key={tag.id}>
-            {tag.name}
-          </option>
-        ))}
+        {allTags.map((tag) => {
+          return (
+            <option value={tag.id} color="pink-100" key={tag.id}>
+              {tag.name}
+            </option>
+          );
+        })}
       </Select>
 
-      <ExistingSearchParams exclude={['orderBy']} />
+      <ExistingSearchParams exclude={['tags']} />
     </RemixForm>
   );
 }
