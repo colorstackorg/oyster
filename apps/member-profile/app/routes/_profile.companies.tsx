@@ -291,8 +291,8 @@ function OpportunitiesCount({
       <TooltipContent>
         <TooltipText>
           {opportunities === '1'
-            ? `${opportunities} opportunity`
-            : `${opportunities} opportunities`}
+            ? `${opportunities} open opportunity`
+            : `${opportunities} open opportunities`}
         </TooltipText>
       </TooltipContent>
     </Tooltip>
