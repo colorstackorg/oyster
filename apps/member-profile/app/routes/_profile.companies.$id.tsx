@@ -3,21 +3,23 @@ import {
   type LoaderFunctionArgs,
   type SerializeFrom,
 } from '@remix-run/node';
-import { generatePath, Link, useLoaderData } from '@remix-run/react';
+import {
+  generatePath,
+  Link,
+  Outlet,
+  useLoaderData,
+  useParams,
+} from '@remix-run/react';
 import dayjs from 'dayjs';
 import { ExternalLink } from 'react-feather';
 
-import {
-  type EmploymentType,
-  type LocationType,
-} from '@oyster/core/employment';
 import {
   getCompany,
   hasReviewAccess,
   listCompanyEmployees,
   listCompanyReviews,
 } from '@oyster/core/employment/server';
-import { cx, Divider, getTextCn, ProfilePicture, Text } from '@oyster/ui';
+import { cx, getTextCn, ProfilePicture, Text } from '@oyster/ui';
 import {
   Tooltip,
   TooltipContent,
@@ -25,8 +27,7 @@ import {
   TooltipTrigger,
 } from '@oyster/ui/tooltip';
 
-import { Card } from '@/shared/components/card';
-import { CompanyReview } from '@/shared/components/company-review';
+import { NavigationItem } from '@/shared/components/navigation';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -133,7 +134,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export default function CompanyPage() {
-  const { company } = useLoaderData<typeof loader>();
+  const { company, currentEmployees, pastEmployees, reviews } =
+    useLoaderData<typeof loader>();
+  const { id } = useParams();
 
   return (
     <section className="mx-auto flex w-full max-w-[36rem] flex-col gap-[inherit]">
@@ -163,9 +166,32 @@ export default function CompanyPage() {
       </header>
 
       <Text color="gray-500">{company.description}</Text>
-      <ReviewsList />
-      <CurrentEmployees />
-      <PastEmployees />
+      <nav>
+        <ul className="flex gap-4">
+          <NavigationItem
+            to={generatePath('/companies/:id/reviews' as string, { id })}
+          >
+            Reviews ({reviews.length})
+          </NavigationItem>
+
+          <NavigationItem
+            to={generatePath('/companies/:id/current-employees' as string, {
+              id,
+            })}
+          >
+            Current Employees ({currentEmployees.length})
+          </NavigationItem>
+
+          <NavigationItem
+            to={generatePath('/companies/:id/past-employees' as string, {
+              id,
+            })}
+          >
+            Past Employees ({pastEmployees.length})
+          </NavigationItem>
+        </ul>
+      </nav>
+      <Outlet />
     </section>
   );
 }
@@ -232,110 +258,11 @@ function AverageRating({
   );
 }
 
-function ReviewsList() {
-  const { hasAccess, reviews } = useLoaderData<typeof loader>();
+export type EmployeeInView = SerializeFrom<
+  typeof loader
+>['currentEmployees'][number];
 
-  if (!reviews.length) {
-    return null;
-  }
-
-  return (
-    <>
-      <section className="flex flex-col gap-[inherit]">
-        <Text weight="500" variant="lg">
-          Reviews ({reviews.length})
-        </Text>
-
-        <CompanyReview.List>
-          {reviews.map((review, i) => {
-            return (
-              <CompanyReview
-                key={review.id}
-                anonymous={review.anonymous}
-                company={{
-                  id: review.companyId || '',
-                  image: review.companyImage || '',
-                  name: review.companyName || '',
-                }}
-                date={review.date}
-                editable={review.editable}
-                employmentType={review.employmentType as EmploymentType}
-                hasAccess={hasAccess}
-                hasUpvoted={review.upvoted as boolean}
-                id={review.id}
-                locationCity={review.locationCity}
-                locationState={review.locationState}
-                locationType={review.locationType as LocationType}
-                rating={review.rating}
-                recommend={review.recommend}
-                reviewedAt={review.reviewedAt}
-                reviewerFirstName={review.reviewerFirstName || ''}
-                reviewerId={review.reviewerId || ''}
-                reviewerLastName={review.reviewerLastName || ''}
-                reviewerProfilePicture={review.reviewerProfilePicture}
-                showAccessWarning={!hasAccess && i === 0}
-                text={review.text}
-                title={review.title || ''}
-                upvotesCount={review.upvotes}
-                workExperienceId={review.workExperienceId || ''}
-              />
-            );
-          })}
-        </CompanyReview.List>
-      </section>
-
-      <Divider my="4" />
-    </>
-  );
-}
-
-function CurrentEmployees() {
-  const { currentEmployees } = useLoaderData<typeof loader>();
-
-  return (
-    <Card>
-      <Card.Title>Current Employees ({currentEmployees.length})</Card.Title>
-
-      {currentEmployees.length ? (
-        <ul>
-          {currentEmployees.map((employee) => {
-            return <EmployeeItem key={employee.id} employee={employee} />;
-          })}
-        </ul>
-      ) : (
-        <Text color="gray-500">
-          There are no current employees from ColorStack.
-        </Text>
-      )}
-    </Card>
-  );
-}
-
-function PastEmployees() {
-  const { pastEmployees } = useLoaderData<typeof loader>();
-
-  return (
-    <Card>
-      <Card.Title>Past Employees ({pastEmployees.length})</Card.Title>
-
-      {pastEmployees.length ? (
-        <ul>
-          {pastEmployees.map((employee) => {
-            return <EmployeeItem key={employee.id} employee={employee} />;
-          })}
-        </ul>
-      ) : (
-        <Text color="gray-500">
-          There are no past employees from ColorStack.
-        </Text>
-      )}
-    </Card>
-  );
-}
-
-type EmployeeInView = SerializeFrom<typeof loader>['currentEmployees'][number];
-
-function EmployeeItem({ employee }: { employee: EmployeeInView }) {
+export function EmployeeItem({ employee }: { employee: EmployeeInView }) {
   const { firstName, id, lastName, location, profilePicture, title } = employee;
 
   return (
