@@ -16,17 +16,12 @@ import { getChatCompletion } from '@/modules/ai/ai';
 import { searchCrunchbaseOrganizations } from '@/modules/employment/queries/search-crunchbase-organizations';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { ENV } from '@/shared/env';
-import { type ListSearchParams, type SelectExpression } from '@/shared/types';
 import {
   ACCENT_COLORS,
   type AccentColor,
   getRandomAccentColor,
 } from '@/shared/utils/color.utils';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
-import {
-  type CreateOpportunityTagInput,
-  type EditOpportunityInput,
-} from './opportunity.types';
 
 // Types
 
@@ -694,84 +689,6 @@ export async function getLinkFromOpportunity(opportunityId: string) {
   }
 
   return link;
-}
-
-export async function createOpportunityTag(input: CreateOpportunityTagInput) {
-  await db.transaction().execute(async (trx) => {
-    await trx
-      .insertInto('opportunityTags')
-      .values({ color: input.color, id: input.id, name: input.name })
-      .execute();
-  });
-}
-
-export async function editOpportunity(id: string, input: EditOpportunityInput) {
-  const result = await db.transaction().execute(async (trx) => {
-    const companyId = await saveCompanyIfNecessary(
-      trx,
-      input.companyCrunchbaseId
-    );
-
-    const result = await trx
-      .updateTable('opportunities')
-      .set({
-        companyId,
-        description: input.description,
-        expiresAt: input.closeDate,
-        title: input.title,
-      })
-      .where('id', '=', id)
-      .executeTakeFirst();
-
-    await trx
-      .deleteFrom('opportunityTagAssociations')
-      .where('opportunityId', '=', id)
-      .where('tagId', 'not in', input.tags)
-      .execute();
-
-    await trx
-      .insertInto('opportunityTagAssociations')
-      .values(
-        input.tags.map((tag) => {
-          return {
-            opportunityId: id,
-            tagId: tag,
-          };
-        })
-      )
-      .onConflict((oc) => {
-        return oc.doNothing();
-      })
-      .execute();
-
-    return result;
-  });
-
-  return success(result);
-}
-
-type ListOpportunityTagsOptions<Selection> = {
-  pagination: Pick<ListSearchParams, 'limit' | 'page'>;
-  select: Selection[];
-  where: { ids?: string[]; search?: string };
-};
-
-export async function listOpportunityTags<
-  Selection extends SelectExpression<DB, 'opportunityTags'>,
->({ pagination, select, where }: ListOpportunityTagsOptions<Selection>) {
-  return db
-    .selectFrom('opportunityTags')
-    .select(select)
-    .$if(!!where.ids, (qb) => {
-      return qb.where('opportunityTags.id', 'in', where.ids!);
-    })
-    .$if(!!where.search, (qb) => {
-      return qb.where('name', 'ilike', `%${where.search}%`);
-    })
-    .orderBy('name', 'asc')
-    .limit(pagination.limit)
-    .offset((pagination.page - 1) * pagination.limit)
-    .execute();
 }
 
 // "Get Opportunity"
