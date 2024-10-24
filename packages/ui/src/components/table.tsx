@@ -1,3 +1,4 @@
+import { type LinkProps, useNavigate } from '@remix-run/react';
 import React, { type PropsWithChildren } from 'react';
 import { MoreVertical } from 'react-feather';
 import { match } from 'ts-pattern';
@@ -10,7 +11,7 @@ import { cx } from '../utils/cx';
 type TableData = Record<string, unknown>;
 
 export type TableColumnProps<T extends TableData> = {
-  displayName: string;
+  displayName?: string;
 
   /**
    * Allows us to be flexible in rendering cells that aren't simply just
@@ -25,6 +26,7 @@ export type TableColumnProps<T extends TableData> = {
   show?(): boolean;
 
   size:
+    | '48'
     | '80'
     | '120'
     | '160'
@@ -35,16 +37,17 @@ export type TableColumnProps<T extends TableData> = {
     | '360'
     | '400'
     | '800';
-};
 
-type TableDropdownProps<T extends TableData> = T & {
-  onOpen(): void;
+  /**
+   * If true, this column will be sticky to the right. Only one column
+   * can/should be sticky. This replaces what used to be the `Dropdown` column,
+   * and is now more flexible.
+   */
+  sticky?: boolean;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TableProps<T extends TableData = any> = {
-  Dropdown?(props: TableDropdownProps<T>): JSX.Element | null;
-
   /**
    * Array of columns that will be used to build the table's headers.
    *
@@ -68,14 +71,18 @@ type TableProps<T extends TableData = any> = {
    * @example 'No student found.'
    */
   emptyMessage?: string;
+
+  /**
+   * Function that allows us to generate a URL from a row. When this is
+   * provided, the row will be clickable and will navigate to the generated
+   * URL.
+   *
+   * @param row - The row of data that we are generating a URL for.
+   */
+  rowTo?(row: T): LinkProps['to'];
 };
 
-export const Table = ({
-  Dropdown,
-  columns,
-  data,
-  emptyMessage,
-}: TableProps) => {
+export const Table = ({ columns, data, emptyMessage, rowTo }: TableProps) => {
   return (
     <div className="overflow-auto rounded-lg border border-gray-200">
       {!data.length ? (
@@ -85,31 +92,48 @@ export const Table = ({
       ) : (
         <table className="w-full table-fixed border-separate border-spacing-0">
           <TableHead columns={columns} />
-          <TableBody columns={columns} data={data} Dropdown={Dropdown} />
+          <TableBody columns={columns} data={data} rowTo={rowTo} />
         </table>
       )}
     </div>
   );
 };
 
+function getFilteredColumns(columns: TableProps['columns']) {
+  return columns.filter((column) => {
+    return !column.show || !!column.show();
+  });
+}
+
 function TableHead({ columns }: Pick<TableProps, 'columns'>) {
   const headerCellCn = cx(
-    'top-0 z-10 border-b border-b-gray-200 bg-gray-50 p-2 py-3 text-left'
+    'top-0 border-b border-b-gray-200 bg-gray-50 p-2 py-3 text-left'
   );
+
+  const filteredColumns = getFilteredColumns(columns);
+  const hasStickyColumn = filteredColumns[filteredColumns.length - 1].sticky;
+
+  // This empty column is used to ensure that all the columns widths are
+  // consistent regardless of the screen size.
+  const emptyCell = <th className={headerCellCn} />;
 
   return (
     <thead>
       <tr>
-        {columns
-          .filter((column) => !column.show || !!column.show())
-          .map((column) => {
-            return (
+        {filteredColumns.map((column, i) => {
+          const key = column.displayName || i + column.size;
+
+          return (
+            <React.Fragment key={key}>
+              {column.sticky && emptyCell}
+
               <th
-                key={column.displayName}
                 className={cx(
                   headerCellCn,
+                  column.sticky && 'sticky right-0',
                   'text-sm font-medium text-gray-700',
                   match(column.size)
+                    .with('48', () => 'w-[48px]')
                     .with('80', () => 'w-[80px]')
                     .with('120', () => 'w-[120px]')
                     .with('160', () => 'w-[160px]')
@@ -125,11 +149,11 @@ function TableHead({ columns }: Pick<TableProps, 'columns'>) {
               >
                 {column.displayName}
               </th>
-            );
-          })}
+            </React.Fragment>
+          );
+        })}
 
-        <th className={headerCellCn}></th>
-        <th className={cx(headerCellCn, 'right-0 w-12 px-0')} />
+        {!hasStickyColumn && emptyCell}
       </tr>
     </thead>
   );
@@ -138,41 +162,80 @@ function TableHead({ columns }: Pick<TableProps, 'columns'>) {
 function TableBody({
   columns,
   data,
-  Dropdown,
-}: Pick<TableProps, 'columns' | 'data' | 'Dropdown'>) {
+  rowTo,
+}: Pick<TableProps, 'columns' | 'data' | 'rowTo'>) {
+  const navigate = useNavigate();
+
   const dataCellCn = cx(
-    'whitespace-nowrap border-b border-b-gray-100 bg-white p-2'
+    'whitespace-nowrap border-b border-b-gray-100 bg-white p-2',
+    rowTo && 'group-hover:bg-gray-50'
   );
+
+  const filteredColumns = getFilteredColumns(columns);
+  const hasStickyColumn = filteredColumns[filteredColumns.length - 1].sticky;
+
+  // This empty column is used to ensure that all the columns widths are
+  // consistent regardless of the screen size.
+  const emptyCell = <td className={dataCellCn} />;
 
   return (
     <tbody>
       {data.map((row) => {
         return (
           <tr
-            className="border-b border-b-gray-100 last:border-b-0"
+            className="group border-b border-b-gray-100 last:border-b-0"
             key={row.id}
+            // We'll provide some additional props to make the row interactive
+            // if we have a `rowTo` function.
+            {...(rowTo && {
+              'aria-label': 'View Details',
+              role: 'button',
+              tabIndex: 0,
+
+              onClick(e) {
+                // We find the closest interactive element to the click target
+                // to ensure that we don't trigger the row click if the user
+                // clicked on a button or link inside of the row.
+                const isInteractiveElement = (e.target as HTMLElement).closest(
+                  'a, button, [tabindex]:not([tabindex="-1"])'
+                );
+
+                // As long as the click target is actually the row, then we
+                // want to trigger the row click.
+                if (isInteractiveElement?.tagName === 'TR') {
+                  navigate(rowTo(row));
+                }
+              },
+
+              onKeyDown(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate(rowTo(row));
+                }
+              },
+            })}
           >
-            {columns
-              .filter((column) => !column.show || !!column.show())
-              .map((column) => {
-                return (
+            {filteredColumns.map((column, i) => {
+              const key = row.id + (column.displayName || i + column.size);
+
+              return (
+                <React.Fragment key={key}>
+                  {column.sticky && emptyCell}
+
                   <td
                     className={cx(
                       dataCellCn,
+                      column.sticky && 'sticky right-0',
                       'overflow-hidden text-ellipsis text-left'
                     )}
-                    key={column.displayName + row.id}
                   >
                     {column.render(row)}
                   </td>
-                );
-              })}
+                </React.Fragment>
+              );
+            })}
 
-            <td className={dataCellCn}></td>
-
-            <td className={cx(dataCellCn, 'sticky right-0')}>
-              {!!Dropdown && <Dropdown {...row} />}
-            </td>
+            {!hasStickyColumn && emptyCell}
           </tr>
         );
       })}
