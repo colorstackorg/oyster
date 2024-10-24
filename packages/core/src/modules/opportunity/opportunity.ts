@@ -151,13 +151,13 @@ async function createOpportunity(
       .values({
         companyId,
         createdAt: new Date(),
-        description: data.description || 'TBD...',
+        description: data.description || 'N/A',
         expiresAt: dayjs().add(3, 'months').toDate(),
         id: opportunityId,
         postedBy: slackMessage.studentId,
         slackChannelId: input.slackChannelId,
         slackMessageId: input.slackMessageId,
-        title: data.title || 'TBD...',
+        title: data.title || 'Opportunity',
       })
       .returning(['id'])
       .executeTakeFirstOrThrow();
