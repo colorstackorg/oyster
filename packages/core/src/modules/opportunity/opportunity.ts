@@ -6,6 +6,7 @@ import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { db, type DB } from '@oyster/db';
+import { ISO8601Date } from '@oyster/types';
 import { id } from '@oyster/utils';
 
 import { OpportunityBullJob } from '@/infrastructure/bull/bull.types';
@@ -16,6 +17,7 @@ import { searchCrunchbaseOrganizations } from '@/modules/employment/queries/sear
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { ENV } from '@/shared/env';
 import {
+  ACCENT_COLORS,
   type AccentColor,
   getRandomAccentColor,
 } from '@/shared/utils/color.utils';
@@ -248,6 +250,57 @@ async function createOpportunity(
   return success(opportunity);
 }
 
+// "Create Opportunity Tag"
+
+export const CreateOpportunityTagInput = z.object({
+  // @ts-expect-error - not sure why b/c AccentColor extends `string`!
+  color: z.enum(ACCENT_COLORS),
+  id: z.string().trim().min(1),
+  name: z.string().trim().min(1),
+});
+
+type CreateOpportunityTagInput = z.infer<typeof CreateOpportunityTagInput>;
+
+/**
+ * Creates a new opportunity tag. This doesn't associate the tag with any
+ * opportunities, it just creates it top-level.
+ *
+ * If a tag with the same name (case insensitive) already exists, this function
+ * will return a failure.
+ *
+ * @param input - The tag to create.
+ * @returns Result indicating the success or failure of the operation.
+ */
+export async function createOpportunityTag(
+  input: CreateOpportunityTagInput
+): Promise<Result> {
+  const existingTag = await db
+    .selectFrom('opportunityTags')
+    .where('name', 'ilike', input.name)
+    .executeTakeFirst();
+
+  if (existingTag) {
+    return fail({
+      code: 409,
+      error: 'A tag with that name already exists.',
+    });
+  }
+
+  await db.transaction().execute(async (trx) => {
+    await trx
+      .insertInto('opportunityTags')
+      .values({
+        color: input.color,
+        createdAt: new Date(),
+        id: input.id,
+        name: input.name,
+      })
+      .execute();
+  });
+
+  return success({});
+}
+
 // "Delete Opportunity"
 
 type DeleteOpportunityInput = {
@@ -287,6 +340,75 @@ export async function deleteOpportunity({
   });
 
   return success({ id: opportunityId });
+}
+
+// "Edit Opportunity"
+
+export const EditOpportunityInput = z.object({
+  companyCrunchbaseId: z.string().trim().min(1),
+  description: z.string().trim().min(1).max(500),
+  expiresAt: ISO8601Date,
+  tags: z
+    .string()
+    .trim()
+    .min(1)
+    .transform((value) => value.split(',')),
+  title: z.string().trim().min(1),
+});
+
+type EditOpportunityInput = z.infer<typeof EditOpportunityInput>;
+
+/**
+ * Edits an opportunity.
+ *
+ * @param opportunityId - The opportunity to edit.
+ * @param input - The updated values for the opportunity.
+ * @returns Result indicating the success or failure of the operation.
+ */
+export async function editOpportunity(
+  opportunityId: string,
+  input: EditOpportunityInput
+): Promise<Result> {
+  const result = await db.transaction().execute(async (trx) => {
+    const companyId = await saveCompanyIfNecessary(
+      trx,
+      input.companyCrunchbaseId
+    );
+
+    const result = await trx
+      .updateTable('opportunities')
+      .set({
+        companyId,
+        description: input.description,
+        expiresAt: input.expiresAt,
+        title: input.title,
+      })
+      .where('id', '=', opportunityId)
+      .executeTakeFirst();
+
+    await trx
+      .deleteFrom('opportunityTagAssociations')
+      .where('opportunityId', '=', opportunityId)
+      .where('tagId', 'not in', input.tags)
+      .execute();
+
+    await trx
+      .insertInto('opportunityTagAssociations')
+      .values(
+        input.tags.map((tagId) => {
+          return {
+            opportunityId,
+            tagId,
+          };
+        })
+      )
+      .onConflict((oc) => oc.doNothing())
+      .execute();
+
+    return result;
+  });
+
+  return success(result);
 }
 
 // "Refine Opportunity"
@@ -607,6 +729,7 @@ export async function getOpportunityDetails({
         .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
     })
     .select([
+      'companies.crunchbaseId as companyCrunchbaseId',
       'companies.id as companyId',
       'companies.imageUrl as companyLogo',
       'companies.name as companyName',
@@ -728,6 +851,16 @@ export async function hasOpportunityWritePermission({
     .executeTakeFirst();
 
   return !!opportunity;
+}
+
+// "List Opportunity Tags"
+
+export async function listOpportunityTags() {
+  return db
+    .selectFrom('opportunityTags')
+    .select(['color', 'id', 'name'])
+    .orderBy('name', 'asc')
+    .execute();
 }
 
 // Worker
