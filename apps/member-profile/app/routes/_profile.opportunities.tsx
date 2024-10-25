@@ -13,19 +13,10 @@ import {
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
-import React, {
-  createContext,
-  type PropsWithChildren,
-  useContext,
-  useRef,
-  useState,
-} from 'react';
 import {
   Bookmark,
   Briefcase,
   Calendar,
-  Check,
-  ChevronDown,
   Circle,
   Tag,
   X,
@@ -35,19 +26,25 @@ import {
 import { db } from '@oyster/db';
 import {
   type AccentColor,
-  cx,
   Dashboard,
   getButtonCn,
   Pagination,
   Pill,
-  type PillProps,
   ProfilePicture,
-  setInputValue,
   Table,
   type TableColumnProps,
   Text,
-  useOnClickOutside,
 } from '@oyster/ui';
+import {
+  FilterButton,
+  FilterEmptyMessage,
+  FilterItem,
+  FilterPopover,
+  FilterRoot,
+  FilterSearch,
+  type FilterValue,
+  useFilterContext,
+} from '@oyster/ui/filter';
 import {
   Tooltip,
   TooltipContent,
@@ -560,7 +557,7 @@ function TagFilter() {
   const { appliedTags } = useLoaderData<typeof loader>();
 
   return (
-    <FilterContainer multiple>
+    <FilterRoot multiple>
       <FilterButton
         icon={<Tag />}
         popover
@@ -579,13 +576,13 @@ function TagFilter() {
         <FilterSearch />
         <TagList />
       </FilterPopover>
-    </FilterContainer>
+    </FilterRoot>
   );
 }
 
 function TagList() {
   const { allTags, appliedTags } = useLoaderData<typeof loader>();
-  const { search } = useContext(FilterContext);
+  const { search } = useFilterContext();
 
   const filteredTags = allTags.filter((tag) => {
     return new RegExp(search, 'i').test(tag.name);
@@ -603,9 +600,9 @@ function TagList() {
         });
 
         return (
-          <PopoverItem
+          <FilterItem
             checked={checked}
-            color={tag.color as PillProps['color']}
+            color={tag.color as AccentColor}
             key={tag.id}
             label={tag.name}
             name="tag"
@@ -621,7 +618,7 @@ function CompanyFilter() {
   const { appliedCompany } = useLoaderData<typeof loader>();
 
   return (
-    <FilterContainer>
+    <FilterRoot>
       <FilterButton
         icon={<Briefcase />}
         popover
@@ -644,13 +641,13 @@ function CompanyFilter() {
         <FilterSearch />
         <CompanyList />
       </FilterPopover>
-    </FilterContainer>
+    </FilterRoot>
   );
 }
 
 function CompanyList() {
   const { allCompanies, appliedCompany } = useLoaderData<typeof loader>();
-  const { search } = useContext(FilterContext);
+  const { search } = useFilterContext();
 
   const filteredCompanies = allCompanies.filter((company) => {
     return new RegExp(search, 'i').test(company.name);
@@ -668,7 +665,7 @@ function CompanyList() {
     <ul className="overflow-auto">
       {filteredCompanies.map((company) => {
         return (
-          <PopoverItem
+          <FilterItem
             checked={company.id === appliedCompany?.id}
             key={company.id}
             label={company.name}
@@ -698,7 +695,7 @@ function DatePostedFilter() {
   });
 
   return (
-    <FilterContainer>
+    <FilterRoot>
       <FilterButton icon={<Calendar />} popover selectedValues={selectedValues}>
         Date Posted
       </FilterButton>
@@ -707,7 +704,7 @@ function DatePostedFilter() {
         <ul>
           {options.map((option) => {
             return (
-              <PopoverItem
+              <FilterItem
                 checked={since === option.value}
                 color={option.color}
                 key={option.value}
@@ -719,7 +716,7 @@ function DatePostedFilter() {
           })}
         </ul>
       </FilterPopover>
-    </FilterContainer>
+    </FilterRoot>
   );
 }
 
@@ -738,7 +735,7 @@ function StatusFilter() {
   });
 
   return (
-    <FilterContainer>
+    <FilterRoot>
       <FilterButton icon={<Circle />} popover selectedValues={selectedValues}>
         Status
       </FilterButton>
@@ -747,7 +744,7 @@ function StatusFilter() {
         <ul>
           {options.map((option) => {
             return (
-              <PopoverItem
+              <FilterItem
                 checked={status === option.value}
                 color={option.color}
                 key={option.value}
@@ -759,7 +756,7 @@ function StatusFilter() {
           })}
         </ul>
       </FilterPopover>
-    </FilterContainer>
+    </FilterRoot>
   );
 }
 
@@ -784,237 +781,5 @@ function ClearFiltersButton() {
     >
       Clear Filters <X className="text-gray-500" size={16} />
     </button>
-  );
-}
-
-// Filter Components
-
-// TODO: Move to `ui` library.
-
-type FilterContext = {
-  multiple?: boolean;
-  open: boolean;
-  search: string;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setSearch: React.Dispatch<React.SetStateAction<string>>;
-};
-
-const FilterContext = createContext<FilterContext>({
-  multiple: false,
-  open: false,
-  search: '',
-  setOpen: () => {},
-  setSearch: () => {},
-});
-
-function FilterContainer({
-  children,
-  multiple,
-}: PropsWithChildren<Pick<FilterContext, 'multiple'>>) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
-
-  const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
-
-  useOnClickOutside(ref, () => {
-    setOpen(false);
-    setSearch('');
-  });
-
-  return (
-    <FilterContext.Provider
-      value={{
-        multiple,
-        open,
-        search,
-        setOpen,
-        setSearch,
-      }}
-    >
-      <div className="relative" ref={ref}>
-        {children}
-      </div>
-    </FilterContext.Provider>
-  );
-}
-
-type FilterValue = {
-  color: PillProps['color'];
-  label: string;
-  value: string;
-};
-
-type FilterButtonProps = PropsWithChildren<{
-  active?: boolean;
-  className?: string;
-  icon: React.ReactElement;
-  onClick?(): void;
-  popover?: boolean;
-  selectedValues?: FilterValue[];
-}>;
-
-function FilterButton({
-  active,
-  children,
-  className,
-  icon,
-  onClick,
-  popover,
-  selectedValues = [],
-}: FilterButtonProps) {
-  const { open, setOpen } = useContext(FilterContext);
-
-  icon = React.cloneElement(icon, {
-    className: active ? '' : 'text-primary',
-    size: 16,
-  });
-
-  const selectedList =
-    selectedValues && selectedValues.length ? (
-      <ul className="flex items-center gap-1">
-        {selectedValues.map((value) => {
-          return (
-            <li key={value.label}>
-              <Pill color={value.color}>{value.label}</Pill>
-            </li>
-          );
-        })}
-      </ul>
-    ) : null;
-
-  return (
-    <button
-      className={cx(
-        'flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm',
-        'focus:border-primary',
-        !active && 'hover:bg-gray-50 active:bg-gray-100',
-        active && 'border-primary bg-primary text-white',
-        open && 'border-primary',
-        className
-      )}
-      onClick={() => {
-        if (onClick) {
-          onClick();
-        } else {
-          setOpen((value) => !value);
-        }
-      }}
-      type="button"
-    >
-      {icon} {children} {selectedList}{' '}
-      {popover && <ChevronDown className="ml-2 text-primary" size={16} />}
-    </button>
-  );
-}
-
-function FilterPopover({ children }: PropsWithChildren) {
-  const { open } = useContext(FilterContext);
-
-  if (!open) {
-    return null;
-  }
-
-  return (
-    <div
-      className="absolute top-full z-10 mt-1 flex max-h-60 w-max max-w-[300px] flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2"
-      id="popover"
-    >
-      {children}
-    </div>
-  );
-}
-
-function FilterSearch() {
-  const { setSearch } = useContext(FilterContext);
-
-  return (
-    <input
-      autoComplete="off"
-      autoFocus
-      className="border-b border-b-gray-300 p-2 text-sm"
-      name="search"
-      onChange={(e) => {
-        setSearch(e.currentTarget.value);
-      }}
-      placeholder="Search..."
-      type="text"
-    />
-  );
-}
-
-function FilterEmptyMessage({ children }: PropsWithChildren) {
-  return (
-    <div className="p-2">
-      <Text color="gray-500" variant="sm">
-        {children}
-      </Text>
-    </div>
-  );
-}
-
-type PopoverItemProps = PropsWithChildren<{
-  checked: boolean;
-  color?: PillProps['color'];
-  label: string;
-  name: string;
-  value: string;
-}>;
-
-function PopoverItem({ checked, color, label, name, value }: PopoverItemProps) {
-  const [_, setSearchParams] = useSearchParams();
-  const { multiple, setOpen } = useContext(FilterContext);
-
-  return (
-    <li>
-      <button
-        className="flex w-full items-center justify-between gap-4 rounded-lg p-2 text-left text-sm hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
-        onClick={(e) => {
-          if (!multiple) {
-            setOpen(false);
-          }
-
-          setSearchParams((params) => {
-            params.delete('page');
-
-            if (multiple) {
-              if (params.getAll(name).includes(e.currentTarget.value)) {
-                params.delete(name, e.currentTarget.value);
-              } else {
-                params.append(name, e.currentTarget.value);
-              }
-
-              return params;
-            }
-
-            if (params.get(name) === e.currentTarget.value) {
-              params.delete(name);
-            } else {
-              params.set(name, e.currentTarget.value);
-            }
-
-            return params;
-          });
-
-          const popoverElement = (e.target as Element).closest('#popover');
-
-          const searchElement = popoverElement?.querySelector(
-            'input[name="search"]'
-          ) as HTMLInputElement;
-
-          if (searchElement) {
-            setInputValue(searchElement, '');
-            searchElement.focus();
-          }
-        }}
-        value={value}
-      >
-        {color ? <Pill color={color}>{label}</Pill> : label}
-        <Check
-          className="text-primary data-[checked=false]:invisible"
-          data-checked={checked}
-          size={20}
-        />
-      </button>
-    </li>
   );
 }

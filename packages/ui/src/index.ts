@@ -49,5 +49,4 @@ export { useRevalidateOnFocus } from './hooks/use-revalidate-on-focus';
 export { useSearchParams } from './hooks/use-search-params';
 export { ACCENT_COLORS } from './utils/constants';
 export type { AccentColor } from './utils/constants';
-export { setInputValue } from './utils/core';
 export { cx } from './utils/cx';
