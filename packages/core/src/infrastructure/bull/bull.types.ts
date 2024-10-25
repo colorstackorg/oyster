@@ -378,6 +378,7 @@ export const OpportunityBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('opportunity.create'),
     data: z.object({
+      sendNotification: z.boolean().optional(),
       slackChannelId: z.string().trim().min(1),
       slackMessageId: z.string().trim().min(1),
     }),
