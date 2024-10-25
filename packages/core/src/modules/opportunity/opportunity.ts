@@ -557,7 +557,7 @@ export async function refineOpportunity(
         title: data.title,
       })
       .where('id', '=', input.opportunityId)
-      .returning(['id', 'slackChannelId', 'slackMessageId'])
+      .returning(['id', 'refinedAt', 'slackChannelId', 'slackMessageId'])
       .executeTakeFirstOrThrow();
 
     // We only want to set this once so that we can evaluate the time it takes
@@ -609,16 +609,20 @@ export async function refineOpportunity(
     return opportunity;
   });
 
-  const message =
-    'I added this to our opportunities board! 📌\n\n' +
-    `<${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}>`;
+  // If this is the first time the opportunity has been refined, we want to send
+  // a notification to the channel.
+  if (!opportunity.refinedAt) {
+    const message =
+      'I added this to our opportunities board! 📌\n\n' +
+      `<${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}>`;
 
-  job('notification.slack.send', {
-    channel: opportunity.slackChannelId,
-    message,
-    threadId: opportunity.slackMessageId,
-    workspace: 'regular',
-  });
+    job('notification.slack.send', {
+      channel: opportunity.slackChannelId,
+      message,
+      threadId: opportunity.slackMessageId,
+      workspace: 'regular',
+    });
+  }
 
   return success(opportunity);
 }
