@@ -9,7 +9,7 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { Plus } from 'react-feather';
+import { Filter, Plus } from 'react-feather';
 
 import { isMemberAdmin } from '@oyster/core/admins';
 import { ListSearchParams } from '@oyster/core/member-profile/ui';
@@ -23,9 +23,12 @@ import {
 import { listResources, listTags } from '@oyster/core/resources/server';
 import { ISO8601Date } from '@oyster/types';
 import {
+  Button,
   Dashboard,
+  Dropdown,
   ExistingSearchParams,
   getButtonCn,
+  IconButton,
   Pagination,
   Pill,
   Select,
@@ -40,6 +43,7 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 import { type SearchTagsResult } from '@/routes/api.tags.search';
 import { getAllTags } from '@/modules/resource/queries/list-tags';
 import { useEffect, useState } from 'react';
+import { match } from 'ts-pattern';
 
 const whereKeys = ListResourcesWhere.keyof().enum;
 
@@ -232,12 +236,13 @@ export default function ResourcesPage() {
         <AddResourceLink />
       </header>
 
-      <section className="flex flex-wrap gap-4">
+      <section className="flex flex-wrap justify-start gap-4">
         <Dashboard.SearchForm placeholder="Search by title...">
           <ExistingSearchParams exclude={['page']} />
         </Dashboard.SearchForm>
         <SortResourcesForm />
         <SortTagsResourcesForm />
+        <FilterResourcesDropdown></FilterResourcesDropdown>
       </section>
 
       <CurrentTagsList />
@@ -245,6 +250,38 @@ export default function ResourcesPage() {
       <ResourcesPagination />
       <Outlet />
     </>
+  );
+}
+function FilterResourcesDropdown() {
+  const [open, setOpen] = useState<boolean>(false);
+
+  function onClose() {
+    setOpen(false);
+  }
+
+  function onClick() {
+    setOpen(true);
+  }
+
+  return (
+    <Dropdown.Container onClose={onClose}>
+      <IconButton
+        backgroundColor="gray-100"
+        backgroundColorOnHover="gray-200"
+        icon={<Filter />}
+        onClick={onClick}
+        shape="square"
+      />
+
+      {open && (
+        <Dropdown>
+          <div className="flex min-w-[18rem] flex-col gap-2 p-2">
+            <Text>Add Filter</Text>
+            <FilterFormResources close={() => setOpen(false)} />
+          </div>
+        </Dropdown>
+      )}
+    </Dropdown.Container>
   );
 }
 
@@ -272,7 +309,7 @@ function SortResourcesForm() {
 
   return (
     <RemixForm
-      className="flex min-w-[12rem] items-center gap-4"
+      className="flex items-center"
       method="get"
       onChange={(e) => submit(e.currentTarget)}
     >
@@ -294,29 +331,65 @@ function SortResourcesForm() {
 }
 
 // WORK FROM HERE HERE HERE _____---------------=================================
+function FilterFormResources({ close }: { close: VoidFunction }) {
+  const [filterKey, setFilterKey] = useState<String>('');
+
+  const [searchParams] = useSearchParams();
+
+  return (
+    <RemixForm className="form" method="get" onSubmit={close}>
+      <Select
+        placeholder="Select a field..."
+        onChange={(e) => {
+          setFilterKey(e.currentTarget.value);
+        }}
+      >
+        <option value="tags" key="tags">
+          Tags
+        </option>
+      </Select>
+      {!!filterKey && (
+        <Text color="gray-500" variant="sm">
+          {match(filterKey)
+            .with('tags', () => 'select:')
+            .exhaustive()}
+        </Text>
+      )}
+
+      {match(filterKey)
+        .with('tags', () => {
+          return <SortTagsResourcesForm />;
+        })
+        .with('', () => {
+          return <div></div>;
+        })
+        .exhaustive()}
+
+      {!!filterKey && (
+        <Button fill size="small" type="submit">
+          <Plus size={20} /> Add Filter
+        </Button>
+      )}
+    </RemixForm>
+  );
+}
+
 function SortTagsResourcesForm() {
   const { allTags } = useLoaderData<typeof loader>();
   const [_searchParams] = useSearchParams();
   const submit = useSubmit();
 
-  const listFetcher = useFetcher<SearchTagsResult>();
-  // useEffect(() => {
-  //   listFetcher.load('/api/tags/search');
-  // }, []);
-  // const tags = listFetcher.data?.tags || [];
-  // console.log(tags, 'tags');
-
   return (
     <RemixForm
-      className="flex min-w-[12rem] items-center gap-4"
+      className="flex grow items-center"
       method="get"
       onChange={(e) => submit(e.currentTarget)}
     >
       <Select
+        defaultValue=""
         name="tags"
         id="tags"
-        placeholder="Find by tags"
-        required
+        placeholder="Find by tag"
         width="fit"
       >
         {allTags.map((tag) => {
