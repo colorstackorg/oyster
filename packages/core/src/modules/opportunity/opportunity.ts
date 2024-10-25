@@ -782,7 +782,7 @@ export async function getOpportunityDetails({
               return eb
                 .selectFrom('admins')
                 .where('admins.memberId', '=', memberId)
-                .where('admins.deletedAt', 'is not', null);
+                .where('admins.deletedAt', 'is', null);
             }),
           ])
           .as('hasWritePermission');
@@ -853,7 +853,7 @@ export async function hasOpportunityWritePermission({
           return eb
             .selectFrom('admins')
             .where('admins.memberId', '=', memberId)
-            .where('admins.deletedAt', 'is not', null);
+            .where('admins.deletedAt', 'is', null);
         }),
       ]);
     })
