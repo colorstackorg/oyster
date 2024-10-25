@@ -1,6 +1,6 @@
 import { type ActionFunctionArgs, json } from '@remix-run/node';
-import { generatePath, Form as RemixForm } from '@remix-run/react';
-import { type PropsWithChildren } from 'react';
+import { type Fetcher, generatePath, useFetcher } from '@remix-run/react';
+import { createContext, type PropsWithChildren, useContext } from 'react';
 import { Bookmark } from 'react-feather';
 
 import { bookmarkOpportunity } from '@oyster/core/opportunities';
@@ -21,12 +21,20 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
 // Components
 
+const FetcherContext = createContext<Fetcher | null>(null);
+
 type BookmarkButtonProps = {
   bookmarked: boolean;
   className?: string;
 };
 
 export function BookmarkButton({ bookmarked, className }: BookmarkButtonProps) {
+  const fetcher = useContext(FetcherContext);
+
+  if (fetcher?.formData) {
+    bookmarked = fetcher.formData.get('bookmarked') === '1';
+  }
+
   return (
     <IconButton
       className={cx(
@@ -35,9 +43,9 @@ export function BookmarkButton({ bookmarked, className }: BookmarkButtonProps) {
       )}
       icon={<Bookmark fill={bookmarked ? 'currentColor' : 'none'} size={20} />}
       backgroundColorOnHover="gray-100"
-      name="action"
+      name="bookmarked"
       type="submit"
-      value="bookmark"
+      value={bookmarked ? '0' : '1'}
     />
   );
 }
@@ -47,16 +55,19 @@ type BookmarkFormProps = PropsWithChildren<{
 }>;
 
 export function BookmarkForm({ children, opportunityId }: BookmarkFormProps) {
+  const fetcher = useFetcher();
+
   return (
-    <RemixForm
-      action={generatePath('/opportunities/:id/bookmark', {
-        id: opportunityId,
-      })}
-      method="post"
-      navigate={false}
-    >
-      <input type="hidden" name="opportunityId" value={opportunityId} />
-      {children}
-    </RemixForm>
+    <FetcherContext.Provider value={fetcher}>
+      <fetcher.Form
+        action={generatePath('/opportunities/:id/bookmark', {
+          id: opportunityId,
+        })}
+        method="post"
+      >
+        <input type="hidden" name="opportunityId" value={opportunityId} />
+        {children}
+      </fetcher.Form>
+    </FetcherContext.Provider>
   );
 }
