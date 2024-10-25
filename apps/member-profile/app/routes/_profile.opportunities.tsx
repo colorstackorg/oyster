@@ -31,7 +31,6 @@ import {
   X,
   Zap,
 } from 'react-feather';
-import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
 import {
@@ -60,7 +59,6 @@ import {
   BookmarkForm,
 } from '@/routes/_profile.opportunities.$id_.bookmark';
 import { Route } from '@/shared/constants';
-import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -74,7 +72,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       getAppliedTags(searchParams),
       listAllCompanies(),
       listAllTags(),
-      listOpportunities(searchParams, user(session), getTimezone(request)),
+      listOpportunities(searchParams, user(session)),
     ]);
 
   return json({
@@ -157,13 +155,11 @@ async function listAllTags() {
 
 async function listOpportunities(
   searchParams: URLSearchParams,
-  memberId: string,
-  tz: string
+  memberId: string
 ) {
-  const bookmarked = searchParams.get('bookmarked') === '1';
-  const company = searchParams.get('company');
-  const date = searchParams.get('date');
-  const status = searchParams.get('status');
+  const { bookmarked, company, since, status } =
+    Object.fromEntries(searchParams);
+
   const tags = searchParams.getAll('tag');
 
   const opportunities = await db
@@ -260,58 +256,30 @@ async function listOpportunities(
       });
     })
 
-    .$if(!!date, (qb) => {
-      if (
-        ![
-          'Today',
-          'Last Week',
-          'Last Month',
-          'Last 3 Months',
-          'Last 6 Months',
-        ].includes(date as string)
-      ) {
+    .$if(!!since, (qb) => {
+      const daysAgo = parseInt(since as string);
+
+      if (!daysAgo) {
         return qb;
       }
 
-      const startOfToday = dayjs().tz(tz).startOf('day');
+      const date = dayjs().subtract(daysAgo, 'day').toDate();
 
-      const comparison = match(date)
-        .with('Today', () => {
-          return startOfToday.toDate();
-        })
-        .with('Last Week', () => {
-          return startOfToday.subtract(1, 'week').toDate();
-        })
-        .with('Last Month', () => {
-          return startOfToday.subtract(1, 'month').toDate();
-        })
-        .with('Last 3 Months', () => {
-          return startOfToday.subtract(3, 'month').toDate();
-        })
-        .with('Last 6 Months', () => {
-          return startOfToday.subtract(6, 'month').toDate();
-        })
-        .otherwise(() => {
-          return startOfToday.toDate();
-        });
-
-      return qb.where('opportunities.createdAt', '>=', comparison);
+      return qb.where('opportunities.createdAt', '>=', date);
     })
 
     .$if(!!status, (qb) => {
-      return match(status)
-        .with('All', () => {
-          return qb;
-        })
-        .with('Open', () => {
-          return qb.where('opportunities.expiresAt', '>', new Date());
-        })
-        .with('Expired', () => {
-          return qb.where('opportunities.expiresAt', '<', new Date());
-        })
-        .otherwise(() => {
-          return qb;
-        });
+      const regex = new RegExp(status as string, 'i');
+
+      if (regex.test('open')) {
+        return qb.where('opportunities.expiresAt', '>', new Date());
+      }
+
+      if (regex.test('expired')) {
+        return qb.where('opportunities.expiresAt', '<', new Date());
+      }
+
+      return qb;
     })
 
     .$if(!!tags.length, (qb) => {
@@ -358,7 +326,7 @@ export default function OpportunitiesPage() {
           <BookmarkFilter />
           <TagFilter />
           <CompanyFilter />
-          <DateFilter />
+          <DatePostedFilter />
           <StatusFilter />
         </div>
 
@@ -682,62 +650,20 @@ function CompanyList() {
   );
 }
 
-function StatusFilter() {
+function DatePostedFilter() {
   const [searchParams] = useSearchParams();
 
-  const status = searchParams.get('status');
+  const since = searchParams.get('since');
 
   const options: FilterValue[] = [
-    { color: 'red-100', label: 'All', value: 'All' },
-    { color: 'pink-100', label: 'Open', value: 'Open' },
-    { color: 'lime-100', label: 'Expired', value: 'Expired' },
+    { color: 'lime-100', label: 'Last 24 Hours', value: '1' },
+    { color: 'green-100', label: 'Last 7 Days', value: '7' },
+    { color: 'cyan-100', label: 'Last 30 Days', value: '30' },
+    { color: 'blue-100', label: 'Last 90 Days', value: '90' },
   ];
 
   const selectedValues = options.filter((option) => {
-    return status === option.label;
-  });
-
-  return (
-    <FilterContainer>
-      <FilterButton icon={<Circle />} popover selectedValues={selectedValues}>
-        Status
-      </FilterButton>
-
-      <FilterPopover>
-        <ul>
-          {options.map((option) => {
-            return (
-              <PopoverItem
-                checked={status === option.label}
-                color={option.color}
-                key={option.label}
-                label={option.label}
-                name="status"
-                value={option.value}
-              />
-            );
-          })}
-        </ul>
-      </FilterPopover>
-    </FilterContainer>
-  );
-}
-
-function DateFilter() {
-  const [searchParams] = useSearchParams();
-
-  const date = searchParams.get('date');
-
-  const options: FilterValue[] = [
-    { color: 'red-100', label: 'Today', value: 'Today' },
-    { color: 'pink-100', label: 'Last Week', value: 'Last Week' },
-    { color: 'lime-100', label: 'Last Month', value: 'Last Month' },
-    { color: 'green-100', label: 'Last 3 Months', value: 'Last 3 Months' },
-    { color: 'amber-100', label: 'Last 6 Months', value: 'Last 6 Months' },
-  ];
-
-  const selectedValues = options.filter((option) => {
-    return date === option.label;
+    return since === option.value;
   });
 
   return (
@@ -751,11 +677,51 @@ function DateFilter() {
           {options.map((option) => {
             return (
               <PopoverItem
-                checked={date === option.label}
+                checked={since === option.value}
                 color={option.color}
-                key={option.label}
+                key={option.value}
                 label={option.label}
-                name="date"
+                name="since"
+                value={option.value}
+              />
+            );
+          })}
+        </ul>
+      </FilterPopover>
+    </FilterContainer>
+  );
+}
+
+function StatusFilter() {
+  const [searchParams] = useSearchParams();
+
+  const status = searchParams.get('status');
+
+  const options: FilterValue[] = [
+    { color: 'orange-100', label: 'Open', value: 'open' },
+    { color: 'red-100', label: 'Expired', value: 'expired' },
+  ];
+
+  const selectedValues = options.filter((option) => {
+    return status === option.value;
+  });
+
+  return (
+    <FilterContainer>
+      <FilterButton icon={<Circle />} popover selectedValues={selectedValues}>
+        Status
+      </FilterButton>
+
+      <FilterPopover>
+        <ul>
+          {options.map((option) => {
+            return (
+              <PopoverItem
+                checked={status === option.value}
+                color={option.color}
+                key={option.value}
+                label={option.label}
+                name="status"
                 value={option.value}
               />
             );
@@ -861,7 +827,7 @@ function FilterButton({
   popover,
   selectedValues = [],
 }: FilterButtonProps) {
-  const { setOpen } = useContext(FilterContext);
+  const { open, setOpen } = useContext(FilterContext);
 
   icon = React.cloneElement(icon, {
     className: active ? '' : 'text-primary',
@@ -888,6 +854,7 @@ function FilterButton({
         'focus:border-primary',
         !active && 'hover:bg-gray-50 active:bg-gray-100',
         active && 'border-primary bg-primary text-white',
+        open && 'border-primary',
         className
       )}
       onClick={() => {
@@ -963,9 +930,9 @@ function PopoverItem({ checked, color, label, name, value }: PopoverItemProps) {
   const { multiple, setOpen } = useContext(FilterContext);
 
   return (
-    <li className="rounded-lg hover:bg-gray-50">
+    <li>
       <button
-        className="flex w-full items-center justify-between gap-4 p-2 text-left text-sm"
+        className="flex w-full items-center justify-between gap-4 rounded-lg p-2 text-left text-sm hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
         onClick={(e) => {
           if (!multiple) {
             setOpen(false);
