@@ -67,227 +67,284 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const { searchParams } = new URL(request.url);
-  const memberId = user(session);
 
-  const bookmarked = searchParams.has('bookmarked');
-  const company = searchParams.get('company');
-  const date = searchParams.get('date');
-  const status = searchParams.get('status');
-  const tagsFromSearch = searchParams.getAll('tag');
-
-  const [filteredCompany, filteredTags, companies, tags, opportunities] =
+  const [appliedCompany, appliedTags, allCompanies, allTags, opportunities] =
     await Promise.all([
-      company
-        ? db
-            .selectFrom('companies')
-            .select(['id', 'name'])
-            .where('companies.id', '=', company)
-            .executeTakeFirst()
-        : null,
-
-      tagsFromSearch.length
-        ? db
-            .selectFrom('opportunityTags')
-            .select(['color', 'id', 'name'])
-            .where('opportunityTags.name', 'in', tagsFromSearch)
-            .execute()
-        : null,
-
-      db
-        .selectFrom('companies')
-        .select(['id', 'name', 'imageUrl'])
-        .orderBy('name', 'asc')
-        .execute(),
-
-      db
-        .selectFrom('opportunityTags')
-        .select(['color', 'id', 'name'])
-        .orderBy('name', 'asc')
-        .execute(),
-
-      db
-        .selectFrom('opportunities')
-        .leftJoin('companies', 'companies.id', 'opportunities.companyId')
-        .leftJoin('slackMessages', (join) => {
-          return join
-            .onRef(
-              'slackMessages.channelId',
-              '=',
-              'opportunities.slackChannelId'
-            )
-            .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
-        })
-        .leftJoin('students', 'students.id', 'opportunities.postedBy')
-        .select([
-          'companies.id as companyId',
-          'companies.name as companyName',
-          'companies.imageUrl as companyLogo',
-          'opportunities.description',
-          'opportunities.id',
-          'opportunities.title',
-          'slackMessages.text as slackMessage',
-          'students.id as posterId',
-          'students.firstName as posterFirstName',
-          'students.lastName as posterLastName',
-          'students.profilePicture as posterProfilePicture',
-
-          (eb) => {
-            return eb
-              .selectFrom('opportunityTags')
-              .leftJoin(
-                'opportunityTagAssociations as associations',
-                'associations.tagId',
-                'opportunityTags.id'
-              )
-              .whereRef('associations.opportunityId', '=', 'opportunities.id')
-              .select(({ fn, ref }) => {
-                const object = jsonBuildObject({
-                  color: ref('opportunityTags.color'),
-                  id: ref('opportunityTags.id'),
-                  name: ref('opportunityTags.name'),
-                });
-
-                return fn
-                  .jsonAgg(sql`${object} order by ${ref('name')} asc`)
-                  .$castTo<
-                    Array<{
-                      color: PillProps['color'];
-                      id: string;
-                      name: string;
-                    }>
-                  >()
-                  .as('tags');
-              })
-              .as('tags');
-          },
-
-          (eb) => {
-            return eb
-              .selectFrom('opportunityBookmarks')
-              .whereRef('opportunityId', '=', 'opportunities.id')
-              .select((eb) => {
-                return eb.fn.countAll<string>().as('count');
-              })
-              .as('bookmarks');
-          },
-
-          (eb) => {
-            return eb
-              .exists(() => {
-                return eb
-                  .selectFrom('opportunityBookmarks')
-                  .whereRef('opportunityId', '=', 'opportunities.id')
-                  .where('opportunityBookmarks.studentId', '=', memberId);
-              })
-              .as('bookmarked');
-          },
-        ])
-        .$if(!!tagsFromSearch.length, (qb) => {
-          return qb.where((eb) => {
-            return eb.exists((eb) => {
-              return eb
-                .selectFrom('opportunityTagAssociations')
-                .leftJoin(
-                  'opportunityTags',
-                  'opportunityTags.id',
-                  'opportunityTagAssociations.tagId'
-                )
-                .whereRef(
-                  'opportunityTagAssociations.opportunityId',
-                  '=',
-                  'opportunities.id'
-                )
-                .groupBy('opportunities.id')
-                .having(
-                  sql`array_agg(opportunity_tags.name)`,
-                  '@>',
-                  sql<string[]>`${tagsFromSearch}`
-                );
-            });
-          });
-        })
-        .$if(!!bookmarked, (qb) => {
-          return qb.where((eb) => {
-            return eb.exists(() => {
-              return eb
-                .selectFrom('opportunityBookmarks')
-                .whereRef(
-                  'opportunityBookmarks.opportunityId',
-                  '=',
-                  'opportunities.id'
-                )
-                .where('opportunityBookmarks.studentId', '=', memberId);
-            });
-          });
-        })
-        .$if(!!company, (qb) => {
-          return qb.where('opportunities.companyId', '=', company);
-        })
-        .$if(!!date, (qb) => {
-          if (
-            ![
-              'Today',
-              'Last Week',
-              'Last Month',
-              'Last 3 Months',
-              'Last 6 Months',
-            ].includes(date as string)
-          ) {
-            return qb;
-          }
-
-          const tz = getTimezone(request);
-          const startOfToday = dayjs().tz(tz).startOf('day');
-
-          const comparison = match(date)
-            .with('Today', () => {
-              return startOfToday.toDate();
-            })
-            .with('Last Week', () => {
-              return startOfToday.subtract(1, 'week').toDate();
-            })
-            .with('Last Month', () => {
-              return startOfToday.subtract(1, 'month').toDate();
-            })
-            .with('Last 3 Months', () => {
-              return startOfToday.subtract(3, 'month').toDate();
-            })
-            .with('Last 6 Months', () => {
-              return startOfToday.subtract(6, 'month').toDate();
-            })
-            .otherwise(() => {
-              return startOfToday.toDate();
-            });
-
-          return qb.where('opportunities.createdAt', '>=', comparison);
-        })
-        .$if(!!status, (qb) => {
-          return match(status)
-            .with('All', () => {
-              return qb;
-            })
-            .with('Open', () => {
-              return qb.where('opportunities.expiresAt', '>', new Date());
-            })
-            .with('Expired', () => {
-              return qb.where('opportunities.expiresAt', '<', new Date());
-            })
-            .otherwise(() => {
-              return qb;
-            });
-        })
-        .orderBy('opportunities.createdAt', 'desc')
-        .execute(),
+      getAppliedCompany(searchParams),
+      getAppliedTags(searchParams),
+      listAllCompanies(),
+      listAllTags(),
+      listOpportunities(searchParams, user(session), getTimezone(request)),
     ]);
 
   return json({
-    companies,
-    filteredCompany,
-    filteredTags,
+    allCompanies,
+    allTags,
+    appliedCompany,
+    appliedTags,
     opportunities,
-    tags,
   });
 }
+
+async function getAppliedCompany(searchParams: URLSearchParams) {
+  const companyFromSearch = searchParams.get('company');
+
+  if (!companyFromSearch) {
+    return null;
+  }
+
+  const company = await db
+    .selectFrom('companies')
+    .select(['id', 'name', 'imageUrl'])
+    .where((eb) => {
+      return eb.or([
+        eb('companies.id', '=', companyFromSearch),
+        eb('companies.name', 'ilike', companyFromSearch),
+      ]);
+    })
+    .executeTakeFirst();
+
+  return company;
+}
+
+async function getAppliedTags(searchParams: URLSearchParams) {
+  const tagsFromSearch = searchParams.getAll('tag');
+
+  if (!tagsFromSearch.length) {
+    return [];
+  }
+
+  const tags = await db
+    .selectFrom('opportunityTags')
+    .select(['color', 'id', 'name'])
+    .where((eb) => {
+      return eb.or([
+        eb('opportunityTags.id', 'in', tagsFromSearch),
+        eb('opportunityTags.name', 'in', tagsFromSearch),
+      ]);
+    })
+    .execute();
+
+  return tags;
+}
+
+async function listAllCompanies() {
+  const companies = await db
+    .selectFrom('companies')
+    .select(['id', 'name', 'imageUrl'])
+    .where((eb) => {
+      return eb.exists(() => {
+        return eb
+          .selectFrom('opportunities')
+          .whereRef('opportunities.companyId', '=', 'companies.id');
+      });
+    })
+    .orderBy('name', 'asc')
+    .execute();
+
+  return companies;
+}
+
+async function listAllTags() {
+  const tags = await db
+    .selectFrom('opportunityTags')
+    .select(['color', 'id', 'name'])
+    .orderBy('name', 'asc')
+    .execute();
+
+  return tags;
+}
+
+async function listOpportunities(
+  searchParams: URLSearchParams,
+  memberId: string,
+  tz: string
+) {
+  const bookmarked = searchParams.get('bookmarked') === '1';
+  const company = searchParams.get('company');
+  const date = searchParams.get('date');
+  const status = searchParams.get('status');
+  const tags = searchParams.getAll('tag');
+
+  const opportunities = await db
+    .selectFrom('opportunities')
+    .leftJoin('companies', 'companies.id', 'opportunities.companyId')
+    .leftJoin('slackMessages', (join) => {
+      return join
+        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
+        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
+    })
+    .leftJoin('students', 'students.id', 'opportunities.postedBy')
+    .select([
+      'companies.id as companyId',
+      'companies.name as companyName',
+      'companies.imageUrl as companyLogo',
+      'opportunities.description',
+      'opportunities.id',
+      'opportunities.title',
+      'slackMessages.text as slackMessage',
+      'students.id as posterId',
+      'students.firstName as posterFirstName',
+      'students.lastName as posterLastName',
+      'students.profilePicture as posterProfilePicture',
+
+      (eb) => {
+        return eb
+          .selectFrom('opportunityTags')
+          .leftJoin(
+            'opportunityTagAssociations as associations',
+            'associations.tagId',
+            'opportunityTags.id'
+          )
+          .whereRef('associations.opportunityId', '=', 'opportunities.id')
+          .select(({ fn, ref }) => {
+            const object = jsonBuildObject({
+              color: ref('opportunityTags.color'),
+              id: ref('opportunityTags.id'),
+              name: ref('opportunityTags.name'),
+            });
+
+            return fn
+              .jsonAgg(sql`${object} order by ${ref('name')} asc`)
+              .$castTo<
+                Array<{
+                  color: PillProps['color'];
+                  id: string;
+                  name: string;
+                }>
+              >()
+              .as('tags');
+          })
+          .as('tags');
+      },
+
+      (eb) => {
+        return eb
+          .selectFrom('opportunityBookmarks')
+          .whereRef('opportunityId', '=', 'opportunities.id')
+          .select((eb) => {
+            return eb.fn.countAll<string>().as('count');
+          })
+          .as('bookmarks');
+      },
+
+      (eb) => {
+        return eb
+          .exists(() => {
+            return eb
+              .selectFrom('opportunityBookmarks')
+              .whereRef('opportunityId', '=', 'opportunities.id')
+              .where('opportunityBookmarks.studentId', '=', memberId);
+          })
+          .as('bookmarked');
+      },
+    ])
+
+    .$if(!!bookmarked, (qb) => {
+      return qb.where((eb) => {
+        return eb.exists(() => {
+          return eb
+            .selectFrom('opportunityBookmarks as bookmarks')
+            .whereRef('bookmarks.opportunityId', '=', 'opportunities.id')
+            .where('bookmarks.studentId', '=', memberId);
+        });
+      });
+    })
+
+    .$if(!!company, (qb) => {
+      return qb.where((eb) => {
+        return eb.or([
+          eb('companies.id', '=', company),
+          eb('companies.name', 'ilike', company),
+        ]);
+      });
+    })
+
+    .$if(!!date, (qb) => {
+      if (
+        ![
+          'Today',
+          'Last Week',
+          'Last Month',
+          'Last 3 Months',
+          'Last 6 Months',
+        ].includes(date as string)
+      ) {
+        return qb;
+      }
+
+      const startOfToday = dayjs().tz(tz).startOf('day');
+
+      const comparison = match(date)
+        .with('Today', () => {
+          return startOfToday.toDate();
+        })
+        .with('Last Week', () => {
+          return startOfToday.subtract(1, 'week').toDate();
+        })
+        .with('Last Month', () => {
+          return startOfToday.subtract(1, 'month').toDate();
+        })
+        .with('Last 3 Months', () => {
+          return startOfToday.subtract(3, 'month').toDate();
+        })
+        .with('Last 6 Months', () => {
+          return startOfToday.subtract(6, 'month').toDate();
+        })
+        .otherwise(() => {
+          return startOfToday.toDate();
+        });
+
+      return qb.where('opportunities.createdAt', '>=', comparison);
+    })
+
+    .$if(!!status, (qb) => {
+      return match(status)
+        .with('All', () => {
+          return qb;
+        })
+        .with('Open', () => {
+          return qb.where('opportunities.expiresAt', '>', new Date());
+        })
+        .with('Expired', () => {
+          return qb.where('opportunities.expiresAt', '<', new Date());
+        })
+        .otherwise(() => {
+          return qb;
+        });
+    })
+
+    .$if(!!tags.length, (qb) => {
+      return qb.where((eb) => {
+        const conditions = tags.map((tag) => {
+          return eb.exists(() => {
+            return eb
+              .selectFrom('opportunityTagAssociations as associations')
+              .innerJoin(
+                'opportunityTags as tags',
+                'tags.id',
+                'associations.tagId'
+              )
+              .whereRef('opportunityId', '=', 'opportunities.id')
+              .where((eb) => {
+                return eb.or([
+                  eb('tags.name', '=', tag),
+                  eb('tags.id', '=', tag),
+                ]);
+              });
+          });
+        });
+
+        return eb.and(conditions);
+      });
+    })
+    .orderBy('opportunities.createdAt', 'desc')
+    .execute();
+
+  return opportunities;
+}
+
+// Page
 
 export default function OpportunitiesPage() {
   return (
@@ -313,6 +370,8 @@ export default function OpportunitiesPage() {
     </>
   );
 }
+
+// Table
 
 type OpportunityInView = SerializeFrom<typeof loader>['opportunities'][number];
 
@@ -468,52 +527,117 @@ function TagsColumn({ id, tags }: OpportunityInView) {
   );
 }
 
-function ClearFiltersButton() {
-  const [_, setSearchParams] = useSearchParams();
-
-  return (
-    <button
-      className="flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm"
-      onClick={() => {
-        setSearchParams({});
-      }}
-      type="button"
-    >
-      Clear Filters <X className="text-gray-500" size={16} />
-    </button>
-  );
-}
+// Filters
 
 function BookmarkFilter() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const bookmarked = searchParams.has('bookmarked');
 
+  function toggleBookmark() {
+    setSearchParams((params) => {
+      if (params.has('bookmarked')) {
+        params.delete('bookmarked');
+      } else {
+        params.set('bookmarked', '1');
+      }
+
+      return params;
+    });
+  }
+
   return (
     <FilterButton
       active={bookmarked}
       icon={<Bookmark />}
-      onClick={() => {
-        setSearchParams((params) => {
-          if (params.has('bookmarked')) {
-            params.delete('bookmarked');
-          } else {
-            params.set('bookmarked', '1');
-          }
-
-          return params;
-        });
-      }}
+      onClick={toggleBookmark}
     >
       Bookmarked
     </FilterButton>
   );
 }
 
+function TagFilter() {
+  const { appliedTags } = useLoaderData<typeof loader>();
+
+  return (
+    <FilterContainer multiple>
+      <FilterButton
+        icon={<Tag />}
+        popover
+        selectedValues={appliedTags.map((tag) => {
+          return {
+            color: tag.color as AccentColor,
+            label: tag.name,
+            value: tag.id,
+          };
+        })}
+      >
+        Tags
+      </FilterButton>
+
+      <FilterPopover>
+        <FilterSearch />
+        <TagList />
+      </FilterPopover>
+    </FilterContainer>
+  );
+}
+
+function TagList() {
+  const { allTags, appliedTags } = useLoaderData<typeof loader>();
+  const { search } = useContext(FilterContext);
+
+  const filteredTags = allTags.filter((tag) => {
+    return new RegExp(search, 'i').test(tag.name);
+  });
+
+  if (!filteredTags.length) {
+    return <FilterEmptyMessage>No tags found.</FilterEmptyMessage>;
+  }
+
+  return (
+    <ul className="overflow-auto">
+      {filteredTags.map((tag) => {
+        const checked = appliedTags.some((appliedTag) => {
+          return appliedTag.id === tag.id;
+        });
+
+        return (
+          <PopoverItem
+            checked={checked}
+            color={tag.color as PillProps['color']}
+            key={tag.id}
+            label={tag.name}
+            name="tag"
+            value={tag.name}
+          />
+        );
+      })}
+    </ul>
+  );
+}
+
 function CompanyFilter() {
+  const { appliedCompany } = useLoaderData<typeof loader>();
+
   return (
     <FilterContainer>
-      <FilterButton icon={<Briefcase />} popover>
+      <FilterButton
+        icon={<Briefcase />}
+        popover
+        selectedValues={
+          appliedCompany
+            ? [
+                {
+                  color: 'gray-100',
+                  label: appliedCompany.name,
+                  value: appliedCompany.id,
+                },
+              ]
+            : []
+        }
+      >
         Company
       </FilterButton>
 
@@ -526,32 +650,35 @@ function CompanyFilter() {
 }
 
 function CompanyList() {
-  const { companies, filteredCompany } = useLoaderData<typeof loader>();
+  const { allCompanies, appliedCompany } = useLoaderData<typeof loader>();
   const { search } = useContext(FilterContext);
 
-  const matchedCompanies = companies.filter((company) => {
-    return company.name.toLowerCase().startsWith(search.toLowerCase());
+  const filteredCompanies = allCompanies.filter((company) => {
+    return new RegExp(search, 'i').test(company.name);
   });
 
-  return matchedCompanies.length ? (
+  if (!filteredCompanies.length) {
+    return (
+      <FilterEmptyMessage>
+        No companies found that have been linked to opportunities.
+      </FilterEmptyMessage>
+    );
+  }
+
+  return (
     <ul className="overflow-auto">
-      {matchedCompanies.map((company) => {
+      {filteredCompanies.map((company) => {
         return (
           <PopoverItem
-            checked={company.id === filteredCompany?.id}
+            checked={company.id === appliedCompany?.id}
             key={company.id}
+            label={company.name}
             name="company"
-            value={company.name}
+            value={company.id}
           />
         );
       })}
     </ul>
-  ) : (
-    <div className="p-2">
-      <Text color="gray-500" variant="sm">
-        No companies found.
-      </Text>
-    </div>
   );
 }
 
@@ -561,9 +688,9 @@ function StatusFilter() {
   const status = searchParams.get('status');
 
   const options: FilterValue[] = [
-    { color: 'red-100', label: 'All' },
-    { color: 'pink-100', label: 'Open' },
-    { color: 'lime-100', label: 'Expired' },
+    { color: 'red-100', label: 'All', value: 'All' },
+    { color: 'pink-100', label: 'Open', value: 'Open' },
+    { color: 'lime-100', label: 'Expired', value: 'Expired' },
   ];
 
   const selectedValues = options.filter((option) => {
@@ -584,8 +711,9 @@ function StatusFilter() {
                 checked={status === option.label}
                 color={option.color}
                 key={option.label}
+                label={option.label}
                 name="status"
-                value={option.label}
+                value={option.value}
               />
             );
           })}
@@ -601,11 +729,11 @@ function DateFilter() {
   const date = searchParams.get('date');
 
   const options: FilterValue[] = [
-    { color: 'red-100', label: 'Today' },
-    { color: 'pink-100', label: 'Last Week' },
-    { color: 'lime-100', label: 'Last Month' },
-    { color: 'green-100', label: 'Last 3 Months' },
-    { color: 'amber-100', label: 'Last 6 Months' },
+    { color: 'red-100', label: 'Today', value: 'Today' },
+    { color: 'pink-100', label: 'Last Week', value: 'Last Week' },
+    { color: 'lime-100', label: 'Last Month', value: 'Last Month' },
+    { color: 'green-100', label: 'Last 3 Months', value: 'Last 3 Months' },
+    { color: 'amber-100', label: 'Last 6 Months', value: 'Last 6 Months' },
   ];
 
   const selectedValues = options.filter((option) => {
@@ -626,8 +754,9 @@ function DateFilter() {
                 checked={date === option.label}
                 color={option.color}
                 key={option.label}
+                label={option.label}
                 name="date"
-                value={option.label}
+                value={option.value}
               />
             );
           })}
@@ -637,67 +766,29 @@ function DateFilter() {
   );
 }
 
-function TagFilter() {
-  const { filteredTags } = useLoaderData<typeof loader>();
+function ClearFiltersButton() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  if (searchParams.size === 0) {
+    return null;
+  }
 
   return (
-    <FilterContainer multiple>
-      <FilterButton
-        icon={<Tag />}
-        popover
-        selectedValues={filteredTags?.map((tag) => {
-          return {
-            color: tag.color as AccentColor,
-            label: tag.name,
-          };
-        })}
-      >
-        Tags
-      </FilterButton>
-
-      <FilterPopover>
-        <FilterSearch />
-        <TagList />
-      </FilterPopover>
-    </FilterContainer>
-  );
-}
-
-function TagList() {
-  const { tags: allTags } = useLoaderData<typeof loader>();
-  const { search } = useContext(FilterContext);
-  const [searchParams] = useSearchParams();
-
-  const tagsFromSearch = searchParams.getAll('tag');
-
-  const matchedTags = allTags.filter((tag) => {
-    return tag.name.toLowerCase().startsWith(search.toLowerCase());
-  });
-
-  return matchedTags.length ? (
-    <ul className="overflow-auto">
-      {matchedTags.map((tag) => {
-        return (
-          <PopoverItem
-            checked={tagsFromSearch.includes(tag.name)}
-            color={tag.color as PillProps['color']}
-            key={tag.id}
-            name="tag"
-            value={tag.name}
-          />
-        );
-      })}
-    </ul>
-  ) : (
-    <div className="p-2">
-      <Text color="gray-500" variant="sm">
-        No tags found.
-      </Text>
-    </div>
+    <button
+      className="flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm hover:bg-gray-50 active:bg-gray-100"
+      onClick={() => {
+        setSearchParams({});
+      }}
+      type="button"
+    >
+      Clear Filters <X className="text-gray-500" size={16} />
+    </button>
   );
 }
 
 // Filter Components
+
+// TODO: Move to `ui` library.
 
 type FilterContext = {
   multiple?: boolean;
@@ -726,6 +817,7 @@ function FilterContainer({
 
   useOnClickOutside(ref, () => {
     setOpen(false);
+    setSearch('');
   });
 
   return (
@@ -748,6 +840,7 @@ function FilterContainer({
 type FilterValue = {
   color: PillProps['color'];
   label: string;
+  value: string;
 };
 
 type FilterButtonProps = PropsWithChildren<{
@@ -793,6 +886,7 @@ function FilterButton({
       className={cx(
         'flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm',
         'focus:border-primary',
+        !active && 'hover:bg-gray-50 active:bg-gray-100',
         active && 'border-primary bg-primary text-white',
         className
       )}
@@ -820,7 +914,7 @@ function FilterPopover({ children }: PropsWithChildren) {
 
   return (
     <div
-      className="absolute top-full z-10 mt-1 flex max-h-60 w-max flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2"
+      className="absolute top-full z-10 mt-1 flex max-h-60 w-max max-w-[300px] flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2"
       id="popover"
     >
       {children}
@@ -834,6 +928,7 @@ function FilterSearch() {
   return (
     <input
       autoComplete="off"
+      autoFocus
       className="border-b border-b-gray-300 p-2 text-sm"
       name="search"
       onChange={(e) => {
@@ -845,14 +940,25 @@ function FilterSearch() {
   );
 }
 
+function FilterEmptyMessage({ children }: PropsWithChildren) {
+  return (
+    <div className="p-2">
+      <Text color="gray-500" variant="sm">
+        {children}
+      </Text>
+    </div>
+  );
+}
+
 type PopoverItemProps = PropsWithChildren<{
   checked: boolean;
   color?: PillProps['color'];
+  label: string;
   name: string;
   value: string;
 }>;
 
-function PopoverItem({ checked, color, name, value }: PopoverItemProps) {
+function PopoverItem({ checked, color, label, name, value }: PopoverItemProps) {
   const [_, setSearchParams] = useSearchParams();
   const { multiple, setOpen } = useContext(FilterContext);
 
@@ -889,15 +995,16 @@ function PopoverItem({ checked, color, name, value }: PopoverItemProps) {
 
           const searchElement = popoverElement?.querySelector(
             'input[name="search"]'
-          );
+          ) as HTMLInputElement;
 
           if (searchElement) {
-            setInputValue(searchElement as HTMLInputElement, '');
+            setInputValue(searchElement, '');
+            searchElement.focus();
           }
         }}
         value={value}
       >
-        {color ? <Pill color={color}>{value}</Pill> : value}
+        {color ? <Pill color={color}>{label}</Pill> : label}
         <Check
           className="text-primary data-[checked=false]:invisible"
           data-checked={checked}
