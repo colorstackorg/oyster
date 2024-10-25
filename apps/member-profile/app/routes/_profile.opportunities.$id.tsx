@@ -9,6 +9,7 @@ import dayjs from 'dayjs';
 import { emojify } from 'node-emoji';
 import { Edit } from 'react-feather';
 
+import { track } from '@oyster/core/mixpanel';
 import { getOpportunityDetails } from '@oyster/core/opportunities';
 import { getIconButtonCn, Modal, Pill, Text } from '@oyster/ui';
 
@@ -51,6 +52,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }),
 
     slackMessagePostedAt: dayjs().to(opportunity.slackMessagePostedAt),
+  });
+
+  track({
+    event: 'Opportunity Viewed',
+    properties: { Company: opportunity.companyName as string },
+    request,
+    user: memberId,
   });
 
   return json(opportunity);

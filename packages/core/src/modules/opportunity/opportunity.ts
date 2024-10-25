@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import dedent from 'dedent';
-import { type Insertable, sql, type Transaction } from 'kysely';
+import { sql, type Transaction } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
@@ -15,6 +15,7 @@ import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker'
 import { getChatCompletion } from '@/modules/ai/ai';
 import { searchCrunchbaseOrganizations } from '@/modules/employment/queries/search-crunchbase-organizations';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
+import { track } from '@/modules/mixpanel';
 import { ENV } from '@/shared/env';
 import {
   ACCENT_COLORS,
@@ -22,10 +23,6 @@ import {
   getRandomAccentColor,
 } from '@/shared/utils/color.utils';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
-
-// Types
-
-type OpportunityRecord = DB['opportunities'];
 
 // Use Case(s)
 
@@ -72,9 +69,18 @@ export async function bookmarkOpportunity({
   if (action === 'created') {
     const opportunity = await db
       .selectFrom('opportunities')
-      .select('postedBy')
-      .where('id', '=', opportunityId)
+      .leftJoin('companies', 'companies.id', 'opportunities.companyId')
+      .select(['companies.name as companyName', 'postedBy'])
+      .where('opportunities.id', '=', opportunityId)
       .executeTakeFirst();
+
+    if (opportunity && opportunity.companyName) {
+      track({
+        event: 'Opportunity Bookmarked',
+        properties: { Company: opportunity.companyName },
+        user: memberId,
+      });
+    }
 
     if (opportunity && opportunity.postedBy) {
       job('gamification.activity.completed', {
@@ -137,10 +143,11 @@ const CreateOpportunityResponse = z.object({
 
 type CreateOpportunityResponse = z.infer<typeof CreateOpportunityResponse>;
 
-type CreateOpportunityInput = Pick<
-  Insertable<OpportunityRecord>,
-  'slackChannelId' | 'slackMessageId'
->;
+type CreateOpportunityInput = {
+  sendNotification?: boolean;
+  slackChannelId: string;
+  slackMessageId: string;
+};
 
 /**
  * Creates an opportunity from a Slack message.
@@ -156,14 +163,16 @@ type CreateOpportunityInput = Pick<
  * @param input - Input data for creating an opportunity.
  * @returns Result indicating the success or failure of the operation.
  */
-async function createOpportunity(
-  input: CreateOpportunityInput
-): Promise<Result> {
+async function createOpportunity({
+  sendNotification = true,
+  slackChannelId,
+  slackMessageId,
+}: CreateOpportunityInput): Promise<Result> {
   const slackMessage = await db
     .selectFrom('slackMessages')
     .select(['studentId', 'text', 'userId as slackUserId'])
-    .where('channelId', '=', input.slackChannelId)
-    .where('id', '=', input.slackMessageId)
+    .where('channelId', '=', slackChannelId)
+    .where('id', '=', slackMessageId)
     .executeTakeFirst();
 
   // This might be the case if someone posts something in the opportunity
@@ -224,8 +233,8 @@ async function createOpportunity(
         expiresAt: dayjs().add(3, 'months').toDate(),
         id: opportunityId,
         postedBy: slackMessage.studentId,
-        slackChannelId: input.slackChannelId,
-        slackMessageId: input.slackMessageId,
+        slackChannelId,
+        slackMessageId,
         title: data.title || 'Opportunity',
       })
       .returning(['id'])
@@ -234,18 +243,18 @@ async function createOpportunity(
     return result;
   });
 
-  const message =
-    `Thanks for sharing an opportunity in <#${input.slackChannelId}> -- I added it to our <${ENV.STUDENT_PROFILE_URL}/opportunities|opportunities board>! 🙂` +
-    '\n\n' +
-    `To generate tags and a description, please paste the opportunity's website content <${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}/refine|*HERE*>.` +
-    '\n\n' +
-    'Thanks again!';
+  if (sendNotification) {
+    const message =
+      `Thanks for sharing an opportunity in <#${slackChannelId}> -- I added it to our <${ENV.STUDENT_PROFILE_URL}/opportunities|opportunities board>! 🙂\n\n` +
+      `To generate tags and a description, please paste the opportunity's website content <${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}/refine|*HERE*>.\n\n` +
+      'Thanks again!';
 
-  job('notification.slack.send', {
-    channel: slackMessage.slackUserId,
-    message,
-    workspace: 'regular',
-  });
+    job('notification.slack.send', {
+      channel: slackMessage.slackUserId,
+      message,
+      workspace: 'regular',
+    });
+  }
 
   return success(opportunity);
 }

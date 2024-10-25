@@ -23,6 +23,7 @@ import {
   Zap,
 } from 'react-feather';
 
+import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
 import {
   type AccentColor,
@@ -62,7 +63,9 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { searchParams } = new URL(request.url);
+  const memberId = user(session);
+
+  const { pathname, searchParams } = new URL(request.url);
   const { limit: _limit, page: _page } = Object.fromEntries(searchParams);
 
   const limit = parseInt(_limit) || 50;
@@ -79,12 +82,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
     getAppliedTags(searchParams),
     listAllCompanies(),
     listAllTags(),
-    listOpportunities(searchParams, {
-      limit,
-      memberId: user(session),
-      page,
-    }),
+    listOpportunities(searchParams, { limit, memberId, page }),
   ]);
+
+  if (pathname === Route['/opportunities']) {
+    track({
+      event: 'Page Viewed',
+      properties: { Page: 'Opportunities' },
+      request,
+      user: memberId,
+    });
+  }
 
   return json({
     allCompanies,
