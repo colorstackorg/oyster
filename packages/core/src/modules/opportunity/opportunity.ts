@@ -655,11 +655,27 @@ async function getMostRelevantCompany(
 
   const [company] = await searchCrunchbaseOrganizations(companyName);
 
-  if (company) {
+  if (company && areNamesSimilar(companyName, company.name)) {
     return saveCompanyIfNecessary(trx, company.crunchbaseId);
   }
 
   return null;
+}
+
+/**
+ * Checks if two company names are similar by checking if one string is a
+ * substring of the other. This does a naive comparison by removing all
+ * non-alphanumeric characters and converting to lowercase.
+ *
+ * @param name1 - First company name.
+ * @param name2 - Second company name.
+ * @returns Whether the two company names are similar.
+ */
+function areNamesSimilar(name1: string, name2: string) {
+  const normalized1 = name1.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const normalized2 = name2.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  return normalized1.includes(normalized2) || normalized2.includes(normalized1);
 }
 
 // Queries
