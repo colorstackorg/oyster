@@ -453,13 +453,17 @@ function CompanyColumn({
   companyLogo,
   companyName,
 }: OpportunityInView) {
+  if (!companyId || !companyName) {
+    return null;
+  }
+
   return (
     <Link
-      className="line-clamp-1 flex w-fit items-center gap-2 hover:underline"
+      className="flex w-fit max-w-full items-center gap-2 hover:underline"
       target="_blank"
       to={generatePath(Route['/companies/:id'], { id: companyId })}
     >
-      <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
+      <div className="h-8 w-8 flex-shrink-0 rounded-lg border border-gray-200 p-1">
         <img
           alt={companyName as string}
           className="aspect-square h-full w-full rounded-md"
@@ -467,7 +471,7 @@ function CompanyColumn({
         />
       </div>
 
-      <Text variant="sm">{companyName}</Text>
+      <span className="truncate text-sm">{companyName}</span>
     </Link>
   );
 }

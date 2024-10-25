@@ -441,13 +441,13 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
   4. "expiresAt": The date that the opportunity is no longer relevant, in
      'YYYY-MM-DD' format. If the opportunity seemingly never "closes", set this
      to null.
-  5. "tags": A list of tags that fit this opportunity, maximum 10 tags. We have
-     a list of existing tags in our database that are available to associate
-     with this opportunity. If there are no relevant tags, create a NEW tag that
-     you think we should add to the opportunity. If you create a new tag, be
-     sure it is different enough from the existing tags, and use sentence
-     case. Must return at least one tag. THIS IS THE MOST IMPORTANT PART OF
-     THIS JOB.
+  5. "tags": A list of tags that fit this opportunity, maximum 5 tags and
+     minimum 1 tag. This is the MOST IMPORTANT FIELD. We have a list of existing
+     tags in our database that are available to associate with this opportunity.
+     If there are no relevant tags, create a NEW tag that you think we should
+     add to the opportunity. If you create a new tag, be sure 1) it is different
+     enough from the existing tags, 2) it will be useful for MANY opportunities
+     and 3) use sentence case.
 
   Here's the webpage you need to analyze:
 
@@ -655,11 +655,27 @@ async function getMostRelevantCompany(
 
   const [company] = await searchCrunchbaseOrganizations(companyName);
 
-  if (company) {
+  if (company && areNamesSimilar(companyName, company.name)) {
     return saveCompanyIfNecessary(trx, company.crunchbaseId);
   }
 
   return null;
+}
+
+/**
+ * Checks if two company names are similar by checking if one string is a
+ * substring of the other. This does a naive comparison by removing all
+ * non-alphanumeric characters and converting to lowercase.
+ *
+ * @param name1 - First company name.
+ * @param name2 - Second company name.
+ * @returns Whether the two company names are similar.
+ */
+function areNamesSimilar(name1: string, name2: string) {
+  const normalized1 = name1.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const normalized2 = name2.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  return normalized1.includes(normalized2) || normalized2.includes(normalized1);
 }
 
 // Queries
