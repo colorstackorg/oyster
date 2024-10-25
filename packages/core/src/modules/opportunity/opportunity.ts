@@ -15,6 +15,7 @@ import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker'
 import { getChatCompletion } from '@/modules/ai/ai';
 import { searchCrunchbaseOrganizations } from '@/modules/employment/queries/search-crunchbase-organizations';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
+import { track } from '@/modules/mixpanel';
 import { ENV } from '@/shared/env';
 import {
   ACCENT_COLORS,
@@ -72,9 +73,18 @@ export async function bookmarkOpportunity({
   if (action === 'created') {
     const opportunity = await db
       .selectFrom('opportunities')
-      .select('postedBy')
-      .where('id', '=', opportunityId)
+      .leftJoin('companies', 'companies.id', 'opportunities.companyId')
+      .select(['companies.name as companyName', 'postedBy'])
+      .where('opportunities.id', '=', opportunityId)
       .executeTakeFirst();
+
+    if (opportunity && opportunity.companyName) {
+      track({
+        event: 'Opportunity Bookmarked',
+        properties: { Company: opportunity.companyName },
+        user: memberId,
+      });
+    }
 
     if (opportunity && opportunity.postedBy) {
       job('gamification.activity.completed', {
