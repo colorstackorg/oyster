@@ -96,21 +96,19 @@ function CompanyLink() {
 
   return (
     <Link
-      className="w-fit cursor-pointer hover:underline"
+      className="flex w-fit items-center gap-2 hover:underline"
       target="_blank"
       to={generatePath(Route['/companies/:id'], { id: companyId })}
     >
-      <div className="flex items-center gap-2">
-        <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
-          <img
-            alt={companyName}
-            className="aspect-square h-full w-full rounded-md"
-            src={companyLogo as string}
-          />
-        </div>
-
-        <Text variant="sm">{companyName}</Text>
+      <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
+        <img
+          alt={companyName}
+          className="aspect-square h-full w-full rounded-md"
+          src={companyLogo as string}
+        />
       </div>
+
+      <Text variant="sm">{companyName}</Text>
     </Link>
   );
 }
