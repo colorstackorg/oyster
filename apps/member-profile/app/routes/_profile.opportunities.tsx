@@ -453,6 +453,10 @@ function CompanyColumn({
   companyLogo,
   companyName,
 }: OpportunityInView) {
+  if (!companyId || !companyName) {
+    return null;
+  }
+
   return (
     <Link
       className="line-clamp-1 flex w-fit items-center gap-2 hover:underline"

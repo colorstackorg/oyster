@@ -441,13 +441,13 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
   4. "expiresAt": The date that the opportunity is no longer relevant, in
      'YYYY-MM-DD' format. If the opportunity seemingly never "closes", set this
      to null.
-  5. "tags": A list of tags that fit this opportunity, maximum 10 tags. We have
+  5. "tags": A list of tags that fit this opportunity, maximum 5 tags. We have
      a list of existing tags in our database that are available to associate
      with this opportunity. If there are no relevant tags, create a NEW tag that
      you think we should add to the opportunity. If you create a new tag, be
-     sure it is different enough from the existing tags, and use sentence
-     case. Must return at least one tag. THIS IS THE MOST IMPORTANT PART OF
-     THIS JOB.
+     sure 1) it is different enough from the existing tags, 2) it will be
+     useful for MANY opportunities and 3) use sentence case. Must return at
+     least one tag. THIS IS THE MOST IMPORTANT PART OF THIS JOB.
 
   Here's the webpage you need to analyze:
 
