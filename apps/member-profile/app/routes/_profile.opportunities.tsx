@@ -38,6 +38,7 @@ import {
   cx,
   Dashboard,
   getButtonCn,
+  Pagination,
   Pill,
   type PillProps,
   ProfilePicture,
@@ -65,22 +66,38 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const { searchParams } = new URL(request.url);
+  const { limit: _limit, page: _page } = Object.fromEntries(searchParams);
 
-  const [appliedCompany, appliedTags, allCompanies, allTags, opportunities] =
-    await Promise.all([
-      getAppliedCompany(searchParams),
-      getAppliedTags(searchParams),
-      listAllCompanies(),
-      listAllTags(),
-      listOpportunities(searchParams, user(session)),
-    ]);
+  const limit = parseInt(_limit) || 50;
+  const page = parseInt(_page) || 1;
+
+  const [
+    appliedCompany,
+    appliedTags,
+    allCompanies,
+    allTags,
+    { opportunities, totalOpportunities },
+  ] = await Promise.all([
+    getAppliedCompany(searchParams),
+    getAppliedTags(searchParams),
+    listAllCompanies(),
+    listAllTags(),
+    listOpportunities(searchParams, {
+      limit,
+      memberId: user(session),
+      page,
+    }),
+  ]);
 
   return json({
     allCompanies,
     allTags,
     appliedCompany,
     appliedTags,
+    limit,
     opportunities,
+    page,
+    totalOpportunities,
   });
 }
 
@@ -153,89 +170,24 @@ async function listAllTags() {
   return tags;
 }
 
+type ListOpportunitiesOptions = {
+  limit: number;
+  memberId: string;
+  page: number;
+};
+
 async function listOpportunities(
   searchParams: URLSearchParams,
-  memberId: string
+  { limit, page, memberId }: ListOpportunitiesOptions
 ) {
   const { bookmarked, company, since, status } =
     Object.fromEntries(searchParams);
 
   const tags = searchParams.getAll('tag');
 
-  const opportunities = await db
+  const query = db
     .selectFrom('opportunities')
     .leftJoin('companies', 'companies.id', 'opportunities.companyId')
-    .leftJoin('slackMessages', (join) => {
-      return join
-        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
-        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
-    })
-    .leftJoin('students', 'students.id', 'opportunities.postedBy')
-    .select([
-      'companies.id as companyId',
-      'companies.name as companyName',
-      'companies.imageUrl as companyLogo',
-      'opportunities.description',
-      'opportunities.id',
-      'opportunities.title',
-      'slackMessages.text as slackMessage',
-      'students.id as posterId',
-      'students.firstName as posterFirstName',
-      'students.lastName as posterLastName',
-      'students.profilePicture as posterProfilePicture',
-
-      (eb) => {
-        return eb
-          .selectFrom('opportunityTags')
-          .leftJoin(
-            'opportunityTagAssociations as associations',
-            'associations.tagId',
-            'opportunityTags.id'
-          )
-          .whereRef('associations.opportunityId', '=', 'opportunities.id')
-          .select(({ fn, ref }) => {
-            const object = jsonBuildObject({
-              color: ref('opportunityTags.color'),
-              id: ref('opportunityTags.id'),
-              name: ref('opportunityTags.name'),
-            });
-
-            return fn
-              .jsonAgg(sql`${object} order by ${ref('name')} asc`)
-              .$castTo<
-                Array<{
-                  color: PillProps['color'];
-                  id: string;
-                  name: string;
-                }>
-              >()
-              .as('tags');
-          })
-          .as('tags');
-      },
-
-      (eb) => {
-        return eb
-          .selectFrom('opportunityBookmarks')
-          .whereRef('opportunityId', '=', 'opportunities.id')
-          .select((eb) => {
-            return eb.fn.countAll<string>().as('count');
-          })
-          .as('bookmarks');
-      },
-
-      (eb) => {
-        return eb
-          .exists(() => {
-            return eb
-              .selectFrom('opportunityBookmarks')
-              .whereRef('opportunityId', '=', 'opportunities.id')
-              .where('opportunityBookmarks.studentId', '=', memberId);
-          })
-          .as('bookmarked');
-      },
-    ])
-
     .$if(!!bookmarked, (qb) => {
       return qb.where((eb) => {
         return eb.exists(() => {
@@ -246,7 +198,6 @@ async function listOpportunities(
         });
       });
     })
-
     .$if(!!company, (qb) => {
       return qb.where((eb) => {
         return eb.or([
@@ -255,9 +206,8 @@ async function listOpportunities(
         ]);
       });
     })
-
     .$if(!!since, (qb) => {
-      const daysAgo = parseInt(since as string);
+      const daysAgo = parseInt(since);
 
       if (!daysAgo) {
         return qb;
@@ -267,7 +217,6 @@ async function listOpportunities(
 
       return qb.where('opportunities.createdAt', '>=', date);
     })
-
     .$if(!!status, (qb) => {
       const regex = new RegExp(status as string, 'i');
 
@@ -281,7 +230,6 @@ async function listOpportunities(
 
       return qb;
     })
-
     .$if(!!tags.length, (qb) => {
       return qb.where((eb) => {
         const conditions = tags.map((tag) => {
@@ -305,11 +253,77 @@ async function listOpportunities(
 
         return eb.and(conditions);
       });
-    })
-    .orderBy('opportunities.createdAt', 'desc')
-    .execute();
+    });
 
-  return opportunities;
+  const [{ count }, opportunities] = await Promise.all([
+    query
+      .select((eb) => eb.fn.countAll().as('count'))
+      .executeTakeFirstOrThrow(),
+
+    query
+      .leftJoin('students', 'students.id', 'opportunities.postedBy')
+      .select([
+        'companies.id as companyId',
+        'companies.name as companyName',
+        'companies.imageUrl as companyLogo',
+        'opportunities.id',
+        'opportunities.title',
+        'students.id as posterId',
+        'students.firstName as posterFirstName',
+        'students.lastName as posterLastName',
+        'students.profilePicture as posterProfilePicture',
+
+        (eb) => {
+          return eb
+            .selectFrom('opportunityTags as tags')
+            .leftJoin(
+              'opportunityTagAssociations as associations',
+              'associations.tagId',
+              'tags.id'
+            )
+            .whereRef('associations.opportunityId', '=', 'opportunities.id')
+            .select(({ fn, ref }) => {
+              const object = jsonBuildObject({
+                color: ref('tags.color'),
+                id: ref('tags.id'),
+                name: ref('tags.name'),
+              });
+
+              type TagObject = {
+                color: AccentColor;
+                id: string;
+                name: string;
+              };
+
+              return fn
+                .jsonAgg(sql`${object} order by ${ref('tags.name')} asc`)
+                .$castTo<TagObject[]>()
+                .as('tags');
+            })
+            .as('tags');
+        },
+
+        (eb) => {
+          return eb
+            .exists(() => {
+              return eb
+                .selectFrom('opportunityBookmarks')
+                .whereRef('opportunityId', '=', 'opportunities.id')
+                .where('opportunityBookmarks.studentId', '=', memberId);
+            })
+            .as('bookmarked');
+        },
+      ])
+      .orderBy('opportunities.createdAt', 'desc')
+      .limit(limit)
+      .offset((page - 1) * limit)
+      .execute(),
+  ]);
+
+  return {
+    opportunities,
+    totalOpportunities: Number(count),
+  };
 }
 
 // Page
@@ -334,6 +348,7 @@ export default function OpportunitiesPage() {
       </div>
 
       <OpportunitiesTable />
+      <OpportunitiesPagination />
       <Outlet />
     </>
   );
@@ -495,6 +510,20 @@ function TagsColumn({ id, tags }: OpportunityInView) {
   );
 }
 
+function OpportunitiesPagination() {
+  const { limit, opportunities, page, totalOpportunities } =
+    useLoaderData<typeof loader>();
+
+  return (
+    <Pagination
+      dataLength={opportunities.length}
+      page={page}
+      pageSize={limit}
+      totalCount={totalOpportunities}
+    />
+  );
+}
+
 // Filters
 
 function BookmarkFilter() {
@@ -504,6 +533,8 @@ function BookmarkFilter() {
 
   function toggleBookmark() {
     setSearchParams((params) => {
+      params.delete('page');
+
       if (params.has('bookmarked')) {
         params.delete('bookmarked');
       } else {
@@ -739,6 +770,10 @@ function ClearFiltersButton() {
     return null;
   }
 
+  if (searchParams.size === 1 && searchParams.has('page')) {
+    return null;
+  }
+
   return (
     <button
       className="flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm hover:bg-gray-50 active:bg-gray-100"
@@ -939,6 +974,8 @@ function PopoverItem({ checked, color, label, name, value }: PopoverItemProps) {
           }
 
           setSearchParams((params) => {
+            params.delete('page');
+
             if (multiple) {
               if (params.getAll(name).includes(e.currentTarget.value)) {
                 params.delete(name, e.currentTarget.value);
