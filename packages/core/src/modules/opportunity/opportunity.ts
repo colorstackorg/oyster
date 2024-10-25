@@ -427,6 +427,10 @@ const REFINE_OPPORTUNITY_SYSTEM_PROMPT = dedent`
   (likely a job posting) text content.
 `;
 
+// Need to help AI out by telling it the current year...Claude 3.5 doesn't
+// seem to know the current date.
+const CURRENT_YEAR = new Date().getFullYear();
+
 const REFINE_OPPORTUNITY_PROMPT = dedent`
   Your job is to analyze the given webpage and extract the following information
   and format it as JSON:
@@ -439,8 +443,9 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
      who it's for, when, potential compensation and any other relevant details
      to someone open to the opportunity.
   4. "expiresAt": The date that the opportunity is no longer relevant, in
-     'YYYY-MM-DD' format. If the opportunity seemingly never "closes", set this
-     to null.
+     'YYYY-MM-DD' format. This should almost always be a date in the FUTURE
+     (the current year is ${CURRENT_YEAR}). If the opportunity seemingly never
+     "closes", set this to null.
   5. "tags": A list of tags that fit this opportunity, maximum 5 tags and
      minimum 1 tag. This is the MOST IMPORTANT FIELD. We have a list of existing
      tags in our database that are available to associate with this opportunity.
