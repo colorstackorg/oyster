@@ -387,8 +387,16 @@ function OpportunitiesTable() {
       displayName: 'Posted By',
       size: '120',
       render: (opportunity) => {
+        if (
+          !opportunity.posterId ||
+          !opportunity.posterFirstName ||
+          !opportunity.posterLastName
+        ) {
+          return null;
+        }
+
         const initials =
-          opportunity.posterFirstName![0] + opportunity.posterLastName![0];
+          opportunity.posterFirstName[0] + opportunity.posterLastName[0];
 
         return (
           <Tooltip>
