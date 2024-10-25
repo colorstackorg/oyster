@@ -69,6 +69,12 @@ export default function ProfileLayout() {
               prefetch="intent"
             />
             <Dashboard.NavigationLink
+              icon={<Home />}
+              label="Chat"
+              pathname={Route['/ai-chat-bot']}
+              prefetch="intent"
+            />
+            <Dashboard.NavigationLink
               icon={<Folder />}
               label="Directory"
               pathname={Route['/directory']}
