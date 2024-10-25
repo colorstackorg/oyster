@@ -29,7 +29,3 @@ export async function listTags<Selection extends SelectExpression<DB, 'tags'>>({
     .offset((pagination.page - 1) * pagination.limit)
     .execute();
 }
-
-export async function getAllTags() {
-  return db.selectFrom('tags').selectAll().orderBy('name asc').execute();
-}
