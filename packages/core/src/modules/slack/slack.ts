@@ -424,6 +424,79 @@ export async function answerPublicQuestion({
   return success({});
 }
 
+type AnswerMemberProfileQuestionInput = {
+  /**
+   * The text passed in by the user to the AI chatbot.
+   */
+  text: string;
+};
+
+/**
+ * Processes a question or input submitted by a member to the AI chatbot
+ * and returns the relevant response.
+ *
+ * @param input - The question or message from the user.
+ * @returns A nested Result type containing the chatbot's response.
+ */
+export async function AnswerMemberProfileQuestion(
+  text: AnswerMemberProfileQuestionInput
+): Promise<Result<string>> {
+  const questionResult = await isQuestion(text.text);
+
+  if (!questionResult.ok) {
+    return questionResult;
+  }
+
+  const isValidQuestion = questionResult.data;
+
+  if (!isValidQuestion) {
+    return success(
+      'I can only respond to questions. Please try again on a different message!'
+    );
+  }
+
+  const threadsResult = await getMostRelevantThreads(text.text, {
+    threshold: 0.98,
+    topK: 5,
+  });
+
+  if (!threadsResult.ok) {
+    return threadsResult;
+  }
+
+  const threads = threadsResult.data.map((thread, i) => {
+    const date = dayjs(thread.createdAt)
+      .tz('America/Los_Angeles')
+      .format("MMM. 'YY");
+
+    const uri = `https://colorstack-family.slack.com/archives/${thread.channelId}/p${thread.id}`;
+
+    return `• <${uri}|*Thread #${i + 1}*> [${date}]`;
+  });
+
+  if (!threads.length) {
+    // Though we didn't find any relevant threads, this is still a "success".
+    return success(
+      "I couldn't find any relevant threads in our workspace. Sorry!"
+    );
+  }
+
+  const answerResult = await getAnswerFromSlackHistory(
+    text.text,
+    threadsResult.data
+  );
+
+  if (!answerResult.ok) {
+    return answerResult;
+  }
+
+  const answer = answerResult.data;
+
+  const messageWithThreads = addThreadReferences(answer);
+
+  return success(messageWithThreads);
+}
+
 /**
  * Determines if the given text is a question.
  *

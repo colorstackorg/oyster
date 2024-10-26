@@ -1,7 +1,7 @@
 /*
 This is the UI for the AI chatbot on the profile page of member profiles.
 */
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@oyster/ui';
 
@@ -13,14 +13,26 @@ export default function AiChatBot() {
   const [submittedQuestion, setSubmittedQuestion] = useState('');
   const [response, setResponse] = useState('');
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (question.trim()) {
-      // Placeholder for API call
-      const currentQuestion = question;
-
-      setResponse(`Response to: ${currentQuestion}`);
-      setSubmittedQuestion(currentQuestion);
+      setSubmittedQuestion(question);
       setQuestion(''); // Clear the input after submitting
+      setResponse('Searching...');
+
+      try {
+        const response = await fetch(
+          `/api/chat/output?text=${encodeURIComponent(question)}`
+        );
+        const data = await response.json();
+
+        if (response.ok) {
+          setResponse(data.answer);
+        } else {
+          setResponse(`Error: ${data.error}`);
+        }
+      } catch (error) {
+        setResponse('An error occurred while fetching the response.');
+      }
     }
   };
 
