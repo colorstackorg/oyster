@@ -1,21 +1,36 @@
-import mailchimp from '@mailchimp/mailchimp_marketing';
 import { match } from 'ts-pattern';
 
 import { sleep } from '@oyster/utils';
 
-import {
-  type GetBullJobData,
-  MailchimpBullJob,
-} from '@/infrastructure/bull/bull.types';
+import { MailchimpBullJob } from '@/infrastructure/bull/bull.types';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
-import { redis, RedisKey } from '@/infrastructure/redis';
-import { ENV, IS_PRODUCTION } from '@/shared/env';
-import { ErrorWithContext } from '@/shared/errors';
+import { redis } from '@/infrastructure/redis';
+import { reportException } from '@/modules/sentry/use-cases/report-exception';
+import { IS_PRODUCTION } from '@/shared/env';
+import { encodeBasicAuthenticationToken } from '@/shared/utils/auth.utils';
+import { fail, success } from '@/shared/utils/core.utils';
 
-mailchimp.setConfig({
-  apiKey: ENV.MAILCHIMP_API_KEY,
-  server: ENV.MAILCHIMP_SERVER_PREFIX,
-});
+// Environment Variables
+
+const MAILCHIMP_API_KEY = process.env.MAILCHIMP_API_KEY as string;
+const MAILCHIMP_AUDIENCE_ID = process.env.MAILCHIMP_AUDIENCE_ID as string;
+const MAILCHIMP_SERVER_PREFIX = process.env.MAILCHIMP_SERVER_PREFIX as string;
+
+// Constants
+
+const MAILCHIMP_API_URL = `https://${MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0`;
+const MAILCHIMP_MEMBER_API_URL = `${MAILCHIMP_API_URL}/lists/${MAILCHIMP_AUDIENCE_ID}/members`;
+
+/**
+ * A base64 encoded string that is used to authenticate requests to the
+ * Mailchimp API. The username can be any string here.
+ *
+ * @see https://mailchimp.com/developer/marketing/guides/quick-start/#generate-your-api-key
+ */
+const MAILCHIMP_TOKEN = encodeBasicAuthenticationToken(
+  'user',
+  MAILCHIMP_API_KEY
+);
 
 /**
  * This is the maximum number of concurrent connections that Mailchimp allows
@@ -23,119 +38,174 @@ mailchimp.setConfig({
  *
  * @see https://mailchimp.com/developer/marketing/docs/fundamentals/#throttling
  */
-const MAX_MAILCHIMP_CONNECTIONS = 10;
+const MAILCHIMP_MAX_CONNECTIONS = 10;
 
-async function grabMailchimpConnection() {
-  while (true) {
-    const connections = await redis.incr(RedisKey.MAILCHIMP_CONNECTIONS);
+/**
+ * The key used to track the number of concurrent connections to the Mailchimp
+ * API.
+ */
+const MAILCHIMP_REDIS_KEY = 'mailchimp:connections';
 
-    if (connections <= MAX_MAILCHIMP_CONNECTIONS) {
-      return;
-    }
+// Core
 
-    await redis.decr(RedisKey.MAILCHIMP_CONNECTIONS);
+// "Add Mailchimp Member"
 
-    await sleep(1000);
-  }
-}
-
-async function releaseMailchimpConnection() {
-  await redis.decr(RedisKey.MAILCHIMP_CONNECTIONS);
-}
-
-class RemoveListMemberError extends ErrorWithContext {
-  message = 'Failed to remove list member.';
-}
-
-async function removeMailchimpListMember({
-  email,
-}: GetBullJobData<'mailchimp.remove'>) {
-  if (!IS_PRODUCTION) {
-    return;
-  }
-
-  await grabMailchimpConnection();
-
-  try {
-    await mailchimp.lists.deleteListMember(ENV.MAILCHIMP_AUDIENCE_ID, email);
-  } catch (e) {
-    throw new RemoveListMemberError().withContext({ email });
-  } finally {
-    await releaseMailchimpConnection();
-  }
-}
-
-class UpdateListMemberError extends ErrorWithContext {
-  message = 'Failed to update list member.';
-}
-
-async function updateMailchimpListMember({
-  email,
-  id,
-}: {
-  email: string;
-  id: string;
-}) {
-  if (!IS_PRODUCTION) {
-    return;
-  }
-
-  await grabMailchimpConnection();
-
-  try {
-    await mailchimp.lists.updateListMember(ENV.MAILCHIMP_AUDIENCE_ID, id, {
-      email_address: email,
-    });
-  } catch (e) {
-    throw new UpdateListMemberError().withContext({
-      newEmail: email,
-      oldEmail: id,
-    });
-  } finally {
-    await releaseMailchimpConnection();
-  }
-}
-
-class AddListMemberError extends ErrorWithContext {
-  message = 'Failed to add member to the list.';
-}
-
-type ListMember = {
+type AddMailchimpMemberInput = {
   email: string;
   firstName: string;
   lastName: string;
 };
 
-async function addMailchimpListMember({
+async function addMailchimpMember<T>({
   email,
   firstName,
   lastName,
-}: ListMember) {
+}: AddMailchimpMemberInput) {
+  if (!IS_PRODUCTION) {
+    return success({ email, firstName, lastName });
+  }
+
+  await grabMailchimpConnection();
+
+  const response = await fetch(MAILCHIMP_MEMBER_API_URL, {
+    body: JSON.stringify({
+      email_address: email,
+      merge_fields: { FNAME: firstName, LNAME: lastName },
+      status: 'subscribed',
+      status_if_new: 'subscribed',
+    }),
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${MAILCHIMP_TOKEN}`,
+    },
+  });
+
+  await releaseMailchimpConnection();
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const error = new Error('Failed to update Mailchimp member.');
+
+    reportException(error, {
+      data,
+      status: response.status,
+    });
+
+    return fail({
+      code: response.status,
+      error: error.message,
+    });
+  }
+
+  return success({ email, firstName, lastName } as T);
+}
+
+// "Remove Mailchimp Member"
+
+type RemoveMailchimpMemberInput = {
+  email: string;
+};
+
+async function removeMailchimpMember({ email }: RemoveMailchimpMemberInput) {
+  if (!IS_PRODUCTION) {
+    return success({ email });
+  }
+
+  await grabMailchimpConnection();
+
+  const response = await fetch(`${MAILCHIMP_MEMBER_API_URL}/${email}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Basic ${MAILCHIMP_TOKEN}`,
+    },
+  });
+
+  await releaseMailchimpConnection();
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const error = new Error('Failed to remove Mailchimp member.');
+
+    reportException(error, {
+      data,
+      status: response.status,
+    });
+
+    return fail({
+      code: response.status,
+      error: error.message,
+    });
+  }
+
+  return success({ email });
+}
+
+// "Update Mailchimp Member"
+
+type UpdateMailchimpMemberInput = {
+  email: string;
+  id: string;
+};
+
+async function updateMailchimpMember({
+  email,
+  id,
+}: UpdateMailchimpMemberInput) {
   if (!IS_PRODUCTION) {
     return;
   }
 
   await grabMailchimpConnection();
 
-  try {
-    // This is a `PUT` call, so it will either add the member to the list,
-    // or it will update the member if they already exist.
-    await mailchimp.lists.setListMember(ENV.MAILCHIMP_AUDIENCE_ID, email, {
-      email_address: email,
-      merge_fields: {
-        FNAME: firstName,
-        LNAME: lastName,
-      },
-      status: 'subscribed',
-      status_if_new: 'subscribed',
+  const response = await fetch(`${MAILCHIMP_MEMBER_API_URL}/${id}`, {
+    body: JSON.stringify({ email_address: email }),
+    method: 'PATCH',
+    headers: {
+      Authorization: `Basic ${MAILCHIMP_TOKEN}`,
+    },
+  });
+
+  await releaseMailchimpConnection();
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const error = new Error('Failed to update Mailchimp member.');
+
+    reportException(error, {
+      data,
+      status: response.status,
     });
-  } catch (e) {
-    throw new AddListMemberError().withContext({
-      email: email,
+
+    return fail({
+      code: response.status,
+      error: error.message,
     });
-  } finally {
-    await releaseMailchimpConnection();
   }
+
+  return success({ email, id });
+}
+
+// Helpers
+
+async function grabMailchimpConnection(): Promise<void> {
+  while (true) {
+    const connections = await redis.incr(MAILCHIMP_REDIS_KEY);
+
+    if (connections <= MAILCHIMP_MAX_CONNECTIONS) {
+      return;
+    }
+
+    await redis.decr(MAILCHIMP_REDIS_KEY);
+
+    await sleep(1000);
+  }
+}
+
+async function releaseMailchimpConnection(): Promise<void> {
+  await redis.decr(MAILCHIMP_REDIS_KEY);
 }
 
 // Worker
@@ -146,13 +216,13 @@ export const mailchimpWorker = registerWorker(
   async (job) => {
     return match(job)
       .with({ name: 'mailchimp.add' }, ({ data }) => {
-        return addMailchimpListMember(data);
+        return addMailchimpMember(data);
       })
       .with({ name: 'mailchimp.remove' }, ({ data }) => {
-        return removeMailchimpListMember(data);
+        return removeMailchimpMember(data);
       })
       .with({ name: 'mailchimp.update' }, ({ data }) => {
-        return updateMailchimpListMember(data);
+        return updateMailchimpMember(data);
       })
       .exhaustive();
   }

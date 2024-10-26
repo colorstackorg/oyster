@@ -15,7 +15,6 @@ export const RedisKey = {
   AIRTABLE_CONNECTIONS: 'airtable:connections',
   CRUNCHBASE_CONNECTIONS: 'crunchbase:connections',
   GOOGLE_GEOCODING_CONNECTIONS: 'google:connections:geocoding',
-  MAILCHIMP_CONNECTIONS: 'mailchimp:connections',
   SLACK_DEACTIVATE_CONNECTIONS: 'slack:connections:deactivate',
   SLACK_GET_BIRTHDATES_CONNECTIONS: 'slack:connections:get_birthdates',
   SLACK_GET_MESSAGE_CONNECTIONS: 'slack:connections:get_message',
