@@ -9,6 +9,7 @@ import {
   FileText,
   Folder,
   Home,
+  MessageCircle,
   User,
 } from 'react-feather';
 
@@ -69,7 +70,7 @@ export default function ProfileLayout() {
               prefetch="intent"
             />
             <Dashboard.NavigationLink
-              icon={<Home />}
+              icon={<MessageCircle />}
               label="Chat"
               pathname={Route['/ai-chat-bot']}
               prefetch="intent"
