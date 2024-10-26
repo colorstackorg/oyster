@@ -1,13 +1,5 @@
 export { Application } from './domain/application';
 export {
-  EmailCampaign,
-  EmailCampaignClick,
-  EmailCampaignLink,
-  EmailCampaignOpen,
-  EmailList,
-  EmailMarketingPlatform,
-} from './domain/email-marketing';
-export {
   Event,
   EventAttendee,
   EventRegistration,

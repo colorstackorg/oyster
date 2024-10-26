@@ -132,19 +132,12 @@ async function updateCompletedRequirements(studentId: string) {
   const updatedRequirements: ActivationRequirement[] = [];
 
   const [
-    open,
     attendee,
     onboardingAttendee,
     introductionMessage,
     announcementReply,
     repliesCountResult,
   ] = await Promise.all([
-    db
-      .selectFrom('emailCampaignOpens')
-      .where('studentId', '=', studentId)
-      .limit(1)
-      .executeTakeFirst(),
-
     db
       .selectFrom('eventAttendees')
       .where('studentId', '=', studentId)
@@ -186,10 +179,6 @@ async function updateCompletedRequirements(studentId: string) {
 
   if (onboardingAttendee) {
     updatedRequirements.push('attend_onboarding');
-  }
-
-  if (open) {
-    updatedRequirements.push('open_email_campaign');
   }
 
   if (announcementReply) {
