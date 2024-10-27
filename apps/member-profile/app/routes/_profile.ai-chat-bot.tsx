@@ -56,7 +56,7 @@ export default function AiChatBot() {
           <div className="h-96 overflow-auto rounded-lg border border-[#348E87] bg-white p-6">
             {response ? (
               <div className="space-y-6">
-                <div className="rounded-lg bg-[#348E87] p-4 text-right shadow">
+                <div className="rounded-lg bg-[#348E87] p-4 shadow">
                   <p className="text-base text-white">{submittedQuestion}</p>
                 </div>
                 <div className="rounded-lg border border-[#348E87] bg-white p-4 shadow">
