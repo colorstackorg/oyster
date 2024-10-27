@@ -12,7 +12,7 @@ import {
   useSearchParams,
   useSubmit,
 } from '@remix-run/react';
-import { FileText, Plus, Star, Users } from 'react-feather';
+import { FileText, Layers, Plus, Star, Users } from 'react-feather';
 
 import {
   ListCompaniesOrderBy,
@@ -204,7 +204,7 @@ type CompanyInView = SerializeFrom<typeof loader>['companies'][number];
 
 function CompanyItem({ company }: { company: CompanyInView }) {
   return (
-    <li className="flex flex-col gap-3 rounded-3xl border border-gray-200 p-4">
+    <li className="flex flex-col gap-3 rounded-2xl border border-gray-200 p-4">
       <header className="flex items-center gap-2">
         <CompanyLogo imageUrl={company.imageUrl} />
         <CompanyTitle id={company.id} name={company.name} />
@@ -214,6 +214,7 @@ function CompanyItem({ company }: { company: CompanyInView }) {
 
       <div className="flex items-center gap-4">
         <EmployeeCount employees={company.employees} />
+        <OpportunitiesCount opportunities={company.opportunities} />
         <ReviewCount reviews={company.reviews} />
         <AverageRating averageRating={company.averageRating} />
       </div>
@@ -270,6 +271,28 @@ function EmployeeCount({ employees }: Pick<CompanyInView, 'employees'>) {
           {employees === '1'
             ? `${employees} member has worked here`
             : `${employees} members have worked here`}
+        </TooltipText>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+function OpportunitiesCount({
+  opportunities,
+}: Pick<CompanyInView, 'opportunities'>) {
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        <Text className="flex items-center gap-1" color="gray-500" variant="sm">
+          <Layers size="16" />
+          <span>{opportunities}</span>
+        </Text>
+      </TooltipTrigger>
+      <TooltipContent>
+        <TooltipText>
+          {opportunities === '1'
+            ? `${opportunities} open opportunity`
+            : `${opportunities} open opportunities`}
         </TooltipText>
       </TooltipContent>
     </Tooltip>
