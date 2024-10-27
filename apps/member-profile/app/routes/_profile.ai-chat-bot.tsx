@@ -42,25 +42,25 @@ export default function AiChatBot() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white p-4">
-      <Card className="w-full max-w-3xl overflow-hidden shadow-xl">
+    <div className="flex flex-1 items-center justify-center p-4">
+      <Card className="w-full max-w-5xl overflow-hidden shadow-xl">
         <div className="bg-white p-0 text-black">
-          <h1 className="mb-2 text-3xl font-bold text-[#348E87]">
+          <h1 className="mb-2 text-4xl font-bold text-[#348E87]">
             Oyster AI 🦪🤖
           </h1>
-          <p className="text-sm text-gray-600">
+          <p className="text-base text-gray-600">
             I'm here to help with any questions you have!
           </p>
         </div>
-        <div className="space-y-4 bg-white pt-0">
-          <div className="h-80 overflow-auto rounded-lg border border-[#348E87] bg-white p-4">
+        <div className="space-y-6 bg-white pt-0">
+          <div className="h-96 overflow-auto rounded-lg border border-[#348E87] bg-white p-6">
             {response ? (
-              <div className="space-y-4">
-                <div className="rounded-lg bg-[#348E87] p-3 text-right shadow">
-                  <p className="text-sm text-white">{submittedQuestion}</p>
+              <div className="space-y-6">
+                <div className="rounded-lg bg-[#348E87] p-4 text-right shadow">
+                  <p className="text-base text-white">{submittedQuestion}</p>
                 </div>
-                <div className="rounded-lg border border-[#348E87] bg-white p-3 shadow">
-                  <p className="text-sm text-gray-800">{response}</p>
+                <div className="rounded-lg border border-[#348E87] bg-white p-4 shadow">
+                  <p className="text-base text-gray-800">{response}</p>
                 </div>
               </div>
             ) : (
@@ -73,24 +73,28 @@ export default function AiChatBot() {
               </div>
             )}
           </div>
-          <div className="flex space-x-2">
-            <ChatBar
-              placeholder="Type your question here..."
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setQuestion(e.target.value)
-              }
-              value={question}
-            />
-            <Button
-              onClick={handleSubmit}
-              disabled={!question.trim()}
-              variant="primary"
-            >
-              Enter
-            </Button>
-            <Button onClick={handleClear} variant="secondary">
-              Clear
-            </Button>
+          <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
+            <div className="flex-grow">
+              <ChatBar
+                placeholder="Type your question here..."
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setQuestion(e.target.value)
+                }
+                value={question}
+              />
+            </div>
+            <div className="flex space-x-4">
+              <Button
+                onClick={handleSubmit}
+                disabled={!question.trim()}
+                variant="primary"
+              >
+                Enter
+              </Button>
+              <Button onClick={handleClear} variant="secondary">
+                Clear
+              </Button>
+            </div>
           </div>
         </div>
       </Card>
