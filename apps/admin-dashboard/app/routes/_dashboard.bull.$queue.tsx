@@ -431,13 +431,17 @@ function RepeatablesTable() {
       size: '200',
       render: (repeatable) => repeatable.tz,
     },
+    {
+      size: '48',
+      sticky: true,
+      render: (repeatable) => <RepeatableDropdown {...repeatable} />,
+    },
   ];
 
   return (
     <Table
       columns={columns}
       data={repeatables}
-      Dropdown={RepeatableDropdown}
       emptyMessage="No repeatables found."
     />
   );
@@ -517,22 +521,7 @@ function JobsTable() {
     {
       displayName: 'ID',
       size: '120',
-      render: (job) => {
-        return (
-          <Link
-            className="link"
-            to={{
-              pathname: generatePath(Route['/bull/:queue/jobs/:id'], {
-                id: job.id,
-                queue,
-              }),
-              search,
-            }}
-          >
-            {job.id}
-          </Link>
-        );
-      },
+      render: (job) => job.id,
     },
     {
       displayName: 'Name',
@@ -588,6 +577,11 @@ function JobsTable() {
       size: '200',
       render: (job) => job.processedAt || '-',
     },
+    {
+      size: '48',
+      render: (job) => <JobDropdown {...job} />,
+      sticky: true,
+    },
   ];
 
   return (
@@ -595,7 +589,15 @@ function JobsTable() {
       columns={columns}
       data={jobs}
       emptyMessage="No jobs found."
-      Dropdown={JobDropdown}
+      rowTo={(job) => {
+        return {
+          pathname: generatePath(Route['/bull/:queue/jobs/:id'], {
+            id: job.id,
+            queue,
+          }),
+          search,
+        };
+      }}
     />
   );
 }
