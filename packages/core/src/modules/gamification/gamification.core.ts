@@ -269,6 +269,17 @@ async function grantGamificationPoints(
           .execute();
       }
     )
+    .with({ type: 'get_opportunity_bookmark' }, async (input) => {
+      await db
+        .insertInto('completedActivities')
+        .values({
+          ...activityCompleted,
+          opportunityBookmarkedBy: input.opportunityBookmarkedBy,
+          opportunityId: input.opportunityId,
+        })
+        .onConflict((oc) => oc.doNothing())
+        .execute();
+    })
     .with({ type: 'get_resource_upvote' }, async (input) => {
       await db
         .insertInto('completedActivities')
@@ -436,7 +447,7 @@ async function queueSlackNotification({
 }: Pick<CompletedActivity, 'points' | 'studentId'>) {
   // We'll only send Slack notifications for activities that grant 10 or more
   // points.
-  if (points < 10) {
+  if (points <= 10) {
     return;
   }
 

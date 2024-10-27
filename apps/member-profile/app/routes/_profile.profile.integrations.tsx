@@ -95,7 +95,7 @@ function IntegrationCard({
   oauthUri,
 }: IntegrationCardProps) {
   return (
-    <li className="flex flex-col gap-4 rounded-3xl border border-gray-200 p-4">
+    <li className="flex flex-col gap-4 rounded-2xl border border-gray-200 p-4">
       <header className="flex items-center justify-between gap-4">
         <img className="w-19 h-10" src={logo} />
 

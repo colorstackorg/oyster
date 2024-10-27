@@ -178,13 +178,17 @@ function OnboardingSessionsTable() {
       render: (session) => session.ambassadorName,
       size: '200',
     },
+    {
+      size: '48',
+      sticky: true,
+      render: (session) => <OnboardingSessionsDropdown {...session} />,
+    },
   ];
 
   return (
     <Table
       columns={columns}
       data={sessions}
-      Dropdown={OnboardingSessionsDropdown}
       emptyMessage="No onboarding sessions found."
     />
   );
