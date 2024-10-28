@@ -17,7 +17,14 @@ import {
   listCompanyEmployees,
   listCompanyReviews,
 } from '@oyster/core/employment/server';
-import { cx, Divider, getTextCn, ProfilePicture, Text } from '@oyster/ui';
+import {
+  cx,
+  Divider,
+  getButtonCn,
+  getTextCn,
+  ProfilePicture,
+  Text,
+} from '@oyster/ui';
 import {
   Tooltip,
   TooltipContent,
@@ -38,13 +45,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const [company, hasAccess, _employees, _reviews] = await Promise.all([
     getCompany({
-      include: ['averageRating', 'employees', 'reviews'],
+      include: ['averageRating', 'employees', 'opportunities', 'reviews'],
       select: [
         'companies.description',
         'companies.domain',
         'companies.id',
         'companies.imageUrl',
         'companies.name',
+        'companies.leetcodeSlug',
         'companies.levelsFyiSlug',
       ],
       where: { id },
@@ -151,9 +159,7 @@ export default function CompanyPage() {
               {company.name}
             </Text>
 
-            {company.levelsFyiSlug && (
-              <LevelsFyiLink slug={company.levelsFyiSlug} />
-            )}
+            <LogoLinkGroup />
           </div>
 
           <DomainLink domain={company.domain} />
@@ -163,10 +169,74 @@ export default function CompanyPage() {
       </header>
 
       <Text color="gray-500">{company.description}</Text>
+      <OpportunitiesAlert
+        id={company.id}
+        opportunities={company.opportunities}
+      />
       <ReviewsList />
       <CurrentEmployees />
       <PastEmployees />
     </section>
+  );
+}
+
+function LogoLinkGroup() {
+  const { company } = useLoaderData<typeof loader>();
+
+  if (!company.leetcodeSlug && !company.levelsFyiSlug) {
+    return null;
+  }
+
+  return (
+    <ul className="mt-1 flex items-center gap-1">
+      {company.levelsFyiSlug && (
+        <LogoLink
+          href={`https://www.levels.fyi/companies/${company.levelsFyiSlug}/salaries`}
+          imageAlt="Levels.fyi Logo"
+          imageSrc="/images/levels-fyi.png"
+          tooltip="View Salary Information on Levels.fyi"
+        />
+      )}
+
+      {company.leetcodeSlug && (
+        <LogoLink
+          href={`https://leetcode.com/company/${company.leetcodeSlug}`}
+          imageAlt="Leetcode Logo"
+          imageSrc="/images/leetcode.png"
+          tooltip="View Leetcode Tagged Problems"
+        />
+      )}
+    </ul>
+  );
+}
+
+type LogoLinkProps = {
+  href: string;
+  imageAlt: string;
+  imageSrc: string;
+  tooltip: string;
+};
+
+function LogoLink({ href, imageAlt, imageSrc, tooltip }: LogoLinkProps) {
+  return (
+    <li>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <a
+            className="cursor-pointer hover:opacity-90"
+            href={href}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <img alt={imageAlt} className="h-4 w-4 rounded-sm" src={imageSrc} />
+          </a>
+        </TooltipTrigger>
+
+        <TooltipContent side="bottom" sideOffset={8}>
+          <TooltipText>{tooltip}</TooltipText>
+        </TooltipContent>
+      </Tooltip>
+    </li>
   );
 }
 
@@ -188,34 +258,6 @@ function DomainLink({ domain }: Pick<CompanyInView, 'domain'>) {
   );
 }
 
-type LevelsFyiLinkProps = {
-  slug: string;
-};
-
-function LevelsFyiLink({ slug }: LevelsFyiLinkProps) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <a
-          className="mt-1"
-          href={`https://www.levels.fyi/companies/${slug}/salaries`}
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <img
-            alt="Levels.fyi Logo"
-            className="h-4 w-4 cursor-pointer rounded-sm hover:opacity-90"
-            src="/images/levels-fyi.png"
-          />
-        </a>
-      </TooltipTrigger>
-      <TooltipContent>
-        <TooltipText>View Salary Information on Levels.fyi</TooltipText>
-      </TooltipContent>
-    </Tooltip>
-  );
-}
-
 function AverageRating({
   averageRating,
 }: Pick<CompanyInView, 'averageRating'>) {
@@ -228,6 +270,39 @@ function AverageRating({
       <Text>
         <span className="text-2xl">{averageRating}</span>/10
       </Text>
+    </div>
+  );
+}
+
+function OpportunitiesAlert({
+  id,
+  opportunities: _opportunities,
+}: Pick<CompanyInView, 'id' | 'opportunities'>) {
+  const opportunities = Number(_opportunities);
+
+  if (!opportunities) {
+    return null;
+  }
+
+  // TODO: Need to extract this into a shared component.
+
+  return (
+    <div className="flex w-full items-center justify-between gap-4 rounded-lg border border-primary border-opacity-30 bg-primary bg-opacity-5 p-2">
+      <Text className="line-clamp-1" variant="sm">
+        {opportunities === 1
+          ? `${opportunities} open opportunity found.`
+          : `${opportunities} open opportunities found.`}
+      </Text>
+
+      <Link
+        className={getButtonCn({ size: 'small' })}
+        to={{
+          pathname: Route['/opportunities'],
+          search: `?company=${id}`,
+        }}
+      >
+        View
+      </Link>
     </div>
   );
 }
