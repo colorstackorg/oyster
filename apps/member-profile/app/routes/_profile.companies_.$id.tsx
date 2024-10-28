@@ -52,8 +52,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'companies.id',
         'companies.imageUrl',
         'companies.name',
+        'companies.leetcodeSlug',
         'companies.levelsFyiSlug',
-        'companies.leetcodeTaggedSlug',
       ],
       where: { id },
     }),
@@ -159,13 +159,7 @@ export default function CompanyPage() {
               {company.name}
             </Text>
 
-            {company.levelsFyiSlug && (
-              <LevelsFyiLink slug={company.levelsFyiSlug} />
-            )}
-
-            {company.leetcodeTaggedSlug && (
-              <LeetcodeTaggedLink slug={company.leetcodeTaggedSlug} />
-            )}
+            <LogoLinkGroup />
           </div>
 
           <DomainLink domain={company.domain} />
@@ -186,6 +180,66 @@ export default function CompanyPage() {
   );
 }
 
+function LogoLinkGroup() {
+  const { company } = useLoaderData<typeof loader>();
+
+  if (!company.leetcodeSlug && !company.levelsFyiSlug) {
+    return null;
+  }
+
+  return (
+    <ul className="mt-1 flex items-center gap-1">
+      {company.levelsFyiSlug && (
+        <LogoLink
+          href={`https://www.levels.fyi/companies/${company.levelsFyiSlug}/salaries`}
+          imageAlt="Levels.fyi Logo"
+          imageSrc="/images/levels-fyi.png"
+          tooltip="View Salary Information on Levels.fyi"
+        />
+      )}
+
+      {company.leetcodeSlug && (
+        <LogoLink
+          href={`https://leetcode.com/company/${company.leetcodeSlug}`}
+          imageAlt="Leetcode Logo"
+          imageSrc="/images/leetcode.png"
+          tooltip="View Leetcode Tagged Problems"
+        />
+      )}
+    </ul>
+  );
+}
+
+type LogoLinkProps = {
+  href: string;
+  imageAlt: string;
+  imageSrc: string;
+  tooltip: string;
+};
+
+function LogoLink({ href, imageAlt, imageSrc, tooltip }: LogoLinkProps) {
+  return (
+    <li>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <a
+            className="cursor-pointer hover:opacity-90"
+            href={href}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <img alt={imageAlt} className="h-4 w-4 rounded-sm" src={imageSrc} />
+          </a>
+        </TooltipTrigger>
+
+        <TooltipContent side="bottom" sideOffset={8}>
+          <TooltipText>{tooltip}</TooltipText>
+        </TooltipContent>
+      </Tooltip>
+    </li>
+  );
+}
+
 type CompanyInView = SerializeFrom<typeof loader>['company'];
 
 function DomainLink({ domain }: Pick<CompanyInView, 'domain'>) {
@@ -201,62 +255,6 @@ function DomainLink({ domain }: Pick<CompanyInView, 'domain'>) {
     >
       {domain} <ExternalLink size="16" />
     </a>
-  );
-}
-
-type LevelsFyiLinkProps = {
-  slug: string;
-};
-
-function LevelsFyiLink({ slug }: LevelsFyiLinkProps) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <a
-          className="mt-1"
-          href={`https://www.levels.fyi/companies/${slug}/salaries`}
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <img
-            alt="Levels.fyi Logo"
-            className="h-4 w-4 cursor-pointer rounded-sm hover:opacity-90"
-            src="/images/levels-fyi.png"
-          />
-        </a>
-      </TooltipTrigger>
-      <TooltipContent>
-        <TooltipText>View Salary Information on Levels.fyi</TooltipText>
-      </TooltipContent>
-    </Tooltip>
-  );
-}
-
-type LeetcodeTaggedLinkProps = {
-  slug: string;
-};
-
-function LeetcodeTaggedLink({ slug }: LeetcodeTaggedLinkProps) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <a
-          className="mt-1"
-          href={slug}
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <img
-            alt="Leetcode Logo"
-            className="h-4 w-4 cursor-pointer rounded-sm hover:opacity-90"
-            src="/images/leetcode.png"
-          />
-        </a>
-      </TooltipTrigger>
-      <TooltipContent>
-        <TooltipText>View Company Leetcode Problems</TooltipText>
-      </TooltipContent>
-    </Tooltip>
   );
 }
 
