@@ -337,8 +337,6 @@ const ResourceFilterKey = ListResourcesWhere.omit({
 }).keyof().enum;
 
 type ResourceFilterKey = ExtractValue<typeof ResourceFilterKey>;
-console.log(ResourceFilterKey);
-// WORK FROM HERE HERE HERE _____---------------=================================
 function FilterFormResources({ close }: { close: VoidFunction }) {
   const [filterKey, setFilterKey] = useState<ResourceFilterKey | null>(null);
 
@@ -357,7 +355,7 @@ function FilterFormResources({ close }: { close: VoidFunction }) {
       {!!filterKey && (
         <Text color="gray-500" variant="sm">
           {match(filterKey)
-            .with('tags', () => 'select:')
+            .with('tags', () => 'select: ')
             .exhaustive()}
         </Text>
       )}
