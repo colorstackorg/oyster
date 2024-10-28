@@ -67,7 +67,7 @@ export default function AiChatBot() {
               <div className="flex h-full items-center justify-center">
                 <p className="text-center text-gray-500">
                   {
-                    "Ask me anything and i'll search the ColorStack Slack for you!"
+                    "Ask me anything and i'll search the ColorStack slack for you!"
                   }
                 </p>
               </div>
