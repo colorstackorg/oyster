@@ -1,4 +1,3 @@
-import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import dedent from 'dedent';
 
@@ -8,7 +7,8 @@ export async function sendUpdateWorkHistoryProfileNotification(userId: string, t
         console.error('Mising userId or text');
         return; 
     }
-    if (text.toLowerCase().includes('offer')) {
+    const keywords = ['offer', 'join', 'signed', 'accepted', 'joining', 'signing', 'selected', 'with']
+    if (keywords.some(keyword => text.toLowerCase().includes(keyword))) {
         const message = dedent `
             Congratulations on securing the bag!  🎉
 
