@@ -13,9 +13,7 @@ export async function sendUpdateWorkHistoryProfileNotification(userId: string, t
             Congratulations on securing the bag!  🎉
 
             We noticed your post in the #career-secured-the-bag channel.
-            Don't forget to update your work history on your member profile
-            Here's the link: https://app.colorstack.io/profile/work
-
+            Don't forget to update your <https://app.colorstack.io/profile/work|*Work History*> on your member profile.
             Keep up the great work!
         `;
 
