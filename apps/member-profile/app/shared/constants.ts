@@ -1,4 +1,5 @@
 const ROUTES = [
+  '/ai-chat-bot',
   '/apply',
   '/apply/thank-you',
   '/companies',
@@ -61,7 +62,6 @@ const ROUTES = [
   '/resources/:id/edit',
   '/resume/review',
   '/resume-books/:id',
-  '/ai-chat-bot',
 ] as const;
 
 export type Route = (typeof ROUTES)[number];
