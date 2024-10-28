@@ -83,11 +83,16 @@ export function SlackMessage({
   ...rest
 }: SlackMessageProps) {
   return (
-    <Text className={cx('whitespace-pre-wrap', className)} {...rest}>
+    <Text
+      className={cx('whitespace-pre-wrap [word-break:break-word]', className)}
+      {...rest}
+    >
       {<>{toHTML(parseSlackMessage(children as string))}</>}
     </Text>
   );
 }
+
+// TODO: Need to add "key" for each rendered element.
 
 function toHTML(node: Node) {
   const result = match(node)
