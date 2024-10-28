@@ -20,7 +20,7 @@ import {
   type ResourceType,
 } from '@oyster/core/resources';
 import { listResources, listTags } from '@oyster/core/resources/server';
-import { ISO8601Date } from '@oyster/types';
+import { ExtractValue, ISO8601Date } from '@oyster/types';
 import {
   Dashboard,
   Dropdown,
@@ -329,16 +329,25 @@ function SortResourcesForm() {
   );
 }
 
+const ResourceFilterKey = ListResourcesWhere.omit({
+  id: true,
+  search: true,
+  postedAfter: true,
+  postedBefore: true,
+}).keyof().enum;
+
+type ResourceFilterKey = ExtractValue<typeof ResourceFilterKey>;
+console.log(ResourceFilterKey);
 // WORK FROM HERE HERE HERE _____---------------=================================
 function FilterFormResources({ close }: { close: VoidFunction }) {
-  const [filterKey, setFilterKey] = useState<String | null>('');
+  const [filterKey, setFilterKey] = useState<ResourceFilterKey | null>(null);
 
   return (
     <RemixForm className="form" method="get" onSubmit={close}>
       <Select
         placeholder="Select a field..."
         onChange={(e) => {
-          setFilterKey(e.currentTarget.value);
+          setFilterKey((e.currentTarget.value || null) as ResourceFilterKey);
         }}
       >
         <option value="tags" key="tags">
@@ -362,7 +371,8 @@ function FilterFormResources({ close }: { close: VoidFunction }) {
             </div>
           );
         })
-        .with('', () => {
+
+        .with(null, () => {
           return null;
         })
         .exhaustive()}
