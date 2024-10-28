@@ -3,7 +3,6 @@ import {
   Link,
   Outlet,
   Form as RemixForm,
-  useFetcher,
   useLoaderData,
   useSearchParams,
   useSubmit,
@@ -12,10 +11,7 @@ import dayjs from 'dayjs';
 import { Filter, Plus } from 'react-feather';
 
 import { isMemberAdmin } from '@oyster/core/admins';
-import {
-  CompanyCombobox,
-  ListSearchParams,
-} from '@oyster/core/member-profile/ui';
+import { ListSearchParams } from '@oyster/core/member-profile/ui';
 import { track } from '@oyster/core/mixpanel';
 import { getPresignedURL } from '@oyster/core/object-storage';
 import {
@@ -26,7 +22,6 @@ import {
 import { listResources, listTags } from '@oyster/core/resources/server';
 import { ISO8601Date } from '@oyster/types';
 import {
-  Combobox,
   Dashboard,
   Dropdown,
   ExistingSearchParams,
@@ -206,7 +201,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 
   const allTags = await listTags({
-    pagination: { limit: 50, page: 1 }, // hardcoded limit
+    pagination: { limit: 100, page: 1 }, // hardcoded limit as of now
     select: ['tags.id', 'tags.name'],
     where: {},
   });
@@ -237,12 +232,15 @@ export default function ResourcesPage() {
         <AddResourceLink />
       </header>
 
-      <section className="flex flex-wrap justify-start gap-4">
-        <Dashboard.SearchForm placeholder="Search by title...">
-          <ExistingSearchParams exclude={['page']} />
-        </Dashboard.SearchForm>
-        <SortResourcesForm />
-        <FilterResourcesDropdown></FilterResourcesDropdown>
+      <section className="flex flex-wrap justify-between">
+        <div className="flex flex-wrap gap-4">
+          <Dashboard.SearchForm placeholder="Search by title...">
+            <ExistingSearchParams exclude={['page']} />
+          </Dashboard.SearchForm>
+          <SortResourcesForm />
+        </div>
+
+        <FilterResourcesDropdown />
       </section>
 
       <CurrentTagsList />
@@ -252,6 +250,7 @@ export default function ResourcesPage() {
     </>
   );
 }
+
 function FilterResourcesDropdown() {
   const [open, setOpen] = useState<boolean>(false);
 
