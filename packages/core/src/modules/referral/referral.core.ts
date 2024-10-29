@@ -42,7 +42,7 @@ type ListReferralsOptions<Selection> = {
 };
 
 export async function listReferrals<
-  Selection extends SelectExpression<DB, 'referrals' | 'applications'>,
+  Selection extends SelectExpression<DB, 'applications' | 'referrals'>,
 >({ select, where }: ListReferralsOptions<Selection>) {
   const referrals = await db
     .selectFrom('referrals')
