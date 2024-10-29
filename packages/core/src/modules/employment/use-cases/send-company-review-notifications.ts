@@ -68,7 +68,7 @@ export async function sendCompanyReviewNotifications({
     const message = dedent`
       Congratulations on completing your role as *${title}* at *${companyName}*! 🎉
 
-      Your ColorStack peers would love to hear about it -- please take a moment to <${reviewURL}|*share a review*>! 🗣️
+      Please take a moment to <${reviewURL}|*share a review*> -- your ColorStack peers would love to hear about it!
     `;
 
     job('notification.slack.send', {
