@@ -9,7 +9,6 @@ import {
   Outlet,
   Form as RemixForm,
   useLoaderData,
-  useParams,
   useSearchParams,
   useSubmit,
 } from '@remix-run/react';
@@ -87,16 +86,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function CompaniesPage() {
-  const id = useParams().id;
-
-  if (id) {
-    return (
-      <>
-        <Outlet />
-      </>
-    );
-  }
-
   return (
     <>
       <header className="flex items-center justify-between gap-4">
@@ -218,7 +207,11 @@ function CompanyItem({ company }: { company: CompanyInView }) {
     <li className="flex flex-col gap-3 rounded-2xl border border-gray-200 p-4">
       <header className="flex items-center gap-2">
         <CompanyLogo imageUrl={company.imageUrl} />
-        <CompanyTitle id={company.id} name={company.name} />
+        <CompanyTitle
+          id={company.id}
+          name={company.name}
+          reviews={company.reviews}
+        />
       </header>
 
       <CompanyDescription description={company.description} />
@@ -244,14 +237,22 @@ function CompanyLogo({ imageUrl }: Pick<CompanyInView, 'imageUrl'>) {
   );
 }
 
-function CompanyTitle({ id, name }: Pick<CompanyInView, 'id' | 'name'>) {
+function CompanyTitle({
+  id,
+  name,
+  reviews,
+}: Pick<CompanyInView, 'id' | 'name' | 'reviews'>) {
+  const to = Number(reviews)
+    ? generatePath(Route['/companies/:id/reviews'], { id })
+    : generatePath(Route['/companies/:id/employees'], { id });
+
   return (
     <Link
       className={cx(
         getTextCn({ variant: 'lg' }),
         'hover:text-primary hover:underline'
       )}
-      to={generatePath(Route['/companies/:id'], { id })}
+      to={to}
     >
       {name}
     </Link>
