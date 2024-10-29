@@ -28,7 +28,7 @@ export const memberWorker = registerWorker(
   'student',
   StudentBullJob,
   async (job) => {
-    return match(job)
+    const result = await match(job)
       .with({ name: 'student.activated' }, ({ data }) => {
         return onMemberActivated(data);
       })
@@ -40,6 +40,9 @@ export const memberWorker = registerWorker(
       )
       .with({ name: 'student.birthdate.daily' }, ({ data }) => {
         return sendBirthdayNotification(data);
+      })
+      .with({ name: 'student.company_review_notifications' }, ({ data }) => {
+        return sendCompanyReviewNotifications(data);
       })
       .with({ name: 'student.created' }, ({ data }) => {
         return onMemberCreated(data);
@@ -62,10 +65,9 @@ export const memberWorker = registerWorker(
       .with({ name: 'student.statuses.new' }, ({ data }) => {
         return createNewActiveStatuses(data);
       })
-      .with({ name: 'student.company_review_notifications' }, ({ data: _ }) => {
-        return sendCompanyReviewNotifications();
-      })
       .exhaustive();
+
+    return result;
   }
 );
 
