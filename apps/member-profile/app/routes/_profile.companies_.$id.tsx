@@ -232,7 +232,7 @@ function LogoLink({ href, imageAlt, imageSrc, tooltip }: LogoLinkProps) {
           </a>
         </TooltipTrigger>
 
-        <TooltipContent side="bottom" sideOffset={8}>
+        <TooltipContent side="bottom">
           <TooltipText>{tooltip}</TooltipText>
         </TooltipContent>
       </Tooltip>
