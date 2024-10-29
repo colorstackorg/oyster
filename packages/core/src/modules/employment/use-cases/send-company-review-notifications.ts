@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import dedent from 'dedent';
 
 import { db } from '@oyster/db';
@@ -11,58 +12,49 @@ import { ENV } from '@/shared/env';
  * to all these students suggesting that they add a review of their experience.
  */
 export async function sendCompanyReviewNotifications() {
-  const now = new Date();
+  const startOfCurrentMonth = dayjs().startOf('month').toDate();
 
-  const firstDayOfPreviousMonth = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)
-  );
+  const startOfPreviousMonth = dayjs()
+    .startOf('month')
+    .subtract(1, 'month')
+    .toDate();
 
-  const firstDayOfCurrentMonth = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)
-  );
-
-  const results = await db
+  const workExperiences = await db
     .selectFrom('workExperiences')
+    .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
+    .leftJoin(
+      'companyReviews',
+      'companyReviews.workExperienceId',
+      'workExperiences.id'
+    )
     .leftJoin('students', 'students.id', 'workExperiences.studentId')
     .select([
-      'workExperiences.companyId',
-      'workExperiences.companyName',
-      'students.firstName as studentName',
-      'students.slackId as studentSlackId',
+      'companies.name as companyName',
+      'students.slackId as memberSlackId',
+      'workExperiences.id',
+      'workExperiences.title',
     ])
-    .where('endDate', '>=', firstDayOfPreviousMonth)
-    .where('endDate', '<', firstDayOfCurrentMonth)
-    .where('endDate', 'is not', null)
+    .where('companies.name', 'is not', null)
+    .where('companyReviews.id', 'is', null)
+    .where('workExperiences.endDate', '>=', startOfPreviousMonth)
+    .where('workExperiences.endDate', '<', startOfCurrentMonth)
+    .where('workExperiences.endDate', 'is not', null)
     .execute();
 
-  results.forEach((result) => {
-    const { companyId, companyName, studentName, studentSlackId } = result;
-
-    if (!companyId || !companyName || !studentName || !studentSlackId) {
-      console.warn(`Skipping notification due to missing data:`, result);
-
-      return;
-    }
-
-    const companyURL = new URL(
-      '/companies/' + companyId,
+  workExperiences.forEach(({ companyName, id, memberSlackId, title }) => {
+    const reviewURL = new URL(
+      '/profile/work/' + id + '/review/add',
       ENV.STUDENT_PROFILE_URL
     );
 
     const message = dedent`
-      Hey ${studentName},
+      Congratulations on completing your role as *${title}* at *${companyName}*! 🎉
 
-      Congratulations on completing your work experience at ${companyName}! 🎉
-
-      We'd love to hear about your experience! Please take a moment to share a review on
-      <${companyURL}|*${companyName}*>'s company page.
-
-      Thanks!
-      The ColorStack Team
+      Please take a moment to <${reviewURL}|*share a review*> -- your ColorStack peers would love to hear about it!
     `;
 
     job('notification.slack.send', {
-      channel: studentSlackId as string,
+      channel: memberSlackId as string,
       message,
       workspace: 'regular',
     });
