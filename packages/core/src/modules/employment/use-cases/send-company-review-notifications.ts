@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import dedent from 'dedent';
 
 import { db } from '@oyster/db';
@@ -5,66 +6,89 @@ import { db } from '@oyster/db';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { ENV } from '@/shared/env';
 
+type SendCompanyReviewNotificationsInput = {
+  after?: Date;
+  before?: Date;
+};
+
 /**
- * This is a monthly job that runs and finds all students that have had a work
- * experience end in the last month. Then, it has the ColorStack bot send a DM
- * to all these students suggesting that they add a review of their experience.
+ * This job finds all members who've had a work experience that ends after
+ * the `after` date and before the `before` date. It then sends a DM to them
+ * asking them to share a review of their experience.
+ *
+ * By default, `after` is the start of the previous month and `before` is the
+ * start of the current month.
+ *
+ * This job is idempotent. If it's run and a member has already received a
+ * notification for a work experience, they won't be notified about that
+ * experience again.
  */
-export async function sendCompanyReviewNotifications() {
-  const now = new Date();
+export async function sendCompanyReviewNotifications({
+  after,
+  before,
+}: SendCompanyReviewNotificationsInput) {
+  const startOfCurrentMonth = dayjs().startOf('month');
 
-  const firstDayOfPreviousMonth = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)
-  );
+  after ||= startOfCurrentMonth.subtract(1, 'month').toDate();
+  before ||= startOfCurrentMonth.toDate();
 
-  const firstDayOfCurrentMonth = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)
-  );
-
-  const results = await db
+  const workExperiences = await db
     .selectFrom('workExperiences')
+    .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
+    .leftJoin(
+      'companyReviews',
+      'companyReviews.workExperienceId',
+      'workExperiences.id'
+    )
     .leftJoin('students', 'students.id', 'workExperiences.studentId')
     .select([
-      'workExperiences.companyId',
-      'workExperiences.companyName',
-      'students.firstName as studentName',
-      'students.slackId as studentSlackId',
+      'companies.name as companyName',
+      'students.slackId as memberSlackId',
+      'workExperiences.id',
+      'workExperiences.title',
     ])
-    .where('endDate', '>=', firstDayOfPreviousMonth)
-    .where('endDate', '<', firstDayOfCurrentMonth)
-    .where('endDate', 'is not', null)
+    .where('companies.name', 'is not', null)
+    .where('companyReviews.id', 'is', null)
+    .where('workExperiences.endDate', '>=', after)
+    .where('workExperiences.endDate', '<', before)
+    .where('workExperiences.endDate', 'is not', null)
+    .where('workExperiences.reviewNotificationSentAt', 'is', null)
     .execute();
 
-  results.forEach((result) => {
-    const { companyId, companyName, studentName, studentSlackId } = result;
+  if (!workExperiences.length) {
+    return;
+  }
 
-    if (!companyId || !companyName || !studentName || !studentSlackId) {
-      console.warn(`Skipping notification due to missing data:`, result);
-
-      return;
-    }
-
-    const companyURL = new URL(
-      '/companies/' + companyId,
+  workExperiences.forEach(({ companyName, id, memberSlackId, title }) => {
+    const reviewURL = new URL(
+      '/profile/work/' + id + '/review/add',
       ENV.STUDENT_PROFILE_URL
     );
 
     const message = dedent`
-      Hey ${studentName},
+      Congratulations on completing your role as *${title}* at *${companyName}*! 🎉
 
-      Congratulations on completing your work experience at ${companyName}! 🎉
-
-      We'd love to hear about your experience! Please take a moment to share a review on
-      <${companyURL}|*${companyName}*>'s company page.
-
-      Thanks!
-      The ColorStack Team
+      Your ColorStack peers would love to hear about it -- please take a moment to <${reviewURL}|*share a review*>! 🗣️
     `;
 
     job('notification.slack.send', {
-      channel: studentSlackId as string,
+      channel: memberSlackId as string,
       message,
       workspace: 'regular',
     });
   });
+
+  await db
+    .updateTable('workExperiences')
+    .set({ reviewNotificationSentAt: new Date() })
+    .where(
+      'id',
+      'in',
+      workExperiences.map(({ id }) => id)
+    )
+    .execute();
+
+  return {
+    notificationsSent: workExperiences.length,
+  };
 }
