@@ -216,6 +216,12 @@ function ApplicationsTable() {
         return `${reviewedByFirstName} ${reviewedByLastName}`;
       },
     },
+    {
+      show: () => ['pending', 'rejected'].includes(status),
+      size: '48',
+      sticky: true,
+      render: (application) => <ApplicationDropdown {...application} />,
+    },
   ];
 
   return (
@@ -223,9 +229,6 @@ function ApplicationsTable() {
       columns={columns}
       data={applications}
       emptyMessage="No pending applications left to review."
-      {...(['pending', 'rejected'].includes(status) && {
-        Dropdown: ApplicationDropdown,
-      })}
     />
   );
 }

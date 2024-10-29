@@ -22,6 +22,7 @@ const BaseEnvironmentConfig = z.object({
   ANTHROPIC_API_KEY: EnvironmentVariable,
   API_URL: EnvironmentVariable,
   COHERE_API_KEY: EnvironmentVariable,
+  CRUNCHBASE_BASIC_API_KEY: EnvironmentVariable,
   DATABASE_URL: EnvironmentVariable,
   ENVIRONMENT: z.nativeEnum(Environment),
   GOOGLE_CLIENT_ID: EnvironmentVariable,
@@ -56,8 +57,6 @@ const BaseEnvironmentConfig = z.object({
   SLACK_INTRODUCTIONS_CHANNEL_ID: EnvironmentVariable,
   SLACK_SIGNING_SECRET: EnvironmentVariable,
   STUDENT_PROFILE_URL: EnvironmentVariable,
-  SWAG_UP_CLIENT_ID: EnvironmentVariable,
-  SWAG_UP_CLIENT_SECRET: EnvironmentVariable,
 });
 
 const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
@@ -70,6 +69,7 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     AIRTABLE_MEMBERS_TABLE_ID: true,
     ANTHROPIC_API_KEY: true,
     COHERE_API_KEY: true,
+    CRUNCHBASE_BASIC_API_KEY: true,
     GOOGLE_CLIENT_ID: true,
     GOOGLE_CLIENT_SECRET: true,
     INTERNAL_SLACK_BOT_TOKEN: true,
@@ -98,8 +98,6 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     SLACK_FEED_CHANNEL_ID: true,
     SLACK_INTRODUCTIONS_CHANNEL_ID: true,
     SLACK_SIGNING_SECRET: true,
-    SWAG_UP_CLIENT_ID: true,
-    SWAG_UP_CLIENT_SECRET: true,
   }).extend({
     ENVIRONMENT: z.literal(Environment.DEVELOPMENT),
     SMTP_HOST: EnvironmentVariable.optional(),

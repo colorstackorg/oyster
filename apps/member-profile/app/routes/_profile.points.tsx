@@ -174,6 +174,11 @@ async function getActivityHistory(
           );
       })
       .leftJoin(
+        'students as opportunityBookmarkers',
+        'opportunityBookmarkers.id',
+        'completedActivities.opportunityBookmarkedBy'
+      )
+      .leftJoin(
         'students as resourceUpvoters',
         'resourceUpvoters.id',
         'completedActivities.resourceUpvotedBy'
@@ -189,6 +194,7 @@ async function getActivityHistory(
         'completedActivities.description',
         'completedActivities.id',
         'completedActivities.occurredAt',
+        'completedActivities.opportunityId',
         'completedActivities.points',
         'completedActivities.resourceId',
         'completedActivities.type',
@@ -196,6 +202,9 @@ async function getActivityHistory(
         'messagesReactedTo.channelId as messageReactedToChannelId',
         'messagesReactedTo.id as messageReactedToId',
         'messagesReactedTo.text as messageReactedToText',
+        'opportunityBookmarkers.firstName as opportunityBookmarkerFirstName',
+        'opportunityBookmarkers.id as opportunityBookmarkerId',
+        'opportunityBookmarkers.lastName as opportunityBookmarkerLastName',
         'resourceUpvoters.firstName as resourceUpvoterFirstName',
         'resourceUpvoters.id as resourceUpvoterId',
         'resourceUpvoters.lastName as resourceUpvoterLastName',
@@ -535,6 +544,31 @@ function ActivityHistoryItemDescription({
     .with('get_activated', () => {
       return <p>You became activated.</p>;
     })
+    .with('get_opportunity_bookmark', () => {
+      return (
+        <p>
+          <RemixLink
+            className="link"
+            to={generatePath(Route['/directory/:id'], {
+              id: activity.opportunityBookmarkerId,
+            })}
+          >
+            {activity.opportunityBookmarkerFirstName}{' '}
+            {activity.opportunityBookmarkerLastName}
+          </RemixLink>{' '}
+          bookmarked an{' '}
+          <RemixLink
+            className="link"
+            to={generatePath(Route['/opportunities/:id'], {
+              id: activity.opportunityId,
+            })}
+          >
+            opportunity
+          </RemixLink>{' '}
+          you posted.
+        </p>
+      );
+    })
     .with('get_resource_upvote', () => {
       return (
         <p>
@@ -609,10 +643,7 @@ function ActivityHistoryItemDescription({
           <div className="flex gap-2">
             <div className="border-r-2 border-r-gray-300" />
 
-            <SlackMessage
-              className="line-clamp-10 [word-break:break-word]"
-              color="gray-500"
-            >
+            <SlackMessage className="line-clamp-10" color="gray-500">
               {activity.messageReactedToText}
             </SlackMessage>
           </div>

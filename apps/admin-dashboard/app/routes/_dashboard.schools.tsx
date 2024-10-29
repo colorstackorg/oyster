@@ -201,15 +201,15 @@ function SchoolsTable() {
       },
       size: '120',
     },
+    {
+      size: '48',
+      sticky: true,
+      render: (school) => <SchoolsTableDropdown {...school} />,
+    },
   ];
 
   return (
-    <Table
-      columns={columns}
-      data={schools}
-      Dropdown={SchoolsTableDropdown}
-      emptyMessage="No schools found."
-    />
+    <Table columns={columns} data={schools} emptyMessage="No schools found." />
   );
 }
 
