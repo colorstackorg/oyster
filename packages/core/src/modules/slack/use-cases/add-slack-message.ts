@@ -4,23 +4,21 @@ import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { redis } from '@/infrastructure/redis';
 import { isFeatureFlagEnabled } from '@/modules/feature-flag/queries/is-feature-flag-enabled';
+import { sendUpdateWorkHistoryProfileNotification } from '@/modules/member/use-cases/send-update-work-history-notification';
+import { ENV } from '@/shared/env';
 import { ErrorWithContext } from '@/shared/errors';
 import { retryWithBackoff } from '@/shared/utils/core.utils';
 import { getSlackMessage } from '../services/slack-message.service';
-import { ENV } from '@/shared/env';
-import { sendUpdateWorkHistoryProfileNotification } from '@/modules/member/use-cases/send-update-work-history-notification';
-
 
 export async function addSlackMessage(
   data: GetBullJobData<'slack.message.add'>
 ) {
-
   // check if channel id = securtheBag channel
   if (data.channelId === ENV.SLACK_SECURE_THE_BAG_CHANNEL_ID) {
-    const text = data.text || ''
-    await(sendUpdateWorkHistoryProfileNotification(data.userId, text))
-  }
+    const text = data.text || '';
 
+    await sendUpdateWorkHistoryProfileNotification(data.userId, text);
+  }
 
   await ensureThreadExistsIfNecessary(data);
 

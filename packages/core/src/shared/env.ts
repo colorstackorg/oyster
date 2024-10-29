@@ -30,7 +30,8 @@ export const ENV = {
     .SLACK_INTRODUCTIONS_CHANNEL_ID as string,
   SLACK_SIGNING_SECRET: process.env.SLACK_SIGNING_SECRET as string,
   STUDENT_PROFILE_URL: process.env.STUDENT_PROFILE_URL as string,
-  SLACK_SECURE_THE_BAG_CHANNEL_ID: process.env.SLACK_SECURE_THE_BAG_CHANNEL_ID as string,
+  SLACK_SECURE_THE_BAG_CHANNEL_ID: process.env
+    .SLACK_SECURE_THE_BAG_CHANNEL_ID as string,
 };
 
 // TODO: Below are the only variables that we need to process in the core,
