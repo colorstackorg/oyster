@@ -10,6 +10,8 @@ export async function up(db: Kysely<any>) {
     .addColumn('base_salary', 'integer')
     .addColumn('bonus', 'integer')
     .addColumn('bonus_text', 'text')
+    .addColumn('relocation', 'integer')
+    .addColumn('relocation_text', 'text')
     .addColumn('company_id', 'text', (cb) => {
       return cb.references('companies.id');
     })
@@ -25,11 +27,12 @@ export async function up(db: Kysely<any>) {
     .addColumn('location_type', 'text', (cb) => cb.notNull())
     .addColumn('role', 'text', (cb) => cb.notNull())
     .addColumn('total_compensation_text', 'text')
+    .addColumn('benefits', 'text')
     .addColumn('is_negotiated', 'boolean', (cb) =>
       cb.notNull().defaultTo(false)
     )
     .addColumn('is_accepted', 'boolean', (cb) => cb.notNull().defaultTo(false))
-    .addColumn('accepted_reason', 'text')
+    .addColumn('decision_reason', 'text')
     .addColumn('posted_by', 'text', (cb) => {
       return cb.references('students.id').notNull();
     })
