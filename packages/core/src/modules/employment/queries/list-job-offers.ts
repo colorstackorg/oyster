@@ -29,9 +29,6 @@ export async function listJobOffers({
         '<=',
         25
       );
-    })
-    .$if(!!where.status, (query) => {
-      return query.where('status', '=', where.status);
     });
 
   const [jobOffers, { count }] = await Promise.all([
