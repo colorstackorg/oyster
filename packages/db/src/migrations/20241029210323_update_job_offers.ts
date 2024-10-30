@@ -14,6 +14,10 @@ export async function up(db: Kysely<any>) {
     .addColumn('is_negotiated', 'boolean')
     .addColumn('is_accepted', 'boolean')
     .addColumn('accepted_reason', 'text')
+    .alterColumn('start_date', (col) => col.dropNotNull())
+    .alterColumn('compensation_type', (col) => col.dropNotNull())
+    .alterColumn('employment_type', (col) => col.dropNotNull())
+    .alterColumn('location_type', (col) => col.dropNotNull())
     .execute();
 }
 
@@ -31,5 +35,9 @@ export async function down(db: Kysely<any>) {
     .dropColumn('is_negotiated')
     .dropColumn('is_accepted')
     .dropColumn('accepted_reason')
+    .alterColumn('start_date', (col) => col.setNotNull())
+    .alterColumn('compensation_type', (col) => col.setNotNull())
+    .alterColumn('employment_type', (col) => col.setNotNull())
+    .alterColumn('location_type', (col) => col.setNotNull())
     .execute();
 }
