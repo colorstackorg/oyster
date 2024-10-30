@@ -32,6 +32,7 @@ export const BullQueue = {
   EVENT: 'event',
   FEED: 'feed',
   GAMIFICATION: 'gamification',
+  JOB_OFFER: 'job_offer',
   MEMBER_EMAIL: 'member_email',
   NOTIFICATION: 'notification',
   ONBOARDING_SESSION: 'onboarding_session',
@@ -303,6 +304,17 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         type: z.literal('update_work_history'),
       }),
     ]),
+  }),
+]);
+
+export const JobOfferBullJob = z.discriminatedUnion('name', [
+  z.object({
+    name: z.literal('job_offer.share'),
+    data: z.object({
+      sendNotification: z.boolean().optional(),
+      slackChannelId: z.string().trim().min(1),
+      slackMessageId: z.string().trim().min(1),
+    }),
   }),
 ]);
 
@@ -631,6 +643,7 @@ export const BullJob = z.union([
   OnboardingSessionBullJob,
   OneTimeCodeBullJob,
   OpportunityBullJob,
+  JobOfferBullJob,
   ProfileBullJob,
   SlackBullJob,
   StudentBullJob,

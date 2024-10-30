@@ -55,12 +55,19 @@ export async function addSlackMessage(
 
   // We'll do some additional checks for top-level threads...
   if (!data.threadId) {
-    const [isAutoReplyChannel, isOpportunityChannel, isOpportunitiesEnabled] =
-      await Promise.all([
-        redis.sismember('slack:auto_reply_channels', data.channelId),
-        redis.sismember('slack:opportunity_channels', data.channelId),
-        isFeatureFlagEnabled('opportunities'),
-      ]);
+    const [
+      isAutoReplyChannel,
+      isOpportunityChannel,
+      isOpportunitiesEnabled,
+      isJobOfferChannel,
+      isJobOffersEnabled,
+    ] = await Promise.all([
+      redis.sismember('slack:auto_reply_channels', data.channelId),
+      redis.sismember('slack:opportunity_channels', data.channelId),
+      redis.sismember('slack:job_offer_channels', data.channelId),
+      isFeatureFlagEnabled('opportunities'),
+      isFeatureFlagEnabled('job_offers'),
+    ]);
 
     if (isAutoReplyChannel) {
       job('slack.question.answer.private', {
@@ -73,6 +80,13 @@ export async function addSlackMessage(
 
     if (isOpportunitiesEnabled && isOpportunityChannel) {
       job('opportunity.create', {
+        slackChannelId: data.channelId,
+        slackMessageId: data.id,
+      });
+    }
+
+    if (isJobOffersEnabled && isJobOfferChannel) {
+      job('job_offer.share', {
         slackChannelId: data.channelId,
         slackMessageId: data.id,
       });

@@ -5,6 +5,7 @@ import { BooleanInput, Entity } from '@oyster/types';
 export type FeatureFlagName =
   | 'family_application'
   | 'opportunities'
+  | 'job_offers'
   | 'send_slack_messages';
 
 // Domain
