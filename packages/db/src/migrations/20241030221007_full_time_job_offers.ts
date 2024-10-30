@@ -18,7 +18,7 @@ export async function up(db: Kysely<any>) {
       return cb.references('companies.id');
     })
     .addColumn('other_company', 'text')
-    .addColumn('start_date', 'date', (cb) => cb.notNull())
+    .addColumn('start_date', 'date')
     .addColumn('stock_per_year', 'integer')
     .addColumn('equity_or_stock_text', 'text')
     .addColumn('updated_at', 'timestamptz', (cb) =>
@@ -26,8 +26,8 @@ export async function up(db: Kysely<any>) {
     )
     .addColumn('location', 'text')
     .addColumn('location_coordinates', sql`point`)
-    .addColumn('location_type', 'text', (cb) => cb.notNull())
-    .addColumn('role', 'text', (cb) => cb.notNull())
+    .addColumn('location_type', 'text')
+    .addColumn('role', 'text')
     .addColumn('total_compensation_text', 'text')
     .addColumn('benefits', 'text')
     .addColumn('is_negotiated', 'boolean', (cb) =>

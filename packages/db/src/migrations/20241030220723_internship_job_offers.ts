@@ -15,14 +15,14 @@ export async function up(db: Kysely<any>) {
       return cb.references('companies.id');
     })
     .addColumn('other_company', 'text')
-    .addColumn('start_date', 'date', (cb) => cb.notNull())
+    .addColumn('start_date', 'date')
     .addColumn('updated_at', 'timestamptz', (cb) =>
       cb.notNull().defaultTo(sql`now()`)
     )
     .addColumn('location', 'text')
     .addColumn('location_coordinates', sql`point`)
-    .addColumn('location_type', 'text', (cb) => cb.notNull())
-    .addColumn('role', 'text', (cb) => cb.notNull())
+    .addColumn('location_type', 'text')
+    .addColumn('role', 'text')
     .addColumn('equity_or_stock_text', 'text')
     .addColumn('bonus', 'integer')
     .addColumn('bonus_text', 'text')
