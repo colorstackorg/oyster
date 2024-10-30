@@ -14,16 +14,29 @@ export async function up(db: Kysely<any>) {
     .addColumn('is_negotiated', 'boolean')
     .addColumn('is_accepted', 'boolean')
     .addColumn('accepted_reason', 'text')
+    .addColumn('posted_by', 'text', (column) => {
+      return column.references('students.id').onDelete('set null');
+    })
+    .addColumn('slack_channel_id', 'text', (column) => {
+      return column.notNull();
+    })
+    .addColumn('slack_message_id', 'text', (column) => {
+      return column.notNull();
+    })
     .alterColumn('start_date', (col) => col.dropNotNull())
     .alterColumn('compensation_type', (col) => col.dropNotNull())
     .alterColumn('employment_type', (col) => col.dropNotNull())
     .alterColumn('location_type', (col) => col.dropNotNull())
+    .dropColumn('student_id')
     .execute();
 }
 
 export async function down(db: Kysely<any>) {
   await db.schema
     .alterTable('job_offers')
+    .addColumn('student_id', 'text', (cb) => {
+      return cb.references('students.id').notNull();
+    })
     .dropColumn('role')
     .dropColumn('bonus_text')
     .dropColumn('equity_or_stock_text')
@@ -35,6 +48,9 @@ export async function down(db: Kysely<any>) {
     .dropColumn('is_negotiated')
     .dropColumn('is_accepted')
     .dropColumn('accepted_reason')
+    .dropColumn('posted_by')
+    .dropColumn('slack_channel_id')
+    .dropColumn('slack_message_id')
     .alterColumn('start_date', (col) => col.setNotNull())
     .alterColumn('compensation_type', (col) => col.setNotNull())
     .alterColumn('employment_type', (col) => col.setNotNull())
