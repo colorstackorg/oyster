@@ -3,7 +3,9 @@ import { type Kysely, sql } from 'kysely';
 export async function up(db: Kysely<any>) {
   await db.schema
     .createTable('full_time_job_offers')
-    .addColumn('id', 'text', (cb) => cb.primaryKey())
+    .addColumn('id', 'text', (cb) => {
+      return cb.primaryKey();
+    })
     .addColumn('created_at', 'timestamptz', (cb) =>
       cb.notNull().defaultTo(sql`now()`)
     )
@@ -33,8 +35,8 @@ export async function up(db: Kysely<any>) {
     )
     .addColumn('is_accepted', 'boolean', (cb) => cb.notNull().defaultTo(false))
     .addColumn('decision_reason', 'text')
-    .addColumn('posted_by', 'text', (cb) => {
-      return cb.references('students.id').notNull();
+    .addColumn('posted_by', 'text', (column) => {
+      return column.references('students.id').onDelete('set null');
     })
     .addColumn('slack_channel_id', 'text', (cb) => cb.notNull())
     .addColumn('slack_message_id', 'text', (cb) => cb.notNull())
