@@ -28,6 +28,7 @@ export async function up(db: Kysely<any>) {
     .alterColumn('employment_type', (col) => col.dropNotNull())
     .alterColumn('location_type', (col) => col.dropNotNull())
     .dropColumn('student_id')
+    .dropColumn('status')
     .execute();
 }
 
@@ -37,6 +38,7 @@ export async function down(db: Kysely<any>) {
     .addColumn('student_id', 'text', (cb) => {
       return cb.references('students.id').notNull();
     })
+    .addColumn('status', 'text', (cb) => cb.notNull())
     .dropColumn('role')
     .dropColumn('bonus_text')
     .dropColumn('equity_or_stock_text')
