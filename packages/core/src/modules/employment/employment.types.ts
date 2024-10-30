@@ -80,21 +80,33 @@ const CompanyReview = z.object({
 });
 
 export const JobOffer = Entity.omit({ deletedAt: true }).extend({
-  baseSalary: z.number().optional(),
-  bonus: z.number().optional(),
+  acceptedReason: z.string().trim().min(1).nullish(),
+  baseSalary: z.number().nullish(),
+  benefits: z.string().trim().min(1).nullish(),
+  bonus: z.number().nullish(),
+  bonusText: z.string().trim().min(1).nullish(),
   companyId: Company.shape.id.nullish(),
-  compensationType: z.string(),
-  employmentType: z.nativeEnum(EmploymentType),
-  hourlyPay: z.number().optional(),
-  location: z.string().optional(),
-  locationLatitude: z.number().optional(),
-  locationLongitude: z.number().optional(),
-  locationType: z.nativeEnum(LocationType),
-  otherCompany: NullishString.optional(),
-  startDate: ISO8601Date,
-  status: z.nativeEnum(JobOfferStatus),
-  stockPerYear: z.number().optional(),
-  studentId: Student.shape.id,
+  compensationType: z.string().nullish(),
+  employmentType: z.nativeEnum(EmploymentType).nullish(),
+  equityOrStockText: z.string().trim().min(1).nullish(),
+  hourlyPay: z.number().nullish(),
+  isAccepted: z.boolean(),
+  isNegotiated: z.boolean(),
+  location: z.string().nullish(),
+  locationLatitude: z.number().nullish(),
+  locationLongitude: z.number().nullish(),
+  locationType: z.nativeEnum(LocationType).nullish(),
+  otherCompany: NullishString.nullish(),
+  postedBy: Student.shape.id.nullish(),
+  relocation: z.number().nullish(),
+  relocationText: z.string().trim().min(1).nullish(),
+  role: z.string().trim().min(1).nullish(),
+  signOnBonus: z.number().nullish(),
+  slackChannelId: z.string().trim().min(1),
+  slackMessageId: z.string().trim().min(1),
+  startDate: ISO8601Date.nullish(),
+  stockPerYear: z.number().nullish(),
+  totalCompensationText: z.string().trim().min(1).nullish(),
 });
 
 export const WorkExperience = Entity.extend({
@@ -144,7 +156,6 @@ export const ListJobOffersWhere = z.object({
   employmentType: JobOffer.shape.employmentType.nullable().catch(null),
   locationLatitude: JobOffer.shape.locationLatitude,
   locationLongitude: JobOffer.shape.locationLongitude,
-  status: JobOffer.shape.status.nullable().catch(null),
 });
 
 export type GetCompanyWhere = z.infer<typeof GetCompanyWhere>;
