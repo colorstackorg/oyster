@@ -182,8 +182,8 @@ async function getAppliedFilters(
       param: 'joinedDirectoryDate',
       value: searchParams.joinedDirectoryDate
         ? dayjs(searchParams.joinedDirectoryDate)
-            .tz('America/Los_Angeles', true)
-            .format('M/D/YY')
+          .tz('America/Los_Angeles', true)
+          .format('M/D/YY')
         : undefined,
     },
     { name: 'Location', param: keys.location, value: searchParams.location },
@@ -264,8 +264,8 @@ function FilterDirectoryDropdown({ filter }: { filter: string }) {
         onClick={onClick}
         shape="square"
       /> : <Button onClick={onClick}>
-          {toTitleCase(filter)}
-        </Button>}
+        {toTitleCase(filter)}
+      </Button>}
 
       {/* I tried to make the buttons for companies and schools look the same as the icon button
       but I couldn't get the color to match */}
