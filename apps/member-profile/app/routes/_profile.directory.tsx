@@ -204,11 +204,9 @@ export default function DirectoryPage() {
 
       <Dashboard.Subheader>
         <Dashboard.SearchForm placeholder="Search by name or email..." />
-        {/* <Dashboard.SearchForm placeholder="Search by school..." />
-        <Dashboard.SearchForm placeholder="Search by company..." /> */}
+        <FilterDirectoryDropdown filter='company' />
+        <FilterDirectoryDropdown filter='school' />
         <div className="ml-auto flex items-center gap-2">
-          <FilterDirectoryDropdown filter='company' />
-          <FilterDirectoryDropdown filter='school' />
           <FilterDirectoryDropdown filter='general' />
         </div>
       </Dashboard.Subheader>
