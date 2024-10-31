@@ -305,7 +305,6 @@ function SortResourcesForm() {
   const submit = useSubmit();
 
   const sortKeys = ListResourcesOrderBy._def.innerType.enum;
-  // test
   return (
     <RemixForm
       className="flex items-center"
@@ -337,6 +336,7 @@ const ResourceFilterKey = ListResourcesWhere.omit({
 }).keyof().enum;
 
 type ResourceFilterKey = ExtractValue<typeof ResourceFilterKey>;
+
 function FilterFormResources({ close }: { close: VoidFunction }) {
   const [filterKey, setFilterKey] = useState<ResourceFilterKey | null>(null);
 
