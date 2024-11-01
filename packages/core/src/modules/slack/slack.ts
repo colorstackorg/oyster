@@ -19,6 +19,7 @@ import { getPineconeIndex } from '@/modules/pinecone';
 import { slack } from '@/modules/slack/instances';
 import { IS_PRODUCTION } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
+import { addSlackReaction } from '@/modules/slack/use-cases/add-slack-reaction';
 
 // Constants
 
@@ -53,7 +54,8 @@ type AnswerChatbotQuestionInput = {
  * Answers the question asked by the user in its channel w/ the ColorStack bot.
  * The uses the underlying `getAnswerFromSlackHistory` function to answer the
  * question, and then sends the answer in the thread where the question was
- * asked.
+ * asked. After the answer has been sent, the bot then reactions to the
+ * original message with the ColorStack logo.
  *
  * @param input - The question (ie: `text`) to respond to.
  */
@@ -136,6 +138,14 @@ export async function answerChatbotQuestion({
     message: answerResult.data,
     threadId: id,
     workspace: 'regular',
+  });
+
+  // React to the original message that served as the query
+  job('slack.reaction.add', {
+    channelId: channelId,
+    messageId: id,
+    reaction: 'colorstack-logo',
+    userId: userId,
   });
 
   // TODO: Delete the loading message after the answer is sent.
