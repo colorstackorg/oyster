@@ -10,6 +10,8 @@ export const ENV = {
   AIRMEET_ACCESS_KEY: process.env.AIRMEET_ACCESS_KEY as string,
   AIRMEET_SECRET_KEY: process.env.AIRMEET_SECRET_KEY as string,
   API_URL: process.env.API_URL as string,
+  CAREER_RESUME_REVIEW_CHANNEL_ID: process.env
+    .CAREER_RESUME_REVIEW_CHANNEL_ID as string,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID as string,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET as string,
   INTERNAL_SLACK_BOT_TOKEN: process.env.INTERNAL_SLACK_BOT_TOKEN as string,

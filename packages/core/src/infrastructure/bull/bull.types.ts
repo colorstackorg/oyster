@@ -41,6 +41,7 @@ export const BullQueue = {
   PROFILE: 'profile',
   SLACK: 'slack',
   STUDENT: 'student',
+  RESUME_REVIEW: 'resume_review',
 } as const;
 
 export type BullQueue = ExtractValue<typeof BullQueue>;
@@ -625,6 +626,19 @@ export const StudentBullJob = z.discriminatedUnion('name', [
     data: z.object({
       after: z.coerce.date().optional(),
       before: z.coerce.date().optional(),
+    }),
+  }),
+]);
+
+export const ResumeReviewBullJob = z.discriminatedUnion('name', [
+  z.object({
+    name: z.literal('resume.review'),
+    data: z.object({
+      channelId: z.string().trim().min(1),
+      messageId: z.string().trim().min(1),
+      text: z.string().trim().min(1),
+      userId: z.string().trim().min(1),
+      threadId: z.string().trim().min(1).optional(),
     }),
   }),
 ]);
