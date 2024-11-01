@@ -7,6 +7,7 @@ dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+import { resumeReviewWorker } from '@/modules/resume/resume-review';
 import { airtableWorker } from './modules/airtable/airtable.core';
 import { applicationWorker } from './modules/application/application.core';
 import { oneTimeCodeWorker } from './modules/authentication/one-time-code.worker';
@@ -51,4 +52,5 @@ export function startBullWorkers(): void {
   opportunityWorker.run();
   profileWorker.run();
   slackWorker.run();
+  resumeReviewWorker.run();
 }
