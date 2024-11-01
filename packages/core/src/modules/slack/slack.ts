@@ -19,7 +19,6 @@ import { getPineconeIndex } from '@/modules/pinecone';
 import { slack } from '@/modules/slack/instances';
 import { IS_PRODUCTION } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
-import { addSlackReaction } from '@/modules/slack/use-cases/add-slack-reaction';
 
 // Constants
 
