@@ -11,15 +11,10 @@ export const resumeReviewWorker = registerWorker(
   'resume_review',
   ResumeReviewBullJob,
   async (job) => {
-    const { channelId, messageId, text, userId, threadId } = job.data;
+    const { channelId, messageId, userId, threadId } = job.data;
 
     // Check if the message is in the #career-resume-review channel
     if (channelId !== targetChannelId) {
-      return;
-    }
-
-    // Edge case: Empty message
-    if (!text) {
       return;
     }
 
