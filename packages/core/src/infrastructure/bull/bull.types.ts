@@ -630,18 +630,16 @@ export const StudentBullJob = z.discriminatedUnion('name', [
   }),
 ]);
 
-export const ResumeReviewBullJob = z.discriminatedUnion('name', [
-  z.object({
-    name: z.literal('resume.review'),
-    data: z.object({
-      channelId: z.string().trim().min(1),
-      messageId: z.string().trim().min(1),
-      text: z.string().trim().min(1),
-      userId: z.string().trim().min(1),
-      threadId: z.string().trim().min(1).optional(),
-    }),
+export const ResumeReviewBullJob = z.object({
+  name: z.literal('resume.review'),
+  data: z.object({
+    channelId: z.string().trim().min(1),
+    messageId: z.string().trim().min(1),
+    text: z.string().trim().min(1),
+    userId: z.string().trim().min(1),
+    threadId: z.string().trim().min(1).optional(),
   }),
-]);
+});
 
 // Combination
 
