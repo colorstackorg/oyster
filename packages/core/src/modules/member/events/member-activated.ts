@@ -16,7 +16,7 @@ export async function onMemberActivated({
     .executeTakeFirstOrThrow();
 
   const giftCardResult = await createGiftCard({
-    expiresOn: dayjs().add(1, 'week').format('YYYY-MM-DD'),
+    expiresOn: dayjs().add(2, 'week').format('YYYY-MM-DD'),
     initialValue: '50.00',
     message:
       'Congratulations on becoming an activated ColorStack member! 🎉 ' +
