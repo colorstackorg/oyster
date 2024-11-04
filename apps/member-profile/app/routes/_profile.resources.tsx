@@ -8,7 +8,9 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
+import { useState } from 'react';
 import { Filter, Plus } from 'react-feather';
+import { match } from 'ts-pattern';
 
 import { isMemberAdmin } from '@oyster/core/admins';
 import { ListSearchParams } from '@oyster/core/member-profile/ui';
@@ -20,7 +22,7 @@ import {
   type ResourceType,
 } from '@oyster/core/resources';
 import { listResources, listTags } from '@oyster/core/resources/server';
-import { ExtractValue, ISO8601Date } from '@oyster/types';
+import { type ExtractValue, ISO8601Date } from '@oyster/types';
 import {
   Dashboard,
   Dropdown,
@@ -38,8 +40,6 @@ import { Resource } from '@/shared/components/resource';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
-import { useState } from 'react';
-import { match } from 'ts-pattern';
 
 const whereKeys = ListResourcesWhere.keyof().enum;
 
@@ -303,8 +303,8 @@ function AddResourceLink() {
 function SortResourcesForm() {
   const { orderBy } = useLoaderData<typeof loader>();
   const submit = useSubmit();
-
   const sortKeys = ListResourcesOrderBy._def.innerType.enum;
+
   return (
     <RemixForm
       className="flex items-center"
@@ -350,7 +350,7 @@ function FilterFormResources({ close }: { close: VoidFunction }) {
       >
         <option value="tags" key="tags">
           Tags
-        </option> 
+        </option>
       </Select>
       {!!filterKey && (
         <Text color="gray-500" variant="sm">
@@ -381,8 +381,8 @@ function FilterFormResources({ close }: { close: VoidFunction }) {
 function SortTagsResourcesForm() {
   const { allTags } = useLoaderData<typeof loader>();
   const [_searchParams] = useSearchParams();
-
   const submit = useSubmit();
+
   return (
     <RemixForm
       className="flex "
