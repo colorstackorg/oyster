@@ -350,7 +350,7 @@ function FilterFormResources({ close }: { close: VoidFunction }) {
       >
         <option value="tags" key="tags">
           Tags
-        </option>
+        </option> 
       </Select>
       {!!filterKey && (
         <Text color="gray-500" variant="sm">
