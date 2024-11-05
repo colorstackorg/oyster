@@ -17,7 +17,7 @@ import { searchCrunchbaseOrganizations } from '@/modules/employment/queries/sear
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { track } from '@/modules/mixpanel';
 import { ENV } from '@/shared/env';
-import { withBrowser } from '@/shared/utils/browser.utils';
+import { getPageContent } from '@/shared/utils/browser.utils';
 import {
   ACCENT_COLORS,
   type AccentColor,
@@ -139,9 +139,7 @@ async function createOpportunity({
     });
   }
 
-  const link = slackMessage.text?.match(
-    /<(https?:\/\/[^\s|>]+)(?:\|[^>]+)?>/
-  )?.[1];
+  const link = getFirstLinkInMessage(slackMessage.text);
 
   // We're only interested in messages that contain a link to an opportunity...
   // so we'll gracefully bail if there isn't one.
@@ -171,18 +169,10 @@ async function createOpportunity({
   // using puppeteer, create a new "empty" opportunity, and then refine it with
   // AI using that website content.
   if (!link.includes('linkedin.com')) {
-    const content = await withBrowser(async (_, page) => {
-      await page.goto(link, {
-        waitUntil: 'networkidle0',
-      });
-
-      return page.evaluate(() => {
-        return document.body.innerText.slice(0, 10_000);
-      });
-    });
+    const content = await getPageContent(link);
 
     return refineOpportunity({
-      content,
+      content: content.slice(0, 10_000),
       opportunityId: opportunity.id,
     });
   }
@@ -561,9 +551,7 @@ export async function refineOpportunity(
   // If this is the first time the opportunity has been refined, we want to send
   // a notification to the channel.
   if (!opportunity.refinedAt) {
-    const message =
-      'I added this to our opportunities board! 📌\n\n' +
-      `<${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}>`;
+    const message = `I added this to our <${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}|opportunities board>! 📌`;
 
     job('notification.slack.send', {
       channel: opportunity.slackChannelId,
@@ -631,6 +619,16 @@ function areNamesSimilar(name1: string, name2: string) {
   return normalized1.includes(normalized2) || normalized2.includes(normalized1);
 }
 
+/**
+ * Extracts the first URL found in the Slack message.
+ *
+ * @param message - Slack message to extract the URL from.
+ * @returns First URL found in the message or `null` if it doesn't exist.
+ */
+function getFirstLinkInMessage(message: string) {
+  return message.match(/<(https?:\/\/[^\s|>]+)(?:\|[^>]+)?>/)?.[1];
+}
+
 // Queries
 
 // "Get Link From Opportunity"
@@ -654,13 +652,11 @@ export async function getLinkFromOpportunity(opportunityId: string) {
     .where('opportunities.id', '=', opportunityId)
     .executeTakeFirst();
 
-  if (!opportunity) {
+  if (!opportunity || !opportunity.text) {
     return null;
   }
 
-  const link = opportunity.text?.match(
-    /<(https?:\/\/[^\s|>]+)(?:\|[^>]+)?>/
-  )?.[1];
+  const link = getFirstLinkInMessage(opportunity.text);
 
   if (!link) {
     return null;
