@@ -54,12 +54,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     slackMessagePostedAt: dayjs().to(opportunity.slackMessagePostedAt),
   });
 
-  track({
-    event: 'Opportunity Viewed',
-    properties: { Company: opportunity.companyName as string },
-    request,
-    user: memberId,
-  });
+  if (memberId !== opportunity.postedBy) {
+    track({
+      event: 'Opportunity Viewed',
+      properties: { Company: opportunity.companyName as string },
+      request,
+      user: memberId,
+    });
+  }
 
   return json(opportunity);
 }
