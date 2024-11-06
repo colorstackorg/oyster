@@ -338,6 +338,7 @@ export async function deleteJobOffer({
 
 // Input types
 export const EditInternshipJobOfferInput = z.object({
+  companyCrunchbaseId: z.string().trim().min(1),
   role: z.string().trim().min(1).nullable(),
   hourlyRate: z.number().nullable(),
   monthlyRate: z.number().nullable(),
@@ -350,6 +351,7 @@ export const EditInternshipJobOfferInput = z.object({
 });
 
 export const EditFullTimeJobOfferInput = z.object({
+  companyCrunchbaseId: z.string().trim().min(1),
   role: z.string().trim().min(1).nullable(),
   baseSalary: z.number().nullable(),
   hourlyRate: z.number().nullable(),
@@ -374,9 +376,15 @@ export async function editInternshipJobOffer(
   input: EditInternshipJobOfferInput
 ): Promise<Result> {
   const result = await db.transaction().execute(async (trx) => {
+    const companyId = await saveCompanyIfNecessary(
+      trx,
+      input.companyCrunchbaseId
+    );
+
     return await trx
       .updateTable('internshipJobOffers')
       .set({
+        companyId,
         role: input.role,
         hourlyRate: input.hourlyRate,
         monthlyRate: input.monthlyRate,
@@ -408,9 +416,15 @@ export async function editFullTimeJobOffer(
   input: EditFullTimeJobOfferInput
 ): Promise<Result> {
   const result = await db.transaction().execute(async (trx) => {
+    const companyId = await saveCompanyIfNecessary(
+      trx,
+      input.companyCrunchbaseId
+    );
+
     return await trx
       .updateTable('fullTimeJobOffers')
       .set({
+        companyId,
         role: input.role,
         baseSalary: input.baseSalary,
         hourlyRate: input.hourlyRate,
