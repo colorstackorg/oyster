@@ -7,6 +7,7 @@ import { isFeatureFlagEnabled } from '@/modules/feature-flag/queries/is-feature-
 import { ErrorWithContext } from '@/shared/errors';
 import { retryWithBackoff } from '@/shared/utils/core.utils';
 import { getSlackMessage } from '../services/slack-message.service';
+import { notifyBusySlackThread } from '@/modules/slack/queries/notify-busy-slack-thread';
 
 export async function addSlackMessage(
   data: GetBullJobData<'slack.message.add'>
@@ -45,6 +46,8 @@ export async function addSlackMessage(
         threadRepliedTo: data.threadId,
         type: 'reply_to_thread',
       });
+
+      notifyBusySlackThread(data.threadId);
     }
   }
 
