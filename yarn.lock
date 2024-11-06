@@ -3422,11 +3422,6 @@
   dependencies:
     "@types/node" "*"
 
-"@types/mailchimp__mailchimp_marketing@^3.0.8":
-  version "3.0.8"
-  resolved "https://registry.yarnpkg.com/@types/mailchimp__mailchimp_marketing/-/mailchimp__mailchimp_marketing-3.0.8.tgz#0c9d387584b92c48c5ae548d04492a96ae41c4f5"
-  integrity sha512-eis38/TBVkln2wd5yKG4fr6RdBR0FsbCIW8j4tVwJf/eczrjP671eecNJ5JNgU9FiWIqkvXgaBWP5Zh3GYl8CQ==
-
 "@types/mdast@^3.0.0":
   version "3.0.10"
   resolved "https://registry.yarnpkg.com/@types/mdast/-/mdast-3.0.10.tgz#4724244a82a4598884cbbe9bcfd73dff927ee8af"
