@@ -97,6 +97,15 @@ export default function ProfileLayout() {
                 prefetch="intent"
               />
             )}
+            {isJobOffersEnabled && (
+              <Dashboard.NavigationLink
+                icon={<DollarSign />}
+                isNew
+                label="Compensation"
+                pathname={Route['/compensation']}
+                prefetch="intent"
+              />
+            )}
             <Dashboard.NavigationLink
               icon={<Briefcase />}
               label="Companies"
