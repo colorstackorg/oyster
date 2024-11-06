@@ -76,12 +76,6 @@ export default function ProfileLayout() {
               prefetch="intent"
             />
             <Dashboard.NavigationLink
-              icon={<MessageCircle />}
-              label="Chat"
-              pathname={Route['/ai-chat-bot']}
-              prefetch="intent"
-            />
-            <Dashboard.NavigationLink
               icon={<Folder />}
               label="Directory"
               pathname={Route['/directory']}
@@ -118,6 +112,13 @@ export default function ProfileLayout() {
               icon={<Calendar />}
               label="Events"
               pathname={Route['/events']}
+              prefetch="intent"
+            />
+            <Dashboard.NavigationLink
+              icon={<MessageCircle />}
+              isNew
+              label="Ask AI"
+              pathname={Route['/ask-ai']}
               prefetch="intent"
             />
             <Dashboard.NavigationLink

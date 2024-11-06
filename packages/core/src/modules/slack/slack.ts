@@ -439,7 +439,7 @@ type AnswerMemberProfileQuestionInput = {
  * @param input - The question or message from the user.
  * @returns A nested Result type containing the chatbot's response.
  */
-export async function AnswerMemberProfileQuestion(
+export async function answerMemberProfileQuestion(
   text: AnswerMemberProfileQuestionInput
 ): Promise<Result<string>> {
   const questionResult = await isQuestion(text.text);

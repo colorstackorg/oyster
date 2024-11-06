@@ -1,12 +1,26 @@
 /*
 This is the UI for the AI chatbot on the profile page of member profiles.
 */
+import { type ActionFunctionArgs, json } from '@remix-run/node';
 import { useState } from 'react';
 
+import { answerMemberProfileQuestion } from '@oyster/core/slack';
 import { Button } from '@oyster/ui';
 
 import { Card } from '@/shared/components/card';
-import { ChatBar } from '@/shared/components/chat-bar';
+
+export async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const text = formData.get('text') as string;
+
+  const result = await answerMemberProfileQuestion({ text });
+
+  if (!result.ok) {
+    return json({ error: result.error }, { status: result.code });
+  }
+
+  return json({ response: result.data });
+}
 
 export default function AiChatBot() {
   const [question, setQuestion] = useState('');
@@ -98,6 +112,33 @@ export default function AiChatBot() {
           </div>
         </div>
       </Card>
+    </div>
+  );
+}
+
+type ChatBarProps = Pick<
+  React.HTMLProps<HTMLInputElement>,
+  'defaultValue' | 'name' | 'id' | 'placeholder' | 'onChange' | 'value'
+>;
+
+function ChatBar({
+  defaultValue,
+  placeholder = 'Search...',
+  value,
+  onChange,
+  ...rest
+}: ChatBarProps) {
+  return (
+    <div className="flex items-center gap-2 rounded-full border border-gray-200 p-2 sm:h-[50px]">
+      <input
+        className="w-full flex-1 bg-inherit [&::-webkit-search-cancel-button]:appearance-none"
+        defaultValue={defaultValue}
+        placeholder={placeholder}
+        type="search"
+        value={value}
+        onChange={onChange}
+        {...rest}
+      />
     </div>
   );
 }

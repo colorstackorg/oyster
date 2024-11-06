@@ -37,4 +37,3 @@ export { updateAllowEmailShare } from './modules/member/use-cases/update-allow-e
 export { updateMember } from './modules/member/use-cases/update-member';
 export { reportException } from './modules/sentry/use-cases/report-exception';
 export { countMessagesSent } from './modules/slack/queries/count-messages-sent';
-export { AnswerMemberProfileQuestion } from './modules/slack/slack';

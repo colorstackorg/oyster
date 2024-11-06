@@ -1,6 +1,6 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 
-import { AnswerMemberProfileQuestion } from '@oyster/core/member-profile/server';
+import { answerMemberProfileQuestion } from '@oyster/core/slack';
 
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -15,7 +15,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   try {
-    const result = await AnswerMemberProfileQuestion({ text });
+    const result = await answerMemberProfileQuestion({ text });
 
     if (!result.ok) {
       console.error('Error in AnswerMemberProfileQuestion:', result.error);

@@ -1,7 +1,7 @@
 const ROUTES = [
-  '/ai-chat-bot',
   '/apply',
   '/apply/thank-you',
+  '/ask-ai',
   '/companies',
   '/companies/reviews/add',
   '/companies/:id',
