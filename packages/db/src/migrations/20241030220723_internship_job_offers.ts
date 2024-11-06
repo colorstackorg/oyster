@@ -20,7 +20,7 @@ export async function up(db: Kysely<any>) {
     .addColumn('relocation_text', 'text')
     .addColumn('benefits', 'text')
     .addColumn('years_of_experience', 'text')
-    .addColumn('is_negotiated', 'boolean')
+    .addColumn('negotiated_text', 'text')
     .addColumn('additional_notes', 'text')
     .addColumn('company_id', 'text', (cb) => {
       return cb.references('companies.id');
