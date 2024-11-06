@@ -1,5 +1,4 @@
 {
-  "name": "oyster",
   "private": true,
   "workspaces": {
     "packages": [
