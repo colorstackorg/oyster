@@ -13,7 +13,7 @@ export { MB_IN_BYTES, FileUploader } from './components/file-uploader';
 export { Form, getErrors, InputField, validateForm } from './components/form';
 export type { DescriptionProps, FieldProps } from './components/form';
 export { IconButton, getIconButtonCn } from './components/icon-button';
-export { Input, getInputCn } from './components/input';
+export { Input, PhoneNumberInput, getInputCn } from './components/input';
 export type { InputProps } from './components/input';
 export { Link } from './components/link';
 export { Login } from './components/login';

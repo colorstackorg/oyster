@@ -40,6 +40,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     name,
     opts,
     processedOn,
+    returnvalue,
     timestamp,
   } = job.toJSON();
 
@@ -68,6 +69,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       failedReason,
     },
     options: opts,
+    result: returnvalue,
   });
 }
 
@@ -84,7 +86,7 @@ async function getJobFromParams(params: Params<string>) {
 }
 
 export default function JobPage() {
-  const { data, general, options } = useLoaderData<typeof loader>();
+  const { data, general, options, result } = useLoaderData<typeof loader>();
   const { queue } = useParams();
 
   return (
@@ -106,6 +108,11 @@ export default function JobPage() {
       <JobSection>
         <JobSectionTitle>Data</JobSectionTitle>
         <JobSectionData data={data} />
+      </JobSection>
+
+      <JobSection>
+        <JobSectionTitle>Result</JobSectionTitle>
+        <JobSectionData data={result} />
       </JobSection>
 
       <JobSection>

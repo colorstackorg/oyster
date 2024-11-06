@@ -10,7 +10,7 @@ export const Card = ({ children, className, ...rest }: CardProps) => {
   return (
     <div
       className={cx(
-        'flex flex-col gap-4 rounded-3xl border border-gray-200 p-4',
+        'flex flex-col gap-4 rounded-2xl border border-gray-200 p-4',
         className
       )}
       {...rest}

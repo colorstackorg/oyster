@@ -225,13 +225,17 @@ function StudentsTable() {
       size: '240',
       render: (student) => student.joinedAt,
     },
+    {
+      size: '48',
+      sticky: true,
+      render: (student) => <StudentDropdown {...student} />,
+    },
   ];
 
   return (
     <Table
       columns={columns}
       data={students}
-      Dropdown={StudentDropdown}
       emptyMessage="No students found."
     />
   );

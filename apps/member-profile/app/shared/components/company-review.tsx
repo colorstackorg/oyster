@@ -1,6 +1,14 @@
 import { generatePath, Link, useFetcher } from '@remix-run/react';
 import { type PropsWithChildren, useState } from 'react';
-import { Check, ChevronDown, ChevronUp, Edit, Star, X } from 'react-feather';
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Edit,
+  Lock,
+  Star,
+  X,
+} from 'react-feather';
 
 import {
   type EmploymentType,
@@ -36,6 +44,7 @@ type CompanyReviewProps = {
   date: string;
   editable?: boolean;
   employmentType: EmploymentType;
+  hasAccess?: boolean;
   hasUpvoted: boolean | null;
   id: string;
   locationCity: string | null;
@@ -48,6 +57,7 @@ type CompanyReviewProps = {
   reviewerId: string;
   reviewerProfilePicture: string | null;
   reviewedAt: string;
+  showAccessWarning?: boolean;
   text: string;
   title: string;
   upvotesCount: string | null;
@@ -60,6 +70,7 @@ export const CompanyReview = ({
   date,
   editable,
   employmentType,
+  hasAccess,
   hasUpvoted,
   id,
   locationCity,
@@ -72,13 +83,16 @@ export const CompanyReview = ({
   reviewerLastName,
   reviewerProfilePicture,
   reviewedAt,
+  showAccessWarning,
   text,
   title,
   upvotesCount,
   workExperienceId,
 }: CompanyReviewProps) => {
   return (
-    <Card>
+    <Card className="relative">
+      {!hasAccess && <NoAccessOverlay showAccessWarning={showAccessWarning} />}
+
       <header className="flex items-center gap-1">
         <CompanyReviewer
           anonymous={anonymous}
@@ -175,6 +189,30 @@ export const CompanyReview = ({
     </Card>
   );
 };
+
+function NoAccessOverlay({
+  showAccessWarning,
+}: Pick<CompanyReviewProps, 'showAccessWarning'>) {
+  return (
+    <>
+      <div className="absolute left-0 top-0 h-full w-full rounded-[inherit] backdrop-blur-sm" />
+
+      {showAccessWarning && (
+        <div className="absolute left-1/2 top-1/2 flex w-full max-w-80 -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2 rounded-lg bg-black/80 p-4">
+          <Lock color="white" />
+
+          <Text className="text-center" color="white" variant="sm">
+            In order to view company reviews, you must{' '}
+            <Link className="underline" to={Route['/companies/reviews/add']}>
+              add a review
+            </Link>{' '}
+            of one of your work experiences first!
+          </Text>
+        </div>
+      )}
+    </>
+  );
+}
 
 function CompanyReviewer({
   anonymous,

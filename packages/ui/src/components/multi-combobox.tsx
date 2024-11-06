@@ -14,10 +14,12 @@ import {
 import { Divider } from './divider';
 import { getInputCn, type InputProps } from './input';
 import { getPillCn } from './pill';
+import { type AccentColor } from '../utils/constants';
 import { setInputValue } from '../utils/core';
 import { cx } from '../utils/cx';
 
 type ComboboxValue = {
+  color?: AccentColor;
   label: string;
   value: string;
 };
@@ -95,6 +97,7 @@ export function MultiComboboxSearch({
 }
 
 type MultiComboboxItemProps = PropsWithChildren<{
+  color?: AccentColor;
   label: string;
   onSelect?(e: React.MouseEvent<HTMLButtonElement>): void;
   value: string;
@@ -102,6 +105,7 @@ type MultiComboboxItemProps = PropsWithChildren<{
 
 export function MultiComboboxItem({
   children,
+  color,
   label,
   onSelect,
   value,
@@ -120,7 +124,7 @@ export function MultiComboboxItem({
           });
 
           if (!alreadySelected) {
-            setValues([...values, { label, value }]);
+            setValues([...values, { color, label, value }]);
           }
 
           const searchElement = searchRef.current!;
@@ -160,7 +164,7 @@ export function MultiComboboxValues({ name }: Pick<InputProps, 'name'>) {
           return (
             <li
               className={cx(
-                getPillCn({ color: 'pink-100' }),
+                getPillCn({ color: value.color || 'pink-100' }),
                 'flex items-center gap-1'
               )}
               key={value.value}

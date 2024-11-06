@@ -13,6 +13,7 @@ export const ActivityPeriod = {
 export const ActivityType = {
   ATTEND_EVENT: 'attend_event',
   GET_ACTIVATED: 'get_activated',
+  GET_OPPORTUNITY_BOOKMARK: 'get_opportunity_bookmark',
   GET_RESOURCE_UPVOTE: 'get_resource_upvote',
   JOIN_MEMBER_DIRECTORY: 'join_member_directory',
   POST_RESOURCE: 'post_resource',

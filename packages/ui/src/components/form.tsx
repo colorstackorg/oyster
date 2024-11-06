@@ -73,6 +73,9 @@ type InputFieldProps = FieldProps<string> &
   Pick<FormFieldProps, 'description' | 'label' | 'required'> &
   Pick<InputProps, 'disabled' | 'placeholder'>;
 
+/**
+ * @deprecated Instead, just compose the `Form.Field` and `Input` together.
+ */
 export function InputField({
   defaultValue,
   description,

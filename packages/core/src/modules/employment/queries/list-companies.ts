@@ -23,12 +23,21 @@ export async function listCompanies<
     .selectFrom('companies')
     .where((eb) => {
       // We only want to return companies that have at least one employee (past
-      // or present).
-      return eb.exists(
-        eb
-          .selectFrom('workExperiences')
-          .whereRef('workExperiences.companyId', '=', 'companies.id')
-      );
+      // or present) or opportunity.
+      return eb.or([
+        eb.exists(() => {
+          return eb
+            .selectFrom('workExperiences')
+            .whereRef('workExperiences.companyId', '=', 'companies.id');
+        }),
+
+        eb.exists(() => {
+          return eb
+            .selectFrom('opportunities')
+            .whereRef('opportunities.companyId', '=', 'companies.id')
+            .where('opportunities.expiresAt', '>', new Date());
+        }),
+      ]);
     })
     .$if(!!where.search, (qb) => {
       const { search } = where;
@@ -74,6 +83,15 @@ export async function listCompanies<
             })
             .whereRef('workExperiences.companyId', '=', 'companies.id')
             .as('averageRating');
+        },
+
+        (eb) => {
+          return eb
+            .selectFrom('opportunities')
+            .select(eb.fn.countAll<string>().as('count'))
+            .whereRef('opportunities.companyId', '=', 'companies.id')
+            .where('opportunities.expiresAt', '>', new Date())
+            .as('opportunities');
         },
 
         (eb) => {

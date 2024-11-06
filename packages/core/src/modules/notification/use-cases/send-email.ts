@@ -11,7 +11,6 @@ import {
   ReferralAcceptedEmail,
   ReferralSentEmail,
   ResumeSubmittedEmail,
-  StudentActivatedEmail,
   StudentAttendedOnboardingEmail,
   StudentRemovedEmail,
 } from '@oyster/email-templates';
@@ -73,7 +72,6 @@ async function sendEmailWithPostmark(input: EmailTemplate) {
     .with('resume-submitted', () => FROM_NOTIFICATIONS)
     .with('referral-accepted', () => FROM_NOTIFICATIONS)
     .with('referral-sent', () => FROM_NOTIFICATIONS)
-    .with('student-activated', () => FROM_NOTIFICATIONS)
     .with('student-attended-onboarding', () => FROM_NOTIFICATIONS)
     .with('student-removed', () => FROM_NOTIFICATIONS)
     .exhaustive();
@@ -149,9 +147,6 @@ function getHtml(input: EmailTemplate): string {
     .with({ name: 'resume-submitted' }, ({ data }) => {
       return ResumeSubmittedEmail(data);
     })
-    .with({ name: 'student-activated' }, ({ data }) => {
-      return StudentActivatedEmail(data);
-    })
     .with({ name: 'student-attended-onboarding' }, ({ data }) => {
       return StudentAttendedOnboardingEmail(data);
     })
@@ -191,9 +186,6 @@ function getSubject(input: EmailTemplate): string {
     .with({ name: 'resume-submitted' }, ({ data }) => {
       return `Confirmation: ${data.resumeBookName} Resume Book! ✅`;
     })
-    .with({ name: 'student-activated' }, () => {
-      return 'Swag Pack 😜';
-    })
     .with({ name: 'student-attended-onboarding' }, () => {
       return "Onboarding Session, ✅! What's Next?";
     })
@@ -229,7 +221,6 @@ async function getAttachments(
       { name: 'referral-accepted' },
       { name: 'referral-sent' },
       { name: 'resume-submitted' },
-      { name: 'student-activated' },
       { name: 'student-removed' },
       () => {
         return undefined;

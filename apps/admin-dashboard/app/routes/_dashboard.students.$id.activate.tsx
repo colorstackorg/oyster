@@ -86,8 +86,8 @@ export default function ActivateStudentPage() {
 
       <Modal.Description>
         Just confirming - do you want to activate {student.firstName}{' '}
-        {student.lastName}? They will receive an email with the ability to claim
-        a swag pack in their profile.
+        {student.lastName}? They will receive an email with a gift card to the
+        merch store.
       </Modal.Description>
 
       <RemixForm className="form" method="post">

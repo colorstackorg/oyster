@@ -41,6 +41,14 @@ export type MixpanelEvent = {
     Method: 'Google' | 'OTP' | 'Slack';
   };
 
+  'Opportunity Bookmarked': {
+    Company: string;
+  };
+
+  'Opportunity Viewed': {
+    Company: string;
+  };
+
   'Page Viewed': {
     Page:
       | 'Companies'
@@ -48,6 +56,7 @@ export type MixpanelEvent = {
       | 'Events'
       | 'Home'
       | 'Last Week in ColorStack'
+      | 'Opportunities'
       | 'Points'
       | 'Profile'
       | 'Resources';

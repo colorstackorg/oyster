@@ -31,8 +31,6 @@ const BaseEnvironmentConfig = z.object({
   SLACK_CLIENT_ID: EnvironmentVariable,
   SLACK_TEAM_ID: EnvironmentVariable,
   STUDENT_PROFILE_URL: EnvironmentVariable,
-  SWAG_UP_CLIENT_ID: EnvironmentVariable,
-  SWAG_UP_CLIENT_SECRET: EnvironmentVariable,
 });
 
 const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
@@ -56,8 +54,6 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     SLACK_ANNOUNCEMENTS_CHANNEL_ID: true,
     SLACK_CLIENT_ID: true,
     SLACK_TEAM_ID: true,
-    SWAG_UP_CLIENT_ID: true,
-    SWAG_UP_CLIENT_SECRET: true,
   }).extend({
     ENVIRONMENT: z.literal(Environment.DEVELOPMENT),
     SMTP_HOST: EnvironmentVariable.optional(),

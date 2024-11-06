@@ -1,23 +1,6 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet } from '@remix-run/react';
-
-import { Modal } from '@oyster/ui';
-
-import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated } from '@/shared/session.server';
-
-export async function loader({ request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request, {
-    redirectTo: `${Route['/login']}?context=claim-swag-pack`,
-  });
-
-  return json({});
-}
-
-export default function ClaimSwagPackLayout() {
-  return (
-    <Modal onCloseTo={Route['/home']}>
-      <Outlet />
-    </Modal>
+export async function loader() {
+  return new Response(
+    'If you were activated recently, you should have received an email with a gift card to our merch store. Please reach out to the ColorStack team if you need further assistance.',
+    { status: 404 }
   );
 }

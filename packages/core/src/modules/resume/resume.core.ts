@@ -125,8 +125,8 @@ export async function listResumeBooks<
   const resumeBooks = await db
     .selectFrom('resumeBooks')
     .select(select)
-    .orderBy('startDate', 'desc')
     .orderBy('endDate', 'desc')
+    .orderBy('startDate', 'desc')
     .orderBy('createdAt', 'desc')
     .execute();
 

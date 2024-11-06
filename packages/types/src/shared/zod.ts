@@ -4,6 +4,8 @@ export const BooleanInput = z.preprocess((value) => {
   return typeof value === 'boolean' ? value : value === '1';
 }, z.boolean());
 
+export const EmptyStringToNull = z.literal('').transform(() => null);
+
 export const ISO8601Date = z.coerce.date().transform((value) => {
   return value.toISOString().split('T')[0];
 });

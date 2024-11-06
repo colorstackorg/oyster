@@ -113,14 +113,7 @@ export default function ActivationModal() {
 function ActivatedState() {
   return (
     <>
-      <Text color="gray-500">
-        Great news -- you're activated and eligible to{' '}
-        <Link className="link" to={Route['/home/claim-swag-pack']}>
-          claim your FREE swag pack
-        </Link>
-        ! 🎉
-      </Text>
-
+      <Text color="gray-500">Great news -- you're activated! 🎉</Text>
       <ActivationList />
     </>
   );
@@ -167,8 +160,8 @@ function NotActivatedState() {
     <>
       <Text color="gray-500">
         You've completed {requirementsCompleted.length}/6 activation
-        requirements. Once you hit all 6, you will be eligible to claim your
-        FREE swag pack! 👀
+        requirements. Once you hit all 6, you will get a gift card to claim your
+        FREE merch! 👀
       </Text>
 
       <ActivationList />

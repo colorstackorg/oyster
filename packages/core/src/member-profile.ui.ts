@@ -39,5 +39,5 @@ export {
   ListMembersInDirectoryWhere,
 } from './modules/member/member.types';
 export { CreateResumeBookInput } from './modules/resume/resume.types';
-export { ClaimSwagPackInput } from './modules/swag-pack/swag-pack.types';
+export { getRandomAccentColor } from './shared/utils/color.utils';
 export { Environment, ListSearchParams } from './shared/types';

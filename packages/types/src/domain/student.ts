@@ -12,7 +12,7 @@ import {
 } from './types';
 import { normalizeUri } from '../../../utils/src/index';
 import { type ExtractValue } from '../shared/types';
-import { NullishString } from '../shared/zod';
+import { EmptyStringToNull, NullishString } from '../shared/zod';
 
 // Enums
 
@@ -160,6 +160,21 @@ export const Student = Entity.merge(StudentSocialLinks)
     otherSchool: z.string().optional(),
 
     /**
+     * A 10-digit phone number without any formatting. Note that since we only
+     * serve US and Canadian students, we will not worry about asking for nor
+     * storing the country code, it is by default +1. We will only store
+     * 10-digit values without any formatting (ie: parentheses, dashes, etc).
+     *
+     * @example "1112223333"
+     * @example "1234567890"
+     */
+    phoneNumber: z
+      .string()
+      .trim()
+      .regex(/^\d{10}$/, 'Must be a 10-digit number.')
+      .or(EmptyStringToNull),
+
+    /**
      * The preferred name that a member would like to go by. This will typically
      * just be a first name.
      *
@@ -193,7 +208,6 @@ export const Student = Entity.merge(StudentSocialLinks)
       }),
 
     slackId: z.string().optional(),
-    swagUpOrderId: z.string().min(1).optional(),
     type: z.nativeEnum(MemberType),
 
     /**

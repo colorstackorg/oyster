@@ -30,7 +30,7 @@ const name = response.toLowerCase().trim();
 writeFileSync(
   path.join(__dirname, `../migrations/${timestamp}_${name}.ts`),
   dedent`
-    import { Kysely } from 'kysely';
+    import { type Kysely } from 'kysely';
 
     export async function up(db: Kysely<any>) {}
 
