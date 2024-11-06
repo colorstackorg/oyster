@@ -336,102 +336,109 @@ export async function deleteJobOffer({
 
 // "Edit Job Offer"
 
-export const EditJobOfferInput = z.discriminatedUnion('employmentType', [
-  z.object({
-    employmentType: z.literal('internship'),
-    role: z.string().trim().min(1).nullable(),
-    hourlyRate: z.number().nullable(),
-    monthlyRate: z.number().nullable(),
-    location: z.string().trim().min(1).nullable(),
-    relocation: z.string().trim().min(1).nullable(),
-    benefits: z.string().trim().min(1).nullable(),
-    yearsOfExperience: z.string().trim().min(1).nullable(),
-    negotiatedText: z.string().trim().min(1).nullable(),
-    additionalNotes: z.string().trim().min(1).nullable(),
-  }),
-  z.object({
-    employmentType: z.literal('full-time'),
-    role: z.string().trim().min(1).nullable(),
-    baseSalary: z.number().nullable(),
-    hourlyRate: z.number().nullable(),
-    location: z.string().trim().min(1).nullable(),
-    stockPerYear: z.number().nullable(),
-    bonus: z.number().nullable(),
-    performanceBonus: z.string().trim().min(1).nullable(),
-    signOnBonus: z.string().trim().min(1).nullable(),
-    relocation: z.string().trim().min(1).nullable(),
-    benefits: z.string().trim().min(1).nullable(),
-    yearsOfExperience: z.string().trim().min(1).nullable(),
-    negotiatedText: z.string().trim().min(1).nullable(),
-    additionalNotes: z.string().trim().min(1).nullable(),
-  }),
-]);
+// Input types
+export const EditInternshipJobOfferInput = z.object({
+  role: z.string().trim().min(1).nullable(),
+  hourlyRate: z.number().nullable(),
+  monthlyRate: z.number().nullable(),
+  location: z.string().trim().min(1).nullable(),
+  relocation: z.string().trim().min(1).nullable(),
+  benefits: z.string().trim().min(1).nullable(),
+  yearsOfExperience: z.string().trim().min(1).nullable(),
+  negotiatedText: z.string().trim().min(1).nullable(),
+  additionalNotes: z.string().trim().min(1).nullable(),
+});
 
-type EditJobOfferInput = z.infer<typeof EditJobOfferInput>;
+export const EditFullTimeJobOfferInput = z.object({
+  role: z.string().trim().min(1).nullable(),
+  baseSalary: z.number().nullable(),
+  hourlyRate: z.number().nullable(),
+  location: z.string().trim().min(1).nullable(),
+  stockPerYear: z.number().nullable(),
+  bonus: z.number().nullable(),
+  performanceBonus: z.string().trim().min(1).nullable(),
+  signOnBonus: z.string().trim().min(1).nullable(),
+  relocation: z.string().trim().min(1).nullable(),
+  benefits: z.string().trim().min(1).nullable(),
+  yearsOfExperience: z.string().trim().min(1).nullable(),
+  negotiatedText: z.string().trim().min(1).nullable(),
+  additionalNotes: z.string().trim().min(1).nullable(),
+});
 
-/**
- * Edits a job offer.
- *
- * @param jobOfferId - The job offer to edit.
- * @param input - The updated values for the job offer.
- * @returns Result indicating the success or failure of the operation.
- */
-export async function editJobOffer(
+type EditInternshipJobOfferInput = z.infer<typeof EditInternshipJobOfferInput>;
+type EditFullTimeJobOfferInput = z.infer<typeof EditFullTimeJobOfferInput>;
+
+// Edit functions
+export async function editInternshipJobOffer(
   jobOfferId: string,
-  input: EditJobOfferInput
+  input: EditInternshipJobOfferInput
 ): Promise<Result> {
   const result = await db.transaction().execute(async (trx) => {
-    if (input.employmentType === 'internship') {
-      return await trx
-        .updateTable('internshipJobOffers')
-        .set({
-          role: input.role,
-          hourlyRate: input.hourlyRate,
-          monthlyRate: input.monthlyRate,
-          location: input.location,
-          relocationText: input.relocation,
-          benefits: input.benefits,
-          yearsOfExperience: input.yearsOfExperience,
-          negotiatedText: input.negotiatedText,
-          additionalNotes: input.additionalNotes,
-          updatedAt: new Date(),
-        })
-        .where('id', '=', jobOfferId)
-        .returning(['id'])
-        .executeTakeFirst();
-    } else {
-      return await trx
-        .updateTable('fullTimeJobOffers')
-        .set({
-          role: input.role,
-          baseSalary: input.baseSalary,
-          hourlyRate: input.hourlyRate,
-          location: input.location,
-          stockPerYear: input.stockPerYear,
-          bonus: input.bonus,
-          totalCompensation:
-            (input.baseSalary ?? 0) +
-            (input.stockPerYear ?? 0) +
-            (input.bonus ?? 0),
-          performanceBonusText: input.performanceBonus,
-          signOnBonusText: input.signOnBonus,
-          relocationText: input.relocation,
-          benefits: input.benefits,
-          yearsOfExperience: input.yearsOfExperience,
-          negotiatedText: input.negotiatedText,
-          additionalNotes: input.additionalNotes,
-          updatedAt: new Date(),
-        })
-        .where('id', '=', jobOfferId)
-        .returning(['id'])
-        .executeTakeFirst();
-    }
+    return await trx
+      .updateTable('internshipJobOffers')
+      .set({
+        role: input.role,
+        hourlyRate: input.hourlyRate,
+        monthlyRate: input.monthlyRate,
+        location: input.location,
+        relocationText: input.relocation,
+        benefits: input.benefits,
+        yearsOfExperience: input.yearsOfExperience,
+        negotiatedText: input.negotiatedText,
+        additionalNotes: input.additionalNotes,
+        updatedAt: new Date(),
+      })
+      .where('id', '=', jobOfferId)
+      .returning(['id'])
+      .executeTakeFirst();
   });
 
   if (!result) {
     return fail({
       code: 404,
-      error: 'Job offer not found',
+      error: 'Internship job offer not found',
+    });
+  }
+
+  return success(result);
+}
+
+export async function editFullTimeJobOffer(
+  jobOfferId: string,
+  input: EditFullTimeJobOfferInput
+): Promise<Result> {
+  const result = await db.transaction().execute(async (trx) => {
+    return await trx
+      .updateTable('fullTimeJobOffers')
+      .set({
+        role: input.role,
+        baseSalary: input.baseSalary,
+        hourlyRate: input.hourlyRate,
+        location: input.location,
+        stockPerYear: input.stockPerYear,
+        bonus: input.bonus,
+        totalCompensation:
+          (input.baseSalary ?? 0) +
+          (input.stockPerYear ?? 0) +
+          (input.bonus ?? 0),
+        performanceBonusText: input.performanceBonus,
+        signOnBonusText: input.signOnBonus,
+        relocationText: input.relocation,
+        benefits: input.benefits,
+        yearsOfExperience: input.yearsOfExperience,
+        negotiatedText: input.negotiatedText,
+        additionalNotes: input.additionalNotes,
+        updatedAt: new Date(),
+      })
+      .where('id', '=', jobOfferId)
+      .returning(['id'])
+      .executeTakeFirst();
+  });
+
+  if (!result) {
+    return fail({
+      code: 404,
+      error: 'Full-time job offer not found',
     });
   }
 
