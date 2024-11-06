@@ -234,6 +234,9 @@ async function shareJobOffer({
 
       return result;
     } else {
+      const totalCompensation =
+        (data.baseSalary ?? 0) + (data.stockPerYear ?? 0) + (data.bonus ?? 0);
+
       const result = await trx
         .insertInto('fullTimeJobOffers')
         .values({
@@ -245,6 +248,7 @@ async function shareJobOffer({
           location: data.location,
           stockPerYear: data.stockPerYear,
           bonus: data.bonus,
+          totalCompensation,
           performanceBonusText: data.performanceBonus,
           signOnBonusText: data.signOnBonus,
           relocationText: data.relocation,
@@ -405,6 +409,10 @@ export async function editJobOffer(
           location: input.location,
           stockPerYear: input.stockPerYear,
           bonus: input.bonus,
+          totalCompensation:
+            (input.baseSalary ?? 0) +
+            (input.stockPerYear ?? 0) +
+            (input.bonus ?? 0),
           performanceBonusText: input.performanceBonus,
           signOnBonusText: input.signOnBonus,
           relocationText: input.relocation,
