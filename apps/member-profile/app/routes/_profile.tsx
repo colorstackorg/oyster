@@ -24,8 +24,8 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const [isChatbotEnabled, resumeBook] = await Promise.all([
-    isFeatureFlagEnabled('chatbot'),
+  const [isJobOffersEnabled, resumeBook] = await Promise.all([
+    isFeatureFlagEnabled('job_offers'),
 
     getResumeBook({
       select: ['resumeBooks.id'],
@@ -37,13 +37,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   ]);
 
   return json({
-    isChatbotEnabled,
+    isJobOffersEnabled,
     resumeBook,
   });
 }
 
 export default function ProfileLayout() {
-  const { isChatbotEnabled, resumeBook } = useLoaderData<typeof loader>();
+  const { isJobOffersEnabled, resumeBook } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -88,6 +88,15 @@ export default function ProfileLayout() {
               pathname={Route['/opportunities']}
               prefetch="intent"
             />
+            {isJobOffersEnabled && (
+              <Dashboard.NavigationLink
+                icon={<DollarSign />}
+                isNew
+                label="Compensation"
+                pathname={Route['/compensation']}
+                prefetch="intent"
+              />
+            )}
             <Dashboard.NavigationLink
               icon={<Briefcase />}
               label="Companies"
@@ -112,15 +121,13 @@ export default function ProfileLayout() {
               pathname={Route['/events']}
               prefetch="intent"
             />
-            {isChatbotEnabled && (
-              <Dashboard.NavigationLink
-                icon={<MessageCircle />}
-                isNew
-                label="Ask AI"
-                pathname={Route['/ask-ai']}
-                prefetch="intent"
-              />
-            )}
+            <Dashboard.NavigationLink
+              icon={<MessageCircle />}
+              isNew
+              label="Ask AI"
+              pathname={Route['/ask-ai']}
+              prefetch="intent"
+            />
             <Dashboard.NavigationLink
               icon={<FileText />}
               label="Resume Review"

@@ -36,3 +36,5 @@ export { updateAllowEmailShare } from './modules/member/use-cases/update-allow-e
 export { updateMember } from './modules/member/use-cases/update-member';
 export { reportException } from './modules/sentry/use-cases/report-exception';
 export { countMessagesSent } from './modules/slack/queries/count-messages-sent';
+export { getFullTimeJobOfferDetails } from './modules/job-offers/get-job-offer-details';
+export { getInternshipJobOfferDetails } from './modules/job-offers/get-job-offer-details';
