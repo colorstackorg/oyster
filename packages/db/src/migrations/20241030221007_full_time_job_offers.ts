@@ -19,6 +19,7 @@ export async function up(db: Kysely<any>) {
     .addColumn('location_type', 'text')
     .addColumn('stock_per_year', 'integer')
     .addColumn('bonus', 'integer')
+    .addColumn('total_compensation', 'integer')
     .addColumn('performance_bonus_text', 'text')
     .addColumn('sign_on_bonus_text', 'text')
     .addColumn('relocation_text', 'text')
