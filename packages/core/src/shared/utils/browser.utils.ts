@@ -1,4 +1,8 @@
-import puppeteer, { type Browser, type Page } from 'puppeteer';
+import puppeteer, { type Browser, type Page } from 'puppeteer-core';
+
+// Environment Variable(s)
+
+const BROWSER_WS_ENDPOINT = process.env.BROWSER_WS_ENDPOINT as string;
 
 // Core
 
@@ -37,10 +41,8 @@ export async function getPageContent(url: string): Promise<string> {
 async function withBrowser<T>(
   fn: (browser: Browser, page: Page) => Promise<T>
 ): Promise<T> {
-  const browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    headless: true,
-    timeout: 10_000,
+  const browser = await puppeteer.connect({
+    browserWSEndpoint: BROWSER_WS_ENDPOINT,
   });
 
   console.log('Launched Puppeteer browser.');

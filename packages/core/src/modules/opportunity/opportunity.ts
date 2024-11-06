@@ -147,14 +147,16 @@ async function createOpportunity({
     return success({});
   }
 
-  const opportunity = await db.transaction().execute(async (trx) => {
-    return trx
+  const opportunityId = id();
+
+  const result = await db.transaction().execute(async (trx) => {
+    await trx
       .insertInto('opportunities')
       .values({
         createdAt: new Date(),
         description: 'N/A',
         expiresAt: dayjs().add(3, 'months').toDate(),
-        id: id(),
+        id: opportunityId,
         postedBy: slackMessage.studentId,
         slackChannelId,
         slackMessageId,
@@ -163,24 +165,28 @@ async function createOpportunity({
       .returning(['id'])
       .onConflict((oc) => oc.doNothing())
       .executeTakeFirstOrThrow();
+
+    // If the link is NOT a LinkedIn job posting, we'll scrape the website content
+    // using puppeteer, create a new "empty" opportunity, and then refine it with
+    // AI using that website content.
+    if (!link.includes('linkedin.com')) {
+      const content = await getPageContent(link);
+
+      return refineOpportunity({
+        content: content.slice(0, 10_000),
+        opportunityId,
+      });
+    }
   });
 
-  // If the link is NOT a LinkedIn job posting, we'll scrape the website content
-  // using puppeteer, create a new "empty" opportunity, and then refine it with
-  // AI using that website content.
-  if (!link.includes('linkedin.com')) {
-    const content = await getPageContent(link);
-
-    return refineOpportunity({
-      content: content.slice(0, 10_000),
-      opportunityId: opportunity.id,
-    });
+  if (result) {
+    return result;
   }
 
   if (sendNotification) {
     const message =
       `Thanks for sharing an opportunity in <#${slackChannelId}> -- I added it to our <${ENV.STUDENT_PROFILE_URL}/opportunities|opportunities board>! 🙂\n\n` +
-      `To generate tags and a description, please paste the opportunity's website content <${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}/refine|*HERE*>.\n\n` +
+      `To generate tags and a description, please paste the opportunity's website content <${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunityId}/refine|*HERE*>.\n\n` +
       'Thanks again!';
 
     job('notification.slack.send', {
@@ -190,7 +196,7 @@ async function createOpportunity({
     });
   }
 
-  return success(opportunity);
+  return success({ id: opportunityId });
 }
 
 // "Create Opportunity Tag"
