@@ -9,29 +9,23 @@ export async function up(db: Kysely<any>) {
     .addColumn('created_at', 'timestamptz', (cb) =>
       cb.notNull().defaultTo(sql`now()`)
     )
+    .addColumn('updated_at', 'timestamptz', (cb) =>
+      cb.notNull().defaultTo(sql`now()`)
+    )
+    .addColumn('role', 'text')
     .addColumn('hourly_salary', 'integer')
     .addColumn('monthly_salary', 'integer')
+    .addColumn('location', 'text')
+    .addColumn('location_type', 'text')
+    .addColumn('relocation_text', 'text')
+    .addColumn('benefits', 'text')
+    .addColumn('years_of_experience', 'text')
+    .addColumn('is_negotiated', 'boolean')
+    .addColumn('additional_notes', 'text')
     .addColumn('company_id', 'text', (cb) => {
       return cb.references('companies.id');
     })
     .addColumn('other_company', 'text')
-    .addColumn('start_date', 'date')
-    .addColumn('updated_at', 'timestamptz', (cb) =>
-      cb.notNull().defaultTo(sql`now()`)
-    )
-    .addColumn('location', 'text')
-    .addColumn('location_coordinates', sql`point`)
-    .addColumn('location_type', 'text')
-    .addColumn('role', 'text')
-    .addColumn('equity_or_stock_text', 'text')
-    .addColumn('bonus', 'integer')
-    .addColumn('bonus_text', 'text')
-    .addColumn('relocation', 'integer')
-    .addColumn('relocation_text', 'text')
-    .addColumn('benefits', 'text')
-    .addColumn('is_negotiated', 'boolean')
-    .addColumn('is_accepted', 'boolean')
-    .addColumn('decision_reason', 'text')
     .addColumn('posted_by', 'text', (column) => {
       return column.references('students.id').onDelete('set null');
     })
