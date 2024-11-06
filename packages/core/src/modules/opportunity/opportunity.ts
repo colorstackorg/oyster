@@ -147,46 +147,44 @@ async function createOpportunity({
     return success({});
   }
 
-  const opportunityId = id();
+  const isLinkedInURL = link.includes('linkedin.com');
 
-  const result = await db.transaction().execute(async (trx) => {
-    await trx
-      .insertInto('opportunities')
-      .values({
-        createdAt: new Date(),
-        description: 'N/A',
-        expiresAt: dayjs().add(3, 'months').toDate(),
-        id: opportunityId,
-        postedBy: slackMessage.studentId,
-        slackChannelId,
-        slackMessageId,
-        title: 'Opportunity',
-      })
-      .returning(['id'])
-      .onConflict((oc) => oc.doNothing())
-      .executeTakeFirstOrThrow();
+  let websiteContent = '';
 
-    // If the link is NOT a LinkedIn job posting, we'll scrape the website content
-    // using puppeteer, create a new "empty" opportunity, and then refine it with
-    // AI using that website content.
-    if (!link.includes('linkedin.com')) {
-      const content = await getPageContent(link);
+  if (!isLinkedInURL) {
+    websiteContent = await getPageContent(link);
+  }
 
-      return refineOpportunity({
-        content: content.slice(0, 10_000),
-        opportunityId,
-      });
-    }
-  });
+  const opportunity = await db
+    .insertInto('opportunities')
+    .values({
+      createdAt: new Date(),
+      description: 'N/A',
+      expiresAt: dayjs().add(3, 'months').toDate(),
+      id: id(),
+      postedBy: slackMessage.studentId,
+      slackChannelId,
+      slackMessageId,
+      title: 'Opportunity',
+    })
+    .returning(['id'])
+    .onConflict((oc) => oc.doNothing())
+    .executeTakeFirstOrThrow();
 
-  if (result) {
-    return result;
+  // If the link is NOT a LinkedIn job posting, we'll scrape the website content
+  // using puppeteer, create a new "empty" opportunity, and then refine it with
+  // AI using that website content.
+  if (!isLinkedInURL) {
+    return refineOpportunity({
+      content: websiteContent.slice(0, 10_000),
+      opportunityId: opportunity.id,
+    });
   }
 
   if (sendNotification) {
     const message =
       `Thanks for sharing an opportunity in <#${slackChannelId}> -- I added it to our <${ENV.STUDENT_PROFILE_URL}/opportunities|opportunities board>! 🙂\n\n` +
-      `To generate tags and a description, please paste the opportunity's website content <${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunityId}/refine|*HERE*>.\n\n` +
+      `To generate tags and a description, please paste the opportunity's website content <${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}/refine|*HERE*>.\n\n` +
       'Thanks again!';
 
     job('notification.slack.send', {
@@ -196,7 +194,7 @@ async function createOpportunity({
     });
   }
 
-  return success({ id: opportunityId });
+  return success(opportunity);
 }
 
 // "Create Opportunity Tag"
