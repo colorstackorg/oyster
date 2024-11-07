@@ -591,6 +591,10 @@ export const StudentBullJob = z.discriminatedUnion('name', [
     data: z.object({}),
   }),
   z.object({
+    name: z.literal('student.anniversary.annual'),
+    data: z.object({}),
+  }),
+  z.object({
     name: z.literal('student.created'),
     data: z.object({
       studentId: Student.shape.id,

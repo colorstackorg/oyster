@@ -22,6 +22,7 @@ import { onMemberRemoved } from './events/member-removed';
 import { backfillEngagementRecords } from './use-cases/backfill-engagement-records';
 import { sendBirthdayNotification } from './use-cases/send-birthday-notification';
 import { viewMemberProfile } from './use-cases/view-member-profile';
+import { sendAnniversaryEmail } from '@/modules/member/use-cases/send-anniversary-email';
 
 export const memberWorker = registerWorker(
   'student',
@@ -63,6 +64,9 @@ export const memberWorker = registerWorker(
       })
       .with({ name: 'student.statuses.new' }, ({ data }) => {
         return createNewActiveStatuses(data);
+      })
+      .with({ name: 'student.anniversary.email' }, ({ data }) => {
+        return sendAnniversaryEmail(data);
       })
       .exhaustive();
 
