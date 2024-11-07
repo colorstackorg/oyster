@@ -14,6 +14,7 @@ import {
   AIRTABLE_MEMBERS_TABLE_ID,
 } from '@/modules/airtable';
 import { sendCompanyReviewNotifications } from '@/modules/employment/use-cases/send-company-review-notifications';
+import { sendAnniversaryEmail } from '@/modules/member/use-cases/send-anniversary-email';
 import { success } from '@/shared/utils/core';
 import { onActivationStepCompleted } from './events/activation-step-completed';
 import { onMemberActivated } from './events/member-activated';
@@ -22,7 +23,6 @@ import { onMemberRemoved } from './events/member-removed';
 import { backfillEngagementRecords } from './use-cases/backfill-engagement-records';
 import { sendBirthdayNotification } from './use-cases/send-birthday-notification';
 import { viewMemberProfile } from './use-cases/view-member-profile';
-import { sendAnniversaryEmail } from '@/modules/member/use-cases/send-anniversary-email';
 
 export const memberWorker = registerWorker(
   'student',
