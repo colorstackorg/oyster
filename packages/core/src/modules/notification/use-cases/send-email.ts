@@ -11,9 +11,11 @@ import {
   ReferralAcceptedEmail,
   ReferralSentEmail,
   ResumeSubmittedEmail,
+  StudentAnniversaryEmail,
   StudentAttendedOnboardingEmail,
   StudentRemovedEmail,
 } from '@oyster/email-templates';
+import { Student } from '@oyster/types';
 
 import { getObject } from '@/infrastructure/s3';
 import { ENVIRONMENT } from '@/shared/env';
@@ -74,6 +76,7 @@ async function sendEmailWithPostmark(input: EmailTemplate) {
     .with('referral-sent', () => FROM_NOTIFICATIONS)
     .with('student-attended-onboarding', () => FROM_NOTIFICATIONS)
     .with('student-removed', () => FROM_NOTIFICATIONS)
+    .with('student-anniversary', () => FROM_NOTIFICATIONS)
     .exhaustive();
 
   const attachments = await getAttachments(input);
@@ -153,6 +156,9 @@ function getHtml(input: EmailTemplate): string {
     .with({ name: 'student-removed' }, ({ data }) => {
       return StudentRemovedEmail(data);
     })
+    .with({ name: 'student-anniversary' }, ({ data }) => {
+      return StudentAnniversaryEmail(data);
+    })
     .exhaustive();
 
   const html = render(element);
@@ -192,6 +198,9 @@ function getSubject(input: EmailTemplate): string {
     .with({ name: 'student-removed' }, () => {
       return 'An Update on Your ColorStack Membership';
     })
+    .with({ name: 'student-anniversary' }, ({ data }) => {
+      return `Happy ${data.years} Year Anniversary, ${data.firstName}! 🎉`;
+    })
     .exhaustive();
 
   const subjectWithEnvironment = match(ENVIRONMENT)
@@ -222,6 +231,7 @@ async function getAttachments(
       { name: 'referral-sent' },
       { name: 'resume-submitted' },
       { name: 'student-removed' },
+      { name: 'student-anniversary' },
       () => {
         return undefined;
       }

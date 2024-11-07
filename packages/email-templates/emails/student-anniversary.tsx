@@ -5,35 +5,35 @@ import { type EmailTemplateData } from '../src/types';
 
 export function StudentAnniversaryEmail({
   firstName,
-}: EmailTemplateData<'student-removed'>) {
+  years,
+}: EmailTemplateData<'student-anniversary'>) {
   return (
     <Email.Template>
       <Email.Preview>
-        Congratulations on your {years} year anniversary at ColorStack!
+        🎉 Congratulations on {years} {years > 1 ? 'years' : 'year'} with
+        ColorStack!
       </Email.Preview>
 
       <Email.Main>
         <Email.Text>Hello {firstName},</Email.Text>
 
         <Email.Text>
-          We are informing you that you have violated the{' '}
-          <Email.Link href="https://docs.google.com/document/d/10hIOyIJQAdU4ZTvil5ECmRlM34Ds0dPGFNpg18WQ1js">
-            ColorStack Code of Conduct
-          </Email.Link>
-          .
+          Congratulations on reaching {years} {years > 1 ? 'years' : 'year'}{' '}
+          with ColorStack! Your commitment and contributions to our community
+          have truly made a difference. We’re so grateful to have you as part of
+          the ColorStack family.
           <br />
           <br />
-          There have been reports with evidence of you being disrespectful,
-          harassing, and/or violent. We have a zero-tolerance policy for this
-          type of behavior within our community. As a result, you are
-          permanently banned from the ColorStack Family.
+          Over the past {years > 1 ? years + ' years' : 'year'}, you’ve shown
+          unwavering support, talent, and passion. Thanks to members like you,
+          ColorStack continues to thrive and empower individuals across tech.
           <br />
           <br />
-          This decision is final.
+          Here's to many more impactful years together! 🎉
         </Email.Text>
 
         <Email.Signature>
-          Regards,
+          Best Regards,
           <br />
           The ColorStack Team
         </Email.Signature>
@@ -42,4 +42,4 @@ export function StudentAnniversaryEmail({
   );
 }
 
-export default StudentRemovedEmail;
+export default StudentAnniversaryEmail;
