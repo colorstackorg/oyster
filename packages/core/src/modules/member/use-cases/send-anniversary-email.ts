@@ -5,11 +5,13 @@ import { db } from '@oyster/db';
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 
-export async function sendAnniversaryEmail(_: GetBullJobData<'student.anniversary.email'>) {
+export async function sendAnniversaryEmail(
+  _: GetBullJobData<'student.anniversary.email'>
+) {
   const members = await db
-  .selectFrom('students')
-  .select(['email', 'firstName', 'acceptedAt'])
-      .whereRef(
+    .selectFrom('students')
+    .select(['email', 'firstName', 'acceptedAt'])
+    .whereRef(
       sql`EXTRACT(MONTH FROM acceptedAt)`,
       '=',
       sql`EXTRACT(MONTH FROM CURRENT_DATE)`
