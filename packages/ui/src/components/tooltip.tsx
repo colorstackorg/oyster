@@ -23,7 +23,8 @@ export function TooltipContent(props: TooltipContentProps) {
   return (
     <Portal>
       <Content
-        className="rounded-md bg-black px-2 py-1 data-[side=top]:mb-1"
+        className="max-w-xs rounded-md bg-black px-2 py-1"
+        sideOffset={8}
         {...props}
       />
     </Portal>

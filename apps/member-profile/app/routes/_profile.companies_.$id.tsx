@@ -3,28 +3,11 @@ import {
   type LoaderFunctionArgs,
   type SerializeFrom,
 } from '@remix-run/node';
-import { generatePath, Link, useLoaderData } from '@remix-run/react';
-import dayjs from 'dayjs';
+import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import { ExternalLink } from 'react-feather';
 
-import {
-  type EmploymentType,
-  type LocationType,
-} from '@oyster/core/employment';
-import {
-  getCompany,
-  hasReviewAccess,
-  listCompanyEmployees,
-  listCompanyReviews,
-} from '@oyster/core/employment/server';
-import {
-  cx,
-  Divider,
-  getButtonCn,
-  getTextCn,
-  ProfilePicture,
-  Text,
-} from '@oyster/ui';
+import { getCompany } from '@oyster/core/employment/server';
+import { getButtonCn, Text } from '@oyster/ui';
 import {
   Tooltip,
   TooltipContent,
@@ -32,111 +15,35 @@ import {
   TooltipTrigger,
 } from '@oyster/ui/tooltip';
 
-import { Card } from '@/shared/components/card';
-import { CompanyReview } from '@/shared/components/company-review';
+import { NavigationItem } from '@/shared/components/navigation';
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated, user } from '@/shared/session.server';
+import { ensureUserAuthenticated } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  const session = await ensureUserAuthenticated(request);
+  await ensureUserAuthenticated(request);
 
-  const id = params.id as string;
-  const memberId = user(session);
+  const companyId = params.id as string;
 
-  const [company, hasAccess, _employees, _reviews] = await Promise.all([
-    getCompany({
-      include: ['averageRating', 'employees', 'opportunities', 'reviews'],
-      select: [
-        'companies.description',
-        'companies.domain',
-        'companies.id',
-        'companies.imageUrl',
-        'companies.name',
-        'companies.leetcodeSlug',
-        'companies.levelsFyiSlug',
-      ],
-      where: { id },
-    }),
-
-    hasReviewAccess(memberId),
-
-    listCompanyEmployees({
-      where: { companyId: id },
-    }),
-
-    listCompanyReviews({
-      memberId,
-      select: [
-        'companyReviews.anonymous',
-        'companyReviews.createdAt',
-        'companyReviews.id',
-        'companyReviews.rating',
-        'companyReviews.recommend',
-        'companyReviews.text',
-        'students.id as reviewerId',
-        'students.firstName as reviewerFirstName',
-        'students.lastName as reviewerLastName',
-        'students.profilePicture as reviewerProfilePicture',
-        'workExperiences.employmentType',
-        'workExperiences.endDate',
-        'workExperiences.locationCity',
-        'workExperiences.locationState',
-        'workExperiences.locationType',
-        'workExperiences.startDate',
-        'workExperiences.title',
-        'workExperiences.id as workExperienceId',
-      ],
-      where: { companyId: id },
-    }),
-  ]);
+  const company = await getCompany({
+    include: ['averageRating', 'employees', 'opportunities', 'reviews'],
+    select: [
+      'companies.description',
+      'companies.domain',
+      'companies.id',
+      'companies.imageUrl',
+      'companies.name',
+      'companies.leetcodeSlug',
+      'companies.levelsFyiSlug',
+    ],
+    where: { id: companyId },
+  });
 
   if (!company) {
     throw new Response(null, { status: 404 });
   }
 
-  const employees = _employees.map(
-    ({ locationCity, locationState, ...employee }) => {
-      return {
-        ...employee,
-        ...(locationCity &&
-          locationState && {
-            location: `${locationCity}, ${locationState}`,
-          }),
-      };
-    }
-  );
-
-  const currentEmployees = employees.filter((employee) => {
-    return employee.status === 'current';
-  });
-
-  const pastEmployees = employees.filter((employee) => {
-    return employee.status === 'past';
-  });
-
-  const reviews = _reviews.map(
-    ({ createdAt, endDate, startDate, ...review }) => {
-      const startMonth = dayjs.utc(startDate).format('MMMM YYYY');
-
-      const endMonth = endDate
-        ? dayjs.utc(endDate).format('MMMM YYYY')
-        : 'Present';
-
-      return {
-        ...review,
-        date: `${startMonth} - ${endMonth}`,
-        editable: review.reviewerId === user(session),
-        reviewedAt: dayjs().to(createdAt),
-      };
-    }
-  );
-
   return json({
     company,
-    currentEmployees,
-    hasAccess,
-    pastEmployees,
-    reviews,
   });
 }
 
@@ -169,13 +76,9 @@ export default function CompanyPage() {
       </header>
 
       <Text color="gray-500">{company.description}</Text>
-      <OpportunitiesAlert
-        id={company.id}
-        opportunities={company.opportunities}
-      />
-      <ReviewsList />
-      <CurrentEmployees />
-      <PastEmployees />
+      <OpportunitiesAlert />
+      <CompanyNavigation />
+      <Outlet />
     </section>
   );
 }
@@ -232,7 +135,7 @@ function LogoLink({ href, imageAlt, imageSrc, tooltip }: LogoLinkProps) {
           </a>
         </TooltipTrigger>
 
-        <TooltipContent side="bottom" sideOffset={8}>
+        <TooltipContent side="bottom">
           <TooltipText>{tooltip}</TooltipText>
         </TooltipContent>
       </Tooltip>
@@ -274,11 +177,10 @@ function AverageRating({
   );
 }
 
-function OpportunitiesAlert({
-  id,
-  opportunities: _opportunities,
-}: Pick<CompanyInView, 'id' | 'opportunities'>) {
-  const opportunities = Number(_opportunities);
+function OpportunitiesAlert() {
+  const { company } = useLoaderData<typeof loader>();
+
+  const opportunities = Number(company.opportunities);
 
   if (!opportunities) {
     return null;
@@ -298,7 +200,7 @@ function OpportunitiesAlert({
         className={getButtonCn({ size: 'small' })}
         to={{
           pathname: Route['/opportunities'],
-          search: `?company=${id}`,
+          search: `?company=${company.id}`,
         }}
       >
         View
@@ -307,138 +209,25 @@ function OpportunitiesAlert({
   );
 }
 
-function ReviewsList() {
-  const { hasAccess, reviews } = useLoaderData<typeof loader>();
-
-  if (!reviews.length) {
-    return null;
-  }
+function CompanyNavigation() {
+  const { company } = useLoaderData<typeof loader>();
+  const { id } = company;
 
   return (
-    <>
-      <section className="flex flex-col gap-[inherit]">
-        <Text weight="500" variant="lg">
-          Reviews ({reviews.length})
-        </Text>
-
-        <CompanyReview.List>
-          {reviews.map((review, i) => {
-            return (
-              <CompanyReview
-                key={review.id}
-                anonymous={review.anonymous}
-                company={{
-                  id: review.companyId || '',
-                  image: review.companyImage || '',
-                  name: review.companyName || '',
-                }}
-                date={review.date}
-                editable={review.editable}
-                employmentType={review.employmentType as EmploymentType}
-                hasAccess={hasAccess}
-                hasUpvoted={review.upvoted as boolean}
-                id={review.id}
-                locationCity={review.locationCity}
-                locationState={review.locationState}
-                locationType={review.locationType as LocationType}
-                rating={review.rating}
-                recommend={review.recommend}
-                reviewedAt={review.reviewedAt}
-                reviewerFirstName={review.reviewerFirstName || ''}
-                reviewerId={review.reviewerId || ''}
-                reviewerLastName={review.reviewerLastName || ''}
-                reviewerProfilePicture={review.reviewerProfilePicture}
-                showAccessWarning={!hasAccess && i === 0}
-                text={review.text}
-                title={review.title || ''}
-                upvotesCount={review.upvotes}
-                workExperienceId={review.workExperienceId || ''}
-              />
-            );
-          })}
-        </CompanyReview.List>
-      </section>
-
-      <Divider my="4" />
-    </>
-  );
-}
-
-function CurrentEmployees() {
-  const { currentEmployees } = useLoaderData<typeof loader>();
-
-  return (
-    <Card>
-      <Card.Title>Current Employees ({currentEmployees.length})</Card.Title>
-
-      {currentEmployees.length ? (
-        <ul>
-          {currentEmployees.map((employee) => {
-            return <EmployeeItem key={employee.id} employee={employee} />;
-          })}
-        </ul>
-      ) : (
-        <Text color="gray-500">
-          There are no current employees from ColorStack.
-        </Text>
-      )}
-    </Card>
-  );
-}
-
-function PastEmployees() {
-  const { pastEmployees } = useLoaderData<typeof loader>();
-
-  return (
-    <Card>
-      <Card.Title>Past Employees ({pastEmployees.length})</Card.Title>
-
-      {pastEmployees.length ? (
-        <ul>
-          {pastEmployees.map((employee) => {
-            return <EmployeeItem key={employee.id} employee={employee} />;
-          })}
-        </ul>
-      ) : (
-        <Text color="gray-500">
-          There are no past employees from ColorStack.
-        </Text>
-      )}
-    </Card>
-  );
-}
-
-type EmployeeInView = SerializeFrom<typeof loader>['currentEmployees'][number];
-
-function EmployeeItem({ employee }: { employee: EmployeeInView }) {
-  const { firstName, id, lastName, location, profilePicture, title } = employee;
-
-  return (
-    <li className="line-clamp-1 grid grid-cols-[3rem_1fr] items-start gap-2 rounded-2xl p-2 hover:bg-gray-100">
-      <ProfilePicture
-        initials={firstName![0] + lastName![0]}
-        size="48"
-        src={profilePicture || undefined}
-      />
-
-      <div>
-        <Link
-          className={cx(getTextCn({}), 'hover:underline')}
-          to={generatePath(Route['/directory/:id'], { id })}
+    <nav>
+      <ul className="flex gap-4">
+        <NavigationItem
+          to={generatePath(Route['/companies/:id/reviews'], { id })}
         >
-          {firstName} {lastName}
-        </Link>
+          Reviews ({company.reviews})
+        </NavigationItem>
 
-        <Text color="gray-500" variant="sm">
-          {location ? (
-            <>
-              {title} &bull; {location}
-            </>
-          ) : (
-            <>{title}</>
-          )}
-        </Text>
-      </div>
-    </li>
+        <NavigationItem
+          to={generatePath(Route['/companies/:id/employees'], { id })}
+        >
+          Employees ({company.employees})
+        </NavigationItem>
+      </ul>
+    </nav>
   );
 }
