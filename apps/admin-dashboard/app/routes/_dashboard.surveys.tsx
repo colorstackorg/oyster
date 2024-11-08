@@ -151,15 +151,15 @@ function SurveysTable() {
       render: (survey) => survey.eventName,
       size: '400',
     },
+    {
+      size: '48',
+      sticky: true,
+      render: (survey) => <SurveyDropdown {...survey} />,
+    },
   ];
 
   return (
-    <Table
-      columns={columns}
-      data={surveys}
-      emptyMessage="No surveys found."
-      Dropdown={SurveyDropdown}
-    />
+    <Table columns={columns} data={surveys} emptyMessage="No surveys found." />
   );
 }
 

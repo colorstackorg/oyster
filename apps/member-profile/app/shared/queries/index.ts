@@ -30,6 +30,7 @@ export async function getEducationExperiences(id: string) {
       },
     ])
     .where('studentId', '=', id)
+    .orderBy('endDate', 'desc')
     .orderBy('startDate', 'desc')
     .execute();
 

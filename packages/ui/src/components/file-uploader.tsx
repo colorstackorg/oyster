@@ -65,7 +65,7 @@ export function FileUploader({
     <div className="flex flex-col gap-4">
       <div
         className={cx(
-          'relative cursor-grab rounded-3xl border-2 border-dashed border-gray-300',
+          'relative cursor-grab rounded-2xl border-2 border-dashed border-gray-300',
           'transition-colors duration-300 ease-in-out',
           'hover:border-primary',
           isDragged && 'border-primary'
@@ -98,7 +98,7 @@ export function FileUploader({
 
         <input
           accept={accept.join(', ')}
-          className="absolute top-0 h-full w-full cursor-grab rounded-3xl opacity-0"
+          className="absolute top-0 h-full w-full cursor-grab rounded-2xl opacity-0"
           id={id}
           name={name}
           onChange={onFileChange}

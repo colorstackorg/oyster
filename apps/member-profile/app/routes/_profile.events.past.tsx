@@ -132,7 +132,7 @@ type PastEventItemProps = {
 
 function PastEventItem({ event }: PastEventItemProps) {
   return (
-    <li className="flex flex-col rounded-3xl border border-gray-200">
+    <li className="flex flex-col rounded-2xl border border-gray-200">
       <div className="h-24 w-full rounded-[inherit] bg-[url(/images/colorstack-background.png)] bg-contain" />
 
       <div className="flex flex-1 flex-col gap-3 p-4">

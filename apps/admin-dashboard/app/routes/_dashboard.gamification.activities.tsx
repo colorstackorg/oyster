@@ -116,13 +116,17 @@ function ActivitiesTable() {
       size: '400',
       render: (activity) => activity.description,
     },
+    {
+      size: '48',
+      sticky: true,
+      render: (activity) => <ActivitiesTableDropdown {...activity} />,
+    },
   ];
 
   return (
     <Table
       columns={columns}
       data={activities}
-      Dropdown={ActivitiesTableDropdown}
       emptyMessage="No activities found."
     />
   );

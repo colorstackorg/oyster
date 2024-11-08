@@ -11,7 +11,7 @@ type ButtonProps = Pick<
 > & {
   color?: 'error' | 'primary' | 'success';
   fill?: boolean;
-  size?: 'regular' | 'small';
+  size?: 'regular' | 'small' | 'xs';
   submitting?: boolean;
   variant?: 'primary' | 'secondary';
 };
@@ -85,6 +85,7 @@ export function getButtonCn({
     match(size)
       .with('regular', () => 'px-4 py-3')
       .with('small', () => 'px-3 py-2')
+      .with('xs', () => 'px-2 py-1 text-sm')
       .exhaustive(),
 
     match(variant)

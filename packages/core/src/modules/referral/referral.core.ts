@@ -42,10 +42,11 @@ type ListReferralsOptions<Selection> = {
 };
 
 export async function listReferrals<
-  Selection extends SelectExpression<DB, 'referrals'>,
+  Selection extends SelectExpression<DB, 'applications' | 'referrals'>,
 >({ select, where }: ListReferralsOptions<Selection>) {
   const referrals = await db
     .selectFrom('referrals')
+    .innerJoin('applications', 'applications.referralId', 'referrals.id')
     .select(select)
     .$if(!!where.referrerId, (qb) => {
       return qb.where('referrerId', '=', where.referrerId as string);
