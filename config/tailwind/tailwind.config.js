@@ -20,8 +20,8 @@ export const tailwindConfig = {
       },
       keyframes: {
         'loader-shimmer': {
-          '0%, 100%': { opacity: '0.2' },
-          '50%': { opacity: '0.5' },
+          '0%, 100%': { opacity: '0.1' },
+          '50%': { opacity: '0.8' },
         },
         'modal-animation': {
           '0%': { opacity: 0, transform: 'scale(0)' },

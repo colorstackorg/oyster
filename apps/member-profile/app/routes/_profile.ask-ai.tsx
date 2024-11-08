@@ -1,56 +1,109 @@
-import { type ActionFunctionArgs, json } from '@remix-run/node';
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
 import {
   Form as RemixForm,
   useActionData,
+  useLoaderData,
   useNavigation,
 } from '@remix-run/react';
 import { useEffect, useRef, useState } from 'react';
-import { ArrowUpRight, Send, X } from 'react-feather';
+import { AlignLeft, ArrowUpRight, MessageCircle, Send, X } from 'react-feather';
+import { match } from 'ts-pattern';
 
-import { answerMemberProfileQuestion } from '@oyster/core/slack';
-import { cx, IconButton, Text } from '@oyster/ui';
+import {
+  answerMemberProfileQuestion,
+  type ParsedChatbotAnswer,
+} from '@oyster/core/slack';
+import { IconButton, Text } from '@oyster/ui';
+
+import { cache } from '@/infrastructure/redis';
+import { EmptyState } from '@/shared/components/empty-state';
+import {
+  commitSession,
+  ensureUserAuthenticated,
+  user,
+} from '@/shared/session.server';
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const session = await ensureUserAuthenticated(request);
+
+  const answer = await cache.get<ParsedChatbotAnswer>(
+    'chatbotAnswer:' + user(session)
+  );
+
+  return json({ answer });
+}
 
 export async function action({ request }: ActionFunctionArgs) {
-  const formData = await request.formData();
-  const question = formData.get('question') as string;
+  const session = await ensureUserAuthenticated(request);
 
-  const result = await answerMemberProfileQuestion({ question });
+  const form = await request.formData();
 
-  if (!result.ok) {
-    return json({ error: result.error, question }, { status: result.code });
+  const question = form.get('question') as string;
+
+  if (!question || !question.trim()) {
+    return json(
+      { error: 'Please provide a valid question.', ok: false as const },
+      { status: 400 }
+    );
   }
 
-  return json({
-    answer: result.data,
+  const result = await answerMemberProfileQuestion({
+    memberId: user(session),
+    question: question.trim(),
   });
+
+  if (!result.ok) {
+    return json(
+      { error: result.error, ok: false as const },
+      { status: result.code }
+    );
+  }
+
+  return json(
+    {
+      answer: result.data.answer,
+      ok: true as const,
+      threads: result.data.threads,
+    },
+    {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    }
+  );
 }
 
 export default function AskAI() {
-  const { formData, state } = useNavigation();
+  const { state } = useNavigation();
   const actionData = useActionData<typeof action>();
+  const { answer } = useLoaderData<typeof loader>();
 
-  const hasSubmitted = !!actionData || !!formData;
+  const hasSubmitted = state === 'submitting' || answer || actionData;
 
   return (
     <section
-      className={cx(
-        'mx-auto flex w-full flex-1 flex-col gap-8 @container/ask-ai lg:w-[640px]',
-        !hasSubmitted && 'justify-center'
-      )}
+      className='mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 data-[submitted="false"]:justify-center'
+      data-submitted={hasSubmitted}
     >
-      <QuestionHeader />
-      <QuestionForm />
+      <ChatbotHeader />
+      <ChatbotForm />
 
       <div className="min-h-60">
-        {state === 'submitting' ? <LoadingState /> : <QuestionResponse />}
+        {state === 'submitting' ? <LoadingState /> : <ChatbotResponse />}
       </div>
     </section>
   );
 }
 
-function QuestionHeader() {
+function ChatbotHeader() {
   return (
     <header className="flex flex-col items-center gap-1">
+      <EmptyState icon={<MessageCircle />} />
+
       <Text variant="3xl" weight="500">
         What do you want to know?
       </Text>
@@ -72,7 +125,7 @@ const EXAMPLE_QUESTIONS = [
   'How should I prepare for a behavioral interview?',
 ];
 
-function QuestionForm() {
+function ChatbotForm() {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const questionRef = useRef<HTMLInputElement>(null);
 
@@ -93,17 +146,21 @@ function QuestionForm() {
   }
 
   return (
-    <RemixForm className="flex w-[inherit] flex-col gap-4" method="post">
+    <RemixForm className="flex flex-col gap-4" method="post">
       <div
+        // This is the "input" styling...really should be getting it from
+        // the input component, but this is a quick fix.
         className="flex flex-col gap-4 rounded-lg border border-gray-200 p-2 focus-within:border-primary focus:border-primary"
         onClick={(e) => {
-          // Only focus if the click is on the outer <div />, nothing else.
+          // Only need to do something when the click's target is on the actual
+          // <div />, not any of the children.
           if (e.currentTarget === e.target) {
             questionRef.current!.focus();
           }
         }}
       >
         <input
+          // TODO: Convert this to an autosize <textarea />.
           autoComplete="off"
           autoFocus
           className="w-full text-base"
@@ -175,30 +232,102 @@ function SuggestedQuestion({ question, onClick }: SuggestedQuestionProps) {
 function LoadingState() {
   return (
     <div className="flex flex-col gap-2">
-      {[...Array(5)].map((_, i) => (
-        <div
-          className="h-4 w-full animate-[loader-shimmer_1.5s_ease-in-out_infinite] rounded-full bg-gray-100"
-          key={i}
-          style={{ animationDelay: `${i * 200}ms` }}
-        />
-      ))}
+      {[...Array(10)].map((_, i) => {
+        return (
+          <div
+            className="h-4 w-full animate-[loader-shimmer_1s_ease-in-out_infinite] rounded-full bg-gray-200 opacity-20"
+            key={i}
+            style={{ animationDelay: `${i * 100}ms` }}
+          />
+        );
+      })}
     </div>
   );
 }
 
-function QuestionResponse() {
+function ChatbotResponse() {
   const actionData = useActionData<typeof action>();
+  const { answer } = useLoaderData<typeof loader>();
 
-  const answer = actionData && 'answer' in actionData && actionData.answer;
-  const error = actionData && 'error' in actionData && actionData.error;
-
-  if (error) {
-    return <Text color="error">{error}</Text>;
+  if (!actionData && !answer) {
+    return null;
   }
 
-  if (answer) {
-    return <Text>{answer}</Text>;
+  if (actionData && !actionData.ok) {
+    return <Text color="error">{actionData.error}</Text>;
   }
 
-  return null;
+  const { answer: segments, threads } = (actionData || answer)!;
+
+  return (
+    <ResponseSection icon={<AlignLeft />} title="Answer">
+      <Text className="whitespace-break-spaces">
+        {segments.map((segment, i) => {
+          return match(segment)
+            .with({ type: 'text' }, ({ content }) => {
+              return content;
+            })
+            .with({ type: 'reference' }, ({ threadNumber }) => {
+              const thread = threads.find((thread) => {
+                return thread.number === threadNumber;
+              });
+
+              // This should never happen, but keeping this check just to be safe.
+              if (!thread) {
+                return null;
+              }
+
+              return (
+                <ReferenceLink
+                  key={i}
+                  number={thread.number}
+                  url={thread.url}
+                />
+              );
+            })
+            .exhaustive();
+        })}
+      </Text>
+    </ResponseSection>
+  );
+}
+
+type ResponseSectionProps = {
+  children: React.ReactNode;
+  icon: React.ReactNode;
+  title: string;
+};
+
+function ResponseSection({ children, icon, title }: ResponseSectionProps) {
+  return (
+    <section className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        {icon}
+
+        <Text weight="500" variant="lg">
+          {title}
+        </Text>
+      </div>
+
+      {children}
+    </section>
+  );
+}
+
+type ReferenceLinkProps = {
+  number: number;
+  url: string;
+};
+
+function ReferenceLink({ number, url }: ReferenceLinkProps) {
+  return (
+    <a
+      className="mr-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-sm text-primary hover:bg-primary hover:text-white"
+      href={url}
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      {number}
+    </a>
+  );
 }
