@@ -8,6 +8,7 @@ export type TextProps = Pick<
   'className' | 'children'
 > & {
   align?: 'left' | 'center' | 'right';
+  as?: 'p' | 'span';
   color?: 'black' | 'error' | 'gray-500' | 'primary' | 'success' | 'white';
   variant?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';
   weight?: '400' | '500' | '600';
@@ -15,6 +16,7 @@ export type TextProps = Pick<
 
 export function Text({
   align,
+  as: Component = 'p',
   children,
   className,
   color,
@@ -22,7 +24,7 @@ export function Text({
   weight,
 }: TextProps) {
   return (
-    <p
+    <Component
       className={getTextCn({
         align,
         className,
@@ -32,7 +34,7 @@ export function Text({
       })}
     >
       {children}
-    </p>
+    </Component>
   );
 }
 
