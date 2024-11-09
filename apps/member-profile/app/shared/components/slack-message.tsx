@@ -77,7 +77,7 @@ export function SlackMessageCard({
 
 type SlackMessageProps = Pick<
   TextProps,
-  'as' | 'children' | 'className' | 'color'
+  'as' | 'children' | 'className' | 'color' | 'variant'
 >;
 
 export function SlackMessage({
