@@ -3,8 +3,8 @@ import { z } from 'zod';
 import { BooleanInput, Entity } from '@oyster/types';
 
 export type FeatureFlagName =
+  | 'chatbot'
   | 'family_application'
-  | 'opportunities'
   | 'send_slack_messages';
 
 // Domain

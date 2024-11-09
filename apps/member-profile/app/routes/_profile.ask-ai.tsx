@@ -65,7 +65,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   return json(
     {
-      answer: result.data.answer,
+      answerSegments: result.data.answerSegments,
       ok: true as const,
       threads: result.data.threads,
     },
@@ -82,7 +82,7 @@ export default function AskAI() {
   const actionData = useActionData<typeof action>();
   const { answer } = useLoaderData<typeof loader>();
 
-  const hasSubmitted = state === 'submitting' || answer || actionData;
+  const hasSubmitted = state === 'submitting' || !!answer || !!actionData;
 
   return (
     <section
@@ -257,19 +257,19 @@ function ChatbotResponse() {
     return <Text color="error">{actionData.error}</Text>;
   }
 
-  const { answer: segments, threads } = (actionData || answer)!;
+  const { answerSegments, threads } = (actionData || answer)!;
 
   return (
     <ResponseSection icon={<AlignLeft />} title="Answer">
       <Text className="whitespace-break-spaces">
-        {segments.map((segment, i) => {
+        {answerSegments.map((segment, i) => {
           return match(segment)
             .with({ type: 'text' }, ({ content }) => {
               return content;
             })
-            .with({ type: 'reference' }, ({ threadNumber }) => {
+            .with({ type: 'reference' }, ({ number }) => {
               const thread = threads.find((thread) => {
-                return thread.number === threadNumber;
+                return thread.number === number;
               });
 
               // This should never happen, but keeping this check just to be safe.
