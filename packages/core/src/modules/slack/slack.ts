@@ -602,6 +602,13 @@ export async function answerMemberProfileQuestion({
     ONE_HOUR_IN_SECONDS
   );
 
+  track({
+    application: 'Member Profile',
+    event: 'Chatbot Question Asked',
+    properties: { Question: question },
+    user: memberId,
+  });
+
   return success(parsedAnswer);
 }
 
