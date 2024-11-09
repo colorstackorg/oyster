@@ -31,6 +31,7 @@ const BaseEnvironmentConfig = z.object({
   SENTRY_DSN: EnvironmentVariable,
   SESSION_SECRET: EnvironmentVariable,
   SLACK_ANNOUNCEMENTS_CHANNEL_ID: EnvironmentVariable,
+  SLACK_BOT_TOKEN: EnvironmentVariable,
   SLACK_CLIENT_ID: EnvironmentVariable,
   SLACK_TEAM_ID: EnvironmentVariable,
   STUDENT_PROFILE_URL: EnvironmentVariable,
@@ -58,6 +59,7 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     R2_SECRET_ACCESS_KEY: true,
     SENTRY_DSN: true,
     SLACK_ANNOUNCEMENTS_CHANNEL_ID: true,
+    SLACK_BOT_TOKEN: true,
     SLACK_CLIENT_ID: true,
     SLACK_TEAM_ID: true,
   }).extend({
