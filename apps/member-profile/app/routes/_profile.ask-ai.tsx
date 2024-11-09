@@ -135,8 +135,11 @@ const EXAMPLE_QUESTIONS = [
 ];
 
 function ChatbotForm() {
+  const navigation = useNavigation();
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const questionRef = useRef<HTMLInputElement>(null);
+
+  const isSubmitting = navigation.state === 'submitting';
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -184,6 +187,7 @@ function ChatbotForm() {
           <IconButton
             backgroundColor="gray-100"
             backgroundColorOnHover="gray-200"
+            disabled={isSubmitting}
             icon={<X size={20} />}
             onClick={() => {
               questionRef.current!.value = '';
@@ -193,6 +197,7 @@ function ChatbotForm() {
           <IconButton
             backgroundColor="gray-100"
             backgroundColorOnHover="gray-200"
+            disabled={isSubmitting}
             icon={<Send size={20} />}
             shape="square"
             type="submit"
@@ -202,14 +207,17 @@ function ChatbotForm() {
 
       <div className="flex items-center gap-2 overflow-auto pb-4">
         <SuggestedQuestion
+          disabled={isSubmitting}
           question="What is Fam Friday?"
           onClick={onClickSuggestion}
         />
         <SuggestedQuestion
+          disabled={isSubmitting}
           question="What is the IRL StackedUp Summit?"
           onClick={onClickSuggestion}
         />
         <SuggestedQuestion
+          disabled={isSubmitting}
           question="How should I prepare for a technical interview?"
           onClick={onClickSuggestion}
         />
@@ -219,14 +227,20 @@ function ChatbotForm() {
 }
 
 type SuggestedQuestionProps = {
+  disabled: boolean;
   question: string;
   onClick(e: React.MouseEvent<HTMLButtonElement>): void;
 };
 
-function SuggestedQuestion({ question, onClick }: SuggestedQuestionProps) {
+function SuggestedQuestion({
+  disabled,
+  question,
+  onClick,
+}: SuggestedQuestionProps) {
   return (
     <button
-      className="flex shrink-0 items-center gap-1 rounded-full border border-gray-200 bg-gray-50 p-1 text-xs hover:bg-gray-100 active:bg-gray-200"
+      className="flex shrink-0 items-center gap-1 rounded-full border border-gray-200 bg-gray-50 p-1 text-xs hover:bg-gray-100 active:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+      disabled={disabled}
       name="question"
       onClick={onClick}
       type="submit"
