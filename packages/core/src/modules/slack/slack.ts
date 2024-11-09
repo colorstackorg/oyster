@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import dedent from 'dedent';
-import { type ExpressionBuilder } from 'kysely';
+import { type ExpressionBuilder, sql } from 'kysely';
 import { z } from 'zod';
 
 import { type DB, db } from '@oyster/db';
@@ -454,7 +454,8 @@ const MEMBER_PROFILE_SYSTEM_PROMPT = dedent`
 
   <output_format>
     Your response must follow this exact format:
-    1. First, output a JSON object containing thread metadata:
+    1. First, output a JSON object containing thread metadata (the
+       "threads" array MUST be closed with a square bracket not a curly brace):
       {
         "threads": [
           { "channelId": "...", "threadId": "...", "number": 1 },
@@ -544,7 +545,7 @@ export async function answerMemberProfileQuestion({
 
   const threadsResult = await getMostRelevantThreads(question, {
     threshold: 0.5,
-    topK: 10,
+    topK: 7,
   });
 
   if (!threadsResult.ok) {
@@ -604,7 +605,12 @@ export async function answerMemberProfileQuestion({
   return success(parsedAnswer);
 }
 
-type ThreadReference = {
+export type ThreadReference = {
+  authorFirstName: string;
+  authorLastName: string;
+  authorProfilePicture: string;
+  createdAt: string;
+
   /**
    * The number of the thread in context. For example, if the answer used
    * 5 references, the first thread reference would be `1`, the second would
@@ -615,6 +621,17 @@ type ThreadReference = {
    * @example 3
    */
   number: number;
+
+  /**
+   * The # of replies to the thread.
+   *
+   * @example 1
+   * @example 2
+   * @example 3
+   */
+  replyCount: number;
+
+  text: string;
 
   /**
    * The Slack permalink to the thread. Enables the user to click on the
@@ -693,13 +710,50 @@ async function parseAnswerForMemberProfile(
 
   const threads = await Promise.all(
     metadataResult.data.threads.map(async (thread) => {
-      const { permalink } = await slack.chat.getPermalink({
-        channel: thread.channelId,
-        message_ts: thread.threadId,
-      });
+      const [{ permalink }, slackMessage] = await Promise.all([
+        slack.chat.getPermalink({
+          channel: thread.channelId,
+          message_ts: thread.threadId,
+        }),
+
+        db
+          .selectFrom('slackMessages')
+          .leftJoin('students', 'slackMessages.studentId', 'students.id')
+          .select([
+            'slackMessages.text',
+            'students.firstName as authorFirstName',
+            'students.lastName as authorLastName',
+            'students.profilePicture as authorProfilePicture',
+
+            ({ ref }) => {
+              const field = sql<string>`
+                to_char(${ref('slackMessages.createdAt')}, 'FMMM/FMDD/YY')
+              `;
+
+              return field.as('createdAt');
+            },
+
+            (eb) => {
+              return eb
+                .selectFrom('slackMessages as replies')
+                .select(({ fn }) => fn.countAll<string>().as('count'))
+                .whereRef('replies.threadId', '=', 'slackMessages.id')
+                .as('replyCount');
+            },
+          ])
+          .where('slackMessages.channelId', '=', thread.channelId)
+          .where('slackMessages.id', '=', thread.threadId)
+          .executeTakeFirst(),
+      ]);
 
       return {
+        authorFirstName: slackMessage?.authorFirstName || '',
+        authorLastName: slackMessage?.authorLastName || '',
+        authorProfilePicture: slackMessage?.authorProfilePicture || '',
+        createdAt: slackMessage?.createdAt || '',
         number: thread.number,
+        replyCount: parseInt(slackMessage?.replyCount || '0'),
+        text: slackMessage?.text || '',
         url: permalink!,
       };
     })
