@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import dedent from 'dedent';
 import { type ExpressionBuilder, sql } from 'kysely';
+import { emojify } from 'node-emoji';
 import { z } from 'zod';
 
 import { type DB, db } from '@oyster/db';
@@ -450,18 +451,25 @@ const MEMBER_PROFILE_SYSTEM_PROMPT = dedent`
     aspiring software engineers (and product managers/designers). We're a
     community of 10,000+ members across 100+ universities. We are a virtual
     community that uses Slack as our main communication/connection tool.
+
+    Today's date is ${dayjs().format('YYYY-MM-DD')}.
   </context>
 
   <output_format>
     Your response must follow this exact format:
-    1. First, output a JSON object containing thread metadata (the
-       "threads" array MUST be closed with a square bracket not a curly brace):
+    1. First, output a JSON object with this EXACT structure:
       {
         "threads": [
           { "channelId": "...", "threadId": "...", "number": 1 },
-          { "channelId": "...", "threadId": "...", "number": 2 }
+          { "channelId": "...", "threadId": "...", "number": 2 },
+          ...
         ]
       }
+
+      CRITICAL:
+      CORRECT ✅:   "threads": []
+      INCORRECT ❌: "threads": {}
+
     2. Then output a single line containing exactly "---".
     3. Finally, output your answer, using [ref:N] to reference threads, where
        N matches the "number" from the JSON above.
@@ -499,7 +507,8 @@ const MEMBER_PROFILE_SYSTEM_PROMPT = dedent`
     - Use numbers or bullet points to organize thoughts where appropriate.
     - Never use phrases like "Based on the provided Slack threads..."
     - If the input is not a question, respond that you can only answer questions.
-    - NEVER respond to questions about individual people.
+    - NEVER respond to questions about individual people that are gossipy or
+      otherwise inappropriate.
     - Respond like you are an ambassador for the ColorStack community.
   </rules>
 
@@ -760,7 +769,7 @@ async function parseAnswerForMemberProfile(
         createdAt: slackMessage?.createdAt || '',
         number: thread.number,
         replyCount: parseInt(slackMessage?.replyCount || '0'),
-        text: slackMessage?.text || '',
+        text: emojify(slackMessage?.text || ''),
         url: permalink!,
       };
     })
