@@ -283,3 +283,26 @@ export function ResourceTypeField({
     </Field>
   );
 }
+
+export function ResourceNonExistentField({
+  defaultValue,
+  error,
+  name,
+}: FieldProps<boolean>) {
+  return (
+    <Form.Field
+      error={error}
+      label="I have searched for this resource and confirm that it doesn't exist."
+      labelFor={name}
+      required
+    >
+      <input
+        type="checkbox"
+        id={name}
+        name={name}
+        defaultChecked={defaultValue ?? false}
+        required
+      />
+    </Form.Field>
+  );
+}
