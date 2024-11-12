@@ -60,7 +60,6 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.576.0",
     "@aws-sdk/s3-request-presigner": "^3.577.0",
-    "@mailchimp/mailchimp_marketing": "^3.0.78",
     "@oyster/db": "*",
     "@oyster/email-templates": "*",
     "@oyster/types": "*",
@@ -91,7 +90,6 @@
     "@remix-run/react": "^2.8.1",
     "@types/dedent": "^0.7.2",
     "@types/jsonwebtoken": "^9.0.2",
-    "@types/mailchimp__mailchimp_marketing": "^3.0.8",
     "@types/nodemailer": "^6.4.14",
     "nanoid": "^3.0.0",
     "puppeteer-core": "^23.7.0",

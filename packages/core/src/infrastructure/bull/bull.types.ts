@@ -4,7 +4,7 @@ import { EmailTemplate } from '@oyster/email-templates';
 import {
   ActivationRequirement,
   Application,
-  EmailCampaign,
+  Email,
   Event,
   type ExtractValue,
   ProfileView,
@@ -28,10 +28,10 @@ import { Survey } from '@/modules/survey/survey.types';
 export const BullQueue = {
   AIRTABLE: 'airtable',
   APPLICATION: 'application',
-  EMAIL_MARKETING: 'email_marketing',
   EVENT: 'event',
   FEED: 'feed',
   GAMIFICATION: 'gamification',
+  MAILCHIMP: 'mailchimp',
   MEMBER_EMAIL: 'member_email',
   NOTIFICATION: 'notification',
   ONBOARDING_SESSION: 'onboarding_session',
@@ -97,47 +97,6 @@ export const ApplicationBullJob = z.discriminatedUnion('name', [
     data: z.object({
       applicationId: Application.shape.id,
     }),
-  }),
-]);
-
-export const EmailMarketingBullJob = z.discriminatedUnion('name', [
-  z.object({
-    name: z.literal('email_marketing.opened'),
-    data: z.object({
-      studentId: Student.shape.id,
-    }),
-  }),
-  z.object({
-    name: z.literal('email_marketing.remove'),
-    data: z.object({
-      email: Student.shape.email,
-    }),
-  }),
-  z.object({
-    name: z.literal('email_marketing.sync'),
-    data: z.object({
-      campaignId: EmailCampaign.shape.id,
-    }),
-  }),
-  z.object({
-    name: z.literal('email_marketing.sync.hourly'),
-    data: z.object({}),
-  }),
-  z.object({
-    name: z.literal('email_marketing.sync.daily'),
-    data: z.object({}),
-  }),
-  z.object({
-    name: z.literal('email_marketing.sync.weekly'),
-    data: z.object({}),
-  }),
-  z.object({
-    name: z.literal('email_marketing.sync.monthly'),
-    data: z.object({}),
-  }),
-  z.object({
-    name: z.literal('email_marketing.sync.yearly'),
-    data: z.object({}),
   }),
 ]);
 
@@ -303,6 +262,30 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         type: z.literal('update_work_history'),
       }),
     ]),
+  }),
+]);
+
+export const MailchimpBullJob = z.discriminatedUnion('name', [
+  z.object({
+    name: z.literal('mailchimp.add'),
+    data: z.object({
+      email: Email,
+      firstName: z.string().trim().min(1),
+      lastName: z.string().trim().min(1),
+    }),
+  }),
+  z.object({
+    name: z.literal('mailchimp.remove'),
+    data: z.object({
+      email: Email,
+    }),
+  }),
+  z.object({
+    name: z.literal('mailchimp.update'),
+    data: z.object({
+      email: Email,
+      id: z.string().trim().min(1),
+    }),
   }),
 ]);
 
@@ -622,10 +605,10 @@ export const StudentBullJob = z.discriminatedUnion('name', [
 export const BullJob = z.union([
   AirtableBullJob,
   ApplicationBullJob,
-  EmailMarketingBullJob,
   EventBullJob,
   FeedBullJob,
   GamificationBullJob,
+  MailchimpBullJob,
   MemberEmailBullJob,
   NotificationBullJob,
   OnboardingSessionBullJob,
