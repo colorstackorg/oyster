@@ -2,7 +2,7 @@ import { type Kysely, sql } from 'kysely';
 
 export async function up(db: Kysely<any>) {
   // Was never used and is no longer needed.
-  await db.schema.dropTable('job_offers').execute();
+  await db.schema.dropTable('job_offers').ifExists().execute();
 
   await db.schema
     .createTable('internship_job_offers')
@@ -48,6 +48,7 @@ export async function up(db: Kysely<any>) {
     .createTable('full_time_job_offers')
     .addColumn('additional_notes', 'text')
     .addColumn('base_salary', 'integer')
+    .addColumn('benefits', 'text')
     .addColumn('bonus', 'integer')
     .addColumn('company_id', 'text', (column) => {
       return column.references('companies.id');
