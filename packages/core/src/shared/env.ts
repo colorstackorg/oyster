@@ -16,9 +16,6 @@ export const ENV = {
   INTERNAL_SLACK_NOTIFICATIONS_CHANNEL_ID: process.env
     .INTERNAL_SLACK_NOTIFICATIONS_CHANNEL_ID as string,
   JWT_SECRET: process.env.JWT_SECRET as string,
-  MAILCHIMP_API_KEY: process.env.MAILCHIMP_API_KEY as string,
-  MAILCHIMP_AUDIENCE_ID: process.env.MAILCHIMP_AUDIENCE_ID as string,
-  MAILCHIMP_SERVER_PREFIX: process.env.MAILCHIMP_SERVER_PREFIX as string,
   MEMBER_PROFILE_URL: process.env.MEMBER_PROFILE_URL as string,
   REDIS_URL: process.env.REDIS_URL as string,
   SENTRY_DSN: process.env.SENTRY_DSN as string,

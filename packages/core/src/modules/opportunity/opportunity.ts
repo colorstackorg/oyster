@@ -17,6 +17,7 @@ import { searchCrunchbaseOrganizations } from '@/modules/employment/queries/sear
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { track } from '@/modules/mixpanel';
 import { ENV } from '@/shared/env';
+import { getPageContent } from '@/shared/utils/browser.utils';
 import {
   ACCENT_COLORS,
   type AccentColor,
@@ -97,52 +98,6 @@ export async function bookmarkOpportunity({
 
 // "Create Opportunity"
 
-const CREATE_OPPORTUNITY_SYSTEM_PROMPT = dedent`
-  You are a helpful assistant that extracts structured data from Slack messages
-  in a tech-focused workspace. Members share opportunities for internships,
-  full-time positions, events, and other programs to help them get their first
-  role in tech. Your job is to analyze the given Slack message and extract
-  specific information in a JSON format.
-`;
-
-const CREATE_OPPORTUNITY_PROMPT = dedent`
-  Here's the Slack message you need to analyze:
-
-  <slack_message>
-    $SLACK_MESSAGE
-  </slack_message>
-
-  You need to extract the following information and format it as JSON:
-
-  1. "company": The name of the company offering the opportunity.
-  2. "title": The title of the opportunity, max 75 characters.
-  3. "description": A brief description of the opportunity, max 400 characters.
-
-  Follow these guidelines:
-  - If you cannot confidently infer information, set the value to null.
-  - Do not include the company name in the "title" field.
-
-  Your output should be a single JSON object containing these fields. Do not
-  provide any explanation or text outside of the JSON object. Ensure your JSON
-  is properly formatted and valid.
-
-  <output>
-    {
-      "company": "string | null",
-      "description": "string | null",
-      "title": "string | null"
-    }
-  </output>
-`;
-
-const CreateOpportunityResponse = z.object({
-  company: z.string().trim().min(1).nullable(),
-  description: z.string().trim().min(1).max(500).nullable(),
-  title: z.string().trim().min(1).max(100).nullable(),
-});
-
-type CreateOpportunityResponse = z.infer<typeof CreateOpportunityResponse>;
-
 type CreateOpportunityInput = {
   sendNotification?: boolean;
   slackChannelId: string;
@@ -184,64 +139,47 @@ async function createOpportunity({
     });
   }
 
+  const link = getFirstLinkInMessage(slackMessage.text);
+
   // We're only interested in messages that contain a link to an opportunity...
   // so we'll gracefully bail if there isn't one.
-  if (!slackMessage.text.includes('http')) {
+  if (!link) {
     return success({});
   }
 
-  const prompt = CREATE_OPPORTUNITY_PROMPT.replace(
-    '$SLACK_MESSAGE',
-    slackMessage.text
-  );
+  const isLinkedInURL = link.includes('linkedin.com');
 
-  const completionResult = await getChatCompletion({
-    maxTokens: 250,
-    messages: [{ role: 'user', content: prompt }],
-    system: [{ type: 'text', text: CREATE_OPPORTUNITY_SYSTEM_PROMPT }],
-    temperature: 0,
-  });
+  let websiteContent = '';
 
-  if (!completionResult.ok) {
-    return completionResult;
+  if (!isLinkedInURL) {
+    websiteContent = await getPageContent(link);
   }
 
-  let data: CreateOpportunityResponse;
+  const opportunity = await db
+    .insertInto('opportunities')
+    .values({
+      createdAt: new Date(),
+      description: 'N/A',
+      expiresAt: dayjs().add(3, 'months').toDate(),
+      id: id(),
+      postedBy: slackMessage.studentId,
+      slackChannelId,
+      slackMessageId,
+      title: 'Opportunity',
+    })
+    .returning(['id'])
+    .onConflict((oc) => oc.doNothing())
+    .executeTakeFirstOrThrow();
 
-  try {
-    data = CreateOpportunityResponse.parse(JSON.parse(completionResult.data));
-  } catch (error) {
-    return fail({
-      code: 400,
-      error: 'Failed to parse or validate JSON from AI response.',
+  // If the link is NOT a LinkedIn job posting, we'll scrape the website content
+  // using puppeteer, create a new "empty" opportunity, and then refine it with
+  // AI using that website content.
+  if (!isLinkedInURL) {
+    return refineOpportunity({
+      content: websiteContent.slice(0, 10_000),
+      opportunityId: opportunity.id,
     });
   }
-
-  const opportunity = await db.transaction().execute(async (trx) => {
-    const companyId = data.company
-      ? await getMostRelevantCompany(trx, data.company)
-      : null;
-
-    const opportunityId = id();
-
-    const result = await trx
-      .insertInto('opportunities')
-      .values({
-        companyId,
-        createdAt: new Date(),
-        description: data.description || 'N/A',
-        expiresAt: dayjs().add(3, 'months').toDate(),
-        id: opportunityId,
-        postedBy: slackMessage.studentId,
-        slackChannelId,
-        slackMessageId,
-        title: data.title || 'Opportunity',
-      })
-      .returning(['id'])
-      .executeTakeFirstOrThrow();
-
-    return result;
-  });
 
   if (sendNotification) {
     const message =
@@ -617,9 +555,7 @@ export async function refineOpportunity(
   // If this is the first time the opportunity has been refined, we want to send
   // a notification to the channel.
   if (!opportunity.refinedAt) {
-    const message =
-      'I added this to our opportunities board! 📌\n\n' +
-      `<${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}>`;
+    const message = `I added this to our <${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}|opportunities board>! 📌`;
 
     job('notification.slack.send', {
       channel: opportunity.slackChannelId,
@@ -687,6 +623,16 @@ function areNamesSimilar(name1: string, name2: string) {
   return normalized1.includes(normalized2) || normalized2.includes(normalized1);
 }
 
+/**
+ * Extracts the first URL found in the Slack message.
+ *
+ * @param message - Slack message to extract the URL from.
+ * @returns First URL found in the message or `null` if it doesn't exist.
+ */
+function getFirstLinkInMessage(message: string) {
+  return message.match(/<(https?:\/\/[^\s|>]+)(?:\|[^>]+)?>/)?.[1];
+}
+
 // Queries
 
 // "Get Link From Opportunity"
@@ -710,13 +656,11 @@ export async function getLinkFromOpportunity(opportunityId: string) {
     .where('opportunities.id', '=', opportunityId)
     .executeTakeFirst();
 
-  if (!opportunity) {
+  if (!opportunity || !opportunity.text) {
     return null;
   }
 
-  const link = opportunity.text?.match(
-    /<(https?:\/\/[^\s|>]+)(?:\|[^>]+)?>/
-  )?.[1];
+  const link = getFirstLinkInMessage(opportunity.text);
 
   if (!link) {
     return null;
