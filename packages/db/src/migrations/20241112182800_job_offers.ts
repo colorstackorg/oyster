@@ -22,7 +22,6 @@ export async function up(db: Kysely<any>) {
     .addColumn('location_type', 'text')
     .addColumn('monthly_rate', 'integer')
     .addColumn('negotiated_text', 'text')
-    .addColumn('other_company', 'text')
     .addColumn('posted_by', 'text', (column) => {
       return column.references('students.id').onDelete('set null');
     })
@@ -63,7 +62,6 @@ export async function up(db: Kysely<any>) {
     .addColumn('location', 'text')
     .addColumn('location_type', 'text')
     .addColumn('negotiated_text', 'text')
-    .addColumn('other_company', 'text')
     .addColumn('performance_bonus_text', 'text')
     .addColumn('posted_by', 'text', (column) => {
       return column.references('students.id').onDelete('set null');
