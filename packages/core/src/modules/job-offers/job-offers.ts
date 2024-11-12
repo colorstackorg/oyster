@@ -5,14 +5,188 @@ import { z } from 'zod';
 import { db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { job } from '@/api';
 import { JobOfferBullJob } from '@/infrastructure/bull/bull.types';
+import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { getChatCompletion } from '@/modules/ai/ai';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { ENV } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
+
+// "Delete Job Offer"
+
+type DeleteJobOfferInput = {
+  jobOfferId: string;
+  memberId: string;
+};
+
+/**
+ * Deletes a job offer from the database, only if the given member has
+ * permission to do so. This will attempt to delete the job offer from both
+ * `fullTimeJobOffers` and `internshipJobOffers` tables, one will succeed and
+ * one will have no effect.
+ *
+ * @param input - The job offer to delete and the member deleting it.
+ * @returns Result indicating the success or failure of the operation.
+ */
+export async function deleteJobOffer({
+  jobOfferId,
+  memberId,
+}: DeleteJobOfferInput): Promise<Result> {
+  const hasPermission = await hasJobOfferWritePermission({
+    jobOfferId,
+    memberId,
+  });
+
+  if (!hasPermission) {
+    return fail({
+      code: 403,
+      error: 'You do not have permission to delete this job offer.',
+    });
+  }
+
+  await db.transaction().execute(async (trx) => {
+    await trx
+      .deleteFrom('fullTimeJobOffers')
+      .where('id', '=', jobOfferId)
+      .execute();
+
+    await trx
+      .deleteFrom('internshipJobOffers')
+      .where('id', '=', jobOfferId)
+      .execute();
+  });
+
+  return success({ id: jobOfferId });
+}
+
+// "Edit Internship Job Offer"
+
+export const EditInternshipJobOfferInput = z.object({
+  additionalNotes: z.string().trim().min(1).nullable(),
+  benefits: z.string().trim().min(1).nullable(),
+  companyCrunchbaseId: z.string().trim().min(1),
+  hourlyRate: z.number().nullable(),
+  location: z.string().trim().min(1).nullable(),
+  monthlyRate: z.number().nullable(),
+  negotiatedText: z.string().trim().min(1).nullable(),
+  relocation: z.string().trim().min(1).nullable(),
+  role: z.string().trim().min(1).nullable(),
+  yearsOfExperience: z.string().trim().min(1).nullable(),
+});
+
+type EditInternshipJobOfferInput = z.infer<typeof EditInternshipJobOfferInput>;
+
+export async function editInternshipJobOffer(
+  jobOfferId: string,
+  input: EditInternshipJobOfferInput
+): Promise<Result> {
+  const jobOffer = await db.transaction().execute(async (trx) => {
+    const companyId = await saveCompanyIfNecessary(
+      trx,
+      input.companyCrunchbaseId
+    );
+
+    return trx
+      .updateTable('internshipJobOffers')
+      .set({
+        additionalNotes: input.additionalNotes,
+        benefits: input.benefits,
+        companyId,
+        hourlyRate: input.hourlyRate,
+        location: input.location,
+        monthlyRate: input.monthlyRate,
+        negotiatedText: input.negotiatedText,
+        relocationText: input.relocation,
+        role: input.role,
+        updatedAt: new Date(),
+        yearsOfExperience: input.yearsOfExperience,
+      })
+      .where('id', '=', jobOfferId)
+      .returning(['id'])
+      .executeTakeFirst();
+  });
+
+  if (!jobOffer) {
+    return fail({
+      code: 404,
+      error: 'Could not find internship job offer to update.',
+    });
+  }
+
+  return success(jobOffer);
+}
+
+// "Edit Full-Time Job Offer"
+
+export const EditFullTimeJobOfferInput = z.object({
+  additionalNotes: z.string().trim().min(1).nullable(),
+  baseSalary: z.number().nullable(),
+  benefits: z.string().trim().min(1).nullable(),
+  bonus: z.number().nullable(),
+  companyCrunchbaseId: z.string().trim().min(1),
+  hourlyRate: z.number().nullable(),
+  location: z.string().trim().min(1).nullable(),
+  negotiatedText: z.string().trim().min(1).nullable(),
+  performanceBonus: z.string().trim().min(1).nullable(),
+  relocation: z.string().trim().min(1).nullable(),
+  role: z.string().trim().min(1).nullable(),
+  signOnBonus: z.string().trim().min(1).nullable(),
+  stockPerYear: z.number().nullable(),
+  yearsOfExperience: z.string().trim().min(1).nullable(),
+});
+
+type EditFullTimeJobOfferInput = z.infer<typeof EditFullTimeJobOfferInput>;
+
+export async function editFullTimeJobOffer(
+  jobOfferId: string,
+  input: EditFullTimeJobOfferInput
+): Promise<Result> {
+  const jobOffer = await db.transaction().execute(async (trx) => {
+    const companyId = await saveCompanyIfNecessary(
+      trx,
+      input.companyCrunchbaseId
+    );
+
+    return trx
+      .updateTable('fullTimeJobOffers')
+      .set({
+        additionalNotes: input.additionalNotes,
+        baseSalary: input.baseSalary,
+        benefits: input.benefits,
+        bonus: input.bonus,
+        companyId,
+        hourlyRate: input.hourlyRate,
+        location: input.location,
+        negotiatedText: input.negotiatedText,
+        relocationText: input.relocation,
+        role: input.role,
+        performanceBonusText: input.performanceBonus,
+        signOnBonusText: input.signOnBonus,
+        stockPerYear: input.stockPerYear,
+        totalCompensation: calculateTotalCompensation({
+          baseSalary: input.baseSalary,
+          bonus: input.bonus,
+          stockPerYear: input.stockPerYear,
+        }),
+        yearsOfExperience: input.yearsOfExperience,
+        updatedAt: new Date(),
+      })
+      .where('id', '=', jobOfferId)
+      .returning(['id'])
+      .executeTakeFirst();
+  });
+
+  if (!jobOffer) {
+    return fail({
+      code: 404,
+      error: 'Could not find full-time job offer to update.',
+    });
+  }
+
+  return success(jobOffer);
+}
 
 // "Share Job Offer"
 
@@ -233,8 +407,11 @@ async function shareJobOffer({
 
       return result;
     } else {
-      const totalCompensation =
-        (data.baseSalary ?? 0) + (data.stockPerYear ?? 0) + (data.bonus ?? 0);
+      const totalCompensation = calculateTotalCompensation({
+        baseSalary: data.baseSalary,
+        bonus: data.bonus,
+        stockPerYear: data.stockPerYear,
+      });
 
       const result = await trx
         .insertInto('fullTimeJobOffers')
@@ -284,181 +461,32 @@ async function shareJobOffer({
   return success(jobOffer);
 }
 
-// "Delete Job Offer"
+// Helpers
 
-type DeleteJobOfferInput = {
-  memberId: string;
-  jobOfferId: string;
+type CompensationDetails = {
+  baseSalary: number | null;
+  bonus: number | null;
+  stockPerYear: number | null;
 };
 
 /**
- * Deletes an opportunity from the database, only if the given member has
- * permission to do so. The database will cascade delete any associated records
- * (ie: tags, bookmarks, etc).
+ * Calculates the total compensation for a job offer, which is the sum of the
+ * base salary, stock per year, and bonus (itemized over 4 years).
  *
- * @param input - The job offer to delete and the member deleting it.
- * @returns Result indicating the success or failure of the operation.
+ * @param details - Compensation details.
+ * @returns Total compensation.
  */
-export async function deleteJobOffer({
-  memberId,
-  jobOfferId,
-}: DeleteJobOfferInput): Promise<Result> {
-  const hasPermission = await hasJobOfferWritePermission({
-    memberId,
-    jobOfferId,
-  });
+function calculateTotalCompensation({
+  baseSalary,
+  bonus,
+  stockPerYear,
+}: CompensationDetails) {
+  baseSalary = baseSalary ?? 0;
+  bonus = (bonus ?? 0) / 4; // Itemize the bonus over 4 years.
+  stockPerYear = stockPerYear ?? 0;
 
-  if (!hasPermission) {
-    return fail({
-      code: 403,
-      error: 'You do not have permission to delete this job offer.',
-    });
-  }
-
-  await db.transaction().execute(async (trx) => {
-    // Try to delete from both tables - one will succeed and one will have no effect
-    // Note that job offer ids are unique across both tables.
-    await Promise.all([
-      trx
-        .deleteFrom('fullTimeJobOffers')
-        .where('id', '=', jobOfferId)
-        .execute(),
-      trx
-        .deleteFrom('internshipJobOffers')
-        .where('id', '=', jobOfferId)
-        .execute(),
-    ]);
-  });
-
-  return success({ id: jobOfferId });
+  return baseSalary + stockPerYear + bonus;
 }
-
-// "Edit Job Offer"
-
-// Input types
-export const EditInternshipJobOfferInput = z.object({
-  companyCrunchbaseId: z.string().trim().min(1),
-  role: z.string().trim().min(1).nullable(),
-  hourlyRate: z.number().nullable(),
-  monthlyRate: z.number().nullable(),
-  location: z.string().trim().min(1).nullable(),
-  relocation: z.string().trim().min(1).nullable(),
-  benefits: z.string().trim().min(1).nullable(),
-  yearsOfExperience: z.string().trim().min(1).nullable(),
-  negotiatedText: z.string().trim().min(1).nullable(),
-  additionalNotes: z.string().trim().min(1).nullable(),
-});
-
-export const EditFullTimeJobOfferInput = z.object({
-  companyCrunchbaseId: z.string().trim().min(1),
-  role: z.string().trim().min(1).nullable(),
-  baseSalary: z.number().nullable(),
-  hourlyRate: z.number().nullable(),
-  location: z.string().trim().min(1).nullable(),
-  stockPerYear: z.number().nullable(),
-  bonus: z.number().nullable(),
-  performanceBonus: z.string().trim().min(1).nullable(),
-  signOnBonus: z.string().trim().min(1).nullable(),
-  relocation: z.string().trim().min(1).nullable(),
-  benefits: z.string().trim().min(1).nullable(),
-  yearsOfExperience: z.string().trim().min(1).nullable(),
-  negotiatedText: z.string().trim().min(1).nullable(),
-  additionalNotes: z.string().trim().min(1).nullable(),
-});
-
-type EditInternshipJobOfferInput = z.infer<typeof EditInternshipJobOfferInput>;
-type EditFullTimeJobOfferInput = z.infer<typeof EditFullTimeJobOfferInput>;
-
-// Edit functions
-export async function editInternshipJobOffer(
-  jobOfferId: string,
-  input: EditInternshipJobOfferInput
-): Promise<Result> {
-  const result = await db.transaction().execute(async (trx) => {
-    const companyId = await saveCompanyIfNecessary(
-      trx,
-      input.companyCrunchbaseId
-    );
-
-    return await trx
-      .updateTable('internshipJobOffers')
-      .set({
-        companyId,
-        role: input.role,
-        hourlyRate: input.hourlyRate,
-        monthlyRate: input.monthlyRate,
-        location: input.location,
-        relocationText: input.relocation,
-        benefits: input.benefits,
-        yearsOfExperience: input.yearsOfExperience,
-        negotiatedText: input.negotiatedText,
-        additionalNotes: input.additionalNotes,
-        updatedAt: new Date(),
-      })
-      .where('id', '=', jobOfferId)
-      .returning(['id'])
-      .executeTakeFirst();
-  });
-
-  if (!result) {
-    return fail({
-      code: 404,
-      error: 'Internship job offer not found',
-    });
-  }
-
-  return success(result);
-}
-
-export async function editFullTimeJobOffer(
-  jobOfferId: string,
-  input: EditFullTimeJobOfferInput
-): Promise<Result> {
-  const result = await db.transaction().execute(async (trx) => {
-    const companyId = await saveCompanyIfNecessary(
-      trx,
-      input.companyCrunchbaseId
-    );
-
-    return await trx
-      .updateTable('fullTimeJobOffers')
-      .set({
-        companyId,
-        role: input.role,
-        baseSalary: input.baseSalary,
-        hourlyRate: input.hourlyRate,
-        location: input.location,
-        stockPerYear: input.stockPerYear,
-        bonus: input.bonus,
-        totalCompensation:
-          (input.baseSalary ?? 0) +
-          (input.stockPerYear ?? 0) +
-          (input.bonus ?? 0),
-        performanceBonusText: input.performanceBonus,
-        signOnBonusText: input.signOnBonus,
-        relocationText: input.relocation,
-        benefits: input.benefits,
-        yearsOfExperience: input.yearsOfExperience,
-        negotiatedText: input.negotiatedText,
-        additionalNotes: input.additionalNotes,
-        updatedAt: new Date(),
-      })
-      .where('id', '=', jobOfferId)
-      .returning(['id'])
-      .executeTakeFirst();
-  });
-
-  if (!result) {
-    return fail({
-      code: 404,
-      error: 'Full-time job offer not found',
-    });
-  }
-
-  return success(result);
-}
-
-// Helpers
 
 // "Has Edit Permission"
 
