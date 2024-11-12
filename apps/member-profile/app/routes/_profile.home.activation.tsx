@@ -6,8 +6,10 @@ import { CheckCircle, ChevronDown, ChevronUp, XCircle } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
-import { type ActivationRequirement } from '@oyster/types';
-import { ACTIVATION_REQUIREMENTS } from '@oyster/types';
+import {
+  ACTIVATION_REQUIREMENTS,
+  type ActivationRequirement,
+} from '@oyster/types';
 import { Modal, Pill, Text } from '@oyster/ui';
 import { run } from '@oyster/utils';
 
