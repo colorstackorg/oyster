@@ -794,16 +794,16 @@ export const opportunityWorker = registerWorker(
   'opportunity',
   OpportunityBullJob,
   async (job) => {
-    return match(job)
+    const result = await match(job)
       .with({ name: 'opportunity.create' }, async ({ data }) => {
-        const result = await createOpportunity(data);
-
-        if (!result.ok) {
-          throw new Error(result.error);
-        }
-
-        return result.data;
+        return createOpportunity(data);
       })
       .exhaustive();
+
+    if (!result.ok) {
+      throw new Error(result.error);
+    }
+
+    return result.data;
   }
 );

@@ -516,16 +516,16 @@ export const jobOfferWorker = registerWorker(
   'job_offer',
   JobOfferBullJob,
   async (job) => {
-    return match(job)
+    const result = await match(job)
       .with({ name: 'job_offer.share' }, async ({ data }) => {
-        const result = await shareJobOffer(data);
-
-        if (!result.ok) {
-          throw new Error(result.error);
-        }
-
-        return result.data;
+        return shareJobOffer(data);
       })
       .exhaustive();
+
+    if (!result.ok) {
+      throw new Error(result.error);
+    }
+
+    return result.data;
   }
 );
