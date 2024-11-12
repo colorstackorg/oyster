@@ -31,6 +31,7 @@ export const BullQueue = {
   EVENT: 'event',
   FEED: 'feed',
   GAMIFICATION: 'gamification',
+  JOB_OFFER: 'job_offer',
   MAILCHIMP: 'mailchimp',
   MEMBER_EMAIL: 'member_email',
   NOTIFICATION: 'notification',
@@ -262,6 +263,17 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         type: z.literal('update_work_history'),
       }),
     ]),
+  }),
+]);
+
+export const JobOfferBullJob = z.discriminatedUnion('name', [
+  z.object({
+    name: z.literal('job_offer.share'),
+    data: z.object({
+      sendNotification: z.boolean().optional(),
+      slackChannelId: z.string().trim().min(1),
+      slackMessageId: z.string().trim().min(1),
+    }),
   }),
 ]);
 
@@ -608,6 +620,7 @@ export const BullJob = z.union([
   EventBullJob,
   FeedBullJob,
   GamificationBullJob,
+  JobOfferBullJob,
   MailchimpBullJob,
   MemberEmailBullJob,
   NotificationBullJob,

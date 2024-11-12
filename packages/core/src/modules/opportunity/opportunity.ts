@@ -1,11 +1,11 @@
 import dayjs from 'dayjs';
 import dedent from 'dedent';
-import { sql, type Transaction } from 'kysely';
+import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { db, type DB } from '@oyster/db';
+import { db } from '@oyster/db';
 import { ISO8601Date } from '@oyster/types';
 import { id } from '@oyster/utils';
 
@@ -13,7 +13,7 @@ import { OpportunityBullJob } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { getChatCompletion } from '@/modules/ai/ai';
-import { searchCrunchbaseOrganizations } from '@/modules/employment/queries/search-crunchbase-organizations';
+import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { track } from '@/modules/mixpanel';
 import { ENV } from '@/shared/env';
@@ -571,59 +571,6 @@ export async function refineOpportunity(
 // Helpers
 
 /**
- * Finds the most relevant company ID based on the given name.
- *
- * If the company is already in our database, then this function will return the
- * ID of the existing company.
- *
- * Otherwise, this function will query the Crunchbase API, choose the most
- * relevant company, and save it in our database (if it's not already there).
- * Then returns the ID of the newly created company.
- *
- * @param trx - Database transaction to use for the operation.
- * @param companyName - Name of the company to find or create.
- * @returns ID of the company found or created.
- */
-async function getMostRelevantCompany(
-  trx: Transaction<DB>,
-  companyName: string
-) {
-  const companyFromDatabase = await trx
-    .selectFrom('companies')
-    .select('id')
-    .where('name', 'ilike', companyName)
-    .executeTakeFirst();
-
-  if (companyFromDatabase) {
-    return companyFromDatabase.id;
-  }
-
-  const [company] = await searchCrunchbaseOrganizations(companyName);
-
-  if (company && areNamesSimilar(companyName, company.name)) {
-    return saveCompanyIfNecessary(trx, company.crunchbaseId);
-  }
-
-  return null;
-}
-
-/**
- * Checks if two company names are similar by checking if one string is a
- * substring of the other. This does a naive comparison by removing all
- * non-alphanumeric characters and converting to lowercase.
- *
- * @param name1 - First company name.
- * @param name2 - Second company name.
- * @returns Whether the two company names are similar.
- */
-function areNamesSimilar(name1: string, name2: string) {
-  const normalized1 = name1.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const normalized2 = name2.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-  return normalized1.includes(normalized2) || normalized2.includes(normalized1);
-}
-
-/**
  * Extracts the first URL found in the Slack message.
  *
  * @param message - Slack message to extract the URL from.
@@ -847,16 +794,16 @@ export const opportunityWorker = registerWorker(
   'opportunity',
   OpportunityBullJob,
   async (job) => {
-    return match(job)
+    const result = await match(job)
       .with({ name: 'opportunity.create' }, async ({ data }) => {
-        const result = await createOpportunity(data);
-
-        if (!result.ok) {
-          throw new Error(result.error);
-        }
-
-        return result.data;
+        return createOpportunity(data);
       })
       .exhaustive();
+
+    if (!result.ok) {
+      throw new Error(result.error);
+    }
+
+    return result.data;
   }
 );
