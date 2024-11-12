@@ -206,21 +206,22 @@ function ChatbotForm() {
       </div>
 
       <div className="flex items-center gap-2 overflow-auto pb-4">
-        <SuggestedQuestion
-          disabled={isSubmitting}
-          question="What is Fam Friday?"
-          onClick={onClickSuggestion}
-        />
-        <SuggestedQuestion
-          disabled={isSubmitting}
-          question="What is the IRL StackedUp Summit?"
-          onClick={onClickSuggestion}
-        />
-        <SuggestedQuestion
-          disabled={isSubmitting}
-          question="How should I prepare for a technical interview?"
-          onClick={onClickSuggestion}
-        />
+        {[
+          'What is Fam Friday?',
+          'What is the Google interview process like?',
+          'How should I negotiate my offer?',
+          'What is the IRL StackedUp Summit?',
+          'How should I prepare for a technical interview?',
+        ].map((question) => {
+          return (
+            <SuggestedQuestion
+              disabled={isSubmitting}
+              key={question}
+              onClick={onClickSuggestion}
+              question={question}
+            />
+          );
+        })}
       </div>
     </RemixForm>
   );
