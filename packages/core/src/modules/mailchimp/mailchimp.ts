@@ -91,7 +91,7 @@ async function addMailchimpMember(
   const data = await response.json();
 
   if (!response.ok) {
-    const error = new Error('Failed to update Mailchimp member.');
+    const error = new Error('Failed to add Mailchimp member.');
 
     reportException(error, {
       data,
