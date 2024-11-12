@@ -57,13 +57,13 @@ export async function addSlackMessage(
   if (!data.threadId) {
     const [
       isAutoReplyChannel,
-      isOpportunityChannel,
       isJobOfferChannel,
+      isOpportunityChannel,
       isJobOffersEnabled,
     ] = await Promise.all([
       redis.sismember('slack:auto_reply_channels', data.channelId),
-      redis.sismember('slack:opportunity_channels', data.channelId),
       redis.sismember('slack:job_offer_channels', data.channelId),
+      redis.sismember('slack:opportunity_channels', data.channelId),
       isFeatureFlagEnabled('job_offers'),
     ]);
 
@@ -76,15 +76,15 @@ export async function addSlackMessage(
       });
     }
 
-    if (isOpportunityChannel) {
-      job('opportunity.create', {
+    if (isJobOffersEnabled && isJobOfferChannel) {
+      job('job_offer.share', {
         slackChannelId: data.channelId,
         slackMessageId: data.id,
       });
     }
 
-    if (isJobOffersEnabled && isJobOfferChannel) {
-      job('job_offer.share', {
+    if (isOpportunityChannel) {
+      job('opportunity.create', {
         slackChannelId: data.channelId,
         slackMessageId: data.id,
       });
