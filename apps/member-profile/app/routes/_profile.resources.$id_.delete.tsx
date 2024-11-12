@@ -1,23 +1,36 @@
-import { useNavigate, useSearchParams } from '@remix-run/react';
+import { type ActionFunctionArgs, redirect } from '@remix-run/node';
+import { Form, useNavigate, useSearchParams } from '@remix-run/react';
+import { useState } from 'react';
 
 import { Button, Modal } from '@oyster/ui';
 
+import { deleteResource } from '@/modules/resource/use-cases/delete-resource';
 import { Route } from '@/shared/constants';
+
+export async function action({ params, request }: ActionFunctionArgs) {
+  const { id } = params;
+
+  if (!id) throw new Error('Resource ID is required');
+
+  await deleteResource(id);
+
+  const url = new URL(request.url);
+  const searchParams = url.searchParams.toString();
+
+  return redirect(
+    `${Route['/resources']}${searchParams ? `?${searchParams}` : ''}`
+  );
+}
 
 export default function DeleteResource() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const returnPath = () => {
     const currentParams = searchParams.toString();
 
     return `${Route['/resources']}${currentParams ? `?${currentParams}` : ''}`;
-  };
-
-  const handleDelete = () => {
-    // Call backend API to delete the resource here
-    // Navigate to the profile/resources path after deletion
-    navigate(returnPath());
   };
 
   return (
@@ -28,12 +41,21 @@ export default function DeleteResource() {
         </Modal.Title>
       </Modal.Header>
       <Modal.Description>This action cannot be undone.</Modal.Description>
-      <Button.Group>
-        <Button variant="secondary" onClick={() => navigate(returnPath())}>
-          Cancel
-        </Button>
-        <Button onClick={handleDelete}>Delete</Button>
-      </Button.Group>
+      <Form method="post" onSubmit={() => setIsDeleting(true)}>
+        <Button.Group>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => navigate(returnPath())}
+            disabled={isDeleting}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </Button.Group>
+      </Form>
     </Modal>
   );
 }
