@@ -7,6 +7,7 @@ import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
 import { type ActivationRequirement } from '@oyster/types';
+import { ACTIVATION_REQUIREMENTS } from '@oyster/types';
 import { Modal, Pill, Text } from '@oyster/ui';
 import { run } from '@oyster/utils';
 
@@ -66,7 +67,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     acceptedAt,
     claimedSwagPackAt,
-    requirementsCompleted: member.activationRequirementsCompleted,
+    requirementsCompleted: member.activationRequirementsCompleted.filter(
+      (requirement) => {
+        return ACTIVATION_REQUIREMENTS.includes(
+          requirement as ActivationRequirement
+        );
+      }
+    ),
     status,
   });
 }
@@ -159,9 +166,10 @@ function NotActivatedState() {
   return (
     <>
       <Text color="gray-500">
-        You've completed {requirementsCompleted.length}/6 activation
-        requirements. Once you hit all 6, you will get a gift card to claim your
-        FREE merch! 👀
+        You've completed {requirementsCompleted.length}/
+        {ACTIVATION_REQUIREMENTS.length} activation requirements. Once you hit
+        all {ACTIVATION_REQUIREMENTS.length}, you will get a gift card to claim
+        your FREE merch! 👀
       </Text>
 
       <ActivationList />
