@@ -463,12 +463,9 @@ const MEMBER_PROFILE_SYSTEM_PROMPT = dedent`
           { "channelId": "...", "threadId": "...", "number": 1 },
           { "channelId": "...", "threadId": "...", "number": 2 },
           ...
-        ]
+        ],
+        "ok": true
       }
-
-      CRITICAL:
-      CORRECT ✅:   "threads": []
-      INCORRECT ❌: "threads": {}
 
     2. Then output a single line containing exactly "---".
     3. Finally, output your answer, using [ref:N] to reference threads, where
@@ -517,7 +514,8 @@ const MEMBER_PROFILE_SYSTEM_PROMPT = dedent`
       "threads": [
         { "channelId": "C123", "threadId": "T456", "number": 1 },
         { "channelId": "C789", "threadId": "T012", "number": 2 }
-      ]
+      ],
+      "ok": true
     }
     ---
     The internship application process typically starts in August for many tech companies [ref:1]. Some companies like Google and Microsoft begin even earlier, opening their applications in July [ref:2].
