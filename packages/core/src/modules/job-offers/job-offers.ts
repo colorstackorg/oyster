@@ -1,8 +1,9 @@
 import dedent from 'dedent';
+import { type ExpressionBuilder } from 'kysely';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { db } from '@oyster/db';
+import { db, type DB } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { JobOfferBullJob } from '@/infrastructure/bull/bull.types';
@@ -13,6 +14,8 @@ import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { ENV } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
+
+// Core
 
 // "Delete Job Offer"
 
@@ -191,9 +194,12 @@ export async function editFullTimeJobOffer(
 // "Share Job Offer"
 
 const SHARE_JOB_OFFER_SYSTEM_PROMPT = dedent`
-  You are a helpful assistant that extracts structured data about job offers from text content.
-  Your job is to analyze the given text and determine if it describes an internship offer or a full-time offer, and then
-  extract specific information about compensation, benefits, and other job details in a JSON format.
+  You are a helpful assistant that extracts structured data about job offers
+  from text content.
+
+  Your job is to analyze the given text and determine if it describes an
+  internship offer or a full-time offer, and then extract specific information
+  about compensation, benefits, and other job details in a JSON format.
 `;
 
 const SHARE_JOB_OFFER_PROMPT = dedent`
@@ -206,16 +212,28 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
   First, determine if the job offer is for an internship or a full-time position.
 
   If job offer is a full-time position do the following:
-  - Extract compensation details from the following Slack message, specifically identifying base salary, stock per year, and bonus. Ideally get the annual base salary. But if there is no annual base salary given, determine the hourly rate.
-  - Calculate the annualized stock. Sometimes the value for stock per year will already be given, sometimes you will be given a vesting schedule, or the total amount of stock over a number of years. Calculate a value for stock per year.
-  - Calculate the bonus. If bonus is given as a percentage, assume this is percentage of base salary and CALCULATE the value. If sign on bonus and relocation and any other bonuses are also given, SUM all these values.
-  - Determine PERFORMANCE_BONUS, SIGN_ON_BONUS, RELOCATION, BENEFITS, YEARS_OF_EXPERIENCE, and NEGOTIATED by extracting the text relevant to this. Return this text. If a particular field is not referenced, return NULL for this field.
-  - Let ADDITIONAL_NOTES be a text field containing any additional info present in the job offer but not captured elsewhere.
+  - Extract compensation details from the following Slack message, specifically
+    identifying base salary, stock per year, and bonus. Ideally get the annual
+    base salary. But if there is no annual base salary given, determine the
+    hourly rate.
+  - Calculate the annualized stock. Sometimes the value for stock per year will
+    already be given, sometimes you will be given a vesting schedule, or the
+    total amount of stock over a number of years. Calculate a value for stock
+    per year.
+  - Calculate the bonus. If bonus is given as a percentage, assume this is
+    percentage of base salary and CALCULATE the value. If sign on bonus and
+    relocation and any other bonuses are also given, SUM all these values.
+  - Determine PERFORMANCE_BONUS, SIGN_ON_BONUS, RELOCATION, BENEFITS,
+    YEARS_OF_EXPERIENCE, and NEGOTIATED by extracting the text relevant to this.
+    Return this text. If a particular field is not referenced, return NULL for
+    this field.
+  - Let ADDITIONAL_NOTES be a text field containing any additional info present
+    in the job offer but not captured elsewhere.
 
   Return the response as a json in the format
   <output>
   {
-    "employment_type": "full-time",
+    "employment_type": "full_time",
     "company": COMPANY,
     "role": ROLE,
     "base_salary": BASE_SALARY,
@@ -234,9 +252,13 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
   </output>
 
   If job offer is an internship do the following:
-  - Extract compensation details from the job offer, specifically identifying salary. Calculate the hourly rate and the monthly rate.
-  - Determine RELOCATION, BENEFITS, YEARS_OF_EXPERIENCE, and NEGOTIATED by extracting the text relevant to this. Return this text. If a particular field is not referenced, return NULL for this field.
-  - Let ADDITIONAL_NOTES be a text field containing any additional info present in the job offer but not captured elsewhere.
+  - Extract compensation details from the job offer, specifically identifying
+    hourly rate and monthly rate.
+  - Determine RELOCATION, BENEFITS, YEARS_OF_EXPERIENCE, and NEGOTIATED by
+    extracting the text relevant to this. Return this text. If a particular
+    field is not referenced, return NULL for this field.
+  - Let ADDITIONAL_NOTES be a text field containing any additional info present
+    in the job offer but not captured elsewhere.
 
   Return the response as a json in the format.
   <output>
@@ -259,39 +281,41 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
   - Location should be a city name in the format "{city_name}, {state_abbreviation}"
   - If you are unsure about any value return NULL
   - IMPORTANT: Return ONLY the JSON
-  - If something other than hourly or monthly rate is given, assume 40 hour work week and calculate hourly rate. Return NULL if you are unsure on any values.
+  - If something other than hourly or monthly rate is given, assume 40 hour
+    work week and calculate hourly rate. Return NULL if you are unsure on any
+    values.
 `;
 
 const ShareJobOfferResponse = z.discriminatedUnion('employmentType', [
   z.object({
-    employmentType: z.literal('internship'),
-    company: z.string().trim().min(1).nullable(),
-    role: z.string().trim().min(1).nullable(),
-    hourlyRate: z.number().nullable(),
-    monthlyRate: z.number().nullable(),
-    location: z.string().trim().min(1).nullable(),
-    relocation: z.string().trim().min(1).nullable(),
-    benefits: z.string().trim().min(1).nullable(),
-    yearsOfExperience: z.string().trim().min(1).nullable(),
-    negotiatedText: z.string().trim().min(1).nullable(),
     additionalNotes: z.string().trim().min(1).nullable(),
+    benefits: z.string().trim().min(1).nullable(),
+    company: z.string().trim().min(1).nullable(),
+    employmentType: z.literal('internship'),
+    hourlyRate: z.number().nullable(),
+    location: z.string().trim().min(1).nullable(),
+    monthlyRate: z.number().nullable(),
+    negotiatedText: z.string().trim().min(1).nullable(),
+    relocation: z.string().trim().min(1).nullable(),
+    role: z.string().trim().min(1).nullable(),
+    yearsOfExperience: z.string().trim().min(1).nullable(),
   }),
   z.object({
-    employmentType: z.literal('full-time'),
-    company: z.string().trim().min(1).nullable(),
-    role: z.string().trim().min(1).nullable(),
+    additionalNotes: z.string().trim().min(1).nullable(),
     baseSalary: z.number().nullable(),
+    benefits: z.string().trim().min(1).nullable(),
+    bonus: z.number().nullable(),
+    company: z.string().trim().min(1).nullable(),
+    employmentType: z.literal('full_time'),
     hourlyRate: z.number().nullable(),
     location: z.string().trim().min(1).nullable(),
-    stockPerYear: z.number().nullable(),
-    bonus: z.number().nullable(),
-    performanceBonus: z.string().trim().min(1).nullable(),
-    signOnBonus: z.string().trim().min(1).nullable(),
-    relocation: z.string().trim().min(1).nullable(),
-    benefits: z.string().trim().min(1).nullable(),
-    yearsOfExperience: z.string().trim().min(1).nullable(),
     negotiatedText: z.string().trim().min(1).nullable(),
-    additionalNotes: z.string().trim().min(1).nullable(),
+    performanceBonus: z.string().trim().min(1).nullable(),
+    relocation: z.string().trim().min(1).nullable(),
+    role: z.string().trim().min(1).nullable(),
+    signOnBonus: z.string().trim().min(1).nullable(),
+    stockPerYear: z.number().nullable(),
+    yearsOfExperience: z.string().trim().min(1).nullable(),
   }),
 ]);
 
@@ -304,15 +328,15 @@ type ShareJobOfferInput = {
 };
 
 /**
- * Shares a job offer from a Slack message.
+ * Creates a job offer that was shared in a Slack message.
  *
- * If the Slack message does not contain the word "role" or "job title", this
- * function will return early with a success result.
+ * If the Slack message does not contain the expected format, this function will
+ * return early with a success result.
  *
  * Otherwise, we'll pass the Slack message into AI to extract the job offer's
- * details. Then, we'll try to find the most relevant
- * company in our database. Then, we save the job offer in our database and
- * notify the original poster that we've added it to our job offers board.
+ * details. Then, we'll try to find the most relevant company in our database.
+ * Then, we save the job offer in our database and notify the original poster
+ * that we've added it to our job offers board.
  *
  * @param input - Input data for sharing a job offer.
  * @returns Result indicating the success or failure of the operation.
@@ -339,10 +363,10 @@ async function shareJobOffer({
   }
 
   // We're only interested in messages that share a job offer. If the Slack
-  // message doesn't contain the word "role" or "job title", we'll bail early.
+  // message doesn't contain the expected format, we'll bail early.
   if (
-    !slackMessage.text.includes('role') &&
-    !slackMessage.text.includes('job title')
+    !slackMessage.text.includes('Company:') &&
+    !slackMessage.text.includes('Location:')
   ) {
     return success({});
   }
@@ -379,70 +403,52 @@ async function shareJobOffer({
       ? await getMostRelevantCompany(trx, data.company)
       : null;
 
-    const jobOfferId = id();
+    const baseJobOffer = {
+      additionalNotes: data.additionalNotes,
+      benefits: data.benefits,
+      companyId,
+      createdAt: new Date(),
+      hourlyRate: data.hourlyRate,
+      id: id(),
+      location: data.location,
+      negotiatedText: data.negotiatedText,
+      postedBy: slackMessage.studentId,
+      relocationText: data.relocation,
+      role: data.role,
+      slackChannelId,
+      slackMessageId,
+      updatedAt: new Date(),
+      yearsOfExperience: data.yearsOfExperience,
+    };
 
     if (data.employmentType === 'internship') {
-      const result = await trx
+      return trx
         .insertInto('internshipJobOffers')
         .values({
-          id: jobOfferId,
-          createdAt: new Date(),
-          role: data.role,
-          hourlyRate: data.hourlyRate,
+          ...baseJobOffer,
           monthlyRate: data.monthlyRate,
-          location: data.location,
-          relocationText: data.relocation,
-          benefits: data.benefits,
-          yearsOfExperience: data.yearsOfExperience,
-          negotiatedText: data.negotiatedText,
-          additionalNotes: data.additionalNotes,
-          companyId: companyId,
-          postedBy: slackMessage.studentId,
-          slackChannelId: slackChannelId,
-          slackMessageId: slackMessageId,
-          updatedAt: new Date(),
         })
         .returning(['id'])
         .executeTakeFirstOrThrow();
+    }
 
-      return result;
-    } else {
-      const totalCompensation = calculateTotalCompensation({
+    return trx
+      .insertInto('fullTimeJobOffers')
+      .values({
+        ...baseJobOffer,
         baseSalary: data.baseSalary,
         bonus: data.bonus,
+        performanceBonusText: data.performanceBonus,
+        signOnBonusText: data.signOnBonus,
         stockPerYear: data.stockPerYear,
-      });
-
-      const result = await trx
-        .insertInto('fullTimeJobOffers')
-        .values({
-          id: jobOfferId,
-          createdAt: new Date(),
-          role: data.role,
+        totalCompensation: calculateTotalCompensation({
           baseSalary: data.baseSalary,
-          hourlyRate: data.hourlyRate,
-          location: data.location,
-          stockPerYear: data.stockPerYear,
           bonus: data.bonus,
-          totalCompensation,
-          performanceBonusText: data.performanceBonus,
-          signOnBonusText: data.signOnBonus,
-          relocationText: data.relocation,
-          benefits: data.benefits,
-          yearsOfExperience: data.yearsOfExperience,
-          negotiatedText: data.negotiatedText,
-          additionalNotes: data.additionalNotes,
-          companyId: companyId,
-          postedBy: slackMessage.studentId,
-          slackChannelId: slackChannelId,
-          slackMessageId: slackMessageId,
-          updatedAt: new Date(),
-        })
-        .returning(['id'])
-        .executeTakeFirstOrThrow();
-
-      return result;
-    }
+          stockPerYear: data.stockPerYear,
+        }),
+      })
+      .returning(['id'])
+      .executeTakeFirstOrThrow();
   });
 
   if (sendNotification) {
@@ -507,35 +513,35 @@ export async function hasJobOfferWritePermission({
   memberId,
   jobOfferId,
 }: HasEditPermissionInput): Promise<boolean> {
-  const jobOffer = await db
-    .with('job_offers', (qb) =>
-      qb
-        .selectFrom('fullTimeJobOffers')
-        .select('postedBy')
-        .where('id', '=', jobOfferId)
-        .unionAll(
-          qb
-            .selectFrom('internshipJobOffers')
-            .select('postedBy')
-            .where('id', '=', jobOfferId)
-        )
-    )
-    .selectFrom('job_offers')
-    .select('postedBy')
-    .where((eb) =>
-      eb.or([
-        eb('postedBy', '=', memberId),
-        eb.exists(
-          eb
-            .selectFrom('admins')
-            .where('memberId', '=', memberId)
-            .where('deletedAt', 'is', null)
-        ),
-      ])
-    )
-    .executeTakeFirst();
+  function isPosterOrAdmin(
+    eb: ExpressionBuilder<DB, 'fullTimeJobOffers' | 'internshipJobOffers'>
+  ) {
+    return eb.or([
+      eb('postedBy', '=', memberId),
+      eb.exists(() => {
+        return eb
+          .selectFrom('admins')
+          .where('admins.memberId', '=', memberId)
+          .where('admins.deletedAt', 'is', null);
+      }),
+    ]);
+  }
 
-  return !!jobOffer;
+  const [fullTimeJobOffer, internshipJobOffer] = await Promise.all([
+    db
+      .selectFrom('fullTimeJobOffers')
+      .where('id', '=', jobOfferId)
+      .where(isPosterOrAdmin)
+      .executeTakeFirst(),
+
+    db
+      .selectFrom('internshipJobOffers')
+      .where('id', '=', jobOfferId)
+      .where(isPosterOrAdmin)
+      .executeTakeFirst(),
+  ]);
+
+  return !!fullTimeJobOffer || !!internshipJobOffer;
 }
 
 // Worker
