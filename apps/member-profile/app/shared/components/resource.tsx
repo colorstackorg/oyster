@@ -328,10 +328,6 @@ function ResourceActionGroup({
           </Tooltip>
         </li>
       )}
-      {/* TODO: move to function component */}
-      {/* /resources/:id/delete after pressing delete shows a confirmation modal */}
-      {/* ensure that any search params in the URL are preserved */}
-      {/* Once the user confirms they want to delete the resource */}
       {editable ? (
         <li>
           <Tooltip>
