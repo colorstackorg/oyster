@@ -13,7 +13,10 @@ export function createDatabaseConnection(url: string = DATABASE_URL) {
 
   const dialect = new PostgresDialect({
     pool: new pg.Pool({
-      connectionString: url,
+      connectionString:
+        process.env.IS_RAILWAY_BUILD === 'true'
+          ? process.env.DATABASE_PUBLIC_URL
+          : url,
     }),
   });
 
