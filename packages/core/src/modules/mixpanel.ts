@@ -21,7 +21,7 @@ if (MIXPANEL_TOKEN) {
 export type MixpanelEvent = {
   'Chatbot Question Asked': {
     Question: string;
-    Type: 'DM' | 'Public';
+    Type?: 'DM' | 'Public';
   };
 
   'Directory - CTA Clicked': {

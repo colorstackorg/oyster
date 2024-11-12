@@ -10,17 +10,26 @@ import {
   useNavigation,
 } from '@remix-run/react';
 import { useEffect, useRef, useState } from 'react';
-import { AlignLeft, ArrowUpRight, MessageCircle, Send, X } from 'react-feather';
+import {
+  AlignLeft,
+  ArrowUpRight,
+  ExternalLink,
+  MessageCircle,
+  Send,
+  X,
+} from 'react-feather';
 import { match } from 'ts-pattern';
 
 import {
   answerMemberProfileQuestion,
   type ParsedChatbotAnswer,
+  type ThreadReference,
 } from '@oyster/core/slack';
-import { IconButton, Text } from '@oyster/ui';
+import { IconButton, ProfilePicture, Text } from '@oyster/ui';
 
 import { cache } from '@/infrastructure/redis';
 import { EmptyState } from '@/shared/components/empty-state';
+import { SlackMessage } from '@/shared/components/slack-message';
 import {
   commitSession,
   ensureUserAuthenticated,
@@ -126,8 +135,11 @@ const EXAMPLE_QUESTIONS = [
 ];
 
 function ChatbotForm() {
+  const navigation = useNavigation();
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const questionRef = useRef<HTMLInputElement>(null);
+
+  const isSubmitting = navigation.state === 'submitting';
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -175,6 +187,7 @@ function ChatbotForm() {
           <IconButton
             backgroundColor="gray-100"
             backgroundColorOnHover="gray-200"
+            disabled={isSubmitting}
             icon={<X size={20} />}
             onClick={() => {
               questionRef.current!.value = '';
@@ -184,6 +197,7 @@ function ChatbotForm() {
           <IconButton
             backgroundColor="gray-100"
             backgroundColorOnHover="gray-200"
+            disabled={isSubmitting}
             icon={<Send size={20} />}
             shape="square"
             type="submit"
@@ -192,32 +206,42 @@ function ChatbotForm() {
       </div>
 
       <div className="flex items-center gap-2 overflow-auto pb-4">
-        <SuggestedQuestion
-          question="What is Fam Friday?"
-          onClick={onClickSuggestion}
-        />
-        <SuggestedQuestion
-          question="What is the IRL StackedUp Summit?"
-          onClick={onClickSuggestion}
-        />
-        <SuggestedQuestion
-          question="How should I prepare for a technical interview?"
-          onClick={onClickSuggestion}
-        />
+        {[
+          'What is Fam Friday?',
+          'What is the Google interview process like?',
+          'How should I negotiate my offer?',
+          'What is the IRL StackedUp Summit?',
+          'How should I prepare for a technical interview?',
+        ].map((question) => {
+          return (
+            <SuggestedQuestion
+              disabled={isSubmitting}
+              key={question}
+              onClick={onClickSuggestion}
+              question={question}
+            />
+          );
+        })}
       </div>
     </RemixForm>
   );
 }
 
 type SuggestedQuestionProps = {
+  disabled: boolean;
   question: string;
   onClick(e: React.MouseEvent<HTMLButtonElement>): void;
 };
 
-function SuggestedQuestion({ question, onClick }: SuggestedQuestionProps) {
+function SuggestedQuestion({
+  disabled,
+  question,
+  onClick,
+}: SuggestedQuestionProps) {
   return (
     <button
-      className="flex shrink-0 items-center gap-1 rounded-full border border-gray-200 bg-gray-50 p-1 text-xs hover:bg-gray-100 active:bg-gray-200"
+      className="flex shrink-0 items-center gap-1 rounded-full border border-gray-200 bg-gray-50 p-1 text-xs hover:bg-gray-100 active:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+      disabled={disabled}
       name="question"
       onClick={onClick}
       type="submit"
@@ -260,57 +284,105 @@ function ChatbotResponse() {
   const { answerSegments, threads } = (actionData || answer)!;
 
   return (
-    <ResponseSection icon={<AlignLeft />} title="Answer">
-      <Text className="whitespace-break-spaces">
-        {answerSegments.map((segment, i) => {
-          return match(segment)
-            .with({ type: 'text' }, ({ content }) => {
-              return content;
-            })
-            .with({ type: 'reference' }, ({ number }) => {
-              const thread = threads.find((thread) => {
-                return thread.number === number;
-              });
+    <div className="flex flex-col gap-8">
+      <ResponseSection icon={<ExternalLink />} title="Sources">
+        <ul className="flex snap-x snap-mandatory gap-2 overflow-x-auto pb-4">
+          {threads.map((thread) => {
+            return <ThreadPreview key={thread.number} {...thread} />;
+          })}
+        </ul>
+      </ResponseSection>
 
-              // This should never happen, but keeping this check just to be safe.
-              if (!thread) {
-                return null;
-              }
+      <ResponseSection icon={<AlignLeft />} title="Answer">
+        <Text className="whitespace-break-spaces">
+          {answerSegments.map((segment, i) => {
+            return match(segment)
+              .with({ type: 'text' }, ({ content }) => {
+                return content;
+              })
+              .with({ type: 'reference' }, ({ number }) => {
+                const thread = threads.find((thread) => {
+                  return thread.number === number;
+                });
 
-              return (
-                <ReferenceLink
-                  key={i}
-                  number={thread.number}
-                  url={thread.url}
-                />
-              );
-            })
-            .exhaustive();
-        })}
-      </Text>
-    </ResponseSection>
+                // This should never happen, but keeping this check just to be safe.
+                if (!thread) {
+                  return null;
+                }
+
+                return (
+                  <ReferenceLink
+                    key={i}
+                    number={thread.number}
+                    url={thread.url}
+                  />
+                );
+              })
+              .exhaustive();
+          })}
+        </Text>
+      </ResponseSection>
+    </div>
   );
 }
 
-type ResponseSectionProps = {
-  children: React.ReactNode;
-  icon: React.ReactNode;
-  title: string;
-};
-
-function ResponseSection({ children, icon, title }: ResponseSectionProps) {
+function ThreadPreview({
+  authorFirstName,
+  authorLastName,
+  authorProfilePicture,
+  createdAt,
+  number,
+  replyCount,
+  text,
+  url,
+}: ThreadReference) {
   return (
-    <section className="flex flex-col gap-2">
-      <div className="flex items-center gap-2">
-        {icon}
+    <li className="w-64 shrink-0 snap-start">
+      <button
+        className="flex h-full w-full flex-col gap-3 rounded-lg bg-gray-50 p-1 hover:bg-gray-100"
+        onClick={(e) => {
+          // We would obviously prefer to use a link here, but since we may have
+          // nested links within the Slack message, we have to adjust this
+          // top level component to be a button.
+          window.open(e.currentTarget.value, '_blank');
+        }}
+        type="button"
+        value={url}
+      >
+        <div className="flex w-full items-center gap-1">
+          <ProfilePicture
+            initials={(authorFirstName[0] || '') + (authorLastName[0] || '')}
+            size="32"
+            src={authorProfilePicture}
+          />
 
-        <Text weight="500" variant="lg">
-          {title}
-        </Text>
-      </div>
+          <Text className="line-clamp-1" weight="600" variant="sm">
+            {authorFirstName} {authorLastName}
+          </Text>
 
-      {children}
-    </section>
+          <Text className="ml-auto" color="gray-500" variant="xs">
+            {createdAt}
+          </Text>
+        </div>
+
+        <SlackMessage
+          as="span"
+          className="line-clamp-3"
+          color="gray-500"
+          variant="sm"
+        >
+          {text}
+        </SlackMessage>
+
+        <div className="mt-auto flex w-full items-center justify-between gap-2">
+          <Text color="gray-500" variant="xs">
+            {replyCount} replies
+          </Text>
+
+          <ReferenceLink number={number} url={url} />
+        </div>
+      </button>
+    </li>
   );
 }
 
@@ -329,5 +401,29 @@ function ReferenceLink({ number, url }: ReferenceLinkProps) {
     >
       {number}
     </a>
+  );
+}
+
+// Helpers
+
+type ResponseSectionProps = {
+  children: React.ReactNode;
+  icon: React.ReactNode;
+  title: string;
+};
+
+function ResponseSection({ children, icon, title }: ResponseSectionProps) {
+  return (
+    <section className="flex flex-col gap-4">
+      <div className="flex items-center gap-2">
+        {icon}
+
+        <Text weight="500" variant="lg">
+          {title}
+        </Text>
+      </div>
+
+      {children}
+    </section>
   );
 }

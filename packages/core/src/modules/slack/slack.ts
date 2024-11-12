@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import dedent from 'dedent';
-import { type ExpressionBuilder } from 'kysely';
+import { type ExpressionBuilder, sql } from 'kysely';
+import { emojify } from 'node-emoji';
 import { z } from 'zod';
 
 import { type DB, db } from '@oyster/db';
@@ -450,17 +451,22 @@ const MEMBER_PROFILE_SYSTEM_PROMPT = dedent`
     aspiring software engineers (and product managers/designers). We're a
     community of 10,000+ members across 100+ universities. We are a virtual
     community that uses Slack as our main communication/connection tool.
+
+    Today's date is ${dayjs().format('YYYY-MM-DD')}.
   </context>
 
   <output_format>
     Your response must follow this exact format:
-    1. First, output a JSON object containing thread metadata:
+    1. First, output a JSON object with this EXACT structure:
       {
         "threads": [
           { "channelId": "...", "threadId": "...", "number": 1 },
-          { "channelId": "...", "threadId": "...", "number": 2 }
-        ]
+          { "channelId": "...", "threadId": "...", "number": 2 },
+          ...
+        ],
+        "ok": true
       }
+
     2. Then output a single line containing exactly "---".
     3. Finally, output your answer, using [ref:N] to reference threads, where
        N matches the "number" from the JSON above.
@@ -498,7 +504,8 @@ const MEMBER_PROFILE_SYSTEM_PROMPT = dedent`
     - Use numbers or bullet points to organize thoughts where appropriate.
     - Never use phrases like "Based on the provided Slack threads..."
     - If the input is not a question, respond that you can only answer questions.
-    - NEVER respond to questions about individual people.
+    - NEVER respond to questions about individual people that are gossipy or
+      otherwise inappropriate.
     - Respond like you are an ambassador for the ColorStack community.
   </rules>
 
@@ -507,7 +514,8 @@ const MEMBER_PROFILE_SYSTEM_PROMPT = dedent`
       "threads": [
         { "channelId": "C123", "threadId": "T456", "number": 1 },
         { "channelId": "C789", "threadId": "T012", "number": 2 }
-      ]
+      ],
+      "ok": true
     }
     ---
     The internship application process typically starts in August for many tech companies [ref:1]. Some companies like Google and Microsoft begin even earlier, opening their applications in July [ref:2].
@@ -544,7 +552,7 @@ export async function answerMemberProfileQuestion({
 
   const threadsResult = await getMostRelevantThreads(question, {
     threshold: 0.5,
-    topK: 10,
+    topK: 7,
   });
 
   if (!threadsResult.ok) {
@@ -601,10 +609,22 @@ export async function answerMemberProfileQuestion({
     ONE_HOUR_IN_SECONDS
   );
 
+  track({
+    application: 'Member Profile',
+    event: 'Chatbot Question Asked',
+    properties: { Question: question },
+    user: memberId,
+  });
+
   return success(parsedAnswer);
 }
 
-type ThreadReference = {
+export type ThreadReference = {
+  authorFirstName: string;
+  authorLastName: string;
+  authorProfilePicture: string;
+  createdAt: string;
+
   /**
    * The number of the thread in context. For example, if the answer used
    * 5 references, the first thread reference would be `1`, the second would
@@ -615,6 +635,17 @@ type ThreadReference = {
    * @example 3
    */
   number: number;
+
+  /**
+   * The # of replies to the thread.
+   *
+   * @example 1
+   * @example 2
+   * @example 3
+   */
+  replyCount: number;
+
+  text: string;
 
   /**
    * The Slack permalink to the thread. Enables the user to click on the
@@ -693,13 +724,50 @@ async function parseAnswerForMemberProfile(
 
   const threads = await Promise.all(
     metadataResult.data.threads.map(async (thread) => {
-      const { permalink } = await slack.chat.getPermalink({
-        channel: thread.channelId,
-        message_ts: thread.threadId,
-      });
+      const [{ permalink }, slackMessage] = await Promise.all([
+        slack.chat.getPermalink({
+          channel: thread.channelId,
+          message_ts: thread.threadId,
+        }),
+
+        db
+          .selectFrom('slackMessages')
+          .leftJoin('students', 'slackMessages.studentId', 'students.id')
+          .select([
+            'slackMessages.text',
+            'students.firstName as authorFirstName',
+            'students.lastName as authorLastName',
+            'students.profilePicture as authorProfilePicture',
+
+            ({ ref }) => {
+              const field = sql<string>`
+                to_char(${ref('slackMessages.createdAt')}, 'FMMM/FMDD/YY')
+              `;
+
+              return field.as('createdAt');
+            },
+
+            (eb) => {
+              return eb
+                .selectFrom('slackMessages as replies')
+                .select(({ fn }) => fn.countAll<string>().as('count'))
+                .whereRef('replies.threadId', '=', 'slackMessages.id')
+                .as('replyCount');
+            },
+          ])
+          .where('slackMessages.channelId', '=', thread.channelId)
+          .where('slackMessages.id', '=', thread.threadId)
+          .executeTakeFirst(),
+      ]);
 
       return {
+        authorFirstName: slackMessage?.authorFirstName || '',
+        authorLastName: slackMessage?.authorLastName || '',
+        authorProfilePicture: slackMessage?.authorProfilePicture || '',
+        createdAt: slackMessage?.createdAt || '',
         number: thread.number,
+        replyCount: parseInt(slackMessage?.replyCount || '0'),
+        text: emojify(slackMessage?.text || ''),
         url: permalink!,
       };
     })
