@@ -184,12 +184,6 @@ export const EditWorkExperienceInput = AddWorkExperienceInput.extend({
   id: WorkExperience.shape.id,
 });
 
-export const UploadJobOfferInput = JobOffer.omit({
-  createdAt: true,
-  id: true,
-  updatedAt: true,
-});
-
 export const UpvoteCompanyReviewInput = z.object({
   memberId: z.string().trim().min(1),
 });
@@ -201,5 +195,4 @@ export type DeleteWorkExperienceInput = z.infer<
 >;
 export type EditCompanyReviewInput = z.infer<typeof EditCompanyReviewInput>;
 export type EditWorkExperienceInput = z.infer<typeof EditWorkExperienceInput>;
-export type UploadJobOfferInput = z.infer<typeof UploadJobOfferInput>;
 export type UpvoteCompanyReviewInput = z.infer<typeof UpvoteCompanyReviewInput>;
