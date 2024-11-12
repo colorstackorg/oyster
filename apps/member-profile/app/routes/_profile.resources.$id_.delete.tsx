@@ -27,14 +27,14 @@ export default function DeleteResource() {
   const [searchParams] = useSearchParams();
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const returnPath = () => {
+  const getReturnPath = () => {
     const currentParams = searchParams.toString();
 
     return `${Route['/resources']}${currentParams ? `?${currentParams}` : ''}`;
   };
 
   return (
-    <Modal onCloseTo={returnPath()}>
+    <Modal onCloseTo={getReturnPath()}>
       <Modal.Header>
         <Modal.Title>
           Are you sure you want to delete this resource?
@@ -46,7 +46,7 @@ export default function DeleteResource() {
           <Button
             type="button"
             variant="secondary"
-            onClick={() => navigate(returnPath())}
+            onClick={() => navigate(getReturnPath())}
             disabled={isDeleting}
           >
             Cancel
