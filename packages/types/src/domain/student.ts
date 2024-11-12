@@ -24,6 +24,8 @@ export const ActivationRequirement = {
   SEND_INTRODUCTION_MESSAGE: 'send_introduction_message',
 } as const;
 
+export const ACTIVATION_REQUIREMENTS = Object.values(ActivationRequirement);
+
 export const MemberType = {
   ALUMNI: 'alumni',
   STUDENT: 'student',

@@ -10,6 +10,7 @@ export { Program, ProgramParticipant } from './domain/program';
 export { Resource, ResourceStatus, ResourceUser } from './domain/resource';
 export {
   ActivationRequirement,
+  ACTIVATION_REQUIREMENTS,
   MemberEthnicity,
   MemberType,
   Student,

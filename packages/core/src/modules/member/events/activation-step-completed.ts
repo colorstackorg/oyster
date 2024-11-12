@@ -2,7 +2,11 @@ import dayjs from 'dayjs';
 import dedent from 'dedent';
 
 import { db } from '@oyster/db';
-import { ActivationRequirement, type Student } from '@oyster/types';
+import {
+  ACTIVATION_REQUIREMENTS,
+  type ActivationRequirement,
+  type Student,
+} from '@oyster/types';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { activateMember } from '@/modules/member/use-cases/activate-member';
@@ -28,8 +32,6 @@ type SendProgressNotificationInput = Pick<
 > & {
   slackId: NonNullable<Student['slackId']>;
 };
-
-const ACTIVATION_REQUIREMENTS = Object.values(ActivationRequirement);
 
 export async function onActivationStepCompleted(
   event: ActivationStepCompletedInput
