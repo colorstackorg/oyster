@@ -545,6 +545,149 @@ async function shareJobOffer({
   return success(jobOffer);
 }
 
+// Queries
+
+// "Get Full-Time Job Offer Details"
+
+type GetFullTimeJobOfferDetailsInput = {
+  memberId: string;
+  offerId: string;
+};
+
+export async function getFullTimeJobOfferDetails({
+  memberId,
+  offerId,
+}: GetFullTimeJobOfferDetailsInput) {
+  const offer = await db
+    .selectFrom('fullTimeJobOffers')
+    .leftJoin('companies', 'companies.id', 'fullTimeJobOffers.companyId')
+    .leftJoin('students', 'students.id', 'fullTimeJobOffers.postedBy')
+    .leftJoin('slackMessages', (join) => {
+      return join
+        .onRef(
+          'slackMessages.channelId',
+          '=',
+          'fullTimeJobOffers.slackChannelId'
+        )
+        .onRef('slackMessages.id', '=', 'fullTimeJobOffers.slackMessageId');
+    })
+    .select([
+      'companies.id as companyId',
+      'companies.name as companyName',
+      'companies.imageUrl as companyLogo',
+      'companies.crunchbaseId as companyCrunchbaseId',
+      'fullTimeJobOffers.id',
+      'fullTimeJobOffers.role',
+      'fullTimeJobOffers.location',
+      'fullTimeJobOffers.createdAt',
+      'fullTimeJobOffers.totalCompensation',
+      'fullTimeJobOffers.baseSalary',
+      'fullTimeJobOffers.hourlyRate',
+      'fullTimeJobOffers.stockPerYear',
+      'fullTimeJobOffers.bonus',
+      'fullTimeJobOffers.signOnBonusText',
+      'fullTimeJobOffers.performanceBonusText',
+      'fullTimeJobOffers.relocationText',
+      'fullTimeJobOffers.benefits',
+      'fullTimeJobOffers.yearsOfExperience',
+      'fullTimeJobOffers.negotiatedText',
+      'fullTimeJobOffers.additionalNotes',
+      'slackMessages.channelId as slackMessageChannelId',
+      'slackMessages.createdAt as slackMessagePostedAt',
+      'slackMessages.id as slackMessageId',
+      'slackMessages.text as slackMessageText',
+      'students.firstName as posterFirstName',
+      'students.lastName as posterLastName',
+      'students.profilePicture as posterProfilePicture',
+
+      (eb) => {
+        return eb
+          .or([
+            eb('fullTimeJobOffers.postedBy', '=', memberId),
+            eb.exists(() => {
+              return eb
+                .selectFrom('admins')
+                .where('admins.memberId', '=', memberId)
+                .where('admins.deletedAt', 'is', null);
+            }),
+          ])
+          .as('hasWritePermission');
+      },
+    ])
+    .where('fullTimeJobOffers.id', '=', offerId)
+    .executeTakeFirst();
+
+  return offer;
+}
+
+// "Get Internship Job Offer Details"
+
+type GetInternshipJobOfferDetailsInput = {
+  memberId: string;
+  offerId: string;
+};
+
+export async function getInternshipJobOfferDetails({
+  memberId,
+  offerId,
+}: GetInternshipJobOfferDetailsInput) {
+  const offer = await db
+    .selectFrom('internshipJobOffers')
+    .leftJoin('companies', 'companies.id', 'internshipJobOffers.companyId')
+    .leftJoin('students', 'students.id', 'internshipJobOffers.postedBy')
+    .leftJoin('slackMessages', (join) => {
+      return join
+        .onRef(
+          'slackMessages.channelId',
+          '=',
+          'internshipJobOffers.slackChannelId'
+        )
+        .onRef('slackMessages.id', '=', 'internshipJobOffers.slackMessageId');
+    })
+    .select([
+      'companies.id as companyId',
+      'companies.name as companyName',
+      'companies.imageUrl as companyLogo',
+      'companies.crunchbaseId as companyCrunchbaseId',
+      'internshipJobOffers.id',
+      'internshipJobOffers.role',
+      'internshipJobOffers.location',
+      'internshipJobOffers.createdAt',
+      'internshipJobOffers.monthlyRate',
+      'internshipJobOffers.hourlyRate',
+      'internshipJobOffers.relocationText',
+      'internshipJobOffers.benefits',
+      'internshipJobOffers.yearsOfExperience',
+      'internshipJobOffers.negotiatedText',
+      'internshipJobOffers.additionalNotes',
+      'slackMessages.channelId as slackMessageChannelId',
+      'slackMessages.createdAt as slackMessagePostedAt',
+      'slackMessages.id as slackMessageId',
+      'slackMessages.text as slackMessageText',
+      'students.firstName as posterFirstName',
+      'students.lastName as posterLastName',
+      'students.profilePicture as posterProfilePicture',
+
+      (eb) => {
+        return eb
+          .or([
+            eb('internshipJobOffers.postedBy', '=', memberId),
+            eb.exists(() => {
+              return eb
+                .selectFrom('admins')
+                .where('admins.memberId', '=', memberId)
+                .where('admins.deletedAt', 'is', null);
+            }),
+          ])
+          .as('hasWritePermission');
+      },
+    ])
+    .where('internshipJobOffers.id', '=', offerId)
+    .executeTakeFirst();
+
+  return offer;
+}
+
 // Helpers
 
 // "Has Edit Permission"

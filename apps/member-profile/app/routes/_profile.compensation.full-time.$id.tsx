@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 import { emojify } from 'node-emoji';
 import { Edit } from 'react-feather';
 
-import { getFullTimeJobOfferDetails } from '@oyster/core/member-profile/server';
+import { getFullTimeJobOfferDetails } from '@oyster/core/job-offers';
 import { getIconButtonCn, Modal, Text } from '@oyster/ui';
 
 import { SlackMessageLink } from '@/shared/components/slack-message';
