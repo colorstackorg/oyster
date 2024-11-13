@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 import { emojify } from 'node-emoji';
 import { Edit } from 'react-feather';
 
-import { getInternshipJobOfferDetails } from '@oyster/core/member-profile/server';
+import { getFullTimeJobOfferDetails } from '@oyster/core/member-profile/server';
 import { getIconButtonCn, Modal, Text } from '@oyster/ui';
 
 import { SlackMessageLink } from '@/shared/components/slack-message';
@@ -21,7 +21,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const memberId = user(session);
   const offerId = params.id as string;
 
-  const offer = await getInternshipJobOfferDetails({
+  const offer = await getFullTimeJobOfferDetails({
     memberId,
     offerId,
   });
@@ -29,7 +29,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   if (!offer) {
     throw new Response(null, {
       status: 404,
-      statusText: 'The internship offer you are looking for does not exist.',
+      statusText: 'The full-time offer you are looking for does not exist.',
     });
   }
 
@@ -44,13 +44,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   return json(offer);
 }
 
-export default function InternshipOfferPage() {
+export default function FullTimeOfferPage() {
   const [searchParams] = useSearchParams();
 
   return (
     <Modal
       onCloseTo={{
-        pathname: Route['/compensation/internship-offers'],
+        pathname: Route['/compensation/full-time'],
         search: searchParams.toString(),
       }}
     >
@@ -127,12 +127,9 @@ function EditOfferButton() {
           backgroundColorOnHover: 'gray-200',
         })}
         to={{
-          pathname: generatePath(
-            Route['/compensation/internship-offers/:id/edit'],
-            {
-              id,
-            }
-          ),
+          pathname: generatePath(Route['/compensation/full-time/:id/edit'], {
+            id,
+          }),
           search: searchParams.toString(),
         }}
       >
@@ -144,6 +141,28 @@ function EditOfferButton() {
   );
 }
 
+function SlackMessage() {
+  const {
+    id,
+    slackMessageChannelId,
+    posterFirstName,
+    posterLastName,
+    posterProfilePicture,
+  } = useLoaderData<typeof loader>();
+
+  if (!slackMessageChannelId) return null;
+
+  return (
+    <SlackMessageLink
+      channelId={slackMessageChannelId}
+      messageId={id}
+      posterFirstName={posterFirstName || ''}
+      posterLastName={posterLastName || ''}
+      posterProfilePicture={posterProfilePicture || ''}
+    />
+  );
+}
+
 function OfferDetails() {
   const offer = useLoaderData<typeof loader>();
 
@@ -152,7 +171,7 @@ function OfferDetails() {
       {/* Basic Information */}
       <section>
         <div className="grid grid-cols-2 gap-3">
-          <DetailItem label="Employment Type" value="Internship" />
+          <DetailItem label="Employment Type" value="Full-Time" />
           <DetailItem label="Location" value={offer.location} />
         </div>
       </section>
@@ -163,15 +182,48 @@ function OfferDetails() {
       <section>
         <div className="grid grid-cols-2 gap-3">
           <DetailItem
-            label="Monthly Rate"
+            label="Total Compensation"
             value={
-              offer.monthlyRate ? `$${offer.monthlyRate.toLocaleString()}` : ''
+              offer.totalCompensation
+                ? `$${offer.totalCompensation.toLocaleString()}`
+                : ''
+            }
+          />
+          <DetailItem
+            label="Base Salary"
+            value={
+              offer.baseSalary ? `$${offer.baseSalary.toLocaleString()}` : ''
             }
           />
           <DetailItem
             label="Hourly Rate"
             value={offer.hourlyRate ? `$${offer.hourlyRate}/hr` : ''}
           />
+          <DetailItem
+            label="Stock Per Year"
+            value={
+              offer.stockPerYear
+                ? `$${offer.stockPerYear.toLocaleString()}`
+                : ''
+            }
+          />
+        </div>
+      </section>
+
+      <div className="h-[1px] bg-gray-200" />
+
+      {/* Bonuses and Benefits */}
+      <section>
+        <div className="grid grid-cols-2 gap-3">
+          <DetailItem
+            label="Total Bonus"
+            value={offer.bonus ? `$${offer.bonus.toLocaleString()}` : ''}
+          />
+          <DetailItem
+            label="Performance Bonus"
+            value={offer.performanceBonusText}
+          />
+          <DetailItem label="Sign-on Bonus" value={offer.signOnBonusText} />
           <DetailItem label="Relocation" value={offer.relocationText} />
         </div>
       </section>
@@ -197,28 +249,6 @@ function OfferDetails() {
         </>
       )}
     </div>
-  );
-}
-
-function SlackMessage() {
-  const {
-    id,
-    slackMessageChannelId,
-    posterFirstName,
-    posterLastName,
-    posterProfilePicture,
-  } = useLoaderData<typeof loader>();
-
-  if (!slackMessageChannelId) return null;
-
-  return (
-    <SlackMessageLink
-      channelId={slackMessageChannelId}
-      messageId={id}
-      posterFirstName={posterFirstName || ''}
-      posterLastName={posterLastName || ''}
-      posterProfilePicture={posterProfilePicture || ''}
-    />
   );
 }
 

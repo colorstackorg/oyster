@@ -53,7 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     listFullTimeOffers(searchParams, { limit, memberId, page }),
   ]);
 
-  if (pathname === Route['/compensation/full-time-offers']) {
+  if (pathname === Route['/compensation/full-time']) {
     track({
       event: 'Page Viewed',
       properties: { Page: 'Compensation' },
@@ -184,7 +184,7 @@ function FullTimeOffersTable() {
       emptyMessage="No full-time offers found."
       rowTo={(row) => {
         return {
-          pathname: generatePath(Route['/compensation/full-time-offers/:id'], {
+          pathname: generatePath(Route['/compensation/full-time/:id'], {
             id: row.id,
           }),
           search: searchParams.toString(),

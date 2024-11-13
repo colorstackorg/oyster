@@ -132,7 +132,7 @@ function InternshipOffersTable() {
       emptyMessage="No internship offers found matching your criteria."
       rowTo={(row) => {
         return {
-          pathname: generatePath(Route['/compensation/internship-offers/:id'], {
+          pathname: generatePath(Route['/compensation/internships/:id'], {
             id: row.id,
           }),
           search: searchParams.toString(),

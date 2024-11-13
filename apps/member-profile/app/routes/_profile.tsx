@@ -10,6 +10,7 @@ import {
   FileText,
   Folder,
   Home,
+  Layers,
   MessageCircle,
   User,
 } from 'react-feather';
@@ -24,8 +25,8 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const [isJobOffersEnabled, resumeBook] = await Promise.all([
-    isFeatureFlagEnabled('job_offers'),
+  const [isCompensationEnabled, resumeBook] = await Promise.all([
+    isFeatureFlagEnabled('compensation'),
 
     getResumeBook({
       select: ['resumeBooks.id'],
@@ -37,13 +38,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   ]);
 
   return json({
-    isJobOffersEnabled,
+    isCompensationEnabled,
     resumeBook,
   });
 }
 
 export default function ProfileLayout() {
-  const { isJobOffersEnabled, resumeBook } = useLoaderData<typeof loader>();
+  const { isCompensationEnabled, resumeBook } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -82,31 +83,13 @@ export default function ProfileLayout() {
               prefetch="intent"
             />
             <Dashboard.NavigationLink
-              icon={<DollarSign />}
+              icon={<Layers />}
               isNew
               label="Opportunities"
               pathname={Route['/opportunities']}
               prefetch="intent"
             />
-            {isJobOffersEnabled && (
-              <Dashboard.NavigationLink
-                icon={<DollarSign />}
-                isNew
-                label="Compensation"
-                pathname={Route['/compensation']}
-                prefetch="intent"
-              />
-            )}
-            {isJobOffersEnabled && (
-              <Dashboard.NavigationLink
-                icon={<DollarSign />}
-                isNew
-                label="Compensation"
-                pathname={Route['/compensation']}
-                prefetch="intent"
-              />
-            )}
-            {isJobOffersEnabled && (
+            {isCompensationEnabled && (
               <Dashboard.NavigationLink
                 icon={<DollarSign />}
                 isNew
