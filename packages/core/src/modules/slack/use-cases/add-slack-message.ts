@@ -3,6 +3,7 @@ import { db } from '@oyster/db';
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { redis } from '@/infrastructure/redis';
+import { isFeatureFlagEnabled } from '@/modules/feature-flag/queries/is-feature-flag-enabled';
 import { ErrorWithContext } from '@/shared/errors';
 import { retryWithBackoff } from '@/shared/utils/core.utils';
 import { getSlackMessage } from '../services/slack-message.service';
@@ -54,9 +55,16 @@ export async function addSlackMessage(
 
   // We'll do some additional checks for top-level threads...
   if (!data.threadId) {
-    const [isAutoReplyChannel, isOpportunityChannel] = await Promise.all([
+    const [
+      isAutoReplyChannel,
+      isJobOfferChannel,
+      isOpportunityChannel,
+      isJobOffersEnabled,
+    ] = await Promise.all([
       redis.sismember('slack:auto_reply_channels', data.channelId),
+      redis.sismember('slack:job_offer_channels', data.channelId),
       redis.sismember('slack:opportunity_channels', data.channelId),
+      isFeatureFlagEnabled('job_offers'),
     ]);
 
     if (isAutoReplyChannel) {
@@ -65,6 +73,13 @@ export async function addSlackMessage(
         question: data.text as string,
         threadId: data.id,
         userId: data.userId,
+      });
+    }
+
+    if (isJobOffersEnabled && isJobOfferChannel) {
+      job('job_offer.share', {
+        slackChannelId: data.channelId,
+        slackMessageId: data.id,
       });
     }
 

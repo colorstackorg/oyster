@@ -13,6 +13,7 @@ import { oneTimeCodeWorker } from './modules/authentication/one-time-code.worker
 import { eventWorker } from './modules/event/event.worker';
 import { feedWorker } from './modules/feed/feed';
 import { gamificationWorker } from './modules/gamification/gamification.core';
+import { jobOfferWorker } from './modules/job-offers/job-offers';
 import { mailchimpWorker } from './modules/mailchimp/mailchimp';
 import { memberEmailWorker } from './modules/member/member-email.worker';
 import { memberWorker } from './modules/member/member.worker';
@@ -40,6 +41,7 @@ export function startBullWorkers(): void {
   eventWorker.run();
   feedWorker.run();
   gamificationWorker.run();
+  jobOfferWorker.run();
   mailchimpWorker.run();
   memberWorker.run();
   memberEmailWorker.run();

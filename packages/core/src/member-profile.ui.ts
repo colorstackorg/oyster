@@ -19,7 +19,6 @@ export {
   EmploymentType,
   FORMATTED_EMPLOYMENT_TYPE,
   FORMATTED_LOCATION_TYPE,
-  ListJobOffersWhere,
   LocationType,
   WorkExperience,
 } from './modules/employment/employment.types';
