@@ -6,7 +6,9 @@ import { ENV } from '@/shared/env';
 
 // Instances
 
-export const redis = new Redis(ENV.REDIS_URL as string);
+export const redis = new Redis(ENV.REDIS_URL, {
+  family: 0,
+});
 
 // Types
 
