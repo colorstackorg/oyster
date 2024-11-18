@@ -225,30 +225,30 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
     relocation and any other bonuses are also given, SUM all these values.
   - Determine PERFORMANCE_BONUS, SIGN_ON_BONUS, RELOCATION, BENEFITS,
     YEARS_OF_EXPERIENCE, and NEGOTIATED by extracting the text relevant to this.
-    Return this text. If a particular field is not referenced, return NULL for
+    Return this text. If a particular field is not referenced, return null for
     this field.
   - Let ADDITIONAL_NOTES be a text field containing any additional info present
     in the job offer but not captured elsewhere.
 
   Return the response as a json in the format
   <output>
-  {
-    "employment_type": "full_time",
-    "company": COMPANY,
-    "role": ROLE,
-    "base_salary": BASE_SALARY,
-    "hourly_rate": HOURLY_RATE,
-    "location": LOCATION,
-    "stock_per_year": STOCK_PER_YEAR,
-    "bonus": BONUS,
-    "performance_bonus": PERFORMANCE_BONUS,
-    "sign_on_bonus": SIGN_ON_BONUS,
-    "relocation": RELOCATION,
-    "benefits": BENEFITS,
-    "years_of_experience": YEARS_OF_EXPERIENCE,
-    "negotiated_text": NEGOTIATED,
-    "additional_notes": ADDITIONAL_NOTES
-  }
+    {
+      "additionalNotes": "string | null",
+      "baseSalary": "number | null",
+      "benefits": "string | null",
+      "bonus": "number | null",
+      "company": "string",
+      "employmentType": "full_time",
+      "hourlyRate": "number | null",
+      "location": "string | null",
+      "negotiatedText": "string | null",
+      "performanceBonus": "string | null",
+      "relocation": "string | null",
+      "role": "string",
+      "signOnBonus": "string | null",
+      "stockPerYear": "number | null",
+      "yearsOfExperience": "string | null",
+    }
   </output>
 
   If job offer is an internship do the following:
@@ -256,33 +256,33 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
     hourly rate and monthly rate.
   - Determine RELOCATION, BENEFITS, YEARS_OF_EXPERIENCE, and NEGOTIATED by
     extracting the text relevant to this. Return this text. If a particular
-    field is not referenced, return NULL for this field.
+    field is not referenced, return null for this field.
   - Let ADDITIONAL_NOTES be a text field containing any additional info present
     in the job offer but not captured elsewhere.
 
   Return the response as a json in the format.
   <output>
-  {
-    "employment_type": "internship",
-    "company": COMPANY,
-    "role": ROLE,
-    "hourly_rate": HOURLY_RATE,
-    "monthly_rate": MONTHLY_RATE,
-    "location": LOCATION,
-    "relocation": RELOCATION,
-    "benefits": BENEFITS,
-    "years_of_experience": YEARS_OF_EXPERIENCE,
-    "negotiated_text": NEGOTIATED,
-    "additional_notes": ADDITIONAL_NOTES,
-  }
+    {
+      "additionalNotes": "string | null",
+      "benefits": "string | null",
+      "company": "string",
+      "employmentType": "internship",
+      "hourlyRate": "number | null",
+      "location": "string | null",
+      "monthlyRate": "number | null",
+      "negotiatedText": "string | null",
+      "relocation": "string | null",
+      "role": "string",
+      "yearsOfExperience": "string | null",
+    }
   </output>
 
   IMPORTANT Rules for all responses:
   - Location should be a city name in the format "{city_name}, {state_abbreviation}"
-  - If you are unsure about any value return NULL
-  - IMPORTANT: Return ONLY the JSON
+  - If you are unsure about any value return null
+  - IMPORTANT: Return ONLY the JSON, don't return the <output> tags.
   - If something other than hourly or monthly rate is given, assume 40 hour
-    work week and calculate hourly rate. Return NULL if you are unsure on any
+    work week and calculate hourly rate. Return null if you are unsure on any
     values.
 `;
 
