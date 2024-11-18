@@ -203,87 +203,89 @@ const SHARE_JOB_OFFER_SYSTEM_PROMPT = dedent`
 `;
 
 const SHARE_JOB_OFFER_PROMPT = dedent`
-  Here's the job offer details to analyze:
+  You are an AI assistant specialized in extracting structured data about job offers from text content. Your task is to analyze the given job offer details and extract specific information in a JSON format.
+
+  Here is the job offer to analyze:
 
   <job_offer>
     $JOB_OFFER_TEXT
   </job_offer>
 
-  First, determine if the job offer is for an internship or a full-time position.
+  Instructions:
+  1. Carefully read and analyze the job offer text.
+  2. Determine whether the position is full-time or an internship.
+  3. Extract relevant information based on the job type.
+  4. Perform any necessary calculations, especially for financial details.
+  5. Format the extracted information into a JSON object.
 
-  If job offer is a full-time position do the following:
-  - Extract compensation details from the following Slack message, specifically
-    identifying base salary, stock per year, and bonus. Ideally get the annual
-    base salary. But if there is no annual base salary given, determine the
-    hourly rate.
-  - Calculate the annualized stock. Sometimes the value for stock per year will
-    already be given, sometimes you will be given a vesting schedule, or the
-    total amount of stock over a number of years. Calculate a value for stock
-    per year.
-  - Calculate the bonus. If bonus is given as a percentage, assume this is
-    percentage of base salary and CALCULATE the value. If sign on bonus and
-    relocation and any other bonuses are also given, SUM all these values.
-  - Determine PERFORMANCE_BONUS, SIGN_ON_BONUS, RELOCATION, BENEFITS,
-    YEARS_OF_EXPERIENCE, and NEGOTIATED by extracting the text relevant to this.
-    Return this text. If a particular field is not referenced, return null for
-    this field.
-  - Let ADDITIONAL_NOTES be a text field containing any additional info present
-    in the job offer but not captured elsewhere.
+  Before providing the final JSON output, wrap your analysis inside <job_offer_analysis> tags. In your analysis:
+  - Clearly state whether the job is full-time or an internship, and provide your reasoning for this classification. Quote relevant parts of the job offer that support your decision.
+  - List out key information from the job offer, categorizing it into "Employment Type," "Salary Information," and "Additional Details." For each piece of information, quote the relevant part of the job offer.
+  - Show your work step-by-step for any calculations, clearly explaining each step and the reasoning behind it.
+  - Double-check all numerical values for accuracy by re-calculating and comparing results.
+  - Ensure any textual fields are concise and relevant, quoting the original text where appropriate.
 
-  Return the response as a json in the format
-  <output>
-    {
-      "additionalNotes": "string | null",
-      "baseSalary": "number | null",
-      "benefits": "string | null",
-      "bonus": "number | null",
-      "company": "string",
-      "employmentType": "full_time",
-      "hourlyRate": "number | null",
-      "location": "string | null",
-      "negotiatedText": "string | null",
-      "performanceBonus": "string | null",
-      "relocation": "string | null",
-      "role": "string",
-      "signOnBonus": "string | null",
-      "stockPerYear": "number | null",
-      "yearsOfExperience": "string | null",
-    }
-  </output>
+  For a full-time position, extract and calculate:
+  - Base salary (annual or hourly)
+  - Annualized stock value
+  - Total bonus (including sign-on, performance, relocation)
+  - Additional fields: performance bonus, sign-on bonus, relocation, benefits, years of experience, negotiation details
 
-  If job offer is an internship do the following:
-  - Extract compensation details from the job offer, specifically identifying
-    hourly rate and monthly rate.
-  - Determine RELOCATION, BENEFITS, YEARS_OF_EXPERIENCE, and NEGOTIATED by
-    extracting the text relevant to this. Return this text. If a particular
-    field is not referenced, return null for this field.
-  - Let ADDITIONAL_NOTES be a text field containing any additional info present
-    in the job offer but not captured elsewhere.
+  For an internship, extract:
+  - Hourly rate and/or monthly rate
+  - Additional fields: relocation, benefits, years of experience, negotiation details
 
-  Return the response as a json in the format.
-  <output>
-    {
-      "additionalNotes": "string | null",
-      "benefits": "string | null",
-      "company": "string",
-      "employmentType": "internship",
-      "hourlyRate": "number | null",
-      "location": "string | null",
-      "monthlyRate": "number | null",
-      "negotiatedText": "string | null",
-      "relocation": "string | null",
-      "role": "string",
-      "yearsOfExperience": "string | null",
-    }
-  </output>
+  For both types, include:
+  - Company name
+  - Role
+  - Location (format as "City, State")
+  - Any additional notes not captured in other fields
 
-  IMPORTANT Rules for all responses:
-  - Location should be a city name in the format "{city_name}, {state_abbreviation}"
-  - If you are unsure about any value return null
-  - IMPORTANT: Return ONLY the JSON, don't return the <output> tags.
-  - If something other than hourly or monthly rate is given, assume 40 hour
-    work week and calculate hourly rate. Return null if you are unsure on any
-    values.
+  Output Format:
+  After your analysis, provide the extracted information in a JSON object. Use null for any fields where information is unavailable or unclear. Here's the structure to follow:
+
+  For full-time:
+  {
+    "additionalNotes": string | null,
+    "baseSalary": number | null,
+    "benefits": string | null,
+    "bonus": number | null,
+    "company": string,
+    "employmentType": "full_time",
+    "hourlyRate": number | null,
+    "location": string | null,
+    "negotiatedText": string | null,
+    "performanceBonus": string | null,
+    "relocation": string | null,
+    "role": string,
+    "signOnBonus": string | null,
+    "stockPerYear": number | null,
+    "yearsOfExperience": string | null
+  }
+
+  For internship:
+  {
+    "additionalNotes": string | null,
+    "benefits": string | null,
+    "company": string,
+    "employmentType": "internship",
+    "hourlyRate": number | null,
+    "location": string | null,
+    "monthlyRate": number | null,
+    "negotiatedText": string | null,
+    "relocation": string | null,
+    "role": string,
+    "yearsOfExperience": string | null
+  }
+
+  Important Rules:
+  - If unsure about any value, use null.
+  - For hourly rates, assume a 40-hour work week if calculating from other given information.
+  - Ensure all calculations are accurate and double-checked.
+  - Keep textual fields concise and relevant.
+  - After your analysis, provide only the JSON object, without any additional text or tags.
+
+  Now, analyze the job offer and provide the structured data as requested.
 `;
 
 const ShareJobOfferResponse = z.discriminatedUnion('employmentType', [
