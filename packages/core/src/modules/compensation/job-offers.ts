@@ -48,6 +48,9 @@ async function backfillJobOffers({
     .where('slackMessages.channelId', 'in', compensationChannels)
     .where('slackMessages.deletedAt', 'is', null)
     .where('slackMessages.threadId', 'is', null)
+    .where('slackMessages.text', 'like', '%Company%')
+    .where('slackMessages.text', 'like', '%Location%')
+    .where('slackMessages.text', 'like', '%Role%')
     .where((eb) => {
       return eb.not(() => {
         return eb.exists(() => {
@@ -503,6 +506,7 @@ async function shareJobOffer({
       postedBy: slackMessage.studentId,
       relocation: data.relocation,
       role: data.role,
+      signOnBonus: data.signOnBonus,
       slackChannelId,
       slackMessageId,
       updatedAt: new Date(),
@@ -525,7 +529,6 @@ async function shareJobOffer({
         ...baseJobOffer,
         baseSalary: data.baseSalary,
         performanceBonus: data.performanceBonus,
-        signOnBonus: data.signOnBonus,
         totalCompensation: calculateTotalCompensation({
           baseSalary: data.baseSalary,
           performanceBonus: data.performanceBonus,
