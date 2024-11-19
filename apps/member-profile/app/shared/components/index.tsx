@@ -4,6 +4,7 @@
 import { generatePath, Link } from '@remix-run/react';
 import { Briefcase } from 'react-feather';
 
+import { Text } from '@oyster/ui';
 import {
   FilterButton,
   FilterEmptyMessage,
@@ -18,17 +19,35 @@ import { Route } from '@/shared/constants';
 
 // Company Column
 
-type CompanyColumnProps = {
+export function CompanyColumn({
+  companyId,
+  companyLogo,
+  companyName,
+}: CompanyLinkProps) {
+  if (!companyId || !companyName) {
+    return null;
+  }
+
+  return (
+    <CompanyLink
+      companyId={companyId}
+      companyLogo={companyLogo}
+      companyName={companyName}
+    />
+  );
+}
+
+type CompanyLinkProps = {
   companyId: string | null;
   companyLogo: string | null;
   companyName: string | null;
 };
 
-export function CompanyColumn({
+export function CompanyLink({
   companyId,
   companyLogo,
   companyName,
-}: CompanyColumnProps) {
+}: CompanyLinkProps) {
   if (!companyId || !companyName) {
     return null;
   }
@@ -39,15 +58,17 @@ export function CompanyColumn({
       target="_blank"
       to={generatePath(Route['/companies/:id'], { id: companyId })}
     >
-      <div className="h-8 w-8 flex-shrink-0 rounded-lg border border-gray-200 p-1">
+      <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
         <img
-          alt={companyName as string}
+          alt={companyName}
           className="aspect-square h-full w-full rounded-md"
           src={companyLogo as string}
         />
       </div>
 
-      <span className="truncate text-sm">{companyName}</span>
+      <Text as="span" className="truncate" variant="sm">
+        {companyName}
+      </Text>
     </Link>
   );
 }
