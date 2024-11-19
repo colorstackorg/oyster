@@ -523,6 +523,12 @@ async function shareJobOffer({
         baseSalary: data.baseSalary,
         performanceBonus: data.performanceBonus,
         signOnBonus: data.signOnBonus,
+        totalCompensation: calculateTotalCompensation({
+          baseSalary: data.baseSalary,
+          performanceBonus: data.performanceBonus,
+          signOnBonus: data.signOnBonus,
+          totalStock: data.totalStock,
+        }),
         totalStock: data.totalStock,
       })
       .returning(['id'])
@@ -546,6 +552,35 @@ async function shareJobOffer({
 }
 
 // Helpers
+
+type CompensationDetails = {
+  baseSalary: number;
+  performanceBonus: number | null;
+  signOnBonus: number | null;
+  totalStock: number | null;
+};
+
+/**
+ * Calculates the total compensation for a job offer, which follows the formula:
+ *
+ * `baseSalary + performanceBonus + (totalStock / 4) + (signOnBonus / 4)`
+ *
+ * @param details - Compensation details.
+ * @returns Total compensation.
+ */
+function calculateTotalCompensation({
+  baseSalary,
+  performanceBonus,
+  signOnBonus,
+  totalStock,
+}: CompensationDetails) {
+  return (
+    (baseSalary ?? 0) +
+    (performanceBonus ?? 0) +
+    (signOnBonus ?? 0) / 4 +
+    (totalStock ?? 0) / 4
+  );
+}
 
 // "Has Edit Permission"
 
