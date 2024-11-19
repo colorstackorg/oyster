@@ -5,12 +5,6 @@ export async function up(db: Kysely<any>) {
 
   await db.schema
     .alterTable('internship_job_offers')
-    .dropColumn('location_type')
-    .dropColumn('monthly_rate')
-    .addColumn('posted_at', 'timestamptz', (column) => {
-      return column.notNull();
-    })
-    .addColumn('sign_on_bonus', 'decimal(10, 2)')
     .alterColumn('hourly_rate', (column) => {
       return column.setDataType('decimal(10, 2)');
     })
@@ -20,6 +14,12 @@ export async function up(db: Kysely<any>) {
     .alterColumn('location', (column) => {
       return column.setNotNull();
     })
+    .dropColumn('location_type')
+    .dropColumn('monthly_rate')
+    .addColumn('posted_at', 'timestamptz', (column) => {
+      return column.notNull();
+    })
+    .addColumn('sign_on_bonus', 'decimal(10, 2)')
     .execute();
 
   await db.schema
