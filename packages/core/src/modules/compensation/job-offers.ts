@@ -9,6 +9,7 @@ import { id } from '@oyster/utils';
 import { JobOfferBullJob } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
+import { redis } from '@/infrastructure/redis';
 import { getChatCompletion } from '@/modules/ai/ai';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
@@ -16,6 +17,70 @@ import { ENV } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 
 // Core
+
+type BackfillJobOffersInput = {
+  limit?: number;
+};
+
+/**
+ * Backfills all the job offers that were shared in compensation channels.
+ *
+ * This is idempotent and will not re-share job offers that have already been
+ * shared. This processes emits a job for each offer so this will happen
+ * asynchronously in the background.
+ *
+ * @returns Result indicating the success or failure of the operation.
+ */
+async function backfillJobOffers({
+  limit = 5,
+}: BackfillJobOffersInput): Promise<Result> {
+  const compensationChannels = await redis.smembers(
+    'slack:compensation_channels'
+  );
+
+  const slackMessages = await db
+    .selectFrom('slackMessages')
+    .select([
+      'slackMessages.id',
+      'slackMessages.channelId',
+      'slackMessages.createdAt',
+    ])
+    .where('slackMessages.channelId', 'in', compensationChannels)
+    .where('slackMessages.deletedAt', 'is', null)
+    .where((eb) => {
+      return eb.not(() => {
+        return eb.exists(() => {
+          return eb
+            .selectFrom('fullTimeJobOffers')
+            .whereRef('slackChannelId', '=', 'slackMessages.channelId')
+            .whereRef('slackMessageId', '=', 'slackMessages.id');
+        });
+      });
+    })
+    .where((eb) => {
+      return eb.not(() => {
+        return eb.exists(() => {
+          return eb
+            .selectFrom('internshipJobOffers')
+            .whereRef('slackChannelId', '=', 'slackMessages.channelId')
+            .whereRef('slackMessageId', '=', 'slackMessages.id');
+        });
+      });
+    })
+    .orderBy('slackMessages.createdAt', 'desc')
+    .limit(limit)
+    .execute();
+
+  for (const slackMessage of slackMessages) {
+    job('job_offer.share', {
+      sendNotification: false,
+      slackChannelId: slackMessage.channelId,
+      slackMessageId: slackMessage.id,
+    });
+  }
+
+  return success({});
+}
 
 // "Delete Job Offer"
 
@@ -539,6 +604,9 @@ export const jobOfferWorker = registerWorker(
   JobOfferBullJob,
   async (job) => {
     const result = await match(job)
+      .with({ name: 'job_offer.backfill' }, async ({ data }) => {
+        return backfillJobOffers(data);
+      })
       .with({ name: 'job_offer.share' }, async ({ data }) => {
         return shareJobOffer(data);
       })
