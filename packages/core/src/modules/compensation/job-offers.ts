@@ -136,7 +136,7 @@ export const EditFullTimeJobOfferInput = z.object({
   relocation: z.string().trim().min(1).nullable(),
   role: z.string().trim().min(1).nullable(),
   signOnBonus: z.string().trim().min(1).nullable(),
-  stockPerYear: z.number().nullable(),
+  totalStock: z.number().nullable(),
 });
 
 type EditFullTimeJobOfferInput = z.infer<typeof EditFullTimeJobOfferInput>;
@@ -165,7 +165,7 @@ export async function editFullTimeJobOffer(
         pastExperience: input.pastExperience,
         performanceBonus: input.performanceBonus,
         signOnBonus: input.signOnBonus,
-        stockPerYear: input.stockPerYear,
+        totalStock: input.totalStock,
         updatedAt: new Date(),
       })
       .where('id', '=', jobOfferId)
@@ -226,27 +226,25 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
   - "location": Format as "City, State". If the location mentions being remote,
     then just use "Remote". If the user specifies a short-hand location like
     "SF" or "NYC", then use the full location (ie: San Francisco, CA).
-  - "negotiatedText": The user-provided negotiation details. Don't include
+  - "negotiated": The user-provided negotiation details. Don't include
     anything in the "benefits" section. Don't format.
-  - "pastExperienceText": The user-provided past experience.
-  - "relocationText": The user-provided housing/relocation details. Don't format.
+  - "pastExperience": The user-provided past experience.
+  - "relocation": The user-provided housing/relocation details. Don't format.
   - "role": The role for the job offer. Expand any acronyms (ie:
     SWE -> Software Engineer, PM -> Product Manager).
+  - "signOnBonus": The total sign-on bonus.
 
   For a full-time position, extract and calculate:
   - "baseSalary": The annual base salary of the position.
   - "performanceBonus": The annualized performance bonus (if a percentage of base
   salary, convert to annualized amount). If a range is given, use the highest
   amount.
-  - "signOnBonus": The annualized sign-on bonus over 4 years.
-  - "stockPerYear": The annualized stock value over 4 years (unless otherwise
-    specified).
+  - "totalStock": The total equity/stock grant.
 
   For an internship, extract and/or calculate:
-  - "hourlyRate": The hourly pay of the position. If the hourly rate is given, use
-    that directly. If the monthly rate is given, convert to hourly
+  - "hourlyRate": The hourly pay of the position. If the hourly rate is given,
+    use that directly. If the monthly rate is given, convert to hourly
     (hourly = monthly * 12 / 52 / 40).
-  - "signOnBonus": The internship-specific sign-on bonus.
 
   Output Format:
   After your analysis, provide the extracted information in a JSON object. Use
@@ -256,20 +254,18 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
   For full-time:
   {
     "additionalNotes": string | null,
-    "baseSalary": number | null,
+    "baseSalary": number,
     "benefits": string | null,
-    "bonus": number | null,
     "company": string,
     "employmentType": "full_time",
-    "hourlyRate": number | null,
-    "location": string | null,
-    "negotiatedText": string | null,
-    "pastExperienceText": number | null,
+    "location": string,
+    "negotiated": string | null,
+    "pastExperience": string | null,
     "performanceBonus": string | null,
-    "relocationText": string | null,
+    "relocation": string | null,
     "role": string,
     "signOnBonus": number | null,
-    "stockPerYear": number | null
+    "totalStock": number | null
   }
 
   For internship:
@@ -278,19 +274,17 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
     "benefits": string | null,
     "company": string,
     "employmentType": "internship",
-    "hourlyRate": number | null,
-    "location": string | null,
+    "hourlyRate": number,
+    "location": string,
     "negotiated": string | null,
-    "pastExperienceText": number | null,
-    "relocationText": string | null,
+    "pastExperience": string | null,
+    "relocation": string | null,
     "role": string,
     "signOnBonus": number | null
   }
 
   Important Rules:
   - If unsure about any value, use null.
-  - For hourly rates, assume a 40-hour work week if calculating from other
-    given information.
   - Ensure all calculations are accurate and double-checked.
   - Keep textual fields concise and relevant.
   - After your analysis, provide only the JSON object, without any additional
@@ -302,12 +296,12 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
 const BaseJobOffer = z.object({
   additionalNotes: z.string().trim().min(1).nullable(),
   benefits: z.string().trim().min(1).nullable(),
-  company: z.string().trim().min(1).nullable(),
+  company: z.string().trim().min(1),
   location: z.string().trim().min(1),
   negotiated: z.string().trim().min(1).nullable(),
   pastExperience: z.string().trim().min(1).nullable(),
   relocation: z.string().trim().min(1).nullable(),
-  role: z.string().trim().min(1).nullable(),
+  role: z.string().trim().min(1),
   signOnBonus: z.coerce.number().nullable(),
 });
 
@@ -322,7 +316,7 @@ const ShareJobOfferResponse = z.discriminatedUnion('employmentType', [
     baseSalary: z.coerce.number(),
     employmentType: z.literal('full_time'),
     performanceBonus: z.coerce.number().nullable(),
-    stockPerYear: z.coerce.number().nullable(),
+    totalStock: z.coerce.number().nullable(),
   }),
 ]);
 
@@ -464,7 +458,7 @@ async function shareJobOffer({
         baseSalary: data.baseSalary,
         performanceBonus: data.performanceBonus,
         signOnBonus: data.signOnBonus,
-        stockPerYear: data.stockPerYear,
+        totalStock: data.totalStock,
       })
       .returning(['id'])
       .executeTakeFirstOrThrow();

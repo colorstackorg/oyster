@@ -91,6 +91,11 @@ export async function up(db: Kysely<any>) {
 
   await db.schema
     .alterTable('full_time_job_offers')
+    .renameColumn('stock_per_year', 'total_stock')
+    .execute();
+
+  await db.schema
+    .alterTable('full_time_job_offers')
     .renameColumn('years_of_experience', 'past_experience')
     .execute();
 
