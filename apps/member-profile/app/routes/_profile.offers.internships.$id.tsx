@@ -1,109 +1,73 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import {
-  generatePath,
-  Link,
-  useLoaderData,
-  useSearchParams,
-} from '@remix-run/react';
+import { useLoaderData, useSearchParams } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { Edit } from 'react-feather';
 
+import { hourlyToMonthlyRate } from '@oyster/core/job-offers';
 import { db } from '@oyster/db';
-import { getIconButtonCn, Modal, Text } from '@oyster/ui';
+import { Divider, Modal } from '@oyster/ui';
 
+import { CompanyLink } from '@/shared/components';
+import {
+  OfferDetail,
+  OfferSection,
+  OfferTitle,
+} from '@/shared/components/offer';
 import { ViewInSlackButton } from '@/shared/components/slack-message';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
-  const memberId = user(session);
-  const offerId = params.id as string;
 
-  const _offer = await getInternshipJobOfferDetails({
-    memberId,
-    offerId,
+  const offer = await getInternshipOfferDetails({
+    memberId: user(session),
+    offerId: params.id as string,
   });
 
-  if (!_offer) {
+  if (!offer) {
     throw new Response(null, {
       status: 404,
       statusText: 'The internship offer you are looking for does not exist.',
     });
   }
 
-  const formatter = new Intl.NumberFormat('en-US', {
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-    style: 'currency',
-  });
-
-  Object.assign(_offer, {
-    createdAt: dayjs().to(_offer.createdAt),
-  });
-
-  const hourlyRate = parseInt(_offer.hourlyRate);
-  const monthlyRate = (hourlyRate * 40 * 52) / 12;
-
-  const offer = {
-    ..._offer,
-    hourlyRate: formatter.format(hourlyRate) + '/hr',
-    monthlyRate: formatter.format(monthlyRate) + '/mo',
-  };
-
   return json(offer);
 }
 
-type GetInternshipJobOfferDetailsInput = {
+type GetInternshipOfferDetailsInput = {
   memberId: string;
   offerId: string;
 };
 
-async function getInternshipJobOfferDetails({
+async function getInternshipOfferDetails({
   memberId,
   offerId,
-}: GetInternshipJobOfferDetailsInput) {
-  const offer = await db
-    .selectFrom('internshipJobOffers')
-    .leftJoin('companies', 'companies.id', 'internshipJobOffers.companyId')
-    .leftJoin('students', 'students.id', 'internshipJobOffers.postedBy')
-    .leftJoin('slackMessages', (join) => {
-      return join
-        .onRef(
-          'slackMessages.channelId',
-          '=',
-          'internshipJobOffers.slackChannelId'
-        )
-        .onRef('slackMessages.id', '=', 'internshipJobOffers.slackMessageId');
-    })
+}: GetInternshipOfferDetailsInput) {
+  const _offer = await db
+    .selectFrom('internshipJobOffers as internshipOffers')
+    .leftJoin('companies', 'companies.id', 'internshipOffers.companyId')
     .select([
       'companies.id as companyId',
-      'companies.name as companyName',
       'companies.imageUrl as companyLogo',
-      'companies.crunchbaseId as companyCrunchbaseId',
-      'internshipJobOffers.id',
-      'internshipJobOffers.role',
-      'internshipJobOffers.location',
-      'internshipJobOffers.createdAt',
-      'internshipJobOffers.hourlyRate',
-      'internshipJobOffers.relocation',
-      'internshipJobOffers.benefits',
-      'internshipJobOffers.pastExperience',
-      'internshipJobOffers.negotiated',
-      'internshipJobOffers.additionalNotes',
-      'slackMessages.channelId as slackMessageChannelId',
-      'slackMessages.createdAt as slackMessagePostedAt',
-      'slackMessages.id as slackMessageId',
-      'slackMessages.text as slackMessageText',
-      'students.firstName as posterFirstName',
-      'students.lastName as posterLastName',
-      'students.profilePicture as posterProfilePicture',
+      'companies.name as companyName',
+      'internshipOffers.additionalNotes',
+      'internshipOffers.benefits',
+      'internshipOffers.id',
+      'internshipOffers.hourlyRate',
+      'internshipOffers.location',
+      'internshipOffers.negotiated',
+      'internshipOffers.pastExperience',
+      'internshipOffers.postedAt',
+      'internshipOffers.relocation',
+      'internshipOffers.role',
+      'internshipOffers.signOnBonus',
+      'internshipOffers.slackChannelId',
+      'internshipOffers.slackMessageId',
 
       (eb) => {
         return eb
           .or([
-            eb('internshipJobOffers.postedBy', '=', memberId),
+            eb('internshipOffers.postedBy', '=', memberId),
             eb.exists(() => {
               return eb
                 .selectFrom('admins')
@@ -114,13 +78,47 @@ async function getInternshipJobOfferDetails({
           .as('hasWritePermission');
       },
     ])
-    .where('internshipJobOffers.id', '=', offerId)
+    .where('internshipOffers.id', '=', offerId)
     .executeTakeFirst();
+
+  if (!_offer) {
+    return null;
+  }
+
+  const formatter = new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    style: 'currency',
+  });
+
+  const hourlyRate = parseInt(_offer.hourlyRate);
+  const monthlyRate = hourlyToMonthlyRate(hourlyRate);
+
+  const offer = {
+    ..._offer,
+    hourlyRate: formatter.format(hourlyRate) + '/hr',
+    monthlyRate: formatter.format(monthlyRate) + '/mo',
+    postedAt: dayjs().to(_offer.postedAt),
+    signOnBonus: formatter.format(Number(_offer.signOnBonus) || 0),
+  };
 
   return offer;
 }
 
+// UI
+
 export default function InternshipOfferPage() {
+  const {
+    companyId,
+    companyLogo,
+    companyName,
+    postedAt,
+    role,
+    slackChannelId,
+    slackMessageId,
+  } = useLoaderData<typeof loader>();
+
   const [searchParams] = useSearchParams();
 
   return (
@@ -132,164 +130,70 @@ export default function InternshipOfferPage() {
     >
       <Modal.Header>
         <div className="flex flex-col gap-2">
-          <CompanyLink />
-          <OfferTitle />
+          <CompanyLink
+            companyId={companyId}
+            companyLogo={companyLogo}
+            companyName={companyName}
+          />
+          <OfferTitle postedAt={postedAt} role={role!} />
         </div>
+
         <div className="flex items-center gap-[inherit]">
-          {/* <EditOfferButton /> */}
           <Modal.CloseButton />
         </div>
       </Modal.Header>
 
-      <OfferDetails />
-      <SlackMessage />
+      <InternshipOfferDetails />
+
+      {slackChannelId && slackMessageId && (
+        <div className="mx-auto">
+          <ViewInSlackButton
+            channelId={slackChannelId}
+            messageId={slackMessageId}
+          />
+        </div>
+      )}
     </Modal>
   );
 }
 
-function CompanyLink() {
-  const { companyId, companyLogo, companyName } =
-    useLoaderData<typeof loader>();
-
-  if (!companyId || !companyName) {
-    return null;
-  }
-
-  return (
-    <Link
-      className="flex w-fit items-center gap-2 hover:underline"
-      target="_blank"
-      to={generatePath(Route['/companies/:id'], { id: companyId })}
-    >
-      <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
-        <img
-          alt={companyName}
-          className="aspect-square h-full w-full rounded-md"
-          src={companyLogo as string}
-        />
-      </div>
-
-      <Text variant="sm">{companyName}</Text>
-    </Link>
-  );
-}
-
-function OfferTitle() {
-  const { createdAt, role } = useLoaderData<typeof loader>();
+function InternshipOfferDetails() {
+  const {
+    additionalNotes,
+    benefits,
+    hourlyRate,
+    location,
+    monthlyRate,
+    negotiated,
+    pastExperience,
+    relocation,
+    signOnBonus,
+  } = useLoaderData<typeof loader>();
 
   return (
-    <div className="flex flex-col gap-1">
-      <Text variant="lg">{role}</Text>
-      <Text color="gray-500" variant="sm">
-        Posted {createdAt} ago
-      </Text>
-    </div>
-  );
-}
+    <div className="flex flex-col gap-4 sm:p-4">
+      <OfferSection>
+        <OfferDetail label="Employment Type" value="Internship" />
+        <OfferDetail label="Location" value={location} />
+      </OfferSection>
 
-function EditOfferButton() {
-  const { hasWritePermission, id } = useLoaderData<typeof loader>();
-  const [searchParams] = useSearchParams();
+      <Divider />
 
-  if (!hasWritePermission) {
-    return null;
-  }
+      <OfferSection>
+        <OfferDetail label="Hourly Rate" value={hourlyRate} />
+        <OfferDetail label="Monthly Rate" value={monthlyRate} />
+        <OfferDetail label="Sign-On Bonus" value={signOnBonus} />
+        <OfferDetail label="Relocation" value={relocation} />
+        <OfferDetail label="Benefits" value={benefits} />
+      </OfferSection>
 
-  return (
-    <>
-      <Link
-        className={getIconButtonCn({
-          backgroundColor: 'gray-100',
-          backgroundColorOnHover: 'gray-200',
-        })}
-        to={{
-          pathname: generatePath(Route['/offers/internships/:id/edit'], {
-            id,
-          }),
-          search: searchParams.toString(),
-        }}
-      >
-        <Edit />
-      </Link>
+      <Divider />
 
-      <div className="h-6 w-[1px] bg-gray-100" />
-    </>
-  );
-}
-
-function OfferDetails() {
-  const offer = useLoaderData<typeof loader>();
-
-  return (
-    <div className="flex flex-col gap-4 p-4">
-      {/* Basic Information */}
-      <section>
-        <div className="grid grid-cols-2 gap-3">
-          <DetailItem label="Employment Type" value="Internship" />
-          <DetailItem label="Location" value={offer.location} />
-        </div>
-      </section>
-
-      <div className="h-[1px] bg-gray-200" />
-
-      {/* Compensation Details */}
-      <section>
-        <div className="grid grid-cols-2 gap-3">
-          <DetailItem label="Monthly Rate" value={offer.monthlyRate} />
-          <DetailItem label="Hourly Rate" value={offer.hourlyRate} />
-          <DetailItem label="Relocation" value={offer.relocation} />
-        </div>
-      </section>
-
-      {/* Additional Notes */}
-      {offer.additionalNotes && (
-        <>
-          <div className="h-[1px] bg-gray-200" />
-          <section>
-            <div className="grid grid-cols-2 gap-3">
-              <DetailItem label="Benefits" value={offer.benefits} />
-              <DetailItem
-                label="Past Experience"
-                value={offer.pastExperience}
-              />
-              <DetailItem label="Negotiated" value={offer.negotiated} />
-              <DetailItem
-                label="Additional Notes"
-                value={offer.additionalNotes}
-              />
-            </div>
-          </section>
-        </>
-      )}
-    </div>
-  );
-}
-
-function SlackMessage() {
-  const { id, slackMessageChannelId } = useLoaderData<typeof loader>();
-
-  if (!slackMessageChannelId) {
-    return null;
-  }
-
-  return <ViewInSlackButton channelId={slackMessageChannelId} messageId={id} />;
-}
-
-function DetailItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number | null | undefined;
-}) {
-  if (!value) return null;
-
-  return (
-    <div>
-      <Text color="gray-500" variant="sm">
-        {label}
-      </Text>
-      <Text>{value}</Text>
+      <OfferSection>
+        <OfferDetail label="Past Experience" value={pastExperience} />
+        <OfferDetail label="Negotiated" value={negotiated} />
+        <OfferDetail label="Additional Notes" value={additionalNotes} />
+      </OfferSection>
     </div>
   );
 }

@@ -5,17 +5,18 @@ import {
 } from '@remix-run/node';
 import {
   generatePath,
-  Link,
   Outlet,
   useLoaderData,
   useSearchParams,
 } from '@remix-run/react';
-import dayjs from 'dayjs';
-import { Briefcase, Calendar, DollarSign, MapPin } from 'react-feather';
+import { DollarSign, MapPin } from 'react-feather';
 
+import { hourlyToMonthlyRate } from '@oyster/core/job-offers';
+import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
-import { Pagination, Table, type TableColumnProps } from '@oyster/ui';
+import { Pagination, Table, type TableColumnProps, Text } from '@oyster/ui';
 import {
+  ClearFiltersButton,
   FilterButton,
   FilterEmptyMessage,
   FilterItem,
@@ -26,48 +27,46 @@ import {
   useFilterContext,
 } from '@oyster/ui/filter';
 
+import { CompanyColumn, CompanyFilter } from '@/shared/components';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
-  const memberId = user(session);
 
-  const { searchParams } = new URL(request.url);
-  const { limit: _limit, page: _page } = Object.fromEntries(searchParams);
+  const { pathname, searchParams } = new URL(request.url);
+  const {
+    company,
+    hourlyRate,
+    limit: _limit,
+    page: _page,
+  } = Object.fromEntries(searchParams);
 
   const limit = parseInt(_limit) || 50;
   const page = parseInt(_page) || 1;
 
-  const [
-    appliedCompany,
-    allCompanies,
-    allLocations,
-    { internshipOffers, totalInternshipOffers },
-  ] = await Promise.all([
-    getAppliedCompany(searchParams),
-    listAllCompanies(),
-    listAllLocations(),
-    listInternshipOffers(searchParams, { limit, memberId, page }),
-  ]);
+  const [appliedCompany, allCompanies, allLocations, { offers, totalOffers }] =
+    await Promise.all([
+      getAppliedCompany(company),
+      listAllCompanies(),
+      listAllLocations(),
+      listInternshipOffers({
+        company,
+        hourlyRate,
+        limit,
+        locations: searchParams.getAll('location'),
+        page,
+      }),
+    ]);
 
-  const formatter = new Intl.NumberFormat('en-US', {
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-    style: 'currency',
-  });
-
-  const offers = internshipOffers.map((offer) => {
-    const hourlyRate = parseInt(offer.hourlyRate);
-    const monthlyRate = (hourlyRate * 40 * 52) / 12;
-
-    return {
-      ...offer,
-      hourlyRate: formatter.format(hourlyRate) + '/hr',
-      monthlyRate: formatter.format(monthlyRate) + '/mo',
-    };
-  });
+  if (pathname === Route['/offers/internships']) {
+    track({
+      event: 'Page Viewed',
+      properties: { Page: 'Compensation' },
+      request,
+      user: user(session),
+    });
+  }
 
   return json({
     allCompanies,
@@ -76,184 +75,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
     limit,
     offers,
     page,
-    totalOffers: totalInternshipOffers,
+    totalOffers,
   });
 }
 
-export default function InternshipOffersPage() {
-  return (
-    <>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <CompanyFilter />
-          <HourlyRateFilter />
-          <LocationFilter />
-          <DatePostedFilter />
-        </div>
-      </div>
-
-      <InternshipOffersTable />
-      <InternshipOffersPagination />
-      <Outlet />
-    </>
-  );
-}
-
-type OfferInView = SerializeFrom<typeof loader>['offers'][number];
-
-function InternshipOffersTable() {
-  const { offers } = useLoaderData<typeof loader>();
-  const [searchParams] = useSearchParams();
-
-  const columns: TableColumnProps<OfferInView>[] = [
-    {
-      displayName: 'Company',
-      size: '200',
-      render: (internshipOffer) => <CompanyColumn {...internshipOffer} />,
-    },
-    {
-      displayName: 'Role',
-      size: '320',
-      render: (internshipOffer) => internshipOffer.role,
-    },
-    {
-      displayName: 'Hourly Rate',
-      size: '160',
-      render: (internshipOffer) => internshipOffer.hourlyRate,
-    },
-    {
-      displayName: 'Monthly Rate',
-      size: '160',
-      render: (internshipOffer) => internshipOffer.monthlyRate,
-    },
-    {
-      displayName: 'Location',
-      size: '200',
-      render: (internshipOffer) => internshipOffer.location,
-    },
-  ];
-
-  return (
-    <Table
-      columns={columns}
-      data={offers}
-      emptyMessage="No internship offers found matching your criteria."
-      rowTo={(row) => {
-        return {
-          pathname: generatePath(Route['/offers/internships/:id'], {
-            id: row.id,
-          }),
-          search: searchParams.toString(),
-        };
-      }}
-    />
-  );
-}
-
-function HourlyRateFilter() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const minRate = searchParams.get('minRate');
-  const maxRate = searchParams.get('maxRate');
-
-  const formatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const { name, value } = e.target;
-
-    setSearchParams((params) => {
-      params.delete('page');
-
-      if (value) {
-        params.set(name, value);
-      } else {
-        params.delete(name);
-      }
-
-      return params;
-    });
-  }
-
-  return (
-    <FilterRoot>
-      <FilterButton
-        icon={<DollarSign />}
-        popover
-        selectedValues={
-          minRate || maxRate
-            ? [
-                {
-                  color: 'green-100',
-                  label: `${minRate ? formatter.format(parseInt(minRate)) : '$0'}/hr - ${
-                    maxRate ? formatter.format(parseInt(maxRate)) : '∞'
-                  }/hr`,
-                  value: `${minRate || '0'}-${maxRate || '∞'}`,
-                },
-              ]
-            : []
-        }
-      >
-        Hourly Rate Range
-      </FilterButton>
-
-      <FilterPopover>
-        <div className="flex flex-col gap-4 p-4">
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                Min Rate
-              </label>
-              <input
-                type="number"
-                name="minRate"
-                value={minRate || ''}
-                onChange={handleChange}
-                placeholder="0"
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                Max Rate
-              </label>
-              <input
-                type="number"
-                name="maxRate"
-                value={maxRate || ''}
-                onChange={handleChange}
-                placeholder="No limit"
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
-              />
-            </div>
-          </div>
-        </div>
-      </FilterPopover>
-    </FilterRoot>
-  );
-}
-
-function InternshipOffersPagination() {
-  const { limit, offers, page, totalOffers } = useLoaderData<typeof loader>();
-
-  return (
-    <Pagination
-      dataLength={offers.length}
-      page={page}
-      pageSize={limit}
-      totalCount={totalOffers}
-    />
-  );
-}
-
-async function getAppliedCompany(searchParams: URLSearchParams) {
-  const companyFromSearch = searchParams.get('company');
-
+async function getAppliedCompany(companyFromSearch: string | null) {
   if (!companyFromSearch) {
-    return null;
+    return undefined;
   }
 
   const company = await db
@@ -270,30 +98,6 @@ async function getAppliedCompany(searchParams: URLSearchParams) {
   return company;
 }
 
-function CompanyColumn({ companyId, companyLogo, companyName }: OfferInView) {
-  if (!companyId || !companyName) {
-    return null;
-  }
-
-  return (
-    <Link
-      className="flex w-fit max-w-full items-center gap-2 hover:underline"
-      target="_blank"
-      to={generatePath(Route['/companies/:id'], { id: companyId })}
-    >
-      <div className="h-8 w-8 flex-shrink-0 rounded-lg border border-gray-200 p-1">
-        <img
-          alt={companyName as string}
-          className="aspect-square h-full w-full rounded-md"
-          src={companyLogo as string}
-        />
-      </div>
-
-      <span className="truncate text-sm">{companyName}</span>
-    </Link>
-  );
-}
-
 async function listAllCompanies() {
   const companies = await db
     .selectFrom('companies')
@@ -302,7 +106,7 @@ async function listAllCompanies() {
       return eb.exists(() => {
         return eb
           .selectFrom('internshipJobOffers')
-          .whereRef('internshipJobOffers.companyId', '=', 'companies.id');
+          .whereRef('companyId', '=', 'companies.id');
       });
     })
     .orderBy('name', 'asc')
@@ -312,7 +116,7 @@ async function listAllCompanies() {
 }
 
 async function listAllLocations() {
-  const locations = await db
+  const rows = await db
     .selectFrom('internshipJobOffers')
     .select('location')
     .distinct()
@@ -320,19 +124,31 @@ async function listAllLocations() {
     .orderBy('location', 'asc')
     .execute();
 
+  const locations = rows.map((row) => {
+    return row.location;
+  });
+
   return locations;
 }
 
-async function listInternshipOffers(
-  searchParams: URLSearchParams,
-  { limit, memberId, page }: { limit: number; memberId: string; page: number }
-) {
-  const { company, since, minRate, maxRate } = Object.fromEntries(searchParams);
-  const locations = searchParams.getAll('location');
+type ListInternshipOffersInput = {
+  company: string | null;
+  hourlyRate: string | null;
+  limit: number;
+  locations: string[];
+  page: number;
+};
 
+async function listInternshipOffers({
+  company,
+  hourlyRate,
+  limit,
+  locations,
+  page,
+}: ListInternshipOffersInput) {
   const query = db
-    .selectFrom('internshipJobOffers')
-    .leftJoin('companies', 'companies.id', 'internshipJobOffers.companyId')
+    .selectFrom('internshipJobOffers as internshipOffers')
+    .leftJoin('companies', 'companies.id', 'internshipOffers.companyId')
     .$if(!!company, (qb) => {
       return qb.where((eb) => {
         return eb.or([
@@ -341,126 +157,213 @@ async function listInternshipOffers(
         ]);
       });
     })
-    .$if(!!since, (qb) => {
-      const daysAgo = parseInt(since);
-
-      if (!daysAgo) return qb;
-      const date = dayjs().subtract(daysAgo, 'day').toDate();
-
-      return qb.where('internshipJobOffers.createdAt', '>=', date);
+    .$if(!!hourlyRate && !!Number(hourlyRate), (qb) => {
+      return qb.where('internshipOffers.hourlyRate', '>=', hourlyRate);
     })
     .$if(locations.length > 0, (qb) => {
-      return qb.where((eb) => {
-        return eb.or(
-          locations.map((location) => {
-            return eb('internshipJobOffers.location', '=', location);
-          })
-        );
-      });
-    })
-    .$if(!!minRate, (qb) => {
-      return qb.where('internshipJobOffers.hourlyRate', '>=', minRate || '');
-    })
-    .$if(!!maxRate, (qb) => {
-      return qb.where('internshipJobOffers.hourlyRate', '<=', maxRate || '');
+      return qb.where('internshipOffers.location', 'in', locations);
     });
 
-  const [{ count }, internshipOffers] = await Promise.all([
+  const [{ count }, _offers] = await Promise.all([
     query
-      .select((eb) => eb.fn.countAll().as('count'))
+      .select((eb) => eb.fn.countAll<string>().as('count'))
       .executeTakeFirstOrThrow(),
 
     query
-      .leftJoin('students', 'students.id', 'internshipJobOffers.postedBy')
       .select([
         'companies.id as companyId',
         'companies.name as companyName',
         'companies.imageUrl as companyLogo',
-        'internshipJobOffers.id',
-        'internshipJobOffers.role',
-        'internshipJobOffers.location',
-        'internshipJobOffers.hourlyRate',
-        // 'internshipJobOffers.monthlyRate',
-        'internshipJobOffers.createdAt',
-        'students.id as posterId',
-        'students.firstName as posterFirstName',
-        'students.lastName as posterLastName',
-        'students.profilePicture as posterProfilePicture',
+        'internshipOffers.hourlyRate',
+        'internshipOffers.id',
+        'internshipOffers.location',
+        'internshipOffers.role',
       ])
-      .orderBy('internshipJobOffers.createdAt', 'desc')
+      .orderBy('internshipOffers.postedAt', 'desc')
       .limit(limit)
       .offset((page - 1) * limit)
       .execute(),
   ]);
 
+  const formatter = new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    style: 'currency',
+  });
+
+  const offers = _offers.map((offer) => {
+    const hourlyRate = parseInt(offer.hourlyRate);
+    const monthlyRate = hourlyToMonthlyRate(hourlyRate);
+
+    return {
+      ...offer,
+      hourlyRate: formatter.format(hourlyRate) + '/hr',
+      monthlyRate: formatter.format(monthlyRate) + '/mo',
+    };
+  });
+
   return {
-    internshipOffers,
-    totalInternshipOffers: Number(count),
+    offers,
+    totalOffers: Number(count),
   };
 }
 
-function CompanyFilter() {
-  const { appliedCompany } = useLoaderData<typeof loader>();
+// Page
+
+export default function InternshipOffersPage() {
+  const { allCompanies, appliedCompany } = useLoaderData<typeof loader>();
+
+  return (
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <CompanyFilter
+            allCompanies={allCompanies}
+            emptyMessage="No companies found that are linked to internship offers."
+            selectedCompany={appliedCompany}
+          />
+          <HourlyRateFilter />
+          <LocationFilter />
+        </div>
+
+        <ClearFiltersButton />
+      </div>
+
+      <InternshipOffersTable />
+      <InternshipOffersPagination />
+      <Outlet />
+    </>
+  );
+}
+
+// Table
+
+type InternshipOfferInView = SerializeFrom<typeof loader>['offers'][number];
+
+function InternshipOffersTable() {
+  const { offers } = useLoaderData<typeof loader>();
+  const [searchParams] = useSearchParams();
+
+  const columns: TableColumnProps<InternshipOfferInView>[] = [
+    {
+      displayName: 'Company',
+      size: '200',
+      render: (offer) => <CompanyColumn {...offer} />,
+    },
+    {
+      displayName: 'Role',
+      size: '240',
+      render: (offer) => offer.role,
+    },
+    {
+      displayName: 'Hourly Rate',
+      size: '120',
+      render: (offer) => {
+        return (
+          <Text
+            as="span"
+            className="rounded-md bg-yellow-50 px-2 py-1"
+            weight="500"
+          >
+            {offer.hourlyRate}
+          </Text>
+        );
+      },
+    },
+    {
+      displayName: 'Monthly Rate',
+      size: '160',
+      render: (offer) => offer.monthlyRate,
+    },
+    {
+      displayName: 'Location',
+      size: '200',
+      render: (offer) => offer.location,
+    },
+  ];
+
+  return (
+    <Table
+      columns={columns}
+      data={offers}
+      emptyMessage="No internship offers found matching the criteria."
+      rowTo={({ id }) => {
+        return {
+          pathname: generatePath(Route['/offers/internships/:id'], { id }),
+          search: searchParams.toString(),
+        };
+      }}
+    />
+  );
+}
+
+function InternshipOffersPagination() {
+  const { limit, offers, page, totalOffers } = useLoaderData<typeof loader>();
+
+  return (
+    <Pagination
+      dataLength={offers.length}
+      page={page}
+      pageSize={limit}
+      totalCount={totalOffers}
+    />
+  );
+}
+
+// Filters
+
+function HourlyRateFilter() {
+  const [searchParams] = useSearchParams();
+
+  const hourlyRate = searchParams.get('hourlyRate');
+
+  const options: FilterValue[] = [
+    { color: 'red-100', label: '> $20/hr', value: '20' },
+    { color: 'orange-100', label: '> $30/hr', value: '30' },
+    { color: 'amber-100', label: '> $40/hr', value: '40' },
+    { color: 'cyan-100', label: '> $50/hr', value: '50' },
+    { color: 'green-100', label: '> $60/hr', value: '60' },
+    { color: 'lime-100', label: '> $70/hr', value: '70' },
+  ];
+
+  const selectedValues = options.filter((option) => {
+    return hourlyRate === option.value;
+  });
 
   return (
     <FilterRoot>
       <FilterButton
-        icon={<Briefcase />}
+        icon={<DollarSign />}
         popover
-        selectedValues={
-          appliedCompany
-            ? [
-                {
-                  color: 'gray-100',
-                  label: appliedCompany.name,
-                  value: appliedCompany.id,
-                },
-              ]
-            : []
-        }
+        selectedValues={selectedValues}
       >
-        Company
+        Hourly Rate
       </FilterButton>
 
       <FilterPopover>
-        <FilterSearch />
-        <CompanyList />
+        <ul>
+          {options.map((option) => {
+            return (
+              <FilterItem
+                checked={hourlyRate === option.value}
+                color={option.color}
+                key={option.value}
+                label={option.label}
+                name="hourlyRate"
+                value={option.value}
+              />
+            );
+          })}
+        </ul>
       </FilterPopover>
     </FilterRoot>
   );
 }
 
-function CompanyList() {
-  const { allCompanies, appliedCompany } = useLoaderData<typeof loader>();
-  const { search } = useFilterContext();
-
-  const filteredCompanies = allCompanies.filter((company) => {
-    return new RegExp(search, 'i').test(company.name);
-  });
-
-  if (!filteredCompanies.length) {
-    return <FilterEmptyMessage>No companies found</FilterEmptyMessage>;
-  }
-
-  return (
-    <ul className="overflow-auto">
-      {filteredCompanies.map((company) => {
-        return (
-          <FilterItem
-            checked={company.id === appliedCompany?.id}
-            key={company.id}
-            label={company.name}
-            name="company"
-            value={company.id}
-          />
-        );
-      })}
-    </ul>
-  );
-}
-
 function LocationFilter() {
   const [searchParams] = useSearchParams();
+
   const locations = searchParams.getAll('location');
 
   return (
@@ -468,11 +371,13 @@ function LocationFilter() {
       <FilterButton
         icon={<MapPin />}
         popover
-        selectedValues={locations.map((location) => ({
-          color: 'purple-100',
-          label: location,
-          value: location,
-        }))}
+        selectedValues={locations.map((location) => {
+          return {
+            color: 'purple-100',
+            label: location,
+            value: location,
+          };
+        })}
       >
         Location
       </FilterButton>
@@ -486,76 +391,37 @@ function LocationFilter() {
 }
 
 function LocationList() {
-  const { allLocations } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
+  const { allLocations } = useLoaderData<typeof loader>();
   const { search } = useFilterContext();
-  const selectedLocations = searchParams.getAll('location');
 
-  const filteredLocations = allLocations.filter((loc) => {
-    return new RegExp(search, 'i').test(loc.location as string);
-  });
+  let filteredLocations = allLocations;
+
+  if (search) {
+    filteredLocations = allLocations.filter((location) => {
+      return new RegExp(search, 'i').test(location);
+    });
+  }
 
   if (!filteredLocations.length) {
-    return <FilterEmptyMessage>No locations found</FilterEmptyMessage>;
+    return <FilterEmptyMessage>No locations found.</FilterEmptyMessage>;
   }
+
+  const selectedLocations = searchParams.getAll('location');
 
   return (
     <ul className="overflow-auto">
-      {filteredLocations.map((loc) => {
-        const checked = selectedLocations.includes(loc.location as string);
-        const value = loc.location as string;
-
+      {filteredLocations.map((location) => {
         return (
           <FilterItem
-            checked={checked}
-            key={value}
-            label={value}
+            checked={selectedLocations.includes(location)}
+            key={location}
+            label={location}
             name="location"
-            value={value}
+            value={location}
           />
         );
       })}
     </ul>
-  );
-}
-
-function DatePostedFilter() {
-  const [searchParams] = useSearchParams();
-  const since = searchParams.get('since');
-
-  const options: FilterValue[] = [
-    { color: 'lime-100', label: 'Last 24 Hours', value: '1' },
-    { color: 'green-100', label: 'Last 7 Days', value: '7' },
-    { color: 'cyan-100', label: 'Last 30 Days', value: '30' },
-    { color: 'blue-100', label: 'Last 90 Days', value: '90' },
-  ];
-
-  const selectedValues = options.filter((option) => {
-    return since === option.value;
-  });
-
-  return (
-    <FilterRoot>
-      <FilterButton icon={<Calendar />} popover selectedValues={selectedValues}>
-        Date Posted
-      </FilterButton>
-
-      <FilterPopover>
-        <ul>
-          {options.map((option) => {
-            return (
-              <FilterItem
-                checked={since === option.value}
-                color={option.color}
-                key={option.value}
-                label={option.label}
-                name="since"
-                value={option.value}
-              />
-            );
-          })}
-        </ul>
-      </FilterPopover>
-    </FilterRoot>
   );
 }

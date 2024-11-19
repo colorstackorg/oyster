@@ -1,119 +1,75 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import {
-  generatePath,
-  Link,
-  useLoaderData,
-  useSearchParams,
-} from '@remix-run/react';
+import { useLoaderData, useSearchParams } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { Edit } from 'react-feather';
 
 import { db } from '@oyster/db';
-import { getIconButtonCn, Modal, Text } from '@oyster/ui';
+import { Divider, Modal } from '@oyster/ui';
 
+import { CompanyLink } from '@/shared/components';
+import {
+  OfferDetail,
+  OfferSection,
+  OfferTitle,
+} from '@/shared/components/offer';
 import { ViewInSlackButton } from '@/shared/components/slack-message';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
-  const memberId = user(session);
-  const offerId = params.id as string;
 
-  const _offer = await getFullTimeJobOfferDetails({
-    memberId,
-    offerId,
+  const offer = await getFullTimeOfferDetails({
+    memberId: user(session),
+    offerId: params.id as string,
   });
 
-  if (!_offer) {
+  if (!offer) {
     throw new Response(null, {
       status: 404,
       statusText: 'The full-time offer you are looking for does not exist.',
     });
   }
 
-  Object.assign(_offer, {
-    createdAt: dayjs().to(_offer.createdAt),
-  });
-
-  const formatter = new Intl.NumberFormat('en-US', {
-    currency: 'USD',
-    maximumFractionDigits: 0,
-    style: 'currency',
-  });
-
-  const offer = {
-    ..._offer,
-    annualizedStock: formatter.format(Number(_offer.totalStock) / 4),
-    baseSalary: formatter.format(Number(_offer.baseSalary)),
-    performanceBonus:
-      _offer.performanceBonus !== null
-        ? formatter.format(Number(_offer.performanceBonus))
-        : 'N/A',
-    signOnBonus:
-      _offer.signOnBonus !== null
-        ? formatter.format(Number(_offer.signOnBonus))
-        : 'N/A',
-    totalCompensation: formatter.format(Number(_offer.totalCompensation)),
-    totalStock: formatter.format(Number(_offer.totalStock)),
-  };
-
   return json(offer);
 }
 
-type GetFullTimeJobOfferDetailsInput = {
+type GetFullTimeOfferDetailsInput = {
   memberId: string;
   offerId: string;
 };
 
-async function getFullTimeJobOfferDetails({
+async function getFullTimeOfferDetails({
   memberId,
   offerId,
-}: GetFullTimeJobOfferDetailsInput) {
-  const offer = await db
-    .selectFrom('fullTimeJobOffers')
-    .leftJoin('companies', 'companies.id', 'fullTimeJobOffers.companyId')
-    .leftJoin('students', 'students.id', 'fullTimeJobOffers.postedBy')
-    .leftJoin('slackMessages', (join) => {
-      return join
-        .onRef(
-          'slackMessages.channelId',
-          '=',
-          'fullTimeJobOffers.slackChannelId'
-        )
-        .onRef('slackMessages.id', '=', 'fullTimeJobOffers.slackMessageId');
-    })
+}: GetFullTimeOfferDetailsInput) {
+  const _offer = await db
+    .selectFrom('fullTimeJobOffers as fullTimeOffers')
+    .leftJoin('companies', 'companies.id', 'fullTimeOffers.companyId')
     .select([
       'companies.id as companyId',
       'companies.name as companyName',
       'companies.imageUrl as companyLogo',
-      'companies.crunchbaseId as companyCrunchbaseId',
-      'fullTimeJobOffers.id',
-      'fullTimeJobOffers.role',
-      'fullTimeJobOffers.location',
-      'fullTimeJobOffers.createdAt',
-      'fullTimeJobOffers.totalCompensation',
-      'fullTimeJobOffers.baseSalary',
-      'fullTimeJobOffers.signOnBonus',
-      'fullTimeJobOffers.performanceBonus',
-      'fullTimeJobOffers.relocation',
-      'fullTimeJobOffers.benefits',
-      'fullTimeJobOffers.totalStock',
-      'fullTimeJobOffers.pastExperience',
-      'fullTimeJobOffers.negotiated',
-      'fullTimeJobOffers.additionalNotes',
-      'slackMessages.channelId as slackMessageChannelId',
-      'slackMessages.createdAt as slackMessagePostedAt',
-      'slackMessages.id as slackMessageId',
-      'slackMessages.text as slackMessageText',
-      'students.firstName as posterFirstName',
-      'students.lastName as posterLastName',
-      'students.profilePicture as posterProfilePicture',
+      'fullTimeOffers.additionalNotes',
+      'fullTimeOffers.baseSalary',
+      'fullTimeOffers.benefits',
+      'fullTimeOffers.id',
+      'fullTimeOffers.location',
+      'fullTimeOffers.negotiated',
+      'fullTimeOffers.pastExperience',
+      'fullTimeOffers.performanceBonus',
+      'fullTimeOffers.postedAt',
+      'fullTimeOffers.relocation',
+      'fullTimeOffers.role',
+      'fullTimeOffers.signOnBonus',
+      'fullTimeOffers.slackChannelId',
+      'fullTimeOffers.slackMessageId',
+      'fullTimeOffers.totalCompensation',
+      'fullTimeOffers.totalStock',
 
       (eb) => {
         return eb
           .or([
-            eb('fullTimeJobOffers.postedBy', '=', memberId),
+            eb('fullTimeOffers.postedBy', '=', memberId),
             eb.exists(() => {
               return eb
                 .selectFrom('admins')
@@ -124,13 +80,44 @@ async function getFullTimeJobOfferDetails({
           .as('hasWritePermission');
       },
     ])
-    .where('fullTimeJobOffers.id', '=', offerId)
+    .where('fullTimeOffers.id', '=', offerId)
     .executeTakeFirst();
+
+  if (!_offer) {
+    return null;
+  }
+
+  const formatter = new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    maximumFractionDigits: 0,
+    style: 'currency',
+  });
+
+  const offer = {
+    ..._offer,
+    annualStock: formatter.format((Number(_offer.totalStock) || 0) / 4),
+    baseSalary: formatter.format(Number(_offer.baseSalary)),
+    performanceBonus: formatter.format(Number(_offer.performanceBonus) || 0),
+    postedAt: dayjs().to(_offer.postedAt),
+    signOnBonus: formatter.format(Number(_offer.signOnBonus) || 0),
+    totalCompensation: formatter.format(Number(_offer.totalCompensation)),
+    totalStock: formatter.format(Number(_offer.totalStock)),
+  };
 
   return offer;
 }
 
 export default function FullTimeOfferPage() {
+  const {
+    companyId,
+    companyLogo,
+    companyName,
+    postedAt,
+    role,
+    slackChannelId,
+    slackMessageId,
+  } = useLoaderData<typeof loader>();
+
   const [searchParams] = useSearchParams();
 
   return (
@@ -142,182 +129,76 @@ export default function FullTimeOfferPage() {
     >
       <Modal.Header>
         <div className="flex flex-col gap-2">
-          <CompanyLink />
-          <OfferTitle />
+          <CompanyLink
+            companyId={companyId}
+            companyLogo={companyLogo}
+            companyName={companyName}
+          />
+          <OfferTitle postedAt={postedAt} role={role!} />
         </div>
+
         <div className="flex items-center gap-[inherit]">
-          {/* <EditOfferButton /> */}
           <Modal.CloseButton />
         </div>
       </Modal.Header>
 
-      <OfferDetails />
-      <SlackMessage />
+      <FullTimeOfferDetails />
+
+      {slackChannelId && slackMessageId && (
+        <div className="mx-auto">
+          <ViewInSlackButton
+            channelId={slackChannelId}
+            messageId={slackMessageId}
+          />
+        </div>
+      )}
     </Modal>
   );
 }
 
-function CompanyLink() {
-  const { companyId, companyLogo, companyName } =
-    useLoaderData<typeof loader>();
-
-  if (!companyId || !companyName) {
-    return null;
-  }
-
-  return (
-    <Link
-      className="flex w-fit items-center gap-2 hover:underline"
-      target="_blank"
-      to={generatePath(Route['/companies/:id'], { id: companyId })}
-    >
-      <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
-        <img
-          alt={companyName}
-          className="aspect-square h-full w-full rounded-md"
-          src={companyLogo as string}
-        />
-      </div>
-
-      <Text variant="sm">{companyName}</Text>
-    </Link>
-  );
-}
-
-function OfferTitle() {
-  const { createdAt, role } = useLoaderData<typeof loader>();
+function FullTimeOfferDetails() {
+  const {
+    additionalNotes,
+    annualStock,
+    baseSalary,
+    benefits,
+    location,
+    negotiated,
+    pastExperience,
+    performanceBonus,
+    relocation,
+    signOnBonus,
+    totalCompensation,
+    totalStock,
+  } = useLoaderData<typeof loader>();
 
   return (
-    <div className="flex flex-col gap-1">
-      <Text variant="lg">{role}</Text>
-      <Text color="gray-500" variant="sm">
-        Posted {createdAt} ago
-      </Text>
-    </div>
-  );
-}
+    <div className="flex flex-col gap-4 sm:p-4">
+      <OfferSection>
+        <OfferDetail label="Employment Type" value="Full-Time" />
+        <OfferDetail label="Location" value={location} />
+      </OfferSection>
 
-function EditOfferButton() {
-  const { hasWritePermission, id } = useLoaderData<typeof loader>();
-  const [searchParams] = useSearchParams();
+      <Divider />
 
-  if (!hasWritePermission) {
-    return null;
-  }
+      <OfferSection>
+        <OfferDetail label="Total Compensation" value={totalCompensation} />
+        <OfferDetail label="Base Salary" value={baseSalary} />
+        <OfferDetail label="Total Stock" value={totalStock} />
+        <OfferDetail label="Stock (/yr)" value={annualStock} />
+        <OfferDetail label="Performance Bonus (/yr)" value={performanceBonus} />
+        <OfferDetail label="Sign-On Bonus (One-Time)" value={signOnBonus} />
+        <OfferDetail label="Relocation" value={relocation} />
+        <OfferDetail label="Benefits" value={benefits} />
+      </OfferSection>
 
-  return (
-    <>
-      <Link
-        className={getIconButtonCn({
-          backgroundColor: 'gray-100',
-          backgroundColorOnHover: 'gray-200',
-        })}
-        to={{
-          pathname: generatePath(Route['/offers/full-time/:id/edit'], {
-            id,
-          }),
-          search: searchParams.toString(),
-        }}
-      >
-        <Edit />
-      </Link>
+      <Divider />
 
-      <div className="h-6 w-[1px] bg-gray-100" />
-    </>
-  );
-}
-
-function SlackMessage() {
-  const { id, slackMessageChannelId } = useLoaderData<typeof loader>();
-
-  if (!slackMessageChannelId) {
-    return null;
-  }
-
-  return <ViewInSlackButton channelId={slackMessageChannelId} messageId={id} />;
-}
-
-function OfferDetails() {
-  const offer = useLoaderData<typeof loader>();
-
-  return (
-    <div className="flex flex-col gap-4 p-4">
-      {/* Basic Information */}
-      <section>
-        <div className="grid grid-cols-2 gap-3">
-          <DetailItem label="Employment Type" value="Full-Time" />
-          <DetailItem label="Location" value={offer.location} />
-        </div>
-      </section>
-
-      <div className="h-[1px] bg-gray-200" />
-
-      {/* Compensation Details */}
-      <section>
-        <div className="grid grid-cols-2 gap-3">
-          <DetailItem
-            label="Total Compensation"
-            value={offer.totalCompensation}
-          />
-          <DetailItem label="Base Salary" value={offer.baseSalary} />
-          <DetailItem label="Total Stock" value={offer.totalStock} />
-          <DetailItem label="Stock (/yr)" value={offer.annualizedStock} />
-        </div>
-      </section>
-
-      <div className="h-[1px] bg-gray-200" />
-
-      {/* Bonuses and Benefits */}
-      <section>
-        <div className="grid grid-cols-2 gap-3">
-          <DetailItem
-            label="Performance Bonus"
-            value={offer.performanceBonus}
-          />
-          <DetailItem label="Sign-On Bonus" value={offer.signOnBonus} />
-          <DetailItem label="Relocation" value={offer.relocation} />
-        </div>
-      </section>
-
-      {/* Additional Notes */}
-      {offer.additionalNotes && (
-        <>
-          <div className="h-[1px] bg-gray-200" />
-          <section>
-            <div className="grid grid-cols-2 gap-3">
-              <DetailItem label="Benefits" value={offer.benefits} />
-              <DetailItem
-                label="Past Experience"
-                value={offer.pastExperience}
-              />
-              <DetailItem label="Negotiated" value={offer.negotiated} />
-              <DetailItem
-                label="Additional Notes"
-                value={offer.additionalNotes}
-              />
-            </div>
-          </section>
-        </>
-      )}
-    </div>
-  );
-}
-
-function DetailItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number | null | undefined;
-}) {
-  if (!value) return null;
-
-  return (
-    <div>
-      <Text color="gray-500" variant="sm">
-        {label}
-      </Text>
-      <Text>{value}</Text>
+      <OfferSection>
+        <OfferDetail label="Past Experience" value={pastExperience} />
+        <OfferDetail label="Negotiated" value={negotiated} />
+        <OfferDetail label="Additional Notes" value={additionalNotes} />
+      </OfferSection>
     </div>
   );
 }

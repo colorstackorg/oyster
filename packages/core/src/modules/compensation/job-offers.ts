@@ -284,8 +284,9 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
 
   For both internships and full-time job offers, include:
   - "additionalNotes": A catch-all for all other information not captured in
-    other fields. Don't leave any information out, but also don't show information
-    that was already captured elsewhere. Format it in a clean list.
+    other fields. Don't leave any information out, but also don't show
+    information that was already captured elsewhere. Format it in short
+    sentences, multiple sentences if needed.
   - "benefits": The user-provided list of benefits. Fix typos and format it in
     sentence case.
   - "location": Format as "City, State". If the location mentions being remote,
@@ -580,6 +581,23 @@ function calculateTotalCompensation({
     (signOnBonus ?? 0) / 4 +
     (totalStock ?? 0) / 4
   );
+}
+
+/**
+ * Converts an hourly rate to a monthly rate. The formula is:
+ *
+ * `(hourlyRate * 40 hours/week * 52 weeks/year) / 12 months/year`
+ *
+ * @param hourlyRate - Hourly rate.
+ * @returns Monthly rate.
+ *
+ * @example
+ * hourlyToMonthlyRate(1) // 833.33
+ * hourlyToMonthlyRate(25) // 5208.33
+ * hourlyToMonthlyRate(50) // 8666.67
+ */
+export function hourlyToMonthlyRate(hourlyRate: number) {
+  return (hourlyRate * 40 * 52) / 12;
 }
 
 // "Has Edit Permission"
