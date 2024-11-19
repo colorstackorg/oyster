@@ -284,8 +284,9 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
 
   For both internships and full-time job offers, include:
   - "additionalNotes": A catch-all for all other information not captured in
-    other fields. Don't leave any information out, but also don't show information
-    that was already captured elsewhere. Format it in a clean list.
+    other fields. Don't leave any information out, but also don't show
+    information that was already captured elsewhere. Format it in short
+    sentences, multiple sentences if needed.
   - "benefits": The user-provided list of benefits. Fix typos and format it in
     sentence case.
   - "location": Format as "City, State". If the location mentions being remote,
