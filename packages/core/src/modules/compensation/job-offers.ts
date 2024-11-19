@@ -70,10 +70,10 @@ export const EditInternshipJobOfferInput = z.object({
   additionalNotes: z.string().trim().min(1).nullable(),
   benefits: z.string().trim().min(1).nullable(),
   companyCrunchbaseId: z.string().trim().min(1),
-  hourlyRate: z.number().nullable(),
-  location: z.string().trim().min(1).nullable(),
-  monthlyRate: z.number().nullable(),
-  negotiatedText: z.string().trim().min(1).nullable(),
+  hourlyRate: z.number(),
+  location: z.string().trim().min(1),
+  monthlyRate: z.number(),
+  negotiated: z.string().trim().min(1).nullable(),
   relocation: z.string().trim().min(1).nullable(),
   role: z.string().trim().min(1).nullable(),
   yearsOfExperience: z.string().trim().min(1).nullable(),
@@ -99,12 +99,11 @@ export async function editInternshipJobOffer(
         companyId,
         hourlyRate: input.hourlyRate,
         location: input.location,
-        monthlyRate: input.monthlyRate,
-        negotiatedText: input.negotiatedText,
-        relocationText: input.relocation,
+        negotiated: input.negotiated,
+        pastExperience: input.yearsOfExperience,
+        relocation: input.relocation,
         role: input.role,
         updatedAt: new Date(),
-        yearsOfExperience: input.yearsOfExperience,
       })
       .where('id', '=', jobOfferId)
       .returning(['id'])
@@ -125,19 +124,19 @@ export async function editInternshipJobOffer(
 
 export const EditFullTimeJobOfferInput = z.object({
   additionalNotes: z.string().trim().min(1).nullable(),
-  baseSalary: z.number().nullable(),
+  baseSalary: z.number(),
   benefits: z.string().trim().min(1).nullable(),
   bonus: z.number().nullable(),
   companyCrunchbaseId: z.string().trim().min(1),
   hourlyRate: z.number().nullable(),
-  location: z.string().trim().min(1).nullable(),
+  location: z.string().trim().min(1),
   negotiatedText: z.string().trim().min(1).nullable(),
+  pastExperience: z.string().trim().min(1).nullable(),
   performanceBonus: z.string().trim().min(1).nullable(),
   relocation: z.string().trim().min(1).nullable(),
   role: z.string().trim().min(1).nullable(),
   signOnBonus: z.string().trim().min(1).nullable(),
   stockPerYear: z.number().nullable(),
-  yearsOfExperience: z.string().trim().min(1).nullable(),
 });
 
 type EditFullTimeJobOfferInput = z.infer<typeof EditFullTimeJobOfferInput>;
@@ -158,22 +157,15 @@ export async function editFullTimeJobOffer(
         additionalNotes: input.additionalNotes,
         baseSalary: input.baseSalary,
         benefits: input.benefits,
-        bonus: input.bonus,
         companyId,
-        hourlyRate: input.hourlyRate,
         location: input.location,
-        negotiatedText: input.negotiatedText,
-        relocationText: input.relocation,
+        negotiated: input.negotiatedText,
+        relocation: input.relocation,
         role: input.role,
-        performanceBonusText: input.performanceBonus,
-        signOnBonusText: input.signOnBonus,
+        pastExperience: input.pastExperience,
+        performanceBonus: input.performanceBonus,
+        signOnBonus: input.signOnBonus,
         stockPerYear: input.stockPerYear,
-        totalCompensation: calculateTotalCompensation({
-          baseSalary: input.baseSalary,
-          bonus: input.bonus,
-          stockPerYear: input.stockPerYear,
-        }),
-        yearsOfExperience: input.yearsOfExperience,
         updatedAt: new Date(),
       })
       .where('id', '=', jobOfferId)
@@ -194,17 +186,12 @@ export async function editFullTimeJobOffer(
 // "Share Job Offer"
 
 const SHARE_JOB_OFFER_SYSTEM_PROMPT = dedent`
-  You are a helpful assistant that extracts structured data about job offers
-  from text content.
-
-  Your job is to analyze the given text and determine if it describes an
-  internship offer or a full-time offer, and then extract specific information
-  about compensation, benefits, and other job details in a JSON format.
+  You are an AI assistant specialized in extracting structured data about job
+  offers from text content. Your task is to analyze the given job offer details
+  and extract specific information in a JSON format.
 `;
 
 const SHARE_JOB_OFFER_PROMPT = dedent`
-  You are an AI assistant specialized in extracting structured data about job offers from text content. Your task is to analyze the given job offer details and extract specific information in a JSON format.
-
   Here is the job offer to analyze:
 
   <job_offer>
@@ -218,31 +205,53 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
   4. Perform any necessary calculations, especially for financial details.
   5. Format the extracted information into a JSON object.
 
-  Before providing the final JSON output, wrap your analysis inside <job_offer_analysis> tags. In your analysis:
-  - Clearly state whether the job is full-time or an internship, and provide your reasoning for this classification. Quote relevant parts of the job offer that support your decision.
-  - List out key information from the job offer, categorizing it into "Employment Type," "Salary Information," and "Additional Details." For each piece of information, quote the relevant part of the job offer.
-  - Show your work step-by-step for any calculations, clearly explaining each step and the reasoning behind it.
-  - Double-check all numerical values for accuracy by re-calculating and comparing results.
-  - Ensure any textual fields are concise and relevant, quoting the original text where appropriate.
+  Before providing the final JSON output, wrap your analysis inside
+  <analysis> tags. In your analysis:
+  - Clearly state whether the job is full-time or an internship, and provide
+    your reasoning for this classification. Quote relevant parts of the job
+    offer that support your decision.
+  - Show your work step-by-step for any calculations, clearly explaining each
+    step and the reasoning behind it.
+  - Double-check all numerical values for accuracy by re-calculating and
+    comparing results.
+  - Ensure any textual fields are concise and relevant, quoting the original
+    text where appropriate.
+
+  For both internships and full-time job offers, include:
+  - "additionalNotes": A catch-all for all other information not captured in
+    other fields. Don't leave any information out, but also don't show information
+    that was already captured elsewhere. Format it in a clean list.
+  - "benefits": The user-provided list of benefits. Fix typos and format it in
+    sentence case.
+  - "location": Format as "City, State". If the location mentions being remote,
+    then just use "Remote". If the user specifies a short-hand location like
+    "SF" or "NYC", then use the full location (ie: San Francisco, CA).
+  - "negotiatedText": The user-provided negotiation details. Don't include
+    anything in the "benefits" section. Don't format.
+  - "pastExperienceText": The user-provided past experience.
+  - "relocationText": The user-provided housing/relocation details. Don't format.
+  - "role": The role for the job offer. Expand any acronyms (ie:
+    SWE -> Software Engineer, PM -> Product Manager).
 
   For a full-time position, extract and calculate:
-  - Base salary (annual or hourly)
-  - Annualized stock value
-  - Total bonus (including sign-on, performance, relocation)
-  - Additional fields: performance bonus, sign-on bonus, relocation, benefits, years of experience, negotiation details
+  - "baseSalary": The annual base salary of the position.
+  - "performanceBonus": The annualized performance bonus (if a percentage of base
+  salary, convert to annualized amount). If a range is given, use the highest
+  amount.
+  - "signOnBonus": The annualized sign-on bonus over 4 years.
+  - "stockPerYear": The annualized stock value over 4 years (unless otherwise
+    specified).
 
-  For an internship, extract:
-  - Hourly rate and/or monthly rate
-  - Additional fields: relocation, benefits, years of experience, negotiation details
-
-  For both types, include:
-  - Company name
-  - Role
-  - Location (format as "City, State")
-  - Any additional notes not captured in other fields
+  For an internship, extract and/or calculate:
+  - "hourlyRate": The hourly pay of the position. If the hourly rate is given, use
+    that directly. If the monthly rate is given, convert to hourly
+    (hourly = monthly * 12 / 52 / 40).
+  - "signOnBonus": The internship-specific sign-on bonus.
 
   Output Format:
-  After your analysis, provide the extracted information in a JSON object. Use null for any fields where information is unavailable or unclear. Here's the structure to follow:
+  After your analysis, provide the extracted information in a JSON object. Use
+  null for any fields where information is unavailable or unclear. Here's the
+  structure to follow:
 
   For full-time:
   {
@@ -255,12 +264,12 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
     "hourlyRate": number | null,
     "location": string | null,
     "negotiatedText": string | null,
+    "pastExperienceText": number | null,
     "performanceBonus": string | null,
-    "relocation": string | null,
+    "relocationText": string | null,
     "role": string,
-    "signOnBonus": string | null,
-    "stockPerYear": number | null,
-    "yearsOfExperience": string | null
+    "signOnBonus": number | null,
+    "stockPerYear": number | null
   }
 
   For internship:
@@ -271,53 +280,49 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
     "employmentType": "internship",
     "hourlyRate": number | null,
     "location": string | null,
-    "monthlyRate": number | null,
-    "negotiatedText": string | null,
-    "relocation": string | null,
+    "negotiated": string | null,
+    "pastExperienceText": number | null,
+    "relocationText": string | null,
     "role": string,
-    "yearsOfExperience": string | null
+    "signOnBonus": number | null
   }
 
   Important Rules:
   - If unsure about any value, use null.
-  - For hourly rates, assume a 40-hour work week if calculating from other given information.
+  - For hourly rates, assume a 40-hour work week if calculating from other
+    given information.
   - Ensure all calculations are accurate and double-checked.
   - Keep textual fields concise and relevant.
-  - After your analysis, provide only the JSON object, without any additional text or tags.
+  - After your analysis, provide only the JSON object, without any additional
+    text or tags.
 
   Now, analyze the job offer and provide the structured data as requested.
 `;
 
+const BaseJobOffer = z.object({
+  additionalNotes: z.string().trim().min(1).nullable(),
+  benefits: z.string().trim().min(1).nullable(),
+  company: z.string().trim().min(1).nullable(),
+  location: z.string().trim().min(1),
+  negotiated: z.string().trim().min(1).nullable(),
+  pastExperience: z.string().trim().min(1).nullable(),
+  relocation: z.string().trim().min(1).nullable(),
+  role: z.string().trim().min(1).nullable(),
+  signOnBonus: z.coerce.number().nullable(),
+});
+
+type BaseJobOffer = z.infer<typeof BaseJobOffer>;
+
 const ShareJobOfferResponse = z.discriminatedUnion('employmentType', [
-  z.object({
-    additionalNotes: z.string().trim().min(1).nullable(),
-    benefits: z.string().trim().min(1).nullable(),
-    company: z.string().trim().min(1).nullable(),
+  BaseJobOffer.extend({
     employmentType: z.literal('internship'),
-    hourlyRate: z.number().nullable(),
-    location: z.string().trim().min(1).nullable(),
-    monthlyRate: z.number().nullable(),
-    negotiatedText: z.string().trim().min(1).nullable(),
-    relocation: z.string().trim().min(1).nullable(),
-    role: z.string().trim().min(1).nullable(),
-    yearsOfExperience: z.string().trim().min(1).nullable(),
+    hourlyRate: z.coerce.number(),
   }),
-  z.object({
-    additionalNotes: z.string().trim().min(1).nullable(),
-    baseSalary: z.number().nullable(),
-    benefits: z.string().trim().min(1).nullable(),
-    bonus: z.number().nullable(),
-    company: z.string().trim().min(1).nullable(),
+  BaseJobOffer.extend({
+    baseSalary: z.coerce.number(),
     employmentType: z.literal('full_time'),
-    hourlyRate: z.number().nullable(),
-    location: z.string().trim().min(1).nullable(),
-    negotiatedText: z.string().trim().min(1).nullable(),
-    performanceBonus: z.string().trim().min(1).nullable(),
-    relocation: z.string().trim().min(1).nullable(),
-    role: z.string().trim().min(1).nullable(),
-    signOnBonus: z.string().trim().min(1).nullable(),
-    stockPerYear: z.number().nullable(),
-    yearsOfExperience: z.string().trim().min(1).nullable(),
+    performanceBonus: z.coerce.number().nullable(),
+    stockPerYear: z.coerce.number().nullable(),
   }),
 ]);
 
@@ -350,9 +355,10 @@ async function shareJobOffer({
 }: ShareJobOfferInput): Promise<Result> {
   const slackMessage = await db
     .selectFrom('slackMessages')
-    .select(['studentId', 'text', 'userId as slackUserId'])
+    .select(['createdAt', 'studentId', 'text', 'userId as slackUserId'])
     .where('channelId', '=', slackChannelId)
     .where('id', '=', slackMessageId)
+    .where('deletedAt', 'is', null)
     .executeTakeFirst();
 
   // This might be the case if someone posts something in the job offer
@@ -379,7 +385,7 @@ async function shareJobOffer({
   );
 
   const completionResult = await getChatCompletion({
-    maxTokens: 250,
+    maxTokens: 1000,
     messages: [{ role: 'user', content: prompt }],
     system: [{ type: 'text', text: SHARE_JOB_OFFER_SYSTEM_PROMPT }],
     temperature: 0,
@@ -392,7 +398,24 @@ async function shareJobOffer({
   let data: ShareJobOfferResponse;
 
   try {
-    data = ShareJobOfferResponse.parse(JSON.parse(completionResult.data));
+    const closingTag = '</analysis>';
+
+    const closingTagIndex = completionResult.data.indexOf(closingTag);
+
+    if (closingTagIndex === -1) {
+      return fail({
+        code: 400,
+        error: 'Failed to find relevant JSON in AI response.',
+      });
+    }
+
+    const jsonString = completionResult.data
+      .slice(closingTagIndex + closingTag.length)
+      .trim();
+
+    const json = JSON.parse(jsonString);
+
+    data = ShareJobOfferResponse.parse(json);
   } catch (error) {
     return fail({
       code: 400,
@@ -410,17 +433,17 @@ async function shareJobOffer({
       benefits: data.benefits,
       companyId,
       createdAt: new Date(),
-      hourlyRate: data.hourlyRate,
       id: id(),
       location: data.location,
-      negotiatedText: data.negotiatedText,
+      negotiated: data.negotiated,
+      pastExperience: data.pastExperience,
+      postedAt: slackMessage.createdAt,
       postedBy: slackMessage.studentId,
-      relocationText: data.relocation,
+      relocation: data.relocation,
       role: data.role,
       slackChannelId,
       slackMessageId,
       updatedAt: new Date(),
-      yearsOfExperience: data.yearsOfExperience,
     };
 
     if (data.employmentType === 'internship') {
@@ -428,7 +451,7 @@ async function shareJobOffer({
         .insertInto('internshipJobOffers')
         .values({
           ...baseJobOffer,
-          monthlyRate: data.monthlyRate,
+          hourlyRate: data.hourlyRate,
         })
         .returning(['id'])
         .executeTakeFirstOrThrow();
@@ -439,15 +462,9 @@ async function shareJobOffer({
       .values({
         ...baseJobOffer,
         baseSalary: data.baseSalary,
-        bonus: data.bonus,
-        performanceBonusText: data.performanceBonus,
-        signOnBonusText: data.signOnBonus,
+        performanceBonus: data.performanceBonus,
+        signOnBonus: data.signOnBonus,
         stockPerYear: data.stockPerYear,
-        totalCompensation: calculateTotalCompensation({
-          baseSalary: data.baseSalary,
-          bonus: data.bonus,
-          stockPerYear: data.stockPerYear,
-        }),
       })
       .returning(['id'])
       .executeTakeFirstOrThrow();
@@ -470,31 +487,6 @@ async function shareJobOffer({
 }
 
 // Helpers
-
-type CompensationDetails = {
-  baseSalary: number | null;
-  bonus: number | null;
-  stockPerYear: number | null;
-};
-
-/**
- * Calculates the total compensation for a job offer, which is the sum of the
- * base salary, stock per year, and bonus (itemized over 4 years).
- *
- * @param details - Compensation details.
- * @returns Total compensation.
- */
-function calculateTotalCompensation({
-  baseSalary,
-  bonus,
-  stockPerYear,
-}: CompensationDetails) {
-  baseSalary = baseSalary ?? 0;
-  bonus = (bonus ?? 0) / 4; // Itemize the bonus over 4 years.
-  stockPerYear = stockPerYear ?? 0;
-
-  return baseSalary + stockPerYear + bonus;
-}
 
 // "Has Edit Permission"
 
