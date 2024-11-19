@@ -1,13 +1,17 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useSearchParams } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { type PropsWithChildren } from 'react';
 
 import { hourlyToMonthlyRate } from '@oyster/core/job-offers';
 import { db } from '@oyster/db';
-import { Divider, Modal, Text } from '@oyster/ui';
+import { Divider, Modal } from '@oyster/ui';
 
 import { CompanyLink } from '@/shared/components';
+import {
+  OfferDetail,
+  OfferSection,
+  OfferTitle,
+} from '@/shared/components/offer';
 import { ViewInSlackButton } from '@/shared/components/slack-message';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -109,6 +113,8 @@ export default function InternshipOfferPage() {
     companyId,
     companyLogo,
     companyName,
+    postedAt,
+    role,
     slackChannelId,
     slackMessageId,
   } = useLoaderData<typeof loader>();
@@ -129,7 +135,7 @@ export default function InternshipOfferPage() {
             companyLogo={companyLogo}
             companyName={companyName}
           />
-          <InternshipOfferTitle />
+          <OfferTitle postedAt={postedAt} role={role!} />
         </div>
 
         <div className="flex items-center gap-[inherit]">
@@ -151,19 +157,6 @@ export default function InternshipOfferPage() {
   );
 }
 
-function InternshipOfferTitle() {
-  const { postedAt, role } = useLoaderData<typeof loader>();
-
-  return (
-    <div className="flex flex-col gap-1">
-      <Text variant="lg">{role}</Text>
-      <Text color="gray-500" variant="sm">
-        Posted {postedAt} ago
-      </Text>
-    </div>
-  );
-}
-
 function InternshipOfferDetails() {
   const {
     additionalNotes,
@@ -180,54 +173,27 @@ function InternshipOfferDetails() {
   return (
     <div className="flex flex-col gap-4 sm:p-4">
       <OfferSection>
-        <OfferDetailItem label="Employment Type" value="Internship" />
-        <OfferDetailItem label="Location" value={location} />
+        <OfferDetail label="Employment Type" value="Internship" />
+        <OfferDetail label="Location" value={location} />
       </OfferSection>
 
       <Divider />
 
       <OfferSection>
-        <OfferDetailItem label="Hourly Rate" value={hourlyRate} />
-        <OfferDetailItem label="Monthly Rate" value={monthlyRate} />
-        <OfferDetailItem label="Sign-On Bonus" value={signOnBonus} />
-        <OfferDetailItem label="Relocation" value={relocation} />
+        <OfferDetail label="Hourly Rate" value={hourlyRate} />
+        <OfferDetail label="Monthly Rate" value={monthlyRate} />
+        <OfferDetail label="Sign-On Bonus" value={signOnBonus} />
+        <OfferDetail label="Relocation" value={relocation} />
+        <OfferDetail label="Benefits" value={benefits} />
       </OfferSection>
 
       <Divider />
 
       <OfferSection>
-        <OfferDetailItem label="Benefits" value={benefits} />
-        <OfferDetailItem label="Past Experience" value={pastExperience} />
-        <OfferDetailItem label="Negotiated" value={negotiated} />
-        <OfferDetailItem label="Additional Notes" value={additionalNotes} />
+        <OfferDetail label="Past Experience" value={pastExperience} />
+        <OfferDetail label="Negotiated" value={negotiated} />
+        <OfferDetail label="Additional Notes" value={additionalNotes} />
       </OfferSection>
-    </div>
-  );
-}
-
-// TODO: Move to shared component for full-time offer usage as well.
-
-function OfferSection({ children }: PropsWithChildren) {
-  return <section className="grid gap-4 sm:grid-cols-2">{children}</section>;
-}
-
-type OfferDetailItemProps = {
-  label: string;
-  value: string | number | null | undefined;
-};
-
-function OfferDetailItem({ label, value }: OfferDetailItemProps) {
-  if (!value) {
-    return null;
-  }
-
-  return (
-    <div>
-      <Text color="gray-500" variant="sm">
-        {label}
-      </Text>
-
-      <Text>{value}</Text>
     </div>
   );
 }
