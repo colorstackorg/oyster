@@ -370,7 +370,7 @@ function OpportunitiesTable() {
   const columns: TableColumnProps<OpportunityInView>[] = [
     {
       displayName: 'Company',
-      size: '240',
+      size: '200',
       render: (opportunity) => <CompanyColumn {...opportunity} />,
     },
     {

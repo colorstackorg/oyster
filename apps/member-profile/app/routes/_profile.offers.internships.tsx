@@ -12,8 +12,9 @@ import {
 import { DollarSign, MapPin } from 'react-feather';
 
 import { hourlyToMonthlyRate } from '@oyster/core/job-offers';
+import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
-import { Pagination, Table, type TableColumnProps } from '@oyster/ui';
+import { Pagination, Table, type TableColumnProps, Text } from '@oyster/ui';
 import {
   ClearFiltersButton,
   FilterButton,
@@ -28,14 +29,15 @@ import {
 
 import { CompanyColumn, CompanyFilter } from '@/shared/components';
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
-  const { searchParams } = new URL(request.url);
+  const { pathname, searchParams } = new URL(request.url);
   const {
     company,
+    hourlyRate,
     limit: _limit,
     page: _page,
   } = Object.fromEntries(searchParams);
@@ -50,12 +52,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
       listAllLocations(),
       listInternshipOffers({
         company,
-        hourlyRate: searchParams.get('hourlyRate'),
+        hourlyRate,
         limit,
         locations: searchParams.getAll('location'),
         page,
       }),
     ]);
+
+  if (pathname === Route['/offers/internships']) {
+    track({
+      event: 'Page Viewed',
+      properties: { Page: 'Compensation' },
+      request,
+      user: user(session),
+    });
+  }
 
   return json({
     allCompanies,
@@ -237,18 +248,28 @@ function InternshipOffersTable() {
   const columns: TableColumnProps<InternshipOfferInView>[] = [
     {
       displayName: 'Company',
-      size: '240',
+      size: '200',
       render: (offer) => <CompanyColumn {...offer} />,
     },
     {
       displayName: 'Role',
-      size: '280',
+      size: '240',
       render: (offer) => offer.role,
     },
     {
       displayName: 'Hourly Rate',
       size: '120',
-      render: (offer) => offer.hourlyRate,
+      render: (offer) => {
+        return (
+          <Text
+            as="span"
+            className="rounded-md bg-yellow-50 px-2 py-1"
+            weight="500"
+          >
+            {offer.hourlyRate}
+          </Text>
+        );
+      },
     },
     {
       displayName: 'Monthly Rate',
@@ -342,6 +363,7 @@ function HourlyRateFilter() {
 
 function LocationFilter() {
   const [searchParams] = useSearchParams();
+
   const locations = searchParams.getAll('location');
 
   return (
