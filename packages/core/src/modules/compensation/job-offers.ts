@@ -503,6 +503,7 @@ async function shareJobOffer({
       postedBy: slackMessage.studentId,
       relocation: data.relocation,
       role: data.role,
+      signOnBonus: data.signOnBonus,
       slackChannelId,
       slackMessageId,
       updatedAt: new Date(),
@@ -525,7 +526,6 @@ async function shareJobOffer({
         ...baseJobOffer,
         baseSalary: data.baseSalary,
         performanceBonus: data.performanceBonus,
-        signOnBonus: data.signOnBonus,
         totalCompensation: calculateTotalCompensation({
           baseSalary: data.baseSalary,
           performanceBonus: data.performanceBonus,
