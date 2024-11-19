@@ -268,6 +268,12 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
 
 export const JobOfferBullJob = z.discriminatedUnion('name', [
   z.object({
+    name: z.literal('job_offer.backfill'),
+    data: z.object({
+      limit: z.coerce.number().optional().default(5),
+    }),
+  }),
+  z.object({
     name: z.literal('job_offer.share'),
     data: z.object({
       sendNotification: z.boolean().optional(),

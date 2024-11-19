@@ -79,24 +79,6 @@ const CompanyReview = z.object({
   workExperienceId: z.string().trim().min(1),
 });
 
-export const JobOffer = Entity.omit({ deletedAt: true }).extend({
-  baseSalary: z.number().optional(),
-  bonus: z.number().optional(),
-  companyId: Company.shape.id.nullish(),
-  compensationType: z.string(),
-  employmentType: z.nativeEnum(EmploymentType),
-  hourlyPay: z.number().optional(),
-  location: z.string().optional(),
-  locationLatitude: z.number().optional(),
-  locationLongitude: z.number().optional(),
-  locationType: z.nativeEnum(LocationType),
-  otherCompany: NullishString.optional(),
-  startDate: ISO8601Date,
-  status: z.nativeEnum(JobOfferStatus),
-  stockPerYear: z.number().optional(),
-  studentId: Student.shape.id,
-});
-
 export const WorkExperience = Entity.extend({
   companyId: Company.shape.id.nullish(),
   companyName: z.string().trim().min(1).nullish(),
