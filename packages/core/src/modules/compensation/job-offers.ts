@@ -434,8 +434,9 @@ async function shareJobOffer({
   // We're only interested in messages that share a job offer. If the Slack
   // message doesn't contain the expected format, we'll bail early.
   if (
-    !slackMessage.text.includes('Company:') &&
-    !slackMessage.text.includes('Location:')
+    !slackMessage.text.includes('Company') &&
+    !slackMessage.text.includes('Location') &&
+    !slackMessage.text.includes('Role')
   ) {
     return success({});
   }
