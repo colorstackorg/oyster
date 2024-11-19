@@ -582,6 +582,23 @@ function calculateTotalCompensation({
   );
 }
 
+/**
+ * Converts an hourly rate to a monthly rate. The formula is:
+ *
+ * `(hourlyRate * 40 hours/week * 52 weeks/year) / 12 months/year`
+ *
+ * @param hourlyRate - Hourly rate.
+ * @returns Monthly rate.
+ *
+ * @example
+ * hourlyToMonthlyRate(1) // 833.33
+ * hourlyToMonthlyRate(25) // 5208.33
+ * hourlyToMonthlyRate(50) // 8666.67
+ */
+export function hourlyToMonthlyRate(hourlyRate: number) {
+  return (hourlyRate * 40 * 52) / 12;
+}
+
 // "Has Edit Permission"
 
 type HasEditPermissionInput = {

@@ -13,12 +13,12 @@ export default function OffersLayout() {
 
         <nav className="mr-auto">
           <ul className="flex items-center gap-4">
-            <NavigationItem to={Route['/offers/full-time']}>
-              Full-Time
-            </NavigationItem>
-
             <NavigationItem to={Route['/offers/internships']}>
               Internships
+            </NavigationItem>
+
+            <NavigationItem to={Route['/offers/full-time']}>
+              Full-Time
             </NavigationItem>
           </ul>
         </nav>
