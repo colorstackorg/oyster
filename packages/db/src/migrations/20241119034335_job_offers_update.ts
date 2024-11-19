@@ -62,6 +62,7 @@ export async function up(db: Kysely<any>) {
     })
     .dropColumn('location_type')
     .addColumn('performance_bonus', 'decimal(10, 2)')
+    .dropColumn('performance_bonus_text')
     .addColumn('posted_at', 'timestamptz', (column) => {
       return column.notNull();
     })
