@@ -523,6 +523,12 @@ async function shareJobOffer({
         baseSalary: data.baseSalary,
         performanceBonus: data.performanceBonus,
         signOnBonus: data.signOnBonus,
+        totalCompensation: calculateTotalCompensation({
+          baseSalary: data.baseSalary,
+          performanceBonus: data.performanceBonus,
+          signOnBonus: data.signOnBonus,
+          totalStock: data.totalStock,
+        }),
         totalStock: data.totalStock,
       })
       .returning(['id'])
@@ -545,150 +551,36 @@ async function shareJobOffer({
   return success(jobOffer);
 }
 
-// Queries
-
-// "Get Full-Time Job Offer Details"
-
-type GetFullTimeJobOfferDetailsInput = {
-  memberId: string;
-  offerId: string;
-};
-
-export async function getFullTimeJobOfferDetails({
-  memberId,
-  offerId,
-}: GetFullTimeJobOfferDetailsInput) {
-  const offer = await db
-    .selectFrom('fullTimeJobOffers')
-    .leftJoin('companies', 'companies.id', 'fullTimeJobOffers.companyId')
-    .leftJoin('students', 'students.id', 'fullTimeJobOffers.postedBy')
-    .leftJoin('slackMessages', (join) => {
-      return join
-        .onRef(
-          'slackMessages.channelId',
-          '=',
-          'fullTimeJobOffers.slackChannelId'
-        )
-        .onRef('slackMessages.id', '=', 'fullTimeJobOffers.slackMessageId');
-    })
-    .select([
-      'companies.id as companyId',
-      'companies.name as companyName',
-      'companies.imageUrl as companyLogo',
-      'companies.crunchbaseId as companyCrunchbaseId',
-      'fullTimeJobOffers.id',
-      'fullTimeJobOffers.role',
-      'fullTimeJobOffers.location',
-      'fullTimeJobOffers.createdAt',
-      // 'fullTimeJobOffers.totalCompensation',
-      'fullTimeJobOffers.baseSalary',
-      // 'fullTimeJobOffers.hourlyRate',
-      // 'fullTimeJobOffers.stockPerYear',
-      // 'fullTimeJobOffers.bonus',
-      // 'fullTimeJobOffers.signOnBonusText',
-      // 'fullTimeJobOffers.performanceBonusText',
-      // 'fullTimeJobOffers.relocationText',
-      'fullTimeJobOffers.benefits',
-      // 'fullTimeJobOffers.yearsOfExperience',
-      // 'fullTimeJobOffers.negotiatedText',
-      'fullTimeJobOffers.additionalNotes',
-      'slackMessages.channelId as slackMessageChannelId',
-      'slackMessages.createdAt as slackMessagePostedAt',
-      'slackMessages.id as slackMessageId',
-      'slackMessages.text as slackMessageText',
-      'students.firstName as posterFirstName',
-      'students.lastName as posterLastName',
-      'students.profilePicture as posterProfilePicture',
-
-      (eb) => {
-        return eb
-          .or([
-            eb('fullTimeJobOffers.postedBy', '=', memberId),
-            eb.exists(() => {
-              return eb
-                .selectFrom('admins')
-                .where('admins.memberId', '=', memberId)
-                .where('admins.deletedAt', 'is', null);
-            }),
-          ])
-          .as('hasWritePermission');
-      },
-    ])
-    .where('fullTimeJobOffers.id', '=', offerId)
-    .executeTakeFirst();
-
-  return offer;
-}
-
-// "Get Internship Job Offer Details"
-
-type GetInternshipJobOfferDetailsInput = {
-  memberId: string;
-  offerId: string;
-};
-
-export async function getInternshipJobOfferDetails({
-  memberId,
-  offerId,
-}: GetInternshipJobOfferDetailsInput) {
-  const offer = await db
-    .selectFrom('internshipJobOffers')
-    .leftJoin('companies', 'companies.id', 'internshipJobOffers.companyId')
-    .leftJoin('students', 'students.id', 'internshipJobOffers.postedBy')
-    .leftJoin('slackMessages', (join) => {
-      return join
-        .onRef(
-          'slackMessages.channelId',
-          '=',
-          'internshipJobOffers.slackChannelId'
-        )
-        .onRef('slackMessages.id', '=', 'internshipJobOffers.slackMessageId');
-    })
-    .select([
-      'companies.id as companyId',
-      'companies.name as companyName',
-      'companies.imageUrl as companyLogo',
-      'companies.crunchbaseId as companyCrunchbaseId',
-      'internshipJobOffers.id',
-      'internshipJobOffers.role',
-      'internshipJobOffers.location',
-      'internshipJobOffers.createdAt',
-      // 'internshipJobOffers.monthlyRate',
-      'internshipJobOffers.hourlyRate',
-      // 'internshipJobOffers.relocationText',
-      'internshipJobOffers.benefits',
-      // 'internshipJobOffers.yearsOfExperience',
-      // 'internshipJobOffers.negotiatedText',
-      'internshipJobOffers.additionalNotes',
-      'slackMessages.channelId as slackMessageChannelId',
-      'slackMessages.createdAt as slackMessagePostedAt',
-      'slackMessages.id as slackMessageId',
-      'slackMessages.text as slackMessageText',
-      'students.firstName as posterFirstName',
-      'students.lastName as posterLastName',
-      'students.profilePicture as posterProfilePicture',
-
-      (eb) => {
-        return eb
-          .or([
-            eb('internshipJobOffers.postedBy', '=', memberId),
-            eb.exists(() => {
-              return eb
-                .selectFrom('admins')
-                .where('admins.memberId', '=', memberId)
-                .where('admins.deletedAt', 'is', null);
-            }),
-          ])
-          .as('hasWritePermission');
-      },
-    ])
-    .where('internshipJobOffers.id', '=', offerId)
-    .executeTakeFirst();
-
-  return offer;
-}
-
 // Helpers
+
+type CompensationDetails = {
+  baseSalary: number;
+  performanceBonus: number | null;
+  signOnBonus: number | null;
+  totalStock: number | null;
+};
+
+/**
+ * Calculates the total compensation for a job offer, which follows the formula:
+ *
+ * `baseSalary + performanceBonus + (totalStock / 4) + (signOnBonus / 4)`
+ *
+ * @param details - Compensation details.
+ * @returns Total compensation.
+ */
+function calculateTotalCompensation({
+  baseSalary,
+  performanceBonus,
+  signOnBonus,
+  totalStock,
+}: CompensationDetails) {
+  return (
+    (baseSalary ?? 0) +
+    (performanceBonus ?? 0) +
+    (signOnBonus ?? 0) / 4 +
+    (totalStock ?? 0) / 4
+  );
+}
 
 // "Has Edit Permission"
 

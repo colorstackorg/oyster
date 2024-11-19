@@ -177,59 +177,25 @@ function toHTML(node: Node, index?: number) {
   return result;
 }
 
-// Same as SlackMessageCard but without the Slack Message text field.
-type SlackMessageLinkProps = {
-  channelId?: string;
-  messageId?: string;
-  postedAt?: string;
-  posterFirstName?: string;
-  posterLastName?: string;
-  posterProfilePicture?: string;
-};
-
-export function SlackMessageLink({
+export function ViewInSlackButton({
   channelId,
   messageId,
-  postedAt,
-  posterFirstName = 'ColorStack',
-  posterLastName = 'Member',
-  posterProfilePicture,
-}: SlackMessageLinkProps) {
+}: Pick<SlackMessageCardProps, 'channelId' | 'messageId'>) {
+  if (!channelId || !messageId) {
+    return null;
+  }
+
   return (
-    <Card>
-      <header className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <ProfilePicture
-            initials={posterFirstName[0] + posterLastName[0]}
-            size="48"
-            src={posterProfilePicture}
-          />
-
-          <Text weight="600">
-            {posterFirstName} {posterLastName}
-          </Text>
-
-          {postedAt && (
-            <Text color="gray-500" variant="sm">
-              {postedAt}
-            </Text>
-          )}
-        </div>
-
-        {channelId && messageId && (
-          <Link
-            className={cx(
-              getButtonCn({ size: 'small', variant: 'secondary' }),
-              'border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200'
-            )}
-            target="_blank"
-            to={SLACK_WORKSPACE_URL + `/archives/${channelId}/p${messageId}`}
-          >
-            <img alt="Slack Logo" className="h-5 w-5" src="/images/slack.svg" />{' '}
-            View in Slack
-          </Link>
-        )}
-      </header>
-    </Card>
+    <Link
+      className={cx(
+        getButtonCn({ size: 'small', variant: 'secondary' }),
+        'border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200'
+      )}
+      target="_blank"
+      to={SLACK_WORKSPACE_URL + `/archives/${channelId}/p${messageId}`}
+    >
+      <img alt="Slack Logo" className="h-5 w-5" src="/images/slack.svg" /> View
+      in Slack
+    </Link>
   );
 }

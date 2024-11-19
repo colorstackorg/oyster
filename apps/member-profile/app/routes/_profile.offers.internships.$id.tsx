@@ -6,13 +6,12 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { emojify } from 'node-emoji';
 import { Edit } from 'react-feather';
 
-import { getInternshipJobOfferDetails } from '@oyster/core/job-offers';
+import { db } from '@oyster/db';
 import { getIconButtonCn, Modal, Text } from '@oyster/ui';
 
-import { SlackMessageLink } from '@/shared/components/slack-message';
+import { ViewInSlackButton } from '@/shared/components/slack-message';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -21,27 +20,104 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const memberId = user(session);
   const offerId = params.id as string;
 
-  const offer = await getInternshipJobOfferDetails({
+  const _offer = await getInternshipJobOfferDetails({
     memberId,
     offerId,
   });
 
-  if (!offer) {
+  if (!_offer) {
     throw new Response(null, {
       status: 404,
       statusText: 'The internship offer you are looking for does not exist.',
     });
   }
 
-  Object.assign(offer, {
-    createdAt: dayjs().to(offer.createdAt),
-    slackMessageText: emojify(offer.slackMessageText || '', {
-      fallback: '',
-    }),
-    slackMessagePostedAt: dayjs().to(offer.slackMessagePostedAt),
+  const formatter = new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    style: 'currency',
   });
 
+  Object.assign(_offer, {
+    createdAt: dayjs().to(_offer.createdAt),
+  });
+
+  const hourlyRate = parseInt(_offer.hourlyRate);
+  const monthlyRate = (hourlyRate * 40 * 52) / 12;
+
+  const offer = {
+    ..._offer,
+    hourlyRate: formatter.format(hourlyRate) + '/hr',
+    monthlyRate: formatter.format(monthlyRate) + '/mo',
+  };
+
   return json(offer);
+}
+
+type GetInternshipJobOfferDetailsInput = {
+  memberId: string;
+  offerId: string;
+};
+
+async function getInternshipJobOfferDetails({
+  memberId,
+  offerId,
+}: GetInternshipJobOfferDetailsInput) {
+  const offer = await db
+    .selectFrom('internshipJobOffers')
+    .leftJoin('companies', 'companies.id', 'internshipJobOffers.companyId')
+    .leftJoin('students', 'students.id', 'internshipJobOffers.postedBy')
+    .leftJoin('slackMessages', (join) => {
+      return join
+        .onRef(
+          'slackMessages.channelId',
+          '=',
+          'internshipJobOffers.slackChannelId'
+        )
+        .onRef('slackMessages.id', '=', 'internshipJobOffers.slackMessageId');
+    })
+    .select([
+      'companies.id as companyId',
+      'companies.name as companyName',
+      'companies.imageUrl as companyLogo',
+      'companies.crunchbaseId as companyCrunchbaseId',
+      'internshipJobOffers.id',
+      'internshipJobOffers.role',
+      'internshipJobOffers.location',
+      'internshipJobOffers.createdAt',
+      'internshipJobOffers.hourlyRate',
+      'internshipJobOffers.relocation',
+      'internshipJobOffers.benefits',
+      'internshipJobOffers.pastExperience',
+      'internshipJobOffers.negotiated',
+      'internshipJobOffers.additionalNotes',
+      'slackMessages.channelId as slackMessageChannelId',
+      'slackMessages.createdAt as slackMessagePostedAt',
+      'slackMessages.id as slackMessageId',
+      'slackMessages.text as slackMessageText',
+      'students.firstName as posterFirstName',
+      'students.lastName as posterLastName',
+      'students.profilePicture as posterProfilePicture',
+
+      (eb) => {
+        return eb
+          .or([
+            eb('internshipJobOffers.postedBy', '=', memberId),
+            eb.exists(() => {
+              return eb
+                .selectFrom('admins')
+                .where('admins.memberId', '=', memberId)
+                .where('admins.deletedAt', 'is', null);
+            }),
+          ])
+          .as('hasWritePermission');
+      },
+    ])
+    .where('internshipJobOffers.id', '=', offerId)
+    .executeTakeFirst();
+
+  return offer;
 }
 
 export default function InternshipOfferPage() {
@@ -50,7 +126,7 @@ export default function InternshipOfferPage() {
   return (
     <Modal
       onCloseTo={{
-        pathname: Route['/compensation/internships'],
+        pathname: Route['/offers/internships'],
         search: searchParams.toString(),
       }}
     >
@@ -127,7 +203,7 @@ function EditOfferButton() {
           backgroundColorOnHover: 'gray-200',
         })}
         to={{
-          pathname: generatePath(Route['/compensation/internships/:id/edit'], {
+          pathname: generatePath(Route['/offers/internships/:id/edit'], {
             id,
           }),
           search: searchParams.toString(),
@@ -159,17 +235,9 @@ function OfferDetails() {
       {/* Compensation Details */}
       <section>
         <div className="grid grid-cols-2 gap-3">
-          <DetailItem
-            label="Monthly Rate"
-            value={
-              offer.monthlyRate ? `$${offer.monthlyRate.toLocaleString()}` : ''
-            }
-          />
-          <DetailItem
-            label="Hourly Rate"
-            value={offer.hourlyRate ? `$${offer.hourlyRate}/hr` : ''}
-          />
-          <DetailItem label="Relocation" value={offer.relocationText} />
+          <DetailItem label="Monthly Rate" value={offer.monthlyRate} />
+          <DetailItem label="Hourly Rate" value={offer.hourlyRate} />
+          <DetailItem label="Relocation" value={offer.relocation} />
         </div>
       </section>
 
@@ -181,10 +249,10 @@ function OfferDetails() {
             <div className="grid grid-cols-2 gap-3">
               <DetailItem label="Benefits" value={offer.benefits} />
               <DetailItem
-                label="Years of Experience"
-                value={offer.yearsOfExperience}
+                label="Past Experience"
+                value={offer.pastExperience}
               />
-              <DetailItem label="Negotiated" value={offer.negotiatedText} />
+              <DetailItem label="Negotiated" value={offer.negotiated} />
               <DetailItem
                 label="Additional Notes"
                 value={offer.additionalNotes}
@@ -198,25 +266,13 @@ function OfferDetails() {
 }
 
 function SlackMessage() {
-  const {
-    id,
-    slackMessageChannelId,
-    posterFirstName,
-    posterLastName,
-    posterProfilePicture,
-  } = useLoaderData<typeof loader>();
+  const { id, slackMessageChannelId } = useLoaderData<typeof loader>();
 
-  if (!slackMessageChannelId) return null;
+  if (!slackMessageChannelId) {
+    return null;
+  }
 
-  return (
-    <SlackMessageLink
-      channelId={slackMessageChannelId}
-      messageId={id}
-      posterFirstName={posterFirstName || ''}
-      posterLastName={posterLastName || ''}
-      posterProfilePicture={posterProfilePicture || ''}
-    />
-  );
+  return <ViewInSlackButton channelId={slackMessageChannelId} messageId={id} />;
 }
 
 function DetailItem({

@@ -51,14 +51,32 @@ export async function loader({ request }: LoaderFunctionArgs) {
     listInternshipOffers(searchParams, { limit, memberId, page }),
   ]);
 
+  const formatter = new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    style: 'currency',
+  });
+
+  const offers = internshipOffers.map((offer) => {
+    const hourlyRate = parseInt(offer.hourlyRate);
+    const monthlyRate = (hourlyRate * 40 * 52) / 12;
+
+    return {
+      ...offer,
+      hourlyRate: formatter.format(hourlyRate) + '/hr',
+      monthlyRate: formatter.format(monthlyRate) + '/mo',
+    };
+  });
+
   return json({
     allCompanies,
     allLocations,
     appliedCompany,
     limit,
-    internshipOffers,
+    offers,
     page,
-    totalInternshipOffers,
+    totalOffers: totalInternshipOffers,
   });
 }
 
@@ -81,17 +99,13 @@ export default function InternshipOffersPage() {
   );
 }
 
-type InternshipOfferInView = SerializeFrom<
-  typeof loader
->['internshipOffers'][number];
+type OfferInView = SerializeFrom<typeof loader>['offers'][number];
 
 function InternshipOffersTable() {
-  const { internshipOffers } = useLoaderData<typeof loader>();
+  const { offers } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
 
-  const formatter = new Intl.NumberFormat('en-US');
-
-  const columns: TableColumnProps<InternshipOfferInView>[] = [
+  const columns: TableColumnProps<OfferInView>[] = [
     {
       displayName: 'Company',
       size: '200',
@@ -105,18 +119,12 @@ function InternshipOffersTable() {
     {
       displayName: 'Hourly Rate',
       size: '160',
-      render: (internshipOffer) =>
-        internshipOffer.hourlyRate
-          ? `$${formatter.format(internshipOffer.hourlyRate)}/hr`
-          : null,
+      render: (internshipOffer) => internshipOffer.hourlyRate,
     },
     {
       displayName: 'Monthly Rate',
       size: '160',
-      render: (internshipOffer) =>
-        internshipOffer.monthlyRate
-          ? `$${formatter.format(internshipOffer.monthlyRate)}/mo`
-          : null,
+      render: (internshipOffer) => internshipOffer.monthlyRate,
     },
     {
       displayName: 'Location',
@@ -128,11 +136,11 @@ function InternshipOffersTable() {
   return (
     <Table
       columns={columns}
-      data={internshipOffers}
+      data={offers}
       emptyMessage="No internship offers found matching your criteria."
       rowTo={(row) => {
         return {
-          pathname: generatePath(Route['/compensation/internships/:id'], {
+          pathname: generatePath(Route['/offers/internships/:id'], {
             id: row.id,
           }),
           search: searchParams.toString(),
@@ -229,15 +237,14 @@ function HourlyRateFilter() {
 }
 
 function InternshipOffersPagination() {
-  const { limit, internshipOffers, page, totalInternshipOffers } =
-    useLoaderData<typeof loader>();
+  const { limit, offers, page, totalOffers } = useLoaderData<typeof loader>();
 
   return (
     <Pagination
-      dataLength={internshipOffers.length}
+      dataLength={offers.length}
       page={page}
       pageSize={limit}
-      totalCount={totalInternshipOffers}
+      totalCount={totalOffers}
     />
   );
 }
@@ -263,11 +270,7 @@ async function getAppliedCompany(searchParams: URLSearchParams) {
   return company;
 }
 
-function CompanyColumn({
-  companyId,
-  companyLogo,
-  companyName,
-}: InternshipOfferInView) {
+function CompanyColumn({ companyId, companyLogo, companyName }: OfferInView) {
   if (!companyId || !companyName) {
     return null;
   }
@@ -356,18 +359,10 @@ async function listInternshipOffers(
       });
     })
     .$if(!!minRate, (qb) => {
-      return qb.where(
-        'internshipJobOffers.hourlyRate',
-        '>=',
-        parseInt(minRate)
-      );
+      return qb.where('internshipJobOffers.hourlyRate', '>=', minRate || '');
     })
     .$if(!!maxRate, (qb) => {
-      return qb.where(
-        'internshipJobOffers.hourlyRate',
-        '<=',
-        parseInt(maxRate)
-      );
+      return qb.where('internshipJobOffers.hourlyRate', '<=', maxRate || '');
     });
 
   const [{ count }, internshipOffers] = await Promise.all([
@@ -385,7 +380,7 @@ async function listInternshipOffers(
         'internshipJobOffers.role',
         'internshipJobOffers.location',
         'internshipJobOffers.hourlyRate',
-        'internshipJobOffers.monthlyRate',
+        // 'internshipJobOffers.monthlyRate',
         'internshipJobOffers.createdAt',
         'students.id as posterId',
         'students.firstName as posterFirstName',

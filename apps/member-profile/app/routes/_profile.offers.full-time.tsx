@@ -53,7 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     listFullTimeOffers(searchParams, { limit, memberId, page }),
   ]);
 
-  if (pathname === Route['/compensation/full-time']) {
+  if (pathname === Route['/offers/full-time']) {
     track({
       event: 'Page Viewed',
       properties: { Page: 'Compensation' },
@@ -62,12 +62,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   }
 
+  const formatter = new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    maximumFractionDigits: 0,
+    style: 'currency',
+  });
+
+  const offers = fullTimeOffers.map((offer) => {
+    return {
+      ...offer,
+      baseSalary: formatter.format(Number(offer.baseSalary)),
+      performanceBonus: formatter.format(Number(offer.performanceBonus || 0)),
+      signOnBonus: formatter.format(Number(offer.signOnBonus || 0)),
+      stockPerYear: formatter.format(Number(offer.totalStock || 0) / 4),
+      totalCompensation: formatter.format(Number(offer.totalCompensation)),
+    };
+  });
+
   return json({
     allCompanies,
     allLocations,
     appliedCompany,
     limit,
-    fullTimeOffers,
+    fullTimeOffers: offers,
     page,
     totalFullTimeOffers,
   });
@@ -125,8 +142,6 @@ function FullTimeOffersTable() {
   const { fullTimeOffers } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
 
-  const formatter = new Intl.NumberFormat('en-US');
-
   const columns: TableColumnProps<FullTimeOfferInView>[] = [
     {
       displayName: 'Company',
@@ -135,45 +150,38 @@ function FullTimeOffersTable() {
     },
     {
       displayName: 'Role',
-      size: '280',
+      size: '240',
       render: (fullTimeOffer) => fullTimeOffer.role,
-    },
-    {
-      displayName: 'Total Comp',
-      size: '120',
-      render: (fullTimeOffer) =>
-        fullTimeOffer.totalCompensation
-          ? `$${formatter.format(fullTimeOffer.totalCompensation)}`
-          : null,
-    },
-    {
-      displayName: 'Base Salary',
-      size: '120',
-      render: (fullTimeOffer) =>
-        fullTimeOffer.baseSalary
-          ? `$${formatter.format(fullTimeOffer.baseSalary)}`
-          : null,
-    },
-    {
-      displayName: 'Stock',
-      size: '120',
-      render: (fullTimeOffer) =>
-        fullTimeOffer.stockPerYear
-          ? `$${formatter.format(fullTimeOffer.stockPerYear)}/yr`
-          : null,
-    },
-    {
-      displayName: 'Bonus',
-      size: '120',
-      render: (fullTimeOffer) =>
-        fullTimeOffer.bonus
-          ? `$${formatter.format(fullTimeOffer.bonus)}`
-          : null,
     },
     {
       displayName: 'Location',
       size: '160',
       render: (fullTimeOffer) => fullTimeOffer.location,
+    },
+    {
+      displayName: 'Total Compensation',
+      size: '160',
+      render: (fullTimeOffer) => fullTimeOffer.totalCompensation,
+    },
+    {
+      displayName: 'Base Salary',
+      size: '160',
+      render: (fullTimeOffer) => fullTimeOffer.baseSalary,
+    },
+    {
+      displayName: 'Stock (/yr)',
+      size: '160',
+      render: (fullTimeOffer) => fullTimeOffer.stockPerYear,
+    },
+    {
+      displayName: 'Performance Bonus (Maximum)',
+      size: '240',
+      render: (fullTimeOffer) => fullTimeOffer.performanceBonus,
+    },
+    {
+      displayName: 'Sign-On Bonus',
+      size: '120',
+      render: (fullTimeOffer) => fullTimeOffer.signOnBonus,
     },
   ];
 
@@ -184,7 +192,7 @@ function FullTimeOffersTable() {
       emptyMessage="No full-time offers found."
       rowTo={(row) => {
         return {
-          pathname: generatePath(Route['/compensation/full-time/:id'], {
+          pathname: generatePath(Route['/offers/full-time/:id'], {
             id: row.id,
           }),
           search: searchParams.toString(),
@@ -299,14 +307,14 @@ async function listFullTimeOffers(
       return qb.where(
         'fullTimeJobOffers.totalCompensation',
         '>=',
-        parseInt(minSalary)
+        minSalary || ''
       );
     })
     .$if(!!maxSalary, (qb) => {
       return qb.where(
         'fullTimeJobOffers.totalCompensation',
         '<=',
-        parseInt(maxSalary)
+        maxSalary || ''
       );
     });
 
@@ -324,10 +332,11 @@ async function listFullTimeOffers(
         'fullTimeJobOffers.id',
         'fullTimeJobOffers.role',
         'fullTimeJobOffers.location',
+        'fullTimeJobOffers.performanceBonus',
         'fullTimeJobOffers.totalCompensation',
         'fullTimeJobOffers.baseSalary',
-        'fullTimeJobOffers.stockPerYear',
-        'fullTimeJobOffers.bonus',
+        'fullTimeJobOffers.totalStock',
+        'fullTimeJobOffers.signOnBonus',
         'students.id as posterId',
         'students.firstName as posterFirstName',
         'students.lastName as posterLastName',

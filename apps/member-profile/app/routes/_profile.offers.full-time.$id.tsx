@@ -6,13 +6,12 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { emojify } from 'node-emoji';
 import { Edit } from 'react-feather';
 
-import { getFullTimeJobOfferDetails } from '@oyster/core/job-offers';
+import { db } from '@oyster/db';
 import { getIconButtonCn, Modal, Text } from '@oyster/ui';
 
-import { SlackMessageLink } from '@/shared/components/slack-message';
+import { ViewInSlackButton } from '@/shared/components/slack-message';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -21,27 +20,114 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const memberId = user(session);
   const offerId = params.id as string;
 
-  const offer = await getFullTimeJobOfferDetails({
+  const _offer = await getFullTimeJobOfferDetails({
     memberId,
     offerId,
   });
 
-  if (!offer) {
+  if (!_offer) {
     throw new Response(null, {
       status: 404,
       statusText: 'The full-time offer you are looking for does not exist.',
     });
   }
 
-  Object.assign(offer, {
-    createdAt: dayjs().to(offer.createdAt),
-    slackMessageText: emojify(offer.slackMessageText || '', {
-      fallback: '',
-    }),
-    slackMessagePostedAt: dayjs().to(offer.slackMessagePostedAt),
+  Object.assign(_offer, {
+    createdAt: dayjs().to(_offer.createdAt),
   });
 
+  const formatter = new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    maximumFractionDigits: 0,
+    style: 'currency',
+  });
+
+  const offer = {
+    ..._offer,
+    annualizedStock: formatter.format(Number(_offer.totalStock) / 4),
+    baseSalary: formatter.format(Number(_offer.baseSalary)),
+    performanceBonus:
+      _offer.performanceBonus !== null
+        ? formatter.format(Number(_offer.performanceBonus))
+        : 'N/A',
+    signOnBonus:
+      _offer.signOnBonus !== null
+        ? formatter.format(Number(_offer.signOnBonus))
+        : 'N/A',
+    totalCompensation: formatter.format(Number(_offer.totalCompensation)),
+    totalStock: formatter.format(Number(_offer.totalStock)),
+  };
+
   return json(offer);
+}
+
+type GetFullTimeJobOfferDetailsInput = {
+  memberId: string;
+  offerId: string;
+};
+
+async function getFullTimeJobOfferDetails({
+  memberId,
+  offerId,
+}: GetFullTimeJobOfferDetailsInput) {
+  const offer = await db
+    .selectFrom('fullTimeJobOffers')
+    .leftJoin('companies', 'companies.id', 'fullTimeJobOffers.companyId')
+    .leftJoin('students', 'students.id', 'fullTimeJobOffers.postedBy')
+    .leftJoin('slackMessages', (join) => {
+      return join
+        .onRef(
+          'slackMessages.channelId',
+          '=',
+          'fullTimeJobOffers.slackChannelId'
+        )
+        .onRef('slackMessages.id', '=', 'fullTimeJobOffers.slackMessageId');
+    })
+    .select([
+      'companies.id as companyId',
+      'companies.name as companyName',
+      'companies.imageUrl as companyLogo',
+      'companies.crunchbaseId as companyCrunchbaseId',
+      'fullTimeJobOffers.id',
+      'fullTimeJobOffers.role',
+      'fullTimeJobOffers.location',
+      'fullTimeJobOffers.createdAt',
+      'fullTimeJobOffers.totalCompensation',
+      'fullTimeJobOffers.baseSalary',
+      'fullTimeJobOffers.signOnBonus',
+      'fullTimeJobOffers.performanceBonus',
+      'fullTimeJobOffers.relocation',
+      'fullTimeJobOffers.benefits',
+      'fullTimeJobOffers.totalStock',
+      'fullTimeJobOffers.pastExperience',
+      'fullTimeJobOffers.negotiated',
+      'fullTimeJobOffers.additionalNotes',
+      'slackMessages.channelId as slackMessageChannelId',
+      'slackMessages.createdAt as slackMessagePostedAt',
+      'slackMessages.id as slackMessageId',
+      'slackMessages.text as slackMessageText',
+      'students.firstName as posterFirstName',
+      'students.lastName as posterLastName',
+      'students.profilePicture as posterProfilePicture',
+
+      (eb) => {
+        return eb
+          .or([
+            eb('fullTimeJobOffers.postedBy', '=', memberId),
+            eb.exists(() => {
+              return eb
+                .selectFrom('admins')
+                .where('admins.memberId', '=', memberId)
+                .where('admins.deletedAt', 'is', null);
+            }),
+          ])
+          .as('hasWritePermission');
+      },
+    ])
+    .where('fullTimeJobOffers.id', '=', offerId)
+    .executeTakeFirst();
+
+  return offer;
 }
 
 export default function FullTimeOfferPage() {
@@ -50,7 +136,7 @@ export default function FullTimeOfferPage() {
   return (
     <Modal
       onCloseTo={{
-        pathname: Route['/compensation/full-time'],
+        pathname: Route['/offers/full-time'],
         search: searchParams.toString(),
       }}
     >
@@ -127,7 +213,7 @@ function EditOfferButton() {
           backgroundColorOnHover: 'gray-200',
         })}
         to={{
-          pathname: generatePath(Route['/compensation/full-time/:id/edit'], {
+          pathname: generatePath(Route['/offers/full-time/:id/edit'], {
             id,
           }),
           search: searchParams.toString(),
@@ -142,25 +228,13 @@ function EditOfferButton() {
 }
 
 function SlackMessage() {
-  const {
-    id,
-    slackMessageChannelId,
-    posterFirstName,
-    posterLastName,
-    posterProfilePicture,
-  } = useLoaderData<typeof loader>();
+  const { id, slackMessageChannelId } = useLoaderData<typeof loader>();
 
-  if (!slackMessageChannelId) return null;
+  if (!slackMessageChannelId) {
+    return null;
+  }
 
-  return (
-    <SlackMessageLink
-      channelId={slackMessageChannelId}
-      messageId={id}
-      posterFirstName={posterFirstName || ''}
-      posterLastName={posterLastName || ''}
-      posterProfilePicture={posterProfilePicture || ''}
-    />
-  );
+  return <ViewInSlackButton channelId={slackMessageChannelId} messageId={id} />;
 }
 
 function OfferDetails() {
@@ -183,30 +257,11 @@ function OfferDetails() {
         <div className="grid grid-cols-2 gap-3">
           <DetailItem
             label="Total Compensation"
-            value={
-              offer.totalCompensation
-                ? `$${offer.totalCompensation.toLocaleString()}`
-                : ''
-            }
+            value={offer.totalCompensation}
           />
-          <DetailItem
-            label="Base Salary"
-            value={
-              offer.baseSalary ? `$${offer.baseSalary.toLocaleString()}` : ''
-            }
-          />
-          <DetailItem
-            label="Hourly Rate"
-            value={offer.hourlyRate ? `$${offer.hourlyRate}/hr` : ''}
-          />
-          <DetailItem
-            label="Stock Per Year"
-            value={
-              offer.stockPerYear
-                ? `$${offer.stockPerYear.toLocaleString()}`
-                : ''
-            }
-          />
+          <DetailItem label="Base Salary" value={offer.baseSalary} />
+          <DetailItem label="Total Stock" value={offer.totalStock} />
+          <DetailItem label="Stock (/yr)" value={offer.annualizedStock} />
         </div>
       </section>
 
@@ -216,15 +271,11 @@ function OfferDetails() {
       <section>
         <div className="grid grid-cols-2 gap-3">
           <DetailItem
-            label="Total Bonus"
-            value={offer.bonus ? `$${offer.bonus.toLocaleString()}` : ''}
-          />
-          <DetailItem
             label="Performance Bonus"
-            value={offer.performanceBonusText}
+            value={offer.performanceBonus}
           />
-          <DetailItem label="Sign-on Bonus" value={offer.signOnBonusText} />
-          <DetailItem label="Relocation" value={offer.relocationText} />
+          <DetailItem label="Sign-On Bonus" value={offer.signOnBonus} />
+          <DetailItem label="Relocation" value={offer.relocation} />
         </div>
       </section>
 
@@ -236,10 +287,10 @@ function OfferDetails() {
             <div className="grid grid-cols-2 gap-3">
               <DetailItem label="Benefits" value={offer.benefits} />
               <DetailItem
-                label="Years of Experience"
-                value={offer.yearsOfExperience}
+                label="Past Experience"
+                value={offer.pastExperience}
               />
-              <DetailItem label="Negotiated" value={offer.negotiatedText} />
+              <DetailItem label="Negotiated" value={offer.negotiated} />
               <DetailItem
                 label="Additional Notes"
                 value={offer.additionalNotes}

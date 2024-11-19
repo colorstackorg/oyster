@@ -38,7 +38,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   ]);
 
   return json({
-    isCompensationEnabled,
+    isCompensationEnabled: false, // Temporarily disable...
     resumeBook,
   });
 }
@@ -94,7 +94,7 @@ export default function ProfileLayout() {
                 icon={<DollarSign />}
                 isNew
                 label="Compensation"
-                pathname={Route['/compensation']}
+                pathname={Route['/offers']}
                 prefetch="intent"
               />
             )}

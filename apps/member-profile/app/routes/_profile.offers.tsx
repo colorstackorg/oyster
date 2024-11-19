@@ -13,11 +13,11 @@ export default function CompensationLayout() {
 
         <nav className="mr-auto">
           <ul className="flex gap-4">
-            <NavigationItem to={Route['/compensation/full-time']}>
+            <NavigationItem to={Route['/offers/full-time']}>
               Full-Time
             </NavigationItem>
 
-            <NavigationItem to={Route['/compensation/internships']}>
+            <NavigationItem to={Route['/offers/internships']}>
               Internships
             </NavigationItem>
           </ul>
