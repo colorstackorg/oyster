@@ -71,13 +71,13 @@ async function backfillJobOffers({
     .limit(limit)
     .execute();
 
-  for (const slackMessage of slackMessages) {
+  slackMessages.forEach((slackMessage) => {
     job('job_offer.share', {
       sendNotification: false,
       slackChannelId: slackMessage.channelId,
       slackMessageId: slackMessage.id,
     });
-  }
+  });
 
   return success({});
 }
