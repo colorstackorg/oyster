@@ -47,6 +47,7 @@ async function backfillJobOffers({
     ])
     .where('slackMessages.channelId', 'in', compensationChannels)
     .where('slackMessages.deletedAt', 'is', null)
+    .where('slackMessages.threadId', 'is', null)
     .where((eb) => {
       return eb.not(() => {
         return eb.exists(() => {
