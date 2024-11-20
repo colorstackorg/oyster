@@ -188,7 +188,7 @@ function AddFullTimeOfferForm() {
       <Divider my="1" />
 
       <Form.Field
-        description="How many year of experience and/or internships do you have?"
+        description="How many years of experience and/or internships do you have?"
         error={errors.pastExperience}
         label="Past Experience"
         labelFor="pastExperience"
