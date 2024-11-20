@@ -12,10 +12,11 @@ import {
   useLoaderData,
   useSearchParams,
 } from '@remix-run/react';
+import { useState } from 'react';
 
 import {
-  editInternshipOffer,
-  EditInternshipOfferInput,
+  editFullTimeOffer,
+  EditFullTimeOfferInput,
 } from '@oyster/core/job-offers';
 import { db } from '@oyster/db';
 import {
@@ -26,6 +27,7 @@ import {
   getErrors,
   Input,
   Modal,
+  Text,
   Textarea,
   validateForm,
 } from '@oyster/ui';
@@ -45,27 +47,29 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const memberId = user(session);
 
   const offer = await db
-    .selectFrom('internshipJobOffers as internshipOffers')
-    .leftJoin('companies', 'companies.id', 'internshipOffers.companyId')
+    .selectFrom('fullTimeJobOffers as fullTimeOffers')
+    .leftJoin('companies', 'companies.id', 'fullTimeOffers.companyId')
     .select([
       'companies.crunchbaseId as companyCrunchbaseId',
       'companies.imageUrl as companyLogo',
       'companies.name as companyName',
-      'internshipOffers.additionalNotes',
-      'internshipOffers.benefits',
-      'internshipOffers.hourlyRate',
-      'internshipOffers.id',
-      'internshipOffers.location',
-      'internshipOffers.negotiated',
-      'internshipOffers.relocation',
-      'internshipOffers.role',
-      'internshipOffers.pastExperience',
-      'internshipOffers.signOnBonus',
+      'fullTimeOffers.additionalNotes',
+      'fullTimeOffers.baseSalary',
+      'fullTimeOffers.benefits',
+      'fullTimeOffers.id',
+      'fullTimeOffers.location',
+      'fullTimeOffers.negotiated',
+      'fullTimeOffers.relocation',
+      'fullTimeOffers.role',
+      'fullTimeOffers.pastExperience',
+      'fullTimeOffers.performanceBonus',
+      'fullTimeOffers.signOnBonus',
+      'fullTimeOffers.totalStock',
 
       (eb) => {
         return eb
           .or([
-            eb('internshipOffers.postedBy', '=', memberId),
+            eb('fullTimeOffers.postedBy', '=', memberId),
             eb.exists(() => {
               return eb
                 .selectFrom('admins')
@@ -76,20 +80,20 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           .as('hasWritePermission');
       },
     ])
-    .where('internshipOffers.id', '=', params.id as string)
+    .where('fullTimeOffers.id', '=', params.id as string)
     .executeTakeFirst();
 
   if (!offer) {
     throw new Response(null, {
       status: 404,
-      statusText: 'The internship offer you are trying to edit does not exist.',
+      statusText: 'The full-time offer you are trying to edit does not exist.',
     });
   }
 
   if (!offer.hasWritePermission) {
     throw new Response(null, {
       status: 403,
-      statusText: 'You do not have permission to edit this internship offer.',
+      statusText: 'You do not have permission to edit this full-time offer.',
     });
   }
 
@@ -101,7 +105,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const { data, errors, ok } = await validateForm(
     request,
-    EditInternshipOfferInput
+    EditFullTimeOfferInput
   );
 
   if (!ok) {
@@ -110,19 +114,19 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const offerId = params.id as string;
 
-  const result = await editInternshipOffer(offerId, data);
+  const result = await editFullTimeOffer(offerId, data);
 
   if (!result.ok) {
     return json({ error: result.error }, { status: result.code });
   }
 
   toast(session, {
-    message: 'Edited internship offer.',
+    message: 'Edited full-time offer.',
   });
 
   const url = new URL(request.url);
 
-  url.pathname = generatePath(Route['/offers/internships/:id'], {
+  url.pathname = generatePath(Route['/offers/full-time/:id'], {
     id: offerId,
   });
 
@@ -133,42 +137,54 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 }
 
-export default function EditInternshipOffer() {
+export default function EditFullTimeOffer() {
   const [searchParams] = useSearchParams();
 
   return (
     <Modal
       onCloseTo={{
-        pathname: Route['/offers/internships'],
+        pathname: Route['/offers/full-time'],
         search: searchParams.toString(),
       }}
     >
       <Modal.Header>
-        <Modal.Title>Edit Internship Offer</Modal.Title>
+        <Modal.Title>Edit Full-Time Offer</Modal.Title>
         <Modal.CloseButton />
       </Modal.Header>
 
-      <EditInternshipOfferForm />
+      <EditFullTimeOfferForm />
     </Modal>
   );
 }
 
-function EditInternshipOfferForm() {
+const formatter = new Intl.NumberFormat('en-US', {
+  currency: 'USD',
+  maximumFractionDigits: 0,
+  style: 'currency',
+});
+
+function EditFullTimeOfferForm() {
   const {
     additionalNotes,
+    baseSalary,
     benefits,
     companyCrunchbaseId,
     companyName,
-    hourlyRate,
     id,
     location,
     negotiated,
     pastExperience,
+    performanceBonus,
     relocation,
     role,
     signOnBonus,
+    totalStock: _totalStock,
   } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
+
+  const [totalStock, setTotalStock] = useState<number>(
+    Number(_totalStock) || 0
+  );
 
   return (
     <RemixForm className="form" method="post">
@@ -210,22 +226,47 @@ function EditInternshipOfferForm() {
 
       <div className="grid grid-cols-2 gap-[inherit]">
         <Form.Field
-          error={errors.hourlyRate}
-          label="Hourly Rate"
-          labelFor="hourlyRate"
+          error={errors.baseSalary}
+          label="Base Salary"
+          labelFor="baseSalary"
           required
         >
           <Input
-            defaultValue={hourlyRate}
-            id="hourlyRate"
+            defaultValue={baseSalary}
+            id="baseSalary"
             min={0}
-            name="hourlyRate"
+            name="baseSalary"
             required
             type="number"
           />
         </Form.Field>
 
         <Form.Field
+          error={errors.totalStock}
+          label="Total Stock"
+          labelFor="totalStock"
+        >
+          <div className="flex flex-col gap-2">
+            <Input
+              id="totalStock"
+              min={0}
+              name="totalStock"
+              onChange={(e) => setTotalStock(e.currentTarget.valueAsNumber)}
+              type="number"
+              value={totalStock}
+            />
+
+            {!!totalStock && (
+              <Text color="gray-500" variant="sm">
+                {formatter.format(totalStock / 4)}/yr, assuming a 4-year vesting
+                period.
+              </Text>
+            )}
+          </div>
+        </Form.Field>
+
+        <Form.Field
+          description="The amount of money you will receive upfront."
           error={errors.signOnBonus}
           label="Sign-On Bonus"
           labelFor="signOnBonus"
@@ -235,6 +276,21 @@ function EditInternshipOfferForm() {
             id="signOnBonus"
             min={0}
             name="signOnBonus"
+            type="number"
+          />
+        </Form.Field>
+
+        <Form.Field
+          description="The maximum performance/annual bonus you can receive."
+          error={errors.performanceBonus}
+          label="Performance Bonus"
+          labelFor="performanceBonus"
+        >
+          <Input
+            defaultValue={performanceBonus || undefined}
+            id="performanceBonus"
+            min={0}
+            name="performanceBonus"
             type="number"
           />
         </Form.Field>
@@ -318,7 +374,7 @@ function EditInternshipOfferForm() {
 
         <Link
           className={getButtonCn({ color: 'error', variant: 'secondary' })}
-          to={generatePath(Route['/offers/internships/:id/delete'], { id })}
+          to={generatePath(Route['/offers/full-time/:id/delete'], { id })}
         >
           Delete
         </Link>

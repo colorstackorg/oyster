@@ -236,30 +236,35 @@ export async function editInternshipOffer(
 
 // "Edit Full-Time Offer"
 
-export const EditFullTimeJobOfferInput = z.object({
-  additionalNotes: z.string().trim().min(1).nullable(),
-  baseSalary: z.number(),
-  benefits: z.string().trim().min(1).nullable(),
-  bonus: z.number().nullable(),
+export const EditFullTimeOfferInput = FullTimeOffer.omit({
+  company: true,
+  employmentType: true,
+}).extend({
+  additionalNotes: nullableField(BaseOffer.shape.additionalNotes),
+  benefits: nullableField(BaseOffer.shape.benefits),
   companyCrunchbaseId: z.string().trim().min(1),
-  hourlyRate: z.number().nullable(),
-  location: z.string().trim().min(1),
-  negotiatedText: z.string().trim().min(1).nullable(),
-  pastExperience: z.string().trim().min(1).nullable(),
-  performanceBonus: z.string().trim().min(1).nullable(),
-  relocation: z.string().trim().min(1).nullable(),
-  role: z.string().trim().min(1).nullable(),
-  signOnBonus: z.string().trim().min(1).nullable(),
-  totalStock: z.number().nullable(),
+  negotiated: nullableField(BaseOffer.shape.negotiated),
+  pastExperience: nullableField(BaseOffer.shape.pastExperience),
+  performanceBonus: nullableField(FullTimeOffer.shape.performanceBonus),
+  relocation: nullableField(BaseOffer.shape.relocation),
+  signOnBonus: nullableField(BaseOffer.shape.signOnBonus),
+  totalStock: nullableField(FullTimeOffer.shape.totalStock),
 });
 
-type EditFullTimeJobOfferInput = z.infer<typeof EditFullTimeJobOfferInput>;
+type EditFullTimeOfferInput = z.infer<typeof EditFullTimeOfferInput>;
 
-export async function editFullTimeJobOffer(
-  jobOfferId: string,
-  input: EditFullTimeJobOfferInput
+/**
+ * Edits a full-time offer.
+ *
+ * @param offerId - The ID of the full-time offer to edit.
+ * @param input - The new details for the full-time offer.
+ * @returns Result indicating the success or failure of the operation.
+ */
+export async function editFullTimeOffer(
+  offerId: string,
+  input: EditFullTimeOfferInput
 ): Promise<Result> {
-  const jobOffer = await db.transaction().execute(async (trx) => {
+  const offer = await db.transaction().execute(async (trx) => {
     const companyId = await saveCompanyIfNecessary(
       trx,
       input.companyCrunchbaseId
@@ -273,28 +278,34 @@ export async function editFullTimeJobOffer(
         benefits: input.benefits,
         companyId,
         location: input.location,
-        negotiated: input.negotiatedText,
-        relocation: input.relocation,
-        role: input.role,
+        negotiated: input.negotiated,
         pastExperience: input.pastExperience,
         performanceBonus: input.performanceBonus,
+        relocation: input.relocation,
+        role: input.role,
         signOnBonus: input.signOnBonus,
+        totalCompensation: calculateTotalCompensation({
+          baseSalary: input.baseSalary,
+          performanceBonus: input.performanceBonus,
+          signOnBonus: input.signOnBonus,
+          totalStock: input.totalStock,
+        }),
         totalStock: input.totalStock,
         updatedAt: new Date(),
       })
-      .where('id', '=', jobOfferId)
+      .where('id', '=', offerId)
       .returning(['id'])
       .executeTakeFirst();
   });
 
-  if (!jobOffer) {
+  if (!offer) {
     return fail({
       code: 404,
       error: 'Could not find full-time job offer to update.',
     });
   }
 
-  return success(jobOffer);
+  return success(offer);
 }
 
 // "Share Job Offer"
