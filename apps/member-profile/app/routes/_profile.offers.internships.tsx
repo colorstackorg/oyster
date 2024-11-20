@@ -215,7 +215,7 @@ async function listInternshipOffers({
   });
 
   const offers = _offers.map((offer) => {
-    const hourlyRate = parseInt(offer.hourlyRate);
+    const hourlyRate = Number(offer.hourlyRate);
     const monthlyRate = hourlyToMonthlyRate(hourlyRate);
 
     return {
