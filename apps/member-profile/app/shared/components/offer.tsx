@@ -4,6 +4,8 @@ import { Edit } from 'react-feather';
 
 import { getIconButtonCn, Text } from '@oyster/ui';
 
+import { Card } from '@/shared/components/card';
+
 // Edit Offer Button
 
 type EditOfferButtonProps = {
@@ -38,6 +40,32 @@ export function EditOfferButton({
 
       <div className="h-6 w-[1px] bg-gray-100" />
     </>
+  );
+}
+
+// Offer Aggregation
+
+type OfferAggregationProps = {
+  label: string;
+  value: string | number | null | undefined;
+};
+
+export function OfferAggregation({ label, value }: OfferAggregationProps) {
+  return (
+    <Card className="gap-1">
+      <Text color="gray-500" variant="sm">
+        {label}
+      </Text>
+      <Text variant="2xl">{value}</Text>
+    </Card>
+  );
+}
+
+export function OfferAggregationGroup({ children }: PropsWithChildren) {
+  return (
+    <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2 @3xl:grid-cols-3">
+      {children}
+    </div>
   );
 }
 
