@@ -63,6 +63,7 @@ export const Modal = ({
             'absolute inset-0 cursor-default bg-black',
             'animate-[modal-shader-animation_250ms_forwards]'
           )}
+          preventScrollReset
           to={onCloseTo}
         />
       </div>
