@@ -4,6 +4,7 @@ import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { db, type DB } from '@oyster/db';
+import { nullableField } from '@oyster/types';
 import { id } from '@oyster/utils';
 
 import { JobOfferBullJob } from '@/infrastructure/bull/bull.types';
@@ -16,9 +17,45 @@ import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-comp
 import { ENV } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 
+// Types
+
+const BaseOffer = z.object({
+  additionalNotes: z.string().trim().min(1).nullable(),
+  benefits: z.string().trim().min(1).nullable(),
+  company: z.string().trim().min(1),
+  location: z.string().trim().min(1),
+  negotiated: z.string().trim().min(1).nullable(),
+  pastExperience: z.string().trim().min(1).nullable(),
+  relocation: z.string().trim().min(1).nullable(),
+  role: z.string().trim().min(1),
+  signOnBonus: z.coerce.number().nullable(),
+});
+
+const FullTimeOffer = BaseOffer.extend({
+  baseSalary: z.coerce.number(),
+  employmentType: z.literal('full_time'),
+  performanceBonus: z.coerce.number().nullable(),
+  totalStock: z.coerce.number().nullable(),
+});
+
+const InternshipOffer = BaseOffer.extend({
+  employmentType: z.literal('internship'),
+  hourlyRate: z.coerce.number(),
+});
+
+const Offer = z.discriminatedUnion('employmentType', [
+  FullTimeOffer,
+  InternshipOffer,
+]);
+
+type BaseOffer = z.infer<typeof BaseOffer>;
+type FullTimeOffer = z.infer<typeof FullTimeOffer>;
+type InternshipOffer = z.infer<typeof InternshipOffer>;
+type Offer = z.infer<typeof Offer>;
+
 // Core
 
-type BackfillJobOffersInput = {
+type BackfillOffersInput = {
   limit?: number;
 };
 
@@ -31,9 +68,9 @@ type BackfillJobOffersInput = {
  *
  * @returns Result indicating the success or failure of the operation.
  */
-async function backfillJobOffers({
+async function backfillOffers({
   limit = 5,
-}: BackfillJobOffersInput): Promise<Result> {
+}: BackfillOffersInput): Promise<Result> {
   const compensationChannels = await redis.smembers(
     'slack:compensation_channels'
   );
@@ -133,28 +170,35 @@ export async function deleteOffer({
   return success({ id: offerId });
 }
 
-// "Edit Internship Job Offer"
+// "Edit Internship Offer"
 
-export const EditInternshipJobOfferInput = z.object({
-  additionalNotes: z.string().trim().min(1).nullable(),
-  benefits: z.string().trim().min(1).nullable(),
+export const EditInternshipOfferInput = InternshipOffer.omit({
+  company: true,
+  employmentType: true,
+}).extend({
+  additionalNotes: nullableField(BaseOffer.shape.additionalNotes),
+  benefits: nullableField(BaseOffer.shape.benefits),
   companyCrunchbaseId: z.string().trim().min(1),
-  hourlyRate: z.number(),
-  location: z.string().trim().min(1),
-  monthlyRate: z.number(),
-  negotiated: z.string().trim().min(1).nullable(),
-  relocation: z.string().trim().min(1).nullable(),
-  role: z.string().trim().min(1).nullable(),
-  yearsOfExperience: z.string().trim().min(1).nullable(),
+  negotiated: nullableField(BaseOffer.shape.negotiated),
+  pastExperience: nullableField(BaseOffer.shape.pastExperience),
+  relocation: nullableField(BaseOffer.shape.relocation),
+  signOnBonus: nullableField(BaseOffer.shape.signOnBonus),
 });
 
-type EditInternshipJobOfferInput = z.infer<typeof EditInternshipJobOfferInput>;
+type EditInternshipOfferInput = z.infer<typeof EditInternshipOfferInput>;
 
-export async function editInternshipJobOffer(
-  jobOfferId: string,
-  input: EditInternshipJobOfferInput
+/**
+ * Edits an internship offer.
+ *
+ * @param offerId - The ID of the internship offer to edit.
+ * @param input - The new details for the internship offer.
+ * @returns Result indicating the success or failure of the operation.
+ */
+export async function editInternshipOffer(
+  offerId: string,
+  input: EditInternshipOfferInput
 ): Promise<Result> {
-  const jobOffer = await db.transaction().execute(async (trx) => {
+  const offer = await db.transaction().execute(async (trx) => {
     const companyId = await saveCompanyIfNecessary(
       trx,
       input.companyCrunchbaseId
@@ -169,52 +213,58 @@ export async function editInternshipJobOffer(
         hourlyRate: input.hourlyRate,
         location: input.location,
         negotiated: input.negotiated,
-        pastExperience: input.yearsOfExperience,
+        pastExperience: input.pastExperience,
         relocation: input.relocation,
         role: input.role,
+        signOnBonus: input.signOnBonus,
         updatedAt: new Date(),
       })
-      .where('id', '=', jobOfferId)
+      .where('id', '=', offerId)
       .returning(['id'])
       .executeTakeFirst();
   });
 
-  if (!jobOffer) {
+  if (!offer) {
     return fail({
       code: 404,
       error: 'Could not find internship job offer to update.',
     });
   }
 
-  return success(jobOffer);
+  return success(offer);
 }
 
-// "Edit Full-Time Job Offer"
+// "Edit Full-Time Offer"
 
-export const EditFullTimeJobOfferInput = z.object({
-  additionalNotes: z.string().trim().min(1).nullable(),
-  baseSalary: z.number(),
-  benefits: z.string().trim().min(1).nullable(),
-  bonus: z.number().nullable(),
+export const EditFullTimeOfferInput = FullTimeOffer.omit({
+  company: true,
+  employmentType: true,
+}).extend({
+  additionalNotes: nullableField(BaseOffer.shape.additionalNotes),
+  benefits: nullableField(BaseOffer.shape.benefits),
   companyCrunchbaseId: z.string().trim().min(1),
-  hourlyRate: z.number().nullable(),
-  location: z.string().trim().min(1),
-  negotiatedText: z.string().trim().min(1).nullable(),
-  pastExperience: z.string().trim().min(1).nullable(),
-  performanceBonus: z.string().trim().min(1).nullable(),
-  relocation: z.string().trim().min(1).nullable(),
-  role: z.string().trim().min(1).nullable(),
-  signOnBonus: z.string().trim().min(1).nullable(),
-  totalStock: z.number().nullable(),
+  negotiated: nullableField(BaseOffer.shape.negotiated),
+  pastExperience: nullableField(BaseOffer.shape.pastExperience),
+  performanceBonus: nullableField(FullTimeOffer.shape.performanceBonus),
+  relocation: nullableField(BaseOffer.shape.relocation),
+  signOnBonus: nullableField(BaseOffer.shape.signOnBonus),
+  totalStock: nullableField(FullTimeOffer.shape.totalStock),
 });
 
-type EditFullTimeJobOfferInput = z.infer<typeof EditFullTimeJobOfferInput>;
+type EditFullTimeOfferInput = z.infer<typeof EditFullTimeOfferInput>;
 
-export async function editFullTimeJobOffer(
-  jobOfferId: string,
-  input: EditFullTimeJobOfferInput
+/**
+ * Edits a full-time offer.
+ *
+ * @param offerId - The ID of the full-time offer to edit.
+ * @param input - The new details for the full-time offer.
+ * @returns Result indicating the success or failure of the operation.
+ */
+export async function editFullTimeOffer(
+  offerId: string,
+  input: EditFullTimeOfferInput
 ): Promise<Result> {
-  const jobOffer = await db.transaction().execute(async (trx) => {
+  const offer = await db.transaction().execute(async (trx) => {
     const companyId = await saveCompanyIfNecessary(
       trx,
       input.companyCrunchbaseId
@@ -228,28 +278,34 @@ export async function editFullTimeJobOffer(
         benefits: input.benefits,
         companyId,
         location: input.location,
-        negotiated: input.negotiatedText,
-        relocation: input.relocation,
-        role: input.role,
+        negotiated: input.negotiated,
         pastExperience: input.pastExperience,
         performanceBonus: input.performanceBonus,
+        relocation: input.relocation,
+        role: input.role,
         signOnBonus: input.signOnBonus,
+        totalCompensation: calculateTotalCompensation({
+          baseSalary: input.baseSalary,
+          performanceBonus: input.performanceBonus,
+          signOnBonus: input.signOnBonus,
+          totalStock: input.totalStock,
+        }),
         totalStock: input.totalStock,
         updatedAt: new Date(),
       })
-      .where('id', '=', jobOfferId)
+      .where('id', '=', offerId)
       .returning(['id'])
       .executeTakeFirst();
   });
 
-  if (!jobOffer) {
+  if (!offer) {
     return fail({
       code: 404,
       error: 'Could not find full-time job offer to update.',
     });
   }
 
-  return success(jobOffer);
+  return success(offer);
 }
 
 // "Share Job Offer"
@@ -363,35 +419,6 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
   Now, analyze the job offer and provide the structured data as requested.
 `;
 
-const BaseJobOffer = z.object({
-  additionalNotes: z.string().trim().min(1).nullable(),
-  benefits: z.string().trim().min(1).nullable(),
-  company: z.string().trim().min(1),
-  location: z.string().trim().min(1),
-  negotiated: z.string().trim().min(1).nullable(),
-  pastExperience: z.string().trim().min(1).nullable(),
-  relocation: z.string().trim().min(1).nullable(),
-  role: z.string().trim().min(1),
-  signOnBonus: z.coerce.number().nullable(),
-});
-
-type BaseJobOffer = z.infer<typeof BaseJobOffer>;
-
-const ShareJobOfferResponse = z.discriminatedUnion('employmentType', [
-  BaseJobOffer.extend({
-    employmentType: z.literal('internship'),
-    hourlyRate: z.coerce.number(),
-  }),
-  BaseJobOffer.extend({
-    baseSalary: z.coerce.number(),
-    employmentType: z.literal('full_time'),
-    performanceBonus: z.coerce.number().nullable(),
-    totalStock: z.coerce.number().nullable(),
-  }),
-]);
-
-type ShareJobOfferResponse = z.infer<typeof ShareJobOfferResponse>;
-
 type ShareJobOfferInput = {
   sendNotification?: boolean;
   slackChannelId: string;
@@ -460,7 +487,7 @@ async function shareJobOffer({
     return completionResult;
   }
 
-  let data: ShareJobOfferResponse;
+  let data: Offer;
 
   try {
     const closingTag = '</analysis>';
@@ -480,7 +507,7 @@ async function shareJobOffer({
 
     const json = JSON.parse(jsonString);
 
-    data = ShareJobOfferResponse.parse(json);
+    data = Offer.parse(json);
   } catch (error) {
     return fail({
       code: 400,
@@ -663,7 +690,7 @@ export const jobOfferWorker = registerWorker(
   async (job) => {
     const result = await match(job)
       .with({ name: 'job_offer.backfill' }, async ({ data }) => {
-        return backfillJobOffers(data);
+        return backfillOffers(data);
       })
       .with({ name: 'job_offer.share' }, async ({ data }) => {
         return shareJobOffer(data);

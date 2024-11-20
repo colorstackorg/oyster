@@ -1,6 +1,45 @@
+import { Link, useSearchParams } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
+import { Edit } from 'react-feather';
 
-import { Text } from '@oyster/ui';
+import { getIconButtonCn, Text } from '@oyster/ui';
+
+// Edit Offer Button
+
+type EditOfferButtonProps = {
+  hasWritePermission: boolean;
+  pathname: string;
+};
+
+export function EditOfferButton({
+  hasWritePermission,
+  pathname,
+}: EditOfferButtonProps) {
+  const [searchParams] = useSearchParams();
+
+  if (!hasWritePermission) {
+    return null;
+  }
+
+  return (
+    <>
+      <Link
+        className={getIconButtonCn({
+          backgroundColor: 'gray-100',
+          backgroundColorOnHover: 'gray-200',
+        })}
+        to={{
+          pathname,
+          search: searchParams.toString(),
+        }}
+      >
+        <Edit />
+      </Link>
+
+      <div className="h-6 w-[1px] bg-gray-100" />
+    </>
+  );
+}
 
 // Offer Detail
 
