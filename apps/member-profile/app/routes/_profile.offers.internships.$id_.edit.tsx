@@ -21,6 +21,7 @@ import { db } from '@oyster/db';
 import {
   Button,
   Divider,
+  DollarInput,
   Form,
   getButtonCn,
   getErrors,
@@ -215,13 +216,11 @@ function EditInternshipOfferForm() {
           labelFor="hourlyRate"
           required
         >
-          <Input
+          <DollarInput
             defaultValue={hourlyRate}
             id="hourlyRate"
-            min={0}
             name="hourlyRate"
             required
-            type="number"
           />
         </Form.Field>
 
@@ -230,12 +229,10 @@ function EditInternshipOfferForm() {
           label="Sign-On Bonus"
           labelFor="signOnBonus"
         >
-          <Input
+          <DollarInput
             defaultValue={signOnBonus || undefined}
             id="signOnBonus"
-            min={0}
             name="signOnBonus"
-            type="number"
           />
         </Form.Field>
       </div>
