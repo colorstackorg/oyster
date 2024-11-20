@@ -86,29 +86,29 @@ async function backfillJobOffers({
   return success({});
 }
 
-// "Delete Job Offer"
+// "Delete Offer"
 
-type DeleteJobOfferInput = {
-  jobOfferId: string;
+type DeleteOfferInput = {
   memberId: string;
+  offerId: string;
 };
 
 /**
- * Deletes a job offer from the database, only if the given member has
- * permission to do so. This will attempt to delete the job offer from both
+ * Deletes an offer from the database, only if the given member has
+ * permission to do so. This will attempt to delete the offer from both
  * `fullTimeJobOffers` and `internshipJobOffers` tables, one will succeed and
  * one will have no effect.
  *
- * @param input - The job offer to delete and the member deleting it.
+ * @param input - The offer to delete and the member deleting it.
  * @returns Result indicating the success or failure of the operation.
  */
-export async function deleteJobOffer({
-  jobOfferId,
+export async function deleteOffer({
   memberId,
-}: DeleteJobOfferInput): Promise<Result> {
-  const hasPermission = await hasJobOfferWritePermission({
-    jobOfferId,
+  offerId,
+}: DeleteOfferInput): Promise<Result> {
+  const hasPermission = await hasOfferWritePermission({
     memberId,
+    offerId,
   });
 
   if (!hasPermission) {
@@ -121,16 +121,16 @@ export async function deleteJobOffer({
   await db.transaction().execute(async (trx) => {
     await trx
       .deleteFrom('fullTimeJobOffers')
-      .where('id', '=', jobOfferId)
+      .where('id', '=', offerId)
       .execute();
 
     await trx
       .deleteFrom('internshipJobOffers')
-      .where('id', '=', jobOfferId)
+      .where('id', '=', offerId)
       .execute();
   });
 
-  return success({ id: jobOfferId });
+  return success({ id: offerId });
 }
 
 // "Edit Internship Job Offer"
@@ -609,7 +609,7 @@ export function hourlyToMonthlyRate(hourlyRate: number) {
 
 type HasEditPermissionInput = {
   memberId: string;
-  jobOfferId: string;
+  offerId: string;
 };
 
 /**
@@ -620,9 +620,9 @@ type HasEditPermissionInput = {
  * @param input - Member ID and job offer ID.
  * @returns Whether the member has write permission for the job offer.
  */
-export async function hasJobOfferWritePermission({
+export async function hasOfferWritePermission({
   memberId,
-  jobOfferId,
+  offerId,
 }: HasEditPermissionInput): Promise<boolean> {
   function isPosterOrAdmin(
     eb: ExpressionBuilder<DB, 'fullTimeJobOffers' | 'internshipJobOffers'>
@@ -641,13 +641,13 @@ export async function hasJobOfferWritePermission({
   const [fullTimeJobOffer, internshipJobOffer] = await Promise.all([
     db
       .selectFrom('fullTimeJobOffers')
-      .where('id', '=', jobOfferId)
+      .where('id', '=', offerId)
       .where(isPosterOrAdmin)
       .executeTakeFirst(),
 
     db
       .selectFrom('internshipJobOffers')
-      .where('id', '=', jobOfferId)
+      .where('id', '=', offerId)
       .where(isPosterOrAdmin)
       .executeTakeFirst(),
   ]);
