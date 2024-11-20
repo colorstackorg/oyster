@@ -55,6 +55,242 @@ type Offer = z.infer<typeof Offer>;
 
 // Core
 
+// "Add Full-Time Offer"
+
+export const AddFullTimeOfferInput = FullTimeOffer.omit({
+  company: true,
+  employmentType: true,
+}).extend({
+  additionalNotes: nullableField(BaseOffer.shape.additionalNotes),
+  benefits: nullableField(BaseOffer.shape.benefits),
+  companyCrunchbaseId: z.string().trim().min(1),
+  negotiated: nullableField(BaseOffer.shape.negotiated),
+  pastExperience: nullableField(BaseOffer.shape.pastExperience),
+  performanceBonus: nullableField(FullTimeOffer.shape.performanceBonus),
+  postedBy: z.string().trim().min(1),
+  relocation: nullableField(BaseOffer.shape.relocation),
+  signOnBonus: nullableField(BaseOffer.shape.signOnBonus),
+  totalStock: nullableField(FullTimeOffer.shape.totalStock),
+});
+
+type AddFullTimeOfferInput = z.infer<typeof AddFullTimeOfferInput>;
+
+/**
+ * Adds a full-time offer to the database. Also sends a notification to the
+ * compensation channel, w/ the offer details and a link to the offer embedded
+ * in the message.
+ *
+ * @param input - The details for the full-time job offer.
+ * @returns Result indicating the success or failure of the operation.
+ */
+export async function addFullTimeOffer(
+  input: AddFullTimeOfferInput
+): Promise<Result<{ id: string }>> {
+  const offer = await db.transaction().execute(async (trx) => {
+    const companyId = await saveCompanyIfNecessary(
+      trx,
+      input.companyCrunchbaseId
+    );
+
+    return trx
+      .insertInto('fullTimeJobOffers')
+      .values({
+        additionalNotes: input.additionalNotes,
+        baseSalary: input.baseSalary,
+        benefits: input.benefits,
+        companyId,
+        createdAt: new Date(),
+        id: id(),
+        location: input.location,
+        negotiated: input.negotiated,
+        pastExperience: input.pastExperience,
+        performanceBonus: input.performanceBonus,
+        postedAt: new Date(),
+        postedBy: input.postedBy,
+        relocation: input.relocation,
+        role: input.role,
+        signOnBonus: input.signOnBonus,
+        totalCompensation: calculateTotalCompensation({
+          baseSalary: input.baseSalary,
+          performanceBonus: input.performanceBonus,
+          signOnBonus: input.signOnBonus,
+          totalStock: input.totalStock,
+        }),
+        totalStock: input.totalStock,
+        updatedAt: new Date(),
+      })
+      .returning([
+        'id',
+        'totalCompensation',
+        (eb) => {
+          return eb
+            .selectFrom('companies')
+            .select('companies.name')
+            .whereRef('companies.id', '=', 'fullTimeJobOffers.companyId')
+            .as<string>('companyName');
+        },
+      ])
+      .executeTakeFirst();
+  });
+
+  if (!offer) {
+    return fail({
+      code: 404,
+      error: 'Failed to create full-time offer.',
+    });
+  }
+
+  // There should currently only be 1 channel in this set right now, but this
+  // may change in the future and if so, we'll need to update this.
+  const [compensationChannel] = await redis.smembers(
+    'slack:compensation_channels'
+  );
+
+  const { format } = new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    maximumFractionDigits: 0,
+    style: 'currency',
+  });
+
+  const message = dedent`
+    A new <${ENV.STUDENT_PROFILE_URL}/offers/full-time/${offer.id}|*FT offer*> is in! 🚀
+
+    >*Role/Job Title*: ${input.role}
+    >*Company*: ${offer.companyName}
+    >*Location*: ${input.location}
+    >*Past Experience*: ${input.pastExperience}
+    >*Base Salary*: ${format(input.baseSalary)}
+    >*Stock*: ${input.totalStock ? format(input.totalStock) : 'N/A'}
+    >*Bonus (Annual)*: ${input.performanceBonus ? format(input.performanceBonus) : 'N/A'}
+    >*Sign-On Bonus*: ${input.signOnBonus ? format(input.signOnBonus) : 'N/A'}
+    >*Housing/Relocation*: ${input.relocation || 'N/A'}
+    >*Benefits*: ${input.benefits || 'N/A'}
+    >*Negotiated*: ${input.negotiated || 'N/A'}
+    >*Additional Notes*: ${input.additionalNotes || 'N/A'}
+    >*TC*: ${format(Number(offer.totalCompensation))}
+  `;
+
+  job('notification.slack.send', {
+    channel: compensationChannel,
+    message,
+    workspace: 'regular',
+  });
+
+  return success(offer);
+}
+
+// "Add Internship Offer"
+
+/**
+ * Adds an internship offer to the database. Also sends a notification to the
+ * compensation channel, w/ the offer details and a link to the offer embedded
+ * in the message.
+ *
+ * @param input - The details for the internship offer.
+ * @returns Result indicating the success or failure of the operation.
+ */
+export const AddInternshipOfferInput = InternshipOffer.omit({
+  company: true,
+  employmentType: true,
+}).extend({
+  additionalNotes: nullableField(BaseOffer.shape.additionalNotes),
+  benefits: nullableField(BaseOffer.shape.benefits),
+  companyCrunchbaseId: z.string().trim().min(1),
+  negotiated: nullableField(BaseOffer.shape.negotiated),
+  pastExperience: nullableField(BaseOffer.shape.pastExperience),
+  postedBy: z.string().trim().min(1),
+  relocation: nullableField(BaseOffer.shape.relocation),
+  signOnBonus: nullableField(BaseOffer.shape.signOnBonus),
+});
+
+type AddInternshipOfferInput = z.infer<typeof AddInternshipOfferInput>;
+
+export async function addInternshipOffer(
+  input: AddInternshipOfferInput
+): Promise<Result<{ id: string }>> {
+  const offer = await db.transaction().execute(async (trx) => {
+    const companyId = await saveCompanyIfNecessary(
+      trx,
+      input.companyCrunchbaseId
+    );
+
+    return trx
+      .insertInto('internshipJobOffers')
+      .values({
+        additionalNotes: input.additionalNotes,
+        benefits: input.benefits,
+        companyId,
+        createdAt: new Date(),
+        hourlyRate: input.hourlyRate,
+        id: id(),
+        location: input.location,
+        negotiated: input.negotiated,
+        pastExperience: input.pastExperience,
+        postedAt: new Date(),
+        postedBy: input.postedBy,
+        relocation: input.relocation,
+        role: input.role,
+        signOnBonus: input.signOnBonus,
+        updatedAt: new Date(),
+      })
+      .returning([
+        'id',
+        (eb) => {
+          return eb
+            .selectFrom('companies')
+            .select('companies.name')
+            .whereRef('companies.id', '=', 'internshipJobOffers.companyId')
+            .as<string>('companyName');
+        },
+      ])
+      .executeTakeFirst();
+  });
+
+  if (!offer) {
+    return fail({
+      code: 404,
+      error: 'Failed to create internship offer.',
+    });
+  }
+
+  // There should currently only be 1 channel in this set right now, but this
+  // may change in the future and if so, we'll need to update this.
+  const [compensationChannel] = await redis.smembers(
+    'slack:compensation_channels'
+  );
+
+  const { format } = new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+    style: 'currency',
+  });
+
+  const message = dedent`
+    A new <${ENV.STUDENT_PROFILE_URL}/offers/internships/${offer.id}|*internship offer*> is in! 🚀
+
+    >*Role/Job Title*: ${input.role}
+    >*Company*: ${offer.companyName}
+    >*Location*: ${input.location}
+    >*Past Experience*: ${input.pastExperience}
+    >*Hourly Rate*: ${format(input.hourlyRate)}
+    >*Monthly Rate*: ${format(hourlyToMonthlyRate(input.hourlyRate))}
+    >*Sign-On Bonus*: ${input.signOnBonus ? format(input.signOnBonus) : 'N/A'}
+    >*Housing/Relocation*: ${input.relocation || 'N/A'}
+    >*Benefits*: ${input.benefits || 'N/A'}
+    >*Negotiated*: ${input.negotiated || 'N/A'}
+    >*Additional Notes*: ${input.additionalNotes || 'N/A'}
+  `;
+
+  job('notification.slack.send', {
+    channel: compensationChannel,
+    message,
+    workspace: 'regular',
+  });
+
+  return success(offer);
+}
+
 type BackfillOffersInput = {
   limit?: number;
 };
@@ -170,85 +406,10 @@ export async function deleteOffer({
   return success({ id: offerId });
 }
 
-// "Edit Internship Offer"
-
-export const EditInternshipOfferInput = InternshipOffer.omit({
-  company: true,
-  employmentType: true,
-}).extend({
-  additionalNotes: nullableField(BaseOffer.shape.additionalNotes),
-  benefits: nullableField(BaseOffer.shape.benefits),
-  companyCrunchbaseId: z.string().trim().min(1),
-  negotiated: nullableField(BaseOffer.shape.negotiated),
-  pastExperience: nullableField(BaseOffer.shape.pastExperience),
-  relocation: nullableField(BaseOffer.shape.relocation),
-  signOnBonus: nullableField(BaseOffer.shape.signOnBonus),
-});
-
-type EditInternshipOfferInput = z.infer<typeof EditInternshipOfferInput>;
-
-/**
- * Edits an internship offer.
- *
- * @param offerId - The ID of the internship offer to edit.
- * @param input - The new details for the internship offer.
- * @returns Result indicating the success or failure of the operation.
- */
-export async function editInternshipOffer(
-  offerId: string,
-  input: EditInternshipOfferInput
-): Promise<Result> {
-  const offer = await db.transaction().execute(async (trx) => {
-    const companyId = await saveCompanyIfNecessary(
-      trx,
-      input.companyCrunchbaseId
-    );
-
-    return trx
-      .updateTable('internshipJobOffers')
-      .set({
-        additionalNotes: input.additionalNotes,
-        benefits: input.benefits,
-        companyId,
-        hourlyRate: input.hourlyRate,
-        location: input.location,
-        negotiated: input.negotiated,
-        pastExperience: input.pastExperience,
-        relocation: input.relocation,
-        role: input.role,
-        signOnBonus: input.signOnBonus,
-        updatedAt: new Date(),
-      })
-      .where('id', '=', offerId)
-      .returning(['id'])
-      .executeTakeFirst();
-  });
-
-  if (!offer) {
-    return fail({
-      code: 404,
-      error: 'Could not find internship job offer to update.',
-    });
-  }
-
-  return success(offer);
-}
-
 // "Edit Full-Time Offer"
 
-export const EditFullTimeOfferInput = FullTimeOffer.omit({
-  company: true,
-  employmentType: true,
-}).extend({
-  additionalNotes: nullableField(BaseOffer.shape.additionalNotes),
-  benefits: nullableField(BaseOffer.shape.benefits),
-  companyCrunchbaseId: z.string().trim().min(1),
-  negotiated: nullableField(BaseOffer.shape.negotiated),
-  pastExperience: nullableField(BaseOffer.shape.pastExperience),
-  performanceBonus: nullableField(FullTimeOffer.shape.performanceBonus),
-  relocation: nullableField(BaseOffer.shape.relocation),
-  signOnBonus: nullableField(BaseOffer.shape.signOnBonus),
-  totalStock: nullableField(FullTimeOffer.shape.totalStock),
+export const EditFullTimeOfferInput = AddFullTimeOfferInput.omit({
+  postedBy: true,
 });
 
 type EditFullTimeOfferInput = z.infer<typeof EditFullTimeOfferInput>;
@@ -302,6 +463,61 @@ export async function editFullTimeOffer(
     return fail({
       code: 404,
       error: 'Could not find full-time job offer to update.',
+    });
+  }
+
+  return success(offer);
+}
+
+// "Edit Internship Offer"
+
+export const EditInternshipOfferInput = AddInternshipOfferInput.omit({
+  postedBy: true,
+});
+
+type EditInternshipOfferInput = z.infer<typeof EditInternshipOfferInput>;
+
+/**
+ * Edits an internship offer.
+ *
+ * @param offerId - The ID of the internship offer to edit.
+ * @param input - The new details for the internship offer.
+ * @returns Result indicating the success or failure of the operation.
+ */
+export async function editInternshipOffer(
+  offerId: string,
+  input: EditInternshipOfferInput
+): Promise<Result> {
+  const offer = await db.transaction().execute(async (trx) => {
+    const companyId = await saveCompanyIfNecessary(
+      trx,
+      input.companyCrunchbaseId
+    );
+
+    return trx
+      .updateTable('internshipJobOffers')
+      .set({
+        additionalNotes: input.additionalNotes,
+        benefits: input.benefits,
+        companyId,
+        hourlyRate: input.hourlyRate,
+        location: input.location,
+        negotiated: input.negotiated,
+        pastExperience: input.pastExperience,
+        relocation: input.relocation,
+        role: input.role,
+        signOnBonus: input.signOnBonus,
+        updatedAt: new Date(),
+      })
+      .where('id', '=', offerId)
+      .returning(['id'])
+      .executeTakeFirst();
+  });
+
+  if (!offer) {
+    return fail({
+      code: 404,
+      error: 'Could not find internship job offer to update.',
     });
   }
 
