@@ -138,7 +138,7 @@ export async function addFullTimeOffer(
     'slack:compensation_channels'
   );
 
-  const formatter = new Intl.NumberFormat('en-US', {
+  const { format } = new Intl.NumberFormat('en-US', {
     currency: 'USD',
     maximumFractionDigits: 0,
     style: 'currency',
@@ -151,15 +151,15 @@ export async function addFullTimeOffer(
     >*Company*: ${offer.companyName}
     >*Location*: ${input.location}
     >*Past Experience*: ${input.pastExperience}
-    >*Base Salary*: ${formatter.format(input.baseSalary)}
-    >*Stock*: ${input.totalStock ? formatter.format(input.totalStock) : 'N/A'}
-    >*Bonus (Annual)*: ${input.performanceBonus ? formatter.format(input.performanceBonus) : 'N/A'}
-    >*Sign-On Bonus*: ${input.signOnBonus ? formatter.format(input.signOnBonus) : 'N/A'}
+    >*Base Salary*: ${format(input.baseSalary)}
+    >*Stock*: ${input.totalStock ? format(input.totalStock) : 'N/A'}
+    >*Bonus (Annual)*: ${input.performanceBonus ? format(input.performanceBonus) : 'N/A'}
+    >*Sign-On Bonus*: ${input.signOnBonus ? format(input.signOnBonus) : 'N/A'}
     >*Housing/Relocation*: ${input.relocation || 'N/A'}
     >*Benefits*: ${input.benefits || 'N/A'}
     >*Negotiated*: ${input.negotiated || 'N/A'}
     >*Additional Notes*: ${input.additionalNotes || 'N/A'}
-    >*TC*: ${formatter.format(Number(offer.totalCompensation))}
+    >*TC*: ${format(Number(offer.totalCompensation))}
   `;
 
   job('notification.slack.send', {
@@ -217,7 +217,16 @@ export async function addInternshipOffer(
         signOnBonus: input.signOnBonus,
         updatedAt: new Date(),
       })
-      .returning(['id'])
+      .returning([
+        'id',
+        (eb) => {
+          return eb
+            .selectFrom('companies')
+            .select('companies.name')
+            .whereRef('companies.id', '=', 'internshipJobOffers.companyId')
+            .as<string>('companyName');
+        },
+      ])
       .executeTakeFirst();
   });
 
@@ -228,7 +237,40 @@ export async function addInternshipOffer(
     });
   }
 
-  // TODO: Send Slack Notification to community-compensation channel...
+  // There should currently only be 1 channel in this set right now, but this
+  // may change in the future and if so, we'll need to update this.
+  const [compensationChannel] = await redis.smembers(
+    'slack:compensation_channels'
+  );
+
+  const { format } = new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+    style: 'currency',
+  });
+
+  const message = dedent`
+    A new <${ENV.STUDENT_PROFILE_URL}/offers/internships/${offer.id}|*internship offer*> is in! 🚀
+
+    >*Role/Job Title*: ${input.role}
+    >*Company*: ${offer.companyName}
+    >*Location*: ${input.location}
+    >*Past Experience*: ${input.pastExperience}
+    >*Hourly Rate*: ${format(input.hourlyRate)}
+    >*Monthly Rate*: ${format(hourlyToMonthlyRate(input.hourlyRate))}
+    >*Sign-On Bonus*: ${input.signOnBonus ? format(input.signOnBonus) : 'N/A'}
+    >*Housing/Relocation*: ${input.relocation || 'N/A'}
+    >*Benefits*: ${input.benefits || 'N/A'}
+    >*Negotiated*: ${input.negotiated || 'N/A'}
+    >*Additional Notes*: ${input.additionalNotes || 'N/A'}
+  `;
+
+  job('notification.slack.send', {
+    channel: compensationChannel,
+    message,
+    workspace: 'regular',
+  });
 
   return success(offer);
 }
