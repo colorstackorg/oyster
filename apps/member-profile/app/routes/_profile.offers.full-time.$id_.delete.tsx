@@ -82,6 +82,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 }
 
+// UI
+
 export default function DeleteFullTimeOffer() {
   const { companyName } = useLoaderData<typeof loader>();
   const { error } = getErrors(useActionData<typeof action>());
