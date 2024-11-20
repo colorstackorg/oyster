@@ -75,6 +75,14 @@ export const AddFullTimeOfferInput = FullTimeOffer.omit({
 
 type AddFullTimeOfferInput = z.infer<typeof AddFullTimeOfferInput>;
 
+/**
+ * Adds a full-time offer to the database. Also sends a notification to the
+ * compensation channel, w/ the offer details and a link to the offer embedded
+ * in the message.
+ *
+ * @param input - The details for the full-time job offer.
+ * @returns Result indicating the success or failure of the operation.
+ */
 export async function addFullTimeOffer(
   input: AddFullTimeOfferInput
 ): Promise<Result<{ id: string }>> {
@@ -173,6 +181,14 @@ export async function addFullTimeOffer(
 
 // "Add Internship Offer"
 
+/**
+ * Adds an internship offer to the database. Also sends a notification to the
+ * compensation channel, w/ the offer details and a link to the offer embedded
+ * in the message.
+ *
+ * @param input - The details for the internship offer.
+ * @returns Result indicating the success or failure of the operation.
+ */
 export const AddInternshipOfferInput = InternshipOffer.omit({
   company: true,
   employmentType: true,
