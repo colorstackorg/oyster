@@ -111,7 +111,17 @@ export async function addFullTimeOffer(
         totalStock: input.totalStock,
         updatedAt: new Date(),
       })
-      .returning(['id'])
+      .returning([
+        'id',
+        'totalCompensation',
+        (eb) => {
+          return eb
+            .selectFrom('companies')
+            .select('companies.name')
+            .whereRef('companies.id', '=', 'fullTimeJobOffers.companyId')
+            .as<string>('companyName');
+        },
+      ])
       .executeTakeFirst();
   });
 
@@ -122,7 +132,41 @@ export async function addFullTimeOffer(
     });
   }
 
-  // TODO: Send Slack Notification to community-compensation channel...
+  // There should currently only be 1 channel in this set right now, but this
+  // may change in the future and if so, we'll need to update this.
+  const [compensationChannel] = await redis.smembers(
+    'slack:compensation_channels'
+  );
+
+  const formatter = new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    maximumFractionDigits: 0,
+    style: 'currency',
+  });
+
+  const message = dedent`
+    A new <${ENV.STUDENT_PROFILE_URL}/offers/full-time/${offer.id}|*FT offer*> is in! 🚀
+
+    >*Role/Job Title*: ${input.role}
+    >*Company*: ${offer.companyName}
+    >*Location*: ${input.location}
+    >*Past Experience*: ${input.pastExperience}
+    >*Base Salary*: ${formatter.format(input.baseSalary)}
+    >*Stock*: ${input.totalStock ? formatter.format(input.totalStock) : 'N/A'}
+    >*Bonus (Annual)*: ${input.performanceBonus ? formatter.format(input.performanceBonus) : 'N/A'}
+    >*Sign-On Bonus*: ${input.signOnBonus ? formatter.format(input.signOnBonus) : 'N/A'}
+    >*Housing/Relocation*: ${input.relocation || 'N/A'}
+    >*Benefits*: ${input.benefits || 'N/A'}
+    >*Negotiated*: ${input.negotiated || 'N/A'}
+    >*Additional Notes*: ${input.additionalNotes || 'N/A'}
+    >*TC*: ${formatter.format(Number(offer.totalCompensation))}
+  `;
+
+  job('notification.slack.send', {
+    channel: compensationChannel,
+    message,
+    workspace: 'regular',
+  });
 
   return success(offer);
 }
