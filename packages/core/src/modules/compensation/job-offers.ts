@@ -349,10 +349,11 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
     sentences, multiple sentences if needed.
   - "benefits": The user-provided list of benefits. Fix typos and format it in
     sentence case.
-  - "location": Format as "City, State". If the location mentions being remote,
-    then just use "Remote". If the user specifies a short-hand location like
-    "SF" or "NYC", then use the full location (ie: San Francisco, CA). If the
-    user specifies multiple locations, then use the first location.
+  - "location": Format as "City, State". The state should an abbreviation (ie:
+    CA). If the location mentions being remote, then just use "Remote". If the
+    user specifies a short-hand location like "SF" or "NYC", then use the full
+    location (ie: San Francisco, CA). If the user specifies multiple locations,
+    then use the first location.
   - "negotiated": The user-provided negotiation details. Don't include
     anything in the "benefits" section. Don't format.
   - "pastExperience": The user-provided past experience.

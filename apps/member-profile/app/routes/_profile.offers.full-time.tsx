@@ -27,6 +27,10 @@ import {
 } from '@oyster/ui/filter';
 
 import { CompanyColumn, CompanyFilter } from '@/shared/components';
+import {
+  OfferAggregation,
+  OfferAggregationGroup,
+} from '@/shared/components/offer';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -43,19 +47,23 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const limit = parseInt(_limit) || 50;
   const page = parseInt(_page) || 1;
 
-  const [appliedCompany, allCompanies, allLocations, { offers, totalOffers }] =
-    await Promise.all([
-      getAppliedCompany(company),
-      listAllCompanies(),
-      listAllLocations(),
-      listFullTimeOffers({
-        company,
-        limit,
-        locations: searchParams.getAll('location'),
-        page,
-        totalCompensation: searchParams.getAll('totalCompensation'),
-      }),
-    ]);
+  const [
+    appliedCompany,
+    allCompanies,
+    allLocations,
+    { averageBaseSalary, averageTotalCompensation, offers, totalOffers },
+  ] = await Promise.all([
+    getAppliedCompany(company),
+    listAllCompanies(),
+    listAllLocations(),
+    listFullTimeOffers({
+      company,
+      limit,
+      locations: searchParams.getAll('location'),
+      page,
+      totalCompensation: searchParams.getAll('totalCompensation'),
+    }),
+  ]);
 
   if (pathname === Route['/offers/full-time']) {
     track({
@@ -70,6 +78,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     allCompanies,
     allLocations,
     appliedCompany,
+    averageBaseSalary,
+    averageTotalCompensation,
     limit,
     offers,
     page,
@@ -185,9 +195,23 @@ async function listFullTimeOffers({
       });
     });
 
-  const [{ count }, _offers] = await Promise.all([
+  const [aggregation, _offers] = await Promise.all([
     query
-      .select((eb) => eb.fn.countAll<string>().as('count'))
+      .select([
+        (eb) => {
+          return eb.fn
+            .avg<string>('fullTimeOffers.baseSalary')
+            .as('averageBaseSalary');
+        },
+        (eb) => {
+          return eb.fn
+            .avg<string>('fullTimeOffers.totalCompensation')
+            .as('averageTotalCompensation');
+        },
+        (eb) => {
+          return eb.fn.countAll<string>().as('totalOffers');
+        },
+      ])
       .executeTakeFirstOrThrow(),
 
     query
@@ -230,16 +254,27 @@ async function listFullTimeOffers({
     };
   });
 
+  const averageBaseSalary = Number(aggregation.averageBaseSalary);
+  const averageTotalCompensation = Number(aggregation.averageTotalCompensation);
+
   return {
+    averageBaseSalary: formatter.format(averageBaseSalary),
+    averageTotalCompensation: formatter.format(averageTotalCompensation),
     offers,
-    totalOffers: Number(count),
+    totalOffers: Number(aggregation.totalOffers),
   };
 }
 
 // Page
 
 export default function FullTimeOffersPage() {
-  const { allCompanies, appliedCompany } = useLoaderData<typeof loader>();
+  const {
+    allCompanies,
+    appliedCompany,
+    averageBaseSalary,
+    averageTotalCompensation,
+    totalOffers,
+  } = useLoaderData<typeof loader>();
 
   return (
     <>
@@ -256,6 +291,18 @@ export default function FullTimeOffersPage() {
 
         <ClearFiltersButton />
       </div>
+
+      <OfferAggregationGroup>
+        <OfferAggregation
+          label="Average Total Compensation"
+          value={averageTotalCompensation}
+        />
+        <OfferAggregation
+          label="Average Base Salary"
+          value={averageBaseSalary}
+        />
+        <OfferAggregation label="Total Offers" value={totalOffers} />
+      </OfferAggregationGroup>
 
       <FullTimeOffersTable />
       <FullTimeOffersPagination />

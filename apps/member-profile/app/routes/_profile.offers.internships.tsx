@@ -28,6 +28,8 @@ import {
 } from '@oyster/ui/filter';
 
 import { CompanyColumn, CompanyFilter } from '@/shared/components';
+import { OfferAggregation } from '@/shared/components/offer';
+import { OfferAggregationGroup } from '@/shared/components/offer';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -44,19 +46,23 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const limit = parseInt(_limit) || 50;
   const page = parseInt(_page) || 1;
 
-  const [appliedCompany, allCompanies, allLocations, { offers, totalOffers }] =
-    await Promise.all([
-      getAppliedCompany(company),
-      listAllCompanies(),
-      listAllLocations(),
-      listInternshipOffers({
-        company,
-        hourlyRates: searchParams.getAll('hourlyRate'),
-        limit,
-        locations: searchParams.getAll('location'),
-        page,
-      }),
-    ]);
+  const [
+    appliedCompany,
+    allCompanies,
+    allLocations,
+    { averageHourlyRate, averageMonthlyRate, offers, totalOffers },
+  ] = await Promise.all([
+    getAppliedCompany(company),
+    listAllCompanies(),
+    listAllLocations(),
+    listInternshipOffers({
+      company,
+      hourlyRates: searchParams.getAll('hourlyRate'),
+      limit,
+      locations: searchParams.getAll('location'),
+      page,
+    }),
+  ]);
 
   if (pathname === Route['/offers/internships']) {
     track({
@@ -71,6 +77,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     allCompanies,
     allLocations,
     appliedCompany,
+    averageHourlyRate,
+    averageMonthlyRate,
     limit,
     offers,
     page,
@@ -186,9 +194,18 @@ async function listInternshipOffers({
       return qb.where('internshipOffers.location', 'in', locations);
     });
 
-  const [{ count }, _offers] = await Promise.all([
+  const [aggregation, _offers] = await Promise.all([
     query
-      .select((eb) => eb.fn.countAll<string>().as('count'))
+      .select([
+        (eb) => {
+          return eb.fn
+            .avg<string>('internshipOffers.hourlyRate')
+            .as('averageHourlyRate');
+        },
+        (eb) => {
+          return eb.fn.countAll<string>().as('totalOffers');
+        },
+      ])
       .executeTakeFirstOrThrow(),
 
     query
@@ -225,16 +242,27 @@ async function listInternshipOffers({
     };
   });
 
+  const averageHourlyRate = Number(aggregation.averageHourlyRate);
+  const averageMonthlyRate = hourlyToMonthlyRate(averageHourlyRate);
+
   return {
+    averageHourlyRate: formatter.format(averageHourlyRate) + '/hr',
+    averageMonthlyRate: formatter.format(averageMonthlyRate) + '/mo',
     offers,
-    totalOffers: Number(count),
+    totalOffers: Number(aggregation.totalOffers),
   };
 }
 
 // Page
 
 export default function InternshipOffersPage() {
-  const { allCompanies, appliedCompany } = useLoaderData<typeof loader>();
+  const {
+    allCompanies,
+    appliedCompany,
+    averageHourlyRate,
+    averageMonthlyRate,
+    totalOffers,
+  } = useLoaderData<typeof loader>();
 
   return (
     <>
@@ -251,6 +279,18 @@ export default function InternshipOffersPage() {
 
         <ClearFiltersButton />
       </div>
+
+      <OfferAggregationGroup>
+        <OfferAggregation
+          label="Average Hourly Rate"
+          value={averageHourlyRate}
+        />
+        <OfferAggregation
+          label="Average Monthly Rate"
+          value={averageMonthlyRate}
+        />
+        <OfferAggregation label="Total Offers" value={totalOffers} />
+      </OfferAggregationGroup>
 
       <InternshipOffersTable />
       <InternshipOffersPagination />
