@@ -81,6 +81,7 @@ Modal.CloseButton = function ModalCloseButton() {
         backgroundColor: 'gray-100',
         backgroundColorOnHover: 'gray-200',
       })}
+      preventScrollReset
       to={onCloseTo}
     >
       <X />
