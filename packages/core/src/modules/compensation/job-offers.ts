@@ -351,7 +351,8 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
     sentence case.
   - "location": Format as "City, State". If the location mentions being remote,
     then just use "Remote". If the user specifies a short-hand location like
-    "SF" or "NYC", then use the full location (ie: San Francisco, CA).
+    "SF" or "NYC", then use the full location (ie: San Francisco, CA). If the
+    user specifies multiple locations, then use the first location.
   - "negotiated": The user-provided negotiation details. Don't include
     anything in the "benefits" section. Don't format.
   - "pastExperience": The user-provided past experience.
@@ -419,7 +420,7 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
   Now, analyze the job offer and provide the structured data as requested.
 `;
 
-type ShareJobOfferInput = {
+type ShareOfferInput = {
   sendNotification?: boolean;
   slackChannelId: string;
   slackMessageId: string;
@@ -439,14 +440,14 @@ type ShareJobOfferInput = {
  * @param input - Input data for sharing a job offer.
  * @returns Result indicating the success or failure of the operation.
  */
-async function shareJobOffer({
+async function shareOffer({
   sendNotification = true,
   slackChannelId,
   slackMessageId,
-}: ShareJobOfferInput): Promise<Result> {
+}: ShareOfferInput): Promise<Result> {
   const slackMessage = await db
     .selectFrom('slackMessages')
-    .select(['createdAt', 'studentId', 'text', 'userId as slackUserId'])
+    .select(['createdAt', 'studentId', 'text', 'userId'])
     .where('channelId', '=', slackChannelId)
     .where('id', '=', slackMessageId)
     .where('deletedAt', 'is', null)
@@ -461,127 +462,164 @@ async function shareJobOffer({
     });
   }
 
+  // Sometimes a member will post multiple offer details in a single Slack
+  // message. We'll split the message into multiple chunks and process each
+  // chunk individually.
+  const offerChunks = splitOffers(slackMessage.text);
+
   // We're only interested in messages that share a job offer. If the Slack
   // message doesn't contain the expected format, we'll bail early.
-  if (
-    !slackMessage.text.includes('Company') &&
-    !slackMessage.text.includes('Location') &&
-    !slackMessage.text.includes('Role')
-  ) {
+  if (!offerChunks.length) {
     return success({});
   }
 
-  const prompt = SHARE_JOB_OFFER_PROMPT.replace(
-    '$JOB_OFFER_TEXT',
-    slackMessage.text
-  );
+  const offers: Offer[] = [];
 
-  const completionResult = await getChatCompletion({
-    maxTokens: 1000,
-    messages: [{ role: 'user', content: prompt }],
-    system: [{ type: 'text', text: SHARE_JOB_OFFER_SYSTEM_PROMPT }],
-    temperature: 0,
-  });
+  for (const offerChunk of offerChunks) {
+    const prompt = SHARE_JOB_OFFER_PROMPT.replace(
+      '$JOB_OFFER_TEXT',
+      offerChunk
+    );
 
-  if (!completionResult.ok) {
-    return completionResult;
-  }
+    const completionResult = await getChatCompletion({
+      maxTokens: 1000,
+      messages: [{ role: 'user', content: prompt }],
+      system: [{ type: 'text', text: SHARE_JOB_OFFER_SYSTEM_PROMPT }],
+      temperature: 0,
+    });
 
-  let data: Offer;
+    if (!completionResult.ok) {
+      return completionResult;
+    }
 
-  try {
-    const closingTag = '</analysis>';
+    try {
+      const closingTag = '</analysis>';
 
-    const closingTagIndex = completionResult.data.indexOf(closingTag);
+      const closingTagIndex = completionResult.data.indexOf(closingTag);
 
-    if (closingTagIndex === -1) {
+      if (closingTagIndex === -1) {
+        return fail({
+          code: 400,
+          error: 'Failed to find relevant JSON in AI response.',
+        });
+      }
+
+      const jsonString = completionResult.data
+        .slice(closingTagIndex + closingTag.length)
+        .trim();
+
+      const json = JSON.parse(jsonString);
+
+      offers.push(Offer.parse(json));
+    } catch (error) {
       return fail({
         code: 400,
-        error: 'Failed to find relevant JSON in AI response.',
+        error: 'Failed to parse or validate JSON from AI response.',
       });
     }
-
-    const jsonString = completionResult.data
-      .slice(closingTagIndex + closingTag.length)
-      .trim();
-
-    const json = JSON.parse(jsonString);
-
-    data = Offer.parse(json);
-  } catch (error) {
-    return fail({
-      code: 400,
-      error: 'Failed to parse or validate JSON from AI response.',
-    });
   }
 
-  const jobOffer = await db.transaction().execute(async (trx) => {
-    const companyId = data.company
-      ? await getMostRelevantCompany(trx, data.company)
-      : null;
+  await db.transaction().execute(async (trx) => {
+    for (const offer of offers) {
+      const companyId = offer.company
+        ? await getMostRelevantCompany(trx, offer.company)
+        : null;
 
-    const baseJobOffer = {
-      additionalNotes: data.additionalNotes,
-      benefits: data.benefits,
-      companyId,
-      createdAt: new Date(),
-      id: id(),
-      location: data.location,
-      negotiated: data.negotiated,
-      pastExperience: data.pastExperience,
-      postedAt: slackMessage.createdAt,
-      postedBy: slackMessage.studentId,
-      relocation: data.relocation,
-      role: data.role,
-      signOnBonus: data.signOnBonus,
-      slackChannelId,
-      slackMessageId,
-      updatedAt: new Date(),
-    };
+      const baseJobOffer = {
+        additionalNotes: offer.additionalNotes,
+        benefits: offer.benefits,
+        companyId,
+        createdAt: new Date(),
+        id: id(),
+        location: offer.location,
+        negotiated: offer.negotiated,
+        pastExperience: offer.pastExperience,
+        postedAt: slackMessage.createdAt,
+        postedBy: slackMessage.studentId,
+        relocation: offer.relocation,
+        role: offer.role,
+        signOnBonus: offer.signOnBonus,
+        slackChannelId,
+        slackMessageId,
+        updatedAt: new Date(),
+      };
 
-    if (data.employmentType === 'internship') {
-      return trx
-        .insertInto('internshipJobOffers')
-        .values({
-          ...baseJobOffer,
-          hourlyRate: data.hourlyRate,
-        })
-        .returning(['id'])
-        .executeTakeFirstOrThrow();
+      if (offer.employmentType === 'internship') {
+        await trx
+          .insertInto('internshipJobOffers')
+          .values({
+            ...baseJobOffer,
+            hourlyRate: offer.hourlyRate,
+          })
+          .returning(['id'])
+          .executeTakeFirstOrThrow();
+      } else {
+        await trx
+          .insertInto('fullTimeJobOffers')
+          .values({
+            ...baseJobOffer,
+            baseSalary: offer.baseSalary,
+            performanceBonus: offer.performanceBonus,
+            totalCompensation: calculateTotalCompensation({
+              baseSalary: offer.baseSalary,
+              performanceBonus: offer.performanceBonus,
+              signOnBonus: offer.signOnBonus,
+              totalStock: offer.totalStock,
+            }),
+            totalStock: offer.totalStock,
+          })
+          .returning(['id'])
+          .executeTakeFirstOrThrow();
+      }
     }
-
-    return trx
-      .insertInto('fullTimeJobOffers')
-      .values({
-        ...baseJobOffer,
-        baseSalary: data.baseSalary,
-        performanceBonus: data.performanceBonus,
-        totalCompensation: calculateTotalCompensation({
-          baseSalary: data.baseSalary,
-          performanceBonus: data.performanceBonus,
-          signOnBonus: data.signOnBonus,
-          totalStock: data.totalStock,
-        }),
-        totalStock: data.totalStock,
-      })
-      .returning(['id'])
-      .executeTakeFirstOrThrow();
   });
 
   if (sendNotification) {
-    const message =
-      `Thanks for sharing your compensation details in <#${slackChannelId}> -- I added it to our <${ENV.STUDENT_PROFILE_URL}/compensation|job offers board>! 🙂\n\n` +
-      `Verify that the details are correct and refine them if needed: <${ENV.STUDENT_PROFILE_URL}/compensation/${jobOffer.id}/refine|*HERE*>.\n\n` +
-      'Thanks again!';
-
-    job('notification.slack.send', {
-      channel: slackMessage.slackUserId,
-      message,
-      workspace: 'regular',
+    job('notification.slack.ephemeral.send', {
+      channel: slackChannelId,
+      text: `Thanks for sharing your offer details, just added it to our <${ENV.STUDENT_PROFILE_URL}/offers|offer database>! 🙂`,
+      threadId: slackMessageId,
+      userId: slackMessage.userId,
     });
   }
 
-  return success(jobOffer);
+  return success(offers);
+}
+
+/**
+ * When a member shares a job offer in Slack, they'll sometimes post multiple
+ * offers in a single message. We split the message into chunks, each containing
+ * a single job offer.
+ *
+ * The key delimiter is the "Role/Job" header. We'll split the text at each
+ * occurrence of this header.
+ *
+ * @param text - Text to split.
+ * @returns Array of job offer chunks.
+ */
+function splitOffers(text: string): string[] {
+  const header = 'Role/Job'.toLowerCase();
+
+  const indices: number[] = [];
+
+  let currentIndex = text.toLowerCase().indexOf(header);
+
+  while (currentIndex !== -1) {
+    indices.push(currentIndex);
+    currentIndex = text.toLowerCase().indexOf(header, currentIndex + 1);
+  }
+
+  if (indices.length === 0) {
+    return [];
+  }
+
+  const chunks = indices.map((startIndex, i) => {
+    const endIndex = indices[i + 1] || text.length;
+
+    return text.slice(startIndex, endIndex).trim();
+  });
+
+  return chunks;
 }
 
 // Helpers
@@ -693,7 +731,7 @@ export const jobOfferWorker = registerWorker(
         return backfillOffers(data);
       })
       .with({ name: 'job_offer.share' }, async ({ data }) => {
-        return shareJobOffer(data);
+        return shareOffer(data);
       })
       .exhaustive();
 

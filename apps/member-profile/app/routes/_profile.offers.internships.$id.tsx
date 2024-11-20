@@ -93,7 +93,7 @@ async function getInternshipOfferDetails({
     style: 'currency',
   });
 
-  const hourlyRate = parseInt(_offer.hourlyRate);
+  const hourlyRate = Number(_offer.hourlyRate);
   const monthlyRate = hourlyToMonthlyRate(hourlyRate);
 
   const offer = {
