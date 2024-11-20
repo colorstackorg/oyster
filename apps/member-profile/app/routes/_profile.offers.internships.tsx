@@ -37,7 +37,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const { pathname, searchParams } = new URL(request.url);
   const {
     company,
-    hourlyRate,
     limit: _limit,
     page: _page,
   } = Object.fromEntries(searchParams);
@@ -52,7 +51,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       listAllLocations(),
       listInternshipOffers({
         company,
-        hourlyRate,
+        hourlyRates: searchParams.getAll('hourlyRate'),
         limit,
         locations: searchParams.getAll('location'),
         page,
@@ -133,7 +132,7 @@ async function listAllLocations() {
 
 type ListInternshipOffersInput = {
   company: string | null;
-  hourlyRate: string | null;
+  hourlyRates: string[];
   limit: number;
   locations: string[];
   page: number;
@@ -141,7 +140,7 @@ type ListInternshipOffersInput = {
 
 async function listInternshipOffers({
   company,
-  hourlyRate,
+  hourlyRates,
   limit,
   locations,
   page,
@@ -157,8 +156,31 @@ async function listInternshipOffers({
         ]);
       });
     })
-    .$if(!!hourlyRate && !!Number(hourlyRate), (qb) => {
-      return qb.where('internshipOffers.hourlyRate', '>=', hourlyRate);
+    .$if(!!hourlyRates.length, (qb) => {
+      const conditions = hourlyRates
+        .map((range) => {
+          const [min, max] = range.trim().split('-');
+
+          return [Number(min), Number(max)];
+        })
+        .filter(([min, max]) => {
+          return !isNaN(min) && !isNaN(max);
+        });
+
+      if (!conditions.length) {
+        return qb;
+      }
+
+      return qb.where((eb) => {
+        return eb.or(
+          conditions.map(([min, max]) => {
+            return eb.and([
+              eb('internshipOffers.hourlyRate', '>=', min.toString()),
+              eb('internshipOffers.hourlyRate', '<=', max.toString()),
+            ]);
+          })
+        );
+      });
     })
     .$if(locations.length > 0, (qb) => {
       return qb.where('internshipOffers.location', 'in', locations);
@@ -316,23 +338,24 @@ function InternshipOffersPagination() {
 function HourlyRateFilter() {
   const [searchParams] = useSearchParams();
 
-  const hourlyRate = searchParams.get('hourlyRate');
+  const ranges = searchParams.getAll('hourlyRate');
 
   const options: FilterValue[] = [
-    { color: 'red-100', label: '> $20/hr', value: '20' },
-    { color: 'orange-100', label: '> $30/hr', value: '30' },
-    { color: 'amber-100', label: '> $40/hr', value: '40' },
-    { color: 'cyan-100', label: '> $50/hr', value: '50' },
-    { color: 'green-100', label: '> $60/hr', value: '60' },
-    { color: 'lime-100', label: '> $70/hr', value: '70' },
+    { color: 'cyan-100', label: '< $20/hr', value: '0-20' },
+    { color: 'orange-100', label: '$20-30/hr', value: '20-30' },
+    { color: 'amber-100', label: '$30-40/hr', value: '30-40' },
+    { color: 'pink-100', label: '$40-50/hr', value: '40-50' },
+    { color: 'green-100', label: '$50-60/hr', value: '50-60' },
+    { color: 'lime-100', label: '$60-70/hr', value: '60-70' },
+    { color: 'purple-100', label: '$70+/hr', value: '70-250' },
   ];
 
   const selectedValues = options.filter((option) => {
-    return hourlyRate === option.value;
+    return ranges.includes(option.value);
   });
 
   return (
-    <FilterRoot>
+    <FilterRoot multiple>
       <FilterButton
         icon={<DollarSign />}
         popover
@@ -342,11 +365,15 @@ function HourlyRateFilter() {
       </FilterButton>
 
       <FilterPopover>
-        <ul>
+        <ul className="overflow-auto">
           {options.map((option) => {
+            const checked = selectedValues.some(({ value }) => {
+              return option.value === value;
+            });
+
             return (
               <FilterItem
-                checked={hourlyRate === option.value}
+                checked={checked}
                 color={option.color}
                 key={option.value}
                 label={option.label}
