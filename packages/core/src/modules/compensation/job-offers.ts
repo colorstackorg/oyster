@@ -346,20 +346,22 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
   - "additionalNotes": A catch-all for all other information not captured in
     other fields. Don't leave any information out, but also don't show
     information that was already captured elsewhere. Format it in short
-    sentences, multiple sentences if needed.
+    sentences, multiple sentences if needed. Ignore any user-reported total
+    compensation (TC) since we'll calculate that ourselves.
   - "benefits": The user-provided list of benefits. Fix typos and format it in
     sentence case.
   - "location": Format as "City, State". The state should an abbreviation (ie:
     CA). If the location mentions being remote, then just use "Remote". If the
-    user specifies a short-hand location like "SF" or "NYC", then use the full
-    location (ie: San Francisco, CA). If the user specifies multiple locations,
-    then use the first location.
+    user specifies a short-hand city, then use the full location (ie: SF
+    -> San Francisco, CA, NYC -> New York, NY). If the user specifies multiple
+    locations, then use the first location.
   - "negotiated": The user-provided negotiation details. Don't include
     anything in the "benefits" section. Don't format.
   - "pastExperience": The user-provided past experience.
   - "relocation": The user-provided housing/relocation details. Don't format.
-  - "role": The role for the job offer. Expand any acronyms (ie:
-    SWE -> Software Engineer, PM -> Product Manager).
+  - "role": The role for the job offer. Expand any generic acronyms (ie:
+    SWE -> Software Engineer, PM -> Product Manager), but do not expand acronyms
+    that are program/company specific (ie: TEIP).
   - "signOnBonus": The total sign-on bonus.
 
   For a full-time position, extract and calculate:
