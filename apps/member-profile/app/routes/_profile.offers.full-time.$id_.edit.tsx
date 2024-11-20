@@ -12,7 +12,6 @@ import {
   useLoaderData,
   useSearchParams,
 } from '@remix-run/react';
-import { useState } from 'react';
 
 import {
   editFullTimeOffer,
@@ -22,12 +21,12 @@ import { db } from '@oyster/db';
 import {
   Button,
   Divider,
+  DollarInput,
   Form,
   getButtonCn,
   getErrors,
   Input,
   Modal,
-  Text,
   Textarea,
   validateForm,
 } from '@oyster/ui';
@@ -157,12 +156,6 @@ export default function EditFullTimeOffer() {
   );
 }
 
-const formatter = new Intl.NumberFormat('en-US', {
-  currency: 'USD',
-  maximumFractionDigits: 0,
-  style: 'currency',
-});
-
 function EditFullTimeOfferForm() {
   const {
     additionalNotes,
@@ -178,13 +171,9 @@ function EditFullTimeOfferForm() {
     relocation,
     role,
     signOnBonus,
-    totalStock: _totalStock,
+    totalStock,
   } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
-
-  const [totalStock, setTotalStock] = useState<number>(
-    Number(_totalStock) || 0
-  );
 
   return (
     <RemixForm className="form" method="post">
@@ -231,13 +220,11 @@ function EditFullTimeOfferForm() {
           labelFor="baseSalary"
           required
         >
-          <Input
+          <DollarInput
             defaultValue={baseSalary}
             id="baseSalary"
-            min={0}
             name="baseSalary"
             required
-            type="number"
           />
         </Form.Field>
 
@@ -246,23 +233,11 @@ function EditFullTimeOfferForm() {
           label="Total Stock"
           labelFor="totalStock"
         >
-          <div className="flex flex-col gap-2">
-            <Input
-              id="totalStock"
-              min={0}
-              name="totalStock"
-              onChange={(e) => setTotalStock(e.currentTarget.valueAsNumber)}
-              type="number"
-              value={totalStock}
-            />
-
-            {!!totalStock && (
-              <Text color="gray-500" variant="sm">
-                {formatter.format(totalStock / 4)}/yr, assuming a 4-year vesting
-                period.
-              </Text>
-            )}
-          </div>
+          <DollarInput
+            defaultValue={totalStock || undefined}
+            id="totalStock"
+            name="totalStock"
+          />
         </Form.Field>
 
         <Form.Field
@@ -271,12 +246,10 @@ function EditFullTimeOfferForm() {
           label="Sign-On Bonus"
           labelFor="signOnBonus"
         >
-          <Input
+          <DollarInput
             defaultValue={signOnBonus || undefined}
             id="signOnBonus"
-            min={0}
             name="signOnBonus"
-            type="number"
           />
         </Form.Field>
 
@@ -286,12 +259,10 @@ function EditFullTimeOfferForm() {
           label="Performance Bonus"
           labelFor="performanceBonus"
         >
-          <Input
+          <DollarInput
             defaultValue={performanceBonus || undefined}
             id="performanceBonus"
-            min={0}
             name="performanceBonus"
-            type="number"
           />
         </Form.Field>
       </div>
