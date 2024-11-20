@@ -55,6 +55,68 @@ type Offer = z.infer<typeof Offer>;
 
 // Core
 
+// "Add Internship Offer"
+
+export const AddInternshipOfferInput = InternshipOffer.omit({
+  company: true,
+  employmentType: true,
+}).extend({
+  additionalNotes: nullableField(BaseOffer.shape.additionalNotes),
+  benefits: nullableField(BaseOffer.shape.benefits),
+  companyCrunchbaseId: z.string().trim().min(1),
+  negotiated: nullableField(BaseOffer.shape.negotiated),
+  pastExperience: nullableField(BaseOffer.shape.pastExperience),
+  postedBy: z.string().trim().min(1),
+  relocation: nullableField(BaseOffer.shape.relocation),
+  signOnBonus: nullableField(BaseOffer.shape.signOnBonus),
+});
+
+type AddInternshipOfferInput = z.infer<typeof AddInternshipOfferInput>;
+
+export async function addInternshipOffer(
+  input: AddInternshipOfferInput
+): Promise<Result<{ id: string }>> {
+  const offer = await db.transaction().execute(async (trx) => {
+    const companyId = await saveCompanyIfNecessary(
+      trx,
+      input.companyCrunchbaseId
+    );
+
+    return trx
+      .insertInto('internshipJobOffers')
+      .values({
+        additionalNotes: input.additionalNotes,
+        benefits: input.benefits,
+        companyId,
+        createdAt: new Date(),
+        hourlyRate: input.hourlyRate,
+        id: id(),
+        location: input.location,
+        negotiated: input.negotiated,
+        pastExperience: input.pastExperience,
+        postedAt: new Date(),
+        postedBy: input.postedBy,
+        relocation: input.relocation,
+        role: input.role,
+        signOnBonus: input.signOnBonus,
+        updatedAt: new Date(),
+      })
+      .returning(['id'])
+      .executeTakeFirst();
+  });
+
+  if (!offer) {
+    return fail({
+      code: 404,
+      error: 'Failed to create internship offer.',
+    });
+  }
+
+  // TODO: Send Slack Notification to community-compensation channel...
+
+  return success(offer);
+}
+
 type BackfillOffersInput = {
   limit?: number;
 };
@@ -172,17 +234,8 @@ export async function deleteOffer({
 
 // "Edit Internship Offer"
 
-export const EditInternshipOfferInput = InternshipOffer.omit({
-  company: true,
-  employmentType: true,
-}).extend({
-  additionalNotes: nullableField(BaseOffer.shape.additionalNotes),
-  benefits: nullableField(BaseOffer.shape.benefits),
-  companyCrunchbaseId: z.string().trim().min(1),
-  negotiated: nullableField(BaseOffer.shape.negotiated),
-  pastExperience: nullableField(BaseOffer.shape.pastExperience),
-  relocation: nullableField(BaseOffer.shape.relocation),
-  signOnBonus: nullableField(BaseOffer.shape.signOnBonus),
+export const EditInternshipOfferInput = AddInternshipOfferInput.omit({
+  postedBy: true,
 });
 
 type EditInternshipOfferInput = z.infer<typeof EditInternshipOfferInput>;
