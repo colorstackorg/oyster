@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, useSearchParams } from '@remix-run/react';
+import { generatePath, useLoaderData, useSearchParams } from '@remix-run/react';
 import dayjs from 'dayjs';
 
 import { hourlyToMonthlyRate } from '@oyster/core/job-offers';
@@ -8,6 +8,7 @@ import { Divider, Modal } from '@oyster/ui';
 
 import { CompanyLink } from '@/shared/components';
 import {
+  EditOfferButton,
   OfferDetail,
   OfferSection,
   OfferTitle,
@@ -113,6 +114,8 @@ export default function InternshipOfferPage() {
     companyId,
     companyLogo,
     companyName,
+    hasWritePermission,
+    id,
     postedAt,
     role,
     slackChannelId,
@@ -139,6 +142,12 @@ export default function InternshipOfferPage() {
         </div>
 
         <div className="flex items-center gap-[inherit]">
+          <EditOfferButton
+            hasWritePermission={!!hasWritePermission}
+            pathname={generatePath(Route['/offers/internships/:id/edit'], {
+              id,
+            })}
+          />
           <Modal.CloseButton />
         </div>
       </Modal.Header>
