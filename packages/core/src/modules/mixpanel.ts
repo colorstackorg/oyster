@@ -52,6 +52,7 @@ export type MixpanelEvent = {
   'Page Viewed': {
     Page:
       | 'Companies'
+      | 'Compensation'
       | 'Directory'
       | 'Events'
       | 'Home'

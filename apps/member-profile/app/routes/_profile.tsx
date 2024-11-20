@@ -10,6 +10,7 @@ import {
   FileText,
   Folder,
   Home,
+  Layers,
   MessageCircle,
   User,
 } from 'react-feather';
@@ -24,8 +25,8 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const [isChatbotEnabled, resumeBook] = await Promise.all([
-    isFeatureFlagEnabled('chatbot'),
+  const [isCompensationEnabled, resumeBook] = await Promise.all([
+    isFeatureFlagEnabled('compensation'),
 
     getResumeBook({
       select: ['resumeBooks.id'],
@@ -37,13 +38,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   ]);
 
   return json({
-    isChatbotEnabled,
+    isCompensationEnabled,
     resumeBook,
   });
 }
 
 export default function ProfileLayout() {
-  const { isChatbotEnabled, resumeBook } = useLoaderData<typeof loader>();
+  const { isCompensationEnabled, resumeBook } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -82,12 +83,21 @@ export default function ProfileLayout() {
               prefetch="intent"
             />
             <Dashboard.NavigationLink
-              icon={<DollarSign />}
+              icon={<Layers />}
               isNew
               label="Opportunities"
               pathname={Route['/opportunities']}
               prefetch="intent"
             />
+            {isCompensationEnabled && (
+              <Dashboard.NavigationLink
+                icon={<DollarSign />}
+                isNew
+                label="Offers"
+                pathname={Route['/offers']}
+                prefetch="intent"
+              />
+            )}
             <Dashboard.NavigationLink
               icon={<Briefcase />}
               label="Companies"
@@ -112,15 +122,13 @@ export default function ProfileLayout() {
               pathname={Route['/events']}
               prefetch="intent"
             />
-            {isChatbotEnabled && (
-              <Dashboard.NavigationLink
-                icon={<MessageCircle />}
-                isNew
-                label="Ask AI"
-                pathname={Route['/ask-ai']}
-                prefetch="intent"
-              />
-            )}
+            <Dashboard.NavigationLink
+              icon={<MessageCircle />}
+              isNew
+              label="Ask AI"
+              pathname={Route['/ask-ai']}
+              prefetch="intent"
+            />
             <Dashboard.NavigationLink
               icon={<FileText />}
               label="Resume Review"

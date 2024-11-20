@@ -176,3 +176,26 @@ function toHTML(node: Node, index?: number) {
 
   return result;
 }
+
+export function ViewInSlackButton({
+  channelId,
+  messageId,
+}: Pick<SlackMessageCardProps, 'channelId' | 'messageId'>) {
+  if (!channelId || !messageId) {
+    return null;
+  }
+
+  return (
+    <Link
+      className={cx(
+        getButtonCn({ size: 'small', variant: 'secondary' }),
+        'border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200'
+      )}
+      target="_blank"
+      to={SLACK_WORKSPACE_URL + `/archives/${channelId}/p${messageId}`}
+    >
+      <img alt="Slack Logo" className="h-5 w-5" src="/images/slack.svg" /> View
+      in Slack
+    </Link>
+  );
+}
