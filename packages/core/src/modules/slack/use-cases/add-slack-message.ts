@@ -67,7 +67,7 @@ export async function addSlackMessage(
       isFeatureFlagEnabled('compensation'),
     ]);
 
-    if (isAutoReplyChannel) {
+    if (!data.isBot && isAutoReplyChannel) {
       job('slack.question.answer.private', {
         channelId: data.channelId,
         question: data.text as string,
@@ -76,7 +76,7 @@ export async function addSlackMessage(
       });
     }
 
-    if (isCompensationEnabled && isCompensationChannel) {
+    if (!data.isBot && isCompensationEnabled && isCompensationChannel) {
       job('offer.share', {
         slackChannelId: data.channelId,
         slackMessageId: data.id,
