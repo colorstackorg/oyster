@@ -114,7 +114,7 @@ async function listAllCompanies() {
     .where((eb) => {
       return eb.exists(() => {
         return eb
-          .selectFrom('fullTimeJobOffers as fullTimeOffers')
+          .selectFrom('fullTimeOffers')
           .whereRef('fullTimeOffers.companyId', '=', 'companies.id');
       });
     })
@@ -126,7 +126,7 @@ async function listAllCompanies() {
 
 async function listAllLocations() {
   const rows = await db
-    .selectFrom('fullTimeJobOffers')
+    .selectFrom('fullTimeOffers')
     .select('location')
     .distinct()
     .where('location', 'is not', null)
@@ -156,7 +156,7 @@ async function listFullTimeOffers({
   totalCompensation,
 }: ListFullTimeOffersInput) {
   const query = db
-    .selectFrom('fullTimeJobOffers as fullTimeOffers')
+    .selectFrom('fullTimeOffers')
     .leftJoin('companies', 'companies.id', 'fullTimeOffers.companyId')
     .$if(!!company, (qb) => {
       return qb.where((eb) => {

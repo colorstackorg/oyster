@@ -11,8 +11,8 @@ import {
 } from '@remix-run/react';
 import { DollarSign, MapPin } from 'react-feather';
 
-import { hourlyToMonthlyRate } from '@oyster/core/job-offers';
 import { track } from '@oyster/core/mixpanel';
+import { hourlyToMonthlyRate } from '@oyster/core/offers';
 import { db } from '@oyster/db';
 import { Pagination, Table, type TableColumnProps, Text } from '@oyster/ui';
 import {
@@ -112,7 +112,7 @@ async function listAllCompanies() {
     .where((eb) => {
       return eb.exists(() => {
         return eb
-          .selectFrom('internshipJobOffers')
+          .selectFrom('internshipOffers')
           .whereRef('companyId', '=', 'companies.id');
       });
     })
@@ -124,7 +124,7 @@ async function listAllCompanies() {
 
 async function listAllLocations() {
   const rows = await db
-    .selectFrom('internshipJobOffers')
+    .selectFrom('internshipOffers')
     .select('location')
     .distinct()
     .where('location', 'is not', null)
@@ -154,7 +154,7 @@ async function listInternshipOffers({
   page,
 }: ListInternshipOffersInput) {
   const query = db
-    .selectFrom('internshipJobOffers as internshipOffers')
+    .selectFrom('internshipOffers')
     .leftJoin('companies', 'companies.id', 'internshipOffers.companyId')
     .$if(!!company, (qb) => {
       return qb.where((eb) => {

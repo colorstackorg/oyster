@@ -45,7 +45,7 @@ async function getFullTimeOfferDetails({
   offerId,
 }: GetFullTimeOfferDetailsInput) {
   const _offer = await db
-    .selectFrom('fullTimeJobOffers as fullTimeOffers')
+    .selectFrom('fullTimeOffers')
     .leftJoin('companies', 'companies.id', 'fullTimeOffers.companyId')
     .select([
       'companies.id as companyId',
@@ -138,7 +138,7 @@ export default function FullTimeOfferPage() {
             companyLogo={companyLogo}
             companyName={companyName}
           />
-          <OfferTitle postedAt={postedAt} role={role!} />
+          <OfferTitle postedAt={postedAt} role={role} />
         </div>
 
         <div className="flex items-center gap-[inherit]">

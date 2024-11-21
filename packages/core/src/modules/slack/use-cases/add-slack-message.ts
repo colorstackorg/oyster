@@ -77,7 +77,7 @@ export async function addSlackMessage(
     }
 
     if (isCompensationEnabled && isCompensationChannel) {
-      job('job_offer.share', {
+      job('offer.share', {
         slackChannelId: data.channelId,
         slackMessageId: data.id,
       });

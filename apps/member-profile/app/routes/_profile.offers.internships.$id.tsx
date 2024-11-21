@@ -2,7 +2,7 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, useLoaderData, useSearchParams } from '@remix-run/react';
 import dayjs from 'dayjs';
 
-import { hourlyToMonthlyRate } from '@oyster/core/job-offers';
+import { hourlyToMonthlyRate } from '@oyster/core/offers';
 import { db } from '@oyster/db';
 import { Divider, Modal } from '@oyster/ui';
 
@@ -45,7 +45,7 @@ async function getInternshipOfferDetails({
   offerId,
 }: GetInternshipOfferDetailsInput) {
   const _offer = await db
-    .selectFrom('internshipJobOffers as internshipOffers')
+    .selectFrom('internshipOffers')
     .leftJoin('companies', 'companies.id', 'internshipOffers.companyId')
     .select([
       'companies.id as companyId',
@@ -136,7 +136,7 @@ export default function InternshipOfferPage() {
             companyLogo={companyLogo}
             companyName={companyName}
           />
-          <OfferTitle postedAt={postedAt} role={role!} />
+          <OfferTitle postedAt={postedAt} role={role} />
         </div>
 
         <div className="flex items-center gap-[inherit]">
