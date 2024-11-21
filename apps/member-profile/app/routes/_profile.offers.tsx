@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from '@remix-run/react';
+import { Outlet } from '@remix-run/react';
 
 import { Dashboard } from '@oyster/ui';
 
@@ -7,12 +7,6 @@ import { AddOfferButton } from '@/shared/components/offer';
 import { Route } from '@/shared/constants';
 
 export default function OffersLayout() {
-  const location = useLocation();
-
-  const addPathname = location.pathname.includes('/internships')
-    ? Route['/offers/internships/add']
-    : Route['/offers/full-time/add'];
-
   return (
     <>
       <Dashboard.Header>
@@ -30,7 +24,7 @@ export default function OffersLayout() {
           </ul>
         </nav>
 
-        <AddOfferButton pathname={addPathname} />
+        <AddOfferButton />
       </Dashboard.Header>
 
       <Outlet />

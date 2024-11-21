@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from '@remix-run/react';
+import { Link, useLocation, useSearchParams } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import { Edit, Info, Plus } from 'react-feather';
 
@@ -11,15 +11,17 @@ import {
 } from '@oyster/ui/tooltip';
 
 import { Card } from '@/shared/components/card';
+import { Route } from '@/shared/constants';
 
 // Add Offer Button
 
-type AddOfferButtonProps = {
-  pathname: string;
-};
-
-export function AddOfferButton({ pathname }: AddOfferButtonProps) {
+export function AddOfferButton() {
+  const location = useLocation();
   const [searchParams] = useSearchParams();
+
+  const pathname = location.pathname.includes('/internships')
+    ? Route['/offers/internships/add']
+    : Route['/offers/full-time/add'];
 
   return (
     <Link
