@@ -80,7 +80,7 @@ type AddFullTimeOfferInput = z.infer<typeof AddFullTimeOfferInput>;
  * compensation channel, w/ the offer details and a link to the offer embedded
  * in the message.
  *
- * @param input - The details for the full-time job offer.
+ * @param input - The details for the full-time offer.
  * @returns Result indicating the success or failure of the operation.
  */
 export async function addFullTimeOffer(
@@ -456,7 +456,7 @@ export async function editFullTimeOffer(
   if (!offer) {
     return fail({
       code: 404,
-      error: 'Could not find full-time job offer to update.',
+      error: 'Could not find full-time offer to update.',
     });
   }
 
@@ -510,22 +510,22 @@ export async function editInternshipOffer(
   if (!offer) {
     return fail({
       code: 404,
-      error: 'Could not find internship job offer to update.',
+      error: 'Could not find internship offer to update.',
     });
   }
 
   return success(offer);
 }
 
-// "Share Job Offer"
+// "Share Offer"
 
-const SHARE_JOB_OFFER_SYSTEM_PROMPT = dedent`
+const SHARE_OFFER_SYSTEM_PROMPT = dedent`
   You are an AI assistant specialized in extracting structured data about job
   offers from text content. Your task is to analyze the given job offer details
   and extract specific information in a JSON format.
 `;
 
-const SHARE_JOB_OFFER_PROMPT = dedent`
+const SHARE_OFFER_PROMPT = dedent`
   Here is the job offer to analyze:
 
   <job_offer>
@@ -551,7 +551,7 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
   - Ensure any textual fields are concise and relevant, quoting the original
     text where appropriate.
 
-  For both internships and full-time job offers, include:
+  For both internships and full-time offers, include:
   - "additionalNotes": A catch-all for all other information not captured in
     other fields. Don't leave any information out, but also don't show
     information that was already captured elsewhere. Format it in short
@@ -638,7 +638,7 @@ type ShareOfferInput = {
 };
 
 /**
- * Creates a job offer that was shared in a Slack message.
+ * Creates an offer that was shared in a Slack message.
  *
  * If the Slack message does not contain the expected format, this function will
  * return early with a success result.
@@ -669,7 +669,7 @@ async function shareOffer({
   if (!slackMessage || !slackMessage.text) {
     return fail({
       code: 404,
-      error: 'Could not share job offer b/c Slack message was not found.',
+      error: 'Could not share offer b/c Slack message was not found.',
     });
   }
 
@@ -678,7 +678,7 @@ async function shareOffer({
   // chunk individually.
   const offerChunks = splitOffers(slackMessage.text);
 
-  // We're only interested in messages that share a job offer. If the Slack
+  // We're only interested in messages that share an offer. If the Slack
   // message doesn't contain the expected format, we'll bail early.
   if (!offerChunks.length) {
     return success({});
@@ -687,15 +687,12 @@ async function shareOffer({
   const offers: Offer[] = [];
 
   for (const offerChunk of offerChunks) {
-    const prompt = SHARE_JOB_OFFER_PROMPT.replace(
-      '$JOB_OFFER_TEXT',
-      offerChunk
-    );
+    const prompt = SHARE_OFFER_PROMPT.replace('$JOB_OFFER_TEXT', offerChunk);
 
     const completionResult = await getChatCompletion({
       maxTokens: 1000,
       messages: [{ role: 'user', content: prompt }],
-      system: [{ type: 'text', text: SHARE_JOB_OFFER_SYSTEM_PROMPT }],
+      system: [{ type: 'text', text: SHARE_OFFER_SYSTEM_PROMPT }],
       temperature: 0,
     });
 
