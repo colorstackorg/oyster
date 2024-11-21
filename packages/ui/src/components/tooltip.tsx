@@ -10,6 +10,7 @@ import {
 } from '@radix-ui/react-tooltip';
 
 import { Text, type TextProps } from './text';
+import { cx } from '../utils/cx';
 
 export function Tooltip(props: TooltipProps) {
   return (
@@ -35,6 +36,6 @@ export function TooltipText(props: TextProps) {
   return <Text color="white" variant="xs" {...props} />;
 }
 
-export function TooltipTrigger(props: TooltipTriggerProps) {
-  return <Trigger className="cursor-default" {...props} />;
+export function TooltipTrigger({ className, ...props }: TooltipTriggerProps) {
+  return <Trigger className={cx('cursor-default', className)} {...props} />;
 }

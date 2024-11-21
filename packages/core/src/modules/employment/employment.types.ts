@@ -33,12 +33,6 @@ export const FORMATTED_EMPLOYMENT_TYPE: Record<EmploymentType, string> = {
   part_time: 'Part-Time',
 };
 
-export const JobOfferStatus = {
-  ACCEPTED: 'accepted',
-  RECEIVED: 'received',
-  REJECTED: 'rejected',
-} as const;
-
 export const LocationType = {
   HYBRID: 'hybrid',
   IN_PERSON: 'in_person',
@@ -77,24 +71,6 @@ const CompanyReview = z.object({
   studentId: Student.shape.id,
   text: z.string().trim().min(750),
   workExperienceId: z.string().trim().min(1),
-});
-
-export const JobOffer = Entity.omit({ deletedAt: true }).extend({
-  baseSalary: z.number().optional(),
-  bonus: z.number().optional(),
-  companyId: Company.shape.id.nullish(),
-  compensationType: z.string(),
-  employmentType: z.nativeEnum(EmploymentType),
-  hourlyPay: z.number().optional(),
-  location: z.string().optional(),
-  locationLatitude: z.number().optional(),
-  locationLongitude: z.number().optional(),
-  locationType: z.nativeEnum(LocationType),
-  otherCompany: NullishString.optional(),
-  startDate: ISO8601Date,
-  status: z.nativeEnum(JobOfferStatus),
-  stockPerYear: z.number().optional(),
-  studentId: Student.shape.id,
 });
 
 export const WorkExperience = Entity.extend({
@@ -139,19 +115,10 @@ export const ListCompaniesWhere = z.object({
   search: ListSearchParams.shape.search,
 });
 
-export const ListJobOffersWhere = z.object({
-  company: Company.shape.id.nullable().catch(null),
-  employmentType: JobOffer.shape.employmentType.nullable().catch(null),
-  locationLatitude: JobOffer.shape.locationLatitude,
-  locationLongitude: JobOffer.shape.locationLongitude,
-  status: JobOffer.shape.status.nullable().catch(null),
-});
-
 export type GetCompanyWhere = z.infer<typeof GetCompanyWhere>;
 export type ListCompaniesOrderBy = z.infer<typeof ListCompaniesOrderBy>;
 export type ListCompaniesWhere = z.infer<typeof ListCompaniesWhere>;
 export type ListCompanyReviewsWhere = z.infer<typeof ListCompanyReviewsWhere>;
-export type ListJobOffersWhere = z.infer<typeof ListJobOffersWhere>;
 
 // Use Case(s)
 
@@ -184,12 +151,6 @@ export const EditWorkExperienceInput = AddWorkExperienceInput.extend({
   id: WorkExperience.shape.id,
 });
 
-export const UploadJobOfferInput = JobOffer.omit({
-  createdAt: true,
-  id: true,
-  updatedAt: true,
-});
-
 export const UpvoteCompanyReviewInput = z.object({
   memberId: z.string().trim().min(1),
 });
@@ -201,5 +162,4 @@ export type DeleteWorkExperienceInput = z.infer<
 >;
 export type EditCompanyReviewInput = z.infer<typeof EditCompanyReviewInput>;
 export type EditWorkExperienceInput = z.infer<typeof EditWorkExperienceInput>;
-export type UploadJobOfferInput = z.infer<typeof UploadJobOfferInput>;
 export type UpvoteCompanyReviewInput = z.infer<typeof UpvoteCompanyReviewInput>;

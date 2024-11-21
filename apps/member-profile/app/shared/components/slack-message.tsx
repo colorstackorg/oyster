@@ -75,7 +75,10 @@ export function SlackMessageCard({
   );
 }
 
-type SlackMessageProps = Pick<TextProps, 'children' | 'className' | 'color'>;
+type SlackMessageProps = Pick<
+  TextProps,
+  'as' | 'children' | 'className' | 'color' | 'variant'
+>;
 
 export function SlackMessage({
   children,
@@ -94,7 +97,9 @@ export function SlackMessage({
 
 // TODO: Need to add "key" for each rendered element.
 
-function toHTML(node: Node) {
+function toHTML(node: Node, index?: number) {
+  const key = node.source + index;
+
   const result = match(node)
     .with(
       { type: NodeType.Code },
@@ -107,12 +112,17 @@ function toHTML(node: Node) {
       }
     )
     .with({ type: NodeType.Bold }, ({ children }) => {
-      return <span className="font-semibold">{children.map(toHTML)}</span>;
+      return (
+        <span className="font-semibold" key={key}>
+          {children.map(toHTML)}
+        </span>
+      );
     })
     .with({ type: NodeType.ChannelLink }, ({ channelID, label }) => {
       return (
         <Link
           className="link"
+          key={key}
           to={SLACK_WORKSPACE_URL + `/channels/${channelID}`}
         >
           {label ? label.map(toHTML) : channelID}
@@ -121,23 +131,27 @@ function toHTML(node: Node) {
     })
     .with({ type: NodeType.Command }, ({ label, name }) => {
       return (
-        <span className="rounded bg-yellow-100 p-0.5 font-semibold">
+        <span className="rounded bg-yellow-100 p-0.5 font-semibold" key={key}>
           {label ? label.map(toHTML) : `@${name}`}
         </span>
       );
     })
     .with({ type: NodeType.Italic }, ({ children }) => {
-      return <span className="italic">{children.map(toHTML)}</span>;
+      return (
+        <span className="italic" key={key}>
+          {children.map(toHTML)}
+        </span>
+      );
     })
     .with({ type: NodeType.Root }, ({ children }) => {
-      return <React.Fragment>{children.map(toHTML)}</React.Fragment>;
+      return <React.Fragment key={key}>{children.map(toHTML)}</React.Fragment>;
     })
     .with({ type: NodeType.Text }, ({ text }) => {
       return text;
     })
     .with({ type: NodeType.URL }, ({ label, url }) => {
       return (
-        <Link className="link" to={url} target="_blank">
+        <Link className="link" key={key} to={url} target="_blank">
           {label ? label.map(toHTML) : url}
         </Link>
       );
@@ -150,6 +164,7 @@ function toHTML(node: Node) {
             'hover:bg-opacity-20',
             'active:bg-opacity-30'
           )}
+          key={key}
           to={SLACK_WORKSPACE_URL + `/team/${userID}`}
         >
           {label ? label.map(toHTML) : `@${userID}`}
@@ -160,4 +175,27 @@ function toHTML(node: Node) {
     .exhaustive();
 
   return result;
+}
+
+export function ViewInSlackButton({
+  channelId,
+  messageId,
+}: Pick<SlackMessageCardProps, 'channelId' | 'messageId'>) {
+  if (!channelId || !messageId) {
+    return null;
+  }
+
+  return (
+    <Link
+      className={cx(
+        getButtonCn({ size: 'small', variant: 'secondary' }),
+        'border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200'
+      )}
+      target="_blank"
+      to={SLACK_WORKSPACE_URL + `/archives/${channelId}/p${messageId}`}
+    >
+      <img alt="Slack Logo" className="h-5 w-5" src="/images/slack.svg" /> View
+      in Slack
+    </Link>
+  );
 }

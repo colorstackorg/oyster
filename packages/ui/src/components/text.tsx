@@ -7,12 +7,16 @@ export type TextProps = Pick<
   React.HTMLProps<HTMLElement>,
   'className' | 'children'
 > & {
+  align?: 'left' | 'center' | 'right';
+  as?: 'p' | 'span';
   color?: 'black' | 'error' | 'gray-500' | 'primary' | 'success' | 'white';
   variant?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';
   weight?: '400' | '500' | '600';
 };
 
 export function Text({
+  align,
+  as: Component = 'p',
   children,
   className,
   color,
@@ -20,8 +24,9 @@ export function Text({
   weight,
 }: TextProps) {
   return (
-    <p
+    <Component
       className={getTextCn({
+        align,
         className,
         color,
         variant,
@@ -29,17 +34,24 @@ export function Text({
       })}
     >
       {children}
-    </p>
+    </Component>
   );
 }
 
 export function getTextCn({
+  align = 'left',
   className,
   color = 'black',
   variant = 'md',
   weight = '400',
-}: Pick<TextProps, 'className' | 'color' | 'variant' | 'weight'>) {
+}: Pick<TextProps, 'align' | 'className' | 'color' | 'variant' | 'weight'>) {
   return cx(
+    match(align)
+      .with('left', () => 'text-left')
+      .with('center', () => 'text-center')
+      .with('right', () => 'text-right')
+      .exhaustive(),
+
     match(color)
       .with('black', () => 'text-black')
       .with('error', () => 'text-red-600')

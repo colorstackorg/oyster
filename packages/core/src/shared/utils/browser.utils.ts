@@ -4,6 +4,10 @@ import puppeteer, { type Browser, type Page } from 'puppeteer-core';
 
 const BROWSER_WS_ENDPOINT = process.env.BROWSER_WS_ENDPOINT as string;
 
+// Constants
+
+const DEFAULT_TIMEOUT = 10_000; // 10s
+
 // Core
 
 /**
@@ -16,7 +20,12 @@ const BROWSER_WS_ENDPOINT = process.env.BROWSER_WS_ENDPOINT as string;
 export async function getPageContent(url: string): Promise<string> {
   return withBrowser(async (_, page) => {
     await page.goto(url, {
-      waitUntil: 'networkidle0',
+      timeout: DEFAULT_TIMEOUT,
+      waitUntil: 'domcontentloaded',
+    });
+
+    await page.waitForNetworkIdle({
+      timeout: DEFAULT_TIMEOUT,
     });
 
     const content = await page.evaluate(() => {

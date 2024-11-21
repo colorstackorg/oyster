@@ -59,6 +59,7 @@ export function getIconButtonCn({
 >) {
   return cx(
     'flex h-fit w-fit cursor-pointer items-center justify-center',
+    'disabled:cursor-not-allowed disabled:opacity-50',
 
     match(backgroundColor)
       .with('gray-100', () => 'bg-gray-100')

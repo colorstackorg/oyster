@@ -22,6 +22,7 @@ const _queues: Record<string, Queue> = {};
 export function getQueue(name: string) {
   if (!_queues[name]) {
     const connection = new Redis(ENV.REDIS_URL, {
+      family: 0,
       maxRetriesPerRequest: null,
     });
 

@@ -63,6 +63,7 @@ export const Modal = ({
             'absolute inset-0 cursor-default bg-black',
             'animate-[modal-shader-animation_250ms_forwards]'
           )}
+          preventScrollReset
           to={onCloseTo}
         />
       </div>
@@ -80,6 +81,7 @@ Modal.CloseButton = function ModalCloseButton() {
         backgroundColor: 'gray-100',
         backgroundColorOnHover: 'gray-200',
       })}
+      preventScrollReset
       to={onCloseTo}
     >
       <X />
