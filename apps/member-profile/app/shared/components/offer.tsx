@@ -1,10 +1,32 @@
 import { Link, useSearchParams } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
-import { Edit } from 'react-feather';
+import { Edit, Plus } from 'react-feather';
 
-import { getIconButtonCn, Text } from '@oyster/ui';
+import { getButtonCn, getIconButtonCn, Text } from '@oyster/ui';
 
 import { Card } from '@/shared/components/card';
+
+// Add Offer Button
+
+type AddOfferButtonProps = {
+  pathname: string;
+};
+
+export function AddOfferButton({ pathname }: AddOfferButtonProps) {
+  const [searchParams] = useSearchParams();
+
+  return (
+    <Link
+      className={getButtonCn({ size: 'small' })}
+      to={{
+        pathname,
+        search: searchParams.toString(),
+      }}
+    >
+      <Plus size={20} /> Add Offer
+    </Link>
+  );
+}
 
 // Edit Offer Button
 
