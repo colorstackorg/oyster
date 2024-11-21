@@ -14,7 +14,7 @@ import {
 import {
   addInternshipOffer,
   AddInternshipOfferInput,
-} from '@oyster/core/job-offers';
+} from '@oyster/core/offers';
 import {
   Button,
   Divider,

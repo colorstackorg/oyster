@@ -45,7 +45,7 @@ async function getFullTimeOfferDetails({
   offerId,
 }: GetFullTimeOfferDetailsInput) {
   const _offer = await db
-    .selectFrom('fullTimeJobOffers as fullTimeOffers')
+    .selectFrom('fullTimeOffers')
     .leftJoin('companies', 'companies.id', 'fullTimeOffers.companyId')
     .select([
       'companies.id as companyId',

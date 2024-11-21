@@ -7,7 +7,7 @@ import { db, type DB } from '@oyster/db';
 import { nullableField } from '@oyster/types';
 import { id } from '@oyster/utils';
 
-import { JobOfferBullJob } from '@/infrastructure/bull/bull.types';
+import { OfferBullJob } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { redis } from '@/infrastructure/redis';
@@ -93,7 +93,7 @@ export async function addFullTimeOffer(
     );
 
     return trx
-      .insertInto('fullTimeJobOffers')
+      .insertInto('fullTimeOffers')
       .values({
         additionalNotes: input.additionalNotes,
         baseSalary: input.baseSalary,
@@ -126,7 +126,7 @@ export async function addFullTimeOffer(
           return eb
             .selectFrom('companies')
             .select('companies.name')
-            .whereRef('companies.id', '=', 'fullTimeJobOffers.companyId')
+            .whereRef('companies.id', '=', 'fullTimeOffers.companyId')
             .as<string>('companyName');
         },
       ])
@@ -214,7 +214,7 @@ export async function addInternshipOffer(
     );
 
     return trx
-      .insertInto('internshipJobOffers')
+      .insertInto('internshipOffers')
       .values({
         additionalNotes: input.additionalNotes,
         benefits: input.benefits,
@@ -237,7 +237,7 @@ export async function addInternshipOffer(
           return eb
             .selectFrom('companies')
             .select('companies.name')
-            .whereRef('companies.id', '=', 'internshipJobOffers.companyId')
+            .whereRef('companies.id', '=', 'internshipOffers.companyId')
             .as<string>('companyName');
         },
       ])
@@ -325,7 +325,7 @@ async function backfillOffers({
       return eb.not(() => {
         return eb.exists(() => {
           return eb
-            .selectFrom('fullTimeJobOffers')
+            .selectFrom('fullTimeOffers')
             .whereRef('slackChannelId', '=', 'slackMessages.channelId')
             .whereRef('slackMessageId', '=', 'slackMessages.id');
         });
@@ -335,7 +335,7 @@ async function backfillOffers({
       return eb.not(() => {
         return eb.exists(() => {
           return eb
-            .selectFrom('internshipJobOffers')
+            .selectFrom('internshipOffers')
             .whereRef('slackChannelId', '=', 'slackMessages.channelId')
             .whereRef('slackMessageId', '=', 'slackMessages.id');
         });
@@ -346,7 +346,7 @@ async function backfillOffers({
     .execute();
 
   slackMessages.forEach((slackMessage) => {
-    job('job_offer.share', {
+    job('offer.share', {
       sendNotification: false,
       slackChannelId: slackMessage.channelId,
       slackMessageId: slackMessage.id,
@@ -366,7 +366,7 @@ type DeleteOfferInput = {
 /**
  * Deletes an offer from the database, only if the given member has
  * permission to do so. This will attempt to delete the offer from both
- * `fullTimeJobOffers` and `internshipJobOffers` tables, one will succeed and
+ * `fullTimeOffers` and `internshipOffers` tables, one will succeed and
  * one will have no effect.
  *
  * @param input - The offer to delete and the member deleting it.
@@ -389,13 +389,10 @@ export async function deleteOffer({
   }
 
   await db.transaction().execute(async (trx) => {
-    await trx
-      .deleteFrom('fullTimeJobOffers')
-      .where('id', '=', offerId)
-      .execute();
+    await trx.deleteFrom('fullTimeOffers').where('id', '=', offerId).execute();
 
     await trx
-      .deleteFrom('internshipJobOffers')
+      .deleteFrom('internshipOffers')
       .where('id', '=', offerId)
       .execute();
   });
@@ -429,7 +426,7 @@ export async function editFullTimeOffer(
     );
 
     return trx
-      .updateTable('fullTimeJobOffers')
+      .updateTable('fullTimeOffers')
       .set({
         additionalNotes: input.additionalNotes,
         baseSalary: input.baseSalary,
@@ -492,7 +489,7 @@ export async function editInternshipOffer(
     );
 
     return trx
-      .updateTable('internshipJobOffers')
+      .updateTable('internshipOffers')
       .set({
         additionalNotes: input.additionalNotes,
         benefits: input.benefits,
@@ -739,7 +736,7 @@ async function shareOffer({
         ? await getMostRelevantCompany(trx, offer.company)
         : null;
 
-      const baseJobOffer = {
+      const baseOffer = {
         additionalNotes: offer.additionalNotes,
         benefits: offer.benefits,
         companyId,
@@ -759,18 +756,18 @@ async function shareOffer({
 
       if (offer.employmentType === 'internship') {
         await trx
-          .insertInto('internshipJobOffers')
+          .insertInto('internshipOffers')
           .values({
-            ...baseJobOffer,
+            ...baseOffer,
             hourlyRate: offer.hourlyRate,
           })
           .returning(['id'])
           .executeTakeFirstOrThrow();
       } else {
         await trx
-          .insertInto('fullTimeJobOffers')
+          .insertInto('fullTimeOffers')
           .values({
-            ...baseJobOffer,
+            ...baseOffer,
             baseSalary: offer.baseSalary,
             signOnBonus: offer.signOnBonus,
             performanceBonus: offer.performanceBonus,
@@ -904,7 +901,7 @@ export async function hasOfferWritePermission({
   offerId,
 }: HasEditPermissionInput): Promise<boolean> {
   function isPosterOrAdmin(
-    eb: ExpressionBuilder<DB, 'fullTimeJobOffers' | 'internshipJobOffers'>
+    eb: ExpressionBuilder<DB, 'fullTimeOffers' | 'internshipOffers'>
   ) {
     return eb.or([
       eb('postedBy', '=', memberId),
@@ -917,34 +914,34 @@ export async function hasOfferWritePermission({
     ]);
   }
 
-  const [fullTimeJobOffer, internshipJobOffer] = await Promise.all([
+  const [fullTimeOffer, internshipOffer] = await Promise.all([
     db
-      .selectFrom('fullTimeJobOffers')
+      .selectFrom('fullTimeOffers')
       .where('id', '=', offerId)
       .where(isPosterOrAdmin)
       .executeTakeFirst(),
 
     db
-      .selectFrom('internshipJobOffers')
+      .selectFrom('internshipOffers')
       .where('id', '=', offerId)
       .where(isPosterOrAdmin)
       .executeTakeFirst(),
   ]);
 
-  return !!fullTimeJobOffer || !!internshipJobOffer;
+  return !!fullTimeOffer || !!internshipOffer;
 }
 
 // Worker
 
-export const jobOfferWorker = registerWorker(
-  'job_offer',
-  JobOfferBullJob,
+export const offerWorker = registerWorker(
+  'offer',
+  OfferBullJob,
   async (job) => {
     const result = await match(job)
-      .with({ name: 'job_offer.backfill' }, async ({ data }) => {
+      .with({ name: 'offer.backfill' }, async ({ data }) => {
         return backfillOffers(data);
       })
-      .with({ name: 'job_offer.share' }, async ({ data }) => {
+      .with({ name: 'offer.share' }, async ({ data }) => {
         return shareOffer(data);
       })
       .exhaustive();

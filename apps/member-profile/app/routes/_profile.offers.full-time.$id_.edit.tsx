@@ -13,10 +13,7 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 
-import {
-  editFullTimeOffer,
-  EditFullTimeOfferInput,
-} from '@oyster/core/job-offers';
+import { editFullTimeOffer, EditFullTimeOfferInput } from '@oyster/core/offers';
 import { db } from '@oyster/db';
 import {
   Button,
@@ -46,7 +43,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const memberId = user(session);
 
   const offer = await db
-    .selectFrom('fullTimeJobOffers as fullTimeOffers')
+    .selectFrom('fullTimeOffers')
     .leftJoin('companies', 'companies.id', 'fullTimeOffers.companyId')
     .select([
       'companies.crunchbaseId as companyCrunchbaseId',

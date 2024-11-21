@@ -11,10 +11,7 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 
-import {
-  addFullTimeOffer,
-  AddFullTimeOfferInput,
-} from '@oyster/core/job-offers';
+import { addFullTimeOffer, AddFullTimeOfferInput } from '@oyster/core/offers';
 import {
   Button,
   Divider,

@@ -16,7 +16,7 @@ import {
 import {
   editInternshipOffer,
   EditInternshipOfferInput,
-} from '@oyster/core/job-offers';
+} from '@oyster/core/offers';
 import { db } from '@oyster/db';
 import {
   Button,
@@ -46,7 +46,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const memberId = user(session);
 
   const offer = await db
-    .selectFrom('internshipJobOffers as internshipOffers')
+    .selectFrom('internshipOffers')
     .leftJoin('companies', 'companies.id', 'internshipOffers.companyId')
     .select([
       'companies.crunchbaseId as companyCrunchbaseId',
