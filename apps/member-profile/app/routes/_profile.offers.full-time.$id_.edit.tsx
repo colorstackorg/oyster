@@ -14,21 +14,31 @@ import {
 } from '@remix-run/react';
 
 import { editFullTimeOffer, EditFullTimeOfferInput } from '@oyster/core/offers';
+import {
+  OfferAdditionalNotesField,
+  OfferBaseSalaryField,
+  OfferBenefitsField,
+  OfferCompanyField,
+  OfferLocationField,
+  OfferNegotiatedField,
+  OfferPastExperienceField,
+  OfferPerformanceBonusField,
+  OfferRelocationField,
+  OfferRoleField,
+  OfferSignOnBonusField,
+  OfferTotalStockField,
+} from '@oyster/core/offers/ui';
 import { db } from '@oyster/db';
 import {
   Button,
   Divider,
-  DollarInput,
   Form,
   getButtonCn,
   getErrors,
-  Input,
   Modal,
-  Textarea,
   validateForm,
 } from '@oyster/ui';
 
-import { CompanyCombobox } from '@/shared/components/company-combobox';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -134,26 +144,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 export default function EditFullTimeOffer() {
-  const [searchParams] = useSearchParams();
-
-  return (
-    <Modal
-      onCloseTo={{
-        pathname: Route['/offers/full-time'],
-        search: searchParams.toString(),
-      }}
-    >
-      <Modal.Header>
-        <Modal.Title>Edit Full-Time Offer</Modal.Title>
-        <Modal.CloseButton />
-      </Modal.Header>
-
-      <EditFullTimeOfferForm />
-    </Modal>
-  );
-}
-
-function EditFullTimeOfferForm() {
   const {
     additionalNotes,
     baseSalary,
@@ -171,182 +161,89 @@ function EditFullTimeOfferForm() {
     totalStock,
   } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
+  const [searchParams] = useSearchParams();
 
   return (
-    <RemixForm className="form" method="post">
-      <Form.Field
-        error={errors.companyCrunchbaseId}
-        label="Company"
-        labelFor="companyCrunchbaseId"
-        required
-      >
-        <CompanyCombobox
+    <Modal
+      onCloseTo={{
+        pathname: Route['/offers/full-time'],
+        search: searchParams.toString(),
+      }}
+    >
+      <Modal.Header>
+        <Modal.Title>Edit Full-Time Offer</Modal.Title>
+        <Modal.CloseButton />
+      </Modal.Header>
+
+      <RemixForm className="form" method="post">
+        <OfferCompanyField
           defaultValue={{
             crunchbaseId: companyCrunchbaseId || '',
             name: companyName || '',
           }}
-          name="companyCrunchbaseId"
+          error={errors.companyCrunchbaseId}
         />
-      </Form.Field>
+        <OfferRoleField defaultValue={role} error={errors.role} />
+        <OfferLocationField defaultValue={location} error={errors.location} />
 
-      <Form.Field error={errors.role} label="Role" labelFor="role" required>
-        <Input
-          defaultValue={role || undefined}
-          id="role"
-          name="role"
-          required
-        />
-      </Form.Field>
+        <Divider my="1" />
 
-      <Form.Field
-        description='Please format the location as "City, State".'
-        error={errors.location}
-        label="Location"
-        labelFor="location"
-        required
-      >
-        <Input defaultValue={location} id="location" name="location" required />
-      </Form.Field>
-
-      <Divider my="1" />
-
-      <div className="grid grid-cols-2 gap-[inherit]">
-        <Form.Field
-          error={errors.baseSalary}
-          label="Base Salary"
-          labelFor="baseSalary"
-          required
-        >
-          <DollarInput
+        <div className="grid grid-cols-2 gap-[inherit]">
+          <OfferBaseSalaryField
             defaultValue={baseSalary}
-            id="baseSalary"
-            name="baseSalary"
-            required
+            error={errors.baseSalary}
           />
-        </Form.Field>
-
-        <Form.Field
-          error={errors.totalStock}
-          label="Total Stock"
-          labelFor="totalStock"
-        >
-          <DollarInput
+          <OfferTotalStockField
             defaultValue={totalStock || undefined}
-            id="totalStock"
-            name="totalStock"
+            error={errors.totalStock}
           />
-        </Form.Field>
-
-        <Form.Field
-          description="The amount of money you will receive upfront."
-          error={errors.signOnBonus}
-          label="Sign-On Bonus"
-          labelFor="signOnBonus"
-        >
-          <DollarInput
+          <OfferSignOnBonusField
             defaultValue={signOnBonus || undefined}
-            id="signOnBonus"
-            name="signOnBonus"
+            error={errors.signOnBonus}
           />
-        </Form.Field>
-
-        <Form.Field
-          description="The maximum performance/annual bonus you can receive."
-          error={errors.performanceBonus}
-          label="Performance Bonus"
-          labelFor="performanceBonus"
-        >
-          <DollarInput
+          <OfferPerformanceBonusField
             defaultValue={performanceBonus || undefined}
-            id="performanceBonus"
-            name="performanceBonus"
+            error={errors.performanceBonus}
           />
-        </Form.Field>
-      </div>
+        </div>
 
-      <Form.Field
-        description="Does this offer anything for relocation and/or housing?"
-        error={errors.relocation}
-        label="Relocation / Housing"
-        labelFor="relocation"
-      >
-        <Input
+        <OfferRelocationField
           defaultValue={relocation || undefined}
-          id="relocation"
-          name="relocation"
+          error={errors.relocation}
         />
-      </Form.Field>
-
-      <Form.Field
-        description="Does this job offer any benefits? (e.g. health insurance, 401k, etc.)"
-        error={errors.benefits}
-        label="Benefits"
-        labelFor="benefits"
-      >
-        <Textarea
+        <OfferBenefitsField
           defaultValue={benefits || undefined}
-          id="benefits"
-          minRows={2}
-          name="benefits"
+          error={errors.benefits}
         />
-      </Form.Field>
 
-      <Divider my="1" />
+        <Divider my="1" />
 
-      <Form.Field
-        description="How many years of experience and/or internships do you have?"
-        error={errors.pastExperience}
-        label="Past Experience"
-        labelFor="pastExperience"
-        required
-      >
-        <Input
+        <OfferPastExperienceField
           defaultValue={pastExperience || undefined}
-          id="pastExperience"
-          name="pastExperience"
-          required
+          error={errors.pastExperience}
         />
-      </Form.Field>
-
-      <Form.Field
-        description="Did you negotiate, and if so, what was the result?"
-        error={errors.negotiated}
-        label="Negotiated"
-        labelFor="negotiated"
-      >
-        <Input
+        <OfferNegotiatedField
           defaultValue={negotiated || undefined}
-          id="negotiated"
-          name="negotiated"
+          error={errors.negotiated}
         />
-      </Form.Field>
-
-      <Form.Field
-        description="Any additional notes about this offer?"
-        error={errors.additionalNotes}
-        label="Additional Notes"
-        labelFor="additionalNotes"
-      >
-        <Textarea
+        <OfferAdditionalNotesField
           defaultValue={additionalNotes || undefined}
-          id="additionalNotes"
-          minRows={2}
-          name="additionalNotes"
+          error={errors.additionalNotes}
         />
-      </Form.Field>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
-      <Button.Group flexDirection="row-reverse" spacing="between">
-        <Button.Submit>Edit</Button.Submit>
+        <Button.Group flexDirection="row-reverse" spacing="between">
+          <Button.Submit>Edit</Button.Submit>
 
-        <Link
-          className={getButtonCn({ color: 'error', variant: 'secondary' })}
-          to={generatePath(Route['/offers/full-time/:id/delete'], { id })}
-        >
-          Delete
-        </Link>
-      </Button.Group>
-    </RemixForm>
+          <Link
+            className={getButtonCn({ color: 'error', variant: 'secondary' })}
+            to={generatePath(Route['/offers/full-time/:id/delete'], { id })}
+          >
+            Delete
+          </Link>
+        </Button.Group>
+      </RemixForm>
+    </Modal>
   );
 }

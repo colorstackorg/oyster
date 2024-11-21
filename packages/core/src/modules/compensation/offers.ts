@@ -202,7 +202,7 @@ export const AddInternshipOfferInput = InternshipOffer.omit({
   relocation: nullableField(BaseOffer.shape.relocation),
 });
 
-export type AddInternshipOfferInput = z.infer<typeof AddInternshipOfferInput>;
+type AddInternshipOfferInput = z.infer<typeof AddInternshipOfferInput>;
 
 export async function addInternshipOffer(
   input: AddInternshipOfferInput
@@ -406,7 +406,7 @@ export const EditFullTimeOfferInput = AddFullTimeOfferInput.omit({
   postedBy: true,
 });
 
-export type EditFullTimeOfferInput = z.infer<typeof EditFullTimeOfferInput>;
+type EditFullTimeOfferInput = z.infer<typeof EditFullTimeOfferInput>;
 
 /**
  * Edits a full-time offer.
@@ -469,7 +469,7 @@ export const EditInternshipOfferInput = AddInternshipOfferInput.omit({
   postedBy: true,
 });
 
-export type EditInternshipOfferInput = z.infer<typeof EditInternshipOfferInput>;
+type EditInternshipOfferInput = z.infer<typeof EditInternshipOfferInput>;
 
 /**
  * Edits an internship offer.

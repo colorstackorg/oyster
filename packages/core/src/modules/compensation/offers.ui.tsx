@@ -1,8 +1,4 @@
-import { Form as RemixForm } from '@remix-run/react';
-
 import {
-  Button,
-  Divider,
   DollarInput,
   type FieldProps,
   Form,
@@ -11,119 +7,10 @@ import {
 } from '@oyster/ui';
 
 import { CompanyCombobox } from '@/modules/employment/ui/company-field';
-import {
-  type AddInternshipOfferInput,
-  type EditInternshipOfferInput,
-} from './offers';
-
-// Add Internship Offer Form
-
-type AddInternshipOfferFormProps = {
-  error?: string;
-  errors: Partial<Record<keyof AddInternshipOfferInput, string>>;
-};
-
-export function AddInternshipOfferForm({
-  error,
-  errors,
-}: AddInternshipOfferFormProps) {
-  return (
-    <RemixForm className="form" method="post">
-      <OfferCompanyField error={errors.companyCrunchbaseId} />
-      <OfferRoleField error={errors.role} />
-      <OfferLocationField error={errors.location} />
-
-      <Divider my="1" />
-
-      <OfferHourlyRateField error={errors.hourlyRate} />
-      <OfferRelocationField error={errors.relocation} />
-      <OfferBenefitsField error={errors.benefits} />
-
-      <Divider my="1" />
-
-      <OfferPastExperienceField error={errors.pastExperience} />
-      <OfferNegotiatedField error={errors.negotiated} />
-      <OfferAdditionalNotesField error={errors.additionalNotes} />
-
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
-
-      <Button.Group>
-        <Button.Submit>Add</Button.Submit>
-      </Button.Group>
-    </RemixForm>
-  );
-}
-
-// Edit Internship Offer Form
-
-type EditInternshipOfferFormProps = {
-  error?: string;
-  errors: Partial<Record<keyof EditInternshipOfferInput, string>>;
-  offer: EditInternshipOfferInput & { companyName: string };
-};
-
-export function EditInternshipOfferForm({
-  error,
-  errors,
-  offer,
-}: EditInternshipOfferFormProps) {
-  return (
-    <RemixForm className="form" method="post">
-      <OfferCompanyField
-        defaultValue={{
-          crunchbaseId: offer.companyCrunchbaseId || '',
-          name: offer.companyName || '',
-        }}
-        error={errors.companyCrunchbaseId}
-      />
-      <OfferRoleField defaultValue={offer.role} error={errors.role} />
-      <OfferLocationField
-        defaultValue={offer.location}
-        error={errors.location}
-      />
-
-      <Divider my="1" />
-
-      <OfferHourlyRateField
-        defaultValue={offer.hourlyRate.toString()}
-        error={errors.hourlyRate}
-      />
-      <OfferRelocationField
-        defaultValue={offer.relocation || undefined}
-        error={errors.relocation}
-      />
-      <OfferBenefitsField
-        defaultValue={offer.benefits || undefined}
-        error={errors.benefits}
-      />
-
-      <Divider my="1" />
-
-      <OfferPastExperienceField
-        defaultValue={offer.pastExperience || undefined}
-        error={errors.pastExperience}
-      />
-      <OfferNegotiatedField
-        defaultValue={offer.negotiated || undefined}
-        error={errors.negotiated}
-      />
-      <OfferAdditionalNotesField
-        defaultValue={offer.additionalNotes || undefined}
-        error={errors.additionalNotes}
-      />
-
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
-
-      <Button.Group>
-        <Button.Submit>Add</Button.Submit>
-      </Button.Group>
-    </RemixForm>
-  );
-}
 
 // Components
 
-function OfferAdditionalNotesField({
+export function OfferAdditionalNotesField({
   defaultValue,
   error,
 }: Omit<FieldProps<string>, 'name'>) {
@@ -144,7 +31,28 @@ function OfferAdditionalNotesField({
   );
 }
 
-function OfferBenefitsField({
+export function OfferBaseSalaryField({
+  defaultValue,
+  error,
+}: Omit<FieldProps<string>, 'name'>) {
+  return (
+    <Form.Field
+      error={error}
+      label="Base Salary"
+      labelFor="baseSalary"
+      required
+    >
+      <DollarInput
+        defaultValue={defaultValue}
+        id="baseSalary"
+        name="baseSalary"
+        required
+      />
+    </Form.Field>
+  );
+}
+
+export function OfferBenefitsField({
   defaultValue,
   error,
 }: Omit<FieldProps<string>, 'name'>) {
@@ -165,7 +73,7 @@ function OfferBenefitsField({
   );
 }
 
-function OfferCompanyField({
+export function OfferCompanyField({
   defaultValue,
   error,
 }: Omit<FieldProps<{ crunchbaseId: string; name: string }>, 'name'>) {
@@ -186,7 +94,7 @@ function OfferCompanyField({
   );
 }
 
-function OfferHourlyRateField({
+export function OfferHourlyRateField({
   defaultValue,
   error,
 }: Omit<FieldProps<string>, 'name'>) {
@@ -207,7 +115,7 @@ function OfferHourlyRateField({
   );
 }
 
-function OfferLocationField({
+export function OfferLocationField({
   defaultValue,
   error,
 }: Omit<FieldProps<string>, 'name'>) {
@@ -229,7 +137,7 @@ function OfferLocationField({
   );
 }
 
-function OfferNegotiatedField({
+export function OfferNegotiatedField({
   defaultValue,
   error,
 }: Omit<FieldProps<string>, 'name'>) {
@@ -245,7 +153,7 @@ function OfferNegotiatedField({
   );
 }
 
-function OfferPastExperienceField({
+export function OfferPastExperienceField({
   defaultValue,
   error,
 }: Omit<FieldProps<string>, 'name'>) {
@@ -265,7 +173,27 @@ function OfferPastExperienceField({
   );
 }
 
-function OfferRelocationField({
+export function OfferPerformanceBonusField({
+  defaultValue,
+  error,
+}: Omit<FieldProps<string>, 'name'>) {
+  return (
+    <Form.Field
+      description="The maximum performance/annual bonus you can receive."
+      error={error}
+      label="Performance Bonus"
+      labelFor="performanceBonus"
+    >
+      <DollarInput
+        defaultValue={defaultValue}
+        id="performanceBonus"
+        name="performanceBonus"
+      />
+    </Form.Field>
+  );
+}
+
+export function OfferRelocationField({
   defaultValue,
   error,
 }: Omit<FieldProps<string>, 'name'>) {
@@ -281,13 +209,48 @@ function OfferRelocationField({
   );
 }
 
-function OfferRoleField({
+export function OfferRoleField({
   defaultValue,
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
     <Form.Field error={error} label="Role" labelFor="role" required>
       <Input defaultValue={defaultValue} id="role" name="role" required />
+    </Form.Field>
+  );
+}
+
+export function OfferSignOnBonusField({
+  defaultValue,
+  error,
+}: Omit<FieldProps<string>, 'name'>) {
+  return (
+    <Form.Field
+      description="The amount of money you will receive upfront."
+      error={error}
+      label="Sign-On Bonus"
+      labelFor="signOnBonus"
+    >
+      <DollarInput
+        defaultValue={defaultValue}
+        id="signOnBonus"
+        name="signOnBonus"
+      />
+    </Form.Field>
+  );
+}
+
+export function OfferTotalStockField({
+  defaultValue,
+  error,
+}: Omit<FieldProps<string>, 'name'>) {
+  return (
+    <Form.Field error={error} label="Total Stock" labelFor="totalStock">
+      <DollarInput
+        defaultValue={defaultValue}
+        id="totalStock"
+        name="totalStock"
+      />
     </Form.Field>
   );
 }

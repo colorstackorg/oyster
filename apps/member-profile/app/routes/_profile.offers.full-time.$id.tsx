@@ -138,7 +138,7 @@ export default function FullTimeOfferPage() {
             companyLogo={companyLogo}
             companyName={companyName}
           />
-          <OfferTitle postedAt={postedAt} role={role!} />
+          <OfferTitle postedAt={postedAt} role={role} />
         </div>
 
         <div className="flex items-center gap-[inherit]">

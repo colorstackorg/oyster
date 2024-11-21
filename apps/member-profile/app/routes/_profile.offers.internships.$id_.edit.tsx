@@ -6,6 +6,8 @@ import {
 } from '@remix-run/node';
 import {
   generatePath,
+  Link,
+  Form as RemixForm,
   useActionData,
   useLoaderData,
   useSearchParams,
@@ -15,9 +17,27 @@ import {
   editInternshipOffer,
   EditInternshipOfferInput,
 } from '@oyster/core/offers';
-import { EditInternshipOfferForm } from '@oyster/core/offers/ui';
+import {
+  OfferAdditionalNotesField,
+  OfferBenefitsField,
+  OfferCompanyField,
+  OfferHourlyRateField,
+  OfferLocationField,
+  OfferNegotiatedField,
+  OfferPastExperienceField,
+  OfferRelocationField,
+  OfferRoleField,
+} from '@oyster/core/offers/ui';
 import { db } from '@oyster/db';
-import { getErrors, Modal, validateForm } from '@oyster/ui';
+import {
+  Button,
+  Divider,
+  Form,
+  getButtonCn,
+  getErrors,
+  Modal,
+  validateForm,
+} from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -127,6 +147,7 @@ export default function EditInternshipOffer() {
     companyCrunchbaseId,
     companyName,
     hourlyRate,
+    id,
     location,
     negotiated,
     pastExperience,
@@ -148,22 +169,60 @@ export default function EditInternshipOffer() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <EditInternshipOfferForm
-        error={error}
-        errors={errors}
-        offer={{
-          additionalNotes,
-          benefits,
-          companyCrunchbaseId: companyCrunchbaseId || '',
-          companyName: companyName || '',
-          hourlyRate: Number(hourlyRate),
-          location,
-          negotiated,
-          pastExperience,
-          relocation,
-          role: role || '',
-        }}
-      />
+      <RemixForm className="form" method="post">
+        <OfferCompanyField
+          defaultValue={{
+            crunchbaseId: companyCrunchbaseId || '',
+            name: companyName || '',
+          }}
+          error={errors.companyCrunchbaseId}
+        />
+        <OfferRoleField defaultValue={role} error={errors.role} />
+        <OfferLocationField defaultValue={location} error={errors.location} />
+
+        <Divider my="1" />
+
+        <OfferHourlyRateField
+          defaultValue={hourlyRate}
+          error={errors.hourlyRate}
+        />
+        <OfferRelocationField
+          defaultValue={relocation || undefined}
+          error={errors.relocation}
+        />
+        <OfferBenefitsField
+          defaultValue={benefits || undefined}
+          error={errors.benefits}
+        />
+
+        <Divider my="1" />
+
+        <OfferPastExperienceField
+          defaultValue={pastExperience || undefined}
+          error={errors.pastExperience}
+        />
+        <OfferNegotiatedField
+          defaultValue={negotiated || undefined}
+          error={errors.negotiated}
+        />
+        <OfferAdditionalNotesField
+          defaultValue={additionalNotes || undefined}
+          error={errors.additionalNotes}
+        />
+
+        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+
+        <Button.Group flexDirection="row-reverse" spacing="between">
+          <Button.Submit>Edit</Button.Submit>
+
+          <Link
+            className={getButtonCn({ color: 'error', variant: 'secondary' })}
+            to={generatePath(Route['/offers/internships/:id/delete'], { id })}
+          >
+            Delete
+          </Link>
+        </Button.Group>
+      </RemixForm>
     </Modal>
   );
 }

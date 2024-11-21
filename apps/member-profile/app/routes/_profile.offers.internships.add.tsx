@@ -4,14 +4,36 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { generatePath, useActionData, useSearchParams } from '@remix-run/react';
+import {
+  generatePath,
+  Form as RemixForm,
+  useActionData,
+  useSearchParams,
+} from '@remix-run/react';
 
 import {
   addInternshipOffer,
   AddInternshipOfferInput,
 } from '@oyster/core/offers';
-import { AddInternshipOfferForm } from '@oyster/core/offers/ui';
-import { getErrors, Modal, validateForm } from '@oyster/ui';
+import {
+  OfferAdditionalNotesField,
+  OfferBenefitsField,
+  OfferCompanyField,
+  OfferHourlyRateField,
+  OfferLocationField,
+  OfferNegotiatedField,
+  OfferPastExperienceField,
+  OfferRelocationField,
+  OfferRoleField,
+} from '@oyster/core/offers/ui';
+import {
+  Button,
+  Divider,
+  Form,
+  getErrors,
+  Modal,
+  validateForm,
+} from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -81,7 +103,29 @@ export default function AddInternshipOffer() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <AddInternshipOfferForm error={error} errors={errors} />
+      <RemixForm className="form" method="post">
+        <OfferCompanyField error={errors.companyCrunchbaseId} />
+        <OfferRoleField error={errors.role} />
+        <OfferLocationField error={errors.location} />
+
+        <Divider my="1" />
+
+        <OfferHourlyRateField error={errors.hourlyRate} />
+        <OfferRelocationField error={errors.relocation} />
+        <OfferBenefitsField error={errors.benefits} />
+
+        <Divider my="1" />
+
+        <OfferPastExperienceField error={errors.pastExperience} />
+        <OfferNegotiatedField error={errors.negotiated} />
+        <OfferAdditionalNotesField error={errors.additionalNotes} />
+
+        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+
+        <Button.Group>
+          <Button.Submit>Add</Button.Submit>
+        </Button.Group>
+      </RemixForm>
     </Modal>
   );
 }

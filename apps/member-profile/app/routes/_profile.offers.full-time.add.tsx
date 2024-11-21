@@ -13,18 +13,28 @@ import {
 
 import { addFullTimeOffer, AddFullTimeOfferInput } from '@oyster/core/offers';
 import {
+  OfferAdditionalNotesField,
+  OfferBaseSalaryField,
+  OfferBenefitsField,
+  OfferCompanyField,
+  OfferLocationField,
+  OfferNegotiatedField,
+  OfferPastExperienceField,
+  OfferPerformanceBonusField,
+  OfferRelocationField,
+  OfferRoleField,
+  OfferSignOnBonusField,
+  OfferTotalStockField,
+} from '@oyster/core/offers/ui';
+import {
   Button,
   Divider,
-  DollarInput,
   Form,
   getErrors,
-  Input,
   Modal,
-  Textarea,
   validateForm,
 } from '@oyster/ui';
 
-import { CompanyCombobox } from '@/shared/components/company-combobox';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -79,6 +89,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function AddFullTimeOffer() {
   const [searchParams] = useSearchParams();
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Modal
@@ -92,131 +103,35 @@ export default function AddFullTimeOffer() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <AddFullTimeOfferForm />
+      <RemixForm className="form" method="post">
+        <OfferCompanyField error={errors.companyCrunchbaseId} />
+        <OfferRoleField error={errors.role} />
+        <OfferLocationField error={errors.location} />
+
+        <Divider my="1" />
+
+        <div className="grid grid-cols-2 gap-[inherit]">
+          <OfferBaseSalaryField error={errors.baseSalary} />
+          <OfferTotalStockField error={errors.totalStock} />
+          <OfferSignOnBonusField error={errors.signOnBonus} />
+          <OfferPerformanceBonusField error={errors.performanceBonus} />
+        </div>
+
+        <OfferRelocationField error={errors.relocation} />
+        <OfferBenefitsField error={errors.benefits} />
+
+        <Divider my="1" />
+
+        <OfferPastExperienceField error={errors.pastExperience} />
+        <OfferNegotiatedField error={errors.negotiated} />
+        <OfferAdditionalNotesField error={errors.additionalNotes} />
+
+        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+
+        <Button.Group>
+          <Button.Submit>Add</Button.Submit>
+        </Button.Group>
+      </RemixForm>
     </Modal>
-  );
-}
-
-function AddFullTimeOfferForm() {
-  const { error, errors } = getErrors(useActionData<typeof action>());
-
-  return (
-    <RemixForm className="form" method="post">
-      <Form.Field
-        error={errors.companyCrunchbaseId}
-        label="Company"
-        labelFor="companyCrunchbaseId"
-        required
-      >
-        <CompanyCombobox name="companyCrunchbaseId" />
-      </Form.Field>
-
-      <Form.Field error={errors.role} label="Role" labelFor="role" required>
-        <Input id="role" name="role" required />
-      </Form.Field>
-
-      <Form.Field
-        description='Please format the location as "City, State".'
-        error={errors.location}
-        label="Location"
-        labelFor="location"
-        required
-      >
-        <Input id="location" name="location" required />
-      </Form.Field>
-
-      <Divider my="1" />
-
-      <div className="grid grid-cols-2 gap-[inherit]">
-        <Form.Field
-          error={errors.baseSalary}
-          label="Base Salary"
-          labelFor="baseSalary"
-          required
-        >
-          <DollarInput id="baseSalary" name="baseSalary" required />
-        </Form.Field>
-
-        <Form.Field
-          error={errors.totalStock}
-          label="Total Stock"
-          labelFor="totalStock"
-        >
-          <DollarInput id="totalStock" name="totalStock" />
-        </Form.Field>
-
-        <Form.Field
-          description="The amount of money you will receive upfront."
-          error={errors.signOnBonus}
-          label="Sign-On Bonus"
-          labelFor="signOnBonus"
-        >
-          <DollarInput id="signOnBonus" name="signOnBonus" />
-        </Form.Field>
-
-        <Form.Field
-          description="The maximum performance/annual bonus you can receive."
-          error={errors.performanceBonus}
-          label="Performance Bonus"
-          labelFor="performanceBonus"
-        >
-          <DollarInput id="performanceBonus" name="performanceBonus" />
-        </Form.Field>
-      </div>
-
-      <Form.Field
-        description="Does this offer anything for relocation and/or housing?"
-        error={errors.relocation}
-        label="Relocation / Housing"
-        labelFor="relocation"
-      >
-        <Input id="relocation" name="relocation" />
-      </Form.Field>
-
-      <Form.Field
-        description="Does this job offer any benefits? (e.g. health insurance, 401k, etc.)"
-        error={errors.benefits}
-        label="Benefits"
-        labelFor="benefits"
-      >
-        <Textarea id="benefits" minRows={2} name="benefits" />
-      </Form.Field>
-
-      <Divider my="1" />
-
-      <Form.Field
-        description="How many years of experience and/or internships do you have?"
-        error={errors.pastExperience}
-        label="Past Experience"
-        labelFor="pastExperience"
-        required
-      >
-        <Input id="pastExperience" name="pastExperience" required />
-      </Form.Field>
-
-      <Form.Field
-        description="Did you negotiate, and if so, what was the result?"
-        error={errors.negotiated}
-        label="Negotiated"
-        labelFor="negotiated"
-      >
-        <Input id="negotiated" name="negotiated" />
-      </Form.Field>
-
-      <Form.Field
-        description="Any additional notes about this offer?"
-        error={errors.additionalNotes}
-        label="Additional Notes"
-        labelFor="additionalNotes"
-      >
-        <Textarea id="additionalNotes" minRows={2} name="additionalNotes" />
-      </Form.Field>
-
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
-
-      <Button.Group>
-        <Button.Submit>Add</Button.Submit>
-      </Button.Group>
-    </RemixForm>
   );
 }
