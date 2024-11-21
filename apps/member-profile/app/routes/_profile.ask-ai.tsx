@@ -205,7 +205,7 @@ function ChatbotForm() {
         </div>
       </div>
 
-      <div className="scrollbar scrollbar-thin scrollbar-thumb-primary scrollbar-track-green-100 flex items-center gap-2 overflow-auto pb-4">
+      <div className="flex items-center gap-2 overflow-auto pb-4 scrollbar scrollbar-thumb-primary">
         {[
           'What is Fam Friday?',
           'What is the Google interview process like?',
