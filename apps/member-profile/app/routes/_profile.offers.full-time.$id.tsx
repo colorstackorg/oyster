@@ -2,6 +2,7 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, useLoaderData, useSearchParams } from '@remix-run/react';
 import dayjs from 'dayjs';
 
+import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
 import { Divider, Modal } from '@oyster/ui';
 
@@ -20,8 +21,10 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
+  const memberId = user(session);
+
   const offer = await getFullTimeOfferDetails({
-    memberId: user(session),
+    memberId,
     offerId: params.id as string,
   });
 
@@ -31,6 +34,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       statusText: 'The full-time offer you are looking for does not exist.',
     });
   }
+
+  track({
+    event: 'Offer Viewed',
+    properties: { Company: offer.companyName as string, Type: 'Full-Time' },
+    request,
+    user: memberId,
+  });
 
   return json(offer);
 }
