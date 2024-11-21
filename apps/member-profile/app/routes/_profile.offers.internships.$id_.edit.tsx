@@ -61,7 +61,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'internshipOffers.relocation',
       'internshipOffers.role',
       'internshipOffers.pastExperience',
-      'internshipOffers.signOnBonus',
 
       (eb) => {
         return eb
@@ -167,7 +166,6 @@ function EditInternshipOfferForm() {
     pastExperience,
     relocation,
     role,
-    signOnBonus,
   } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
 
@@ -209,33 +207,19 @@ function EditInternshipOfferForm() {
 
       <Divider my="1" />
 
-      <div className="grid grid-cols-2 gap-[inherit]">
-        <Form.Field
-          error={errors.hourlyRate}
-          label="Hourly Rate"
-          labelFor="hourlyRate"
+      <Form.Field
+        error={errors.hourlyRate}
+        label="Hourly Rate"
+        labelFor="hourlyRate"
+        required
+      >
+        <DollarInput
+          defaultValue={hourlyRate}
+          id="hourlyRate"
+          name="hourlyRate"
           required
-        >
-          <DollarInput
-            defaultValue={hourlyRate}
-            id="hourlyRate"
-            name="hourlyRate"
-            required
-          />
-        </Form.Field>
-
-        <Form.Field
-          error={errors.signOnBonus}
-          label="Sign-On Bonus"
-          labelFor="signOnBonus"
-        >
-          <DollarInput
-            defaultValue={signOnBonus || undefined}
-            id="signOnBonus"
-            name="signOnBonus"
-          />
-        </Form.Field>
-      </div>
+        />
+      </Form.Field>
 
       <Form.Field
         description="Does this offer anything for relocation and/or housing?"

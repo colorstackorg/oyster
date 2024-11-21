@@ -61,7 +61,6 @@ async function getInternshipOfferDetails({
       'internshipOffers.postedAt',
       'internshipOffers.relocation',
       'internshipOffers.role',
-      'internshipOffers.signOnBonus',
       'internshipOffers.slackChannelId',
       'internshipOffers.slackMessageId',
 
@@ -101,7 +100,6 @@ async function getInternshipOfferDetails({
     hourlyRate: formatter.format(hourlyRate) + '/hr',
     monthlyRate: formatter.format(monthlyRate) + '/mo',
     postedAt: dayjs().to(_offer.postedAt),
-    signOnBonus: formatter.format(Number(_offer.signOnBonus) || 0),
   };
 
   return offer;
@@ -176,7 +174,6 @@ function InternshipOfferDetails() {
     negotiated,
     pastExperience,
     relocation,
-    signOnBonus,
   } = useLoaderData<typeof loader>();
 
   return (
@@ -191,7 +188,6 @@ function InternshipOfferDetails() {
       <OfferSection>
         <OfferDetail label="Hourly Rate" value={hourlyRate} />
         <OfferDetail label="Monthly Rate" value={monthlyRate} />
-        <OfferDetail label="Sign-On Bonus" value={signOnBonus} />
         <OfferDetail label="Relocation" value={relocation} />
         <OfferDetail label="Benefits" value={benefits} />
       </OfferSection>
