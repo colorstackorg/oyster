@@ -51,6 +51,7 @@ export const tailwindConfig = {
     },
   },
   plugins: [require('@tailwindcss/container-queries')],
+  plugins: [require('tailwindcss-scrollbar')],
 };
 
 export default tailwindConfig;

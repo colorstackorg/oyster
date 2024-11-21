@@ -37,5 +37,8 @@
     "npm": ">=7.0.0",
     "node": "^20.0.0"
   },
-  "packageManager": "yarn@1.22.10"
+  "packageManager": "yarn@1.22.10",
+  "dependencies": {
+    "tailwind-scrollbar": "^3.1.0"
+  }
 }
