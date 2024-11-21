@@ -9,6 +9,7 @@ import {
   useLoaderData,
   useSearchParams,
 } from '@remix-run/react';
+import dayjs from 'dayjs';
 import { DollarSign, MapPin } from 'react-feather';
 
 import { track } from '@oyster/core/mixpanel';
@@ -216,6 +217,7 @@ async function listInternshipOffers({
         'internshipOffers.hourlyRate',
         'internshipOffers.id',
         'internshipOffers.location',
+        'internshipOffers.postedAt',
         'internshipOffers.role',
       ])
       .orderBy('internshipOffers.postedAt', 'desc')
@@ -231,16 +233,19 @@ async function listInternshipOffers({
     style: 'currency',
   });
 
-  const offers = _offers.map((offer) => {
-    const hourlyRate = Number(offer.hourlyRate);
-    const monthlyRate = hourlyToMonthlyRate(hourlyRate);
+  const offers = _offers.map(
+    ({ hourlyRate: _hourlyRate, postedAt, ...offer }) => {
+      const hourlyRate = Number(_hourlyRate);
+      const monthlyRate = hourlyToMonthlyRate(hourlyRate);
 
-    return {
-      ...offer,
-      hourlyRate: formatter.format(hourlyRate) + '/hr',
-      monthlyRate: formatter.format(monthlyRate) + '/mo',
-    };
-  });
+      return {
+        ...offer,
+        hourlyRate: formatter.format(hourlyRate) + '/hr',
+        monthlyRate: formatter.format(monthlyRate) + '/mo',
+        postedAt: dayjs().to(postedAt),
+      };
+    }
+  );
 
   const averageHourlyRate = Number(aggregation.averageHourlyRate);
   const averageMonthlyRate = hourlyToMonthlyRate(averageHourlyRate);
@@ -340,8 +345,19 @@ function InternshipOffersTable() {
     },
     {
       displayName: 'Location',
-      size: '200',
+      size: '240',
       render: (offer) => offer.location,
+    },
+    {
+      displayName: '',
+      size: '80',
+      render: (offer) => {
+        return (
+          <Text as="span" color="gray-500" variant="sm">
+            {offer.postedAt} ago
+          </Text>
+        );
+      },
     },
   ];
 
