@@ -30,6 +30,7 @@ import { CompanyColumn, CompanyFilter } from '@/shared/components';
 import {
   OfferAggregation,
   OfferAggregationGroup,
+  TotalCompensationTooltip,
 } from '@/shared/components/offer';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -294,7 +295,11 @@ export default function FullTimeOffersPage() {
 
       <OfferAggregationGroup>
         <OfferAggregation
-          label="Average Total Compensation"
+          label={
+            <>
+              Average Total Compensation <TotalCompensationTooltip />
+            </>
+          }
           value={averageTotalCompensation}
         />
         <OfferAggregation

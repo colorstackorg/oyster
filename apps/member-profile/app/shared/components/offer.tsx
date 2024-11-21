@@ -100,7 +100,7 @@ export function OfferAggregationGroup({ children }: PropsWithChildren) {
 // Offer Detail
 
 type OfferDetailProps = {
-  label: string;
+  label: string | React.ReactNode;
   value: string | number | null | undefined;
 };
 
