@@ -130,24 +130,14 @@ function AddInternshipOfferForm() {
 
       <Divider my="1" />
 
-      <div className="grid grid-cols-2 gap-[inherit]">
-        <Form.Field
-          error={errors.hourlyRate}
-          label="Hourly Rate"
-          labelFor="hourlyRate"
-          required
-        >
-          <DollarInput id="hourlyRate" name="hourlyRate" required />
-        </Form.Field>
-
-        <Form.Field
-          error={errors.signOnBonus}
-          label="Sign-On Bonus"
-          labelFor="signOnBonus"
-        >
-          <DollarInput id="signOnBonus" name="signOnBonus" />
-        </Form.Field>
-      </div>
+      <Form.Field
+        error={errors.hourlyRate}
+        label="Hourly Rate"
+        labelFor="hourlyRate"
+        required
+      >
+        <DollarInput id="hourlyRate" name="hourlyRate" required />
+      </Form.Field>
 
       <Form.Field
         description="Does this offer anything for relocation and/or housing?"

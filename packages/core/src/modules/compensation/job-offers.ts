@@ -28,13 +28,13 @@ const BaseOffer = z.object({
   pastExperience: z.string().trim().min(1).nullable(),
   relocation: z.string().trim().min(1).nullable(),
   role: z.string().trim().min(1),
-  signOnBonus: z.coerce.number().nullable(),
 });
 
 const FullTimeOffer = BaseOffer.extend({
   baseSalary: z.coerce.number(),
   employmentType: z.literal('full_time'),
   performanceBonus: z.coerce.number().nullable(),
+  signOnBonus: z.coerce.number().nullable(),
   totalStock: z.coerce.number().nullable(),
 });
 
@@ -69,7 +69,7 @@ export const AddFullTimeOfferInput = FullTimeOffer.omit({
   performanceBonus: nullableField(FullTimeOffer.shape.performanceBonus),
   postedBy: z.string().trim().min(1),
   relocation: nullableField(BaseOffer.shape.relocation),
-  signOnBonus: nullableField(BaseOffer.shape.signOnBonus),
+  signOnBonus: nullableField(FullTimeOffer.shape.signOnBonus),
   totalStock: nullableField(FullTimeOffer.shape.totalStock),
 });
 
@@ -200,7 +200,6 @@ export const AddInternshipOfferInput = InternshipOffer.omit({
   pastExperience: nullableField(BaseOffer.shape.pastExperience),
   postedBy: z.string().trim().min(1),
   relocation: nullableField(BaseOffer.shape.relocation),
-  signOnBonus: nullableField(BaseOffer.shape.signOnBonus),
 });
 
 type AddInternshipOfferInput = z.infer<typeof AddInternshipOfferInput>;
@@ -230,7 +229,6 @@ export async function addInternshipOffer(
         postedBy: input.postedBy,
         relocation: input.relocation,
         role: input.role,
-        signOnBonus: input.signOnBonus,
         updatedAt: new Date(),
       })
       .returning([
@@ -275,7 +273,6 @@ export async function addInternshipOffer(
     >*Past Experience*: ${input.pastExperience}
     >*Hourly Rate*: ${format(input.hourlyRate)}
     >*Monthly Rate*: ${format(hourlyToMonthlyRate(input.hourlyRate))}
-    >*Sign-On Bonus*: ${input.signOnBonus ? format(input.signOnBonus) : 'N/A'}
     >*Housing/Relocation*: ${input.relocation || 'N/A'}
     >*Benefits*: ${input.benefits || 'N/A'}
     >*Negotiated*: ${input.negotiated || 'N/A'}
@@ -506,7 +503,6 @@ export async function editInternshipOffer(
         pastExperience: input.pastExperience,
         relocation: input.relocation,
         role: input.role,
-        signOnBonus: input.signOnBonus,
         updatedAt: new Date(),
       })
       .where('id', '=', offerId)
@@ -578,13 +574,13 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
   - "role": The role for the job offer. Expand any generic acronyms (ie:
     SWE -> Software Engineer, PM -> Product Manager), but do not expand acronyms
     that are program/company specific (ie: TEIP).
-  - "signOnBonus": The total sign-on bonus.
 
   For a full-time position, extract and calculate:
   - "baseSalary": The annual base salary of the position.
   - "performanceBonus": The annualized performance bonus (if a percentage of base
   salary, convert to annualized amount). If a range is given, use the highest
   amount.
+  - "signOnBonus": The total sign-on bonus.
   - "totalStock": The total equity/stock grant.
 
   For an internship, extract and/or calculate:
@@ -625,8 +621,7 @@ const SHARE_JOB_OFFER_PROMPT = dedent`
     "negotiated": string | null,
     "pastExperience": string | null,
     "relocation": string | null,
-    "role": string,
-    "signOnBonus": number | null
+    "role": string
   }
 
   Important Rules:
@@ -757,7 +752,6 @@ async function shareOffer({
         postedBy: slackMessage.studentId,
         relocation: offer.relocation,
         role: offer.role,
-        signOnBonus: offer.signOnBonus,
         slackChannelId,
         slackMessageId,
         updatedAt: new Date(),
@@ -778,6 +772,7 @@ async function shareOffer({
           .values({
             ...baseJobOffer,
             baseSalary: offer.baseSalary,
+            signOnBonus: offer.signOnBonus,
             performanceBonus: offer.performanceBonus,
             totalCompensation: calculateTotalCompensation({
               baseSalary: offer.baseSalary,
