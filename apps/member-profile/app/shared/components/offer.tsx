@@ -1,10 +1,40 @@
-import { Link, useSearchParams } from '@remix-run/react';
+import { Link, useLocation, useSearchParams } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
-import { Edit } from 'react-feather';
+import { Edit, Info, Plus } from 'react-feather';
 
-import { getIconButtonCn, Text } from '@oyster/ui';
+import { getButtonCn, getIconButtonCn, Text } from '@oyster/ui';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipText,
+  TooltipTrigger,
+} from '@oyster/ui/tooltip';
 
 import { Card } from '@/shared/components/card';
+import { Route } from '@/shared/constants';
+
+// Add Offer Button
+
+export function AddOfferButton() {
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  const pathname = location.pathname.includes('/internships')
+    ? Route['/offers/internships/add']
+    : Route['/offers/full-time/add'];
+
+  return (
+    <Link
+      className={getButtonCn({ size: 'small' })}
+      to={{
+        pathname,
+        search: searchParams.toString(),
+      }}
+    >
+      <Plus size={20} /> Add Offer
+    </Link>
+  );
+}
 
 // Edit Offer Button
 
@@ -46,7 +76,7 @@ export function EditOfferButton({
 // Offer Aggregation
 
 type OfferAggregationProps = {
-  label: string;
+  label: string | React.ReactNode;
   value: string | number | null | undefined;
 };
 
@@ -72,7 +102,7 @@ export function OfferAggregationGroup({ children }: PropsWithChildren) {
 // Offer Detail
 
 type OfferDetailProps = {
-  label: string;
+  label: string | React.ReactNode;
   value: string | number | null | undefined;
 };
 
@@ -114,5 +144,57 @@ export function OfferTitle({ postedAt, role }: OfferTitleProps) {
         Posted {postedAt} ago
       </Text>
     </div>
+  );
+}
+
+// Total Compensation Tooltip
+
+export function TotalCompensationTooltip() {
+  return (
+    <Tooltip>
+      <TooltipTrigger className="align-text-bottom">
+        <Info size={16} />
+      </TooltipTrigger>
+
+      <TooltipContent>
+        <div className="flex flex-col gap-2 p-1">
+          <TooltipText>We calculate total compensation as follows:</TooltipText>
+
+          <TooltipText>
+            <code>
+              TC = Base Salary + (Stock / 4) + Performance Bonus + (Sign-On
+              Bonus / 4)
+            </code>
+          </TooltipText>
+
+          <ul className="list-disc ps-6 text-white">
+            <li>
+              <TooltipText>
+                We assume a 4-year vesting period for stock.
+              </TooltipText>
+            </li>
+            <li>
+              <TooltipText>
+                We annualize the sign-on bonus over 4 years to ensure that TC is
+                the same throughout 4 years.
+              </TooltipText>
+            </li>
+            <li>
+              <TooltipText>
+                We do not include relocation bonuses, given that there's
+                typically optionality (ie: relocation stipend vs. corporate
+                housing).
+              </TooltipText>
+            </li>
+            <li>
+              <TooltipText>
+                If a range is specified for the performance/annual bonus, we
+                assume the upper bound.
+              </TooltipText>
+            </li>
+          </ul>
+        </div>
+      </TooltipContent>
+    </Tooltip>
   );
 }

@@ -3,6 +3,7 @@ import { Outlet } from '@remix-run/react';
 import { Dashboard } from '@oyster/ui';
 
 import { NavigationItem } from '@/shared/components/navigation';
+import { AddOfferButton } from '@/shared/components/offer';
 import { Route } from '@/shared/constants';
 
 export default function OffersLayout() {
@@ -22,6 +23,8 @@ export default function OffersLayout() {
             </NavigationItem>
           </ul>
         </nav>
+
+        <AddOfferButton />
       </Dashboard.Header>
 
       <Outlet />

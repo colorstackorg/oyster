@@ -11,6 +11,7 @@ import {
   OfferDetail,
   OfferSection,
   OfferTitle,
+  TotalCompensationTooltip,
 } from '@/shared/components/offer';
 import { ViewInSlackButton } from '@/shared/components/slack-message';
 import { Route } from '@/shared/constants';
@@ -191,7 +192,14 @@ function FullTimeOfferDetails() {
       <Divider />
 
       <OfferSection>
-        <OfferDetail label="Total Compensation" value={totalCompensation} />
+        <OfferDetail
+          label={
+            <>
+              Total Compensation <TotalCompensationTooltip />
+            </>
+          }
+          value={totalCompensation}
+        />
         <OfferDetail label="Base Salary" value={baseSalary} />
         <OfferDetail label="Total Stock" value={totalStock} />
         <OfferDetail label="Stock (/yr)" value={annualStock} />
