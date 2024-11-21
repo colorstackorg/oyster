@@ -36,6 +36,7 @@
     "./mixpanel": "./src/modules/mixpanel.ts",
     "./object-storage": "./src/modules/object-storage/index.ts",
     "./offers": "./src/modules/compensation/offers.ts",
+    "./offers/ui": "./src/modules/compensation/offers.ui.tsx",
     "./opportunities": "./src/modules/opportunity/opportunity.ts",
     "./referrals": "./src/modules/referral/referral.core.ts",
     "./referrals/ui": "./src/modules/referral/referral.ui.tsx",

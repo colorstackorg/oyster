@@ -6,8 +6,6 @@ import {
 } from '@remix-run/node';
 import {
   generatePath,
-  Link,
-  Form as RemixForm,
   useActionData,
   useLoaderData,
   useSearchParams,
@@ -17,21 +15,10 @@ import {
   editInternshipOffer,
   EditInternshipOfferInput,
 } from '@oyster/core/offers';
+import { EditInternshipOfferForm } from '@oyster/core/offers/ui';
 import { db } from '@oyster/db';
-import {
-  Button,
-  Divider,
-  DollarInput,
-  Form,
-  getButtonCn,
-  getErrors,
-  Input,
-  Modal,
-  Textarea,
-  validateForm,
-} from '@oyster/ui';
+import { getErrors, Modal, validateForm } from '@oyster/ui';
 
-import { CompanyCombobox } from '@/shared/components/company-combobox';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -134,6 +121,19 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 export default function EditInternshipOffer() {
+  const {
+    additionalNotes,
+    benefits,
+    companyCrunchbaseId,
+    companyName,
+    hourlyRate,
+    location,
+    negotiated,
+    pastExperience,
+    relocation,
+    role,
+  } = useLoaderData<typeof loader>();
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const [searchParams] = useSearchParams();
 
   return (
@@ -148,162 +148,22 @@ export default function EditInternshipOffer() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <EditInternshipOfferForm />
+      <EditInternshipOfferForm
+        error={error}
+        errors={errors}
+        offer={{
+          additionalNotes,
+          benefits,
+          companyCrunchbaseId: companyCrunchbaseId || '',
+          companyName: companyName || '',
+          hourlyRate: Number(hourlyRate),
+          location,
+          negotiated,
+          pastExperience,
+          relocation,
+          role: role || '',
+        }}
+      />
     </Modal>
-  );
-}
-
-function EditInternshipOfferForm() {
-  const {
-    additionalNotes,
-    benefits,
-    companyCrunchbaseId,
-    companyName,
-    hourlyRate,
-    id,
-    location,
-    negotiated,
-    pastExperience,
-    relocation,
-    role,
-  } = useLoaderData<typeof loader>();
-  const { error, errors } = getErrors(useActionData<typeof action>());
-
-  return (
-    <RemixForm className="form" method="post">
-      <Form.Field
-        error={errors.companyCrunchbaseId}
-        label="Company"
-        labelFor="companyCrunchbaseId"
-        required
-      >
-        <CompanyCombobox
-          defaultValue={{
-            crunchbaseId: companyCrunchbaseId || '',
-            name: companyName || '',
-          }}
-          name="companyCrunchbaseId"
-        />
-      </Form.Field>
-
-      <Form.Field error={errors.role} label="Role" labelFor="role" required>
-        <Input
-          defaultValue={role || undefined}
-          id="role"
-          name="role"
-          required
-        />
-      </Form.Field>
-
-      <Form.Field
-        description='Please format the location as "City, State".'
-        error={errors.location}
-        label="Location"
-        labelFor="location"
-        required
-      >
-        <Input defaultValue={location} id="location" name="location" required />
-      </Form.Field>
-
-      <Divider my="1" />
-
-      <Form.Field
-        error={errors.hourlyRate}
-        label="Hourly Rate"
-        labelFor="hourlyRate"
-        required
-      >
-        <DollarInput
-          defaultValue={hourlyRate}
-          id="hourlyRate"
-          name="hourlyRate"
-          required
-        />
-      </Form.Field>
-
-      <Form.Field
-        description="Does this offer anything for relocation and/or housing?"
-        error={errors.relocation}
-        label="Relocation / Housing"
-        labelFor="relocation"
-      >
-        <Input
-          defaultValue={relocation || undefined}
-          id="relocation"
-          name="relocation"
-        />
-      </Form.Field>
-
-      <Form.Field
-        description="Does this job offer any benefits? (e.g. health insurance, 401k, etc.)"
-        error={errors.benefits}
-        label="Benefits"
-        labelFor="benefits"
-      >
-        <Textarea
-          defaultValue={benefits || undefined}
-          id="benefits"
-          minRows={2}
-          name="benefits"
-        />
-      </Form.Field>
-
-      <Divider my="1" />
-
-      <Form.Field
-        description="How many years of experience and/or internships do you have?"
-        error={errors.pastExperience}
-        label="Past Experience"
-        labelFor="pastExperience"
-        required
-      >
-        <Input
-          defaultValue={pastExperience || undefined}
-          id="pastExperience"
-          name="pastExperience"
-          required
-        />
-      </Form.Field>
-
-      <Form.Field
-        description="Did you negotiate, and if so, what was the result?"
-        error={errors.negotiated}
-        label="Negotiated"
-        labelFor="negotiated"
-      >
-        <Input
-          defaultValue={negotiated || undefined}
-          id="negotiated"
-          name="negotiated"
-        />
-      </Form.Field>
-
-      <Form.Field
-        description="Any additional notes about this offer?"
-        error={errors.additionalNotes}
-        label="Additional Notes"
-        labelFor="additionalNotes"
-      >
-        <Textarea
-          defaultValue={additionalNotes || undefined}
-          id="additionalNotes"
-          minRows={2}
-          name="additionalNotes"
-        />
-      </Form.Field>
-
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
-
-      <Button.Group flexDirection="row-reverse" spacing="between">
-        <Button.Submit>Edit</Button.Submit>
-
-        <Link
-          className={getButtonCn({ color: 'error', variant: 'secondary' })}
-          to={generatePath(Route['/offers/internships/:id/delete'], { id })}
-        >
-          Delete
-        </Link>
-      </Button.Group>
-    </RemixForm>
   );
 }
