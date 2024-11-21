@@ -153,7 +153,7 @@ export async function addFullTimeOffer(
   });
 
   const message = dedent`
-    A new <${ENV.STUDENT_PROFILE_URL}/offers/full-time/${offer.id}|*FT offer*> is in! 🚀
+    A new <${ENV.STUDENT_PROFILE_URL}/offers/full-time/${offer.id}|*full-time offer*> is in! 🚀
 
     >*Role/Job Title*: ${input.role}
     >*Company*: ${offer.companyName}
