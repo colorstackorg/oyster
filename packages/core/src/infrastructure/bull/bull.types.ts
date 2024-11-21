@@ -31,10 +31,10 @@ export const BullQueue = {
   EVENT: 'event',
   FEED: 'feed',
   GAMIFICATION: 'gamification',
-  JOB_OFFER: 'job_offer',
   MAILCHIMP: 'mailchimp',
   MEMBER_EMAIL: 'member_email',
   NOTIFICATION: 'notification',
+  OFFER: 'offer',
   ONBOARDING_SESSION: 'onboarding_session',
   ONE_TIME_CODE: 'one_time_code',
   OPPORTUNITY: 'opportunity',
@@ -266,23 +266,6 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
   }),
 ]);
 
-export const JobOfferBullJob = z.discriminatedUnion('name', [
-  z.object({
-    name: z.literal('job_offer.backfill'),
-    data: z.object({
-      limit: z.coerce.number().optional().default(5),
-    }),
-  }),
-  z.object({
-    name: z.literal('job_offer.share'),
-    data: z.object({
-      sendNotification: z.boolean().optional(),
-      slackChannelId: z.string().trim().min(1),
-      slackMessageId: z.string().trim().min(1),
-    }),
-  }),
-]);
-
 export const MailchimpBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('mailchimp.add'),
@@ -353,6 +336,23 @@ export const NotificationBullJob = z.discriminatedUnion('name', [
         workspace: z.literal('internal'),
       }),
     ]),
+  }),
+]);
+
+export const OfferBullJob = z.discriminatedUnion('name', [
+  z.object({
+    name: z.literal('offer.backfill'),
+    data: z.object({
+      limit: z.coerce.number().optional().default(5),
+    }),
+  }),
+  z.object({
+    name: z.literal('offer.share'),
+    data: z.object({
+      sendNotification: z.boolean().optional(),
+      slackChannelId: z.string().trim().min(1),
+      slackMessageId: z.string().trim().min(1),
+    }),
   }),
 ]);
 
@@ -626,10 +626,10 @@ export const BullJob = z.union([
   EventBullJob,
   FeedBullJob,
   GamificationBullJob,
-  JobOfferBullJob,
   MailchimpBullJob,
   MemberEmailBullJob,
   NotificationBullJob,
+  OfferBullJob,
   OnboardingSessionBullJob,
   OneTimeCodeBullJob,
   OpportunityBullJob,

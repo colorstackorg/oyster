@@ -30,6 +30,7 @@ import { CompanyColumn, CompanyFilter } from '@/shared/components';
 import {
   OfferAggregation,
   OfferAggregationGroup,
+  TotalCompensationTooltip,
 } from '@/shared/components/offer';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -113,7 +114,7 @@ async function listAllCompanies() {
     .where((eb) => {
       return eb.exists(() => {
         return eb
-          .selectFrom('fullTimeJobOffers as fullTimeOffers')
+          .selectFrom('fullTimeOffers')
           .whereRef('fullTimeOffers.companyId', '=', 'companies.id');
       });
     })
@@ -125,7 +126,7 @@ async function listAllCompanies() {
 
 async function listAllLocations() {
   const rows = await db
-    .selectFrom('fullTimeJobOffers')
+    .selectFrom('fullTimeOffers')
     .select('location')
     .distinct()
     .where('location', 'is not', null)
@@ -155,7 +156,7 @@ async function listFullTimeOffers({
   totalCompensation,
 }: ListFullTimeOffersInput) {
   const query = db
-    .selectFrom('fullTimeJobOffers as fullTimeOffers')
+    .selectFrom('fullTimeOffers')
     .leftJoin('companies', 'companies.id', 'fullTimeOffers.companyId')
     .$if(!!company, (qb) => {
       return qb.where((eb) => {
@@ -294,7 +295,11 @@ export default function FullTimeOffersPage() {
 
       <OfferAggregationGroup>
         <OfferAggregation
-          label="Average Total Compensation"
+          label={
+            <>
+              Average Total Compensation <TotalCompensationTooltip />
+            </>
+          }
           value={averageTotalCompensation}
         />
         <OfferAggregation

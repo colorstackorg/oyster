@@ -2,7 +2,7 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, useLoaderData, useSearchParams } from '@remix-run/react';
 import dayjs from 'dayjs';
 
-import { hourlyToMonthlyRate } from '@oyster/core/job-offers';
+import { hourlyToMonthlyRate } from '@oyster/core/offers';
 import { db } from '@oyster/db';
 import { Divider, Modal } from '@oyster/ui';
 
@@ -45,7 +45,7 @@ async function getInternshipOfferDetails({
   offerId,
 }: GetInternshipOfferDetailsInput) {
   const _offer = await db
-    .selectFrom('internshipJobOffers as internshipOffers')
+    .selectFrom('internshipOffers')
     .leftJoin('companies', 'companies.id', 'internshipOffers.companyId')
     .select([
       'companies.id as companyId',
@@ -61,7 +61,6 @@ async function getInternshipOfferDetails({
       'internshipOffers.postedAt',
       'internshipOffers.relocation',
       'internshipOffers.role',
-      'internshipOffers.signOnBonus',
       'internshipOffers.slackChannelId',
       'internshipOffers.slackMessageId',
 
@@ -101,7 +100,6 @@ async function getInternshipOfferDetails({
     hourlyRate: formatter.format(hourlyRate) + '/hr',
     monthlyRate: formatter.format(monthlyRate) + '/mo',
     postedAt: dayjs().to(_offer.postedAt),
-    signOnBonus: formatter.format(Number(_offer.signOnBonus) || 0),
   };
 
   return offer;
@@ -138,7 +136,7 @@ export default function InternshipOfferPage() {
             companyLogo={companyLogo}
             companyName={companyName}
           />
-          <OfferTitle postedAt={postedAt} role={role!} />
+          <OfferTitle postedAt={postedAt} role={role} />
         </div>
 
         <div className="flex items-center gap-[inherit]">
@@ -176,7 +174,6 @@ function InternshipOfferDetails() {
     negotiated,
     pastExperience,
     relocation,
-    signOnBonus,
   } = useLoaderData<typeof loader>();
 
   return (
@@ -191,7 +188,6 @@ function InternshipOfferDetails() {
       <OfferSection>
         <OfferDetail label="Hourly Rate" value={hourlyRate} />
         <OfferDetail label="Monthly Rate" value={monthlyRate} />
-        <OfferDetail label="Sign-On Bonus" value={signOnBonus} />
         <OfferDetail label="Relocation" value={relocation} />
         <OfferDetail label="Benefits" value={benefits} />
       </OfferSection>

@@ -16,22 +16,29 @@ import {
 import {
   editInternshipOffer,
   EditInternshipOfferInput,
-} from '@oyster/core/job-offers';
+} from '@oyster/core/offers';
+import {
+  OfferAdditionalNotesField,
+  OfferBenefitsField,
+  OfferCompanyField,
+  OfferHourlyRateField,
+  OfferLocationField,
+  OfferNegotiatedField,
+  OfferPastExperienceField,
+  OfferRelocationField,
+  OfferRoleField,
+} from '@oyster/core/offers/ui';
 import { db } from '@oyster/db';
 import {
   Button,
   Divider,
-  DollarInput,
   Form,
   getButtonCn,
   getErrors,
-  Input,
   Modal,
-  Textarea,
   validateForm,
 } from '@oyster/ui';
 
-import { CompanyCombobox } from '@/shared/components/company-combobox';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -46,7 +53,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const memberId = user(session);
 
   const offer = await db
-    .selectFrom('internshipJobOffers as internshipOffers')
+    .selectFrom('internshipOffers')
     .leftJoin('companies', 'companies.id', 'internshipOffers.companyId')
     .select([
       'companies.crunchbaseId as companyCrunchbaseId',
@@ -61,7 +68,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'internshipOffers.relocation',
       'internshipOffers.role',
       'internshipOffers.pastExperience',
-      'internshipOffers.signOnBonus',
 
       (eb) => {
         return eb
@@ -135,6 +141,20 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 export default function EditInternshipOffer() {
+  const {
+    additionalNotes,
+    benefits,
+    companyCrunchbaseId,
+    companyName,
+    hourlyRate,
+    id,
+    location,
+    negotiated,
+    pastExperience,
+    relocation,
+    role,
+  } = useLoaderData<typeof loader>();
+  const { error, errors } = getErrors(useActionData<typeof action>());
   const [searchParams] = useSearchParams();
 
   return (
@@ -149,177 +169,60 @@ export default function EditInternshipOffer() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <EditInternshipOfferForm />
-    </Modal>
-  );
-}
-
-function EditInternshipOfferForm() {
-  const {
-    additionalNotes,
-    benefits,
-    companyCrunchbaseId,
-    companyName,
-    hourlyRate,
-    id,
-    location,
-    negotiated,
-    pastExperience,
-    relocation,
-    role,
-    signOnBonus,
-  } = useLoaderData<typeof loader>();
-  const { error, errors } = getErrors(useActionData<typeof action>());
-
-  return (
-    <RemixForm className="form" method="post">
-      <Form.Field
-        error={errors.companyCrunchbaseId}
-        label="Company"
-        labelFor="companyCrunchbaseId"
-        required
-      >
-        <CompanyCombobox
+      <RemixForm className="form" method="post">
+        <OfferCompanyField
           defaultValue={{
             crunchbaseId: companyCrunchbaseId || '',
             name: companyName || '',
           }}
-          name="companyCrunchbaseId"
+          error={errors.companyCrunchbaseId}
         />
-      </Form.Field>
+        <OfferRoleField defaultValue={role} error={errors.role} />
+        <OfferLocationField defaultValue={location} error={errors.location} />
 
-      <Form.Field error={errors.role} label="Role" labelFor="role" required>
-        <Input
-          defaultValue={role || undefined}
-          id="role"
-          name="role"
-          required
-        />
-      </Form.Field>
+        <Divider my="1" />
 
-      <Form.Field
-        description='Please format the location as "City, State".'
-        error={errors.location}
-        label="Location"
-        labelFor="location"
-        required
-      >
-        <Input defaultValue={location} id="location" name="location" required />
-      </Form.Field>
-
-      <Divider my="1" />
-
-      <div className="grid grid-cols-2 gap-[inherit]">
-        <Form.Field
+        <OfferHourlyRateField
+          defaultValue={hourlyRate}
           error={errors.hourlyRate}
-          label="Hourly Rate"
-          labelFor="hourlyRate"
-          required
-        >
-          <DollarInput
-            defaultValue={hourlyRate}
-            id="hourlyRate"
-            name="hourlyRate"
-            required
-          />
-        </Form.Field>
-
-        <Form.Field
-          error={errors.signOnBonus}
-          label="Sign-On Bonus"
-          labelFor="signOnBonus"
-        >
-          <DollarInput
-            defaultValue={signOnBonus || undefined}
-            id="signOnBonus"
-            name="signOnBonus"
-          />
-        </Form.Field>
-      </div>
-
-      <Form.Field
-        description="Does this offer anything for relocation and/or housing?"
-        error={errors.relocation}
-        label="Relocation / Housing"
-        labelFor="relocation"
-      >
-        <Input
+        />
+        <OfferRelocationField
           defaultValue={relocation || undefined}
-          id="relocation"
-          name="relocation"
+          error={errors.relocation}
         />
-      </Form.Field>
-
-      <Form.Field
-        description="Does this job offer any benefits? (e.g. health insurance, 401k, etc.)"
-        error={errors.benefits}
-        label="Benefits"
-        labelFor="benefits"
-      >
-        <Textarea
+        <OfferBenefitsField
           defaultValue={benefits || undefined}
-          id="benefits"
-          minRows={2}
-          name="benefits"
+          error={errors.benefits}
         />
-      </Form.Field>
 
-      <Divider my="1" />
+        <Divider my="1" />
 
-      <Form.Field
-        description="How many year of experience and/or internships do you have?"
-        error={errors.pastExperience}
-        label="Past Experience"
-        labelFor="pastExperience"
-        required
-      >
-        <Input
+        <OfferPastExperienceField
           defaultValue={pastExperience || undefined}
-          id="pastExperience"
-          name="pastExperience"
-          required
+          error={errors.pastExperience}
         />
-      </Form.Field>
-
-      <Form.Field
-        description="Did you negotiate, and if so, what was the result?"
-        error={errors.negotiated}
-        label="Negotiated"
-        labelFor="negotiated"
-      >
-        <Input
+        <OfferNegotiatedField
           defaultValue={negotiated || undefined}
-          id="negotiated"
-          name="negotiated"
+          error={errors.negotiated}
         />
-      </Form.Field>
-
-      <Form.Field
-        description="Any additional notes about this offer?"
-        error={errors.additionalNotes}
-        label="Additional Notes"
-        labelFor="additionalNotes"
-      >
-        <Textarea
+        <OfferAdditionalNotesField
           defaultValue={additionalNotes || undefined}
-          id="additionalNotes"
-          minRows={2}
-          name="additionalNotes"
+          error={errors.additionalNotes}
         />
-      </Form.Field>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
-      <Button.Group flexDirection="row-reverse" spacing="between">
-        <Button.Submit>Edit</Button.Submit>
+        <Button.Group flexDirection="row-reverse" spacing="between">
+          <Button.Submit>Edit</Button.Submit>
 
-        <Link
-          className={getButtonCn({ color: 'error', variant: 'secondary' })}
-          to={generatePath(Route['/offers/internships/:id/delete'], { id })}
-        >
-          Delete
-        </Link>
-      </Button.Group>
-    </RemixForm>
+          <Link
+            className={getButtonCn({ color: 'error', variant: 'secondary' })}
+            to={generatePath(Route['/offers/internships/:id/delete'], { id })}
+          >
+            Delete
+          </Link>
+        </Button.Group>
+      </RemixForm>
+    </Modal>
   );
 }
