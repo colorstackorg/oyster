@@ -9,6 +9,7 @@ import {
   useLoaderData,
   useSearchParams,
 } from '@remix-run/react';
+import dayjs from 'dayjs';
 import { DollarSign, MapPin } from 'react-feather';
 
 import { track } from '@oyster/core/mixpanel';
@@ -224,6 +225,7 @@ async function listFullTimeOffers({
         'fullTimeOffers.id',
         'fullTimeOffers.location',
         'fullTimeOffers.performanceBonus',
+        'fullTimeOffers.postedAt',
         'fullTimeOffers.role',
         'fullTimeOffers.signOnBonus',
         'fullTimeOffers.totalCompensation',
@@ -241,19 +243,21 @@ async function listFullTimeOffers({
     style: 'currency',
   });
 
-  const offers = _offers.map((offer) => {
-    const annualBonus =
-      (Number(offer.performanceBonus) || 0) +
-      (Number(offer.signOnBonus) || 0) / 4;
+  const offers = _offers.map(
+    ({ performanceBonus, postedAt, signOnBonus, totalStock, ...offer }) => {
+      const annualBonus =
+        (Number(performanceBonus) || 0) + (Number(signOnBonus) || 0) / 4;
 
-    return {
-      ...offer,
-      annualBonus: formatter.format(annualBonus),
-      annualStock: formatter.format((Number(offer.totalStock) || 0) / 4),
-      baseSalary: formatter.format(Number(offer.baseSalary)),
-      totalCompensation: formatter.format(Number(offer.totalCompensation)),
-    };
-  });
+      return {
+        ...offer,
+        annualBonus: formatter.format(annualBonus),
+        annualStock: formatter.format((Number(totalStock) || 0) / 4),
+        baseSalary: formatter.format(Number(offer.baseSalary)),
+        postedAt: dayjs().to(postedAt),
+        totalCompensation: formatter.format(Number(offer.totalCompensation)),
+      };
+    }
+  );
 
   const averageBaseSalary = Number(aggregation.averageBaseSalary);
   const averageTotalCompensation = Number(aggregation.averageTotalCompensation);
@@ -367,8 +371,19 @@ function FullTimeOffersTable() {
     },
     {
       displayName: 'Location',
-      size: '200',
+      size: '240',
       render: (offer) => offer.location,
+    },
+    {
+      displayName: '',
+      size: '80',
+      render: (offer) => {
+        return (
+          <Text as="span" color="gray-500" variant="sm">
+            {offer.postedAt} ago
+          </Text>
+        );
+      },
     },
   ];
 
