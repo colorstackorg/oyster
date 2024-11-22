@@ -446,7 +446,7 @@ function TotalCompensationFilter() {
         Total Compensation
       </FilterButton>
 
-      <FilterPopover>
+      <FilterPopover height="max">
         <ul className="overflow-auto">
           {options.map((option) => {
             const checked = selectedValues.some(({ value }) => {
