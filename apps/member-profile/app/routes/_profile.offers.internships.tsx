@@ -397,7 +397,7 @@ function HourlyRateFilter() {
   const ranges = searchParams.getAll('hourlyRate');
 
   const options: FilterValue[] = [
-    { color: 'cyan-100', label: '< $20/hr', value: '0-20' },
+    { color: 'cyan-100', label: '$0-20/hr', value: '0-20' },
     { color: 'orange-100', label: '$20-30/hr', value: '20-30' },
     { color: 'amber-100', label: '$30-40/hr', value: '30-40' },
     { color: 'pink-100', label: '$40-50/hr', value: '40-50' },

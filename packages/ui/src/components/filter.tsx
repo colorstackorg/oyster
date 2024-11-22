@@ -155,7 +155,7 @@ export function FilterPopover({ children }: PropsWithChildren) {
 
   return (
     <div
-      className="absolute top-full z-10 mt-1 flex max-h-60 w-max max-w-[300px] flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2"
+      className="absolute top-full z-10 mt-1 flex w-max max-w-[300px] flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2"
       id="popover"
     >
       {children}

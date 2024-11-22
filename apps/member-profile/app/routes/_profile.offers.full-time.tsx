@@ -423,14 +423,13 @@ function TotalCompensationFilter() {
   const ranges = searchParams.getAll('totalCompensation');
 
   const options: FilterValue[] = [
-    { color: 'cyan-100', label: '< $100K', value: '0-100000' },
+    { color: 'cyan-100', label: '$0-100K', value: '0-100000' },
     { color: 'orange-100', label: '$100-125K', value: '100000-125000' },
     { color: 'amber-100', label: '$125-150K', value: '125000-150000' },
     { color: 'pink-100', label: '$150-175K', value: '150000-175000' },
     { color: 'green-100', label: '$175-200K', value: '175000-200000' },
     { color: 'lime-100', label: '$200-250K', value: '200000-250000' },
-    { color: 'purple-100', label: '$250-300K', value: '250000-300000' },
-    { color: 'red-100', label: '> $300K', value: '300000-1000000' },
+    { color: 'purple-100', label: '$250K+', value: '250000-1000000' },
   ];
 
   const selectedValues = options.filter((option) => {
