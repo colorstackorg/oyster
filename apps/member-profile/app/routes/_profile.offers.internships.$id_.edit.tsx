@@ -213,7 +213,7 @@ export default function EditInternshipOffer() {
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
         <Button.Group flexDirection="row-reverse" spacing="between">
-          <Button.Submit>Edit</Button.Submit>
+          <Button.Submit>Save</Button.Submit>
 
           <Link
             className={getButtonCn({ color: 'error', variant: 'secondary' })}
