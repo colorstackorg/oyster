@@ -330,55 +330,56 @@ function ResourceActionGroup({
       )}
       {editable ? (
         <li>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Dropdown.Container onClose={() => setOpen(false)}>
-                <IconButton
-                  backgroundColorOnHover="gray-200"
-                  icon={<MoreHorizontal />}
+          <Dropdown.Container onClose={() => setOpen(false)}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  className={buttonClassName}
                   onClick={onClick}
-                />
+                  type="button"
+                >
+                  <MoreHorizontal />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <TooltipText>More Options</TooltipText>
+              </TooltipContent>
+            </Tooltip>
 
-                {open && (
-                  <Dropdown>
-                    <Dropdown.List>
-                      <Dropdown.Item>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(shareableUri);
-                            toast({ message: 'Copied URL to clipboard!' });
-                            trackFromClient({
-                              event: 'Resource Link Copied',
-                              properties: undefined,
-                            });
-                          }}
-                          type="button"
-                        >
-                          <Share /> Copy Link
-                        </button>
-                      </Dropdown.Item>
-                      <Dropdown.Item>
-                        <Link
-                          to={{
-                            pathname: generatePath(
-                              Route['/resources/:id/delete'],
-                              { id }
-                            ),
-                            search: searchParams.toString(),
-                          }}
-                        >
-                          <Trash2 /> Delete
-                        </Link>
-                      </Dropdown.Item>
-                    </Dropdown.List>
-                  </Dropdown>
-                )}
-              </Dropdown.Container>
-            </TooltipTrigger>
-            <TooltipContent>
-              <TooltipText>More Options</TooltipText>
-            </TooltipContent>
-          </Tooltip>
+            {open && (
+              <Dropdown>
+                <Dropdown.List>
+                  <Dropdown.Item>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(shareableUri);
+                        toast({ message: 'Copied URL to clipboard!' });
+                        trackFromClient({
+                          event: 'Resource Link Copied',
+                          properties: undefined,
+                        });
+                      }}
+                      type="button"
+                    >
+                      <Share /> Copy Link
+                    </button>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    <Link
+                      to={{
+                        pathname: generatePath(Route['/resources/:id/delete'], {
+                          id,
+                        }),
+                        search: searchParams.toString(),
+                      }}
+                    >
+                      <Trash2 /> Delete
+                    </Link>
+                  </Dropdown.Item>
+                </Dropdown.List>
+              </Dropdown>
+            )}
+          </Dropdown.Container>
         </li>
       ) : (
         <li>
