@@ -361,7 +361,7 @@ function ResourceActionGroup({
                       }}
                       type="button"
                     >
-                      <Share /> Copy Link
+                      <Share /> Copy Resource Link
                     </button>
                   </Dropdown.Item>
                   <Dropdown.Item>
