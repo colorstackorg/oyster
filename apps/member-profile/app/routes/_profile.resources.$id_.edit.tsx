@@ -9,6 +9,8 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
+  generatePath,
+  Link,
   Form as RemixForm,
   useActionData,
   useLoaderData,
@@ -21,6 +23,7 @@ import {
   Button,
   Divider,
   Form,
+  getButtonCn,
   getErrors,
   Modal,
   validateForm,
@@ -50,6 +53,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'resources.link',
       'resources.title',
       'resources.type',
+      'resources.id',
     ],
     where: { id: params.id as string },
   });
@@ -170,8 +174,17 @@ export default function EditResourceModal() {
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
-        <Button.Group>
+        <Button.Group flexDirection="row-reverse" spacing="between">
           <Button.Submit>Save</Button.Submit>
+
+          <Link
+            className={getButtonCn({ color: 'error', variant: 'secondary' })}
+            to={generatePath(Route['/resources/:id/delete'], {
+              id: resource.id,
+            })}
+          >
+            Delete
+          </Link>
         </Button.Group>
       </RemixForm>
     </Modal>

@@ -4,24 +4,15 @@ import {
   useFetcher,
   useSearchParams,
 } from '@remix-run/react';
-import { type PropsWithChildren, useState } from 'react';
-import {
-  ArrowUp,
-  BarChart2,
-  Edit,
-  MoreHorizontal,
-  Share,
-  Trash2,
-} from 'react-feather';
+import { type PropsWithChildren } from 'react';
+import { ArrowUp, BarChart2, Edit, Share } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import { ResourceType } from '@oyster/core/resources';
 import {
   cx,
-  Dropdown,
   getIconButtonCn,
   getTextCn,
-  IconButton,
   Pill,
   ProfilePicture,
   Text,
@@ -293,7 +284,6 @@ function ResourceActionGroup({
   shareableUri,
 }: Pick<ResourceProps, 'editable' | 'id' | 'shareableUri'>) {
   const [searchParams] = useSearchParams();
-  const [open, setOpen] = useState<boolean>(false);
   const toast = useToast();
   const { trackFromClient } = useMixpanelTracker();
 
@@ -301,10 +291,6 @@ function ResourceActionGroup({
     backgroundColor: 'gray-100',
     backgroundColorOnHover: 'gray-200',
   });
-
-  function onClick() {
-    setOpen(true);
-  }
 
   return (
     <ul className="flex items-center gap-1">
@@ -328,84 +314,30 @@ function ResourceActionGroup({
           </Tooltip>
         </li>
       )}
-      {editable ? (
-        <li>
-          <Dropdown.Container onClose={() => setOpen(false)}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  className={buttonClassName}
-                  onClick={onClick}
-                  type="button"
-                >
-                  <MoreHorizontal />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <TooltipText>More Options</TooltipText>
-              </TooltipContent>
-            </Tooltip>
 
-            {open && (
-              <Dropdown>
-                <Dropdown.List>
-                  <Dropdown.Item>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(shareableUri);
-                        toast({ message: 'Copied URL to clipboard!' });
-                        trackFromClient({
-                          event: 'Resource Link Copied',
-                          properties: undefined,
-                        });
-                      }}
-                      type="button"
-                    >
-                      <Share /> Copy Resource Link
-                    </button>
-                  </Dropdown.Item>
-                  <Dropdown.Item>
-                    <Link
-                      to={{
-                        pathname: generatePath(Route['/resources/:id/delete'], {
-                          id,
-                        }),
-                        search: searchParams.toString(),
-                      }}
-                    >
-                      <Trash2 /> Delete
-                    </Link>
-                  </Dropdown.Item>
-                </Dropdown.List>
-              </Dropdown>
-            )}
-          </Dropdown.Container>
-        </li>
-      ) : (
-        <li>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                className={buttonClassName}
-                onClick={() => {
-                  navigator.clipboard.writeText(shareableUri);
-                  toast({ message: 'Copied URL to clipboard!' });
-                  trackFromClient({
-                    event: 'Resource Link Copied',
-                    properties: undefined,
-                  });
-                }}
-                type="button"
-              >
-                <Share />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <TooltipText>Copy Resource Link</TooltipText>
-            </TooltipContent>
-          </Tooltip>
-        </li>
-      )}
+      <li>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              className={buttonClassName}
+              onClick={() => {
+                navigator.clipboard.writeText(shareableUri);
+                toast({ message: 'Copied URL to clipboard!' });
+                trackFromClient({
+                  event: 'Resource Link Copied',
+                  properties: undefined,
+                });
+              }}
+              type="button"
+            >
+              <Share />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <TooltipText>Copy Resource Link</TooltipText>
+          </TooltipContent>
+        </Tooltip>
+      </li>
     </ul>
   );
 }
