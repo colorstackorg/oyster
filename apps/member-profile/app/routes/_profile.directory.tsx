@@ -182,8 +182,8 @@ async function getAppliedFilters(
       param: 'joinedDirectoryDate',
       value: searchParams.joinedDirectoryDate
         ? dayjs(searchParams.joinedDirectoryDate)
-            .tz('America/Los_Angeles', true)
-            .format('M/D/YY')
+          .tz('America/Los_Angeles', true)
+          .format('M/D/YY')
         : undefined,
     },
     { name: 'Location', param: keys.location, value: searchParams.location },
@@ -429,7 +429,6 @@ function FilterForm({
       )}
 
       {Object.entries(searchParams).map(([key, value]) => {
-        console.log(key, value);
         return (
           !!value && (
             <input
