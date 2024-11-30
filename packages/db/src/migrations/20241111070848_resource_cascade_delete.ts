@@ -85,7 +85,7 @@ export async function up(db: Kysely<any>) {
 }
 
 export async function down(db: Kysely<any>) {
-  // Drop back constraints with cascade delete
+  // Drop constraints that had cascade delete
   await db.schema
     .alterTable('resource_attachments')
     .dropConstraint('resource_attachments_resource_id_fkey')
