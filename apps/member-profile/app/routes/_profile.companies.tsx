@@ -112,13 +112,13 @@ function AddReviewLink() {
 
   return (
     <Link
-      className={getButtonCn({})}
+      className={getButtonCn({ size: 'small' })}
       to={{
         pathname: Route['/companies/reviews/add'],
         search: searchParams.toString(),
       }}
     >
-      <Plus size={16} /> Add Review
+      <Plus size={20} /> Add Review
     </Link>
   );
 }

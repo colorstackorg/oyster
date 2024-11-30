@@ -41,6 +41,11 @@ export type MixpanelEvent = {
     Method: 'Google' | 'OTP' | 'Slack';
   };
 
+  'Offer Viewed': {
+    Company: string;
+    Type: 'Full-Time' | 'Internship';
+  };
+
   'Opportunity Bookmarked': {
     Company: string;
   };

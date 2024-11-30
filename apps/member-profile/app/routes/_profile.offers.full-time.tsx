@@ -9,6 +9,7 @@ import {
   useLoaderData,
   useSearchParams,
 } from '@remix-run/react';
+import dayjs from 'dayjs';
 import { DollarSign, MapPin } from 'react-feather';
 
 import { track } from '@oyster/core/mixpanel';
@@ -30,6 +31,7 @@ import { CompanyColumn, CompanyFilter } from '@/shared/components';
 import {
   OfferAggregation,
   OfferAggregationGroup,
+  TotalCompensationTooltip,
 } from '@/shared/components/offer';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -113,7 +115,7 @@ async function listAllCompanies() {
     .where((eb) => {
       return eb.exists(() => {
         return eb
-          .selectFrom('fullTimeJobOffers as fullTimeOffers')
+          .selectFrom('fullTimeOffers')
           .whereRef('fullTimeOffers.companyId', '=', 'companies.id');
       });
     })
@@ -125,7 +127,7 @@ async function listAllCompanies() {
 
 async function listAllLocations() {
   const rows = await db
-    .selectFrom('fullTimeJobOffers')
+    .selectFrom('fullTimeOffers')
     .select('location')
     .distinct()
     .where('location', 'is not', null)
@@ -155,7 +157,7 @@ async function listFullTimeOffers({
   totalCompensation,
 }: ListFullTimeOffersInput) {
   const query = db
-    .selectFrom('fullTimeJobOffers as fullTimeOffers')
+    .selectFrom('fullTimeOffers')
     .leftJoin('companies', 'companies.id', 'fullTimeOffers.companyId')
     .$if(!!company, (qb) => {
       return qb.where((eb) => {
@@ -223,6 +225,7 @@ async function listFullTimeOffers({
         'fullTimeOffers.id',
         'fullTimeOffers.location',
         'fullTimeOffers.performanceBonus',
+        'fullTimeOffers.postedAt',
         'fullTimeOffers.role',
         'fullTimeOffers.signOnBonus',
         'fullTimeOffers.totalCompensation',
@@ -240,19 +243,21 @@ async function listFullTimeOffers({
     style: 'currency',
   });
 
-  const offers = _offers.map((offer) => {
-    const annualBonus =
-      (Number(offer.performanceBonus) || 0) +
-      (Number(offer.signOnBonus) || 0) / 4;
+  const offers = _offers.map(
+    ({ performanceBonus, postedAt, signOnBonus, totalStock, ...offer }) => {
+      const annualBonus =
+        (Number(performanceBonus) || 0) + (Number(signOnBonus) || 0) / 4;
 
-    return {
-      ...offer,
-      annualBonus: formatter.format(annualBonus),
-      annualStock: formatter.format((Number(offer.totalStock) || 0) / 4),
-      baseSalary: formatter.format(Number(offer.baseSalary)),
-      totalCompensation: formatter.format(Number(offer.totalCompensation)),
-    };
-  });
+      return {
+        ...offer,
+        annualBonus: formatter.format(annualBonus),
+        annualStock: formatter.format((Number(totalStock) || 0) / 4),
+        baseSalary: formatter.format(Number(offer.baseSalary)),
+        postedAt: dayjs().to(postedAt),
+        totalCompensation: formatter.format(Number(offer.totalCompensation)),
+      };
+    }
+  );
 
   const averageBaseSalary = Number(aggregation.averageBaseSalary);
   const averageTotalCompensation = Number(aggregation.averageTotalCompensation);
@@ -294,7 +299,11 @@ export default function FullTimeOffersPage() {
 
       <OfferAggregationGroup>
         <OfferAggregation
-          label="Average Total Compensation"
+          label={
+            <>
+              Average Total Compensation <TotalCompensationTooltip />
+            </>
+          }
           value={averageTotalCompensation}
         />
         <OfferAggregation
@@ -362,8 +371,19 @@ function FullTimeOffersTable() {
     },
     {
       displayName: 'Location',
-      size: '200',
+      size: '240',
       render: (offer) => offer.location,
+    },
+    {
+      displayName: '',
+      size: '80',
+      render: (offer) => {
+        return (
+          <Text as="span" color="gray-500" variant="sm">
+            {offer.postedAt} ago
+          </Text>
+        );
+      },
     },
   ];
 
@@ -403,14 +423,13 @@ function TotalCompensationFilter() {
   const ranges = searchParams.getAll('totalCompensation');
 
   const options: FilterValue[] = [
-    { color: 'cyan-100', label: '< $100K', value: '0-100000' },
+    { color: 'cyan-100', label: '$0-100K', value: '0-100000' },
     { color: 'orange-100', label: '$100-125K', value: '100000-125000' },
     { color: 'amber-100', label: '$125-150K', value: '125000-150000' },
     { color: 'pink-100', label: '$150-175K', value: '150000-175000' },
     { color: 'green-100', label: '$175-200K', value: '175000-200000' },
     { color: 'lime-100', label: '$200-250K', value: '200000-250000' },
-    { color: 'purple-100', label: '$250-300K', value: '250000-300000' },
-    { color: 'red-100', label: '> $300K', value: '300000-1000000' },
+    { color: 'purple-100', label: '$250K+', value: '250000-1000000' },
   ];
 
   const selectedValues = options.filter((option) => {
@@ -427,7 +446,7 @@ function TotalCompensationFilter() {
         Total Compensation
       </FilterButton>
 
-      <FilterPopover>
+      <FilterPopover height="max">
         <ul className="overflow-auto">
           {options.map((option) => {
             const checked = selectedValues.some(({ value }) => {

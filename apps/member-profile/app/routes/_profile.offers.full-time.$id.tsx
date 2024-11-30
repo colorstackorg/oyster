@@ -2,6 +2,7 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, useLoaderData, useSearchParams } from '@remix-run/react';
 import dayjs from 'dayjs';
 
+import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
 import { Divider, Modal } from '@oyster/ui';
 
@@ -11,6 +12,7 @@ import {
   OfferDetail,
   OfferSection,
   OfferTitle,
+  TotalCompensationTooltip,
 } from '@/shared/components/offer';
 import { ViewInSlackButton } from '@/shared/components/slack-message';
 import { Route } from '@/shared/constants';
@@ -19,8 +21,10 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
+  const memberId = user(session);
+
   const offer = await getFullTimeOfferDetails({
-    memberId: user(session),
+    memberId,
     offerId: params.id as string,
   });
 
@@ -30,6 +34,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       statusText: 'The full-time offer you are looking for does not exist.',
     });
   }
+
+  track({
+    event: 'Offer Viewed',
+    properties: { Company: offer.companyName as string, Type: 'Full-Time' },
+    request,
+    user: memberId,
+  });
 
   return json(offer);
 }
@@ -44,7 +55,7 @@ async function getFullTimeOfferDetails({
   offerId,
 }: GetFullTimeOfferDetailsInput) {
   const _offer = await db
-    .selectFrom('fullTimeJobOffers as fullTimeOffers')
+    .selectFrom('fullTimeOffers')
     .leftJoin('companies', 'companies.id', 'fullTimeOffers.companyId')
     .select([
       'companies.id as companyId',
@@ -137,7 +148,7 @@ export default function FullTimeOfferPage() {
             companyLogo={companyLogo}
             companyName={companyName}
           />
-          <OfferTitle postedAt={postedAt} role={role!} />
+          <OfferTitle postedAt={postedAt} role={role} />
         </div>
 
         <div className="flex items-center gap-[inherit]">
@@ -191,7 +202,14 @@ function FullTimeOfferDetails() {
       <Divider />
 
       <OfferSection>
-        <OfferDetail label="Total Compensation" value={totalCompensation} />
+        <OfferDetail
+          label={
+            <>
+              Total Compensation <TotalCompensationTooltip />
+            </>
+          }
+          value={totalCompensation}
+        />
         <OfferDetail label="Base Salary" value={baseSalary} />
         <OfferDetail label="Total Stock" value={totalStock} />
         <OfferDetail label="Stock (/yr)" value={annualStock} />

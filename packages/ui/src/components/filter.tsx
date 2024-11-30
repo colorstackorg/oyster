@@ -146,7 +146,14 @@ export function FilterButton({
 
 // Filter Popover
 
-export function FilterPopover({ children }: PropsWithChildren) {
+type FilterPopoverProps = PropsWithChildren<{
+  height?: 'fixed' | 'max';
+}>;
+
+export function FilterPopover({
+  children,
+  height = 'fixed',
+}: FilterPopoverProps) {
   const { open } = useContext(FilterContext);
 
   if (!open) {
@@ -155,7 +162,10 @@ export function FilterPopover({ children }: PropsWithChildren) {
 
   return (
     <div
-      className="absolute top-full z-10 mt-1 flex max-h-60 w-max max-w-[300px] flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2"
+      className={cx(
+        'absolute top-full z-10 mt-1 flex w-max max-w-[300px] flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2',
+        height === 'fixed' && 'max-h-60'
+      )}
       id="popover"
     >
       {children}

@@ -9,10 +9,11 @@ import {
   useLoaderData,
   useSearchParams,
 } from '@remix-run/react';
+import dayjs from 'dayjs';
 import { DollarSign, MapPin } from 'react-feather';
 
-import { hourlyToMonthlyRate } from '@oyster/core/job-offers';
 import { track } from '@oyster/core/mixpanel';
+import { hourlyToMonthlyRate } from '@oyster/core/offers';
 import { db } from '@oyster/db';
 import { Pagination, Table, type TableColumnProps, Text } from '@oyster/ui';
 import {
@@ -112,7 +113,7 @@ async function listAllCompanies() {
     .where((eb) => {
       return eb.exists(() => {
         return eb
-          .selectFrom('internshipJobOffers')
+          .selectFrom('internshipOffers')
           .whereRef('companyId', '=', 'companies.id');
       });
     })
@@ -124,7 +125,7 @@ async function listAllCompanies() {
 
 async function listAllLocations() {
   const rows = await db
-    .selectFrom('internshipJobOffers')
+    .selectFrom('internshipOffers')
     .select('location')
     .distinct()
     .where('location', 'is not', null)
@@ -154,7 +155,7 @@ async function listInternshipOffers({
   page,
 }: ListInternshipOffersInput) {
   const query = db
-    .selectFrom('internshipJobOffers as internshipOffers')
+    .selectFrom('internshipOffers')
     .leftJoin('companies', 'companies.id', 'internshipOffers.companyId')
     .$if(!!company, (qb) => {
       return qb.where((eb) => {
@@ -216,6 +217,7 @@ async function listInternshipOffers({
         'internshipOffers.hourlyRate',
         'internshipOffers.id',
         'internshipOffers.location',
+        'internshipOffers.postedAt',
         'internshipOffers.role',
       ])
       .orderBy('internshipOffers.postedAt', 'desc')
@@ -231,16 +233,19 @@ async function listInternshipOffers({
     style: 'currency',
   });
 
-  const offers = _offers.map((offer) => {
-    const hourlyRate = Number(offer.hourlyRate);
-    const monthlyRate = hourlyToMonthlyRate(hourlyRate);
+  const offers = _offers.map(
+    ({ hourlyRate: _hourlyRate, postedAt, ...offer }) => {
+      const hourlyRate = Number(_hourlyRate);
+      const monthlyRate = hourlyToMonthlyRate(hourlyRate);
 
-    return {
-      ...offer,
-      hourlyRate: formatter.format(hourlyRate) + '/hr',
-      monthlyRate: formatter.format(monthlyRate) + '/mo',
-    };
-  });
+      return {
+        ...offer,
+        hourlyRate: formatter.format(hourlyRate) + '/hr',
+        monthlyRate: formatter.format(monthlyRate) + '/mo',
+        postedAt: dayjs().to(postedAt),
+      };
+    }
+  );
 
   const averageHourlyRate = Number(aggregation.averageHourlyRate);
   const averageMonthlyRate = hourlyToMonthlyRate(averageHourlyRate);
@@ -340,8 +345,19 @@ function InternshipOffersTable() {
     },
     {
       displayName: 'Location',
-      size: '200',
+      size: '240',
       render: (offer) => offer.location,
+    },
+    {
+      displayName: '',
+      size: '80',
+      render: (offer) => {
+        return (
+          <Text as="span" color="gray-500" variant="sm">
+            {offer.postedAt} ago
+          </Text>
+        );
+      },
     },
   ];
 
@@ -381,7 +397,7 @@ function HourlyRateFilter() {
   const ranges = searchParams.getAll('hourlyRate');
 
   const options: FilterValue[] = [
-    { color: 'cyan-100', label: '< $20/hr', value: '0-20' },
+    { color: 'cyan-100', label: '$0-20/hr', value: '0-20' },
     { color: 'orange-100', label: '$20-30/hr', value: '20-30' },
     { color: 'amber-100', label: '$30-40/hr', value: '30-40' },
     { color: 'pink-100', label: '$40-50/hr', value: '40-50' },
@@ -404,7 +420,7 @@ function HourlyRateFilter() {
         Hourly Rate
       </FilterButton>
 
-      <FilterPopover>
+      <FilterPopover height="max">
         <ul className="overflow-auto">
           {options.map((option) => {
             const checked = selectedValues.some(({ value }) => {

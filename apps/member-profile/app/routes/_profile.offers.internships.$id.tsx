@@ -2,7 +2,8 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, useLoaderData, useSearchParams } from '@remix-run/react';
 import dayjs from 'dayjs';
 
-import { hourlyToMonthlyRate } from '@oyster/core/job-offers';
+import { track } from '@oyster/core/mixpanel';
+import { hourlyToMonthlyRate } from '@oyster/core/offers';
 import { db } from '@oyster/db';
 import { Divider, Modal } from '@oyster/ui';
 
@@ -20,8 +21,10 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
+  const memberId = user(session);
+
   const offer = await getInternshipOfferDetails({
-    memberId: user(session),
+    memberId,
     offerId: params.id as string,
   });
 
@@ -31,6 +34,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       statusText: 'The internship offer you are looking for does not exist.',
     });
   }
+
+  track({
+    event: 'Offer Viewed',
+    properties: { Company: offer.companyName as string, Type: 'Internship' },
+    request,
+    user: memberId,
+  });
 
   return json(offer);
 }
@@ -45,7 +55,7 @@ async function getInternshipOfferDetails({
   offerId,
 }: GetInternshipOfferDetailsInput) {
   const _offer = await db
-    .selectFrom('internshipJobOffers as internshipOffers')
+    .selectFrom('internshipOffers')
     .leftJoin('companies', 'companies.id', 'internshipOffers.companyId')
     .select([
       'companies.id as companyId',
@@ -61,7 +71,6 @@ async function getInternshipOfferDetails({
       'internshipOffers.postedAt',
       'internshipOffers.relocation',
       'internshipOffers.role',
-      'internshipOffers.signOnBonus',
       'internshipOffers.slackChannelId',
       'internshipOffers.slackMessageId',
 
@@ -101,7 +110,6 @@ async function getInternshipOfferDetails({
     hourlyRate: formatter.format(hourlyRate) + '/hr',
     monthlyRate: formatter.format(monthlyRate) + '/mo',
     postedAt: dayjs().to(_offer.postedAt),
-    signOnBonus: formatter.format(Number(_offer.signOnBonus) || 0),
   };
 
   return offer;
@@ -138,7 +146,7 @@ export default function InternshipOfferPage() {
             companyLogo={companyLogo}
             companyName={companyName}
           />
-          <OfferTitle postedAt={postedAt} role={role!} />
+          <OfferTitle postedAt={postedAt} role={role} />
         </div>
 
         <div className="flex items-center gap-[inherit]">
@@ -176,7 +184,6 @@ function InternshipOfferDetails() {
     negotiated,
     pastExperience,
     relocation,
-    signOnBonus,
   } = useLoaderData<typeof loader>();
 
   return (
@@ -191,7 +198,6 @@ function InternshipOfferDetails() {
       <OfferSection>
         <OfferDetail label="Hourly Rate" value={hourlyRate} />
         <OfferDetail label="Monthly Rate" value={monthlyRate} />
-        <OfferDetail label="Sign-On Bonus" value={signOnBonus} />
         <OfferDetail label="Relocation" value={relocation} />
         <OfferDetail label="Benefits" value={benefits} />
       </OfferSection>

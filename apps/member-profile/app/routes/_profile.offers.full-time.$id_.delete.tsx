@@ -11,7 +11,7 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 
-import { deleteOffer, hasOfferWritePermission } from '@oyster/core/job-offers';
+import { deleteOffer, hasOfferWritePermission } from '@oyster/core/offers';
 import { db } from '@oyster/db';
 import { Button, Form, getErrors, Modal } from '@oyster/ui';
 
@@ -27,10 +27,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const offer = await db
-    .selectFrom('fullTimeJobOffers')
-    .leftJoin('companies', 'companies.id', 'fullTimeJobOffers.companyId')
+    .selectFrom('fullTimeOffers')
+    .leftJoin('companies', 'companies.id', 'fullTimeOffers.companyId')
     .select(['companies.name as companyName'])
-    .where('fullTimeJobOffers.id', '=', params.id as string)
+    .where('fullTimeOffers.id', '=', params.id as string)
     .executeTakeFirst();
 
   if (!offer) {
