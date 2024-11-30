@@ -182,12 +182,16 @@ async function getAppliedFilters(
       param: 'joinedDirectoryDate',
       value: searchParams.joinedDirectoryDate
         ? dayjs(searchParams.joinedDirectoryDate)
-          .tz('America/Los_Angeles', true)
-          .format('M/D/YY')
+            .tz('America/Los_Angeles', true)
+            .format('M/D/YY')
         : undefined,
     },
     { name: 'Location', param: keys.location, value: searchParams.location },
-    { name: 'School', param: keys.school, value: school || searchParams.school },
+    {
+      name: 'School',
+      param: keys.school,
+      value: school || searchParams.school,
+    },
   ].filter((item) => {
     return !!item.value;
   });
@@ -255,17 +259,19 @@ function FilterDirectoryDropdown({ filter }: { filter: string }) {
 
   return (
     <Dropdown.Container onClose={onClose}>
-      {(filter === 'general') ? <IconButton
-        backgroundColor="gray-100"
-        backgroundColorOnHover="gray-200"
-        icon={<Filter />}
-        onClick={onClick}
-        shape="square"
-      /> : <Button onClick={onClick}>
-        {toTitleCase(filter)}
-      </Button>}
+      {filter === 'general' ? (
+        <IconButton
+          backgroundColor="gray-100"
+          backgroundColorOnHover="gray-200"
+          icon={<Filter />}
+          onClick={onClick}
+          shape="square"
+        />
+      ) : (
+        <Button onClick={onClick}>{toTitleCase(filter)}</Button>
+      )}
 
-      {open && filter != "general" && (
+      {open && filter != 'general' && (
         <>
           <RemixForm
             className="form"
@@ -276,8 +282,8 @@ function FilterDirectoryDropdown({ filter }: { filter: string }) {
               <div className="flex min-w-[18rem] flex-col gap-2 p-2">
                 <Text>{toTitleCase(filter)}</Text>
                 <Text>is...</Text>
-                {filter == "company" && <CompanyCombobox name={keys.company} />}
-                {filter == "school" && <SchoolCombobox name={keys.school} />}
+                {filter == 'company' && <CompanyCombobox name={keys.company} />}
+                {filter == 'school' && <SchoolCombobox name={keys.school} />}
                 <Button fill size="small" type="submit">
                   <Plus size={20} /> Add Filter
                 </Button>
@@ -300,7 +306,7 @@ function FilterDirectoryDropdown({ filter }: { filter: string }) {
         </>
       )}
 
-      {open && filter == "general" && (
+      {open && filter == 'general' && (
         <Dropdown>
           <div className="flex min-w-[18rem] flex-col gap-2 p-2">
             <Text>Add Filter</Text>
@@ -312,27 +318,37 @@ function FilterDirectoryDropdown({ filter }: { filter: string }) {
   );
 }
 
-function FilterForm({ close, filter }: { close: VoidFunction, filter: string }) {
+function FilterForm({
+  close,
+  filter,
+}: {
+  close: VoidFunction;
+  filter: string;
+}) {
   const [filterKey, setFilterKey] = useState<DirectoryFilterKey | null>(null);
 
   const [searchParams] = useSearchParams(DirectorySearchParams);
 
   return (
     <RemixForm className="form" method="get" onSubmit={close}>
-      {filter == "general" && <Select
-        placeholder="Select a field..."
-        onChange={(e) => {
-          setFilterKey((e.currentTarget.value || null) as DirectoryFilterKey);
-        }}
-      >
-        {DIRECTORY_FILTER_KEYS.filter(key => key !== 'company' && key != 'school').map((key) => {
-          return (
-            <option key={key} disabled={!!searchParams[key]} value={key}>
-              {toTitleCase(key)}
-            </option>
-          );
-        })}
-      </Select>}
+      {filter == 'general' && (
+        <Select
+          placeholder="Select a field..."
+          onChange={(e) => {
+            setFilterKey((e.currentTarget.value || null) as DirectoryFilterKey);
+          }}
+        >
+          {DIRECTORY_FILTER_KEYS.filter(
+            (key) => key !== 'company' && key != 'school'
+          ).map((key) => {
+            return (
+              <option key={key} disabled={!!searchParams[key]} value={key}>
+                {toTitleCase(key)}
+              </option>
+            );
+          })}
+        </Select>
+      )}
 
       {!!filterKey && (
         <Text color="gray-500" variant="sm">
