@@ -182,15 +182,15 @@ async function getAppliedFilters(
       param: 'joinedDirectoryDate',
       value: searchParams.joinedDirectoryDate
         ? dayjs(searchParams.joinedDirectoryDate)
-            .tz('America/Los_Angeles', true)
-            .format('M/D/YY')
+          .tz('America/Los_Angeles', true)
+          .format('M/D/YY')
         : undefined,
     },
     { name: 'Location', param: keys.location, value: searchParams.location },
     {
       name: 'School',
       param: keys.school,
-      value: school || searchParams.school,
+      value: school,
     },
   ].filter((item) => {
     return !!item.value;
@@ -247,7 +247,6 @@ const DIRECTORY_FILTER_KEYS = Object.values(DirectoryFilterKey);
 
 function FilterDirectoryDropdown({ filter }: { filter: string }) {
   const [open, setOpen] = useState<boolean>(false);
-  const searchParams = useSearchParams(DirectorySearchParams);
 
   function onClose() {
     setOpen(false);
@@ -271,42 +270,7 @@ function FilterDirectoryDropdown({ filter }: { filter: string }) {
         <Button onClick={onClick}>{toTitleCase(filter)}</Button>
       )}
 
-      {open && filter != 'general' && (
-        <>
-          <RemixForm
-            className="form"
-            method="get"
-            onSubmit={() => setOpen(false)}
-          >
-            <Dropdown>
-              <div className="flex min-w-[18rem] flex-col gap-2 p-2">
-                <Text>{toTitleCase(filter)}</Text>
-                <Text>is...</Text>
-                {filter == 'company' && <CompanyCombobox name={keys.company} />}
-                {filter == 'school' && <SchoolCombobox name={keys.school} />}
-                <Button fill size="small" type="submit">
-                  <Plus size={20} /> Add Filter
-                </Button>
-              </div>
-            </Dropdown>
-          </RemixForm>
-
-          {Object.entries(searchParams).map(([key, value]) => {
-            return (
-              !!value && (
-                <input
-                  key={key}
-                  name={key}
-                  type="hidden"
-                  value={value.toString()}
-                />
-              )
-            );
-          })}
-        </>
-      )}
-
-      {open && filter == 'general' && (
+      {open && filter == "general" && (
         <Dropdown>
           <div className="flex min-w-[18rem] flex-col gap-2 p-2">
             <Text>Add Filter</Text>
@@ -314,7 +278,39 @@ function FilterDirectoryDropdown({ filter }: { filter: string }) {
           </div>
         </Dropdown>
       )}
+
+      {open && filter != 'general' && (
+        <FilterForm filter={filter} close={onClose} />
+      )}
     </Dropdown.Container>
+  );
+}
+
+function CompanyDropdown({ close }: { close: VoidFunction }) {
+  return (
+    <Dropdown>
+      <div className="flex min-w-[18rem] flex-col gap-2 p-2">
+        <Text>Company</Text>
+        <CompanyCombobox name={keys.company} />
+        <Button fill size="small" type="submit">
+          <Plus size={20} /> Add Filter
+        </Button>
+      </div>
+    </Dropdown>
+  );
+}
+
+function SchoolDropdown({ close }: { close: VoidFunction }) {
+  return (
+    <Dropdown>
+      <div className="flex min-w-[18rem] flex-col gap-2 p-2">
+        <Text>School</Text>
+        <SchoolCombobox name={keys.school} />
+        <Button fill size="small" type="submit">
+          <Plus size={20} /> Add Filter
+        </Button>
+      </div>
+    </Dropdown>
   );
 }
 
@@ -339,7 +335,7 @@ function FilterForm({
           }}
         >
           {DIRECTORY_FILTER_KEYS.filter(
-            (key) => key !== 'company' && key != 'school'
+            (key) => key != 'company' && key != 'school'
           ).map((key) => {
             return (
               <option key={key} disabled={!!searchParams[key]} value={key}>
@@ -349,6 +345,9 @@ function FilterForm({
           })}
         </Select>
       )}
+
+      {filter == 'company' && <CompanyDropdown close={close} />}
+      {filter == 'school' && <SchoolDropdown close={close} />}
 
       {!!filterKey && (
         <Text color="gray-500" variant="sm">
@@ -430,6 +429,7 @@ function FilterForm({
       )}
 
       {Object.entries(searchParams).map(([key, value]) => {
+        console.log(key, value);
         return (
           !!value && (
             <input
