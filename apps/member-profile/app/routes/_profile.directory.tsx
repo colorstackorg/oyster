@@ -286,7 +286,7 @@ function FilterDirectoryDropdown({ filter }: { filter: string }) {
   );
 }
 
-function CompanyDropdown({ close }: { close: VoidFunction }) {
+function CompanyDropdown() {
   return (
     <Dropdown>
       <div className="flex min-w-[18rem] flex-col gap-2 p-2">
@@ -300,7 +300,7 @@ function CompanyDropdown({ close }: { close: VoidFunction }) {
   );
 }
 
-function SchoolDropdown({ close }: { close: VoidFunction }) {
+function SchoolDropdown() {
   return (
     <Dropdown>
       <div className="flex min-w-[18rem] flex-col gap-2 p-2">
@@ -346,8 +346,8 @@ function FilterForm({
         </Select>
       )}
 
-      {filter == 'company' && <CompanyDropdown close={close} />}
-      {filter == 'school' && <SchoolDropdown close={close} />}
+      {filter == 'company' && <CompanyDropdown />}
+      {filter == 'school' && <SchoolDropdown />}
 
       {!!filterKey && (
         <Text color="gray-500" variant="sm">
