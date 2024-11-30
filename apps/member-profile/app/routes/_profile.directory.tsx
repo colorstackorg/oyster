@@ -182,8 +182,8 @@ async function getAppliedFilters(
       param: 'joinedDirectoryDate',
       value: searchParams.joinedDirectoryDate
         ? dayjs(searchParams.joinedDirectoryDate)
-          .tz('America/Los_Angeles', true)
-          .format('M/D/YY')
+            .tz('America/Los_Angeles', true)
+            .format('M/D/YY')
         : undefined,
     },
     { name: 'Location', param: keys.location, value: searchParams.location },
@@ -270,7 +270,7 @@ function FilterDirectoryDropdown({ filter }: { filter: string }) {
         <Button onClick={onClick}>{toTitleCase(filter)}</Button>
       )}
 
-      {open && filter == "general" && (
+      {open && filter == 'general' && (
         <Dropdown>
           <div className="flex min-w-[18rem] flex-col gap-2 p-2">
             <Text>Add Filter</Text>
