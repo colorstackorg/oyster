@@ -187,7 +187,7 @@ async function getAppliedFilters(
         : undefined,
     },
     { name: 'Location', param: keys.location, value: searchParams.location },
-    { name: 'School', param: keys.school, value: school },
+    { name: 'School', param: keys.school, value: school || searchParams.school },
   ].filter((item) => {
     return !!item.value;
   });
@@ -243,7 +243,7 @@ const DIRECTORY_FILTER_KEYS = Object.values(DirectoryFilterKey);
 
 function FilterDirectoryDropdown({ filter }: { filter: string }) {
   const [open, setOpen] = useState<boolean>(false);
-  const [searchParams] = useSearchParams(DirectorySearchParams);
+  const searchParams = useSearchParams(DirectorySearchParams);
 
   function onClose() {
     setOpen(false);
@@ -265,12 +265,13 @@ function FilterDirectoryDropdown({ filter }: { filter: string }) {
         {toTitleCase(filter)}
       </Button>}
 
-      {/* I tried to make the buttons for companies and schools look the same as the icon button
-      but I couldn't get the color to match */}
-
       {open && filter != "general" && (
         <>
-          <RemixForm className="form" method="get" onSubmit={onClose}>
+          <RemixForm
+            className="form"
+            method="get"
+            onSubmit={() => setOpen(false)}
+          >
             <Dropdown>
               <div className="flex min-w-[18rem] flex-col gap-2 p-2">
                 <Text>{toTitleCase(filter)}</Text>
