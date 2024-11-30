@@ -14,6 +14,7 @@ import {
   AIRTABLE_FAMILY_BASE_ID,
   AIRTABLE_MEMBERS_TABLE_ID,
 } from '@/modules/airtable/airtable.core';
+import { sendCompanyReviewNotifications } from '@/modules/employment/use-cases/send-company-review-notifications';
 import { success } from '@/shared/utils/core.utils';
 import { onActivationStepCompleted } from './events/activation-step-completed';
 import { onMemberActivated } from './events/member-activated';
@@ -27,7 +28,7 @@ export const memberWorker = registerWorker(
   'student',
   StudentBullJob,
   async (job) => {
-    return match(job)
+    const result = await match(job)
       .with({ name: 'student.activated' }, ({ data }) => {
         return onMemberActivated(data);
       })
@@ -39,6 +40,9 @@ export const memberWorker = registerWorker(
       )
       .with({ name: 'student.birthdate.daily' }, ({ data }) => {
         return sendBirthdayNotification(data);
+      })
+      .with({ name: 'student.company_review_notifications' }, ({ data }) => {
+        return sendCompanyReviewNotifications(data);
       })
       .with({ name: 'student.created' }, ({ data }) => {
         return onMemberCreated(data);
@@ -62,6 +66,8 @@ export const memberWorker = registerWorker(
         return createNewActiveStatuses(data);
       })
       .exhaustive();
+
+    return result;
   }
 );
 

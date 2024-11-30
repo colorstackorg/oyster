@@ -18,7 +18,7 @@ export async function onMemberRemoved({
     airtableTableId: AIRTABLE_MEMBERS_TABLE_ID!,
   });
 
-  job('email_marketing.remove', {
+  job('mailchimp.remove', {
     email,
   });
 

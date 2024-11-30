@@ -3,6 +3,12 @@
 # to install and configure these services on our local machines.
 
 services:
+  browserless:
+    container_name: oyster-browserless
+    image: ghcr.io/browserless/chromium
+    ports:
+      - 3333:3000
+
   postgres:
     container_name: oyster-postgres
     image: postgres:15-alpine

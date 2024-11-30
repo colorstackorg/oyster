@@ -19,11 +19,12 @@ import { EmptyStringToNull, NullishString } from '../shared/zod';
 export const ActivationRequirement = {
   ATTEND_EVENT: 'attend_event',
   ATTEND_ONBOARDING: 'attend_onboarding',
-  OPEN_EMAIL_CAMPAIGN: 'open_email_campaign',
   REPLY_TO_ANNOUNCEMENT_MESSAGE: 'reply_to_announcement_message',
   REPLY_TO_OTHER_MESSAGES: 'reply_to_other_messages',
   SEND_INTRODUCTION_MESSAGE: 'send_introduction_message',
 } as const;
+
+export const ACTIVATION_REQUIREMENTS = Object.values(ActivationRequirement);
 
 export const MemberType = {
   ALUMNI: 'alumni',

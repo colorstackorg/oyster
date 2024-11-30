@@ -6,7 +6,10 @@ import { match } from 'ts-pattern';
 import { getTextCn } from './text';
 import { cx } from '../utils/cx';
 
-export type PillProps = Pick<React.HTMLProps<HTMLElement>, 'children'> & {
+export type PillProps = Pick<
+  React.HTMLProps<HTMLElement>,
+  'children' | 'className'
+> & {
   color:
     | 'amber-100'
     | 'blue-100'
@@ -26,12 +29,19 @@ export type PillProps = Pick<React.HTMLProps<HTMLElement>, 'children'> & {
   to?: LinkProps['to'];
 };
 
-export const Pill = ({ children, color, onCloseHref, to }: PillProps) => {
+export const Pill = ({
+  children,
+  className,
+  color,
+  onCloseHref,
+  to,
+}: PillProps) => {
   const body = (
     <span
       className={cx(
         getTextCn({ variant: 'sm' }),
-        getPillCn({ color, onCloseHref })
+        getPillCn({ color, onCloseHref }),
+        className
       )}
     >
       {children}{' '}

@@ -6,18 +6,12 @@ import {
   AIRTABLE_FAMILY_BASE_ID,
   AIRTABLE_MEMBERS_TABLE_ID,
 } from '@/modules/airtable/airtable.core';
-import { updateMailchimpListMember } from '@/modules/mailchimp/use-cases/update-mailchimp-list-member';
 import { reportException } from '@/modules/sentry/use-cases/report-exception';
 import {
   getSlackUserByEmail,
   updateSlackEmail,
 } from '@/modules/slack/services/slack-user.service';
 import { ErrorWithContext, NotFoundError } from '@/shared/errors';
-
-type UpdateEmailMarketingMemberInput = {
-  email: string;
-  previousEmail: string;
-};
 
 type UpdateSlackUserInput = {
   email: string;
@@ -41,18 +35,16 @@ export async function onPrimaryEmailChanged({
     });
   }
 
-  await Promise.all([
-    updateEmailMarketingMember({
-      email: student.newEmail,
-      previousEmail,
-    }),
+  await updateEmailOnSlack({
+    email: student.newEmail,
+    previousEmail,
+    slackId: student.slackId,
+  });
 
-    updateEmailOnSlack({
-      email: student.newEmail,
-      previousEmail,
-      slackId: student.slackId,
-    }),
-  ]);
+  job('mailchimp.update', {
+    email: student.newEmail,
+    id: previousEmail,
+  });
 
   job('airtable.record.update', {
     airtableBaseId: AIRTABLE_FAMILY_BASE_ID!,
@@ -80,19 +72,6 @@ export async function onPrimaryEmailChanged({
     name: 'primary-email-changed',
     to: previousEmail,
   });
-}
-
-async function updateEmailMarketingMember(
-  input: UpdateEmailMarketingMemberInput
-) {
-  try {
-    await updateMailchimpListMember({
-      email: input.email,
-      id: input.previousEmail,
-    });
-  } catch (e) {
-    reportException(e);
-  }
 }
 
 async function updateEmailOnSlack(input: UpdateSlackUserInput) {

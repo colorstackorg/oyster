@@ -1,11 +1,11 @@
 import dayjs from 'dayjs';
 import dedent from 'dedent';
-import { sql, type Transaction } from 'kysely';
+import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { db, type DB } from '@oyster/db';
+import { db } from '@oyster/db';
 import { ISO8601Date } from '@oyster/types';
 import { id } from '@oyster/utils';
 
@@ -13,10 +13,11 @@ import { OpportunityBullJob } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { getChatCompletion } from '@/modules/ai/ai';
-import { searchCrunchbaseOrganizations } from '@/modules/employment/queries/search-crunchbase-organizations';
+import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { track } from '@/modules/mixpanel';
 import { ENV } from '@/shared/env';
+import { getPageContent } from '@/shared/utils/browser.utils';
 import {
   ACCENT_COLORS,
   type AccentColor,
@@ -97,52 +98,6 @@ export async function bookmarkOpportunity({
 
 // "Create Opportunity"
 
-const CREATE_OPPORTUNITY_SYSTEM_PROMPT = dedent`
-  You are a helpful assistant that extracts structured data from Slack messages
-  in a tech-focused workspace. Members share opportunities for internships,
-  full-time positions, events, and other programs to help them get their first
-  role in tech. Your job is to analyze the given Slack message and extract
-  specific information in a JSON format.
-`;
-
-const CREATE_OPPORTUNITY_PROMPT = dedent`
-  Here's the Slack message you need to analyze:
-
-  <slack_message>
-    $SLACK_MESSAGE
-  </slack_message>
-
-  You need to extract the following information and format it as JSON:
-
-  1. "company": The name of the company offering the opportunity.
-  2. "title": The title of the opportunity, max 75 characters.
-  3. "description": A brief description of the opportunity, max 400 characters.
-
-  Follow these guidelines:
-  - If you cannot confidently infer information, set the value to null.
-  - Do not include the company name in the "title" field.
-
-  Your output should be a single JSON object containing these fields. Do not
-  provide any explanation or text outside of the JSON object. Ensure your JSON
-  is properly formatted and valid.
-
-  <output>
-    {
-      "company": "string | null",
-      "description": "string | null",
-      "title": "string | null"
-    }
-  </output>
-`;
-
-const CreateOpportunityResponse = z.object({
-  company: z.string().trim().min(1).nullable(),
-  description: z.string().trim().min(1).max(500).nullable(),
-  title: z.string().trim().min(1).max(100).nullable(),
-});
-
-type CreateOpportunityResponse = z.infer<typeof CreateOpportunityResponse>;
-
 type CreateOpportunityInput = {
   sendNotification?: boolean;
   slackChannelId: string;
@@ -184,64 +139,47 @@ async function createOpportunity({
     });
   }
 
+  const link = getFirstLinkInMessage(slackMessage.text);
+
   // We're only interested in messages that contain a link to an opportunity...
   // so we'll gracefully bail if there isn't one.
-  if (!slackMessage.text.includes('http')) {
+  if (!link) {
     return success({});
   }
 
-  const prompt = CREATE_OPPORTUNITY_PROMPT.replace(
-    '$SLACK_MESSAGE',
-    slackMessage.text
-  );
+  const isLinkedInURL = link.includes('linkedin.com');
 
-  const completionResult = await getChatCompletion({
-    maxTokens: 250,
-    messages: [{ role: 'user', content: prompt }],
-    system: [{ type: 'text', text: CREATE_OPPORTUNITY_SYSTEM_PROMPT }],
-    temperature: 0,
-  });
+  let websiteContent = '';
 
-  if (!completionResult.ok) {
-    return completionResult;
+  if (!isLinkedInURL) {
+    websiteContent = await getPageContent(link);
   }
 
-  let data: CreateOpportunityResponse;
+  const opportunity = await db
+    .insertInto('opportunities')
+    .values({
+      createdAt: new Date(),
+      description: 'N/A',
+      expiresAt: dayjs().add(3, 'months').toDate(),
+      id: id(),
+      postedBy: slackMessage.studentId,
+      slackChannelId,
+      slackMessageId,
+      title: 'Opportunity',
+    })
+    .returning(['id'])
+    .onConflict((oc) => oc.doNothing())
+    .executeTakeFirstOrThrow();
 
-  try {
-    data = CreateOpportunityResponse.parse(JSON.parse(completionResult.data));
-  } catch (error) {
-    return fail({
-      code: 400,
-      error: 'Failed to parse or validate JSON from AI response.',
+  // If the link is NOT a LinkedIn job posting, we'll scrape the website content
+  // using puppeteer, create a new "empty" opportunity, and then refine it with
+  // AI using that website content.
+  if (!isLinkedInURL) {
+    return refineOpportunity({
+      content: websiteContent.slice(0, 10_000),
+      opportunityId: opportunity.id,
     });
   }
-
-  const opportunity = await db.transaction().execute(async (trx) => {
-    const companyId = data.company
-      ? await getMostRelevantCompany(trx, data.company)
-      : null;
-
-    const opportunityId = id();
-
-    const result = await trx
-      .insertInto('opportunities')
-      .values({
-        companyId,
-        createdAt: new Date(),
-        description: data.description || 'N/A',
-        expiresAt: dayjs().add(3, 'months').toDate(),
-        id: opportunityId,
-        postedBy: slackMessage.studentId,
-        slackChannelId,
-        slackMessageId,
-        title: data.title || 'Opportunity',
-      })
-      .returning(['id'])
-      .executeTakeFirstOrThrow();
-
-    return result;
-  });
 
   if (sendNotification) {
     const message =
@@ -617,9 +555,7 @@ export async function refineOpportunity(
   // If this is the first time the opportunity has been refined, we want to send
   // a notification to the channel.
   if (!opportunity.refinedAt) {
-    const message =
-      'I added this to our opportunities board! 📌\n\n' +
-      `<${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}>`;
+    const message = `I added this to our <${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}|opportunities board>! 📌`;
 
     job('notification.slack.send', {
       channel: opportunity.slackChannelId,
@@ -635,56 +571,13 @@ export async function refineOpportunity(
 // Helpers
 
 /**
- * Finds the most relevant company ID based on the given name.
+ * Extracts the first URL found in the Slack message.
  *
- * If the company is already in our database, then this function will return the
- * ID of the existing company.
- *
- * Otherwise, this function will query the Crunchbase API, choose the most
- * relevant company, and save it in our database (if it's not already there).
- * Then returns the ID of the newly created company.
- *
- * @param trx - Database transaction to use for the operation.
- * @param companyName - Name of the company to find or create.
- * @returns ID of the company found or created.
+ * @param message - Slack message to extract the URL from.
+ * @returns First URL found in the message or `null` if it doesn't exist.
  */
-async function getMostRelevantCompany(
-  trx: Transaction<DB>,
-  companyName: string
-) {
-  const companyFromDatabase = await trx
-    .selectFrom('companies')
-    .select('id')
-    .where('name', 'ilike', companyName)
-    .executeTakeFirst();
-
-  if (companyFromDatabase) {
-    return companyFromDatabase.id;
-  }
-
-  const [company] = await searchCrunchbaseOrganizations(companyName);
-
-  if (company && areNamesSimilar(companyName, company.name)) {
-    return saveCompanyIfNecessary(trx, company.crunchbaseId);
-  }
-
-  return null;
-}
-
-/**
- * Checks if two company names are similar by checking if one string is a
- * substring of the other. This does a naive comparison by removing all
- * non-alphanumeric characters and converting to lowercase.
- *
- * @param name1 - First company name.
- * @param name2 - Second company name.
- * @returns Whether the two company names are similar.
- */
-function areNamesSimilar(name1: string, name2: string) {
-  const normalized1 = name1.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const normalized2 = name2.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-  return normalized1.includes(normalized2) || normalized2.includes(normalized1);
+function getFirstLinkInMessage(message: string) {
+  return message.match(/<(https?:\/\/[^\s|>]+)(?:\|[^>]+)?>/)?.[1];
 }
 
 // Queries
@@ -710,13 +603,11 @@ export async function getLinkFromOpportunity(opportunityId: string) {
     .where('opportunities.id', '=', opportunityId)
     .executeTakeFirst();
 
-  if (!opportunity) {
+  if (!opportunity || !opportunity.text) {
     return null;
   }
 
-  const link = opportunity.text?.match(
-    /<(https?:\/\/[^\s|>]+)(?:\|[^>]+)?>/
-  )?.[1];
+  const link = getFirstLinkInMessage(opportunity.text);
 
   if (!link) {
     return null;
@@ -903,16 +794,16 @@ export const opportunityWorker = registerWorker(
   'opportunity',
   OpportunityBullJob,
   async (job) => {
-    return match(job)
+    const result = await match(job)
       .with({ name: 'opportunity.create' }, async ({ data }) => {
-        const result = await createOpportunity(data);
-
-        if (!result.ok) {
-          throw new Error(result.error);
-        }
-
-        return result.data;
+        return createOpportunity(data);
       })
       .exhaustive();
+
+    if (!result.ok) {
+      throw new Error(result.error);
+    }
+
+    return result.data;
   }
 );

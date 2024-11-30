@@ -17,6 +17,7 @@ import {
   BookmarkButton,
   BookmarkForm,
 } from '@/routes/_profile.opportunities.$id_.bookmark';
+import { CompanyLink } from '@/shared/components';
 import { SlackMessageCard } from '@/shared/components/slack-message';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -65,6 +66,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export default function Opportunity() {
+  const { companyId, companyLogo, companyName } =
+    useLoaderData<typeof loader>();
+
   const [searchParams] = useSearchParams();
 
   return (
@@ -76,7 +80,11 @@ export default function Opportunity() {
     >
       <Modal.Header>
         <div className="flex flex-col gap-2">
-          <CompanyLink />
+          <CompanyLink
+            companyId={companyId}
+            companyLogo={companyLogo}
+            companyName={companyName}
+          />
           <OpportunityTitle />
         </div>
 
@@ -91,33 +99,6 @@ export default function Opportunity() {
       <div />
       <OpportunitySlackMessage />
     </Modal>
-  );
-}
-
-function CompanyLink() {
-  const { companyId, companyLogo, companyName } =
-    useLoaderData<typeof loader>();
-
-  if (!companyId || !companyName) {
-    return null;
-  }
-
-  return (
-    <Link
-      className="flex w-fit items-center gap-2 hover:underline"
-      target="_blank"
-      to={generatePath(Route['/companies/:id'], { id: companyId })}
-    >
-      <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
-        <img
-          alt={companyName}
-          className="aspect-square h-full w-full rounded-md"
-          src={companyLogo as string}
-        />
-      </div>
-
-      <Text variant="sm">{companyName}</Text>
-    </Link>
   );
 }
 

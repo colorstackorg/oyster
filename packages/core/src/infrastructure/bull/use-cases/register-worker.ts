@@ -27,6 +27,7 @@ export function registerWorker<Schema extends ZodType>(
   options: WorkerOptions = {}
 ) {
   const redis = new Redis(ENV.REDIS_URL as string, {
+    family: 0,
     maxRetriesPerRequest: null,
   });
 

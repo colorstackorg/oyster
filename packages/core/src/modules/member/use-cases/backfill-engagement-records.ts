@@ -35,8 +35,6 @@ export async function backfillEngagementRecords(
   }
 
   const [
-    emailCampaignClicks,
-    emailCampaignOpens,
     eventAttendees,
     programParticipants,
     resourceUsers,
@@ -44,20 +42,6 @@ export async function backfillEngagementRecords(
     slackReactions,
     surveyResponses,
   ] = await Promise.all([
-    db
-      .selectFrom('emailCampaignClicks')
-      .select(['id'])
-      .where('studentId', 'is', null)
-      .where('email', 'ilike', email)
-      .execute(),
-
-    db
-      .selectFrom('emailCampaignOpens')
-      .select(['id'])
-      .where('studentId', 'is', null)
-      .where('email', 'ilike', email)
-      .execute(),
-
     db
       .selectFrom('eventAttendees')
       .select(['email', 'eventId'])
@@ -103,22 +87,6 @@ export async function backfillEngagementRecords(
 
   await db.transaction().execute(async (trx) => {
     await Promise.all([
-      ...emailCampaignClicks.map(async (emailCampaignClick) => {
-        await trx
-          .updateTable('emailCampaignClicks')
-          .set({ studentId: student.id })
-          .where('id', '=', emailCampaignClick.id)
-          .execute();
-      }),
-
-      ...emailCampaignOpens.map(async (emailCampaignOpen) => {
-        await trx
-          .updateTable('emailCampaignOpens')
-          .set({ studentId: student.id })
-          .where('id', '=', emailCampaignOpen.id)
-          .execute();
-      }),
-
       ...eventAttendees.map(async (attendee) => {
         await trx
           .updateTable('eventAttendees')
@@ -179,12 +147,6 @@ export async function backfillEngagementRecords(
         .where('slackId', 'is', null)
         .execute(),
     ]);
-  });
-
-  emailCampaignOpens.forEach(() => {
-    job('email_marketing.opened', {
-      studentId: student.id,
-    });
   });
 
   eventAttendees.forEach((attendee) => {

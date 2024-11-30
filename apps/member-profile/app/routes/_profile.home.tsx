@@ -20,7 +20,12 @@ import {
 } from '@oyster/core/member-profile/server';
 import { getIpAddress, setMixpanelProfile, track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
-import { StudentActiveStatus, Timezone } from '@oyster/types';
+import {
+  ACTIVATION_REQUIREMENTS,
+  type ActivationRequirement,
+  StudentActiveStatus,
+  Timezone,
+} from '@oyster/types';
 import { Button, cx, Divider, getButtonCn, Text } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
@@ -175,6 +180,13 @@ async function getStudent(id: string) {
   const joinedAfterActivation =
     row.acceptedAt.valueOf() >=
     dayjs().year(2023).month(5).date(9).startOf('day').toDate().valueOf();
+
+  row.activationRequirementsCompleted =
+    row.activationRequirementsCompleted.filter((requirement) => {
+      return ACTIVATION_REQUIREMENTS.includes(
+        requirement as ActivationRequirement
+      );
+    });
 
   return Object.assign(row, { joinedAfterActivation });
 }
@@ -373,9 +385,10 @@ function ActivationCard() {
       <Card.Title>Activation ✅</Card.Title>
 
       <Card.Description>
-        You've completed {student.activationRequirementsCompleted.length}/6
-        activation requirements. Once you hit all 6, you will get a gift card to
-        claim your FREE merch! 👀
+        You've completed {student.activationRequirementsCompleted.length}/
+        {ACTIVATION_REQUIREMENTS.length} activation requirements. Once you hit
+        all {ACTIVATION_REQUIREMENTS.length}, you will get a gift card to claim
+        your FREE merch! 👀
       </Card.Description>
 
       <Button.Group>
