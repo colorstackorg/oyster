@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Check, ChevronDown } from 'react-feather';
+import { Check, ChevronDown, X } from 'react-feather';
 
 import { Pill, type PillProps } from './pill';
 import { Text } from './text';
@@ -146,7 +146,14 @@ export function FilterButton({
 
 // Filter Popover
 
-export function FilterPopover({ children }: PropsWithChildren) {
+type FilterPopoverProps = PropsWithChildren<{
+  height?: 'fixed' | 'max';
+}>;
+
+export function FilterPopover({
+  children,
+  height = 'fixed',
+}: FilterPopoverProps) {
   const { open } = useContext(FilterContext);
 
   if (!open) {
@@ -155,7 +162,10 @@ export function FilterPopover({ children }: PropsWithChildren) {
 
   return (
     <div
-      className="absolute top-full z-10 mt-1 flex max-h-60 w-max max-w-[300px] flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2"
+      className={cx(
+        'absolute top-full z-10 mt-1 flex w-max max-w-[300px] flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2',
+        height === 'fixed' && 'max-h-60'
+      )}
       id="popover"
     >
       {children}
@@ -270,5 +280,31 @@ export function FilterItem({
         />
       </button>
     </li>
+  );
+}
+
+// Clear Filters Button
+
+export function ClearFiltersButton() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  if (searchParams.size === 0) {
+    return null;
+  }
+
+  if (searchParams.size === 1 && searchParams.has('page')) {
+    return null;
+  }
+
+  return (
+    <button
+      className="flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm hover:bg-gray-50 active:bg-gray-100"
+      onClick={() => {
+        setSearchParams({});
+      }}
+      type="button"
+    >
+      Clear Filters <X className="text-gray-500" size={16} />
+    </button>
   );
 }

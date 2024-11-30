@@ -241,13 +241,13 @@ function AddResourceLink() {
 
   return (
     <Link
-      className={getButtonCn({})}
+      className={getButtonCn({ size: 'small' })}
       to={{
         pathname: Route['/resources/add'],
         search: searchParams.toString(),
       }}
     >
-      <Plus size={16} /> Add Resource
+      <Plus size={20} /> Add Resource
     </Link>
   );
 }

@@ -42,6 +42,64 @@ export const Input = React.forwardRef(
   }
 );
 
+// Dollar Input
+
+type DollarInputProps = Pick<InputProps, 'id' | 'name' | 'required'> & {
+  defaultValue?: string; // Limit the default value to a string.
+};
+
+const dollarFormatter = new Intl.NumberFormat('en-US', {
+  currency: 'USD',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  style: 'currency',
+});
+
+export function DollarInput({
+  defaultValue = '',
+  name,
+  ...rest
+}: DollarInputProps) {
+  const [displayValue, setDisplayValue] = useState(
+    getDisplayValue(defaultValue)
+  );
+
+  function getDisplayValue(input: string): string {
+    return dollarFormatter.format(getValue(input));
+  }
+
+  function getValue(input: string): number {
+    return Number(input.replace(/[^0-9.]/g, '')) || 0;
+  }
+
+  const value = getValue(displayValue);
+
+  return (
+    <>
+      <input
+        autoComplete="off"
+        className={getInputCn()}
+        inputMode="decimal"
+        onBlur={(e) => {
+          setDisplayValue(getDisplayValue(e.target.value));
+        }}
+        onChange={(e) => {
+          // We'll allow commas and periods in the input, but we'll strip the
+          // commas on blur.
+          setDisplayValue('$' + e.target.value.replace(/[^0-9.,]/g, ''));
+        }}
+        placeholder="$0.00"
+        type="text"
+        value={displayValue}
+        {...rest}
+      />
+
+      <input name={name} type="hidden" value={value} />
+    </>
+  );
+}
+// Phone Number Input
+
 type PhoneNumberInputProps = Pick<InputProps, 'id' | 'name' | 'required'> & {
   defaultValue?: string; // Limit the default value to a string.
 };
@@ -110,6 +168,8 @@ function formatPhoneNumber(input: string): string {
 
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
 }
+
+// Helpers
 
 export function getInputCn() {
   return cx(
