@@ -635,7 +635,6 @@ export const ResumeReviewBullJob = z.object({
   data: z.object({
     channelId: z.string().trim().min(1),
     messageId: z.string().trim().min(1),
-    text: z.string().trim().min(1),
     userId: z.string().trim().min(1),
     threadId: z.string().trim().min(1).optional(),
   }),
