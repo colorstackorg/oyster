@@ -65,7 +65,7 @@ export async function addSlackMessage(
       redis.sismember('slack:auto_reply_channels', data.channelId),
       redis.sismember('slack:compensation_channels', data.channelId),
       redis.sismember('slack:opportunity_channels', data.channelId),
-      redis.sismember('slack:secure_the_bag_channels', data.channelId),
+      redis.sismember('slack:secured_the_bag_channels', data.channelId),
       isFeatureFlagEnabled('compensation'),
     ]);
 
