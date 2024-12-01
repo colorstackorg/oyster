@@ -4,6 +4,7 @@ import { db } from '@oyster/db';
 
 import { slack } from '@/modules/slack/instances';
 import { ENV } from '@/shared/env';
+import { RateLimiter } from '@/shared/utils/rate-limiter';
 
 /**
  * @see https://api.slack.com/methods/users.lookupByEmail
@@ -44,7 +45,7 @@ export async function updateSlackEmail(id: string, email: string) {
  * Retrieve all members with both Slack and Member Directory Profiles
  */
 
-export async function getMembersWithProfilesandSlack() {
+export async function getMembersWithSlackAndDirectoryProfiles() {
   try {
     const members = await db
       .selectFrom('students')
@@ -61,17 +62,30 @@ export async function getMembersWithProfilesandSlack() {
   }
 }
 
-export async function setMemberProfileToSlackUserProfile(
-  id: string,
-  memberDirectoryURL: string
+/**
+ * @see https://api.slack.com/apis/rate-limits#tier_t3
+ */
+const updateProfileRateLimiter = new RateLimiter('slack:profile:update', {
+  rateLimit: 50,
+  rateLimitWindow: 60,
+});
+
+export async function addMemberDirectoryURLToSlackProfile(
+  slackUserId: string,
+  memberId: string
 ) {
   try {
+    await updateProfileRateLimiter.process();
+
+    const memberDirectoryURL = generatePath(ENV.MEMBER_DIRECTORY_URL, {
+      id: memberId,
+    });
+
     const profile = {
       fields: {
-        X123: {
-          // unsure of what the field ID is called is it created?
+        [ENV.SLACK_MEMBER_DIRECTORY_FIELD_ID]: {
           value: memberDirectoryURL,
-          alt: '',
+          alt: 'Member Directory Profile',
         },
       },
     };
@@ -79,43 +93,29 @@ export async function setMemberProfileToSlackUserProfile(
     await slack.users.profile.set({
       profile: JSON.stringify(profile),
       token: ENV.SLACK_ADMIN_TOKEN,
-      user: id,
+      user: slackUserId,
     });
 
-    console.log(`SuccessFully updated Slack Profile${id}`);
+    console.log(`Successfully updated Slack Profile ${slackUserId}`);
   } catch (error) {
-    console.error(`Failed To Update Slack Profile ${id}`, error);
+    console.error(`Failed To Update Slack Profile ${slackUserId}`, error);
   }
 }
 
-export async function updateSlackProfilesWithMemberURLS() {
-  const members = await getMembersWithProfilesandSlack();
+export async function updateSlackProfilesWithMemberDirectoryURLs() {
+  const members = await getMembersWithSlackAndDirectoryProfiles();
+
+  console.log(`Found ${members.length} members to update`);
 
   for (const member of members) {
     const { id, email } = member;
 
     const slackUser = await getSlackUserByEmail(email);
 
-    if (slackUser && slackUser.id) {
-      const baseURL = 'https://app.colorstack.io';
-      const memberDirectoryURL = `${baseURL}${generatePath(`/directory/:id`, { id })}`;
-
-      await setMemberProfileToSlackUserProfile(
-        slackUser.id,
-        memberDirectoryURL
-      );
-
-      console.log(
-        `Successfully updated Slack profile for user ${slackUser.id}`
-      );
+    if (slackUser) {
+      await addMemberDirectoryURLToSlackProfile(slackUser.id, id);
     } else {
       console.log(`No Slack User Found for email: ${email}`);
     }
-
-    await delay(10000);
   }
-}
-
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
