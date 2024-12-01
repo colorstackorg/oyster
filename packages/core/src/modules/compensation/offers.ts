@@ -76,9 +76,7 @@ export const AddFullTimeOfferInput = FullTimeOffer.omit({
 type AddFullTimeOfferInput = z.infer<typeof AddFullTimeOfferInput>;
 
 /**
- * Adds a full-time offer to the database. Also sends a notification to the
- * compensation channel, w/ the offer details and a link to the offer embedded
- * in the message.
+ * Adds a full-time offer to the database.
  *
  * @param input - The details for the full-time offer.
  * @returns Result indicating the success or failure of the operation.
@@ -139,42 +137,6 @@ export async function addFullTimeOffer(
       error: 'Failed to create full-time offer.',
     });
   }
-
-  // There should currently only be 1 channel in this set right now, but this
-  // may change in the future and if so, we'll need to update this.
-  const [compensationChannel] = await redis.smembers(
-    'slack:compensation_channels'
-  );
-
-  const { format } = new Intl.NumberFormat('en-US', {
-    currency: 'USD',
-    maximumFractionDigits: 0,
-    style: 'currency',
-  });
-
-  const message = dedent`
-    A new <${ENV.STUDENT_PROFILE_URL}/offers/full-time/${offer.id}|*full-time offer*> is in! 🚀
-
-    >*Role/Job Title*: ${input.role}
-    >*Company*: ${offer.companyName}
-    >*Location*: ${input.location}
-    >*Past Experience*: ${input.pastExperience}
-    >*Base Salary*: ${format(input.baseSalary)}
-    >*Stock*: ${input.totalStock ? format(input.totalStock) : 'N/A'}
-    >*Bonus (Annual)*: ${input.performanceBonus ? format(input.performanceBonus) : 'N/A'}
-    >*Sign-On Bonus*: ${input.signOnBonus ? format(input.signOnBonus) : 'N/A'}
-    >*Housing/Relocation*: ${input.relocation || 'N/A'}
-    >*Benefits*: ${input.benefits || 'N/A'}
-    >*Negotiated*: ${input.negotiated || 'N/A'}
-    >*Additional Notes*: ${input.additionalNotes || 'N/A'}
-    >*TC*: ${format(Number(offer.totalCompensation))}
-  `;
-
-  job('notification.slack.send', {
-    channel: compensationChannel,
-    message,
-    workspace: 'regular',
-  });
 
   return success(offer);
 }
@@ -250,40 +212,6 @@ export async function addInternshipOffer(
       error: 'Failed to create internship offer.',
     });
   }
-
-  // There should currently only be 1 channel in this set right now, but this
-  // may change in the future and if so, we'll need to update this.
-  const [compensationChannel] = await redis.smembers(
-    'slack:compensation_channels'
-  );
-
-  const { format } = new Intl.NumberFormat('en-US', {
-    currency: 'USD',
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-    style: 'currency',
-  });
-
-  const message = dedent`
-    A new <${ENV.STUDENT_PROFILE_URL}/offers/internships/${offer.id}|*internship offer*> is in! 🚀
-
-    >*Role/Job Title*: ${input.role}
-    >*Company*: ${offer.companyName}
-    >*Location*: ${input.location}
-    >*Past Experience*: ${input.pastExperience}
-    >*Hourly Rate*: ${format(input.hourlyRate)}
-    >*Monthly Rate*: ${format(hourlyToMonthlyRate(input.hourlyRate))}
-    >*Housing/Relocation*: ${input.relocation || 'N/A'}
-    >*Benefits*: ${input.benefits || 'N/A'}
-    >*Negotiated*: ${input.negotiated || 'N/A'}
-    >*Additional Notes*: ${input.additionalNotes || 'N/A'}
-  `;
-
-  job('notification.slack.send', {
-    channel: compensationChannel,
-    message,
-    workspace: 'regular',
-  });
 
   return success(offer);
 }

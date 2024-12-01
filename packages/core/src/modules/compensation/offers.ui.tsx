@@ -115,6 +115,8 @@ export function OfferHourlyRateField({
   );
 }
 
+// TODO: Convert this to use the Google Places API.
+
 export function OfferLocationField({
   defaultValue,
   error,
@@ -131,6 +133,7 @@ export function OfferLocationField({
         defaultValue={defaultValue}
         id="location"
         name="location"
+        placeholder="San Francisco, CA"
         required
       />
     </Form.Field>
@@ -215,7 +218,13 @@ export function OfferRoleField({
 }: Omit<FieldProps<string>, 'name'>) {
   return (
     <Form.Field error={error} label="Role" labelFor="role" required>
-      <Input defaultValue={defaultValue} id="role" name="role" required />
+      <Input
+        defaultValue={defaultValue}
+        id="role"
+        name="role"
+        placeholder="Software Engineer Intern"
+        required
+      />
     </Form.Field>
   );
 }

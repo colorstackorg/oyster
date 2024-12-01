@@ -1,6 +1,6 @@
 import { Outlet } from '@remix-run/react';
 
-import { Dashboard } from '@oyster/ui';
+import { cx, Dashboard } from '@oyster/ui';
 
 import { NavigationItem } from '@/shared/components/navigation';
 import { AddOfferButton } from '@/shared/components/offer';
@@ -11,23 +11,33 @@ export default function OffersLayout() {
     <>
       <Dashboard.Header>
         <Dashboard.Title>Offers 💰</Dashboard.Title>
-
-        <nav className="mr-auto">
-          <ul className="flex items-center gap-4">
-            <NavigationItem to={Route['/offers/internships']}>
-              Internships
-            </NavigationItem>
-
-            <NavigationItem to={Route['/offers/full-time']}>
-              Full-Time
-            </NavigationItem>
-          </ul>
-        </nav>
-
+        <OffersNavigation className="hidden sm:block" />
         <AddOfferButton />
       </Dashboard.Header>
 
+      <OffersNavigation className="block sm:hidden" />
+
       <Outlet />
     </>
+  );
+}
+
+type OffersNavigationProps = {
+  className?: string;
+};
+
+function OffersNavigation({ className }: OffersNavigationProps) {
+  return (
+    <nav className={cx('mr-auto', className)}>
+      <ul className="flex items-center gap-4">
+        <NavigationItem to={Route['/offers/internships']}>
+          Internships
+        </NavigationItem>
+
+        <NavigationItem to={Route['/offers/full-time']}>
+          Full-Time
+        </NavigationItem>
+      </ul>
+    </nav>
   );
 }
