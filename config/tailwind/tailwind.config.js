@@ -19,6 +19,10 @@ export const tailwindConfig = {
         warning: colors.yellow[400],
       },
       keyframes: {
+        'loader-shimmer': {
+          '0%, 100%': { opacity: '0.1' },
+          '50%': { opacity: '0.8' },
+        },
         'modal-animation': {
           '0%': { opacity: 0, transform: 'scale(0)' },
           '100%': { opacity: 1, transform: 'scale(1)' },

@@ -12,7 +12,7 @@ import {
   useSearchParams,
   useSubmit,
 } from '@remix-run/react';
-import { FileText, Plus, Star, Users } from 'react-feather';
+import { FileText, Layers, Plus, Star, Users } from 'react-feather';
 
 import {
   ListCompaniesOrderBy,
@@ -112,13 +112,13 @@ function AddReviewLink() {
 
   return (
     <Link
-      className={getButtonCn({})}
+      className={getButtonCn({ size: 'small' })}
       to={{
         pathname: Route['/companies/reviews/add'],
         search: searchParams.toString(),
       }}
     >
-      <Plus size={16} /> Add Review
+      <Plus size={20} /> Add Review
     </Link>
   );
 }
@@ -204,16 +204,21 @@ type CompanyInView = SerializeFrom<typeof loader>['companies'][number];
 
 function CompanyItem({ company }: { company: CompanyInView }) {
   return (
-    <li className="flex flex-col gap-3 rounded-3xl border border-gray-200 p-4">
+    <li className="flex flex-col gap-3 rounded-2xl border border-gray-200 p-4">
       <header className="flex items-center gap-2">
         <CompanyLogo imageUrl={company.imageUrl} />
-        <CompanyTitle id={company.id} name={company.name} />
+        <CompanyTitle
+          id={company.id}
+          name={company.name}
+          reviews={company.reviews}
+        />
       </header>
 
       <CompanyDescription description={company.description} />
 
       <div className="flex items-center gap-4">
         <EmployeeCount employees={company.employees} />
+        <OpportunitiesCount opportunities={company.opportunities} />
         <ReviewCount reviews={company.reviews} />
         <AverageRating averageRating={company.averageRating} />
       </div>
@@ -232,14 +237,22 @@ function CompanyLogo({ imageUrl }: Pick<CompanyInView, 'imageUrl'>) {
   );
 }
 
-function CompanyTitle({ id, name }: Pick<CompanyInView, 'id' | 'name'>) {
+function CompanyTitle({
+  id,
+  name,
+  reviews,
+}: Pick<CompanyInView, 'id' | 'name' | 'reviews'>) {
+  const to = Number(reviews)
+    ? generatePath(Route['/companies/:id/reviews'], { id })
+    : generatePath(Route['/companies/:id/employees'], { id });
+
   return (
     <Link
       className={cx(
         getTextCn({ variant: 'lg' }),
         'hover:text-primary hover:underline'
       )}
-      to={generatePath(Route['/companies/:id'], { id })}
+      to={to}
     >
       {name}
     </Link>
@@ -270,6 +283,28 @@ function EmployeeCount({ employees }: Pick<CompanyInView, 'employees'>) {
           {employees === '1'
             ? `${employees} member has worked here`
             : `${employees} members have worked here`}
+        </TooltipText>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+function OpportunitiesCount({
+  opportunities,
+}: Pick<CompanyInView, 'opportunities'>) {
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        <Text className="flex items-center gap-1" color="gray-500" variant="sm">
+          <Layers size="16" />
+          <span>{opportunities}</span>
+        </Text>
+      </TooltipTrigger>
+      <TooltipContent>
+        <TooltipText>
+          {opportunities === '1'
+            ? `${opportunities} open opportunity`
+            : `${opportunities} open opportunities`}
         </TooltipText>
       </TooltipContent>
     </Tooltip>

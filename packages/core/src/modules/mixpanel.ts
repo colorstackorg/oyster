@@ -21,7 +21,7 @@ if (MIXPANEL_TOKEN) {
 export type MixpanelEvent = {
   'Chatbot Question Asked': {
     Question: string;
-    Type: 'DM' | 'Public';
+    Type?: 'DM' | 'Public';
   };
 
   'Directory - CTA Clicked': {
@@ -41,13 +41,28 @@ export type MixpanelEvent = {
     Method: 'Google' | 'OTP' | 'Slack';
   };
 
+  'Offer Viewed': {
+    Company: string;
+    Type: 'Full-Time' | 'Internship';
+  };
+
+  'Opportunity Bookmarked': {
+    Company: string;
+  };
+
+  'Opportunity Viewed': {
+    Company: string;
+  };
+
   'Page Viewed': {
     Page:
       | 'Companies'
+      | 'Compensation'
       | 'Directory'
       | 'Events'
       | 'Home'
       | 'Last Week in ColorStack'
+      | 'Opportunities'
       | 'Points'
       | 'Profile'
       | 'Resources';

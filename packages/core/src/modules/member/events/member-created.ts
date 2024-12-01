@@ -2,8 +2,6 @@ import { db } from '@oyster/db';
 
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { addMailchimpListMember } from '@/modules/mailchimp/use-cases/add-mailchimp-list-member';
-import { reportException } from '@/modules/sentry/use-cases/report-exception';
 
 type StudentCreatedInput = GetBullJobData<'student.created'>;
 
@@ -39,13 +37,9 @@ export async function onMemberCreated(input: StudentCreatedInput) {
     email: student.email,
   });
 
-  try {
-    await addMailchimpListMember({
-      email: student.email,
-      firstName: student.firstName,
-      lastName: student.lastName,
-    });
-  } catch (e) {
-    reportException(e);
-  }
+  job('mailchimp.add', {
+    email: student.email,
+    firstName: student.firstName,
+    lastName: student.lastName,
+  });
 }

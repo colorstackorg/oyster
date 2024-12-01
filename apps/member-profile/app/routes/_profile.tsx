@@ -6,12 +6,16 @@ import {
   BookOpen,
   Briefcase,
   Calendar,
+  DollarSign,
   FileText,
   Folder,
   Home,
+  Layers,
+  MessageCircle,
   User,
 } from 'react-feather';
 
+import { isFeatureFlagEnabled } from '@oyster/core/member-profile/server';
 import { getResumeBook } from '@oyster/core/resumes';
 import { Dashboard, Divider } from '@oyster/ui';
 
@@ -21,21 +25,26 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const resumeBook = await getResumeBook({
-    select: ['resumeBooks.id'],
-    where: {
-      hidden: false,
-      status: 'active',
-    },
-  });
+  const [isCompensationEnabled, resumeBook] = await Promise.all([
+    isFeatureFlagEnabled('compensation'),
+
+    getResumeBook({
+      select: ['resumeBooks.id'],
+      where: {
+        hidden: false,
+        status: 'active',
+      },
+    }),
+  ]);
 
   return json({
+    isCompensationEnabled,
     resumeBook,
   });
 }
 
 export default function ProfileLayout() {
-  const { resumeBook } = useLoaderData<typeof loader>();
+  const { isCompensationEnabled, resumeBook } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -51,7 +60,6 @@ export default function ProfileLayout() {
               <>
                 <Dashboard.NavigationLink
                   icon={<Book />}
-                  isNew
                   label="Resume Book"
                   pathname={generatePath(Route['/resume-books/:id'], {
                     id: resumeBook.id,
@@ -75,15 +83,31 @@ export default function ProfileLayout() {
               prefetch="intent"
             />
             <Dashboard.NavigationLink
-              icon={<BookOpen />}
-              label="Resources"
-              pathname={Route['/resources']}
+              icon={<Layers />}
+              isNew
+              label="Opportunities"
+              pathname={Route['/opportunities']}
               prefetch="intent"
             />
+            {isCompensationEnabled && (
+              <Dashboard.NavigationLink
+                icon={<DollarSign />}
+                isNew
+                label="Offers"
+                pathname={Route['/offers']}
+                prefetch="intent"
+              />
+            )}
             <Dashboard.NavigationLink
               icon={<Briefcase />}
               label="Companies"
               pathname={Route['/companies']}
+              prefetch="intent"
+            />
+            <Dashboard.NavigationLink
+              icon={<BookOpen />}
+              label="Resources"
+              pathname={Route['/resources']}
               prefetch="intent"
             />
             <Dashboard.NavigationLink
@@ -99,8 +123,14 @@ export default function ProfileLayout() {
               prefetch="intent"
             />
             <Dashboard.NavigationLink
-              icon={<FileText />}
+              icon={<MessageCircle />}
               isNew
+              label="Ask AI"
+              pathname={Route['/ask-ai']}
+              prefetch="intent"
+            />
+            <Dashboard.NavigationLink
+              icon={<FileText />}
               label="Resume Review"
               pathname={Route['/resume/review']}
               prefetch="intent"

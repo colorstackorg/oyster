@@ -19,7 +19,6 @@ export {
   EmploymentType,
   FORMATTED_EMPLOYMENT_TYPE,
   FORMATTED_LOCATION_TYPE,
-  ListJobOffersWhere,
   LocationType,
   WorkExperience,
 } from './modules/employment/employment.types';
@@ -39,4 +38,5 @@ export {
   ListMembersInDirectoryWhere,
 } from './modules/member/member.types';
 export { CreateResumeBookInput } from './modules/resume/resume.types';
+export { getRandomAccentColor } from './shared/utils/color.utils';
 export { Environment, ListSearchParams } from './shared/types';
