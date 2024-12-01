@@ -51,6 +51,6 @@ export function startBullWorkers(): void {
   oneTimeCodeWorker.run();
   opportunityWorker.run();
   profileWorker.run();
-  slackWorker.run();
   resumeReviewWorker.run();
+  slackWorker.run();
 }
