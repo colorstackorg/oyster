@@ -12,14 +12,9 @@ export async function sendAnniversaryEmail(
     .selectFrom('students')
     .select(['email', 'firstName', 'acceptedAt'])
     .whereRef(
-      sql`EXTRACT(MONTH FROM acceptedAt)`,
+      sql`DATE_PART('doy', acceptedAt)`,
       '=',
-      sql`EXTRACT(MONTH FROM CURRENT_DATE)`
-    )
-    .whereRef(
-      sql`EXTRACT(DAY FROM acceptedAt)`,
-      '=',
-      sql`EXTRACT(DAY FROM CURRENT_DATE)`
+      sql`DATE_PART('doy', CURRENT_DATE)`
     )
     .where('slackId', 'is not', null)
     .execute();
@@ -31,14 +26,10 @@ export async function sendAnniversaryEmail(
 
   for (const member of members) {
     const { email, firstName, acceptedAt } = member;
-    const years = Math.floor(
-      (new Date().getTime() - new Date(acceptedAt).getTime()) /
-        1000 /
-        60 /
-        60 /
-        24 /
-        365
-    );
+    const acceptedDate = new Date(acceptedAt);
+    const today = new Date();
+
+    const years = today.getFullYear() - acceptedDate.getFullYear();
 
     job('notification.email.send', {
       name: 'student-anniversary',
