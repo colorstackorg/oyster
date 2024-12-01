@@ -143,7 +143,7 @@ export async function answerChatbotQuestion({
   job('slack.reaction.add', {
     channelId: channelId,
     messageId: id,
-    reaction: 'colorstack-logo',
+    reaction: 'colorstack_logo',
     userId: userId,
   });
 
