@@ -59,12 +59,14 @@ export async function addSlackMessage(
       isAutoReplyChannel,
       isCompensationChannel,
       isOpportunityChannel,
+      isResumeReviewChannel,
       isSecuredTheBagChannel,
       isCompensationEnabled,
     ] = await Promise.all([
       redis.sismember('slack:auto_reply_channels', data.channelId),
       redis.sismember('slack:compensation_channels', data.channelId),
       redis.sismember('slack:opportunity_channels', data.channelId),
+      redis.sismember('slack:resume_review_channels', data.channelId),
       redis.sismember('slack:secured_the_bag_channels', data.channelId),
       isFeatureFlagEnabled('compensation'),
     ]);
@@ -89,6 +91,14 @@ export async function addSlackMessage(
       job('opportunity.create', {
         slackChannelId: data.channelId,
         slackMessageId: data.id,
+      });
+    }
+
+    if (isResumeReviewChannel) {
+      job('resume.review.check', {
+        channelId: data.channelId,
+        messageId: data.id,
+        userId: data.userId,
       });
     }
 
