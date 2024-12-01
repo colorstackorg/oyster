@@ -7,7 +7,6 @@ dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-import { resumeReviewWorker } from '@/modules/resume/resume-review';
 import { airtableWorker } from './modules/airtable/airtable.core';
 import { applicationWorker } from './modules/application/application.core';
 import { oneTimeCodeWorker } from './modules/authentication/one-time-code.worker';
@@ -22,6 +21,7 @@ import { profileWorker } from './modules/member/profile.worker';
 import { notificationWorker } from './modules/notification/notification.worker';
 import { onboardingSessionWorker } from './modules/onboarding-session/onboarding-session.worker';
 import { opportunityWorker } from './modules/opportunity/opportunity';
+import { resumeReviewWorker } from './modules/resume/resume-review';
 import { slackWorker } from './modules/slack/slack.worker';
 
 export { job } from './infrastructure/bull/use-cases/job';
