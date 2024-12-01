@@ -23,6 +23,7 @@ import { deleteSlackMessage } from './use-cases/delete-slack-message';
 import { inviteToSlackWorkspace } from './use-cases/invite-to-slack-workspace';
 import { removeSlackReaction } from './use-cases/remove-slack-reaction';
 import { renameSlackChannel } from './use-cases/rename-slack-channel';
+import { sendSecuredTheBagReminder } from './use-cases/send-secured-the-bag-reminder';
 import { unarchiveSlackChannel } from './use-cases/unarchive-slack-channel';
 
 export const slackWorker = registerWorker(
@@ -80,6 +81,9 @@ export const slackWorker = registerWorker(
       })
       .with({ name: 'slack.message.delete' }, async ({ data }) => {
         return deleteSlackMessage(data);
+      })
+      .with({ name: 'slack.secured_the_bag.reminder' }, async ({ data }) => {
+        return sendSecuredTheBagReminder(data);
       })
       .with({ name: 'slack.profile_picture.changed' }, async ({ data }) => {
         return onSlackProfilePictureChanged(data);
