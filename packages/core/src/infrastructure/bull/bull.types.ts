@@ -39,9 +39,9 @@ export const BullQueue = {
   ONE_TIME_CODE: 'one_time_code',
   OPPORTUNITY: 'opportunity',
   PROFILE: 'profile',
+  RESUME_REVIEW: 'resume_review',
   SLACK: 'slack',
   STUDENT: 'student',
-  RESUME_REVIEW: 'resume_review',
 } as const;
 
 export type BullQueue = ExtractValue<typeof BullQueue>;
