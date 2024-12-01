@@ -19,6 +19,11 @@ export const resumeReviewWorker = registerWorker(
       return;
     }
 
+    // Only check top-level messages, not thread replies
+    if (threadId) {
+      return;
+    }
+
     // Retrieve the member's information
     const member = await db
       .selectFrom('students')
@@ -42,7 +47,7 @@ export const resumeReviewWorker = registerWorker(
         channel: channelId,
         text: `It looks like you haven't tried out the AI Resume Reviewer before—check it out <${resumeReviewUrl}|here>!`,
         userId: userId,
-        threadId: threadId || messageId,
+        threadId: messageId,
       });
     }
   }
