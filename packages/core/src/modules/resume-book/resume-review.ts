@@ -6,6 +6,7 @@ import { sendEphemeralSlackNotification } from '@/modules/notification/use-cases
 import { ENV } from '@/shared/env';
 
 const targetChannelId = ENV.CAREER_RESUME_REVIEW_CHANNEL_ID;
+const resumeReviewUrl = ENV.RESUME_REVIEW_URL;
 
 export const resumeReviewWorker = registerWorker(
   'resume_review',
@@ -39,7 +40,7 @@ export const resumeReviewWorker = registerWorker(
     if (!submission) {
       await sendEphemeralSlackNotification({
         channel: channelId,
-        text: 'You have not submitted a resume to any resume books yet.',
+        text: `It looks like you haven't tried out the AI Resume Reviewer before—check it out <${resumeReviewUrl}|here>!`,
         userId: userId,
         threadId: threadId || messageId,
       });
