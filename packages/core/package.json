@@ -35,6 +35,8 @@
     "./location/ui": "./src/modules/location/location.ui.tsx",
     "./mixpanel": "./src/modules/mixpanel.ts",
     "./object-storage": "./src/modules/object-storage/index.ts",
+    "./offers": "./src/modules/compensation/offers.ts",
+    "./offers/ui": "./src/modules/compensation/offers.ui.tsx",
     "./opportunities": "./src/modules/opportunity/opportunity.ts",
     "./referrals": "./src/modules/referral/referral.core.ts",
     "./referrals/ui": "./src/modules/referral/referral.ui.tsx",
@@ -46,6 +48,7 @@
     "./resumes/ui": "./src/modules/resume/resume.ui.tsx",
     "./scholarships": "./src/modules/scholarship/scholarship.core.ts",
     "./scholarships/ui": "./src/modules/scholarship/scholarship.ui.tsx",
+    "./slack": "./src/modules/slack/slack.ts",
     "./slack/server": "./src/modules/slack/index.server.ts"
   },
   "scripts": {
@@ -59,7 +62,6 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.576.0",
     "@aws-sdk/s3-request-presigner": "^3.577.0",
-    "@mailchimp/mailchimp_marketing": "^3.0.78",
     "@oyster/db": "*",
     "@oyster/email-templates": "*",
     "@oyster/types": "*",
@@ -90,9 +92,9 @@
     "@remix-run/react": "^2.8.1",
     "@types/dedent": "^0.7.2",
     "@types/jsonwebtoken": "^9.0.2",
-    "@types/mailchimp__mailchimp_marketing": "^3.0.8",
     "@types/nodemailer": "^6.4.14",
     "nanoid": "^3.0.0",
+    "puppeteer-core": "^23.7.0",
     "react": "^18.2.0",
     "tsup": "^6.1.3",
     "tsx": "^4.7.1",

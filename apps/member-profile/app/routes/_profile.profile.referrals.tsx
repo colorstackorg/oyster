@@ -1,11 +1,18 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
-import { Send } from 'react-feather';
+import { Info, Send } from 'react-feather';
 import { match } from 'ts-pattern';
 
+import { ApplicationRejectionReason } from '@oyster/core/applications/types';
 import { listReferrals } from '@oyster/core/referrals';
 import { type ReferralStatus } from '@oyster/core/referrals/ui';
 import { Button, getButtonCn, Pill, Text } from '@oyster/ui';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipText,
+  TooltipTrigger,
+} from '@oyster/ui/tooltip';
 
 import {
   EmptyState,
@@ -23,8 +30,9 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const referrals = await listReferrals({
+  const _referrals = await listReferrals({
     select: [
+      'applications.rejectionReason',
       'referrals.email',
       'referrals.firstName',
       'referrals.id',
@@ -34,9 +42,50 @@ export async function loader({ request }: LoaderFunctionArgs) {
     where: { referrerId: user(session) },
   });
 
+  const referrals = _referrals.map((referral) => {
+    return {
+      ...referral,
+      rejectionReason: formatRejectionReason(referral.rejectionReason),
+    };
+  });
+
   return json({
     referrals,
   });
+}
+
+/**
+ * Formats a rejection reason into a user-friendly message.
+ *
+ * @param reason - The raw rejection reason.
+ * @returns A formatted, user-friendly explanation of the rejection reason.
+ *
+ * @example
+ * // Returns "Your referral was rejected because they are not the right major."
+ * formatRejectionReason('ineligible_major');
+ **/
+function formatRejectionReason(reason: string | null): string | undefined {
+  const prefix = 'Your referral was rejected because ';
+
+  switch (reason) {
+    case ApplicationRejectionReason.BAD_LINKEDIN:
+      return prefix + 'their LinkedIn was incomplete/incorrect.';
+
+    case ApplicationRejectionReason.EMAIL_BOUNCED:
+      return prefix + 'their email bounced.';
+
+    case ApplicationRejectionReason.IS_INTERNATIONAL:
+      return prefix + 'they are not enrolled in the US or Canada.';
+
+    case ApplicationRejectionReason.INELIGIBLE_MAJOR:
+      return prefix + 'they are not the right major.';
+
+    case ApplicationRejectionReason.NOT_UNDERGRADUATE:
+      return prefix + 'they are not an undergraduate student.';
+
+    default:
+      return undefined;
+  }
 }
 
 export default function Referrals() {
@@ -86,7 +135,7 @@ export default function Referrals() {
                       return <Pill color="orange-100">Applied</Pill>;
                     })
                     .with('rejected', () => {
-                      return <Pill color="red-100">Rejected</Pill>;
+                      return <RejectedPill reason={referral.rejectionReason} />;
                     })
                     .with('sent', () => {
                       return <Pill color="amber-100">Sent</Pill>;
@@ -118,5 +167,30 @@ export default function Referrals() {
 
       <Outlet />
     </>
+  );
+}
+
+type RejectedPillProps = {
+  reason?: string;
+};
+
+function RejectedPill({ reason }: RejectedPillProps) {
+  if (!reason) {
+    return <Pill color="red-100">Rejected</Pill>;
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        <Pill className="flex items-center gap-1" color="red-100">
+          Rejected
+          {!!reason && <Info size={16} className="text-error" />}
+        </Pill>
+      </TooltipTrigger>
+
+      <TooltipContent>
+        <TooltipText>{reason}</TooltipText>
+      </TooltipContent>
+    </Tooltip>
   );
 }

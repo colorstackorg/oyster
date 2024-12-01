@@ -10,6 +10,7 @@ import {
 } from '@radix-ui/react-tooltip';
 
 import { Text, type TextProps } from './text';
+import { cx } from '../utils/cx';
 
 export function Tooltip(props: TooltipProps) {
   return (
@@ -23,7 +24,8 @@ export function TooltipContent(props: TooltipContentProps) {
   return (
     <Portal>
       <Content
-        className="rounded-md bg-black px-2 py-1 data-[side=top]:mb-1"
+        className="max-w-xs rounded-md bg-black px-2 py-1"
+        sideOffset={8}
         {...props}
       />
     </Portal>
@@ -34,6 +36,6 @@ export function TooltipText(props: TextProps) {
   return <Text color="white" variant="xs" {...props} />;
 }
 
-export function TooltipTrigger(props: TooltipTriggerProps) {
-  return <Trigger className="cursor-default" {...props} />;
+export function TooltipTrigger({ className, ...props }: TooltipTriggerProps) {
+  return <Trigger className={cx('cursor-default', className)} {...props} />;
 }

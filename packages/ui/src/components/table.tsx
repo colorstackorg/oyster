@@ -197,14 +197,14 @@ function TableBody({
                 // As long as the click target is actually the row, then we
                 // want to trigger the row click.
                 if (isInteractiveElement?.tagName === 'TR') {
-                  navigate(rowTo(row));
+                  navigate(rowTo(row), { preventScrollReset: true });
                 }
               },
 
               onKeyDown(e) {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  navigate(rowTo(row));
+                  navigate(rowTo(row), { preventScrollReset: true });
                 }
               },
             })}
