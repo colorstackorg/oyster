@@ -23,7 +23,7 @@ const updateProfileRateLimiter = new RateLimiter('slack:profile:update', {
 export async function addDirectoryLinkToSlackProfiles() {
   const members = await db
     .selectFrom('students')
-    .select(['id', 'slackId'])
+    .select(['email', 'id', 'slackId'])
     .where('slackId', 'is not', null)
     .orderBy('createdAt', 'desc')
     .execute();
@@ -31,11 +31,13 @@ export async function addDirectoryLinkToSlackProfiles() {
   console.log(`Found ${members.length} members to update.`);
 
   for (const member of members) {
+    console.log('Updating Slack profile...', member.email);
+
     try {
       await addDirectoryLinkToSlackProfile(member);
-      console.log('Updated Slack profile!', member.slackId);
+      console.count('Updated Slack profile!');
     } catch (e) {
-      console.error('Failed to update Slack profile.', member.slackId);
+      console.count('Failed to update Slack profile.');
       reportException(e);
     }
   }
@@ -55,7 +57,6 @@ export async function addDirectoryLinkToSlackProfile(
   const profile = {
     fields: {
       [SLACK_MEMBER_DIRECTORY_FIELD_ID]: {
-        alt: '', // We'll just show the URL as text in Slack.
         value: new URL(`/directory/${member.id}`, ENV.STUDENT_PROFILE_URL),
       },
     },
