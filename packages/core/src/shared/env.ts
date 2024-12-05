@@ -16,7 +16,6 @@ export const ENV = {
   INTERNAL_SLACK_NOTIFICATIONS_CHANNEL_ID: process.env
     .INTERNAL_SLACK_NOTIFICATIONS_CHANNEL_ID as string,
   JWT_SECRET: process.env.JWT_SECRET as string,
-  MEMBER_DIRECTORY_URL: process.env.MEMBER_DIRECTORY_URL as string,
   MEMBER_PROFILE_URL: process.env.MEMBER_PROFILE_URL as string,
   REDIS_URL: process.env.REDIS_URL as string,
   SENTRY_DSN: process.env.SENTRY_DSN as string,
@@ -29,8 +28,6 @@ export const ENV = {
   SLACK_CLIENT_SECRET: process.env.SLACK_CLIENT_SECRET as string,
   SLACK_INTRODUCTIONS_CHANNEL_ID: process.env
     .SLACK_INTRODUCTIONS_CHANNEL_ID as string,
-  SLACK_MEMBER_DIRECTORY_FIELD_ID: process.env
-    .SLACK_MEMBER_DIRECTORY_FIELD_ID as string,
   SLACK_SIGNING_SECRET: process.env.SLACK_SIGNING_SECRET as string,
   STUDENT_PROFILE_URL: process.env.STUDENT_PROFILE_URL as string,
 };
