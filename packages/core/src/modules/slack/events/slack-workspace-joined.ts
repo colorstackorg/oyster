@@ -2,6 +2,7 @@ import { db } from '@oyster/db';
 
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { getMemberByEmail } from '@/modules/member/queries/get-member-by-email';
+import { addDirectoryLinkToSlackProfile } from '@/modules/slack/slack-profile';
 import { NotFoundError } from '@/shared/errors';
 
 export async function onSlackWorkspaceJoined({
@@ -27,4 +28,9 @@ export async function onSlackWorkspaceJoined({
     })
     .where('id', '=', member.id)
     .execute();
+
+  await addDirectoryLinkToSlackProfile({
+    id: member.id,
+    slackId,
+  });
 }
