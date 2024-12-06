@@ -1,17 +1,16 @@
 import dedent from 'dedent';
+import { sql } from 'kysely';
 import { z } from 'zod';
 
-import { cache, ONE_WEEK_IN_SECONDS } from '@/infrastructure/redis';
+import { db } from '@oyster/db';
+import { id } from '@oyster/utils';
+
 import { getChatCompletion } from '@/modules/ai/ai';
 import { track } from '@/modules/mixpanel';
 import { ColorStackError } from '@/shared/errors';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 import { getTextFromPDF } from '@/shared/utils/file.utils';
 import { FileLike } from '@/shared/utils/zod.utils';
-
-// Constants
-
-const RESUME_FEEDBACK_REDIS_PREFIX = 'resume_feedback:';
 
 // Queries
 
@@ -20,11 +19,18 @@ const RESUME_FEEDBACK_REDIS_PREFIX = 'resume_feedback:';
  * feedback is temporarily stored in Redis, not longer-term storage.
  */
 export async function getLastResumeFeedback(memberId: string) {
-  const feedback = await cache.get<ResumeFeedback>(
-    RESUME_FEEDBACK_REDIS_PREFIX + memberId
-  );
+  const review = await db
+    .selectFrom('resumeReviews')
+    .select('feedback')
+    .where('memberId', '=', memberId)
+    .orderBy('createdAt', 'desc')
+    .executeTakeFirst();
 
-  return feedback;
+  if (!review) {
+    return null;
+  }
+
+  return review.feedback as ResumeFeedback;
 }
 
 // Use Cases
@@ -173,13 +179,14 @@ export async function reviewResume({
     const object = JSON.parse(completionResult.data);
     const feedback = ResumeFeedback.parse(object);
 
-    // We'll cache the feedback for a week so that the user can view the
-    // feedback without having to constantly re-run the review.
-    await cache.set<ResumeFeedback>(
-      RESUME_FEEDBACK_REDIS_PREFIX + memberId,
-      feedback,
-      ONE_WEEK_IN_SECONDS
-    );
+    await db
+      .insertInto('resumeReviews')
+      .values({
+        feedback: sql`cast(${JSON.stringify(feedback)} as jsonb)`,
+        id: id(),
+        memberId,
+      })
+      .execute();
 
     return success(feedback);
   } catch (e) {
