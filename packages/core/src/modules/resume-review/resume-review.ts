@@ -2,7 +2,7 @@ import dedent from 'dedent';
 import { sql } from 'kysely';
 import { z } from 'zod';
 
-import { db } from '@oyster/db';
+import { db, relativeTime } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { getChatCompletion } from '@/modules/ai/ai';
@@ -23,7 +23,7 @@ export async function getLastResumeFeedback(memberId: string) {
     .selectFrom('resumeReviews')
     .select('feedback')
     .where('memberId', '=', memberId)
-    .where('createdAt', '>=', sql<Date>`now() - interval '1 week'`)
+    .where('createdAt', '>=', relativeTime("now() - interval '1 week'"))
     .orderBy('createdAt', 'desc')
     .executeTakeFirst();
 
