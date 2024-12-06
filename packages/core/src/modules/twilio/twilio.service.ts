@@ -10,9 +10,9 @@ const accountSid = 'INSERT HERE';
 const authToken = 'INSERT HERE';
 const client = new Twilio.Twilio(accountSid, authToken);
 
-export async function sendMessages( _: GetBullJobData<'twilio.messaging'>
+export async function sendMessages(_: GetBullJobData<'twilio.messaging'>
 ) {
-  try {
+    try {
         const studentsPhoneNumbers = await db
             .selectFrom('students')
             .select(['phoneNumber'])
@@ -21,23 +21,23 @@ export async function sendMessages( _: GetBullJobData<'twilio.messaging'>
         console.log("Fetched phone numbers:", studentsPhoneNumbers); // Log the raw data from the database
         const numbers = studentsPhoneNumbers
             .map(({ phoneNumber }) => phoneNumber)
-            .filter(Boolean); 
+            .filter(Boolean);
 
-        const messagePromises = numbers.map(phoneNumber => 
+        const messagePromises = numbers.map(phoneNumber =>
             client.messages.create({
-                body: 'Money Here', 
+                body: 'Money Here',
                 to: `${phoneNumber}`,
                 from: twilioNumber
             })
-            .then(message => console.log(`Message sent to ${message.to}`))
-            .catch(error => console.error(`Failed to send message to ${phoneNumber}:`, error))
+                .then(message => console.log(`Message sent to ${message.to}`))
+                .catch(error => console.error(`Failed to send message to ${phoneNumber}:`, error))
         );
 
         Promise.all(messagePromises)
-        .then(() => console.log('All messages processed'))
-        .catch(err => console.error('Error in processing messages:', err));
-        
-    }catch (error) {
+            .then(() => console.log('All messages processed'))
+            .catch(err => console.error('Error in processing messages:', err));
+
+    } catch (error) {
         console.error("Failed to send messages:", error);
     }
 }
