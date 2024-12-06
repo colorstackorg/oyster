@@ -95,9 +95,7 @@ export async function addSlackMessage(
     }
 
     if (isResumeReviewChannel) {
-      job('resume.review.check', {
-        channelId: data.channelId,
-        messageId: data.id,
+      job('resume_review.check', {
         userId: data.userId,
       });
     }

@@ -396,10 +396,8 @@ export const ProfileBullJob = z.discriminatedUnion('name', [
 
 export const ResumeReviewBullJob = z.discriminatedUnion('name', [
   z.object({
-    name: z.literal('resume.review.check'),
+    name: z.literal('resume_review.check'),
     data: z.object({
-      channelId: z.string().trim().min(1),
-      messageId: z.string().trim().min(1),
       userId: z.string().trim().min(1),
     }),
   }),

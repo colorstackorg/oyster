@@ -1,12 +1,20 @@
 import dedent from 'dedent';
 import { sql } from 'kysely';
+import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { db, relativeTime } from '@oyster/db';
 import { id } from '@oyster/utils';
 
+import {
+  type GetBullJobData,
+  ResumeReviewBullJob,
+} from '@/infrastructure/bull/bull.types';
+import { job } from '@/infrastructure/bull/use-cases/job';
+import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { getChatCompletion } from '@/modules/ai/ai';
 import { track } from '@/modules/mixpanel';
+import { ENV } from '@/shared/env';
 import { ColorStackError } from '@/shared/errors';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 import { getTextFromPDF } from '@/shared/utils/file.utils';
@@ -201,4 +209,48 @@ export async function reviewResume({
       error: error.message,
     });
   }
+}
+
+// Worker
+
+export const resumeReviewWorker = registerWorker(
+  'resume_review',
+  ResumeReviewBullJob,
+  async (job) => {
+    const result = await match(job)
+      .with({ name: 'resume_review.check' }, ({ data }) => {
+        return checkResumeReview(data);
+      })
+      .exhaustive();
+
+    if (!result.ok) {
+      throw new Error(result.error);
+    }
+
+    return result.data;
+  }
+);
+
+async function checkResumeReview({
+  userId,
+}: GetBullJobData<'resume_review.check'>): Promise<Result> {
+  const review = await db
+    .selectFrom('resumeReviews')
+    .leftJoin('students', 'students.id', 'resumeReviews.memberId')
+    .where('students.slackId', '=', userId)
+    .executeTakeFirst();
+
+  // If they haven't used the AI Resume Review feature, then we'll send them
+  // a notification prompting them to do so.
+  if (!review) {
+    const url = new URL('/resume/review', ENV.STUDENT_PROFILE_URL);
+
+    job('notification.slack.send', {
+      channel: userId,
+      message: `If you haven't used the AI Resume Review feature yet, check it out <${url}|*here*>!`,
+      workspace: 'regular',
+    });
+  }
+
+  return success({});
 }
