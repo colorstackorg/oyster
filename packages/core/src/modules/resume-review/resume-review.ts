@@ -23,6 +23,7 @@ export async function getLastResumeFeedback(memberId: string) {
     .selectFrom('resumeReviews')
     .select('feedback')
     .where('memberId', '=', memberId)
+    .where('createdAt', '>=', sql<Date>`now() - interval '1 week'`)
     .orderBy('createdAt', 'desc')
     .executeTakeFirst();
 
