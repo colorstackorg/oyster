@@ -2,18 +2,17 @@ import * as Twilio from 'twilio';
 
 import { db } from '@oyster/db';
 
-import { GetBullJobData } from '@/infrastructure/bull/bull.types'
+import { GetBullJobData } from '@/infrastructure/bull/bull.types';
 
 
 const twilioNumber = 'INSERT HERE';
-const accountSid = 'INSERT HERE'; 
-const authToken = 'INSERT HERE'; 
+const accountSid = 'INSERT HERE';
+const authToken = 'INSERT HERE';
 const client = new Twilio.Twilio(accountSid, authToken);
 
-export async function sendMessages(
-    _: GetBullJobData<'twilio.messaging'>
+export async function sendMessages( _: GetBullJobData<'twilio.messaging'>
 ) {
-    try{
+  try {
         const studentsPhoneNumbers = await db
             .selectFrom('students')
             .select(['phoneNumber'])
