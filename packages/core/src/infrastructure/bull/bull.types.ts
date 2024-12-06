@@ -645,7 +645,7 @@ export const BullJob = z.union([
   ProfileBullJob,
   SlackBullJob,
   StudentBullJob,
-  TwilioMessagingBullJob
+  TwilioMessagingBullJob,
 ]);
 
 // Types

@@ -60,9 +60,6 @@ export async function onPrimaryEmailChanged({
     newEmail: student.newEmail,
     previousEmail,
   };
-  job('twilio.messaging', {
-    data: { key: 'value' },
-  });
 
   job('notification.email.send', {
     data,

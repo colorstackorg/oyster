@@ -1,8 +1,8 @@
-import * as Twilio from 'twilio'
+import * as Twilio from 'twilio';
 
 import { db } from '@oyster/db';
 
-import {GetBullJobData} from '@/infrastructure/bull/bull.types'
+import { GetBullJobData } from '@/infrastructure/bull/bull.types'
 
 
 const twilioNumber = 'INSERT HERE';

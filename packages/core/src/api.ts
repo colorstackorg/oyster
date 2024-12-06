@@ -52,5 +52,5 @@ export function startBullWorkers(): void {
   opportunityWorker.run();
   profileWorker.run();
   slackWorker.run();
-  twilioWorker.run()
+  twilioWorker.run();
 }
