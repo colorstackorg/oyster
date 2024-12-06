@@ -541,6 +541,15 @@ export const SlackBullJob = z.discriminatedUnion('name', [
     }),
   }),
   z.object({
+    name: z.literal('slack.secured_the_bag.reminder'),
+    data: z.object({
+      channelId: z.string().trim().min(1),
+      messageId: z.string().trim().min(1),
+      text: z.string().trim().min(1),
+      userId: z.string().trim().min(1),
+    }),
+  }),
+  z.object({
     name: z.literal('slack.thread.sync_embedding'),
     data: z.object({
       action: z.enum(['add', 'delete', 'update']),
