@@ -39,6 +39,7 @@ export const BullQueue = {
   ONE_TIME_CODE: 'one_time_code',
   OPPORTUNITY: 'opportunity',
   PROFILE: 'profile',
+  RESUME_REVIEW: 'resume_review',
   SLACK: 'slack',
   STUDENT: 'student',
 } as const;
@@ -393,6 +394,15 @@ export const ProfileBullJob = z.discriminatedUnion('name', [
   }),
 ]);
 
+export const ResumeReviewBullJob = z.discriminatedUnion('name', [
+  z.object({
+    name: z.literal('resume_review.check'),
+    data: z.object({
+      userId: z.string().trim().min(1),
+    }),
+  }),
+]);
+
 export const SlackBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('slack.birthdates.update'),
@@ -645,6 +655,7 @@ export const BullJob = z.union([
   OneTimeCodeBullJob,
   OpportunityBullJob,
   ProfileBullJob,
+  ResumeReviewBullJob,
   SlackBullJob,
   StudentBullJob,
 ]);
