@@ -63,6 +63,7 @@ type SlackMessageSentEvent = {
   app_id?: string;
   bot_id?: string;
   channel: string;
+  files?: unknown[];
   subtype: undefined;
   text: string;
   thread_ts: string | undefined;

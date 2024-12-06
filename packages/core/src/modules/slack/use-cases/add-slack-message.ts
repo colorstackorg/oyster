@@ -94,7 +94,7 @@ export async function addSlackMessage(
       });
     }
 
-    if (isResumeReviewChannel) {
+    if (data.hasFile && isResumeReviewChannel) {
       job('resume_review.check', {
         userId: data.userId,
       });

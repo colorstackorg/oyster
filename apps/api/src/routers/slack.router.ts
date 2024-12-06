@@ -107,6 +107,7 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
       job('slack.message.add', {
         channelId: event.channel!,
         createdAt: new Date(Number(event.ts) * 1000),
+        hasFile: !!event.files && !!event.files.length,
         id: event.ts!,
         isBot: !!event.app_id || !!event.bot_id,
         text: event.text!,
