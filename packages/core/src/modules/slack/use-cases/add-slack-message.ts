@@ -94,6 +94,8 @@ export async function addSlackMessage(
 
     if (isSecuredTheBagChannel) {
       job('slack.secured_the_bag.reminder', {
+        channelId: data.channelId,
+        messageId: data.id,
         text: data.text as string,
         userId: data.userId,
       });

@@ -3,9 +3,55 @@ import dedent from 'dedent';
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { getChatCompletion } from '@/modules/ai/ai';
+import { slack } from '@/modules/slack/instances';
 import { ENV } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 
+export async function sendSecuredTheBagReminder({
+  channelId,
+  messageId,
+  text,
+  userId,
+}: GetBullJobData<'slack.secured_the_bag.reminder'>): Promise<Result> {
+  const result = await isCareerAnnouncement(text);
+
+  if (!result.ok) {
+    return fail(result);
+  }
+
+  if (!result.data) {
+    return success({}); // Exit gracefully.
+  }
+
+  const offerDatabaseURL = new URL('/offers', ENV.STUDENT_PROFILE_URL);
+  const workHistoryURL = new URL('/profile/work', ENV.STUDENT_PROFILE_URL);
+
+  const { permalink } = await slack.chat.getPermalink({
+    channel: channelId,
+    message_ts: messageId,
+  });
+
+  const message = dedent`
+    Congratulations on <${permalink}|securing the bag>! 🎉
+
+    Don't forget to add your offer(s) to the <${offerDatabaseURL}|*offer database*> and update your <${workHistoryURL}|*work history*>! ✅
+
+    Keep up the great work! 🚀
+  `;
+
+  job('notification.slack.send', {
+    channel: userId,
+    message,
+    workspace: 'regular',
+  });
+
+  return success({});
+}
+
+/**
+ * Returns true if the input is announcing a new job, offer acceptance, or
+ * career milestone.
+ */
 async function isCareerAnnouncement(text: string): Promise<Result<boolean>> {
   const result = await getChatCompletion({
     maxTokens: 5,
@@ -21,7 +67,7 @@ async function isCareerAnnouncement(text: string): Promise<Result<boolean>> {
         type: 'text',
         text: dedent`
           Determine if the input is announcing a new job, offer acceptance, or career milestone.
-          
+
           If it is, respond with "true". If it is not, respond with "false".
         `,
       },
@@ -34,28 +80,4 @@ async function isCareerAnnouncement(text: string): Promise<Result<boolean>> {
   }
 
   return success(result.data === 'true');
-}
-
-export async function sendSecuredTheBagReminder({
-  text,
-  userId,
-}: GetBullJobData<'slack.secured_the_bag.reminder'>) {
-  const result = await isCareerAnnouncement(text);
-
-  if (!result.ok || !result.data) {
-    return;
-  }
-
-  const message = dedent`
-    Congratulations on securing the bag! 🎉 
-    We noticed your post in the #career-secured-the-bag channel. 
-    Don't forget to update your <${ENV.WORK_EXPERIENCE_URL}|*Work History*> on your member profile. 
-    Keep up the great work!
-  `;
-
-  job('notification.slack.send', {
-    channel: userId,
-    message,
-    workspace: 'regular',
-  });
 }

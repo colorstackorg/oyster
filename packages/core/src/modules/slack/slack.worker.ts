@@ -82,9 +82,6 @@ export const slackWorker = registerWorker(
       .with({ name: 'slack.message.delete' }, async ({ data }) => {
         return deleteSlackMessage(data);
       })
-      .with({ name: 'slack.secured_the_bag.reminder' }, async ({ data }) => {
-        return sendSecuredTheBagReminder(data);
-      })
       .with({ name: 'slack.profile_picture.changed' }, async ({ data }) => {
         return onSlackProfilePictureChanged(data);
       })
@@ -102,6 +99,15 @@ export const slackWorker = registerWorker(
       })
       .with({ name: 'slack.reaction.remove' }, async ({ data }) => {
         return removeSlackReaction(data);
+      })
+      .with({ name: 'slack.secured_the_bag.reminder' }, async ({ data }) => {
+        const result = await sendSecuredTheBagReminder(data);
+
+        if (!result.ok) {
+          throw new Error(result.error);
+        }
+
+        return result.data;
       })
       .with({ name: 'slack.thread.sync_embedding' }, async ({ data }) => {
         const result = await syncThreadToPinecone(data);
