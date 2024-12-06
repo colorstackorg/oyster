@@ -4,7 +4,6 @@ import { db } from '@oyster/db';
 
 import { GetBullJobData } from '@/infrastructure/bull/bull.types';
 
-
 const twilioNumber = 'INSERT HERE';
 const accountSid = 'INSERT HERE';
 const authToken = 'INSERT HERE';
@@ -18,7 +17,6 @@ export async function sendMessages(_: GetBullJobData<'twilio.messaging'>
             .select(['phoneNumber'])
             .execute();
 
-        console.log("Fetched phone numbers:", studentsPhoneNumbers); 
         const numbers = studentsPhoneNumbers
             .map(({ phoneNumber }) => phoneNumber)
             .filter(Boolean);
@@ -29,8 +27,10 @@ export async function sendMessages(_: GetBullJobData<'twilio.messaging'>
                 to: `${phoneNumber}`,
                 from: twilioNumber
             })
-                .then(message => console.log(`Message sent to ${message.to}`))
-                .catch(error => console.error(`Failed to send message to ${phoneNumber}:`, error))
+                .then(message => 
+                    console.log(`Message sent to ${message.to}`))
+                .catch(error => 
+                    console.error(`Failed to send message to ${phoneNumber}:`, error))
         );
 
         Promise.all(messagePromises)
