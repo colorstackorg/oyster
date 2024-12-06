@@ -30,5 +30,5 @@ type TimeUnit =
 type TimeFromNow = `now() ${TimeOperator} interval '${number} ${TimeUnit}'`;
 
 export function relativeTime(input: TimeFromNow): RawBuilder<Date> {
-  return sql<Date>`${input}`;
+  return sql.raw<Date>(input);
 }
