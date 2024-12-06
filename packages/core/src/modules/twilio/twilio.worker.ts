@@ -1,19 +1,19 @@
-import {match} from 'ts-pattern';
+import { match } from 'ts-pattern';
 
-import{TwilioMessagingBullJob} from '@/infrastructure/bull/bull.types'
+import { TwilioMessagingBullJob } from '@/infrastructure/bull/bull.types'
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { sendMessages } from './twilio.service';
 
 debugger
 export const twilioWorker = registerWorker(
-    'twilio', 
+    'twilio',
     TwilioMessagingBullJob,
-    async(job) =>{
+    async (job) => {
         return match(job)
-          .with({name:'twilio.messaging'},({data}) => {
-            console.log("yello manny")
-            return sendMessages(data)
-          })
-          .exhaustive()
+            .with({ name: 'twilio.messaging' }, ({ data }) => {
+                console.log("yello manny")
+                return sendMessages(data)
+            })
+            .exhaustive()
     }
 )

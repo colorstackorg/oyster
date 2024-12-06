@@ -18,7 +18,7 @@ export async function sendMessages(_: GetBullJobData<'twilio.messaging'>
             .select(['phoneNumber'])
             .execute();
 
-        console.log("Fetched phone numbers:", studentsPhoneNumbers); // Log the raw data from the database
+        console.log("Fetched phone numbers:", studentsPhoneNumbers); 
         const numbers = studentsPhoneNumbers
             .map(({ phoneNumber }) => phoneNumber)
             .filter(Boolean);
