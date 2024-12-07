@@ -7,6 +7,7 @@ import { FORMATTED_RACE, Race } from '@oyster/types';
 import { id, run } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull';
+import { getPresignedURL, putObject } from '@/infrastructure/s3';
 import {
   type AirtableField,
   createAirtableRecord,
@@ -18,7 +19,6 @@ import {
   createGoogleDriveFolder,
   uploadFileToGoogleDrive,
 } from '@/modules/google-drive';
-import { getPresignedURL, putObject } from '@/modules/object-storage';
 import {
   type CreateResumeBookInput,
   RESUME_BOOK_CODING_LANGUAGES,
