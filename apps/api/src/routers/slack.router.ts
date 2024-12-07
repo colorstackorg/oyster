@@ -123,7 +123,7 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
         return;
       }
 
-      job('slack.reaction.add', {
+      job('slack.reaction.added', {
         channelId: event.item.channel,
         messageId: event.item.ts,
         reaction: event.reaction,

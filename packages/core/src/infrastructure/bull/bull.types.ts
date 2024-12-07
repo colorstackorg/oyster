@@ -539,6 +539,14 @@ export const SlackBullJob = z.discriminatedUnion('name', [
       channelId: true,
       messageId: true,
       reaction: true,
+    }),
+  }),
+  z.object({
+    name: z.literal('slack.reaction.added'),
+    data: SlackReaction.pick({
+      channelId: true,
+      messageId: true,
+      reaction: true,
       userId: true,
     }),
   }),
