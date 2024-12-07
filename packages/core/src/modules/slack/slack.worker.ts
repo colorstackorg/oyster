@@ -1,7 +1,7 @@
 import { match } from 'ts-pattern';
 
+import { registerWorker } from '@/infrastructure/bull/bull';
 import { SlackBullJob } from '@/infrastructure/bull/bull.types';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { onSlackUserInvited } from '@/modules/slack/events/slack-user-invited';
 import { slack } from '@/modules/slack/instances';
 import {

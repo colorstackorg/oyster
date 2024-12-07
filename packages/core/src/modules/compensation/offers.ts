@@ -7,9 +7,8 @@ import { db, type DB } from '@oyster/db';
 import { nullableField } from '@oyster/types';
 import { id } from '@oyster/utils';
 
-import { job } from '@/infrastructure/bull/bull';
+import { job, registerWorker } from '@/infrastructure/bull/bull';
 import { OfferBullJob } from '@/infrastructure/bull/bull.types';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { redis } from '@/infrastructure/redis';
 import { getChatCompletion } from '@/modules/ai/ai';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
