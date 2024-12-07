@@ -7,4 +7,5 @@ module.exports = {
   tailwindConfig: './config/tailwind/tailwind.config.js',
   tailwindFunctions: ['cx'],
   trailingComma: 'es5',
+  endOfLine: 'auto',
 };
