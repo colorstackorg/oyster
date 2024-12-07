@@ -6,7 +6,7 @@ import { type DB, db, point } from '@oyster/db';
 import { FORMATTED_RACE, Race } from '@oyster/types';
 import { id, run } from '@oyster/utils';
 
-import { job } from '@/infrastructure/bull/use-cases/job';
+import { job } from '@/infrastructure/bull/bull';
 import {
   type AirtableField,
   createAirtableRecord,

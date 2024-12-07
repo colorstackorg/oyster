@@ -1,6 +1,6 @@
 import { db } from '@oyster/db';
 
-import { job } from '@/infrastructure/bull/use-cases/job';
+import { job } from '@/infrastructure/bull/bull';
 import {
   AIRTABLE_FAMILY_BASE_ID,
   AIRTABLE_MEMBERS_TABLE_ID,

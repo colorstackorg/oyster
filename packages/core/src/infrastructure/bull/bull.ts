@@ -1,7 +1,9 @@
-import { Queue } from 'bullmq';
+import { type JobsOptions, Queue } from 'bullmq';
 import { Redis } from 'ioredis';
 
+import { BullJob, type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { redis } from '@/infrastructure/redis';
+import { reportException } from '@/modules/sentry/use-cases/report-exception';
 import { ENV } from '@/shared/env';
 
 // Instead of instantiating a new queue at the top-level which would produce
@@ -38,6 +40,30 @@ export function getQueue(name: string) {
   }
 
   return _queues[name];
+}
+
+export function job<JobName extends BullJob['name']>(
+  name: JobName,
+  data: GetBullJobData<JobName>,
+  options?: JobsOptions
+): void {
+  const result = BullJob.safeParse({
+    data,
+    name,
+  });
+
+  if (!result.success) {
+    reportException(result.error);
+
+    return;
+  }
+
+  const job = result.data;
+
+  const queueName = job.name.split('.')[0];
+  const queue = getQueue(queueName);
+
+  queue.add(job.name, job.data, options).catch((e) => reportException(e));
 }
 
 /**

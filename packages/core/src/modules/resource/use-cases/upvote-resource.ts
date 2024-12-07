@@ -1,6 +1,6 @@
 import { db } from '@oyster/db';
 
-import { job } from '@/infrastructure/bull/use-cases/job';
+import { job } from '@/infrastructure/bull/bull';
 import { type UpvoteResourceInput } from '@/modules/resource/resource.types';
 
 export async function upvoteResource(id: string, input: UpvoteResourceInput) {

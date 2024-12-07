@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 
+import { job } from '@/infrastructure/bull/bull';
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
 import { listAirmeetEvents } from '../airmeet-event.service';
 
 export async function syncRecentAirmeetEvents(

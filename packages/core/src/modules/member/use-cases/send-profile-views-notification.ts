@@ -2,8 +2,8 @@ import dayjs from 'dayjs';
 
 import { db } from '@oyster/db';
 
+import { job } from '@/infrastructure/bull/bull';
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
 
 export async function sendProfileViewsNotification(
   _: GetBullJobData<'profile.views.notification.monthly'>

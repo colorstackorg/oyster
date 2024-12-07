@@ -8,11 +8,11 @@ import { db } from '@oyster/db';
 import { Student } from '@oyster/types';
 import { id } from '@oyster/utils';
 
+import { job } from '@/infrastructure/bull/bull';
 import {
   GamificationBullJob,
   type GetBullJobData,
 } from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import {
   type Activity,

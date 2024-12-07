@@ -3,7 +3,7 @@ import dedent from 'dedent';
 
 import { db } from '@oyster/db';
 
-import { job } from '@/infrastructure/bull/use-cases/job';
+import { job } from '@/infrastructure/bull/bull';
 import { ENV } from '@/shared/env';
 
 type SendCompanyReviewNotificationsInput = {

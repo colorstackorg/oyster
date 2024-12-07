@@ -2,8 +2,8 @@ import { db } from '@oyster/db';
 import type { Gender } from '@oyster/types';
 import { FORMATTED_GENDER } from '@oyster/types';
 
+import { job } from '@/infrastructure/bull/bull';
 import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
 
 export async function onRegisteredForEvent({
   eventId,
