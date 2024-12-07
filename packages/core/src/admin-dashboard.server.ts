@@ -1,5 +1,5 @@
 export { listQueueNames, getQueue } from './infrastructure/bull/bull';
-export { job } from './infrastructure/bull/use-cases/job';
+export { job } from './infrastructure/bull/bull';
 export { getGoogleAuthUri } from './modules/authentication/shared/oauth.utils';
 export { sendOneTimeCode } from './modules/authentication/use-cases/send-one-time-code';
 export { verifyOneTimeCode } from './modules/authentication/use-cases/verify-one-time-code';

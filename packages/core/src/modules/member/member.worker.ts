@@ -5,8 +5,8 @@ import { match } from 'ts-pattern';
 import { db } from '@oyster/db';
 import { splitArray } from '@oyster/utils';
 
+import { job } from '@/infrastructure/bull/bull';
 import { StudentBullJob } from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { backfillActiveStatuses } from '@/modules/active-status/use-cases/backfill-active-statuses';
 import { createNewActiveStatuses } from '@/modules/active-status/use-cases/create-new-active-statuses';
