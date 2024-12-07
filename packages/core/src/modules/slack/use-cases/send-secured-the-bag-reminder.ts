@@ -4,7 +4,7 @@ import { getChatCompletion } from '@/infrastructure/ai';
 import { job } from '@/infrastructure/bull';
 import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { slack } from '@/modules/slack/instances';
-import { ENV } from '@/shared/env';
+import { STUDENT_PROFILE_URL } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 
 export async function sendSecuredTheBagReminder({
@@ -23,8 +23,8 @@ export async function sendSecuredTheBagReminder({
     return success({}); // Exit gracefully.
   }
 
-  const offerDatabaseURL = new URL('/offers', ENV.STUDENT_PROFILE_URL);
-  const workHistoryURL = new URL('/profile/work', ENV.STUDENT_PROFILE_URL);
+  const offerDatabaseURL = new URL('/offers', STUDENT_PROFILE_URL);
+  const workHistoryURL = new URL('/profile/work', STUDENT_PROFILE_URL);
 
   const { permalink } = await slack.chat.getPermalink({
     channel: channelId,

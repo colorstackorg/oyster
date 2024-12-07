@@ -2,11 +2,13 @@ import { Redis } from 'ioredis';
 
 import { type ExtractValue } from '@oyster/types';
 
-import { ENV } from '@/shared/env';
+// Environment Variables
+
+const REDIS_URL = process.env.REDIS_URL as string;
 
 // Instances
 
-export const redis = new Redis(ENV.REDIS_URL, {
+export const redis = new Redis(REDIS_URL, {
   family: 0,
 });
 

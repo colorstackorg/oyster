@@ -13,7 +13,7 @@ import { OfferBullJob } from '@/infrastructure/bull.types';
 import { redis } from '@/infrastructure/redis';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
-import { ENV } from '@/shared/env';
+import { STUDENT_PROFILE_URL } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 
 // Types
@@ -712,7 +712,7 @@ async function shareOffer({
   if (sendNotification) {
     job('notification.slack.ephemeral.send', {
       channel: slackChannelId,
-      text: `Thanks for sharing your offer details, just added it to our <${ENV.STUDENT_PROFILE_URL}/offers|offer database>! 🙂`,
+      text: `Thanks for sharing your offer details, just added it to our <${STUDENT_PROFILE_URL}/offers|offer database>! 🙂`,
       threadId: slackMessageId,
       userId: slackMessage.userId,
     });

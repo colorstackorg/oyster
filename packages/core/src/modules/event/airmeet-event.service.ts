@@ -6,9 +6,16 @@ import { sleep } from '@oyster/utils';
 
 import { redis, RedisKey } from '@/infrastructure/redis';
 import { reportException } from '@/infrastructure/sentry';
-import { ENV, IS_PRODUCTION } from '@/shared/env';
+import { IS_PRODUCTION } from '@/shared/env';
 import { ErrorWithContext } from '@/shared/errors';
 import { validate } from '@/shared/utils/zod.utils';
+
+// Environment Variables
+
+const AIRMEET_ACCESS_KEY = process.env.AIRMEET_ACCESS_KEY as string;
+const AIRMEET_SECRET_KEY = process.env.AIRMEET_SECRET_KEY as string;
+
+// Constants
 
 const AIRMEET_API_URL = 'https://api-gateway.airmeet.com/prod';
 
@@ -294,8 +301,8 @@ async function getAccessToken(): Promise<string> {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
-      'X-Airmeet-Access-Key': ENV.AIRMEET_ACCESS_KEY,
-      'X-Airmeet-Secret-Key': ENV.AIRMEET_SECRET_KEY,
+      'X-Airmeet-Access-Key': AIRMEET_ACCESS_KEY,
+      'X-Airmeet-Secret-Key': AIRMEET_SECRET_KEY,
     },
   });
 

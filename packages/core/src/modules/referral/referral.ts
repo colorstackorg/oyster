@@ -8,7 +8,7 @@ import {
   type ReferFriendInput,
   ReferralStatus,
 } from '@/modules/referral/referral.types';
-import { ENV } from '@/shared/env';
+import { STUDENT_PROFILE_URL } from '@/shared/env';
 
 export { ReferFriendInput } from '@/modules/referral/referral.types';
 
@@ -136,7 +136,7 @@ export async function referFriend({
 
     job('notification.email.send', {
       data: {
-        applicationUri: `${ENV.STUDENT_PROFILE_URL}/apply?r=${referralId}`,
+        applicationUri: `${STUDENT_PROFILE_URL}/apply?r=${referralId}`,
         firstName,
         referrerFirstName: referrer.firstName,
         referrerLastName: referrer.lastName,

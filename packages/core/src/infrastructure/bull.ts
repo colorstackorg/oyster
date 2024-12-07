@@ -9,13 +9,20 @@ import {
 } from '@/infrastructure/bull.types';
 import { redis } from '@/infrastructure/redis';
 import { reportException } from '@/infrastructure/sentry';
-import { ENV } from '@/shared/env';
 import { ZodParseError } from '@/shared/errors';
+
+// Environment Variables
+
+const REDIS_URL = process.env.REDIS_URL as string;
+
+// Constants
 
 // Instead of instantiating a new queue at the top-level which would produce
 // a side-effect, we'll use a global variable to store the queue instances which
 // will be created lazily.
 const _queues: Record<string, Queue> = {};
+
+// Core
 
 /**
  * Returns a Bull queue instance for the given name.
@@ -29,7 +36,7 @@ const _queues: Record<string, Queue> = {};
  */
 export function getQueue(name: string) {
   if (!_queues[name]) {
-    const connection = new Redis(ENV.REDIS_URL, {
+    const connection = new Redis(REDIS_URL, {
       family: 0,
       maxRetriesPerRequest: null,
     });
@@ -108,7 +115,7 @@ export function registerWorker<Schema extends ZodType>(
   processor: (job: z.infer<Schema>) => Promise<unknown>,
   options: WorkerOptions = {}
 ) {
-  const redis = new Redis(ENV.REDIS_URL as string, {
+  const redis = new Redis(REDIS_URL, {
     family: 0,
     maxRetriesPerRequest: null,
   });
