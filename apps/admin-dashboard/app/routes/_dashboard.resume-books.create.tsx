@@ -7,14 +7,14 @@ import {
 import { Form as RemixForm, useActionData, useFetcher } from '@remix-run/react';
 import { useEffect } from 'react';
 
-import { createResumeBook } from '@oyster/core/resumes';
-import { CreateResumeBookInput } from '@oyster/core/resumes/types';
+import { createResumeBook } from '@oyster/core/resume-books';
+import { CreateResumeBookInput } from '@oyster/core/resume-books/types';
 import {
   ResumeBookEndDateField,
   ResumeBookHiddenField,
   ResumeBookNameField,
   ResumeBookStartDateField,
-} from '@oyster/core/resumes/ui';
+} from '@oyster/core/resume-books/ui';
 import {
   Button,
   ComboboxPopover,

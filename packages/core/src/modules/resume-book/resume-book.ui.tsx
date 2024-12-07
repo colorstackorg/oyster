@@ -1,6 +1,6 @@
 import { DatePicker, type FieldProps, Form, Input, Radio } from '@oyster/ui';
 
-import { ResumeBook } from '@/modules/resume/resume.types';
+import { ResumeBook } from '@/modules/resume-book/resume-book.types';
 
 const keys = ResumeBook.keyof().enum;
 

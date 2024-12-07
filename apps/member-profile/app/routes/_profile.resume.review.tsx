@@ -23,8 +23,8 @@ import {
   getLastResumeFeedback,
   type ResumeFeedback,
   reviewResume,
-} from '@oyster/core/resumes';
-import { ReviewResumeInput } from '@oyster/core/resumes/types';
+  ReviewResumeInput,
+} from '@oyster/core/resume-review';
 import {
   Button,
   cx,

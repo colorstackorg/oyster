@@ -4,7 +4,6 @@ import {
   BookOpen,
   Calendar,
   Gift,
-  HelpCircle,
   Layers,
   MapPin,
   Target,
@@ -106,11 +105,6 @@ export default function DashboardLayout() {
                   icon={<MapPin />}
                   label="Schools"
                   pathname={Route['/schools']}
-                />
-                <Dashboard.NavigationLink
-                  icon={<HelpCircle />}
-                  label="Surveys"
-                  pathname={Route['/surveys']}
                 />
 
                 {role === AdminRole.OWNER && (

@@ -277,7 +277,8 @@ type AnswerPublicQuestionInput = {
 
 /**
  * Answers a question asked in a public Slack message by linking to relevant
- * threads in our Slack workspace.
+ * threads in our Slack workspace. After the answer has been sent, the bot then
+ * reacts to the original message with the ColorStack logo.
  *
  * @param input - The message (public question) to answer.
  * @returns The result of the answer.
@@ -414,6 +415,12 @@ export async function answerPublicQuestion({
     message,
     threadId,
     workspace: 'regular',
+  });
+
+  job('slack.reaction.add', {
+    channelId,
+    messageId: threadId,
+    reaction: 'goldicon',
   });
 
   await db.transaction().execute(async (trx) => {
