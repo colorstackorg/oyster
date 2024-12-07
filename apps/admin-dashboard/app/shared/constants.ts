@@ -39,6 +39,7 @@ const ROUTES = [
   '/schools',
   '/schools/create',
   '/schools/:id/edit',
+  '/schools/:id/chapter/create',
   '/students',
   '/students/:id/activate',
   '/students/:id/email',

@@ -7,7 +7,7 @@ import {
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
 import { useState } from 'react';
-import { Edit, Menu, Plus } from 'react-feather';
+import { BookOpen, Edit, Menu, Plus } from 'react-feather';
 import { generatePath } from 'react-router';
 import { match } from 'ts-pattern';
 
@@ -40,10 +40,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
 
   const { schools, totalSchools } = await listSchools(searchParams);
+  const chapters = (await listChapters()).map((row) => row.schoolId);
 
   return json({
     schools,
     totalSchools,
+    chapters,
   });
 }
 
@@ -89,6 +91,13 @@ async function listSchools({ limit, page, search }: ListSearchParams) {
     schools: rows,
     totalSchools: parseInt(countResult.count),
   };
+}
+
+// generate a list of ids of schools that have chapters
+async function listChapters() {
+  const chapters = db.selectFrom(['chapters']).select(['schoolId']).execute();
+
+  return await chapters;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -230,6 +239,7 @@ function SchoolsPagination() {
 
 function SchoolsTableDropdown({ id }: SchoolInView) {
   const [open, setOpen] = useState<boolean>(false);
+  const chapters = useLoaderData<typeof loader>().chapters;
 
   function onClose() {
     setOpen(false);
@@ -249,6 +259,17 @@ function SchoolsTableDropdown({ id }: SchoolInView) {
                 <Edit /> Edit School
               </Link>
             </Dropdown.Item>
+            {chapters.includes(id) ? null : (
+              <Dropdown.Item>
+                <Link
+                  to={generatePath(Route['/schools/:id/chapter/create'], {
+                    id,
+                  })}
+                >
+                  <BookOpen /> Create Chapter
+                </Link>
+              </Dropdown.Item>
+            )}
           </Dropdown.List>
         </Table.Dropdown>
       )}
