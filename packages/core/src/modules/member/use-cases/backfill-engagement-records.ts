@@ -40,7 +40,6 @@ export async function backfillEngagementRecords(
     resourceUsers,
     slackMessages,
     slackReactions,
-    surveyResponses,
   ] = await Promise.all([
     db
       .selectFrom('eventAttendees')
@@ -75,13 +74,6 @@ export async function backfillEngagementRecords(
       .select(['channelId', 'messageId', 'reaction', 'userId'])
       .where('studentId', 'is', null)
       .where('userId', '=', slackId)
-      .execute(),
-
-    db
-      .selectFrom('surveyResponses')
-      .select(['id', 'surveyId'])
-      .where('studentId', 'is', null)
-      .where('email', 'ilike', email)
       .execute(),
   ]);
 
@@ -132,14 +124,6 @@ export async function backfillEngagementRecords(
           .execute();
       }),
 
-      ...surveyResponses.map(async (response) => {
-        await trx
-          .updateTable('surveyResponses')
-          .set({ studentId: student.id })
-          .where('id', '=', response.id)
-          .execute();
-      }),
-
       trx
         .updateTable('students')
         .set({ slackId })
@@ -153,14 +137,6 @@ export async function backfillEngagementRecords(
     job('event.attended', {
       eventId: attendee.eventId,
       studentId: student.id,
-    });
-  });
-
-  surveyResponses.forEach((response) => {
-    job('gamification.activity.completed', {
-      studentId: student.id,
-      surveyRespondedTo: response.surveyId,
-      type: 'respond_to_survey',
     });
   });
 

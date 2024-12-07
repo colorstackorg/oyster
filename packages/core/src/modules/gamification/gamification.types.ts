@@ -20,7 +20,6 @@ export const ActivityType = {
   REACT_TO_MESSAGE: 'react_to_message',
   REFER_FRIEND: 'refer_friend',
   REPLY_TO_THREAD: 'reply_to_thread',
-  RESPOND_TO_SURVEY: 'respond_to_survey',
   REVIEW_COMPANY: 'review_company',
   SUBMIT_CENSUS_RESPONSE: 'submit_census_response',
   SUBMIT_RESUME: 'submit_resume',
