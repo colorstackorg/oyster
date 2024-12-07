@@ -13,7 +13,7 @@ import {
   createAirtableRecord,
   createAirtableTable,
   updateAirtableRecord,
-} from '@/modules/airtable/airtable.core';
+} from '@/modules/airtable/airtable';
 import { type DegreeType } from '@/modules/education/education.types';
 import {
   createGoogleDriveFolder,
