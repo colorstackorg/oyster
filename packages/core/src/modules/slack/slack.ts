@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { type DB, db } from '@oyster/db';
 
 import { job } from '@/infrastructure/bull';
+import { getPineconeIndex } from '@/infrastructure/pinecone';
 import { cache, ONE_HOUR_IN_SECONDS } from '@/infrastructure/redis';
 import {
   createEmbedding,
@@ -15,7 +16,6 @@ import {
 } from '@/modules/ai/ai';
 import { track } from '@/modules/mixpanel';
 import { sendSlackNotification } from '@/modules/notification/use-cases/send-slack-notification';
-import { getPineconeIndex } from '@/modules/pinecone';
 import { slack } from '@/modules/slack/instances';
 import { IS_PRODUCTION } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
