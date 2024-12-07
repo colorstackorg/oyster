@@ -1,13 +1,7 @@
 import { z } from 'zod';
 
-import {
-  BooleanInput,
-  Entity,
-  type ExtractValue,
-  ISO8601Date,
-  NullishString,
-  Student,
-} from '@oyster/types';
+import { Entity, type ExtractValue, Student } from '@oyster/types';
+import { BooleanInput, ISO8601Date, NullishString } from '@oyster/utils/zod';
 
 import { ListSearchParams } from '@/shared/types';
 

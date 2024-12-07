@@ -12,7 +12,7 @@ import { sql } from 'kysely';
 import { z } from 'zod';
 
 import { updateMember } from '@oyster/core/member-profile/server';
-import { ISO8601Date, nullableField, Student } from '@oyster/types';
+import { Student } from '@oyster/types';
 import {
   Button,
   Divider,
@@ -20,6 +20,7 @@ import {
   InputField,
   validateForm,
 } from '@oyster/ui';
+import { ISO8601Date, nullableField } from '@oyster/utils/zod';
 
 import {
   ProfileHeader,

@@ -24,10 +24,10 @@ import {
   ACTIVATION_REQUIREMENTS,
   type ActivationRequirement,
   StudentActiveStatus,
-  Timezone,
 } from '@oyster/types';
 import { Button, cx, Divider, getButtonCn, Text } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
+import { Timezone } from '@oyster/utils/zod';
 
 import { Card, type CardProps } from '@/shared/components/card';
 import { Leaderboard } from '@/shared/components/leaderboard';

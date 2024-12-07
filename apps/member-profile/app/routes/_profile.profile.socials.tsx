@@ -12,8 +12,9 @@ import {
 import { z } from 'zod';
 
 import { updateMember } from '@oyster/core/member-profile/server';
-import { nullableField, Student } from '@oyster/types';
+import { Student } from '@oyster/types';
 import { Button, getErrors, InputField, Text, validateForm } from '@oyster/ui';
+import { nullableField } from '@oyster/utils/zod';
 
 import {
   ProfileHeader,

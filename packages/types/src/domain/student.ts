@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { EmptyStringToNull, NullishString } from '@oyster/utils/zod';
+
 import {
   Address,
   Demographic,
@@ -12,7 +14,6 @@ import {
 } from './types';
 import { normalizeUri } from '../../../utils/src/index';
 import { type ExtractValue } from '../shared/types';
-import { EmptyStringToNull, NullishString } from '../shared/zod';
 
 // Enums
 

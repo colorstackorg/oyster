@@ -4,7 +4,8 @@ import {
 } from 'kysely';
 import { z } from 'zod';
 
-import { type ExtractValue, Timezone } from '@oyster/types';
+import { type ExtractValue } from '@oyster/types';
+import { Timezone } from '@oyster/utils/zod';
 
 // Schemas
 

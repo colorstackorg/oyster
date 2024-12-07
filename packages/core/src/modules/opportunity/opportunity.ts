@@ -6,8 +6,8 @@ import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
-import { ISO8601Date } from '@oyster/types';
 import { id } from '@oyster/utils';
+import { ISO8601Date } from '@oyster/utils/zod';
 
 import { OpportunityBullJob } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';

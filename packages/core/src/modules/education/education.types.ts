@@ -4,11 +4,10 @@ import {
   Address,
   Entity,
   type ExtractValue,
-  ISO8601Date,
   Major,
-  NullishString,
   Student,
 } from '@oyster/types';
+import { ISO8601Date, NullishString } from '@oyster/utils/zod';
 
 // Enums
 

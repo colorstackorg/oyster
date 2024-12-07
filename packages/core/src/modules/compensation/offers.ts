@@ -4,8 +4,8 @@ import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { db, type DB } from '@oyster/db';
-import { nullableField } from '@oyster/types';
 import { id } from '@oyster/utils';
+import { nullableField } from '@oyster/utils/zod';
 
 import { OfferBullJob } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';

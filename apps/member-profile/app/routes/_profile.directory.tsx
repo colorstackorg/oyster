@@ -24,7 +24,7 @@ import {
   ListSearchParams,
 } from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
-import { type ExtractValue, ISO8601Date } from '@oyster/types';
+import { type ExtractValue } from '@oyster/types';
 import {
   Button,
   Dashboard,
@@ -38,6 +38,7 @@ import {
   useSearchParams,
 } from '@oyster/ui';
 import { run, toTitleCase } from '@oyster/utils';
+import { ISO8601Date } from '@oyster/utils/zod';
 
 import { CompanyCombobox } from '@/shared/components/company-combobox';
 import { EthnicityCombobox } from '@/shared/components/ethnicity-combobox';

@@ -20,7 +20,6 @@ import {
   type ResourceType,
 } from '@oyster/core/resources';
 import { listResources, listTags } from '@oyster/core/resources/server';
-import { ISO8601Date } from '@oyster/types';
 import {
   Dashboard,
   ExistingSearchParams,
@@ -31,6 +30,7 @@ import {
   Text,
 } from '@oyster/ui';
 import { run } from '@oyster/utils';
+import { ISO8601Date } from '@oyster/utils/zod';
 
 import { Resource } from '@/shared/components/resource';
 import { Route } from '@/shared/constants';
