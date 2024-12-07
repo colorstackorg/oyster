@@ -72,6 +72,7 @@ const ROUTES = [
   '/recap/:date/reviews',
   '/resources',
   '/resources/add',
+  '/resources/:id/delete',
   '/resources/:id/edit',
   '/resume/review',
   '/resume-books/:id',
