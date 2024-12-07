@@ -8,7 +8,7 @@ import {
   type GetBullJobData,
 } from '@/infrastructure/bull.types';
 import { redis } from '@/infrastructure/redis';
-import { reportException } from '@/modules/sentry/use-cases/report-exception';
+import { reportException } from '@/infrastructure/sentry';
 import { ENV } from '@/shared/env';
 import { ZodParseError } from '@/shared/errors';
 
