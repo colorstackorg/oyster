@@ -13,10 +13,10 @@ import { getChatCompletion } from '@/infrastructure/ai';
 import { job, registerWorker } from '@/infrastructure/bull';
 import { OpportunityBullJob } from '@/infrastructure/bull.types';
 import { track } from '@/infrastructure/mixpanel';
+import { getPageContent } from '@/infrastructure/puppeteer';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { ENV } from '@/shared/env';
-import { getPageContent } from '@/shared/utils/browser.utils';
 import {
   ACCENT_COLORS,
   type AccentColor,
