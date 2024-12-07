@@ -53,8 +53,7 @@ type AnswerChatbotQuestionInput = {
  * Answers the question asked by the user in its channel w/ the ColorStack bot.
  * The uses the underlying `getAnswerFromSlackHistory` function to answer the
  * question, and then sends the answer in the thread where the question was
- * asked. After the answer has been sent, the bot then reactions to the
- * original message with the ColorStack logo.
+ * asked.
  *
  * @param input - The question (ie: `text`) to respond to.
  */
@@ -278,7 +277,8 @@ type AnswerPublicQuestionInput = {
 
 /**
  * Answers a question asked in a public Slack message by linking to relevant
- * threads in our Slack workspace.
+ * threads in our Slack workspace. After the answer has been sent, the bot then
+ * reacts to the original message with the ColorStack logo.
  *
  * @param input - The message (public question) to answer.
  * @returns The result of the answer.
