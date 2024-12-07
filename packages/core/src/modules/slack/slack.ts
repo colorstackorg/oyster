@@ -139,14 +139,6 @@ export async function answerChatbotQuestion({
     workspace: 'regular',
   });
 
-  // React to the original message that served as the query
-  job('slack.reaction.add', {
-    channelId: channelId,
-    messageId: id,
-    reaction: 'colorstack_logo',
-    userId: userId,
-  });
-
   // TODO: Delete the loading message after the answer is sent.
 }
 
@@ -423,6 +415,12 @@ export async function answerPublicQuestion({
     message,
     threadId,
     workspace: 'regular',
+  });
+
+  job('slack.reaction.add', {
+    channelId,
+    messageId: threadId,
+    reaction: 'goldicon',
   });
 
   await db.transaction().execute(async (trx) => {

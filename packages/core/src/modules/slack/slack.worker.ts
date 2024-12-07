@@ -3,6 +3,7 @@ import { match } from 'ts-pattern';
 import { SlackBullJob } from '@/infrastructure/bull/bull.types';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { onSlackUserInvited } from '@/modules/slack/events/slack-user-invited';
+import { slack } from '@/modules/slack/instances';
 import {
   answerChatbotQuestion,
   answerPublicQuestion,
@@ -11,9 +12,9 @@ import {
 } from '@/modules/slack/slack';
 import { updateBirthdatesFromSlack } from '@/modules/slack/use-cases/update-birthdates-from-slack';
 import { onSlackProfilePictureChanged } from './events/slack-profile-picture-changed';
+import { onSlackReactionAdded } from './events/slack-reaction-added';
 import { onSlackWorkspaceJoined } from './events/slack-workspace-joined';
 import { addSlackMessage } from './use-cases/add-slack-message';
-import { addSlackReaction } from './use-cases/add-slack-reaction';
 import { archiveSlackChannel } from './use-cases/archive-slack-channel';
 import { changeSlackMessage } from './use-cases/change-slack-message';
 import { createSlackChannel } from './use-cases/create-slack-channel';
@@ -95,7 +96,14 @@ export const slackWorker = registerWorker(
         return result.data;
       })
       .with({ name: 'slack.reaction.add' }, async ({ data }) => {
-        return addSlackReaction(data);
+        return slack.reactions.add({
+          channel: data.channelId,
+          name: data.reaction,
+          timestamp: data.messageId,
+        });
+      })
+      .with({ name: 'slack.reaction.added' }, async ({ data }) => {
+        return onSlackReactionAdded(data);
       })
       .with({ name: 'slack.reaction.remove' }, async ({ data }) => {
         return removeSlackReaction(data);
