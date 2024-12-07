@@ -4,7 +4,6 @@ import { TwilioMessagingBullJob } from '@/infrastructure/bull/bull.types';
 import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { sendMessages } from './twilio.service';
 
-debugger;
 export const twilioWorker = registerWorker(
   'twilio',
   TwilioMessagingBullJob,
