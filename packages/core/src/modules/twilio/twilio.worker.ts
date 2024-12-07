@@ -11,7 +11,6 @@ export const twilioWorker = registerWorker(
   async (job) => {
     return match(job)
       .with({ name: 'twilio.messaging' }, ({ data }) => {
-        console.log('yello manny');
         return sendMessages(data);
       })
       .exhaustive();
