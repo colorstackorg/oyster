@@ -16,8 +16,9 @@ import {
 import { z } from 'zod';
 
 import { getEvent, job, parseCsv } from '@oyster/core/admin-dashboard/server';
+import { EventAttendee } from '@oyster/core/events/types';
 import { db } from '@oyster/db';
-import { Email, EventAttendee } from '@oyster/types';
+import { Email } from '@oyster/types';
 import {
   Button,
   FileUploader,

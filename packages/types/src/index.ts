@@ -1,12 +1,5 @@
 export { Application } from './domain/application';
 export {
-  Event,
-  EventAttendee,
-  EventRegistration,
-  EventType,
-} from './domain/event';
-export { ProfileView } from './domain/profile-view';
-export {
   ActivationRequirement,
   ACTIVATION_REQUIREMENTS,
   MemberEthnicity,

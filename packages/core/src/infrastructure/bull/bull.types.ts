@@ -5,14 +5,13 @@ import {
   ActivationRequirement,
   Application,
   Email,
-  Event,
   type ExtractValue,
-  ProfileView,
   Student,
   StudentEmail,
 } from '@oyster/types';
 
 import { OneTimeCode } from '@/modules/authentication/authentication.types';
+import { Event } from '@/modules/event/event.types';
 import {
   ActivityType,
   CompletedActivity,
@@ -610,8 +609,8 @@ export const StudentBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('student.profile.viewed'),
     data: z.object({
-      profileViewedId: ProfileView.shape.profileViewedId,
-      viewerId: ProfileView.shape.viewerId,
+      profileViewedId: z.string().trim().min(1),
+      viewerId: z.string().trim().min(1),
     }),
   }),
   z.object({

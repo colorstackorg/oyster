@@ -1,5 +1,6 @@
 import { db } from '@oyster/db';
-import { type EventAttendee } from '@oyster/types';
+
+import { type EventAttendee } from '@/modules/event/event.types';
 
 type CountEventAttendeesOptions = {
   where: Partial<Pick<EventAttendee, 'eventId' | 'studentId'>>;

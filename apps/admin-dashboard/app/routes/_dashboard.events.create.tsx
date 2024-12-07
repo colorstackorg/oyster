@@ -8,7 +8,7 @@ import { Form as RemixForm, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { createEvent } from '@oyster/core/admin-dashboard/server';
-import { Event, EventType } from '@oyster/types';
+import { Event, EventType } from '@oyster/core/events/types';
 import {
   Button,
   DatePicker,

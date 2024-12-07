@@ -1,10 +1,10 @@
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
-import { Event, EventAttendee } from '@oyster/types';
 import { sleep } from '@oyster/utils';
 
 import { redis, RedisKey } from '@/infrastructure/redis';
+import { Event, EventAttendee } from '@/modules/event/event.types';
 import { reportException } from '@/modules/sentry/use-cases/report-exception';
 import { ENV, IS_PRODUCTION } from '@/shared/env';
 import { ErrorWithContext } from '@/shared/errors';

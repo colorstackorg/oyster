@@ -1,8 +1,9 @@
 import dayjs from 'dayjs';
 
 import { db } from '@oyster/db';
-import { type Event } from '@oyster/types';
 import { id } from '@oyster/utils';
+
+import { type Event } from '@/modules/event/event.types';
 
 type CreateEventInput = Pick<Event, 'description' | 'name' | 'type'> & {
   endTime: string;

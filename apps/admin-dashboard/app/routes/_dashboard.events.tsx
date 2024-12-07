@@ -11,7 +11,7 @@ import { generatePath } from 'react-router';
 
 import { listEvents } from '@oyster/core/admin-dashboard/server';
 import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
-import { type Event, EventType } from '@oyster/types';
+import { type Event, EventType } from '@oyster/core/events/types';
 import {
   Dashboard,
   Dropdown,
