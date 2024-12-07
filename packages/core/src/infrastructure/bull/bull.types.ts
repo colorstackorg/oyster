@@ -488,6 +488,7 @@ export const SlackBullJob = z.discriminatedUnion('name', [
       threadId: true,
       userId: true,
     }).extend({
+      hasFile: z.boolean().optional(),
       isBot: z.boolean().optional(),
     }),
   }),
