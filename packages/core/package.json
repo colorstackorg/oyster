@@ -40,7 +40,7 @@
     "./opportunities": "./src/modules/opportunity/opportunity.ts",
     "./referrals": "./src/modules/referral/referral.core.ts",
     "./referrals/ui": "./src/modules/referral/referral.ui.tsx",
-    "./remix": "./src/modules/remix.ts",
+    "./remix": "./src/shared/utils/remix.utils.ts",
     "./resources": "./src/modules/resource/index.ts",
     "./resources/server": "./src/modules/resource/index.server.ts",
     "./resume-books": "./src/modules/resume-book/resume-book.ts",
