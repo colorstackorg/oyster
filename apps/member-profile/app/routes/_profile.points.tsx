@@ -150,11 +150,6 @@ async function getActivityHistory(
     query
       .leftJoin('activities', 'activities.id', 'completedActivities.activityId')
       .leftJoin('events', 'events.id', 'completedActivities.eventAttended')
-      .leftJoin(
-        'surveys',
-        'surveys.id',
-        'completedActivities.surveyRespondedTo'
-      )
       .leftJoin('slackMessages as threads', (join) => {
         return join
           .onRef('threads.id', '=', 'completedActivities.threadRepliedTo')
@@ -209,7 +204,6 @@ async function getActivityHistory(
         'resourceUpvoters.id as resourceUpvoterId',
         'resourceUpvoters.lastName as resourceUpvoterLastName',
         'resumeBooks.name as resumeBookName',
-        'surveys.title as surveyRespondedTo',
         'threads.channelId as threadRepliedToChannelId',
         'threads.id as threadRepliedToId',
         'threads.text as threadRepliedToText',
@@ -678,9 +672,6 @@ function ActivityHistoryItemDescription({
           </div>
         </div>
       );
-    })
-    .with('respond_to_survey', () => {
-      return <p>You responded to a survey: "{activity.surveyRespondedTo}"</p>;
     })
     .with('review_company', () => {
       return <p>You reviewed a work experience.</p>;

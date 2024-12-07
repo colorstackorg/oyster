@@ -23,7 +23,6 @@ import {
   SlackMessage,
   SlackReaction,
 } from '@/modules/slack/slack.types';
-import { Survey } from '@/modules/survey/survey.types';
 
 export const BullQueue = {
   AIRTABLE: 'airtable',
@@ -199,11 +198,6 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         studentId: CompletedActivity.shape.studentId,
         threadRepliedTo: SlackMessage.shape.id,
         type: z.literal('reply_to_thread'),
-      }),
-      z.object({
-        studentId: CompletedActivity.shape.studentId,
-        surveyRespondedTo: Survey.shape.id,
-        type: z.literal('respond_to_survey'),
       }),
       z.object({
         studentId: CompletedActivity.shape.studentId,

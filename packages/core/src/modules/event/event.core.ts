@@ -46,7 +46,6 @@ export async function checkIntoEvent({
  * - `completed_activities` (for `ActivityType.ATTEND_EVENT`)
  * - `event_attendees`
  * - `event_registrations`
- * - `surveys`
  *
  * @param id - ID of the event to delete.
  */
@@ -57,8 +56,6 @@ export async function deleteEvent(id: string) {
       .where('type', '=', ActivityType.ATTEND_EVENT)
       .where('eventAttended', '=', id)
       .execute();
-
-    await trx.deleteFrom('surveys').where('eventId', '=', id).execute();
 
     await trx.deleteFrom('eventAttendees').where('eventId', '=', id).execute();
 
