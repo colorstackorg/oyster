@@ -7,13 +7,13 @@ dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-import { airtableWorker } from './modules/airtable/airtable.core';
-import { applicationWorker } from './modules/application/application.core';
+import { airtableWorker } from './modules/airtable/airtable';
+import { applicationWorker } from './modules/application/application';
 import { oneTimeCodeWorker } from './modules/authentication/one-time-code.worker';
 import { offerWorker } from './modules/compensation/offers';
 import { eventWorker } from './modules/event/event.worker';
 import { feedWorker } from './modules/feed/feed';
-import { gamificationWorker } from './modules/gamification/gamification.core';
+import { gamificationWorker } from './modules/gamification/gamification';
 import { mailchimpWorker } from './modules/mailchimp/mailchimp';
 import { memberEmailWorker } from './modules/member/member-email.worker';
 import { memberWorker } from './modules/member/member.worker';

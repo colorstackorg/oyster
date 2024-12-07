@@ -3,7 +3,7 @@ import { type GetBullJobData } from '@/infrastructure/bull.types';
 import {
   AIRTABLE_FAMILY_BASE_ID,
   AIRTABLE_MEMBERS_TABLE_ID,
-} from '@/modules/airtable/airtable.core';
+} from '@/modules/airtable/airtable';
 
 export async function onMemberRemoved({
   airtableId,

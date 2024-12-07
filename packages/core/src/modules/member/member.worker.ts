@@ -12,7 +12,7 @@ import { createNewActiveStatuses } from '@/modules/active-status/use-cases/creat
 import {
   AIRTABLE_FAMILY_BASE_ID,
   AIRTABLE_MEMBERS_TABLE_ID,
-} from '@/modules/airtable/airtable.core';
+} from '@/modules/airtable/airtable';
 import { sendCompanyReviewNotifications } from '@/modules/employment/use-cases/send-company-review-notifications';
 import { success } from '@/shared/utils/core.utils';
 import { onActivationStepCompleted } from './events/activation-step-completed';
