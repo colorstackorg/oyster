@@ -1,16 +1,12 @@
 import dayjs from 'dayjs';
-import dedent from 'dedent';
 import { type SelectExpression } from 'kysely';
 import { match } from 'ts-pattern';
-import { z } from 'zod';
 
 import { type DB, db, point } from '@oyster/db';
 import { FORMATTED_RACE, Race } from '@oyster/types';
 import { id, run } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull/use-cases/job';
-import { cache, ONE_WEEK_IN_SECONDS } from '@/infrastructure/redis';
-import { getChatCompletion } from '@/modules/ai/ai';
 import {
   type AirtableField,
   createAirtableRecord,
@@ -22,20 +18,17 @@ import {
   createGoogleDriveFolder,
   uploadFileToGoogleDrive,
 } from '@/modules/google-drive';
-import { track } from '@/modules/mixpanel';
 import { getPresignedURL, putObject } from '@/modules/object-storage';
 import {
   type CreateResumeBookInput,
   RESUME_BOOK_CODING_LANGUAGES,
   RESUME_BOOK_JOB_SEARCH_STATUSES,
   RESUME_BOOK_ROLES,
-  type ReviewResumeInput,
   type SubmitResumeInput,
   type UpdateResumeBookInput,
-} from '@/modules/resume/resume.types';
+} from '@/modules/resume-book/resume-book.types';
 import { ColorStackError } from '@/shared/errors';
-import { fail, type Result, success } from '@/shared/utils/core.utils';
-import { getTextFromPDF } from '@/shared/utils/file.utils';
+import { success } from '@/shared/utils/core.utils';
 
 // Environment Variables
 
@@ -45,23 +38,7 @@ const AIRTABLE_RESUME_BOOKS_BASE_ID = process.env
 const GOOGLE_DRIVE_RESUME_BOOKS_FOLDER_ID = process.env
   .GOOGLE_DRIVE_RESUME_BOOKS_FOLDER_ID as string;
 
-// Constants
-
-const RESUME_FEEDBACK_REDIS_PREFIX = 'resume_feedback:';
-
 // Queries
-
-/**
- * Retrieves the last feedback that the member received on their resume. This
- * feedback is temporarily stored in Redis, not longer-term storage.
- */
-export async function getLastResumeFeedback(memberId: string) {
-  const feedback = await cache.get<ResumeFeedback>(
-    RESUME_FEEDBACK_REDIS_PREFIX + memberId
-  );
-
-  return feedback;
-}
 
 type GetResumeBookOptions<Selection> = {
   select: Selection[];
@@ -438,167 +415,6 @@ async function getResumeBookAirtableFields({
       type: 'singleSelect',
     },
   ];
-}
-
-// Review Resume
-
-const ResumeBullet = z.object({
-  content: z.string(),
-  feedback: z.string(),
-  rewrites: z.string().array().min(0).max(2),
-  score: z.number().min(1).max(10),
-});
-
-const ResumeFeedback = z.object({
-  experiences: z
-    .object({
-      bullets: ResumeBullet.array(),
-      company: z.string(),
-      role: z.string(),
-    })
-    .array(),
-
-  projects: z
-    .object({
-      bullets: ResumeBullet.array(),
-      title: z.string(),
-    })
-    .array(),
-});
-
-export type ResumeFeedback = z.infer<typeof ResumeFeedback>;
-
-/**
- * Reviews a resume using AI and returns feedback in the form of JSON that
- * adheres to a specific schema. For now, this feedback is focused on the
- * bullet points of the resume.
- *
- * If there is an issue parsing the AI response, it will throw an error.
- *
- * @todo Implement the ability to review the rest of the resume.
- */
-export async function reviewResume({
-  memberId,
-  resume,
-}: ReviewResumeInput): Promise<Result<ResumeFeedback>> {
-  const systemPrompt = dedent`
-    You are the best resume reviewer in the world, specifically for resumes
-    aimed at getting a software engineering internship/new grad role.
-
-    Here are your guidelines for a great bullet point:
-    - It starts with a strong action verb.
-    - It is specific.
-    - It talks about achievements.
-    - It is concise. No fluff.
-    - If possible, it quantifies impact. Don't be as critical about this for
-      projects as you are for work experiences. Also, not every single bullet
-      point needs to quantify impact, but you should be able to quantify at
-      least 1-2 bullet points per experience.
-
-    Here are your guidelines for giving feedback:
-    - Be kind.
-    - Be specific.
-    - Be actionable.
-    - Ask questions (ie: "how many...", "how much...", "what was the impact...").
-    - Don't be overly nit-picky.
-    - If the bullet point is NOT a 10/10, then the last sentence of your
-      feedback MUST be an actionable improvement item.
-
-    Here are your guidelines for rewriting bullet points:
-    - If the original bullet point is a 10/10, do NOT suggest any rewrites.
-    - If the original bullet point is not a 10/10, suggest 1-2 rewrite
-      options. Those rewrite options should be at minimum 9/10.
-    - Be 1000% certain that the rewrites address all of your feedback. If
-      it doesn't, you're not done yet.
-    - Use letters (ie: "x") instead of arbitrary numbers.
-    - If details about the "what" are missing, you can use placeholders to
-      encourage the user to be more specific (ie: "insert xyz here...").
-  `;
-
-  const userPrompt = dedent`
-    The following is a resume that has been parsed to text from a PDF. Please
-    review this resume.
-
-    IMPORTANT: Do not return ANYTHING except for JSON that respects the
-    following Zod schema:
-
-    const ResumeBullet = z.object({
-      content: z.string(),
-      feedback: z.string(),
-      rewrites: z.string().array().min(0).max(2),
-      score: z.number().min(1).max(10),
-    });
-
-    z.object({
-      // This should also include leadership experiences.
-      experiences: z
-        .object({
-          bullets: ResumeBullet.array(),
-          company: z.string(),
-          role: z.string(),
-        })
-        .array(),
-
-      projects: z
-        .object({
-          bullets: ResumeBullet.array(),
-          title: z.string(),
-        })
-        .array(),
-    });
-  `;
-
-  const resumeText = await getTextFromPDF(resume);
-
-  const completionResult = await getChatCompletion({
-    maxTokens: 8192,
-    messages: [
-      {
-        role: 'user',
-        content: [
-          { type: 'text', text: userPrompt },
-          { type: 'text', text: resumeText },
-        ],
-      },
-    ],
-    system: [{ type: 'text', text: systemPrompt, cache: true }],
-    temperature: 0.25,
-  });
-
-  if (!completionResult.ok) {
-    return completionResult;
-  }
-
-  track({
-    event: 'Resume Reviewed',
-    properties: undefined,
-    user: memberId,
-  });
-
-  try {
-    const object = JSON.parse(completionResult.data);
-    const feedback = ResumeFeedback.parse(object);
-
-    // We'll cache the feedback for a week so that the user can view the
-    // feedback without having to constantly re-run the review.
-    await cache.set<ResumeFeedback>(
-      RESUME_FEEDBACK_REDIS_PREFIX + memberId,
-      feedback,
-      ONE_WEEK_IN_SECONDS
-    );
-
-    return success(feedback);
-  } catch (e) {
-    const error = new ColorStackError()
-      .withMessage('Failed to parse the AI response.')
-      .withContext({ data: completionResult.data, error: e })
-      .report();
-
-    return fail({
-      code: 500,
-      error: error.message,
-    });
-  }
 }
 
 /**

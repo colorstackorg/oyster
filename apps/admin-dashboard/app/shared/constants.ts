@@ -33,8 +33,6 @@ const ROUTES = [
   '/onboarding-sessions',
   '/onboarding-sessions/upload',
   '/onboarding-sessions/:id/add-attendees',
-  '/programs/create',
-  '/resources/create',
   '/resume-books',
   '/resume-books/create',
   '/resume-books/:id/edit',
@@ -42,17 +40,11 @@ const ROUTES = [
   '/schools/create',
   '/schools/:id/edit',
   '/students',
-  '/students/import/programs',
-  '/students/import/resources',
-  '/students/import/scholarships',
   '/students/:id/activate',
   '/students/:id/email',
   '/students/:id/gift',
   '/students/:id/points/grant',
   '/students/:id/remove',
-  '/surveys',
-  '/surveys/create',
-  '/surveys/:id/import',
 ] as const;
 
 export type Route = (typeof ROUTES)[number];

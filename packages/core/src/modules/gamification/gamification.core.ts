@@ -360,16 +360,6 @@ async function grantGamificationPoints(
         .onConflict((oc) => oc.doNothing())
         .execute();
     })
-    .with({ type: 'respond_to_survey' }, async (input) => {
-      await db
-        .insertInto('completedActivities')
-        .values({
-          ...activityCompleted,
-          surveyRespondedTo: input.surveyRespondedTo,
-        })
-        .onConflict((oc) => oc.doNothing())
-        .execute();
-    })
     .with({ type: 'review_company' }, async (input) => {
       await db
         .insertInto('completedActivities')
