@@ -7,7 +7,8 @@ import {
 import { Form, useLoaderData } from '@remix-run/react';
 import { Calendar, Check, ExternalLink } from 'react-feather';
 
-import { getEvent, job } from '@oyster/core/member-profile/server';
+import { job } from '@oyster/core/bull';
+import { getEvent } from '@oyster/core/member-profile/server';
 import { db } from '@oyster/db';
 import { Button, getButtonCn, Modal, Text } from '@oyster/ui';
 
