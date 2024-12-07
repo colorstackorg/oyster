@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { job } from '@/infrastructure/bull/bull';
+import { job } from '@/infrastructure/bull';
 import { redis } from '@/infrastructure/redis';
 import { reportException } from '@/modules/sentry/use-cases/report-exception';
 import { ErrorWithContext, ZodParseError } from '@/shared/errors';

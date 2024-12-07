@@ -1,4 +1,4 @@
-import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { inviteSlackUser } from '../services/slack-admin.service';
 
 export async function inviteToSlackWorkspace({

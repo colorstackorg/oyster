@@ -1,7 +1,7 @@
 import { db } from '@oyster/db';
 
-import { job } from '@/infrastructure/bull/bull';
-import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { job } from '@/infrastructure/bull';
+import { type GetBullJobData } from '@/infrastructure/bull.types';
 import {
   AIRTABLE_FAMILY_BASE_ID,
   AIRTABLE_MEMBERS_TABLE_ID,

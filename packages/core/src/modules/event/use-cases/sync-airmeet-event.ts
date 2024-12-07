@@ -1,7 +1,7 @@
 import { db } from '@oyster/db';
 
-import { job } from '@/infrastructure/bull/bull';
-import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { job } from '@/infrastructure/bull';
+import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { getMemberByEmail } from '@/modules/member/queries/get-member-by-email';
 import { NotFoundError } from '@/shared/errors';
 import {

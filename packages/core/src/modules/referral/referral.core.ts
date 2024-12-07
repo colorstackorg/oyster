@@ -3,7 +3,7 @@ import { type SelectExpression } from 'kysely';
 import { type DB, db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { job } from '@/infrastructure/bull/bull';
+import { job } from '@/infrastructure/bull';
 import {
   type ReferFriendInput,
   ReferralStatus,

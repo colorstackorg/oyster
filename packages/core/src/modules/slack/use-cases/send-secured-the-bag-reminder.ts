@@ -1,7 +1,7 @@
 import dedent from 'dedent';
 
-import { job } from '@/infrastructure/bull/bull';
-import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { job } from '@/infrastructure/bull';
+import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { getChatCompletion } from '@/modules/ai/ai';
 import { slack } from '@/modules/slack/instances';
 import { ENV } from '@/shared/env';

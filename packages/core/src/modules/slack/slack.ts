@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 import { type DB, db } from '@oyster/db';
 
-import { job } from '@/infrastructure/bull/bull';
+import { job } from '@/infrastructure/bull';
 import { cache, ONE_HOUR_IN_SECONDS } from '@/infrastructure/redis';
 import {
   createEmbedding,

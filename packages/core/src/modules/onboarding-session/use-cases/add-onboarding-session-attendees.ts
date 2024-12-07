@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { job } from '@/infrastructure/bull/bull';
+import { job } from '@/infrastructure/bull';
 
 type AddOnboardingSessionAttendeesInput = {
   attendees: string[];

@@ -1,7 +1,7 @@
 import { db } from '@oyster/db';
 
-import { job } from '@/infrastructure/bull/bull';
-import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { job } from '@/infrastructure/bull';
+import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { redis } from '@/infrastructure/redis';
 import { isFeatureFlagEnabled } from '@/modules/feature-flag/queries/is-feature-flag-enabled';
 import { slack } from '@/modules/slack/instances';

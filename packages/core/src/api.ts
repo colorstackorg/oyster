@@ -24,7 +24,7 @@ import { opportunityWorker } from './modules/opportunity/opportunity';
 import { resumeReviewWorker } from './modules/resume-review/resume-review';
 import { slackWorker } from './modules/slack/slack.worker';
 
-export { job } from './infrastructure/bull/bull';
+export { job } from './infrastructure/bull';
 export { OAuthCodeState } from './modules/authentication/authentication.types';
 export { loginWithOAuth } from './modules/authentication/use-cases/login-with-oauth';
 export { saveGoogleDriveCredentials } from './modules/google-drive';
