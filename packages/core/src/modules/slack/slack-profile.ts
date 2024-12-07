@@ -1,6 +1,6 @@
 import { db, type DB } from '@oyster/db';
 
-import { reportException } from '@/modules/sentry/use-cases/report-exception';
+import { reportException } from '@/infrastructure/sentry';
 import { slack } from '@/modules/slack/instances';
 import { ENV } from '@/shared/env';
 import { RateLimiter } from '@/shared/utils/rate-limiter';

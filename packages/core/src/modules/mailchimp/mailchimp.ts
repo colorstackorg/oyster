@@ -5,7 +5,7 @@ import { sleep } from '@oyster/utils';
 import { registerWorker } from '@/infrastructure/bull';
 import { MailchimpBullJob } from '@/infrastructure/bull.types';
 import { redis } from '@/infrastructure/redis';
-import { reportException } from '@/modules/sentry/use-cases/report-exception';
+import { reportException } from '@/infrastructure/sentry';
 import { IS_PRODUCTION } from '@/shared/env';
 import { encodeBasicAuthenticationToken } from '@/shared/utils/auth.utils';
 import { fail, type Result, success } from '@/shared/utils/core.utils';

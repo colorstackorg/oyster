@@ -5,7 +5,7 @@ import { Event, EventAttendee } from '@oyster/types';
 import { sleep } from '@oyster/utils';
 
 import { redis, RedisKey } from '@/infrastructure/redis';
-import { reportException } from '@/modules/sentry/use-cases/report-exception';
+import { reportException } from '@/infrastructure/sentry';
 import { ENV, IS_PRODUCTION } from '@/shared/env';
 import { ErrorWithContext } from '@/shared/errors';
 import { validate } from '@/shared/utils/zod.utils';
