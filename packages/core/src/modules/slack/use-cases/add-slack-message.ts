@@ -54,13 +54,12 @@ export async function addSlackMessage(data: AddSlackMessageInput) {
     threadId: data.threadId || data.id,
   });
 
-  if (data.replyCount === 100) {
-    // We don't need to await this since it's not a critical path.
-    notifyBusySlackThread({
-      channelId: data.channelId,
-      id: data.id,
-    });
-  }
+  // We don't need to await this since it's not a critical path.
+  notifyBusySlackThreadIfNecessary({
+    channelId: data.channelId,
+    id: data.id,
+    threadId: data.threadId,
+  });
 
   // We'll do some additional checks for top-level threads...
   if (!data.threadId) {
@@ -183,14 +182,34 @@ async function ensureThreadExistsIfNecessary(data: AddSlackMessageInput) {
 }
 
 /**
- * Sends a notification to the internal team when a thread gets over 100
+ * Sends a notification to the internal team when a thread gets to 100
  * replies. The motivation is that some threads can get a little too spicy
  * and we want to moderate them quickly in case of abuse.
  */
-async function notifyBusySlackThread({
+async function notifyBusySlackThreadIfNecessary({
   channelId,
   id,
-}: Pick<AddSlackMessageInput, 'channelId' | 'id'>) {
+  threadId,
+}: Pick<AddSlackMessageInput, 'channelId' | 'id' | 'threadId'>) {
+  // We only need to check the # of replies if this is a reply itself.
+  if (!threadId) {
+    return;
+  }
+
+  const row = await db
+    .selectFrom('slackMessages')
+    .select((eb) => eb.fn.countAll<string>().as('count'))
+    .where('channelId', '=', channelId)
+    .where('threadId', '=', threadId)
+    .executeTakeFirstOrThrow();
+
+  const count = Number(row.count);
+
+  // We will only notify if the thread has exactly 100 replies.
+  if (count !== 100) {
+    return;
+  }
+
   const { permalink } = await slack.chat.getPermalink({
     channel: channelId,
     message_ts: id,
