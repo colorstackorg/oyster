@@ -34,30 +34,10 @@ export async function backfillEngagementRecords(
     }
   }
 
-  const [
-    eventAttendees,
-    programParticipants,
-    resourceUsers,
-    slackMessages,
-    slackReactions,
-  ] = await Promise.all([
+  const [eventAttendees, slackMessages, slackReactions] = await Promise.all([
     db
       .selectFrom('eventAttendees')
       .select(['email', 'eventId'])
-      .where('studentId', 'is', null)
-      .where('email', 'ilike', email)
-      .execute(),
-
-    db
-      .selectFrom('programParticipants')
-      .select(['id'])
-      .where('studentId', 'is', null)
-      .where('email', 'ilike', email)
-      .execute(),
-
-    db
-      .selectFrom('internalResourceUsers')
-      .select(['id'])
       .where('studentId', 'is', null)
       .where('email', 'ilike', email)
       .execute(),
@@ -85,22 +65,6 @@ export async function backfillEngagementRecords(
           .set({ studentId: student.id })
           .where('email', 'ilike', attendee.email)
           .where('eventId', '=', attendee.eventId)
-          .execute();
-      }),
-
-      ...programParticipants.map(async (programParticipant) => {
-        await trx
-          .updateTable('programParticipants')
-          .set({ studentId: student.id })
-          .where('id', '=', programParticipant.id)
-          .execute();
-      }),
-
-      ...resourceUsers.map(async (resourceUser) => {
-        await trx
-          .updateTable('internalResourceUsers')
-          .set({ studentId: student.id })
-          .where('id', '=', resourceUser.id)
           .execute();
       }),
 

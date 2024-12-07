@@ -9,15 +9,11 @@ import { sql } from 'kysely';
 import { useState } from 'react';
 import {
   CornerUpLeft,
-  DollarSign,
   Edit,
   ExternalLink,
   Gift,
-  Hash,
   Star,
   Trash,
-  Upload,
-  Users,
   Zap,
 } from 'react-feather';
 import { generatePath } from 'react-router';
@@ -27,7 +23,6 @@ import { db } from '@oyster/db';
 import {
   Dashboard,
   Dropdown,
-  IconButton,
   Pagination,
   Table,
   type TableColumnProps,
@@ -132,64 +127,12 @@ export default function StudentsPage() {
 
       <Dashboard.Subheader>
         <Dashboard.SearchForm placeholder="Search by name..." />
-
-        <div className="ml-auto flex items-center gap-2">
-          <StudentsUploadDropdown />
-        </div>
       </Dashboard.Subheader>
 
       <StudentsTable />
       <StudentsPagination />
       <Outlet />
     </>
-  );
-}
-
-function StudentsUploadDropdown() {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onClick() {
-    setOpen(true);
-  }
-
-  return (
-    <Dropdown.Container onClose={onClose}>
-      <IconButton
-        backgroundColor="gray-100"
-        backgroundColorOnHover="gray-200"
-        icon={<Upload />}
-        onClick={onClick}
-        shape="square"
-      />
-
-      {open && (
-        <Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link to={Route['/students/import/resources']}>
-                <Hash /> Import Resource Users
-              </Link>
-            </Dropdown.Item>
-
-            <Dropdown.Item>
-              <Link to={Route['/students/import/programs']}>
-                <Users /> Import Program Participants
-              </Link>
-            </Dropdown.Item>
-
-            <Dropdown.Item>
-              <Link to={Route['/students/import/scholarships']}>
-                <DollarSign /> Import Scholarship Recipients
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Dropdown>
-      )}
-    </Dropdown.Container>
   );
 }
 
