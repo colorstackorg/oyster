@@ -3,7 +3,7 @@ import { match } from 'ts-pattern';
 import { db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { job } from '@/infrastructure/bull/bull';
+import { job } from '@/infrastructure/bull';
 import { sendEmail } from '@/modules/notification/use-cases/send-email';
 import { IS_DEVELOPMENT } from '@/shared/env';
 import type {

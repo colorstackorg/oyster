@@ -1,6 +1,6 @@
 import { db } from '@oyster/db';
 
-import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { type GetBullJobData } from '@/infrastructure/bull.types';
 
 export async function renameSlackChannel({
   id,

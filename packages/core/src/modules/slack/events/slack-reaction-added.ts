@@ -1,7 +1,7 @@
 import { db } from '@oyster/db';
 
-import { job } from '@/infrastructure/bull/bull';
-import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { job } from '@/infrastructure/bull';
+import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { ErrorWithContext } from '@/shared/errors';
 import { retryWithBackoff } from '@/shared/utils/core.utils';
 import { getSlackMessage } from '../services/slack-message.service';

@@ -6,11 +6,11 @@ import { z } from 'zod';
 import { db, relativeTime } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { job, registerWorker } from '@/infrastructure/bull/bull';
+import { job, registerWorker } from '@/infrastructure/bull';
 import {
   type GetBullJobData,
   ResumeReviewBullJob,
-} from '@/infrastructure/bull/bull.types';
+} from '@/infrastructure/bull.types';
 import { getChatCompletion } from '@/modules/ai/ai';
 import { track } from '@/modules/mixpanel';
 import { ENV } from '@/shared/env';

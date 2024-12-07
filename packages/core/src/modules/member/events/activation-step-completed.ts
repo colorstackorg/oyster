@@ -8,7 +8,7 @@ import {
   type Student,
 } from '@oyster/types';
 
-import { job } from '@/infrastructure/bull/bull';
+import { job } from '@/infrastructure/bull';
 import { activateMember } from '@/modules/member/use-cases/activate-member';
 import { ENV } from '@/shared/env';
 import { ErrorWithContext } from '@/shared/errors';

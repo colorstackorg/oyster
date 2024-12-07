@@ -1,7 +1,7 @@
 import { db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { job } from '@/infrastructure/bull/bull';
+import { job } from '@/infrastructure/bull';
 import { putObject } from '@/modules/object-storage';
 import { type AddResourceInput } from '@/modules/resource/resource.types';
 

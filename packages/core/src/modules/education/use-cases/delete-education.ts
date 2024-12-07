@@ -1,6 +1,6 @@
 import { db } from '@oyster/db';
 
-import { job } from '@/infrastructure/bull/bull';
+import { job } from '@/infrastructure/bull';
 import { checkMostRecentEducation } from './check-most-recent-education';
 import { type Education } from '../education.types';
 

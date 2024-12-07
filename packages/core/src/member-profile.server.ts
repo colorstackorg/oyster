@@ -1,4 +1,4 @@
-export { job } from './infrastructure/bull/bull';
+export { job } from './infrastructure/bull';
 export { getActiveStreak } from './modules/active-status/queries/get-active-streak';
 export { getActiveStreakLeaderboard } from './modules/active-status/queries/get-active-streak-leaderboard';
 export { getGithubProfile } from './modules/authentication/queries/get-github-profile';

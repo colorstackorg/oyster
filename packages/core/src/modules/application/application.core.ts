@@ -6,11 +6,11 @@ import { type DB, db } from '@oyster/db';
 import { type Application, OtherDemographic } from '@oyster/types';
 import { id, run } from '@oyster/utils';
 
-import { job, registerWorker } from '@/infrastructure/bull/bull';
+import { job, registerWorker } from '@/infrastructure/bull';
 import {
   ApplicationBullJob,
   type GetBullJobData,
-} from '@/infrastructure/bull/bull.types';
+} from '@/infrastructure/bull.types';
 import {
   type ApplicationRejectionReason,
   ApplicationStatus,
