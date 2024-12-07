@@ -1,7 +1,7 @@
 import { match } from 'ts-pattern';
 
+import { registerWorker } from '@/infrastructure/bull/bull';
 import { EventBullJob } from '@/infrastructure/bull/bull.types';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { onEventAttended } from './events/event-attended';
 import { onRegisteredForEvent } from './events/event-registered';
 import { registerForEvent } from './use-cases/register-for-event';

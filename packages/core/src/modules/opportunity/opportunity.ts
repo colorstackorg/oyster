@@ -9,9 +9,8 @@ import { db } from '@oyster/db';
 import { ISO8601Date } from '@oyster/types';
 import { id } from '@oyster/utils';
 
-import { job } from '@/infrastructure/bull/bull';
+import { job, registerWorker } from '@/infrastructure/bull/bull';
 import { OpportunityBullJob } from '@/infrastructure/bull/bull.types';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { getChatCompletion } from '@/modules/ai/ai';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';

@@ -1,7 +1,7 @@
 import { match } from 'ts-pattern';
 
+import { registerWorker } from '@/infrastructure/bull/bull';
 import { OneTimeCodeBullJob } from '@/infrastructure/bull/bull.types';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { expireOneTimeCode } from './use-cases/expire-one-time-code';
 
 export const oneTimeCodeWorker = registerWorker(

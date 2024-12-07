@@ -2,8 +2,8 @@ import { match } from 'ts-pattern';
 
 import { sleep } from '@oyster/utils';
 
+import { registerWorker } from '@/infrastructure/bull/bull';
 import { MailchimpBullJob } from '@/infrastructure/bull/bull.types';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { redis } from '@/infrastructure/redis';
 import { reportException } from '@/modules/sentry/use-cases/report-exception';
 import { IS_PRODUCTION } from '@/shared/env';

@@ -5,12 +5,11 @@ import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
 
-import { job } from '@/infrastructure/bull/bull';
+import { job, registerWorker } from '@/infrastructure/bull/bull';
 import {
   FeedBullJob,
   type GetBullJobData,
 } from '@/infrastructure/bull/bull.types';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { ENV } from '@/shared/env';
 
 // Environment Variables

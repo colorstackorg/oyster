@@ -1,7 +1,7 @@
 import { match } from 'ts-pattern';
 
+import { registerWorker } from '@/infrastructure/bull/bull';
 import { NotificationBullJob } from '@/infrastructure/bull/bull.types';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
 import { sendEphemeralSlackNotification } from '@/modules/notification/use-cases/send-ephemeral-slack-notification';
 import { sendEmail } from './use-cases/send-email';
 import { sendSlackNotification } from './use-cases/send-slack-notification';
