@@ -58,12 +58,17 @@ type SlackMessageDeletedEvent = {
 
 /**
  * @see https://api.slack.com/events/message
+ * @see https://api.slack.com/events/message/message_replied
  */
 type SlackMessageSentEvent = {
   app_id?: string;
   bot_id?: string;
   channel: string;
   files?: unknown[];
+  message?: {
+    // Only present if the message is a reply.
+    reply_count?: number;
+  };
   subtype: undefined;
   text: string;
   thread_ts: string | undefined;

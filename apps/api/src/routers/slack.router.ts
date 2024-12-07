@@ -110,6 +110,7 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
         hasFile: !!event.files && !!event.files.length,
         id: event.ts!,
         isBot: !!event.app_id || !!event.bot_id,
+        replyCount: event.message?.reply_count,
         text: event.text!,
         threadId:
           event.ts && event.thread_ts && event.ts !== event.thread_ts

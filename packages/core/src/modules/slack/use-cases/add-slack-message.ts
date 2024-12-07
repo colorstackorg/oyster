@@ -4,14 +4,14 @@ import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
 import { job } from '@/infrastructure/bull/use-cases/job';
 import { redis } from '@/infrastructure/redis';
 import { isFeatureFlagEnabled } from '@/modules/feature-flag/queries/is-feature-flag-enabled';
-import { notifyBusySlackThread } from '@/modules/slack/queries/notify-busy-slack-thread';
+import { slack } from '@/modules/slack/instances';
 import { ErrorWithContext } from '@/shared/errors';
 import { retryWithBackoff } from '@/shared/utils/core.utils';
 import { getSlackMessage } from '../services/slack-message.service';
 
-export async function addSlackMessage(
-  data: GetBullJobData<'slack.message.add'>
-) {
+type AddSlackMessageInput = GetBullJobData<'slack.message.add'>;
+
+export async function addSlackMessage(data: AddSlackMessageInput) {
   await ensureThreadExistsIfNecessary(data);
 
   const student = await db
@@ -46,8 +46,6 @@ export async function addSlackMessage(
         threadRepliedTo: data.threadId,
         type: 'reply_to_thread',
       });
-
-      notifyBusySlackThread(data.threadId);
     }
   }
 
@@ -55,6 +53,14 @@ export async function addSlackMessage(
     action: 'add',
     threadId: data.threadId || data.id,
   });
+
+  if (data.replyCount === 100) {
+    // We don't need to await this since it's not a critical path.
+    notifyBusySlackThread({
+      channelId: data.channelId,
+      id: data.id,
+    });
+  }
 
   // We'll do some additional checks for top-level threads...
   if (!data.threadId) {
@@ -114,9 +120,7 @@ export async function addSlackMessage(
   }
 }
 
-async function ensureThreadExistsIfNecessary(
-  data: GetBullJobData<'slack.message.add'>
-) {
+async function ensureThreadExistsIfNecessary(data: AddSlackMessageInput) {
   // Don't need to bother if there is no thread.
   if (!data.threadId) {
     return;
@@ -176,4 +180,24 @@ async function ensureThreadExistsIfNecessary(
       retryInterval: 5000,
     }
   );
+}
+
+/**
+ * Sends a notification to the internal team when a thread gets over 100
+ * replies. The motivation is that some threads can get a little too spicy
+ * and we want to moderate them quickly in case of abuse.
+ */
+async function notifyBusySlackThread({
+  channelId,
+  id,
+}: Pick<AddSlackMessageInput, 'channelId' | 'id'>) {
+  const { permalink } = await slack.chat.getPermalink({
+    channel: channelId,
+    message_ts: id,
+  });
+
+  job('notification.slack.send', {
+    message: `🚨 Heads up! This <${permalink}|thread> has over 💯 replies!`,
+    workspace: 'internal',
+  });
 }
