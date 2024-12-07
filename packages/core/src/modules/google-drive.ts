@@ -1,13 +1,8 @@
 import { redis } from '@/infrastructure/redis';
 import { OAuthTokenResponse } from '@/modules/authentication/oauth.service';
+import { API_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '@/shared/env';
 import { ColorStackError } from '@/shared/errors';
 import { validate } from '@/shared/utils/zod.utils';
-
-// Environment Variables
-
-const API_URL = process.env.API_URL as string;
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID as string;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET as string;
 
 // Core
 

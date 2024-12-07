@@ -1,6 +1,8 @@
 import { isFeatureFlagEnabled } from '@/modules/feature-flag/queries/is-feature-flag-enabled';
 import { internalSlack, slack } from '@/modules/slack/instances';
-import { ENV } from '@/shared/env';
+
+const INTERNAL_SLACK_NOTIFICATIONS_CHANNEL_ID = process.env
+  .INTERNAL_SLACK_NOTIFICATIONS_CHANNEL_ID as string;
 
 type SendNotificationInput =
   | {
@@ -25,7 +27,7 @@ export async function sendSlackNotification(input: SendNotificationInput) {
 
   const client = input.workspace === 'internal' ? internalSlack : slack;
 
-  const channel = input.channel || ENV.INTERNAL_SLACK_NOTIFICATIONS_CHANNEL_ID;
+  const channel = input.channel || INTERNAL_SLACK_NOTIFICATIONS_CHANNEL_ID;
 
   const { ts } = await client.chat.postMessage({
     channel,

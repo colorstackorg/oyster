@@ -4,7 +4,7 @@ import dedent from 'dedent';
 import { db } from '@oyster/db';
 
 import { job } from '@/infrastructure/bull';
-import { ENV } from '@/shared/env';
+import { STUDENT_PROFILE_URL } from '@/shared/env';
 
 type SendCompanyReviewNotificationsInput = {
   after?: Date;
@@ -62,7 +62,7 @@ export async function sendCompanyReviewNotifications({
   workExperiences.forEach(({ companyName, id, memberSlackId, title }) => {
     const reviewURL = new URL(
       '/profile/work/' + id + '/review/add',
-      ENV.STUDENT_PROFILE_URL
+      STUDENT_PROFILE_URL
     );
 
     const message = dedent`

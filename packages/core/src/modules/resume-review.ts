@@ -13,7 +13,7 @@ import {
   ResumeReviewBullJob,
 } from '@/infrastructure/bull.types';
 import { track } from '@/infrastructure/mixpanel';
-import { ENV } from '@/shared/env';
+import { STUDENT_PROFILE_URL } from '@/shared/env';
 import { ColorStackError } from '@/shared/errors';
 import { fail, type Result, success } from '@/shared/utils/core.utils';
 import { getTextFromPDF } from '@/shared/utils/file.utils';
@@ -242,7 +242,7 @@ async function checkResumeReview({
   // If they haven't used the AI Resume Review feature, then we'll send them
   // a notification prompting them to do so.
   if (!review) {
-    const url = new URL('/resume/review', ENV.STUDENT_PROFILE_URL);
+    const url = new URL('/resume/review', STUDENT_PROFILE_URL);
 
     job('notification.slack.send', {
       channel: userId,
