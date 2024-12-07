@@ -28,7 +28,7 @@ import { generatePath } from 'react-router';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { listQueueNames } from '@oyster/core/admin-dashboard/server';
+import { listQueueNames } from '@oyster/core/bull';
 import {
   cx,
   Dashboard,

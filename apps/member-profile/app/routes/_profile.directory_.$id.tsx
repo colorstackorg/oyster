@@ -4,13 +4,13 @@ import dayjs from 'dayjs';
 import React, { type PropsWithChildren } from 'react';
 import { BookOpen, Calendar, Globe, Home, Link, MapPin } from 'react-feather';
 
+import { job } from '@oyster/core/bull';
 import { getTotalPoints } from '@oyster/core/gamification';
 import {
   countEventAttendees,
   countMessagesSent,
   getActiveStreak,
   getIcebreakerResponses,
-  job,
   listWorkExperiences,
 } from '@oyster/core/member-profile/server';
 import { WorkExperienceItem } from '@oyster/core/member-profile/ui';
