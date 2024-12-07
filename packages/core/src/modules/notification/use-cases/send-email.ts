@@ -15,7 +15,7 @@ import {
   StudentRemovedEmail,
 } from '@oyster/email-templates';
 
-import { getObject } from '@/modules/object-storage';
+import { getObject } from '@/infrastructure/s3';
 import { ENVIRONMENT } from '@/shared/env';
 import {
   getNodemailerTransporter,

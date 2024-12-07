@@ -7,10 +7,10 @@ import { db, type DB } from '@oyster/db';
 import { nullableField } from '@oyster/types';
 import { id } from '@oyster/utils';
 
+import { getChatCompletion } from '@/infrastructure/ai';
 import { job, registerWorker } from '@/infrastructure/bull';
 import { OfferBullJob } from '@/infrastructure/bull.types';
 import { redis } from '@/infrastructure/redis';
-import { getChatCompletion } from '@/modules/ai/ai';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { ENV } from '@/shared/env';

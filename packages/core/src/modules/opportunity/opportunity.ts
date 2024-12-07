@@ -9,12 +9,12 @@ import { db } from '@oyster/db';
 import { ISO8601Date } from '@oyster/types';
 import { id } from '@oyster/utils';
 
+import { getChatCompletion } from '@/infrastructure/ai';
 import { job, registerWorker } from '@/infrastructure/bull';
 import { OpportunityBullJob } from '@/infrastructure/bull.types';
-import { getChatCompletion } from '@/modules/ai/ai';
+import { track } from '@/infrastructure/mixpanel';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
-import { track } from '@/modules/mixpanel';
 import { ENV } from '@/shared/env';
 import { getPageContent } from '@/shared/utils/browser.utils';
 import {
