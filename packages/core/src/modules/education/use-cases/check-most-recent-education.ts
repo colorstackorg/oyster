@@ -4,7 +4,7 @@ import { job } from '@/infrastructure/bull';
 import {
   AIRTABLE_FAMILY_BASE_ID,
   AIRTABLE_MEMBERS_TABLE_ID,
-} from '@/modules/airtable/airtable';
+} from '@/modules/airtable';
 import { DegreeType, type EducationLevel } from '../education.types';
 
 const EducationLevelFromDegreeType: Record<DegreeType, EducationLevel> = {
