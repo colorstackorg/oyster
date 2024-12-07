@@ -34,8 +34,7 @@
     "./location": "./src/modules/location/location.core.ts",
     "./location/types": "./src/modules/location/location.types.ts",
     "./location/ui": "./src/modules/location/location.ui.tsx",
-    "./mixpanel": "./src/modules/mixpanel.ts",
-    "./object-storage": "./src/modules/object-storage/index.ts",
+    "./mixpanel": "./src/infrastructure/mixpanel.ts",
     "./offers": "./src/modules/compensation/offers.ts",
     "./offers/ui": "./src/modules/compensation/offers.ui.tsx",
     "./opportunities": "./src/modules/opportunity/opportunity.ts",
@@ -48,6 +47,7 @@
     "./resume-books/types": "./src/modules/resume-book/resume-book.types.ts",
     "./resume-books/ui": "./src/modules/resume-book/resume-book.ui.tsx",
     "./resume-review": "./src/modules/resume-review/resume-review.ts",
+    "./s3": "./src/infrastructure/s3.ts",
     "./slack": "./src/modules/slack/slack.ts",
     "./slack/server": "./src/modules/slack/index.server.ts"
   },

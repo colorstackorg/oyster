@@ -13,13 +13,13 @@ import { Plus } from 'react-feather';
 import { isMemberAdmin } from '@oyster/core/admins';
 import { ListSearchParams } from '@oyster/core/member-profile/ui';
 import { track } from '@oyster/core/mixpanel';
-import { getPresignedURL } from '@oyster/core/object-storage';
 import {
   ListResourcesOrderBy,
   ListResourcesWhere,
   type ResourceType,
 } from '@oyster/core/resources';
 import { listResources, listTags } from '@oyster/core/resources/server';
+import { getPresignedURL } from '@oyster/core/s3';
 import { ISO8601Date } from '@oyster/types';
 import {
   Dashboard,
