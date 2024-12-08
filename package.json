@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "prettier": "^3.2.5",
+    "tslint": "^5.20.1",
     "turbo": "latest",
     "typescript": "^5.4.2"
   },
@@ -37,5 +38,9 @@
     "npm": ">=7.0.0",
     "node": "^20.0.0"
   },
-  "packageManager": "yarn@1.22.10"
+  "packageManager": "yarn@1.22.10",
+  "dependencies": {
+    "canvas": "^2.11.2",
+    "lint": "^0.8.19"
+  }
 }
