@@ -34,31 +34,10 @@ export async function backfillEngagementRecords(
     }
   }
 
-  const [
-    eventAttendees,
-    programParticipants,
-    resourceUsers,
-    slackMessages,
-    slackReactions,
-    surveyResponses,
-  ] = await Promise.all([
+  const [eventAttendees, slackMessages, slackReactions] = await Promise.all([
     db
       .selectFrom('eventAttendees')
       .select(['email', 'eventId'])
-      .where('studentId', 'is', null)
-      .where('email', 'ilike', email)
-      .execute(),
-
-    db
-      .selectFrom('programParticipants')
-      .select(['id'])
-      .where('studentId', 'is', null)
-      .where('email', 'ilike', email)
-      .execute(),
-
-    db
-      .selectFrom('internalResourceUsers')
-      .select(['id'])
       .where('studentId', 'is', null)
       .where('email', 'ilike', email)
       .execute(),
@@ -76,13 +55,6 @@ export async function backfillEngagementRecords(
       .where('studentId', 'is', null)
       .where('userId', '=', slackId)
       .execute(),
-
-    db
-      .selectFrom('surveyResponses')
-      .select(['id', 'surveyId'])
-      .where('studentId', 'is', null)
-      .where('email', 'ilike', email)
-      .execute(),
   ]);
 
   await db.transaction().execute(async (trx) => {
@@ -93,22 +65,6 @@ export async function backfillEngagementRecords(
           .set({ studentId: student.id })
           .where('email', 'ilike', attendee.email)
           .where('eventId', '=', attendee.eventId)
-          .execute();
-      }),
-
-      ...programParticipants.map(async (programParticipant) => {
-        await trx
-          .updateTable('programParticipants')
-          .set({ studentId: student.id })
-          .where('id', '=', programParticipant.id)
-          .execute();
-      }),
-
-      ...resourceUsers.map(async (resourceUser) => {
-        await trx
-          .updateTable('internalResourceUsers')
-          .set({ studentId: student.id })
-          .where('id', '=', resourceUser.id)
           .execute();
       }),
 
@@ -132,14 +88,6 @@ export async function backfillEngagementRecords(
           .execute();
       }),
 
-      ...surveyResponses.map(async (response) => {
-        await trx
-          .updateTable('surveyResponses')
-          .set({ studentId: student.id })
-          .where('id', '=', response.id)
-          .execute();
-      }),
-
       trx
         .updateTable('students')
         .set({ slackId })
@@ -153,14 +101,6 @@ export async function backfillEngagementRecords(
     job('event.attended', {
       eventId: attendee.eventId,
       studentId: student.id,
-    });
-  });
-
-  surveyResponses.forEach((response) => {
-    job('gamification.activity.completed', {
-      studentId: student.id,
-      surveyRespondedTo: response.surveyId,
-      type: 'respond_to_survey',
     });
   });
 

@@ -6,8 +6,6 @@ export {
   EventType,
 } from './domain/event';
 export { ProfileView } from './domain/profile-view';
-export { Program, ProgramParticipant } from './domain/program';
-export { Resource, ResourceStatus, ResourceUser } from './domain/resource';
 export {
   ActivationRequirement,
   ACTIVATION_REQUIREMENTS,

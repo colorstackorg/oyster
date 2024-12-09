@@ -23,7 +23,6 @@ import {
   SlackMessage,
   SlackReaction,
 } from '@/modules/slack/slack.types';
-import { Survey } from '@/modules/survey/survey.types';
 
 export const BullQueue = {
   AIRTABLE: 'airtable',
@@ -39,6 +38,7 @@ export const BullQueue = {
   ONE_TIME_CODE: 'one_time_code',
   OPPORTUNITY: 'opportunity',
   PROFILE: 'profile',
+  RESUME_REVIEW: 'resume_review',
   SLACK: 'slack',
   STUDENT: 'student',
 } as const;
@@ -198,11 +198,6 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         studentId: CompletedActivity.shape.studentId,
         threadRepliedTo: SlackMessage.shape.id,
         type: z.literal('reply_to_thread'),
-      }),
-      z.object({
-        studentId: CompletedActivity.shape.studentId,
-        surveyRespondedTo: Survey.shape.id,
-        type: z.literal('respond_to_survey'),
       }),
       z.object({
         studentId: CompletedActivity.shape.studentId,
@@ -393,6 +388,15 @@ export const ProfileBullJob = z.discriminatedUnion('name', [
   }),
 ]);
 
+export const ResumeReviewBullJob = z.discriminatedUnion('name', [
+  z.object({
+    name: z.literal('resume_review.check'),
+    data: z.object({
+      userId: z.string().trim().min(1),
+    }),
+  }),
+]);
+
 export const SlackBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('slack.birthdates.update'),
@@ -464,7 +468,7 @@ export const SlackBullJob = z.discriminatedUnion('name', [
     name: z.literal('slack.joined'),
     data: z.object({
       email: Student.shape.email,
-      slackId: Student.shape.slackId,
+      slackId: z.string().trim().min(1),
     }),
   }),
   z.object({
@@ -478,7 +482,9 @@ export const SlackBullJob = z.discriminatedUnion('name', [
       threadId: true,
       userId: true,
     }).extend({
+      hasFile: z.boolean().optional(),
       isBot: z.boolean().optional(),
+      replyCount: z.number().int().optional(),
     }),
   }),
   z.object({
@@ -528,6 +534,14 @@ export const SlackBullJob = z.discriminatedUnion('name', [
       channelId: true,
       messageId: true,
       reaction: true,
+    }),
+  }),
+  z.object({
+    name: z.literal('slack.reaction.added'),
+    data: SlackReaction.pick({
+      channelId: true,
+      messageId: true,
+      reaction: true,
       userId: true,
     }),
   }),
@@ -538,6 +552,15 @@ export const SlackBullJob = z.discriminatedUnion('name', [
       messageId: true,
       reaction: true,
       userId: true,
+    }),
+  }),
+  z.object({
+    name: z.literal('slack.secured_the_bag.reminder'),
+    data: z.object({
+      channelId: z.string().trim().min(1),
+      messageId: z.string().trim().min(1),
+      text: z.string().trim().min(1),
+      userId: z.string().trim().min(1),
     }),
   }),
   z.object({
@@ -636,6 +659,7 @@ export const BullJob = z.union([
   OneTimeCodeBullJob,
   OpportunityBullJob,
   ProfileBullJob,
+  ResumeReviewBullJob,
   SlackBullJob,
   StudentBullJob,
 ]);
