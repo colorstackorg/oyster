@@ -187,14 +187,14 @@ function ImportEventAttendeesForm() {
 
   return (
     <RemixForm className="form" method="post" encType="multipart/form-data">
-      <Form.Field error={errors.file} labelFor={keys.file} required>
+      <FormField error={errors.file} labelFor={keys.file} required>
         <FileUploader
           accept={['text/csv']}
           id={keys.file}
           name={keys.file}
           required
         />
-      </Form.Field>
+      </FormField>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

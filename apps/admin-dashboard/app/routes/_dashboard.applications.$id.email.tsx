@@ -126,14 +126,14 @@ function UpdateApplicationEmailForm() {
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field
+      <FormField
         error={errors.email}
         label="Email"
         labelFor={keys.email}
         required
       >
         <Input id={keys.email} name={keys.email} required />
-      </Form.Field>
+      </FormField>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

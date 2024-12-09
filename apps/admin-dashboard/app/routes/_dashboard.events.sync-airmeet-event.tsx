@@ -84,7 +84,7 @@ function SyncAirmeetEventForm() {
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field
+      <FormField
         description="You can find the ID from the Airmeet event URL."
         error={errors.eventId}
         label="Airmeet ID"
@@ -92,7 +92,7 @@ function SyncAirmeetEventForm() {
         required
       >
         <Input id={keys.eventId} name={keys.eventId} required />
-      </Form.Field>
+      </FormField>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

@@ -63,7 +63,7 @@ export function ResourceAttachmentField({
   }
 
   return (
-    <Form.Field
+    <FormField
       description="Please choose the file you want to upload."
       error={error}
       label="Attachment"
@@ -85,7 +85,7 @@ export function ResourceAttachmentField({
           },
         })}
       />
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -95,7 +95,7 @@ export function ResourceDescriptionField({
   name,
 }: FieldProps<string>) {
   return (
-    <Form.Field
+    <FormField
       description="Must be less than 160 characters."
       error={error}
       label="Description"
@@ -110,7 +110,7 @@ export function ResourceDescriptionField({
         name={name}
         required
       />
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -126,7 +126,7 @@ export function ResourceLinkField({
   }
 
   return (
-    <Form.Field
+    <FormField
       description="Please include the full URL."
       error={error}
       label="URL"
@@ -134,7 +134,7 @@ export function ResourceLinkField({
       required
     >
       <Input defaultValue={defaultValue} id={name} name={name} required />
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -160,7 +160,7 @@ export function ResourceTagsField({
   }
 
   return (
-    <Form.Field
+    <FormField
       description="To categorize and help others find this resource."
       error={error}
       label="Tags"
@@ -237,7 +237,7 @@ export function ResourceTagsField({
           );
         }}
       </MultiCombobox>
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -247,9 +247,9 @@ export function ResourceTitleField({
   name,
 }: FieldProps<string>) {
   return (
-    <Form.Field error={error} label="Title" labelFor={name} required>
+    <FormField error={error} label="Title" labelFor={name} required>
       <Input defaultValue={defaultValue} id={name} name={name} required />
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -261,7 +261,7 @@ export function ResourceTypeField({
   const { setType } = useContext(ResourceFormContext);
 
   return (
-    <Form.Field
+    <FormField
       description="What kind of type is this resource?"
       error={error}
       label="Type"
@@ -280,6 +280,6 @@ export function ResourceTypeField({
         <option value={ResourceType.FILE}>File</option>
         <option value={ResourceType.URL}>URL</option>
       </Select>
-    </Form.Field>
+    </FormField>
   );
 }

@@ -173,7 +173,7 @@ export default function ApplicationPage() {
           />
         </Application>
 
-        <Form.Field
+        <FormField
           description={<CodeOfConductDescription />}
           labelFor={keys.codeOfConduct}
           label="Code of Conduct"
@@ -186,7 +186,7 @@ export default function ApplicationPage() {
             required
             value="1"
           />
-        </Form.Field>
+        </FormField>
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

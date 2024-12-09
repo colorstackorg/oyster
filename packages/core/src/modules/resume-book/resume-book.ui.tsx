@@ -9,7 +9,7 @@ export function ResumeBookEndDateField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <Form.Field
+    <FormField
       description="The date that the resume book should stop accepting responses."
       error={error}
       label="End Date"
@@ -23,7 +23,7 @@ export function ResumeBookEndDateField({
         type="date"
         required
       />
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -32,7 +32,7 @@ export function ResumeBookHiddenField({
   error,
 }: Omit<FieldProps<boolean>, 'name'>) {
   return (
-    <Form.Field
+    <FormField
       description='If you choose "Hidden", the resume book will only be accessible to members who have the link. If you choose "Visible", the resume book will be accessible in the Member Profile navigation to all members.'
       error={error}
       label="Visibility"
@@ -59,7 +59,7 @@ export function ResumeBookHiddenField({
           value="0"
         />
       </Radio.Group>
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -68,7 +68,7 @@ export function ResumeBookNameField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <Form.Field
+    <FormField
       description={`Please don't add "Resume Book" to the title. Example: Spring '24`}
       error={error}
       label="Name"
@@ -81,7 +81,7 @@ export function ResumeBookNameField({
         name={keys.name}
         required
       />
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -90,7 +90,7 @@ export function ResumeBookStartDateField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <Form.Field
+    <FormField
       description="The date that the resume book should start accepting responses."
       error={error}
       label="Start Date"
@@ -104,6 +104,6 @@ export function ResumeBookStartDateField({
         type="date"
         required
       />
-    </Form.Field>
+    </FormField>
   );
 }

@@ -109,21 +109,11 @@ function CreateEventForm() {
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field
-        error={errors.name}
-        label="Name"
-        labelFor={keys.name}
-        required
-      >
+      <FormField error={errors.name} label="Name" labelFor={keys.name} required>
         <Input id={keys.name} name={keys.name} required />
-      </Form.Field>
+      </FormField>
 
-      <Form.Field
-        error={errors.type}
-        label="Type"
-        labelFor={keys.type}
-        required
-      >
+      <FormField error={errors.type} label="Type" labelFor={keys.type} required>
         <Select id={keys.type} name={keys.type} required>
           {EVENT_TYPES.map((type) => {
             return (
@@ -133,17 +123,17 @@ function CreateEventForm() {
             );
           })}
         </Select>
-      </Form.Field>
+      </FormField>
 
-      <Form.Field
+      <FormField
         error={errors.description}
         label="Description"
         labelFor={keys.description}
       >
         <Textarea id={keys.description} minRows={2} name={keys.description} />
-      </Form.Field>
+      </FormField>
 
-      <Form.Field
+      <FormField
         error={errors.startTime}
         label="Start Date/Time"
         labelFor={keys.startTime}
@@ -155,9 +145,9 @@ function CreateEventForm() {
           type="datetime-local"
           required
         />
-      </Form.Field>
+      </FormField>
 
-      <Form.Field
+      <FormField
         error={errors.endTime}
         label="End Date/Time"
         labelFor={keys.endTime}
@@ -169,7 +159,7 @@ function CreateEventForm() {
           type="datetime-local"
           required
         />
-      </Form.Field>
+      </FormField>
 
       <input
         name={keys.timezone}

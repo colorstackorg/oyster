@@ -25,7 +25,7 @@ type FormFieldProps = {
   required?: boolean;
 };
 
-Form.Field = function FormField({
+export function FormField({
   children,
   description,
   error,
@@ -65,7 +65,7 @@ Form.Field = function FormField({
       {error && <p className="mt-2 text-red-600">{error}</p>}
     </div>
   );
-};
+}
 
 // Common Fields
 
@@ -74,7 +74,7 @@ type InputFieldProps = FieldProps<string> &
   Pick<InputProps, 'disabled' | 'placeholder'>;
 
 /**
- * @deprecated Instead, just compose the `Form.Field` and `Input` together.
+ * @deprecated Instead, just compose the `FormField` and `Input` together.
  */
 export function InputField({
   defaultValue,
@@ -87,7 +87,7 @@ export function InputField({
   required,
 }: InputFieldProps) {
   return (
-    <Form.Field
+    <FormField
       description={description}
       error={error}
       label={label}
@@ -102,7 +102,7 @@ export function InputField({
         placeholder={placeholder}
         required={required}
       />
-    </Form.Field>
+    </FormField>
   );
 }
 

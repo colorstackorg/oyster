@@ -101,16 +101,11 @@ function AddRepeatableForm() {
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field
-        error={errors.name}
-        label="Name"
-        labelFor={keys.name}
-        required
-      >
+      <FormField error={errors.name} label="Name" labelFor={keys.name} required>
         <Input id={keys.name} name={keys.name} required />
-      </Form.Field>
+      </FormField>
 
-      <Form.Field
+      <FormField
         description="Please format the job to be in the PT timezone."
         error={errors.pattern}
         label="Pattern (CRON)"
@@ -118,7 +113,7 @@ function AddRepeatableForm() {
         required
       >
         <Input id={keys.pattern} name={keys.pattern} required />
-      </Form.Field>
+      </FormField>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

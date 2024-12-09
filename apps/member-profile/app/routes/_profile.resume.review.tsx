@@ -146,7 +146,7 @@ function UploadForm() {
       encType="multipart/form-data"
       method="post"
     >
-      <Form.Field required>
+      <FormField required>
         <FileUploader
           accept={['application/pdf']}
           id="resume"
@@ -154,7 +154,7 @@ function UploadForm() {
           name="resume"
           required
         />
-      </Form.Field>
+      </FormField>
 
       {actionData && !actionData.ok && (
         <Form.ErrorMessage>{actionData.error}</Form.ErrorMessage>

@@ -17,33 +17,33 @@ export function ReferFriendForm({ error, errors }: ReferFriendFormProps) {
   return (
     <RemixForm className="form" method="post">
       <div className="flex gap-4">
-        <Form.Field
+        <FormField
           error={errors.firstName}
           label="First Name"
           labelFor={keys.firstName}
           required
         >
           <Input id={keys.firstName} name={keys.firstName} required />
-        </Form.Field>
+        </FormField>
 
-        <Form.Field
+        <FormField
           error={errors.lastName}
           label="Last Name"
           labelFor={keys.lastName}
           required
         >
           <Input id={keys.lastName} name={keys.lastName} required />
-        </Form.Field>
+        </FormField>
       </div>
 
-      <Form.Field
+      <FormField
         error={errors.email}
         label="Email"
         labelFor={keys.email}
         required
       >
         <Input id={keys.email} name={keys.email} required type="email" />
-      </Form.Field>
+      </FormField>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

@@ -173,14 +173,14 @@ export default function AddEmailPage() {
       </Modal.Description>
 
       <RemixForm className="form" method="post">
-        <Form.Field
+        <FormField
           error={errors.code}
           label="Code"
           labelFor={keys.code}
           required
         >
           <Input autoFocus id={keys.code} name={keys.code} required />
-        </Form.Field>
+        </FormField>
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

@@ -76,7 +76,7 @@ Application.ContributionField = function ContributionField({
   const { readOnly } = useContext(ApplicationContext);
 
   return (
-    <Form.Field
+    <FormField
       description="As a member, you'll be able to take advantage of the opportunities and services we offer, but we are exclusively interested in welcoming students that will make the community stronger."
       error={error}
       label="How do you plan to contribute to the community?"
@@ -90,7 +90,7 @@ Application.ContributionField = function ContributionField({
         readOnly={readOnly}
         required
       />
-    </Form.Field>
+    </FormField>
   );
 };
 
@@ -109,7 +109,7 @@ Application.EducationLevelField = function EducationLevelField({
   const { readOnly } = useContext(ApplicationContext);
 
   return (
-    <Form.Field error={error} label="Education Level" labelFor={name} required>
+    <FormField error={error} label="Education Level" labelFor={name} required>
       <Radio.Group>
         {EDUCATION_LEVELS_IN_ORDER.map((value: EducationLevel) => {
           return (
@@ -126,7 +126,7 @@ Application.EducationLevelField = function EducationLevelField({
           );
         })}
       </Radio.Group>
-    </Form.Field>
+    </FormField>
   );
 };
 
@@ -138,7 +138,7 @@ Application.EmailField = function EmailField({
   const { readOnly } = useContext(ApplicationContext);
 
   return (
-    <Form.Field
+    <FormField
       description="Must be a valid .edu email. If your email is invalid, your application will automatically be rejected. Please make sure to check for typos!"
       error={error}
       label="Email"
@@ -153,7 +153,7 @@ Application.EmailField = function EmailField({
         required
         type="email"
       />
-    </Form.Field>
+    </FormField>
   );
 };
 
@@ -165,7 +165,7 @@ Application.FirstNameField = function FirstNameField({
   const { readOnly } = useContext(ApplicationContext);
 
   return (
-    <Form.Field error={error} label="First Name" labelFor={name} required>
+    <FormField error={error} label="First Name" labelFor={name} required>
       <Input
         autoFocus={!readOnly}
         defaultValue={defaultValue}
@@ -174,7 +174,7 @@ Application.FirstNameField = function FirstNameField({
         readOnly={readOnly}
         required
       />
-    </Form.Field>
+    </FormField>
   );
 };
 
@@ -195,7 +195,7 @@ Application.GenderField = function GenderField({
   const { readOnly } = useContext(ApplicationContext);
 
   return (
-    <Form.Field error={error} label="Gender" labelFor={name} required>
+    <FormField error={error} label="Gender" labelFor={name} required>
       <Radio.Group>
         {GENDERS_IN_ORDER.map((value: Gender) => {
           return (
@@ -212,7 +212,7 @@ Application.GenderField = function GenderField({
           );
         })}
       </Radio.Group>
-    </Form.Field>
+    </FormField>
   );
 };
 
@@ -224,7 +224,7 @@ Application.GoalsField = function GoalsField({
   const { readOnly } = useContext(ApplicationContext);
 
   return (
-    <Form.Field
+    <FormField
       error={error}
       label="What are your short and long-term goals? Name 1 thing ColorStack can do to help you achieve them."
       labelFor={name}
@@ -237,7 +237,7 @@ Application.GoalsField = function GoalsField({
         readOnly={readOnly}
         required
       />
-    </Form.Field>
+    </FormField>
   );
 };
 
@@ -261,7 +261,7 @@ Application.GraduationYearField = function GraduationYearField({
   const { readOnly } = useContext(ApplicationContext);
 
   return (
-    <Form.Field
+    <FormField
       error={error}
       label="Expected Graduation Year"
       labelFor={name}
@@ -283,7 +283,7 @@ Application.GraduationYearField = function GraduationYearField({
           );
         })}
       </Radio.Group>
-    </Form.Field>
+    </FormField>
   );
 };
 
@@ -295,7 +295,7 @@ Application.LastNameField = function LastNameField({
   const { readOnly } = useContext(ApplicationContext);
 
   return (
-    <Form.Field error={error} label="Last Name" labelFor={name} required>
+    <FormField error={error} label="Last Name" labelFor={name} required>
       <Input
         defaultValue={defaultValue}
         id={name}
@@ -303,7 +303,7 @@ Application.LastNameField = function LastNameField({
         readOnly={readOnly}
         required
       />
-    </Form.Field>
+    </FormField>
   );
 };
 
@@ -315,7 +315,7 @@ Application.LinkedInField = function LinkedInField({
   const { readOnly } = useContext(ApplicationContext);
 
   return (
-    <Form.Field
+    <FormField
       description={<LinkedInDescription />}
       error={error}
       label="LinkedIn Profile/URL"
@@ -330,7 +330,7 @@ Application.LinkedInField = function LinkedInField({
         readOnly={readOnly}
         required
       />
-    </Form.Field>
+    </FormField>
   );
 };
 
@@ -362,7 +362,7 @@ Application.MajorField = function MajorField({
   }
 
   return (
-    <Form.Field
+    <FormField
       description="Please choose the option closest to your major. If your minor is more relevant to this community, please select that instead. If your major/minor is not listed, this might not be the right community for you."
       error={error}
       label="Major"
@@ -376,7 +376,7 @@ Application.MajorField = function MajorField({
         onSelect={onSelect}
         readOnly={readOnly}
       />
-    </Form.Field>
+    </FormField>
   );
 };
 
@@ -399,7 +399,7 @@ Application.OtherDemographicsField = function OtherDemographicsField({
   const { readOnly } = useContext(ApplicationContext);
 
   return (
-    <Form.Field error={error} label="Quality of Life" labelFor={name} required>
+    <FormField error={error} label="Quality of Life" labelFor={name} required>
       <Checkbox.Group>
         {DEMOGRAPHICS_IN_ORDER.map((value: Demographic) => {
           return (
@@ -429,7 +429,7 @@ Application.OtherDemographicsField = function OtherDemographicsField({
           );
         })}
       </Checkbox.Group>
-    </Form.Field>
+    </FormField>
   );
 };
 
@@ -445,7 +445,7 @@ Application.OtherMajorField = function OtherMajorField({
   }
 
   return (
-    <Form.Field error={error} label="Other Major" labelFor={name} required>
+    <FormField error={error} label="Other Major" labelFor={name} required>
       <Input
         defaultValue={defaultValue}
         id={name}
@@ -453,7 +453,7 @@ Application.OtherMajorField = function OtherMajorField({
         readOnly={readOnly}
         required
       />
-    </Form.Field>
+    </FormField>
   );
 };
 
@@ -469,7 +469,7 @@ Application.OtherSchoolField = function OtherSchoolField({
   }
 
   return (
-    <Form.Field
+    <FormField
       description="Please use the full name of your school."
       error={error}
       label="Other School"
@@ -483,7 +483,7 @@ Application.OtherSchoolField = function OtherSchoolField({
         readOnly={readOnly}
         required
       />
-    </Form.Field>
+    </FormField>
   );
 };
 
@@ -505,7 +505,7 @@ Application.RaceField = function RaceField({
   const { readOnly } = useContext(ApplicationContext);
 
   return (
-    <Form.Field
+    <FormField
       description="Our community is designed to support racially underrepresented students in tech. "
       error={error}
       label="Race & Ethnicity"
@@ -527,7 +527,7 @@ Application.RaceField = function RaceField({
           );
         })}
       </Checkbox.Group>
-    </Form.Field>
+    </FormField>
   );
 };
 
@@ -543,7 +543,7 @@ Application.SchoolField = function SchoolField({
   }
 
   return (
-    <Form.Field
+    <FormField
       description='If you do not see your school listed, please choose the "Other" option.'
       error={error}
       label="School"
@@ -556,6 +556,6 @@ Application.SchoolField = function SchoolField({
         onSelect={onSelect}
         readOnly={readOnly}
       />
-    </Form.Field>
+    </FormField>
   );
 };

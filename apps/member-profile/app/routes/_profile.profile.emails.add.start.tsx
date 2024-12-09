@@ -138,7 +138,7 @@ export default function AddEmailPage() {
       </Modal.Description>
 
       <RemixForm className="form" method="post">
-        <Form.Field
+        <FormField
           error={errors.email}
           label="Email"
           labelFor={keys.email}
@@ -151,7 +151,7 @@ export default function AddEmailPage() {
             placeholder="me@gmail.com"
             required
           />
-        </Form.Field>
+        </FormField>
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

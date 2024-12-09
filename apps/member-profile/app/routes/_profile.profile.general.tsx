@@ -178,7 +178,7 @@ export default function UpdateGeneralInformationSection() {
           longitudeName={keys.currentLocationLongitude}
         />
 
-        <Form.Field
+        <FormField
           description="Enter your 10-digit phone number. We'll use this to send you important ColorStack updates."
           error={errors.phoneNumber}
           label="Phone Number"
@@ -189,7 +189,7 @@ export default function UpdateGeneralInformationSection() {
             id={keys.phoneNumber}
             name={keys.phoneNumber}
           />
-        </Form.Field>
+        </FormField>
 
         <Button.Group>
           <Button.Submit>Save</Button.Submit>

@@ -28,7 +28,7 @@ export function SchoolCityField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <Form.Field
+    <FormField
       error={error}
       label="City"
       labelFor={schoolKeys.addressCity}
@@ -41,7 +41,7 @@ export function SchoolCityField({
         placeholder="Los Angeles"
         required
       />
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -50,7 +50,7 @@ export function SchoolNameField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <Form.Field error={error} label="Name" labelFor={schoolKeys.name} required>
+    <FormField error={error} label="Name" labelFor={schoolKeys.name} required>
       <Input
         defaultValue={defaultValue}
         id={schoolKeys.name}
@@ -58,7 +58,7 @@ export function SchoolNameField({
         placeholder="University of California, Los Angeles"
         required
       />
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -67,7 +67,7 @@ export function SchoolStateField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <Form.Field
+    <FormField
       description="Please use the two-letter abbreviation."
       error={error}
       label="State"
@@ -81,7 +81,7 @@ export function SchoolStateField({
         placeholder="CA"
         required
       />
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -95,7 +95,7 @@ export function SchoolTagsField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <Form.Field
+    <FormField
       description="Is this school an HBCU or HSI?"
       error={error}
       label="Tag(s)"
@@ -114,7 +114,7 @@ export function SchoolTagsField({
           );
         })}
       </Select>
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -123,7 +123,7 @@ export function SchoolZipField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <Form.Field
+    <FormField
       error={error}
       label="Zip Code"
       labelFor={schoolKeys.addressZip}
@@ -136,7 +136,7 @@ export function SchoolZipField({
         placeholder="90210"
         required
       />
-    </Form.Field>
+    </FormField>
   );
 }
 

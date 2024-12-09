@@ -105,7 +105,7 @@ export default function UpdateGeneralInformationForm() {
 
       <Divider />
 
-      <Form.Field
+      <FormField
         description={<HistoryFieldDescription />}
         labelFor="history"
         label="Work + Education History"
@@ -119,7 +119,7 @@ export default function UpdateGeneralInformationForm() {
           required
           value="1"
         />
-      </Form.Field>
+      </FormField>
 
       <Button.Group>
         <JoinDirectoryNextButton />

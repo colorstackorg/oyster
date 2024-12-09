@@ -90,7 +90,7 @@ export function OpportunityTagsField({
   }
 
   return (
-    <Form.Field
+    <FormField
       description="To categorize and help others find this opportunity."
       error={error}
       label="Tags"
@@ -177,6 +177,6 @@ export function OpportunityTagsField({
           );
         }}
       </MultiCombobox>
-    </Form.Field>
+    </FormField>
   );
 }

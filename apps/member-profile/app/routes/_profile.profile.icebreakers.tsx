@@ -201,7 +201,7 @@ function IcebreakerGroup({ number }: IcebreakerGroupProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <Form.Field
+      <FormField
         error={errors[promptName]}
         label={label}
         labelFor={promptName}
@@ -224,9 +224,9 @@ function IcebreakerGroup({ number }: IcebreakerGroupProps) {
             );
           })}
         </Select>
-      </Form.Field>
+      </FormField>
 
-      <Form.Field error={errors[responseName]} labelFor={responseName} required>
+      <FormField error={errors[responseName]} labelFor={responseName} required>
         <Textarea
           defaultValue={response?.text || undefined}
           id={responseName}
@@ -236,7 +236,7 @@ function IcebreakerGroup({ number }: IcebreakerGroupProps) {
           placeholder="Maximum of 280 characters..."
           required
         />
-      </Form.Field>
+      </FormField>
     </div>
   );
 }

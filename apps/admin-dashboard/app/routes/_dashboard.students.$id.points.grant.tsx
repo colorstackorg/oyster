@@ -102,7 +102,7 @@ function GrantPointsForm() {
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field
+      <FormField
         error={errors.points}
         label="Points"
         labelFor={keys.points}
@@ -115,9 +115,9 @@ function GrantPointsForm() {
           required
           type="number"
         />
-      </Form.Field>
+      </FormField>
 
-      <Form.Field
+      <FormField
         error={errors.description}
         label="Description"
         labelFor={keys.description}
@@ -129,7 +129,7 @@ function GrantPointsForm() {
           name={keys.description}
           required
         />
-      </Form.Field>
+      </FormField>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

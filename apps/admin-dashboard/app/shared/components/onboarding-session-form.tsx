@@ -26,7 +26,7 @@ export function OnboardingSessionAttendeesField({ error, name }: FieldProps) {
   const members = fetcher.data?.members || [];
 
   return (
-    <Form.Field
+    <FormField
       description="Please select any other students who attended this onboarding session."
       error={error}
       label="Attendees"
@@ -68,7 +68,7 @@ export function OnboardingSessionAttendeesField({ error, name }: FieldProps) {
           </ComboboxPopover>
         )}
       </MultiCombobox>
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -77,8 +77,8 @@ OnboardingSessionForm.DateField = function DateField({
   name,
 }: FieldProps) {
   return (
-    <Form.Field error={error} label="Date" labelFor={name} required>
+    <FormField error={error} label="Date" labelFor={name} required>
       <DatePicker id={name} name={name} type="date" required />
-    </Form.Field>
+    </FormField>
   );
 };

@@ -111,23 +111,13 @@ function AddJobForm() {
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field
-        error={errors.name}
-        label="Name"
-        labelFor={keys.name}
-        required
-      >
+      <FormField error={errors.name} label="Name" labelFor={keys.name} required>
         <Input id={keys.name} name={keys.name} required />
-      </Form.Field>
+      </FormField>
 
-      <Form.Field
-        error={errors.data}
-        label="Data"
-        labelFor={keys.data}
-        required
-      >
+      <FormField error={errors.data} label="Data" labelFor={keys.data} required>
         <Textarea id={keys.data} minRows={4} name={keys.data} required />
-      </Form.Field>
+      </FormField>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

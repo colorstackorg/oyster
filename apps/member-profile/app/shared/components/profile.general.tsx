@@ -13,7 +13,7 @@ export function CurrentLocationField({
   name,
 }: FieldProps<string> & Omit<CityComboboxProps, 'required'>) {
   return (
-    <Form.Field
+    <FormField
       description="We'll use this to connect you to ColorStack members and events in your area."
       error={error}
       labelFor={name}
@@ -29,7 +29,7 @@ export function CurrentLocationField({
         longitudeName={longitudeName}
         required
       />
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -46,7 +46,7 @@ export function PreferredNameField({
   const [value, setValue] = useState(defaultValue);
 
   return (
-    <Form.Field error={error} label="Preferred Name" labelFor={name}>
+    <FormField error={error} label="Preferred Name" labelFor={name}>
       <Input
         defaultValue={defaultValue}
         id={name}
@@ -59,6 +59,6 @@ export function PreferredNameField({
           Your full name will appear as "{firstName} ({value}) {lastName}".
         </Text>
       )}
-    </Form.Field>
+    </FormField>
   );
 }

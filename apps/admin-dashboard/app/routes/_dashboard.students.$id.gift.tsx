@@ -100,7 +100,7 @@ export default function SendGiftModal() {
       </Modal.Description>
 
       <RemixForm className="form" method="post">
-        <Form.Field
+        <FormField
           description="Add a message to the gift so the member knows why they are receiving this."
           label="Message"
           labelFor="message"
@@ -113,7 +113,7 @@ export default function SendGiftModal() {
             placeholder="Congratulations..."
             required
           />
-        </Form.Field>
+        </FormField>
 
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

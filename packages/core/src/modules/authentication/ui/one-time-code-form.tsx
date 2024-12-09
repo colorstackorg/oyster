@@ -8,14 +8,9 @@ OneTimeCodeForm.CodeField = function CodeField({
   name,
 }: FieldProps<string> & { description?: string }) {
   return (
-    <Form.Field
-      description={description}
-      error={error}
-      labelFor={name}
-      required
-    >
+    <FormField description={description} error={error} labelFor={name} required>
       <Input autoFocus id={name} name={name} required />
-    </Form.Field>
+    </FormField>
   );
 };
 
@@ -24,13 +19,13 @@ OneTimeCodeForm.EmailField = function EmailField({
   name,
 }: FieldProps<string>) {
   return (
-    <Form.Field
+    <FormField
       description="Please input your email in order to receive a one-time passcode."
       error={error}
       labelFor={name}
       required
     >
       <Input autoFocus id={name} name={name} required />
-    </Form.Field>
+    </FormField>
   );
 };

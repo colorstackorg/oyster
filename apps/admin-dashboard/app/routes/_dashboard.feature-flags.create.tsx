@@ -79,7 +79,7 @@ export default function CreateFeatureFlagModal() {
       </Modal.Header>
 
       <RemixForm className="form" method="post">
-        <Form.Field
+        <FormField
           description="This should be snake case (ie: all_lower_with_underscores)."
           error={errors.name}
           label="Name"
@@ -87,9 +87,9 @@ export default function CreateFeatureFlagModal() {
           required
         >
           <Input autoFocus id={keys.name} name={keys.name} required />
-        </Form.Field>
+        </FormField>
 
-        <Form.Field
+        <FormField
           description="This is the name that will be displayed in the UI."
           error={errors.displayName}
           label="Display Name"
@@ -97,16 +97,16 @@ export default function CreateFeatureFlagModal() {
           required
         >
           <Input id={keys.displayName} name={keys.displayName} required />
-        </Form.Field>
+        </FormField>
 
-        <Form.Field
+        <FormField
           description="An optional, but recommended, description of what the flag is for."
           error={errors.description}
           label="Description"
           labelFor={keys.description}
         >
           <Textarea id={keys.description} minRows={2} name={keys.description} />
-        </Form.Field>
+        </FormField>
 
         <Checkbox
           color="lime-100"

@@ -93,16 +93,16 @@ export default function RefineOpportunity() {
       </Modal.Header>
 
       <RemixForm className="form" data-gap="2rem" method="post">
-        <Form.Field
+        <FormField
           label="Step 1. Open the link that was shared in a new tab."
           required
         >
           <Link className="link line-clamp-1" to={link} target="_blank">
             {link}
           </Link>
-        </Form.Field>
+        </FormField>
 
-        <Form.Field
+        <FormField
           description="You can simply do Ctrl+A and CTRL+C to copy the text content of the page. However, if it is a LinkedIn post, then please only get the actual post content. We'll only use the first 10,000 characters."
           error={errors.content}
           label="Step 2. Paste the website's text content."
@@ -116,7 +116,7 @@ export default function RefineOpportunity() {
             name="content"
             required
           />
-        </Form.Field>
+        </FormField>
 
         <input type="hidden" name="opportunityId" value={id} />
 

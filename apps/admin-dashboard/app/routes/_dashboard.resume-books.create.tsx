@@ -112,7 +112,7 @@ function SponsorsField() {
   const companies = fetcher.data?.companies || [];
 
   return (
-    <Form.Field
+    <FormField
       description="Please choose all of the companies that are sponsoring this resume book."
       error={errors.sponsors}
       label="Sponsors"
@@ -152,6 +152,6 @@ function SponsorsField() {
           </ul>
         </ComboboxPopover>
       </MultiCombobox>
-    </Form.Field>
+    </FormField>
   );
 }

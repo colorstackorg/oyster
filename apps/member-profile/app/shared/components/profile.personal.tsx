@@ -17,7 +17,7 @@ export function BirthdateNotificationField({
   name,
 }: FieldProps<boolean>) {
   return (
-    <Form.Field error={error}>
+    <FormField error={error}>
       <Checkbox
         color="gold-100"
         defaultChecked={defaultValue}
@@ -25,7 +25,7 @@ export function BirthdateNotificationField({
         name={name}
         value="1"
       />
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -35,7 +35,7 @@ export function BirthdateField({
   name,
 }: FieldProps<string>) {
   return (
-    <Form.Field
+    <FormField
       description="We'll wish you a happy birthday in the #birthdays Slack channel!"
       error={error}
       label="Birthdate"
@@ -47,7 +47,7 @@ export function BirthdateField({
         name={name}
         type="date"
       />
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -57,7 +57,7 @@ export function EthnicityField({
   name,
 }: FieldProps<Pick<Country, 'code' | 'demonym' | 'flagEmoji'>[]>) {
   return (
-    <Form.Field error={error} labelFor={name} label="Ethnicity">
+    <FormField error={error} labelFor={name} label="Ethnicity">
       <EthnicityMultiCombobox
         defaultValues={defaultValue.map((ethnicity) => {
           return {
@@ -67,7 +67,7 @@ export function EthnicityField({
         })}
         name={name}
       />
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -82,7 +82,7 @@ const GENDERS_IN_ORDER: Gender[] = [
 
 export function GenderField({ defaultValue, error, name }: FieldProps<string>) {
   return (
-    <Form.Field error={error} label="Gender" labelFor={name} required>
+    <FormField error={error} label="Gender" labelFor={name} required>
       <Select defaultValue={defaultValue} id={name} name={name} required>
         {GENDERS_IN_ORDER.map((value) => {
           return (
@@ -92,7 +92,7 @@ export function GenderField({ defaultValue, error, name }: FieldProps<string>) {
           );
         })}
       </Select>
-    </Form.Field>
+    </FormField>
   );
 }
 
@@ -108,7 +108,7 @@ export function HometownField({
 }: FieldProps<string> &
   Omit<CityComboboxProps, 'required'> & { description?: string }) {
   return (
-    <Form.Field
+    <FormField
       description={description}
       error={error}
       labelFor={name}
@@ -124,6 +124,6 @@ export function HometownField({
         longitudeName={longitudeName}
         required
       />
-    </Form.Field>
+    </FormField>
   );
 }

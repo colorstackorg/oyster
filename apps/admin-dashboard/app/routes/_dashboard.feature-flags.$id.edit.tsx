@@ -97,7 +97,7 @@ export default function EditFeatureFlagModal() {
       </Modal.Header>
 
       <RemixForm className="form" method="post">
-        <Form.Field
+        <FormField
           description="This is the name that will be displayed in the UI."
           error={errors.displayName}
           label="Display Name"
@@ -110,9 +110,9 @@ export default function EditFeatureFlagModal() {
             name={keys.displayName}
             required
           />
-        </Form.Field>
+        </FormField>
 
-        <Form.Field
+        <FormField
           description="An optional, but recommended, description of what the flag is for."
           error={errors.description}
           label="Description"
@@ -124,7 +124,7 @@ export default function EditFeatureFlagModal() {
             minRows={2}
             name={keys.description}
           />
-        </Form.Field>
+        </FormField>
 
         <Checkbox
           color="lime-100"

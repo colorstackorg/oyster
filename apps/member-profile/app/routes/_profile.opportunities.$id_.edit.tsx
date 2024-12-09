@@ -145,7 +145,7 @@ function EditOpportunityForm() {
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field
+      <FormField
         error={errors.companyCrunchbaseId}
         label="Company"
         labelFor="companyCrunchbaseId"
@@ -158,13 +158,13 @@ function EditOpportunityForm() {
           }}
           name="companyCrunchbaseId"
         />
-      </Form.Field>
+      </FormField>
 
-      <Form.Field error={errors.title} label="Title" labelFor="title" required>
+      <FormField error={errors.title} label="Title" labelFor="title" required>
         <Input defaultValue={title} id="title" name="title" required />
-      </Form.Field>
+      </FormField>
 
-      <Form.Field
+      <FormField
         error={errors.description}
         label="Description"
         labelFor="description"
@@ -178,11 +178,11 @@ function EditOpportunityForm() {
           name="description"
           required
         />
-      </Form.Field>
+      </FormField>
 
       <OpportunityTagsField error={errors.tags} tags={tags || []} />
 
-      <Form.Field
+      <FormField
         description="This is the date that the opportunity will no longer be open."
         error={errors.expiresAt}
         label="Expiration Date"
@@ -196,7 +196,7 @@ function EditOpportunityForm() {
           required
           type="date"
         />
-      </Form.Field>
+      </FormField>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

@@ -94,7 +94,7 @@ function AddEventRecordingForm() {
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field
+      <FormField
         description="Please add the full URL of the event recording."
         error={errors.recordingLink}
         label="Recording Link"
@@ -108,7 +108,7 @@ function AddEventRecordingForm() {
           placeholder="https://www.youtube.com/watch?v=..."
           required
         />
-      </Form.Field>
+      </FormField>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

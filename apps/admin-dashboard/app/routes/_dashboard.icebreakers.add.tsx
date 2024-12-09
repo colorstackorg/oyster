@@ -75,14 +75,14 @@ function AddIcebreakerPromptForm() {
 
   return (
     <RemixForm className="form" method="post">
-      <Form.Field
+      <FormField
         error={errors.text}
         label="Prompt"
         labelFor={keys.text}
         required
       >
         <Input id={keys.text} name={keys.text} required />
-      </Form.Field>
+      </FormField>
 
       <Form.ErrorMessage>{error}</Form.ErrorMessage>
 

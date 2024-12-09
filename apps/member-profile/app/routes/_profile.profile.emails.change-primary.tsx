@@ -93,7 +93,7 @@ export default function ChangePrimaryEmailPage() {
       <RemixForm className="form" method="post">
         <Form.ErrorMessage>{error}</Form.ErrorMessage>
 
-        <Form.Field
+        <FormField
           description="If you don't see your email listed here, please add it to your profile first."
           error={errors.email}
           label="Email"
@@ -113,7 +113,7 @@ export default function ChangePrimaryEmailPage() {
               );
             })}
           </Select>
-        </Form.Field>
+        </FormField>
 
         <Button.Group>
           <Button.Submit>Save</Button.Submit>
