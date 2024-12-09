@@ -14,5 +14,4 @@ export {
 } from './modules/feature-flag/feature-flag.types';
 export { AddIcebreakerPromptInput } from './modules/icebreaker/icebreaker.types';
 export { OnboardingSession } from './modules/onboarding-session/onboarding-session.types';
-export { CreateSurveyInput } from './modules/survey/survey.types';
 export { Environment, ListSearchParams } from './shared/types';

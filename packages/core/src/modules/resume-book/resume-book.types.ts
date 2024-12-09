@@ -80,11 +80,6 @@ export const CreateResumeBookInput = ResumeBook.pick({
     .transform((value) => value.split(',')),
 });
 
-export const ReviewResumeInput = z.object({
-  memberId: z.string().trim().min(1),
-  resume: FileLike,
-});
-
 export const SubmitResumeInput = Student.pick({
   firstName: true,
   lastName: true,
@@ -121,6 +116,5 @@ export const UpdateResumeBookInput = ResumeBook.pick({
 });
 
 export type CreateResumeBookInput = z.infer<typeof CreateResumeBookInput>;
-export type ReviewResumeInput = z.infer<typeof ReviewResumeInput>;
 export type SubmitResumeInput = z.infer<typeof SubmitResumeInput>;
 export type UpdateResumeBookInput = z.infer<typeof UpdateResumeBookInput>;

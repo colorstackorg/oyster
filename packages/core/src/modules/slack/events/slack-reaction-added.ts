@@ -6,8 +6,8 @@ import { ErrorWithContext } from '@/shared/errors';
 import { retryWithBackoff } from '@/shared/utils/core.utils';
 import { getSlackMessage } from '../services/slack-message.service';
 
-export async function addSlackReaction(
-  data: GetBullJobData<'slack.reaction.add'>
+export async function onSlackReactionAdded(
+  data: GetBullJobData<'slack.reaction.added'>
 ) {
   await ensureMessageExists(data);
 
@@ -40,7 +40,9 @@ export async function addSlackReaction(
   }
 }
 
-async function ensureMessageExists(data: GetBullJobData<'slack.reaction.add'>) {
+async function ensureMessageExists(
+  data: GetBullJobData<'slack.reaction.added'>
+) {
   let waiting = false;
 
   await retryWithBackoff(

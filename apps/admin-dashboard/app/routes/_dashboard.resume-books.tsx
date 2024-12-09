@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 import { Clipboard, Edit, ExternalLink, Menu, Plus } from 'react-feather';
 
-import { listResumeBooks } from '@oyster/core/resumes';
+import { listResumeBooks } from '@oyster/core/resume-books';
 import {
   Dashboard,
   Dropdown,

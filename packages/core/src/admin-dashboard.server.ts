@@ -17,6 +17,4 @@ export { activateMember } from './modules/member/use-cases/activate-member';
 export { updateMemberEmail } from './modules/member/use-cases/update-member-email';
 export { addOnboardingSessionAttendees } from './modules/onboarding-session/use-cases/add-onboarding-session-attendees';
 export { uploadOnboardingSession } from './modules/onboarding-session/use-cases/upload-onboarding-session';
-export { createSurvey } from './modules/survey/use-cases/create-survey';
-export { importSurveyResponses } from './modules/survey/use-cases/import-survey-responses';
 export { parseCsv } from './shared/utils/csv.utils';
