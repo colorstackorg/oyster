@@ -1,6 +1,6 @@
 import { Form as RemixForm } from '@remix-run/react';
 
-import { Button, Form, Input } from '@oyster/ui';
+import { Button, Form, FormField, Input } from '@oyster/ui';
 
 import { ReferFriendInput } from '@/modules/referral/referral.types';
 

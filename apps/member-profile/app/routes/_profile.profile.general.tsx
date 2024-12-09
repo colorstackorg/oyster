@@ -16,7 +16,7 @@ import { Student } from '@oyster/types';
 import {
   Button,
   Divider,
-  Form,
+  FormField,
   getErrors,
   InputField,
   PhoneNumberInput,

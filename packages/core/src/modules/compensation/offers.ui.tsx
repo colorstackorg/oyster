@@ -1,7 +1,7 @@
 import {
   DollarInput,
   type FieldProps,
-  Form,
+  FormField,
   Input,
   Textarea,
 } from '@oyster/ui';

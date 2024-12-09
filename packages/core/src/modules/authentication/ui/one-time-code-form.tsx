@@ -1,4 +1,4 @@
-import { type FieldProps, Form, Input } from '@oyster/ui';
+import { type FieldProps, FormField, Input } from '@oyster/ui';
 
 export const OneTimeCodeForm = () => {};
 
