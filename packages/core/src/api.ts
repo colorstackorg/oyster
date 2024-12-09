@@ -22,6 +22,7 @@ import { notificationWorker } from './modules/notification/notification.worker';
 import { onboardingSessionWorker } from './modules/onboarding-session/onboarding-session.worker';
 import { opportunityWorker } from './modules/opportunity/opportunity';
 import { slackWorker } from './modules/slack/slack.worker';
+import { twilioWorker } from './modules/twilio/twilio.worker';
 
 export { job } from './infrastructure/bull/use-cases/job';
 export { OAuthCodeState } from './modules/authentication/authentication.types';
@@ -51,4 +52,5 @@ export function startBullWorkers(): void {
   opportunityWorker.run();
   profileWorker.run();
   slackWorker.run();
+  twilioWorker.run();
 }

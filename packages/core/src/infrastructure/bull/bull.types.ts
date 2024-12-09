@@ -41,6 +41,7 @@ export const BullQueue = {
   PROFILE: 'profile',
   SLACK: 'slack',
   STUDENT: 'student',
+  TWILIO: 'twilio',
 } as const;
 
 export type BullQueue = ExtractValue<typeof BullQueue>;
@@ -619,6 +620,12 @@ export const StudentBullJob = z.discriminatedUnion('name', [
     }),
   }),
 ]);
+export const TwilioMessagingBullJob = z.discriminatedUnion('name', [
+  z.object({
+    data: z.object({}),
+    name: z.literal('twilio.messaging'),
+  }),
+]);
 
 // Combination
 
@@ -638,6 +645,7 @@ export const BullJob = z.union([
   ProfileBullJob,
   SlackBullJob,
   StudentBullJob,
+  TwilioMessagingBullJob,
 ]);
 
 // Types
