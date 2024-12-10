@@ -17,7 +17,7 @@ export {
   InputField,
   validateForm,
 } from './components/form';
-export type { DescriptionProps, FieldProps } from './components/form';
+export type { FieldProps } from './components/form';
 export { IconButton, getIconButtonCn } from './components/icon-button';
 export {
   DollarInput,
