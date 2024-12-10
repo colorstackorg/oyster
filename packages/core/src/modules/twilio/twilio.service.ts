@@ -2,7 +2,7 @@ import { Twilio } from 'twilio';
 
 import { db } from '@oyster/db';
 
-import { GetBullJobData } from '@/infrastructure/bull.types';
+import type { GetBullJobData } from '@/infrastructure/bull.types';
 
 const twilioNumber = 'INSERT HERE';
 const accountSid = 'INSERT HERE';

@@ -8,6 +8,7 @@ export const twilioWorker = registerWorker(
   'twilio',
   TwilioMessagingBullJob,
   async (job) => {
+    
     return match(job)
       .with({ name: 'twilio.messaging' }, ({ data }) => {
         console.log('yello manny');
