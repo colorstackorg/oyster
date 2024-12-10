@@ -5,7 +5,7 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
+  Form,
   useActionData,
   useLoaderData,
   useNavigate,
@@ -155,7 +155,7 @@ export default function EditWorkExperiencePage() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <WorkForm.Context
           defaultValue={{
             isCurrentRole: !workExperience.endDate,
@@ -246,7 +246,7 @@ export default function EditWorkExperiencePage() {
             Delete
           </Button>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

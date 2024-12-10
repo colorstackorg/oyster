@@ -9,9 +9,9 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
   Link,
-  Form as RemixForm,
   useActionData,
   useLoaderData,
   useSearchParams,
@@ -389,7 +389,7 @@ function ResumeBookForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm
+    <Form
       className="form mt-4"
       data-gap="2rem"
       method="post"
@@ -727,7 +727,7 @@ function ResumeBookForm() {
       <Button.Group>
         <Button.Submit>Submit</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }
 

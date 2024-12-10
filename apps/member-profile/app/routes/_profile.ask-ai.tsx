@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
+  Form,
   useActionData,
   useLoaderData,
   useNavigation,
@@ -158,7 +158,7 @@ function ChatbotForm() {
   }
 
   return (
-    <RemixForm className="flex flex-col gap-4" method="post">
+    <Form className="flex flex-col gap-4" method="post">
       <div
         // This is the "input" styling...really should be getting it from
         // the input component, but this is a quick fix.
@@ -223,7 +223,7 @@ function ChatbotForm() {
           );
         })}
       </div>
-    </RemixForm>
+    </Form>
   );
 }
 

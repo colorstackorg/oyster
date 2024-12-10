@@ -5,8 +5,8 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
-  Form as RemixForm,
   useActionData,
   useSearchParams,
 } from '@remix-run/react';
@@ -103,7 +103,7 @@ export default function AddFullTimeOffer() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <OfferCompanyField error={errors.companyCrunchbaseId} />
         <OfferRoleField error={errors.role} />
         <OfferLocationField error={errors.location} />
@@ -131,7 +131,7 @@ export default function AddFullTimeOffer() {
         <Button.Group>
           <Button.Submit>Add</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

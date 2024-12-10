@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import {
   changePrimaryEmail,
@@ -91,7 +87,7 @@ export default function ChangePrimaryEmailPage() {
         be sent to.
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <ErrorMessage>{error}</ErrorMessage>
 
         <FormField
@@ -119,7 +115,7 @@ export default function ChangePrimaryEmailPage() {
         <Button.Group>
           <Button.Submit>Save</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

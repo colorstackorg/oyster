@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { job } from '@oyster/core/admin-dashboard/server';
@@ -84,7 +84,7 @@ function SyncAirmeetEventForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
+    <Form className="form" method="post">
       <FormField
         description="You can find the ID from the Airmeet event URL."
         error={errors.eventId}
@@ -100,6 +100,6 @@ function SyncAirmeetEventForm() {
       <Button.Group>
         <Button.Submit>Sync</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { createEvent } from '@oyster/core/admin-dashboard/server';
@@ -109,7 +109,7 @@ function CreateEventForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
+    <Form className="form" method="post">
       <FormField error={errors.name} label="Name" labelFor={keys.name} required>
         <Input id={keys.name} name={keys.name} required />
       </FormField>
@@ -173,6 +173,6 @@ function CreateEventForm() {
       <Button.Group>
         <Button.Submit>Create</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData, useFetcher } from '@remix-run/react';
+import { Form, useActionData, useFetcher } from '@remix-run/react';
 import { useEffect } from 'react';
 
 import { createResumeBook } from '@oyster/core/resume-books';
@@ -87,7 +87,7 @@ export default function CreateResumeBookModal() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <ResumeBookNameField error={errors.name} />
         <ResumeBookStartDateField error={errors.startDate} />
         <ResumeBookEndDateField error={errors.endDate} />
@@ -96,7 +96,7 @@ export default function CreateResumeBookModal() {
         <Button.Group>
           <Button.Submit>Create</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

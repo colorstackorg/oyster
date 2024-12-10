@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import {
   addEventRecordingLink,
@@ -94,7 +90,7 @@ function AddEventRecordingForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
+    <Form className="form" method="post">
       <FormField
         description="Please add the full URL of the event recording."
         error={errors.recordingLink}
@@ -116,6 +112,6 @@ function AddEventRecordingForm() {
       <Button.Group>
         <Button type="submit">Add</Button>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

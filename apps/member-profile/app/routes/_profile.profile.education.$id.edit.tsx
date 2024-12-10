@@ -5,7 +5,7 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
+  Form,
   useActionData,
   useLoaderData,
   useNavigate,
@@ -174,7 +174,7 @@ export default function EditEducationPage() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <EducationForm.Context>
           <EducationForm.SchoolField
             defaultValue={school}
@@ -229,7 +229,7 @@ export default function EditEducationPage() {
             Delete
           </Button>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

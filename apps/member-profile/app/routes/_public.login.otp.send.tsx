@@ -1,5 +1,5 @@
 import { type ActionFunctionArgs, json, redirect } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 
 import { sendOneTimeCode } from '@oyster/core/member-profile/server';
 import {
@@ -43,10 +43,10 @@ export default function SendOneTimeCodePage() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
+    <Form className="form" method="post">
       <OneTimeCodeForm.EmailField error={errors.email} name={keys.email} />
       <ErrorMessage>{error}</ErrorMessage>
       <Button.Submit fill>Send Code</Button.Submit>
-    </RemixForm>
+    </Form>
   );
 }

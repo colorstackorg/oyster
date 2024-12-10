@@ -5,9 +5,9 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
   Link,
-  Form as RemixForm,
   useActionData,
   useLoaderData,
   useSearchParams,
@@ -145,7 +145,7 @@ function EditOpportunityForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
+    <Form className="form" method="post">
       <FormField
         error={errors.companyCrunchbaseId}
         label="Company"
@@ -213,6 +213,6 @@ function EditOpportunityForm() {
           Delete
         </Link>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

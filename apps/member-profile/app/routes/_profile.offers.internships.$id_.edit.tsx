@@ -5,9 +5,9 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
   Link,
-  Form as RemixForm,
   useActionData,
   useLoaderData,
   useSearchParams,
@@ -169,7 +169,7 @@ export default function EditInternshipOffer() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <OfferCompanyField
           defaultValue={{
             crunchbaseId: companyCrunchbaseId || '',
@@ -222,7 +222,7 @@ export default function EditInternshipOffer() {
             Delete
           </Link>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

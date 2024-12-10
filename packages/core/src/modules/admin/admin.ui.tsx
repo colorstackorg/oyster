@@ -1,4 +1,4 @@
-import { generatePath, Link, Form as RemixForm } from '@remix-run/react';
+import { Form, generatePath, Link } from '@remix-run/react';
 import { useState } from 'react';
 import { Trash } from 'react-feather';
 import { match } from 'ts-pattern';
@@ -29,7 +29,7 @@ type AdminFormProps = {
 
 export function AdminForm({ error, errors }: AdminFormProps) {
   return (
-    <RemixForm className="form" method="post">
+    <Form className="form" method="post">
       <FormField
         error={errors.firstName}
         label="First Name"
@@ -69,7 +69,7 @@ export function AdminForm({ error, errors }: AdminFormProps) {
       <Button.Group>
         <Button.Submit>Add</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }
 

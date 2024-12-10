@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type z } from 'zod';
 
@@ -98,7 +98,7 @@ export default function AddEducationPage() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <EducationForm.Context>
           <EducationForm.SchoolField
             error={errors.schoolId}
@@ -135,7 +135,7 @@ export default function AddEducationPage() {
         <Button.Group>
           <Button.Submit>Save</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

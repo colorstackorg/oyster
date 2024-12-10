@@ -3,11 +3,7 @@ import {
   json,
   type LoaderFunctionArgs,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
@@ -145,7 +141,7 @@ export default function UpsertIcebreakerResponsesForm() {
         <ProfileTitle>Icebreakers</ProfileTitle>
       </ProfileHeader>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <IcebreakersProvider icebreakerResponses={icebreakerResponses}>
           <IcebreakerGroup number="1" />
           <IcebreakerGroup number="2" />
@@ -155,7 +151,7 @@ export default function UpsertIcebreakerResponsesForm() {
         <Button.Group>
           <Button.Submit>Save</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </ProfileSection>
   );
 }

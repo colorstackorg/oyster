@@ -3,11 +3,7 @@ import {
   json,
   type LoaderFunctionArgs,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { type z } from 'zod';
 
 import { updateMember } from '@oyster/core/member-profile/server';
@@ -131,7 +127,7 @@ export default function UpdateGeneralInformationSection() {
         <ProfileTitle>General</ProfileTitle>
       </ProfileHeader>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <InputField
           defaultValue={student.firstName}
           error={errors.firstName}
@@ -194,7 +190,7 @@ export default function UpdateGeneralInformationSection() {
         <Button.Group>
           <Button.Submit>Save</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </ProfileSection>
   );
 }

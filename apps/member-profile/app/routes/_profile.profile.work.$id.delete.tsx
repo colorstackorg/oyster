@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-} from '@remix-run/react';
+import { Form, useActionData, useNavigate } from '@remix-run/react';
 
 import {
   deleteWorkExperience,
@@ -85,7 +81,7 @@ export default function DeleteWorkExperiencePage() {
         Are you sure you want to delete this work experience?
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group flexDirection="row-reverse">
@@ -97,7 +93,7 @@ export default function DeleteWorkExperiencePage() {
             Back
           </Button>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

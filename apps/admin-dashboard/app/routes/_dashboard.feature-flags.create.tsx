@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 
 import { createFeatureFlag } from '@oyster/core/admin-dashboard/server';
 import { CreateFeatureFlagInput } from '@oyster/core/admin-dashboard/ui';
@@ -79,7 +79,7 @@ export default function CreateFeatureFlagModal() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <FormField
           description="This should be snake case (ie: all_lower_with_underscores)."
           error={errors.name}
@@ -123,7 +123,7 @@ export default function CreateFeatureFlagModal() {
         <Button.Group>
           <Button.Submit>Create</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

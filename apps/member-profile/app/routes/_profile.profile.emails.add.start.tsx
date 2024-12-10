@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 import { type z } from 'zod';
 
 import { job } from '@oyster/core/member-profile/server';
@@ -138,7 +138,7 @@ export default function AddEmailPage() {
         address.
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <FormField
           error={errors.email}
           label="Email"
@@ -159,7 +159,7 @@ export default function AddEmailPage() {
         <Button.Group>
           <Button.Submit>Send Code</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

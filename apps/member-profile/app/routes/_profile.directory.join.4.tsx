@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
@@ -123,7 +119,7 @@ export default function UpsertIcebreakerResponsesForm() {
   const { icebreakerResponses } = useLoaderData<typeof loader>();
 
   return (
-    <RemixForm className="form" method="post">
+    <Form className="form" method="post">
       <IcebreakersProvider icebreakerResponses={icebreakerResponses}>
         <IcebreakerGroup number="1" />
         <IcebreakerGroup number="2" />
@@ -134,7 +130,7 @@ export default function UpsertIcebreakerResponsesForm() {
         <JoinDirectoryBackButton to={Route['/directory/join/3']} />
         <JoinDirectoryNextButton>Finish</JoinDirectoryNextButton>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }
 

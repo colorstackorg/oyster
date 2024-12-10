@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import { verifyOneTimeCode } from '@oyster/core/admin-dashboard/server';
 import {
@@ -91,7 +87,7 @@ export default function VerifyOneTimeCodePage() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
+    <Form className="form" method="post">
       <OneTimeCodeForm.CodeField
         description={description}
         error={errors.value}
@@ -101,6 +97,6 @@ export default function VerifyOneTimeCodePage() {
       <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Submit fill>Verify Code</Button.Submit>
-    </RemixForm>
+    </Form>
   );
 }

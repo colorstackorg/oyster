@@ -5,7 +5,7 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
+  Form,
   useActionData,
   useLoaderData,
   useSearchParams,
@@ -89,13 +89,13 @@ export default function DeleteOpportunity() {
         {opportunity.companyName})?
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit color="error">Delete</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

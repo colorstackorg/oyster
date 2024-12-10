@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 
 import { addIcebreakerPrompt } from '@oyster/core/admin-dashboard/server';
 import { AddIcebreakerPromptInput } from '@oyster/core/admin-dashboard/ui';
@@ -75,7 +75,7 @@ function AddIcebreakerPromptForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
+    <Form className="form" method="post">
       <FormField
         error={errors.text}
         label="Prompt"
@@ -90,6 +90,6 @@ function AddIcebreakerPromptForm() {
       <Button.Group>
         <Button.Submit>Add</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

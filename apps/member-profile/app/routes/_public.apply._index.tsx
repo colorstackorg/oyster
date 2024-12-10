@@ -5,11 +5,7 @@ import {
   type MetaFunction,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import { apply } from '@oyster/core/applications';
 import { Application, ApplyInput } from '@oyster/core/applications/ui';
@@ -119,7 +115,7 @@ export default function ApplicationPage() {
         racial diversity in tech. Thank you for joining us.
       </Text>
 
-      <RemixForm className="form" data-gap="2rem" method="post">
+      <Form className="form" data-gap="2rem" method="post">
         <Application readOnly={false}>
           <Application.FirstNameField
             defaultValue={firstName}
@@ -192,7 +188,7 @@ export default function ApplicationPage() {
         <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Submit fill>Apply</Button.Submit>
-      </RemixForm>
+      </Form>
     </>
   );
 }

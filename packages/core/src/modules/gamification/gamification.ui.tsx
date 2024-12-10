@@ -1,4 +1,4 @@
-import { Form as RemixForm } from '@remix-run/react';
+import { Form } from '@remix-run/react';
 
 import {
   Button,
@@ -31,7 +31,7 @@ const ACTIVITY_TYPES = Object.values(ActivityType);
 
 export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
   return (
-    <RemixForm className="form" method="post">
+    <Form className="form" method="post">
       <FormField
         description="This will be visible to members."
         error={errors.name}
@@ -120,6 +120,6 @@ export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
       <Button.Group>
         <Button.Submit>Add</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

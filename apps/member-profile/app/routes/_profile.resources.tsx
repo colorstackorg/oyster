@@ -1,8 +1,8 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import {
+  Form,
   Link,
   Outlet,
-  Form as RemixForm,
   useLoaderData,
   useSearchParams,
   useSubmit,
@@ -259,7 +259,7 @@ function SortResourcesForm() {
   const sortKeys = ListResourcesOrderBy._def.innerType.enum;
 
   return (
-    <RemixForm
+    <Form
       className="flex min-w-[12rem] items-center gap-4"
       method="get"
       onChange={(e) => submit(e.currentTarget)}
@@ -277,7 +277,7 @@ function SortResourcesForm() {
       </Select>
 
       <ExistingSearchParams exclude={['orderBy']} />
-    </RemixForm>
+    </Form>
   );
 }
 

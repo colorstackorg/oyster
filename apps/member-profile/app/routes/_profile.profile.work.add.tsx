@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
@@ -99,7 +99,7 @@ export default function AddWorkExperiencePage() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <WorkForm.Context>
           <WorkForm.TitleField error={errors.title} name={keys.title} />
           <WorkForm.EmploymentTypeField
@@ -148,7 +148,7 @@ export default function AddWorkExperiencePage() {
         <Button.Group>
           <Button.Submit>Save</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

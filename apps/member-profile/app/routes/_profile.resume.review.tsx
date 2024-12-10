@@ -9,7 +9,7 @@ import {
   unstable_parseMultipartFormData as parseMultipartFormData,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
+  Form,
   useActionData,
   useLoaderData,
   useNavigation,
@@ -141,7 +141,7 @@ function UploadForm() {
   const actionData = useActionData<typeof action>();
 
   return (
-    <RemixForm
+    <Form
       className="form"
       data-gap="2rem"
       encType="multipart/form-data"
@@ -164,7 +164,7 @@ function UploadForm() {
       <Button.Group>
         <Button.Submit>Get Feedback</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }
 

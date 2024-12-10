@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { addOnboardingSessionAttendees } from '@oyster/core/admin-dashboard/server';
@@ -93,7 +93,7 @@ export default function AddOnboardingSessionAttendeesPage() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <OnboardingSessionAttendeesField
           error={errors.attendees}
           name={keys.attendees}
@@ -104,7 +104,7 @@ export default function AddOnboardingSessionAttendeesPage() {
         <Button.Group>
           <Button.Submit>Upload</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

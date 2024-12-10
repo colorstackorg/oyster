@@ -8,11 +8,7 @@ import {
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { getEvent, job, parseCsv } from '@oyster/core/admin-dashboard/server';
@@ -187,7 +183,7 @@ function ImportEventAttendeesForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post" encType="multipart/form-data">
+    <Form className="form" method="post" encType="multipart/form-data">
       <FormField error={errors.file} labelFor={keys.file} required>
         <FileUploader
           accept={['text/csv']}
@@ -202,6 +198,6 @@ function ImportEventAttendeesForm() {
       <Button.Group>
         <Button.Submit>Import</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

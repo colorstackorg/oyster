@@ -5,7 +5,7 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
+  Form,
   useActionData,
   useLoaderData,
   useNavigate,
@@ -90,7 +90,7 @@ export default function ActivateStudentPage() {
         merch store.
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group flexDirection="row-reverse">
@@ -100,7 +100,7 @@ export default function ActivateStudentPage() {
             Back
           </Button>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

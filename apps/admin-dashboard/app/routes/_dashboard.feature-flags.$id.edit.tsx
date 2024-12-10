@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import {
   editFeatureFlag,
@@ -97,7 +93,7 @@ export default function EditFeatureFlagModal() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <FormField
           description="This is the name that will be displayed in the UI."
           error={errors.displayName}
@@ -141,7 +137,7 @@ export default function EditFeatureFlagModal() {
         <Button.Group>
           <Button.Submit>Edit</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

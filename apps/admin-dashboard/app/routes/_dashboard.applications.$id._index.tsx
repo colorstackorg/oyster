@@ -4,12 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Link,
-  Form as RemixForm,
-  useLoaderData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form, Link, useLoaderData, useNavigation } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren, useState } from 'react';
 import { ChevronDown, Info } from 'react-feather';
@@ -196,7 +191,7 @@ export default function ApplicationPage() {
         </div>
 
         {application.status === 'pending' && (
-          <RemixForm method="post">
+          <Form method="post">
             <Button.Group>
               <Button
                 color="success"
@@ -210,7 +205,7 @@ export default function ApplicationPage() {
 
               <RejectDropdown />
             </Button.Group>
-          </RemixForm>
+          </Form>
         )}
       </header>
 
@@ -270,7 +265,7 @@ function RejectDropdown() {
 
       {open && (
         <Dropdown className="p-2">
-          <RemixForm className="form" method="post">
+          <Form className="form" method="post">
             <FormField
               description="Select a reason for rejecting this application."
               label="Rejection Reason"
@@ -304,7 +299,7 @@ function RejectDropdown() {
             >
               Reject
             </Button>
-          </RemixForm>
+          </Form>
         </Dropdown>
       )}
     </Dropdown.Container>

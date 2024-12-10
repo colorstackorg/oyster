@@ -5,9 +5,9 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
   Link,
-  Form as RemixForm,
   useActionData,
   useLoaderData,
   useParams,
@@ -93,7 +93,7 @@ export default function RefineOpportunity() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" data-gap="2rem" method="post">
+      <Form className="form" data-gap="2rem" method="post">
         <FormField
           label="Step 1. Open the link that was shared in a new tab."
           required
@@ -128,7 +128,7 @@ export default function RefineOpportunity() {
             Generate <Plus size={16} />
           </Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

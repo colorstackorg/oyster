@@ -5,8 +5,8 @@ import {
   type MetaFunction,
 } from '@remix-run/node';
 import {
+  Form,
   Outlet,
-  Form as RemixForm,
   useActionData,
   useLoaderData,
   useNavigate,
@@ -178,7 +178,7 @@ function EmailAddressSection() {
         )}
       </Button.Group>
 
-      <RemixForm
+      <Form
         className="form"
         method="post"
         onChange={(e) => submit(e.currentTarget)}
@@ -196,7 +196,7 @@ function EmailAddressSection() {
             value="1"
           />
         </FormField>
-      </RemixForm>
+      </Form>
     </ProfileSection>
   );
 }

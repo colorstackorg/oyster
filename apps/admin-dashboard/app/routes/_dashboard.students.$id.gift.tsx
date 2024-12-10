@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { createGoodyOrder } from '@oyster/core/goody';
@@ -106,7 +106,7 @@ export default function SendGiftModal() {
         This will send a DoorDash gift card to this member.
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <FormField
           description="Add a message to the gift so the member knows why they are receiving this."
           label="Message"
@@ -127,7 +127,7 @@ export default function SendGiftModal() {
         <Button.Group>
           <Button.Submit>Send</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

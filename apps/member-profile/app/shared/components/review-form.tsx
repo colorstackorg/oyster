@@ -1,4 +1,4 @@
-import { Form as RemixForm } from '@remix-run/react';
+import { Form } from '@remix-run/react';
 import { Link, useFetcher } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import { Star } from 'react-feather';
@@ -40,7 +40,7 @@ export function AddReviewForm({
   showExperienceField,
 }: AddReviewFormProps) {
   return (
-    <RemixForm className="form" data-gap="2rem" method="post">
+    <Form className="form" data-gap="2rem" method="post">
       {showExperienceField && (
         <ExperienceField
           error={errors.workExperienceId}
@@ -58,7 +58,7 @@ export function AddReviewForm({
       <Button.Group>
         <Button.Submit>Save</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }
 
@@ -71,7 +71,7 @@ type EditReviewFormProps = Omit<AddReviewFormProps, 'showExperienceField'> & {
 
 export function EditReviewForm({ error, errors, review }: EditReviewFormProps) {
   return (
-    <RemixForm className="form" data-gap="2rem" method="post">
+    <Form className="form" data-gap="2rem" method="post">
       <TextField
         defaultValue={review.text}
         error={errors.text}
@@ -101,7 +101,7 @@ export function EditReviewForm({ error, errors, review }: EditReviewFormProps) {
       <Button.Group>
         <Button.Submit>Save</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }
 

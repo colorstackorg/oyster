@@ -5,7 +5,7 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
+  Form,
   useActionData,
   useNavigate,
   useNavigation,
@@ -70,7 +70,7 @@ export default function ArchiveActivityPage() {
         for completing it.
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group flexDirection="row-reverse">
@@ -87,7 +87,7 @@ export default function ArchiveActivityPage() {
             Back
           </Button>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

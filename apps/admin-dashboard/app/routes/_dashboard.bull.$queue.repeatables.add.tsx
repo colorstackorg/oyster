@@ -4,12 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  generatePath,
-  Form as RemixForm,
-  useActionData,
-  useParams,
-} from '@remix-run/react';
+import { Form, generatePath, useActionData, useParams } from '@remix-run/react';
 import { z } from 'zod';
 
 import {
@@ -101,7 +96,7 @@ function AddRepeatableForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
+    <Form className="form" method="post">
       <FormField error={errors.name} label="Name" labelFor={keys.name} required>
         <Input id={keys.name} name={keys.name} required />
       </FormField>
@@ -121,6 +116,6 @@ function AddRepeatableForm() {
       <Button.Group>
         <Button.Submit>Add</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }
