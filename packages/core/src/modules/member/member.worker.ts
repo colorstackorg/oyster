@@ -38,6 +38,9 @@ export const memberWorker = registerWorker(
           return onActivationStepCompleted(data);
         }
       )
+      .with({ name: 'student.anniversary.email' }, ({ data }) => {
+        return sendAnniversaryEmail(data);
+      })
       .with({ name: 'student.birthdate.daily' }, ({ data }) => {
         return sendBirthdayNotification(data);
       })
@@ -64,9 +67,6 @@ export const memberWorker = registerWorker(
       })
       .with({ name: 'student.statuses.new' }, ({ data }) => {
         return createNewActiveStatuses(data);
-      })
-      .with({ name: 'student.anniversary.email' }, ({ data }) => {
-        return sendAnniversaryEmail(data);
       })
       .exhaustive();
 

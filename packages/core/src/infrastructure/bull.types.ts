@@ -587,11 +587,11 @@ export const StudentBullJob = z.discriminatedUnion('name', [
     }),
   }),
   z.object({
-    name: z.literal('student.birthdate.daily'),
+    name: z.literal('student.anniversary.email'),
     data: z.object({}),
   }),
   z.object({
-    name: z.literal('student.anniversary.email'),
+    name: z.literal('student.birthdate.daily'),
     data: z.object({}),
   }),
   z.object({

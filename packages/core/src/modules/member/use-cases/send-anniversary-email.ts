@@ -8,15 +8,21 @@ import { type GetBullJobData } from '@/infrastructure/bull.types';
 export async function sendAnniversaryEmail(
   _: GetBullJobData<'student.anniversary.email'>
 ) {
+  const yearsDiff = sql<number | string>`
+    extract(year from current_date) - extract(year from accepted_at)
+  `;
+
   const members = await db
     .selectFrom('students')
-    .select(['email', 'firstName', 'acceptedAt'])
+    .select(['email', 'firstName', yearsDiff.as('years')])
     .whereRef(
-      sql`DATE_PART('doy', acceptedAt)`,
+      sql`(extract(month from accepted_at), extract(day from accepted_at))`,
       '=',
-      sql`DATE_PART('doy', CURRENT_DATE)`
+      sql`(extract(month from current_date), extract(day from current_date))`
     )
-    .where('slackId', 'is not', null)
+    // We don't want to send a notification if they joined today before the
+    // notification was triggered.
+    .where(yearsDiff, '>', 0)
     .execute();
 
   // We won't send a notification if there are no members with anniversary today!
@@ -24,17 +30,11 @@ export async function sendAnniversaryEmail(
     return;
   }
 
-  for (const member of members) {
-    const { email, firstName, acceptedAt } = member;
-    const acceptedDate = new Date(acceptedAt);
-    const today = new Date();
-
-    const years = today.getFullYear() - acceptedDate.getFullYear();
-
+  members.forEach(({ email, firstName, years }) => {
     job('notification.email.send', {
       name: 'student-anniversary',
-      data: { years, firstName },
+      data: { firstName, years: Number(years) },
       to: email,
     });
-  }
+  });
 }
