@@ -4,8 +4,8 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
-  Form as RemixForm,
   Link as RemixLink,
   useLoaderData,
   useLocation,
@@ -288,7 +288,7 @@ function TimeframeForm() {
   const submit = useSubmit();
 
   return (
-    <RemixForm
+    <Form
       className="flex min-w-[12rem] items-center gap-4"
       method="get"
       onChange={(e) => submit(e.currentTarget)}
@@ -312,7 +312,7 @@ function TimeframeForm() {
         type="hidden"
         value={searchParams.leaderboardLimit}
       />
-    </RemixForm>
+    </Form>
   );
 }
 
@@ -328,7 +328,7 @@ function PointsLeaderboard({ className }: CardProps) {
       <Card.Header>
         <Card.Title>Points Leaderboard</Card.Title>
 
-        <RemixForm
+        <Form
           className="flex min-w-[8rem]"
           method="get"
           onChange={(e) => submit(e.currentTarget)}
@@ -351,7 +351,7 @@ function PointsLeaderboard({ className }: CardProps) {
             type="hidden"
             value={searchParams.timeframe}
           />
-        </RemixForm>
+        </Form>
       </Card.Header>
 
       <Card.Description>

@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useLoaderData } from '@remix-run/react';
+import { Form, useLoaderData } from '@remix-run/react';
 
 import {
   deleteFeatureFlag,
@@ -71,11 +71,11 @@ export default function DeleteFeatureFlagModal() {
         undone.
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <Button.Group>
           <Button.Submit color="error">Delete</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

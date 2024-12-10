@@ -2,7 +2,7 @@ import { type Transaction } from 'kysely';
 
 import { type DB } from '@oyster/db';
 
-import { job } from '@/infrastructure/bull/use-cases/job';
+import { job } from '@/infrastructure/bull';
 
 export async function joinMemberDirectory(
   trx: Transaction<DB>,

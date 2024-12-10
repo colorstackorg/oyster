@@ -1,7 +1,7 @@
-import { deleteObject, putObject } from '@oyster/core/object-storage';
 import { db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
+import { deleteObject, putObject } from '@/infrastructure/s3';
 import { type UpdateResourceInput } from '@/modules/resource/resource.types';
 
 export async function updateResource(

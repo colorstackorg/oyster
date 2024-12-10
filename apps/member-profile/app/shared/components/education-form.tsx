@@ -12,7 +12,7 @@ import {
   type School,
 } from '@oyster/core/member-profile/ui';
 import { type Major } from '@oyster/types';
-import { DatePicker, Form, Input, Select } from '@oyster/ui';
+import { DatePicker, Field, Input, Select } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 const EducationFormContext = React.createContext({
@@ -56,7 +56,7 @@ EducationForm.DegreeTypeField = function DegreeTypeField({
   name,
 }: EducationFieldProps<DegreeType>) {
   return (
-    <Form.Field error={error} label="Degree Type" labelFor={name} required>
+    <Field error={error} label="Degree Type" labelFor={name} required>
       <Select defaultValue={defaultValue} id={name} name={name} required>
         {DEGREE_TYPES.map((degreeType) => {
           return (
@@ -66,7 +66,7 @@ EducationForm.DegreeTypeField = function DegreeTypeField({
           );
         })}
       </Select>
-    </Form.Field>
+    </Field>
   );
 };
 
@@ -76,7 +76,7 @@ EducationForm.EndDateField = ({
   name,
 }: EducationFieldProps<string>) => {
   return (
-    <Form.Field
+    <Field
       description="If you haven't graduated yet, please select the date you expect to graduate."
       error={error}
       label="End Date"
@@ -90,7 +90,7 @@ EducationForm.EndDateField = ({
         required
         type="month"
       />
-    </Form.Field>
+    </Field>
   );
 };
 
@@ -102,7 +102,7 @@ EducationForm.FieldOfStudyField = function FieldOfStudyField({
   const { setIsOtherFieldOfStudy } = useContext(EducationFormContext);
 
   return (
-    <Form.Field error={error} label="Field of Study" labelFor={name} required>
+    <Field error={error} label="Field of Study" labelFor={name} required>
       <MajorCombobox
         defaultDisplayValue={defaultValue && toTitleCase(defaultValue)}
         defaultValue={defaultValue}
@@ -111,7 +111,7 @@ EducationForm.FieldOfStudyField = function FieldOfStudyField({
           setIsOtherFieldOfStudy(e.currentTarget.value === 'other');
         }}
       />
-    </Form.Field>
+    </Field>
   );
 };
 
@@ -132,9 +132,9 @@ EducationForm.OtherFieldOfStudyField = ({
   }
 
   return (
-    <Form.Field error={error} label="Field of Study" labelFor={name} required>
+    <Field error={error} label="Field of Study" labelFor={name} required>
       <Input defaultValue={defaultValue} id={name} name={name} required />
-    </Form.Field>
+    </Field>
   );
 };
 
@@ -154,9 +154,9 @@ EducationForm.OtherSchoolField = function OtherSchoolField({
   }
 
   return (
-    <Form.Field error={error} label="Other School" labelFor={name} required>
+    <Field error={error} label="Other School" labelFor={name} required>
       <Input defaultValue={defaultValue} id={name} name={name} required />
-    </Form.Field>
+    </Field>
   );
 };
 
@@ -170,13 +170,13 @@ EducationForm.SchoolField = function SchoolField({
   const { setIsOtherSchool } = useContext(EducationFormContext);
 
   return (
-    <Form.Field error={error} label="School" labelFor={name} required>
+    <Field error={error} label="School" labelFor={name} required>
       <SchoolCombobox
         defaultValue={defaultValue}
         name={name}
         onSelect={(e) => setIsOtherSchool(e.currentTarget.value === 'other')}
       />
-    </Form.Field>
+    </Field>
   );
 };
 
@@ -186,7 +186,7 @@ EducationForm.StartDateField = function StartDateField({
   name,
 }: EducationFieldProps<string>) {
   return (
-    <Form.Field
+    <Field
       description="Example: August 2020"
       error={error}
       label="Start Date"
@@ -200,6 +200,6 @@ EducationForm.StartDateField = function StartDateField({
         required
         type="month"
       />
-    </Form.Field>
+    </Field>
   );
 };

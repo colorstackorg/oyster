@@ -4,17 +4,13 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  generatePath,
-  Form as RemixForm,
-  useActionData,
-  useParams,
-} from '@remix-run/react';
+import { Form, generatePath, useActionData, useParams } from '@remix-run/react';
 import { z } from 'zod';
 
 import {
   Button,
-  Form,
+  ErrorMessage,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -100,17 +96,12 @@ function AddRepeatableForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
-      <Form.Field
-        error={errors.name}
-        label="Name"
-        labelFor={keys.name}
-        required
-      >
+    <Form className="form" method="post">
+      <Field error={errors.name} label="Name" labelFor={keys.name} required>
         <Input id={keys.name} name={keys.name} required />
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         description="Please format the job to be in the PT timezone."
         error={errors.pattern}
         label="Pattern (CRON)"
@@ -118,13 +109,13 @@ function AddRepeatableForm() {
         required
       >
         <Input id={keys.pattern} name={keys.pattern} required />
-      </Form.Field>
+      </Field>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Add</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

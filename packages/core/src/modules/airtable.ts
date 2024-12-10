@@ -9,11 +9,11 @@ import {
   Student,
 } from '@oyster/types';
 
+import { registerWorker } from '@/infrastructure/bull';
 import {
   AirtableBullJob,
   type GetBullJobData,
-} from '@/infrastructure/bull/bull.types';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
+} from '@/infrastructure/bull.types';
 import { IS_PRODUCTION } from '@/shared/env';
 import { ColorStackError, ErrorWithContext } from '@/shared/errors';
 import { RateLimiter } from '@/shared/utils/rate-limiter';

@@ -5,14 +5,14 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
+  Form,
   useActionData,
   useNavigate,
   useNavigation,
 } from '@remix-run/react';
 
 import { archiveActivity } from '@oyster/core/gamification';
-import { Button, Form, Modal } from '@oyster/ui';
+import { Button, ErrorMessage, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -70,8 +70,8 @@ export default function ArchiveActivityPage() {
         for completing it.
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <Form className="form" method="post">
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group flexDirection="row-reverse">
           <Button.Submit color="error" variant="secondary">
@@ -87,7 +87,7 @@ export default function ArchiveActivityPage() {
             Back
           </Button>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

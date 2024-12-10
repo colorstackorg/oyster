@@ -5,9 +5,9 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
   Link,
-  Form as RemixForm,
   useActionData,
   useLoaderData,
   useSearchParams,
@@ -22,7 +22,8 @@ import {
 import {
   Button,
   DatePicker,
-  Form,
+  ErrorMessage,
+  Field,
   getButtonCn,
   getErrors,
   Input,
@@ -144,8 +145,8 @@ function EditOpportunityForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
-      <Form.Field
+    <Form className="form" method="post">
+      <Field
         error={errors.companyCrunchbaseId}
         label="Company"
         labelFor="companyCrunchbaseId"
@@ -158,13 +159,13 @@ function EditOpportunityForm() {
           }}
           name="companyCrunchbaseId"
         />
-      </Form.Field>
+      </Field>
 
-      <Form.Field error={errors.title} label="Title" labelFor="title" required>
+      <Field error={errors.title} label="Title" labelFor="title" required>
         <Input defaultValue={title} id="title" name="title" required />
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         error={errors.description}
         label="Description"
         labelFor="description"
@@ -178,11 +179,11 @@ function EditOpportunityForm() {
           name="description"
           required
         />
-      </Form.Field>
+      </Field>
 
       <OpportunityTagsField error={errors.tags} tags={tags || []} />
 
-      <Form.Field
+      <Field
         description="This is the date that the opportunity will no longer be open."
         error={errors.expiresAt}
         label="Expiration Date"
@@ -196,9 +197,9 @@ function EditOpportunityForm() {
           required
           type="date"
         />
-      </Form.Field>
+      </Field>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group flexDirection="row-reverse" spacing="between">
         <Button.Submit>Save</Button.Submit>
@@ -212,6 +213,6 @@ function EditOpportunityForm() {
           Delete
         </Link>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

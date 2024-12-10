@@ -6,19 +6,18 @@ import { z } from 'zod';
 import { db, relativeTime } from '@oyster/db';
 import { id } from '@oyster/utils';
 
+import { getChatCompletion } from '@/infrastructure/ai';
+import { job, registerWorker } from '@/infrastructure/bull';
 import {
   type GetBullJobData,
   ResumeReviewBullJob,
-} from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
-import { getChatCompletion } from '@/modules/ai/ai';
-import { track } from '@/modules/mixpanel';
-import { ENV } from '@/shared/env';
+} from '@/infrastructure/bull.types';
+import { track } from '@/infrastructure/mixpanel';
+import { STUDENT_PROFILE_URL } from '@/shared/env';
 import { ColorStackError } from '@/shared/errors';
-import { fail, type Result, success } from '@/shared/utils/core.utils';
-import { getTextFromPDF } from '@/shared/utils/file.utils';
-import { FileLike } from '@/shared/utils/zod.utils';
+import { fail, type Result, success } from '@/shared/utils/core';
+import { getTextFromPDF } from '@/shared/utils/file';
+import { FileLike } from '@/shared/utils/zod';
 
 // Queries
 
@@ -243,7 +242,7 @@ async function checkResumeReview({
   // If they haven't used the AI Resume Review feature, then we'll send them
   // a notification prompting them to do so.
   if (!review) {
-    const url = new URL('/resume/review', ENV.STUDENT_PROFILE_URL);
+    const url = new URL('/resume/review', STUDENT_PROFILE_URL);
 
     job('notification.slack.send', {
       channel: userId,

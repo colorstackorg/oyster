@@ -5,17 +5,16 @@ import { match } from 'ts-pattern';
 import { db } from '@oyster/db';
 import { splitArray } from '@oyster/utils';
 
-import { StudentBullJob } from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
+import { job, registerWorker } from '@/infrastructure/bull';
+import { StudentBullJob } from '@/infrastructure/bull.types';
 import { backfillActiveStatuses } from '@/modules/active-status/use-cases/backfill-active-statuses';
 import { createNewActiveStatuses } from '@/modules/active-status/use-cases/create-new-active-statuses';
 import {
   AIRTABLE_FAMILY_BASE_ID,
   AIRTABLE_MEMBERS_TABLE_ID,
-} from '@/modules/airtable/airtable.core';
+} from '@/modules/airtable';
 import { sendCompanyReviewNotifications } from '@/modules/employment/use-cases/send-company-review-notifications';
-import { success } from '@/shared/utils/core.utils';
+import { success } from '@/shared/utils/core';
 import { onActivationStepCompleted } from './events/activation-step-completed';
 import { onMemberActivated } from './events/member-activated';
 import { onMemberCreated } from './events/member-created';

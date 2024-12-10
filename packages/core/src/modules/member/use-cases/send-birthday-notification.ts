@@ -2,9 +2,10 @@ import { sql } from 'kysely';
 
 import { db } from '@oyster/db';
 
-import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
-import { ENV } from '@/shared/env';
+import { job } from '@/infrastructure/bull';
+import { type GetBullJobData } from '@/infrastructure/bull.types';
+
+const SLACK_BIRTHDAYS_CHANNEL_ID = process.env.SLACK_BIRTHDAYS_CHANNEL_ID;
 
 export async function sendBirthdayNotification(
   _: GetBullJobData<'student.birthdate.daily'>
@@ -44,7 +45,7 @@ export async function sendBirthdayNotification(
   const result = ids.length ? `${ids.join(', ')} and ${last}` : last;
 
   job('notification.slack.send', {
-    channel: ENV.SLACK_BIRTHDAYS_CHANNEL_ID,
+    channel: SLACK_BIRTHDAYS_CHANNEL_ID as string,
     message: `Everyone wish a happy birthday to ${result}! 🎉🎂🎈`,
     workspace: 'regular',
   });

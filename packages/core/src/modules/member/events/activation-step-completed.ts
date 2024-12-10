@@ -8,17 +8,24 @@ import {
   type Student,
 } from '@oyster/types';
 
-import { job } from '@/infrastructure/bull/use-cases/job';
+import { job } from '@/infrastructure/bull';
 import { activateMember } from '@/modules/member/use-cases/activate-member';
-import { ENV } from '@/shared/env';
 import { ErrorWithContext } from '@/shared/errors';
+
+// Environment Variables
+
+const SLACK_ANNOUNCEMENTS_CHANNEL_ID = process.env
+  .SLACK_ANNOUNCEMENTS_CHANNEL_ID as string;
+
+const SLACK_INTRODUCTIONS_CHANNEL_ID = process.env
+  .SLACK_INTRODUCTIONS_CHANNEL_ID as string;
+
+// Types
 
 type ActivationStepCompletedInput = {
   requirement?: ActivationRequirement;
   studentId: string;
 };
-
-// Helper Types
 
 type ShouldProcessInput = Pick<
   Student,
@@ -155,14 +162,14 @@ async function updateCompletedRequirements(studentId: string) {
 
     db
       .selectFrom('slackMessages')
-      .where('channelId', '=', ENV.SLACK_INTRODUCTIONS_CHANNEL_ID)
+      .where('channelId', '=', SLACK_INTRODUCTIONS_CHANNEL_ID)
       .where('threadId', 'is', null)
       .where('studentId', '=', studentId)
       .executeTakeFirst(),
 
     db
       .selectFrom('slackMessages')
-      .where('channelId', '=', ENV.SLACK_ANNOUNCEMENTS_CHANNEL_ID)
+      .where('channelId', '=', SLACK_ANNOUNCEMENTS_CHANNEL_ID)
       .where('threadId', 'is not', null)
       .where('studentId', '=', studentId)
       .executeTakeFirst(),

@@ -1,7 +1,7 @@
 import { db } from '@oyster/db';
 import { type Student } from '@oyster/types';
 
-import { job } from '@/infrastructure/bull/use-cases/job';
+import { job } from '@/infrastructure/bull';
 
 type UpdateMemberEmailInput = Pick<Student, 'email' | 'id'>;
 

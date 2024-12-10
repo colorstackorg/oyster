@@ -9,21 +9,20 @@ import { db } from '@oyster/db';
 import { ISO8601Date } from '@oyster/types';
 import { id } from '@oyster/utils';
 
-import { OpportunityBullJob } from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
-import { getChatCompletion } from '@/modules/ai/ai';
+import { getChatCompletion } from '@/infrastructure/ai';
+import { job, registerWorker } from '@/infrastructure/bull';
+import { OpportunityBullJob } from '@/infrastructure/bull.types';
+import { track } from '@/infrastructure/mixpanel';
+import { getPageContent } from '@/infrastructure/puppeteer';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
-import { track } from '@/modules/mixpanel';
-import { ENV } from '@/shared/env';
-import { getPageContent } from '@/shared/utils/browser.utils';
+import { STUDENT_PROFILE_URL } from '@/shared/env';
 import {
   ACCENT_COLORS,
   type AccentColor,
   getRandomAccentColor,
-} from '@/shared/utils/color.utils';
-import { fail, type Result, success } from '@/shared/utils/core.utils';
+} from '@/shared/utils/color';
+import { fail, type Result, success } from '@/shared/utils/core';
 
 // Use Case(s)
 
@@ -183,8 +182,8 @@ async function createOpportunity({
 
   if (sendNotification) {
     const message =
-      `Thanks for sharing an opportunity in <#${slackChannelId}> -- I added it to our <${ENV.STUDENT_PROFILE_URL}/opportunities|opportunities board>! 🙂\n\n` +
-      `To generate tags and a description, please paste the opportunity's website content <${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}/refine|*HERE*>.\n\n` +
+      `Thanks for sharing an opportunity in <#${slackChannelId}> -- I added it to our <${STUDENT_PROFILE_URL}/opportunities|opportunities board>! 🙂\n\n` +
+      `To generate tags and a description, please paste the opportunity's website content <${STUDENT_PROFILE_URL}/opportunities/${opportunity.id}/refine|*HERE*>.\n\n` +
       'Thanks again!';
 
     job('notification.slack.send', {
@@ -555,7 +554,7 @@ export async function refineOpportunity(
   // If this is the first time the opportunity has been refined, we want to send
   // a notification to the channel.
   if (!opportunity.refinedAt) {
-    const message = `I added this to our <${ENV.STUDENT_PROFILE_URL}/opportunities/${opportunity.id}|opportunities board>! 📌`;
+    const message = `I added this to our <${STUDENT_PROFILE_URL}/opportunities/${opportunity.id}|opportunities board>! 📌`;
 
     job('notification.slack.send', {
       channel: opportunity.slackChannelId,

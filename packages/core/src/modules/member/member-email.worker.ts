@@ -1,7 +1,7 @@
 import { match } from 'ts-pattern';
 
-import { MemberEmailBullJob } from '@/infrastructure/bull/bull.types';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
+import { registerWorker } from '@/infrastructure/bull';
+import { MemberEmailBullJob } from '@/infrastructure/bull.types';
 import { onEmailAdded } from './events/member-email-added';
 import { onPrimaryEmailChanged } from './events/member-primary-email-changed';
 

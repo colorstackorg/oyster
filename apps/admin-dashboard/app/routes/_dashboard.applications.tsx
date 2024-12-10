@@ -4,9 +4,9 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import {
+  Form,
   Link,
   Outlet,
-  Form as RemixForm,
   useLoaderData,
   useLocation,
   useSubmit,
@@ -94,7 +94,7 @@ function FilterApplicationsForm() {
   const [searchParams] = useSearchParams(ApplicationsSearchParams);
 
   return (
-    <RemixForm
+    <Form
       className="flex w-full items-center"
       method="get"
       onChange={(e) => submit(e.currentTarget)}
@@ -125,7 +125,7 @@ function FilterApplicationsForm() {
           })}
         </Select>
       </div>
-    </RemixForm>
+    </Form>
   );
 }
 

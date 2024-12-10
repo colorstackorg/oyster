@@ -1,5 +1,5 @@
-import { reportException } from '@/modules/sentry/use-cases/report-exception';
-import { fail, type Result, success } from '@/shared/utils/core.utils';
+import { reportException } from '@/infrastructure/sentry';
+import { fail, type Result, success } from '@/shared/utils/core';
 
 // Constants
 

@@ -4,14 +4,10 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { type z } from 'zod';
 
-import { job } from '@oyster/core/member-profile/server';
+import { job } from '@oyster/core/bull';
 import {
   OneTimeCode,
   OneTimeCodePurpose,
@@ -20,7 +16,8 @@ import { db } from '@oyster/db';
 import { StudentEmail } from '@oyster/types';
 import {
   Button,
-  Form,
+  ErrorMessage,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -172,22 +169,17 @@ export default function AddEmailPage() {
         profile.
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
-        <Form.Field
-          error={errors.code}
-          label="Code"
-          labelFor={keys.code}
-          required
-        >
+      <Form className="form" method="post">
+        <Field error={errors.code} label="Code" labelFor={keys.code} required>
           <Input autoFocus id={keys.code} name={keys.code} required />
-        </Form.Field>
+        </Field>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Verify</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

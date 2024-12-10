@@ -4,12 +4,19 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { createGoodyOrder } from '@oyster/core/goody';
 import { db } from '@oyster/db';
-import { Button, Form, Modal, Textarea, validateForm } from '@oyster/ui';
+import {
+  Button,
+  ErrorMessage,
+  Field,
+  Modal,
+  Textarea,
+  validateForm,
+} from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -99,8 +106,8 @@ export default function SendGiftModal() {
         This will send a DoorDash gift card to this member.
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
-        <Form.Field
+      <Form className="form" method="post">
+        <Field
           description="Add a message to the gift so the member knows why they are receiving this."
           label="Message"
           labelFor="message"
@@ -113,14 +120,14 @@ export default function SendGiftModal() {
             placeholder="Congratulations..."
             required
           />
-        </Form.Field>
+        </Field>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Send</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

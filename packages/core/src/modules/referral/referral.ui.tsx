@@ -1,6 +1,6 @@
-import { Form as RemixForm } from '@remix-run/react';
+import { Form } from '@remix-run/react';
 
-import { Button, Form, Input } from '@oyster/ui';
+import { Button, ErrorMessage, Field, Input } from '@oyster/ui';
 
 import { ReferFriendInput } from '@/modules/referral/referral.types';
 
@@ -15,41 +15,36 @@ type ReferFriendFormProps = {
 
 export function ReferFriendForm({ error, errors }: ReferFriendFormProps) {
   return (
-    <RemixForm className="form" method="post">
+    <Form className="form" method="post">
       <div className="flex gap-4">
-        <Form.Field
+        <Field
           error={errors.firstName}
           label="First Name"
           labelFor={keys.firstName}
           required
         >
           <Input id={keys.firstName} name={keys.firstName} required />
-        </Form.Field>
+        </Field>
 
-        <Form.Field
+        <Field
           error={errors.lastName}
           label="Last Name"
           labelFor={keys.lastName}
           required
         >
           <Input id={keys.lastName} name={keys.lastName} required />
-        </Form.Field>
+        </Field>
       </div>
 
-      <Form.Field
-        error={errors.email}
-        label="Email"
-        labelFor={keys.email}
-        required
-      >
+      <Field error={errors.email} label="Email" labelFor={keys.email} required>
         <Input id={keys.email} name={keys.email} required type="email" />
-      </Form.Field>
+      </Field>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Refer</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

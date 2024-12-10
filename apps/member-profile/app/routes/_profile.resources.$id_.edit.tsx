@@ -9,7 +9,7 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
+  Form,
   useActionData,
   useLoaderData,
   useSearchParams,
@@ -20,7 +20,7 @@ import { getResource, updateResource } from '@oyster/core/resources/server';
 import {
   Button,
   Divider,
-  Form,
+  ErrorMessage,
   getErrors,
   Modal,
   validateForm,
@@ -131,7 +131,7 @@ export default function EditResourceModal() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post" encType="multipart/form-data">
+      <Form className="form" method="post" encType="multipart/form-data">
         <ResourceProvider type={resource.type}>
           <ResourceTitleField
             defaultValue={resource.title || undefined}
@@ -168,12 +168,12 @@ export default function EditResourceModal() {
           />
         </ResourceProvider>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Save</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

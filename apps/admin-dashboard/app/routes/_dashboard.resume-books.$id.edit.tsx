@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 
 import { getResumeBook, updateResumeBook } from '@oyster/core/resume-books';
@@ -99,7 +95,7 @@ export default function EditResumeBookModal() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <ResumeBookNameField defaultValue={name} error={errors.name} />
         <ResumeBookStartDateField
           defaultValue={startDate}
@@ -110,7 +106,7 @@ export default function EditResumeBookModal() {
         <Button.Group>
           <Button.Submit>Edit</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

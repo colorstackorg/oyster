@@ -1,7 +1,7 @@
 import { db } from '@oyster/db';
 
-import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
+import { job } from '@/infrastructure/bull';
+import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { registerForAirmeetEvent } from '../airmeet-event.service';
 
 export async function registerForEvent({

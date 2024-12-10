@@ -38,5 +38,5 @@ export {
   ListMembersInDirectoryWhere,
 } from './modules/member/member.types';
 export { CreateResumeBookInput } from './modules/resume-book/resume-book.types';
-export { getRandomAccentColor } from './shared/utils/color.utils';
+export { getRandomAccentColor } from './shared/utils/color';
 export { Environment, ListSearchParams } from './shared/types';

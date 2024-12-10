@@ -1,11 +1,11 @@
 import dedent from 'dedent';
 
-import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
-import { getChatCompletion } from '@/modules/ai/ai';
+import { getChatCompletion } from '@/infrastructure/ai';
+import { job } from '@/infrastructure/bull';
+import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { slack } from '@/modules/slack/instances';
-import { ENV } from '@/shared/env';
-import { fail, type Result, success } from '@/shared/utils/core.utils';
+import { STUDENT_PROFILE_URL } from '@/shared/env';
+import { fail, type Result, success } from '@/shared/utils/core';
 
 export async function sendSecuredTheBagReminder({
   channelId,
@@ -23,8 +23,8 @@ export async function sendSecuredTheBagReminder({
     return success({}); // Exit gracefully.
   }
 
-  const offerDatabaseURL = new URL('/offers', ENV.STUDENT_PROFILE_URL);
-  const workHistoryURL = new URL('/profile/work', ENV.STUDENT_PROFILE_URL);
+  const offerDatabaseURL = new URL('/offers', STUDENT_PROFILE_URL);
+  const workHistoryURL = new URL('/profile/work', STUDENT_PROFILE_URL);
 
   const { permalink } = await slack.chat.getPermalink({
     channel: channelId,

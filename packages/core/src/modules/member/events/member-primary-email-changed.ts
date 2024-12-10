@@ -1,12 +1,12 @@
 import { db } from '@oyster/db';
 
-import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
+import { job } from '@/infrastructure/bull';
+import { type GetBullJobData } from '@/infrastructure/bull.types';
+import { reportException } from '@/infrastructure/sentry';
 import {
   AIRTABLE_FAMILY_BASE_ID,
   AIRTABLE_MEMBERS_TABLE_ID,
-} from '@/modules/airtable/airtable.core';
-import { reportException } from '@/modules/sentry/use-cases/report-exception';
+} from '@/modules/airtable';
 import {
   getSlackUserByEmail,
   updateSlackEmail,
