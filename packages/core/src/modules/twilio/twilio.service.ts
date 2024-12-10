@@ -1,4 +1,4 @@
-import Twilio from 'twilio';
+import { Twilio } from 'twilio';
 
 import { db } from '@oyster/db';
 
@@ -7,7 +7,7 @@ import { GetBullJobData } from '@/infrastructure/bull.types';
 const twilioNumber = 'INSERT HERE';
 const accountSid = 'INSERT HERE';
 const authToken = 'INSERT HERE';
-const client = Twilio(accountSid, authToken);
+const client = new Twilio(accountSid, authToken);
 
 export async function sendMessages(_: GetBullJobData<'twilio.messaging'>) {
   try {

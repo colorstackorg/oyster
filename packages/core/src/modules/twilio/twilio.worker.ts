@@ -1,7 +1,7 @@
 import { match } from 'ts-pattern';
 
-import { TwilioMessagingBullJob } from '@/infrastructure/bull.types';
 import { registerWorker } from '@/infrastructure/bull';
+import { TwilioMessagingBullJob } from '@/infrastructure/bull.types';
 import { sendMessages } from './twilio.service';
 
 export const twilioWorker = registerWorker(
