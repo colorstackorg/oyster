@@ -41,7 +41,7 @@ export const BullQueue = {
   RESUME_REVIEW: 'resume_review',
   SLACK: 'slack',
   STUDENT: 'student',
-  TWILIO: 'twilio'
+  TWILIO: 'twilio',
 } as const;
 
 export type BullQueue = ExtractValue<typeof BullQueue>;
