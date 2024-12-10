@@ -1,7 +1,8 @@
 import { type Kysely } from 'kysely';
 
 export async function up(db: Kysely<any>) {
-  // Drop current foreign key constraints
+  // Drop current foreign key constraints.
+
   await db.schema
     .alterTable('resource_attachments')
     .dropConstraint('resource_attachments_resource_id_fkey')
@@ -27,7 +28,8 @@ export async function up(db: Kysely<any>) {
     .dropConstraint('completed_activities_resource_id_fkey')
     .execute();
 
-  // Add back constraints with cascade delete
+  // Add constraints back with cascade delete.
+
   await db.schema
     .alterTable('resource_attachments')
     .addForeignKeyConstraint(
@@ -85,7 +87,8 @@ export async function up(db: Kysely<any>) {
 }
 
 export async function down(db: Kysely<any>) {
-  // Drop constraints that had cascade delete
+  // Drop constraints with cascade delete.
+
   await db.schema
     .alterTable('resource_attachments')
     .dropConstraint('resource_attachments_resource_id_fkey')
@@ -111,7 +114,7 @@ export async function down(db: Kysely<any>) {
     .dropConstraint('completed_activities_resource_id_fkey')
     .execute();
 
-  // Add back constraints with restrict delete
+  // Add constraints back with restrict delete.
 
   await db.schema
     .alterTable('resource_attachments')

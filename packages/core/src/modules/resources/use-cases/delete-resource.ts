@@ -1,25 +1,21 @@
 import { db } from '@oyster/db';
 
-import { deleteObject } from '@/modules/object-storage';
+import { deleteObject } from '@/infrastructure/s3';
 
 export async function deleteResource(id: string) {
-  const result = await db.transaction().execute(async (trx) => {
-    const attachments = await trx
-      .selectFrom('resourceAttachments')
-      .select(['objectKey'])
-      .where('resourceId', '=', id)
-      .execute();
+  const attachments = await db
+    .selectFrom('resourceAttachments')
+    .select(['objectKey'])
+    .where('resourceId', '=', id)
+    .execute();
 
+  await db.transaction().execute(async (trx) => {
     await trx.deleteFrom('resources').where('id', '=', id).execute();
-
-    return attachments;
   });
 
-  if (result.length > 0) {
-    for (const attachment of result) {
-      await deleteObject({
-        key: attachment.objectKey,
-      });
-    }
+  for (const attachment of attachments) {
+    await deleteObject({
+      key: attachment.objectKey,
+    });
   }
 }

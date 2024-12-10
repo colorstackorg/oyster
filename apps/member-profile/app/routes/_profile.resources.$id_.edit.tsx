@@ -50,10 +50,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const record = await getResource({
     select: [
       'resources.description',
+      'resources.id',
       'resources.link',
       'resources.title',
       'resources.type',
-      'resources.id',
     ],
     where: { id: params.id as string },
   });

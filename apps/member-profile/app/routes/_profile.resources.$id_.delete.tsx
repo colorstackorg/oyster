@@ -5,16 +5,16 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
+  Form,
   useActionData,
   useLoaderData,
   useSearchParams,
 } from '@remix-run/react';
 
+import { deleteResource } from '@oyster/core/resources/server';
 import { db } from '@oyster/db';
-import { Button, Form, getErrors, Modal } from '@oyster/ui';
+import { Button, ErrorMessage, getErrors, Modal } from '@oyster/ui';
 
-import { deleteResource } from '@/modules/resource/use-cases/delete-resource';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -46,42 +46,35 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { id } = params;
-
-  if (!id) throw new Error('Resource ID is required');
-
-  await deleteResource(id);
-
-  const url = new URL(request.url);
-  const searchParams = url.searchParams.toString();
+  await deleteResource(params.id as string);
 
   toast(session, {
     message: 'Resource deleted successfully.',
   });
 
-  return redirect(
-    `${Route['/resources']}${searchParams ? `?${searchParams}` : ''}`,
-    {
-      headers: {
-        'Set-Cookie': await commitSession(session),
-      },
-    }
-  );
+  const url = new URL(request.url);
+
+  url.pathname = Route['/resources'];
+
+  return redirect(url.toString(), {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  });
 }
 
 export default function DeleteResourceModal() {
   const { title } = useLoaderData<typeof loader>();
-  const [searchParams] = useSearchParams();
   const { error } = getErrors(useActionData<typeof action>());
-
-  const getReturnPath = () => {
-    const currentParams = searchParams.toString();
-
-    return `${Route['/resources']}${currentParams ? `?${currentParams}` : ''}`;
-  };
+  const [searchParams] = useSearchParams();
 
   return (
-    <Modal onCloseTo={getReturnPath()}>
+    <Modal
+      onCloseTo={{
+        pathname: Route['/resources'],
+        search: searchParams.toString(),
+      }}
+    >
       <Modal.Header>
         <Modal.Title>Delete Resource</Modal.Title>
         <Modal.CloseButton />
@@ -91,13 +84,13 @@ export default function DeleteResourceModal() {
         Are you sure you want to delete "{title}"? This action cannot be undone.
       </Modal.Description>
 
-      <RemixForm method="post">
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <Form className="form" method="post">
+        <ErrorMessage>{error}</ErrorMessage>
 
-        <Button.Group flexDirection="row-reverse">
+        <Button.Group>
           <Button.Submit color="error">Delete</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }
