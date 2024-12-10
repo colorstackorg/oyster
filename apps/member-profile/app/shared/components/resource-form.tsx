@@ -8,6 +8,7 @@ import React, {
 
 import { ResourceType } from '@oyster/core/resources';
 import {
+  Checkbox,
   ComboboxPopover,
   Field,
   type FieldProps,
@@ -135,6 +136,18 @@ export function ResourceLinkField({
     >
       <Input defaultValue={defaultValue} id={name} name={name} required />
     </Field>
+  );
+}
+
+export function ResourceSearchConfirmationField({ name }: FieldProps<boolean>) {
+  return (
+    <Checkbox
+      label="I have searched for this resource and it does not exist."
+      id={name}
+      name={name}
+      required
+      value="1"
+    />
   );
 }
 
@@ -281,28 +294,5 @@ export function ResourceTypeField({
         <option value={ResourceType.URL}>URL</option>
       </Select>
     </Field>
-  );
-}
-
-export function ResourceNonExistentField({
-  defaultValue,
-  error,
-  name,
-}: FieldProps<boolean>) {
-  return (
-    <Form.Field
-      error={error}
-      label="I have searched for this resource and confirm that it doesn't exist."
-      labelFor={name}
-      required
-    >
-      <input
-        type="checkbox"
-        id={name}
-        name={name}
-        defaultChecked={defaultValue ?? false}
-        required
-      />
-    </Form.Field>
   );
 }
