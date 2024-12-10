@@ -11,7 +11,8 @@ import {
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { z } from 'zod';
 
-import { getEvent, job, parseCsv } from '@oyster/core/admin-dashboard/server';
+import { getEvent, parseCsv } from '@oyster/core/admin-dashboard/server';
+import { job } from '@oyster/core/bull';
 import { db } from '@oyster/db';
 import { Email, EventAttendee } from '@oyster/types';
 import {

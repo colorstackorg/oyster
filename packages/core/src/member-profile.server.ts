@@ -1,4 +1,4 @@
-export { job } from './infrastructure/bull/use-cases/job';
+export { reportException } from './infrastructure/sentry';
 export { getActiveStreak } from './modules/active-status/queries/get-active-streak';
 export { getActiveStreakLeaderboard } from './modules/active-status/queries/get-active-streak-leaderboard';
 export { getGithubProfile } from './modules/authentication/queries/get-github-profile';
@@ -34,5 +34,4 @@ export { changePrimaryEmail } from './modules/member/use-cases/change-primary-em
 export { joinMemberDirectory } from './modules/member/use-cases/join-member-directory';
 export { updateAllowEmailShare } from './modules/member/use-cases/update-allow-email-share';
 export { updateMember } from './modules/member/use-cases/update-member';
-export { reportException } from './modules/sentry/use-cases/report-exception';
 export { countMessagesSent } from './modules/slack/queries/count-messages-sent';

@@ -1,12 +1,12 @@
 import { db } from '@oyster/db';
 
-import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
+import { job } from '@/infrastructure/bull';
+import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { redis } from '@/infrastructure/redis';
 import { isFeatureFlagEnabled } from '@/modules/feature-flag/queries/is-feature-flag-enabled';
 import { slack } from '@/modules/slack/instances';
 import { ErrorWithContext } from '@/shared/errors';
-import { retryWithBackoff } from '@/shared/utils/core.utils';
+import { retryWithBackoff } from '@/shared/utils/core';
 import { getSlackMessage } from '../services/slack-message.service';
 
 type AddSlackMessageInput = GetBullJobData<'slack.message.add'>;

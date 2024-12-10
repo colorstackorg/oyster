@@ -1,8 +1,8 @@
 import { db, type DB } from '@oyster/db';
 
-import { reportException } from '@/modules/sentry/use-cases/report-exception';
+import { reportException } from '@/infrastructure/sentry';
 import { slack } from '@/modules/slack/instances';
-import { ENV } from '@/shared/env';
+import { SLACK_ADMIN_TOKEN, STUDENT_PROFILE_URL } from '@/shared/env';
 import { RateLimiter } from '@/shared/utils/rate-limiter';
 
 // Environment Variables
@@ -57,14 +57,14 @@ export async function addDirectoryLinkToSlackProfile(
   const profile = {
     fields: {
       [SLACK_MEMBER_DIRECTORY_FIELD_ID]: {
-        value: new URL(`/directory/${member.id}`, ENV.STUDENT_PROFILE_URL),
+        value: new URL(`/directory/${member.id}`, STUDENT_PROFILE_URL),
       },
     },
   };
 
   await slack.users.profile.set({
     profile: JSON.stringify(profile),
-    token: ENV.SLACK_ADMIN_TOKEN,
+    token: SLACK_ADMIN_TOKEN,
     user: member.slackId as string,
   });
 }

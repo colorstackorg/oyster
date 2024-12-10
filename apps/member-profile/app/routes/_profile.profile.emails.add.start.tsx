@@ -7,7 +7,7 @@ import {
 import { Form, useActionData } from '@remix-run/react';
 import { type z } from 'zod';
 
-import { job } from '@oyster/core/member-profile/server';
+import { job } from '@oyster/core/bull';
 import {
   OneTimeCode,
   OneTimeCodePurpose,

@@ -2,8 +2,8 @@ import dayjs from 'dayjs';
 
 import { db } from '@oyster/db';
 
-import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
+import { job } from '@/infrastructure/bull';
+import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { createGiftCard } from '@/modules/shopify';
 
 export async function onMemberActivated({

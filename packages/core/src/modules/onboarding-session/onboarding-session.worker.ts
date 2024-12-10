@@ -1,7 +1,7 @@
 import { match } from 'ts-pattern';
 
-import { OnboardingSessionBullJob } from '@/infrastructure/bull/bull.types';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
+import { registerWorker } from '@/infrastructure/bull';
+import { OnboardingSessionBullJob } from '@/infrastructure/bull.types';
 import { onOnboardingSessionAttended } from './events/onboarding-session-attended';
 
 export const onboardingSessionWorker = registerWorker(

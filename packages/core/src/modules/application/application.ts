@@ -6,12 +6,11 @@ import { type DB, db } from '@oyster/db';
 import { type Application, OtherDemographic } from '@oyster/types';
 import { id, run } from '@oyster/utils';
 
+import { job, registerWorker } from '@/infrastructure/bull';
 import {
   ApplicationBullJob,
   type GetBullJobData,
-} from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
+} from '@/infrastructure/bull.types';
 import {
   type ApplicationRejectionReason,
   ApplicationStatus,
@@ -19,7 +18,7 @@ import {
 } from '@/modules/application/application.types';
 import { getPostmarkInstance } from '@/modules/notification/shared/email.utils';
 import { ReferralStatus } from '@/modules/referral/referral.types';
-import { ENV } from '@/shared/env';
+import { STUDENT_PROFILE_URL } from '@/shared/env';
 
 // Queries
 
@@ -286,7 +285,7 @@ export async function acceptApplication(
       job('notification.email.send', {
         data: {
           firstName: referral.referrerFirstName as string,
-          referralsUri: `${ENV.MEMBER_PROFILE_URL}/profile/referrals`,
+          referralsUri: `${STUDENT_PROFILE_URL}/profile/referrals`,
           referredFirstName: referral.referredFirstName,
           referredLastName: referral.referredLastName,
         },

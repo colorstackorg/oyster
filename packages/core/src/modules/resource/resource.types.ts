@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { type ExtractValue } from '@oyster/types';
 
 import { ListSearchParams } from '@/shared/types';
-import { FileLike } from '@/shared/utils/zod.utils';
+import { FileLike } from '@/shared/utils/zod';
 
 // Types
 

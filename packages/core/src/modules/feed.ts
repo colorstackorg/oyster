@@ -5,13 +5,9 @@ import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
 
-import {
-  FeedBullJob,
-  type GetBullJobData,
-} from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
-import { registerWorker } from '@/infrastructure/bull/use-cases/register-worker';
-import { ENV } from '@/shared/env';
+import { job, registerWorker } from '@/infrastructure/bull';
+import { FeedBullJob, type GetBullJobData } from '@/infrastructure/bull.types';
+import { STUDENT_PROFILE_URL } from '@/shared/env';
 
 // Environment Variables
 
@@ -103,7 +99,7 @@ async function getCompanyReviewsMessage(): Promise<string | null> {
 
   const items = companyReviews
     .map(({ anonymous, companyId, companyName, posterSlackId, rating }) => {
-      const url = new URL('/companies/' + companyId, ENV.STUDENT_PROFILE_URL);
+      const url = new URL('/companies/' + companyId, STUDENT_PROFILE_URL);
 
       return anonymous
         ? `• <${url}|*${companyName}*> (${rating}/10) by Anonymous (🫣)`
@@ -135,7 +131,7 @@ async function getMembersMessage(): Promise<string | null> {
     return null;
   }
 
-  const url = new URL('/directory', ENV.STUDENT_PROFILE_URL);
+  const url = new URL('/directory', STUDENT_PROFILE_URL);
 
   url.searchParams.set('joinedDirectoryDate', yesterday.format('YYYY-MM-DD'));
 
@@ -170,7 +166,7 @@ async function getResourcesMessage(): Promise<string | null> {
 
   const items = resources
     .map((resource) => {
-      const url = new URL('/resources', ENV.STUDENT_PROFILE_URL);
+      const url = new URL('/resources', STUDENT_PROFILE_URL);
 
       // Example: https://app.colorstack.io/resources?id=123
       url.searchParams.set('id', resource.id);
@@ -179,7 +175,7 @@ async function getResourcesMessage(): Promise<string | null> {
     })
     .join('\n');
 
-  const url = new URL('/resources', ENV.STUDENT_PROFILE_URL);
+  const url = new URL('/resources', STUDENT_PROFILE_URL);
 
   // Example: https://app.colorstack.io/resources?date=2024-08-15
   url.searchParams.set('date', yesterday.format('YYYY-MM-DD'));

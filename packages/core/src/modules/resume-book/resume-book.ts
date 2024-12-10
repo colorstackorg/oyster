@@ -6,19 +6,19 @@ import { type DB, db, point } from '@oyster/db';
 import { FORMATTED_RACE, Race } from '@oyster/types';
 import { id, run } from '@oyster/utils';
 
-import { job } from '@/infrastructure/bull/use-cases/job';
+import { job } from '@/infrastructure/bull';
+import { getPresignedURL, putObject } from '@/infrastructure/s3';
 import {
   type AirtableField,
   createAirtableRecord,
   createAirtableTable,
   updateAirtableRecord,
-} from '@/modules/airtable/airtable.core';
+} from '@/modules/airtable';
 import { type DegreeType } from '@/modules/education/education.types';
 import {
   createGoogleDriveFolder,
   uploadFileToGoogleDrive,
 } from '@/modules/google-drive';
-import { getPresignedURL, putObject } from '@/modules/object-storage';
 import {
   type CreateResumeBookInput,
   RESUME_BOOK_CODING_LANGUAGES,
@@ -28,7 +28,7 @@ import {
   type UpdateResumeBookInput,
 } from '@/modules/resume-book/resume-book.types';
 import { ColorStackError } from '@/shared/errors';
-import { success } from '@/shared/utils/core.utils';
+import { success } from '@/shared/utils/core';
 
 // Environment Variables
 

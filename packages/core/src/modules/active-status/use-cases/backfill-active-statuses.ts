@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { db } from '@oyster/db';
 import { type StudentActiveStatus } from '@oyster/types';
 
-import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
+import { type GetBullJobData } from '@/infrastructure/bull.types';
 
 export async function backfillActiveStatuses({
   studentId,

@@ -1,6 +1,10 @@
 import jwt from 'jsonwebtoken';
 
-import { ENV } from '@/shared/env';
+// Environment Variables
+
+const JWT_SECRET = process.env.JWT_SECRET as string;
+
+// Core
 
 /**
  * Returns the encoded Basic Authentication token.
@@ -25,5 +29,5 @@ export function signToken<T extends object>(
   data: T,
   options: SignTokenOptions = {}
 ): string {
-  return jwt.sign(data, ENV.JWT_SECRET, options);
+  return jwt.sign(data, JWT_SECRET, options);
 }
