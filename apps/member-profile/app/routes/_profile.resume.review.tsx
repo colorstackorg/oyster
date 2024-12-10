@@ -24,7 +24,7 @@ import {
   type ResumeFeedback,
   reviewResume,
   ReviewResumeInput,
-} from '@oyster/core/resume-review';
+} from '@oyster/core/resume-reviews';
 import {
   Button,
   cx,

@@ -17,7 +17,7 @@ import {
   ActivityType,
   CompletedActivity,
 } from '@/modules/gamification/gamification.types';
-import { OnboardingSession } from '@/modules/onboarding-session/onboarding-session.types';
+import { OnboardingSession } from '@/modules/onboarding-sessions/onboarding-sessions.types';
 import {
   SlackChannel,
   SlackMessage,

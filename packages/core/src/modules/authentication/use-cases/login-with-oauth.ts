@@ -2,7 +2,7 @@ import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
 
-import { getMemberByEmail } from '@/modules/member/queries/get-member-by-email';
+import { getMemberByEmail } from '@/modules/members/queries/get-member-by-email';
 import { signToken } from '@/shared/utils/auth';
 import { type OAuthCodeState } from '../authentication.types';
 import { type OAuthServiceType } from '../oauth.service';
