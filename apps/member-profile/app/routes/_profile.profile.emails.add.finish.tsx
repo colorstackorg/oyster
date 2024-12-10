@@ -20,7 +20,7 @@ import { db } from '@oyster/db';
 import { StudentEmail } from '@oyster/types';
 import {
   Button,
-  Form,
+  ErrorMessage,
   FormField,
   getErrors,
   Input,
@@ -183,7 +183,7 @@ export default function AddEmailPage() {
           <Input autoFocus id={keys.code} name={keys.code} required />
         </FormField>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Verify</Button.Submit>

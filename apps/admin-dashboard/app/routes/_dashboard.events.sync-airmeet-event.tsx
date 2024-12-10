@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { job } from '@oyster/core/admin-dashboard/server';
 import {
   Button,
-  Form,
+  ErrorMessage,
   FormField,
   getErrors,
   Input,
@@ -95,7 +95,7 @@ function SyncAirmeetEventForm() {
         <Input id={keys.eventId} name={keys.eventId} required />
       </FormField>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Sync</Button.Submit>

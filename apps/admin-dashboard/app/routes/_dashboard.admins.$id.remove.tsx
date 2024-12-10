@@ -11,7 +11,7 @@ import {
 } from '@remix-run/react';
 
 import { getAdmin, removeAdmin } from '@oyster/core/admins';
-import { Button, Form, Modal } from '@oyster/ui';
+import { Button, ErrorMessage, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -79,7 +79,7 @@ export default function RemoveAdminPage() {
       </Modal.Description>
 
       <RemixForm className="form" method="post">
-        <Form.ErrorMessage>{actionData?.error}</Form.ErrorMessage>
+        <ErrorMessage>{actionData?.error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit color="error">Remove</Button.Submit>

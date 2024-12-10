@@ -7,7 +7,7 @@ import { type DB } from '@oyster/db';
 import {
   Button,
   Dropdown,
-  Form,
+  ErrorMessage,
   FormField,
   Input,
   Pill,
@@ -64,7 +64,7 @@ export function AdminForm({ error, errors }: AdminFormProps) {
         </Select>
       </FormField>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Add</Button.Submit>

@@ -10,7 +10,7 @@ import { addIcebreakerPrompt } from '@oyster/core/admin-dashboard/server';
 import { AddIcebreakerPromptInput } from '@oyster/core/admin-dashboard/ui';
 import {
   Button,
-  Form,
+  ErrorMessage,
   FormField,
   getErrors,
   Input,
@@ -85,7 +85,7 @@ function AddIcebreakerPromptForm() {
         <Input id={keys.text} name={keys.text} required />
       </FormField>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Add</Button.Submit>

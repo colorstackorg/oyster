@@ -17,7 +17,7 @@ import {
 import { ChangePrimaryEmailInput } from '@oyster/core/member-profile/ui';
 import {
   Button,
-  Form,
+  ErrorMessage,
   FormField,
   getErrors,
   Modal,
@@ -92,7 +92,7 @@ export default function ChangePrimaryEmailPage() {
       </Modal.Description>
 
       <RemixForm className="form" method="post">
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <FormField
           description="If you don't see your email listed here, please add it to your profile first."

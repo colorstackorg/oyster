@@ -22,7 +22,7 @@ import {
 import {
   Button,
   DatePicker,
-  Form,
+  ErrorMessage,
   FormField,
   getButtonCn,
   getErrors,
@@ -199,7 +199,7 @@ function EditOpportunityForm() {
         />
       </FormField>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group flexDirection="row-reverse" spacing="between">
         <Button.Submit>Save</Button.Submit>

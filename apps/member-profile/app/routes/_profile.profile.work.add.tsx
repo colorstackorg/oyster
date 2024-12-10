@@ -16,7 +16,7 @@ import {
 import {
   Address,
   Button,
-  Form,
+  ErrorMessage,
   getErrors,
   Modal,
   validateForm,
@@ -143,7 +143,7 @@ export default function AddWorkExperiencePage() {
           <WorkForm.EndDateField error={errors.endDate} name={keys.endDate} />
         </WorkForm.Context>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Save</Button.Submit>

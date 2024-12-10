@@ -17,7 +17,7 @@ import {
 import { AddEventRecordingLinkInput } from '@oyster/core/admin-dashboard/ui';
 import {
   Button,
-  Form,
+  ErrorMessage,
   FormField,
   getErrors,
   Input,
@@ -111,7 +111,7 @@ function AddEventRecordingForm() {
         />
       </FormField>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button type="submit">Add</Button>

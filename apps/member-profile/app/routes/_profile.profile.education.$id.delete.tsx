@@ -13,7 +13,7 @@ import {
 import { deleteEducation } from '@oyster/core/member-profile/server';
 import { type Education } from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
-import { Button, Form, Modal } from '@oyster/ui';
+import { Button, ErrorMessage, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -96,7 +96,7 @@ export default function DeleteEducationPage() {
       </Modal.Description>
 
       <RemixForm className="form" method="post">
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group flexDirection="row-reverse">
           <Button color="error" type="submit" variant="secondary">

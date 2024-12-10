@@ -11,7 +11,7 @@ import {
 } from '@remix-run/react';
 
 import { acceptApplication, getApplication } from '@oyster/core/applications';
-import { Button, Form, Modal } from '@oyster/ui';
+import { Button, ErrorMessage, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -80,7 +80,7 @@ export default function AcceptApplicationPage() {
       </Modal.Description>
 
       <RemixForm className="form" method="post">
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button type="submit">Accept</Button>

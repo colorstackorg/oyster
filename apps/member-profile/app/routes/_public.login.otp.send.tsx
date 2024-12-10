@@ -6,7 +6,7 @@ import {
   OneTimeCodeForm,
   SendOneTimeCodeInput,
 } from '@oyster/core/member-profile/ui';
-import { Button, Form, getErrors, validateForm } from '@oyster/ui';
+import { Button, ErrorMessage, getErrors, validateForm } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import { oneTimeCodeIdCookie } from '@/shared/cookies.server';
@@ -45,7 +45,7 @@ export default function SendOneTimeCodePage() {
   return (
     <RemixForm className="form" method="post">
       <OneTimeCodeForm.EmailField error={errors.email} name={keys.email} />
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
       <Button.Submit fill>Send Code</Button.Submit>
     </RemixForm>
   );

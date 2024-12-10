@@ -14,7 +14,7 @@ import { z } from 'zod';
 
 import {
   Button,
-  Form,
+  ErrorMessage,
   FormField,
   getErrors,
   Input,
@@ -120,7 +120,7 @@ function AddJobForm() {
         <Textarea id={keys.data} minRows={4} name={keys.data} required />
       </FormField>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Add</Button.Submit>

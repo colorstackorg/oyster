@@ -28,7 +28,7 @@ import {
 import {
   Address,
   Button,
-  Form,
+  ErrorMessage,
   getErrors,
   Modal,
   validateForm,
@@ -231,7 +231,7 @@ export default function EditWorkExperiencePage() {
           />
         </WorkForm.Context>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group flexDirection="row-reverse" spacing="between">
           <Button.Submit>Update</Button.Submit>

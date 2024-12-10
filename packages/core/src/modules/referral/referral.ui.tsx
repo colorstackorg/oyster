@@ -1,6 +1,6 @@
 import { Form as RemixForm } from '@remix-run/react';
 
-import { Button, Form, FormField, Input } from '@oyster/ui';
+import { Button, ErrorMessage, FormField, Input } from '@oyster/ui';
 
 import { ReferFriendInput } from '@/modules/referral/referral.types';
 
@@ -45,7 +45,7 @@ export function ReferFriendForm({ error, errors }: ReferFriendFormProps) {
         <Input id={keys.email} name={keys.email} required type="email" />
       </FormField>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Refer</Button.Submit>

@@ -22,7 +22,7 @@ import {
 } from '@oyster/core/opportunities';
 import {
   Button,
-  Form,
+  ErrorMessage,
   FormField,
   getErrors,
   Modal,
@@ -121,7 +121,7 @@ export default function RefineOpportunity() {
 
         <input type="hidden" name="opportunityId" value={id} />
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>

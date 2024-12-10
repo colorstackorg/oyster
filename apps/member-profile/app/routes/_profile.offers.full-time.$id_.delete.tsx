@@ -13,7 +13,7 @@ import {
 
 import { deleteOffer, hasOfferWritePermission } from '@oyster/core/offers';
 import { db } from '@oyster/db';
-import { Button, Form, getErrors, Modal } from '@oyster/ui';
+import { Button, ErrorMessage, getErrors, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -106,7 +106,7 @@ export default function DeleteFullTimeOffer() {
       </Modal.Description>
 
       <RemixForm className="form" method="post">
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit color="error">Delete</Button.Submit>

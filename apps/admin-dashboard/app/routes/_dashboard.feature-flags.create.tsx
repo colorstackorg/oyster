@@ -11,7 +11,7 @@ import { CreateFeatureFlagInput } from '@oyster/core/admin-dashboard/ui';
 import {
   Button,
   Checkbox,
-  Form,
+  ErrorMessage,
   FormField,
   getErrors,
   Input,
@@ -118,7 +118,7 @@ export default function CreateFeatureFlagModal() {
           value="1"
         />
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Create</Button.Submit>

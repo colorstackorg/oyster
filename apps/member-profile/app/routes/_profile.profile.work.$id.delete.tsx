@@ -14,7 +14,7 @@ import {
   deleteWorkExperience,
   getWorkExperience,
 } from '@oyster/core/member-profile/server';
-import { Button, Form, Modal } from '@oyster/ui';
+import { Button, ErrorMessage, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -86,7 +86,7 @@ export default function DeleteWorkExperiencePage() {
       </Modal.Description>
 
       <RemixForm className="form" method="post">
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group flexDirection="row-reverse">
           <Button color="error" type="submit" variant="secondary">

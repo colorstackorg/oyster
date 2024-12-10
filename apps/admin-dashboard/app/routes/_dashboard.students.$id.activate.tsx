@@ -13,7 +13,7 @@ import {
 
 import { activateMember } from '@oyster/core/admin-dashboard/server';
 import { db } from '@oyster/db';
-import { Button, Form, Modal } from '@oyster/ui';
+import { Button, ErrorMessage, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -91,7 +91,7 @@ export default function ActivateStudentPage() {
       </Modal.Description>
 
       <RemixForm className="form" method="post">
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group flexDirection="row-reverse">
           <Button type="submit">Activate</Button>

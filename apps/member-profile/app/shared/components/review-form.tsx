@@ -12,8 +12,8 @@ import {
   Checkbox,
   cx,
   Divider,
+  ErrorMessage,
   type FieldProps,
-  Form,
   FormField,
   Radio,
   Select,
@@ -53,7 +53,7 @@ export function AddReviewForm({
       <RatingField error={errors.rating} name={keys.rating} />
       <RecommendField error={errors.recommend} name={keys.recommend} />
       <AnonymousField error={errors.anonymous} name={keys.anonymous} />
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Save</Button.Submit>
@@ -96,7 +96,7 @@ export function EditReviewForm({ error, errors, review }: EditReviewFormProps) {
         name={keys.anonymous}
       />
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Save</Button.Submit>

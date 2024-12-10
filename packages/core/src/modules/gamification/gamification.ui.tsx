@@ -1,6 +1,13 @@
 import { Form as RemixForm } from '@remix-run/react';
 
-import { Button, Form, FormField, Input, Select, Textarea } from '@oyster/ui';
+import {
+  Button,
+  ErrorMessage,
+  FormField,
+  Input,
+  Select,
+  Textarea,
+} from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import {
@@ -108,7 +115,7 @@ export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
         />
       </FormField>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Add</Button.Submit>

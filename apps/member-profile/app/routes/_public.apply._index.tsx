@@ -18,7 +18,7 @@ import { buildMeta } from '@oyster/core/remix';
 import {
   Button,
   Checkbox,
-  Form,
+  ErrorMessage,
   FormField,
   getErrors,
   Link,
@@ -189,7 +189,7 @@ export default function ApplicationPage() {
           />
         </FormField>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Submit fill>Apply</Button.Submit>
       </RemixForm>

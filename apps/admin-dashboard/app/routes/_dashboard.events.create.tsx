@@ -12,7 +12,7 @@ import { Event, EventType } from '@oyster/types';
 import {
   Button,
   DatePicker,
-  Form,
+  ErrorMessage,
   FormField,
   getErrors,
   Input,
@@ -168,7 +168,7 @@ function CreateEventForm() {
         value={new window.Intl.DateTimeFormat().resolvedOptions().timeZone}
       />
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Create</Button.Submit>

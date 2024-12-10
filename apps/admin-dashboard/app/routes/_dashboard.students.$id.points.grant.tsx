@@ -15,7 +15,7 @@ import { GrantPointsInput } from '@oyster/core/gamification/types';
 import { db } from '@oyster/db';
 import {
   Button,
-  Form,
+  ErrorMessage,
   FormField,
   getErrors,
   Input,
@@ -132,7 +132,7 @@ function GrantPointsForm() {
         />
       </FormField>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Grant</Button.Submit>

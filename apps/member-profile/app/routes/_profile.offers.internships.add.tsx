@@ -29,7 +29,7 @@ import {
 import {
   Button,
   Divider,
-  Form,
+  ErrorMessage,
   getErrors,
   Modal,
   validateForm,
@@ -120,7 +120,7 @@ export default function AddInternshipOffer() {
         <OfferNegotiatedField error={errors.negotiated} />
         <OfferAdditionalNotesField error={errors.additionalNotes} />
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Add</Button.Submit>

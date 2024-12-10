@@ -20,8 +20,8 @@ import { db } from '@oyster/db';
 import { Email, EventAttendee } from '@oyster/types';
 import {
   Button,
+  ErrorMessage,
   FileUploader,
-  Form,
   FormField,
   getErrors,
   Modal,
@@ -197,7 +197,7 @@ function ImportEventAttendeesForm() {
         />
       </FormField>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Import</Button.Submit>

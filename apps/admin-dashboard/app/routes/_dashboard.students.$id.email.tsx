@@ -16,7 +16,7 @@ import { db } from '@oyster/db';
 import { Student } from '@oyster/types';
 import {
   Button,
-  Form,
+  ErrorMessage,
   FormField,
   getErrors,
   Input,
@@ -129,7 +129,7 @@ function UpdateStudentEmailForm() {
         <Input id={keys.email} name={keys.email} required />
       </FormField>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Update</Button.Submit>

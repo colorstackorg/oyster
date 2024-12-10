@@ -42,8 +42,8 @@ import {
   Button,
   Checkbox,
   Divider,
+  ErrorMessage,
   FileUploader,
-  Form,
   FormField,
   getErrors,
   Input,
@@ -722,7 +722,7 @@ function ResumeBookForm() {
         />
       </FormField>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Submit</Button.Submit>

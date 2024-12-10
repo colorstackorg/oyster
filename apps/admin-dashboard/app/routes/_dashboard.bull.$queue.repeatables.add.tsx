@@ -14,7 +14,7 @@ import { z } from 'zod';
 
 import {
   Button,
-  Form,
+  ErrorMessage,
   FormField,
   getErrors,
   Input,
@@ -116,7 +116,7 @@ function AddRepeatableForm() {
         <Input id={keys.pattern} name={keys.pattern} required />
       </FormField>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Add</Button.Submit>

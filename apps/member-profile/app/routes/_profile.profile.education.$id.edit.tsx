@@ -22,7 +22,13 @@ import {
 } from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
 import { type Major } from '@oyster/types';
-import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
+import {
+  Button,
+  ErrorMessage,
+  getErrors,
+  Modal,
+  validateForm,
+} from '@oyster/ui';
 
 import { EducationForm } from '@/shared/components/education-form';
 import { Route } from '@/shared/constants';
@@ -207,7 +213,7 @@ export default function EditEducationPage() {
           />
         </EducationForm.Context>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group flexDirection="row-reverse" spacing="between">
           <Button.Submit name="action" value="edit">

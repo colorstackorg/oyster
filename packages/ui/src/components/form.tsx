@@ -6,15 +6,13 @@ import { Text } from './text';
 import { cx } from '../utils/cx';
 import { zodErrorMap } from '../utils/zod';
 
-export const Form = () => {};
-
-Form.ErrorMessage = function FormErrorMessage({ children }: PropsWithChildren) {
+export function ErrorMessage({ children }: PropsWithChildren) {
   return children ? (
     <Text className="whitespace-pre-wrap" color="error">
       {children}
     </Text>
   ) : null;
-};
+}
 
 type FormFieldProps = {
   children: React.ReactNode;

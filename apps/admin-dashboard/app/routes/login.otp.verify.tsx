@@ -15,7 +15,7 @@ import {
   OneTimeCodeForm,
   VerifyOneTimeCodeInput,
 } from '@oyster/core/admin-dashboard/ui';
-import { Button, Form, getErrors, validateForm } from '@oyster/ui';
+import { Button, ErrorMessage, getErrors, validateForm } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
@@ -98,7 +98,7 @@ export default function VerifyOneTimeCodePage() {
         name={keys.value}
       />
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Submit fill>Verify Code</Button.Submit>
     </RemixForm>

@@ -15,7 +15,7 @@ import {
 import { db } from '@oyster/db';
 import {
   Button,
-  Form,
+  ErrorMessage,
   FormField,
   getErrors,
   Input,
@@ -154,7 +154,7 @@ export default function AddEmailPage() {
           />
         </FormField>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Send Code</Button.Submit>

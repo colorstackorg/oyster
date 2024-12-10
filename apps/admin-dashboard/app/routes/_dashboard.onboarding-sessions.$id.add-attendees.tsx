@@ -9,7 +9,13 @@ import { z } from 'zod';
 
 import { addOnboardingSessionAttendees } from '@oyster/core/admin-dashboard/server';
 import { db } from '@oyster/db';
-import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
+import {
+  Button,
+  ErrorMessage,
+  getErrors,
+  Modal,
+  validateForm,
+} from '@oyster/ui';
 
 import { OnboardingSessionAttendeesField } from '@/shared/components/onboarding-session-form';
 import { Route } from '@/shared/constants';
@@ -93,7 +99,7 @@ export default function AddOnboardingSessionAttendeesPage() {
           name={keys.attendees}
         />
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Upload</Button.Submit>

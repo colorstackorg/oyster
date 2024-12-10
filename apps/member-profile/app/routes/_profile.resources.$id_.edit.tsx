@@ -20,7 +20,7 @@ import { getResource, updateResource } from '@oyster/core/resources/server';
 import {
   Button,
   Divider,
-  Form,
+  ErrorMessage,
   getErrors,
   Modal,
   validateForm,
@@ -168,7 +168,7 @@ export default function EditResourceModal() {
           />
         </ResourceProvider>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Save</Button.Submit>

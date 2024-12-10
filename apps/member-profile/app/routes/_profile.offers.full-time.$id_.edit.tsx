@@ -32,7 +32,7 @@ import { db } from '@oyster/db';
 import {
   Button,
   Divider,
-  Form,
+  ErrorMessage,
   getButtonCn,
   getErrors,
   Modal,
@@ -231,7 +231,7 @@ export default function EditFullTimeOffer() {
           error={errors.additionalNotes}
         />
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group flexDirection="row-reverse" spacing="between">
           <Button.Submit>Save</Button.Submit>

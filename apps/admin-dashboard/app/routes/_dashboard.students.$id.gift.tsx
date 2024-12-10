@@ -11,7 +11,7 @@ import { createGoodyOrder } from '@oyster/core/goody';
 import { db } from '@oyster/db';
 import {
   Button,
-  Form,
+  ErrorMessage,
   FormField,
   Modal,
   Textarea,
@@ -122,7 +122,7 @@ export default function SendGiftModal() {
           />
         </FormField>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Send</Button.Submit>

@@ -28,8 +28,8 @@ import {
 import {
   Button,
   cx,
+  ErrorMessage,
   FileUploader,
-  Form,
   FormField,
   MB_IN_BYTES,
   Text,
@@ -158,7 +158,7 @@ function UploadForm() {
       </FormField>
 
       {actionData && !actionData.ok && (
-        <Form.ErrorMessage>{actionData.error}</Form.ErrorMessage>
+        <ErrorMessage>{actionData.error}</ErrorMessage>
       )}
 
       <Button.Group>
