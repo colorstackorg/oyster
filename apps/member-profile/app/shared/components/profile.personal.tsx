@@ -4,8 +4,8 @@ import { FORMATTED_GENDER, type Gender } from '@oyster/types';
 import {
   Checkbox,
   DatePicker,
+  Field,
   type FieldProps,
-  FormField,
   Select,
 } from '@oyster/ui';
 
@@ -17,7 +17,7 @@ export function BirthdateNotificationField({
   name,
 }: FieldProps<boolean>) {
   return (
-    <FormField error={error}>
+    <Field error={error}>
       <Checkbox
         color="gold-100"
         defaultChecked={defaultValue}
@@ -25,7 +25,7 @@ export function BirthdateNotificationField({
         name={name}
         value="1"
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -35,7 +35,7 @@ export function BirthdateField({
   name,
 }: FieldProps<string>) {
   return (
-    <FormField
+    <Field
       description="We'll wish you a happy birthday in the #birthdays Slack channel!"
       error={error}
       label="Birthdate"
@@ -47,7 +47,7 @@ export function BirthdateField({
         name={name}
         type="date"
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -57,7 +57,7 @@ export function EthnicityField({
   name,
 }: FieldProps<Pick<Country, 'code' | 'demonym' | 'flagEmoji'>[]>) {
   return (
-    <FormField error={error} labelFor={name} label="Ethnicity">
+    <Field error={error} labelFor={name} label="Ethnicity">
       <EthnicityMultiCombobox
         defaultValues={defaultValue.map((ethnicity) => {
           return {
@@ -67,7 +67,7 @@ export function EthnicityField({
         })}
         name={name}
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -82,7 +82,7 @@ const GENDERS_IN_ORDER: Gender[] = [
 
 export function GenderField({ defaultValue, error, name }: FieldProps<string>) {
   return (
-    <FormField error={error} label="Gender" labelFor={name} required>
+    <Field error={error} label="Gender" labelFor={name} required>
       <Select defaultValue={defaultValue} id={name} name={name} required>
         {GENDERS_IN_ORDER.map((value) => {
           return (
@@ -92,7 +92,7 @@ export function GenderField({ defaultValue, error, name }: FieldProps<string>) {
           );
         })}
       </Select>
-    </FormField>
+    </Field>
   );
 }
 
@@ -108,7 +108,7 @@ export function HometownField({
 }: FieldProps<string> &
   Omit<CityComboboxProps, 'required'> & { description?: string }) {
   return (
-    <FormField
+    <Field
       description={description}
       error={error}
       labelFor={name}
@@ -124,6 +124,6 @@ export function HometownField({
         longitudeName={longitudeName}
         required
       />
-    </FormField>
+    </Field>
   );
 }

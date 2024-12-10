@@ -18,7 +18,7 @@ import {
 import {
   Button,
   ComboboxPopover,
-  FormField,
+  Field,
   getErrors,
   Modal,
   MultiCombobox,
@@ -112,7 +112,7 @@ function SponsorsField() {
   const companies = fetcher.data?.companies || [];
 
   return (
-    <FormField
+    <Field
       description="Please choose all of the companies that are sponsoring this resume book."
       error={errors.sponsors}
       label="Sponsors"
@@ -152,6 +152,6 @@ function SponsorsField() {
           </ul>
         </ComboboxPopover>
       </MultiCombobox>
-    </FormField>
+    </Field>
   );
 }

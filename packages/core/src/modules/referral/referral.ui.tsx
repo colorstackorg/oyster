@@ -1,6 +1,6 @@
 import { Form } from '@remix-run/react';
 
-import { Button, ErrorMessage, FormField, Input } from '@oyster/ui';
+import { Button, ErrorMessage, Field, Input } from '@oyster/ui';
 
 import { ReferFriendInput } from '@/modules/referral/referral.types';
 
@@ -17,33 +17,28 @@ export function ReferFriendForm({ error, errors }: ReferFriendFormProps) {
   return (
     <Form className="form" method="post">
       <div className="flex gap-4">
-        <FormField
+        <Field
           error={errors.firstName}
           label="First Name"
           labelFor={keys.firstName}
           required
         >
           <Input id={keys.firstName} name={keys.firstName} required />
-        </FormField>
+        </Field>
 
-        <FormField
+        <Field
           error={errors.lastName}
           label="Last Name"
           labelFor={keys.lastName}
           required
         >
           <Input id={keys.lastName} name={keys.lastName} required />
-        </FormField>
+        </Field>
       </div>
 
-      <FormField
-        error={errors.email}
-        label="Email"
-        labelFor={keys.email}
-        required
-      >
+      <Field error={errors.email} label="Email" labelFor={keys.email} required>
         <Input id={keys.email} name={keys.email} required type="email" />
-      </FormField>
+      </Field>
 
       <ErrorMessage>{error}</ErrorMessage>
 

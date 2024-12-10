@@ -10,7 +10,7 @@ import { z } from 'zod';
 import {
   Button,
   ErrorMessage,
-  FormField,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -107,13 +107,13 @@ function AddJobForm() {
 
   return (
     <Form className="form" method="post">
-      <FormField error={errors.name} label="Name" labelFor={keys.name} required>
+      <Field error={errors.name} label="Name" labelFor={keys.name} required>
         <Input id={keys.name} name={keys.name} required />
-      </FormField>
+      </Field>
 
-      <FormField error={errors.data} label="Data" labelFor={keys.data} required>
+      <Field error={errors.data} label="Data" labelFor={keys.data} required>
         <Textarea id={keys.data} minRows={4} name={keys.data} required />
-      </FormField>
+      </Field>
 
       <ErrorMessage>{error}</ErrorMessage>
 

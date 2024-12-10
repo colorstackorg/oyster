@@ -24,7 +24,7 @@ import {
   type OtherDemographic,
   type Race,
 } from '@oyster/types';
-import { Button, Dropdown, FormField, Select, Text } from '@oyster/ui';
+import { Button, Dropdown, Field, Select, Text } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
@@ -266,7 +266,7 @@ function RejectDropdown() {
       {open && (
         <Dropdown className="p-2">
           <Form className="form" method="post">
-            <FormField
+            <Field
               description="Select a reason for rejecting this application."
               label="Rejection Reason"
               required
@@ -286,7 +286,7 @@ function RejectDropdown() {
                 </option>
                 <option value={ApplicationRejectionReason.OTHER}>Other</option>
               </Select>
-            </FormField>
+            </Field>
 
             <Button
               color="error"

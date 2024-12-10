@@ -14,8 +14,8 @@ import {
   ComboboxItem,
   ComboboxPopover,
   DatePicker,
+  Field,
   type FieldProps,
-  FormField,
   Input,
   Select,
   useDelayedValue,
@@ -81,9 +81,9 @@ WorkForm.CityField = function CityField({
   name,
 }: FieldProps<string>) {
   return (
-    <FormField error={error} label="City" labelFor={name}>
+    <Field error={error} label="City" labelFor={name}>
       <Address.City defaultValue={defaultValue} id={name} name={name} />
-    </FormField>
+    </Field>
   );
 };
 
@@ -115,7 +115,7 @@ WorkForm.CompanyField = function CompanyField({
   const companies = fetcher.data?.companies || [];
 
   return (
-    <FormField error={error} label="Organization" labelFor={name} required>
+    <Field error={error} label="Organization" labelFor={name} required>
       <Combobox
         defaultDisplayValue={defaultValue.name}
         defaultValue={defaultValue.crunchbaseId}
@@ -157,7 +157,7 @@ WorkForm.CompanyField = function CompanyField({
           </ul>
         </ComboboxPopover>
       </Combobox>
-    </FormField>
+    </Field>
   );
 };
 
@@ -173,7 +173,7 @@ WorkForm.CurrentRoleField = function CurrentRoleField({
   }
 
   return (
-    <FormField error={error} labelFor={name} required>
+    <Field error={error} labelFor={name} required>
       <Checkbox
         color="gold-100"
         defaultChecked={isCurrentRole || !!defaultValue}
@@ -182,7 +182,7 @@ WorkForm.CurrentRoleField = function CurrentRoleField({
         name={name}
         onChange={onChange}
       />
-    </FormField>
+    </Field>
   );
 };
 
@@ -198,7 +198,7 @@ WorkForm.EndDateField = function EndDateField({
   }
 
   return (
-    <FormField
+    <Field
       error={error}
       description="Example: August 2022"
       label="End Date"
@@ -212,7 +212,7 @@ WorkForm.EndDateField = function EndDateField({
         required
         type="month"
       />
-    </FormField>
+    </Field>
   );
 };
 
@@ -233,7 +233,7 @@ WorkForm.EmploymentTypeField = function EmploymentTypeField({
   name,
 }: FieldProps<EmploymentType>) {
   return (
-    <FormField error={error} label="Employment Type" labelFor={name} required>
+    <Field error={error} label="Employment Type" labelFor={name} required>
       <Select defaultValue={defaultValue} id={name} name={name} required>
         {ORDERED_EMPLOYMENT_TYPES.map((employmentType) => {
           return (
@@ -243,7 +243,7 @@ WorkForm.EmploymentTypeField = function EmploymentTypeField({
           );
         })}
       </Select>
-    </FormField>
+    </Field>
   );
 };
 
@@ -261,7 +261,7 @@ WorkForm.LocationTypeField = function LocationTypeField({
   name,
 }: FieldProps<LocationType>) {
   return (
-    <FormField error={error} label="Location Type" labelFor={name} required>
+    <Field error={error} label="Location Type" labelFor={name} required>
       <Select defaultValue={defaultValue} id={name} name={name} required>
         {ORDERED_LOCATION_TYPES.map((locationType) => {
           return (
@@ -271,7 +271,7 @@ WorkForm.LocationTypeField = function LocationTypeField({
           );
         })}
       </Select>
-    </FormField>
+    </Field>
   );
 };
 
@@ -287,7 +287,7 @@ WorkForm.OtherCompanyField = function OtherCompanyField({
   }
 
   return (
-    <FormField error={error} label="Organization" labelFor={name} required>
+    <Field error={error} label="Organization" labelFor={name} required>
       <Input
         defaultValue={defaultValue}
         id={name}
@@ -295,7 +295,7 @@ WorkForm.OtherCompanyField = function OtherCompanyField({
         placeholder="Google"
         required
       />
-    </FormField>
+    </Field>
   );
 };
 
@@ -305,7 +305,7 @@ WorkForm.StartDateField = function StartDateField({
   name,
 }: FieldProps<string>) {
   return (
-    <FormField
+    <Field
       error={error}
       description="Example: August 2020"
       label="Start Date"
@@ -319,7 +319,7 @@ WorkForm.StartDateField = function StartDateField({
         required
         type="month"
       />
-    </FormField>
+    </Field>
   );
 };
 
@@ -329,9 +329,9 @@ WorkForm.StateField = function StateField({
   name,
 }: FieldProps<string>) {
   return (
-    <FormField error={error} label="State" labelFor={name}>
+    <Field error={error} label="State" labelFor={name}>
       <Address.State defaultValue={defaultValue} id={name} name={name} />
-    </FormField>
+    </Field>
   );
 };
 
@@ -341,7 +341,7 @@ WorkForm.TitleField = function TitleField({
   name,
 }: FieldProps<string>) {
   return (
-    <FormField error={error} label="Title" labelFor={name} required>
+    <Field error={error} label="Title" labelFor={name} required>
       <Input
         defaultValue={defaultValue}
         id={name}
@@ -349,6 +349,6 @@ WorkForm.TitleField = function TitleField({
         placeholder="Software Engineering Intern"
         required
       />
-    </FormField>
+    </Field>
   );
 };

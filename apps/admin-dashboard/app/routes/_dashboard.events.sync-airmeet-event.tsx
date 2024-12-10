@@ -11,7 +11,7 @@ import { job } from '@oyster/core/admin-dashboard/server';
 import {
   Button,
   ErrorMessage,
-  FormField,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -85,7 +85,7 @@ function SyncAirmeetEventForm() {
 
   return (
     <Form className="form" method="post">
-      <FormField
+      <Field
         description="You can find the ID from the Airmeet event URL."
         error={errors.eventId}
         label="Airmeet ID"
@@ -93,7 +93,7 @@ function SyncAirmeetEventForm() {
         required
       >
         <Input id={keys.eventId} name={keys.eventId} required />
-      </FormField>
+      </Field>
 
       <ErrorMessage>{error}</ErrorMessage>
 

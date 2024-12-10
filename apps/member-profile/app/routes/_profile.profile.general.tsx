@@ -12,7 +12,7 @@ import { Student } from '@oyster/types';
 import {
   Button,
   Divider,
-  FormField,
+  Field,
   getErrors,
   InputField,
   PhoneNumberInput,
@@ -174,7 +174,7 @@ export default function UpdateGeneralInformationSection() {
           longitudeName={keys.currentLocationLongitude}
         />
 
-        <FormField
+        <Field
           description="Enter your 10-digit phone number. We'll use this to send you important ColorStack updates."
           error={errors.phoneNumber}
           label="Phone Number"
@@ -185,7 +185,7 @@ export default function UpdateGeneralInformationSection() {
             id={keys.phoneNumber}
             name={keys.phoneNumber}
           />
-        </FormField>
+        </Field>
 
         <Button.Group>
           <Button.Submit>Save</Button.Submit>

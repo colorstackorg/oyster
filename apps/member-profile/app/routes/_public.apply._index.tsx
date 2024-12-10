@@ -15,7 +15,7 @@ import {
   Button,
   Checkbox,
   ErrorMessage,
-  FormField,
+  Field,
   getErrors,
   Link,
   Text,
@@ -170,7 +170,7 @@ export default function ApplicationPage() {
           />
         </Application>
 
-        <FormField
+        <Field
           description={<CodeOfConductDescription />}
           labelFor={keys.codeOfConduct}
           label="Code of Conduct"
@@ -183,7 +183,7 @@ export default function ApplicationPage() {
             required
             value="1"
           />
-        </FormField>
+        </Field>
 
         <ErrorMessage>{error}</ErrorMessage>
 

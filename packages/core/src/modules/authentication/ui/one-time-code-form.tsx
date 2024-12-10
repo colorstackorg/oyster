@@ -1,4 +1,4 @@
-import { type FieldProps, FormField, Input } from '@oyster/ui';
+import { Field, type FieldProps, Input } from '@oyster/ui';
 
 export const OneTimeCodeForm = () => {};
 
@@ -8,9 +8,9 @@ OneTimeCodeForm.CodeField = function CodeField({
   name,
 }: FieldProps<string> & { description?: string }) {
   return (
-    <FormField description={description} error={error} labelFor={name} required>
+    <Field description={description} error={error} labelFor={name} required>
       <Input autoFocus id={name} name={name} required />
-    </FormField>
+    </Field>
   );
 };
 
@@ -19,13 +19,13 @@ OneTimeCodeForm.EmailField = function EmailField({
   name,
 }: FieldProps<string>) {
   return (
-    <FormField
+    <Field
       description="Please input your email in order to receive a one-time passcode."
       error={error}
       labelFor={name}
       required
     >
       <Input autoFocus id={name} name={name} required />
-    </FormField>
+    </Field>
   );
 };

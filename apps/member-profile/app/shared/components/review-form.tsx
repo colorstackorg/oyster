@@ -13,8 +13,8 @@ import {
   cx,
   Divider,
   ErrorMessage,
+  Field,
   type FieldProps,
-  FormField,
   Radio,
   Select,
   Text,
@@ -109,7 +109,7 @@ export function EditReviewForm({ error, errors, review }: EditReviewFormProps) {
 
 function AnonymousField({ defaultValue, error, name }: FieldProps<boolean>) {
   return (
-    <FormField
+    <Field
       description="Your name will not be visible to the public."
       error={error}
       label="Would you like to post this review anonymously?"
@@ -123,7 +123,7 @@ function AnonymousField({ defaultValue, error, name }: FieldProps<boolean>) {
         name={name}
         value="1"
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -137,7 +137,7 @@ function ExperienceField({ defaultValue, error, name }: FieldProps<string>) {
   const experiences = fetcher.data?.experiences || [];
 
   return (
-    <FormField
+    <Field
       description={
         <Text>
           If you can't find the work experience you're looking for, you'll need
@@ -166,7 +166,7 @@ function ExperienceField({ defaultValue, error, name }: FieldProps<string>) {
           );
         })}
       </Select>
-    </FormField>
+    </Field>
   );
 }
 
@@ -178,7 +178,7 @@ function RatingField({ defaultValue, error, name }: FieldProps<number>) {
   );
 
   return (
-    <FormField
+    <Field
       error={error}
       label="On a scale from 1-10, how would you rate this experience?"
       labelFor={name}
@@ -217,13 +217,13 @@ function RatingField({ defaultValue, error, name }: FieldProps<number>) {
       </div>
 
       <input name={name} type="hidden" value={selectedRating || ''} />
-    </FormField>
+    </Field>
   );
 }
 
 function RecommendField({ defaultValue, error, name }: FieldProps<boolean>) {
   return (
-    <FormField
+    <Field
       error={error}
       label="Would you recommend this company to another ColorStack member?"
       labelFor={name}
@@ -249,13 +249,13 @@ function RecommendField({ defaultValue, error, name }: FieldProps<boolean>) {
           value="0"
         />
       </Radio.Group>
-    </FormField>
+    </Field>
   );
 }
 
 function TextField({ defaultValue, error, name }: FieldProps<string>) {
   return (
-    <FormField
+    <Field
       description={
         <div>
           Should be at least 750 characters. Feel free to use these guiding
@@ -291,6 +291,6 @@ function TextField({ defaultValue, error, name }: FieldProps<string>) {
         name={name}
         required
       />
-    </FormField>
+    </Field>
   );
 }

@@ -12,7 +12,7 @@ import { db } from '@oyster/db';
 import {
   Button,
   ErrorMessage,
-  FormField,
+  Field,
   Modal,
   Textarea,
   validateForm,
@@ -107,7 +107,7 @@ export default function SendGiftModal() {
       </Modal.Description>
 
       <Form className="form" method="post">
-        <FormField
+        <Field
           description="Add a message to the gift so the member knows why they are receiving this."
           label="Message"
           labelFor="message"
@@ -120,7 +120,7 @@ export default function SendGiftModal() {
             placeholder="Congratulations..."
             required
           />
-        </FormField>
+        </Field>
 
         <ErrorMessage>{error}</ErrorMessage>
 

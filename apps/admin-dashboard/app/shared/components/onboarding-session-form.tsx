@@ -3,7 +3,7 @@ import { useFetcher } from '@remix-run/react';
 import {
   ComboboxPopover,
   DatePicker,
-  FormField,
+  Field,
   MultiCombobox,
   MultiComboboxDisplay,
   MultiComboboxItem,
@@ -26,7 +26,7 @@ export function OnboardingSessionAttendeesField({ error, name }: FieldProps) {
   const members = fetcher.data?.members || [];
 
   return (
-    <FormField
+    <Field
       description="Please select any other students who attended this onboarding session."
       error={error}
       label="Attendees"
@@ -68,7 +68,7 @@ export function OnboardingSessionAttendeesField({ error, name }: FieldProps) {
           </ComboboxPopover>
         )}
       </MultiCombobox>
-    </FormField>
+    </Field>
   );
 }
 
@@ -77,8 +77,8 @@ OnboardingSessionForm.DateField = function DateField({
   name,
 }: FieldProps) {
   return (
-    <FormField error={error} label="Date" labelFor={name} required>
+    <Field error={error} label="Date" labelFor={name} required>
       <DatePicker id={name} name={name} type="date" required />
-    </FormField>
+    </Field>
   );
 };

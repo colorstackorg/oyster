@@ -13,7 +13,7 @@ import {
   Button,
   Checkbox,
   Divider,
-  FormField,
+  Field,
   getErrors,
   InputField,
   Link,
@@ -101,7 +101,7 @@ export default function UpdateGeneralInformationForm() {
 
       <Divider />
 
-      <FormField
+      <Field
         description={<HistoryFieldDescription />}
         labelFor="history"
         label="Work + Education History"
@@ -115,7 +115,7 @@ export default function UpdateGeneralInformationForm() {
           required
           value="1"
         />
-      </FormField>
+      </Field>
 
       <Button.Group>
         <JoinDirectoryNextButton />

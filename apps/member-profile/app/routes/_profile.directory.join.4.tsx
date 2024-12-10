@@ -21,7 +21,7 @@ import {
 import { db } from '@oyster/db';
 import {
   Button,
-  FormField,
+  Field,
   getErrors,
   Select,
   Textarea,
@@ -175,7 +175,7 @@ function IcebreakerGroup({ number }: IcebreakerGroupProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <FormField
+      <Field
         error={errors[promptName]}
         label={label}
         labelFor={promptName}
@@ -198,9 +198,9 @@ function IcebreakerGroup({ number }: IcebreakerGroupProps) {
             );
           })}
         </Select>
-      </FormField>
+      </Field>
 
-      <FormField error={errors[responseName]} labelFor={responseName} required>
+      <Field error={errors[responseName]} labelFor={responseName} required>
         <Textarea
           defaultValue={response?.text || undefined}
           id={responseName}
@@ -210,7 +210,7 @@ function IcebreakerGroup({ number }: IcebreakerGroupProps) {
           placeholder="Maximum of 280 characters..."
           required
         />
-      </FormField>
+      </Field>
     </div>
   );
 }

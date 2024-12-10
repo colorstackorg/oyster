@@ -9,9 +9,9 @@ import React, {
 import { ResourceType } from '@oyster/core/resources';
 import {
   ComboboxPopover,
+  Field,
   type FieldProps,
   FileUploader,
-  FormField,
   Input,
   MB_IN_BYTES,
   MultiCombobox,
@@ -63,7 +63,7 @@ export function ResourceAttachmentField({
   }
 
   return (
-    <FormField
+    <Field
       description="Please choose the file you want to upload."
       error={error}
       label="Attachment"
@@ -85,7 +85,7 @@ export function ResourceAttachmentField({
           },
         })}
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -95,7 +95,7 @@ export function ResourceDescriptionField({
   name,
 }: FieldProps<string>) {
   return (
-    <FormField
+    <Field
       description="Must be less than 160 characters."
       error={error}
       label="Description"
@@ -110,7 +110,7 @@ export function ResourceDescriptionField({
         name={name}
         required
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -126,7 +126,7 @@ export function ResourceLinkField({
   }
 
   return (
-    <FormField
+    <Field
       description="Please include the full URL."
       error={error}
       label="URL"
@@ -134,7 +134,7 @@ export function ResourceLinkField({
       required
     >
       <Input defaultValue={defaultValue} id={name} name={name} required />
-    </FormField>
+    </Field>
   );
 }
 
@@ -160,7 +160,7 @@ export function ResourceTagsField({
   }
 
   return (
-    <FormField
+    <Field
       description="To categorize and help others find this resource."
       error={error}
       label="Tags"
@@ -237,7 +237,7 @@ export function ResourceTagsField({
           );
         }}
       </MultiCombobox>
-    </FormField>
+    </Field>
   );
 }
 
@@ -247,9 +247,9 @@ export function ResourceTitleField({
   name,
 }: FieldProps<string>) {
   return (
-    <FormField error={error} label="Title" labelFor={name} required>
+    <Field error={error} label="Title" labelFor={name} required>
       <Input defaultValue={defaultValue} id={name} name={name} required />
-    </FormField>
+    </Field>
   );
 }
 
@@ -261,7 +261,7 @@ export function ResourceTypeField({
   const { setType } = useContext(ResourceFormContext);
 
   return (
-    <FormField
+    <Field
       description="What kind of type is this resource?"
       error={error}
       label="Type"
@@ -280,6 +280,6 @@ export function ResourceTypeField({
         <option value={ResourceType.FILE}>File</option>
         <option value={ResourceType.URL}>URL</option>
       </Select>
-    </FormField>
+    </Field>
   );
 }

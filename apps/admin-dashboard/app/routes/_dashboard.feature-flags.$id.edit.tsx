@@ -15,7 +15,7 @@ import {
   Button,
   Checkbox,
   ErrorMessage,
-  FormField,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -94,7 +94,7 @@ export default function EditFeatureFlagModal() {
       </Modal.Header>
 
       <Form className="form" method="post">
-        <FormField
+        <Field
           description="This is the name that will be displayed in the UI."
           error={errors.displayName}
           label="Display Name"
@@ -107,9 +107,9 @@ export default function EditFeatureFlagModal() {
             name={keys.displayName}
             required
           />
-        </FormField>
+        </Field>
 
-        <FormField
+        <Field
           description="An optional, but recommended, description of what the flag is for."
           error={errors.description}
           label="Description"
@@ -121,7 +121,7 @@ export default function EditFeatureFlagModal() {
             minRows={2}
             name={keys.description}
           />
-        </FormField>
+        </Field>
 
         <Checkbox
           color="lime-100"

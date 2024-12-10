@@ -17,7 +17,7 @@ import { StudentEmail } from '@oyster/types';
 import {
   Button,
   ErrorMessage,
-  FormField,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -170,14 +170,9 @@ export default function AddEmailPage() {
       </Modal.Description>
 
       <Form className="form" method="post">
-        <FormField
-          error={errors.code}
-          label="Code"
-          labelFor={keys.code}
-          required
-        >
+        <Field error={errors.code} label="Code" labelFor={keys.code} required>
           <Input autoFocus id={keys.code} name={keys.code} required />
-        </FormField>
+        </Field>
 
         <ErrorMessage>{error}</ErrorMessage>
 

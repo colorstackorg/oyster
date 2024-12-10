@@ -13,7 +13,7 @@ import {
   Button,
   DatePicker,
   ErrorMessage,
-  FormField,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -110,11 +110,11 @@ function CreateEventForm() {
 
   return (
     <Form className="form" method="post">
-      <FormField error={errors.name} label="Name" labelFor={keys.name} required>
+      <Field error={errors.name} label="Name" labelFor={keys.name} required>
         <Input id={keys.name} name={keys.name} required />
-      </FormField>
+      </Field>
 
-      <FormField error={errors.type} label="Type" labelFor={keys.type} required>
+      <Field error={errors.type} label="Type" labelFor={keys.type} required>
         <Select id={keys.type} name={keys.type} required>
           {EVENT_TYPES.map((type) => {
             return (
@@ -124,17 +124,17 @@ function CreateEventForm() {
             );
           })}
         </Select>
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         error={errors.description}
         label="Description"
         labelFor={keys.description}
       >
         <Textarea id={keys.description} minRows={2} name={keys.description} />
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         error={errors.startTime}
         label="Start Date/Time"
         labelFor={keys.startTime}
@@ -146,9 +146,9 @@ function CreateEventForm() {
           type="datetime-local"
           required
         />
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         error={errors.endTime}
         label="End Date/Time"
         labelFor={keys.endTime}
@@ -160,7 +160,7 @@ function CreateEventForm() {
           type="datetime-local"
           required
         />
-      </FormField>
+      </Field>
 
       <input
         name={keys.timezone}

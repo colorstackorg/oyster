@@ -12,7 +12,7 @@ import { db } from '@oyster/db';
 import {
   Button,
   ErrorMessage,
-  FormField,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -99,7 +99,7 @@ function GrantPointsForm() {
 
   return (
     <Form className="form" method="post">
-      <FormField
+      <Field
         error={errors.points}
         label="Points"
         labelFor={keys.points}
@@ -112,9 +112,9 @@ function GrantPointsForm() {
           required
           type="number"
         />
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         error={errors.description}
         label="Description"
         labelFor={keys.description}
@@ -126,7 +126,7 @@ function GrantPointsForm() {
           name={keys.description}
           required
         />
-      </FormField>
+      </Field>
 
       <ErrorMessage>{error}</ErrorMessage>
 

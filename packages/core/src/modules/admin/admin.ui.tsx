@@ -8,7 +8,7 @@ import {
   Button,
   Dropdown,
   ErrorMessage,
-  FormField,
+  Field,
   Input,
   Pill,
   Select,
@@ -30,39 +30,34 @@ type AdminFormProps = {
 export function AdminForm({ error, errors }: AdminFormProps) {
   return (
     <Form className="form" method="post">
-      <FormField
+      <Field
         error={errors.firstName}
         label="First Name"
         labelFor={keys.firstName}
         required
       >
         <Input id={keys.firstName} name={keys.firstName} required />
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         error={errors.lastName}
         label="Last Name"
         labelFor={keys.lastName}
         required
       >
         <Input id={keys.lastName} name={keys.lastName} required />
-      </FormField>
+      </Field>
 
-      <FormField
-        error={errors.email}
-        label="Email"
-        labelFor={keys.email}
-        required
-      >
+      <Field error={errors.email} label="Email" labelFor={keys.email} required>
         <Input id={keys.email} name={keys.email} required />
-      </FormField>
+      </Field>
 
-      <FormField error={errors.role} label="Role" labelFor={keys.role} required>
+      <Field error={errors.role} label="Role" labelFor={keys.role} required>
         <Select id={keys.role} name={keys.role} required>
           <option value={AdminRole.ADMIN}>Admin</option>
           <option value={AdminRole.AMBASSADOR}>Ambassador</option>
         </Select>
-      </FormField>
+      </Field>
 
       <ErrorMessage>{error}</ErrorMessage>
 

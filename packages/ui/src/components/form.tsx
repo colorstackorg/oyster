@@ -23,7 +23,7 @@ type FormFieldProps = {
   required?: boolean;
 };
 
-export function FormField({
+export function Field({
   children,
   description,
   error,
@@ -72,7 +72,7 @@ type InputFieldProps = FieldProps<string> &
   Pick<InputProps, 'disabled' | 'placeholder'>;
 
 /**
- * @deprecated Instead, just compose the `FormField` and `Input` together.
+ * @deprecated Instead, just compose the `Field` and `Input` together.
  */
 export function InputField({
   defaultValue,
@@ -85,7 +85,7 @@ export function InputField({
   required,
 }: InputFieldProps) {
   return (
-    <FormField
+    <Field
       description={description}
       error={error}
       label={label}
@@ -100,7 +100,7 @@ export function InputField({
         placeholder={placeholder}
         required={required}
       />
-    </FormField>
+    </Field>
   );
 }
 

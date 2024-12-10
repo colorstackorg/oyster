@@ -12,7 +12,7 @@ export { ExistingSearchParams } from './components/existing-search-params';
 export { MB_IN_BYTES, FileUploader } from './components/file-uploader';
 export {
   ErrorMessage,
-  FormField,
+  Field,
   getErrors,
   InputField,
   validateForm,

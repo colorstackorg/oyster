@@ -15,7 +15,7 @@ import {
 import {
   type AccentColor,
   ComboboxPopover,
-  FormField,
+  Field,
   MultiCombobox,
   MultiComboboxDisplay,
   MultiComboboxItem,
@@ -90,7 +90,7 @@ export function OpportunityTagsField({
   }
 
   return (
-    <FormField
+    <Field
       description="To categorize and help others find this opportunity."
       error={error}
       label="Tags"
@@ -177,6 +177,6 @@ export function OpportunityTagsField({
           );
         }}
       </MultiCombobox>
-    </FormField>
+    </Field>
   );
 }

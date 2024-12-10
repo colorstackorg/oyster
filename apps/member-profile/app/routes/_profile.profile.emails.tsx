@@ -24,7 +24,7 @@ import {
   Button,
   Checkbox,
   cx,
-  FormField,
+  Field,
   getErrors,
   Text,
   validateForm,
@@ -183,7 +183,7 @@ function EmailAddressSection() {
         method="post"
         onChange={(e) => submit(e.currentTarget)}
       >
-        <FormField
+        <Field
           description="If you go to school where there is a ColorStack chapter, this will allow that chapter's leaders to reach out to you about local events and opportunities."
           error={errors.allowEmailShare}
           label="Would you like to share your email with chapter leaders?"
@@ -195,7 +195,7 @@ function EmailAddressSection() {
             name={keys.allowEmailShare}
             value="1"
           />
-        </FormField>
+        </Field>
       </Form>
     </ProfileSection>
   );

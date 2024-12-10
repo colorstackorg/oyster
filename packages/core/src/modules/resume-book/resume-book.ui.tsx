@@ -1,10 +1,4 @@
-import {
-  DatePicker,
-  type FieldProps,
-  FormField,
-  Input,
-  Radio,
-} from '@oyster/ui';
+import { DatePicker, Field, type FieldProps, Input, Radio } from '@oyster/ui';
 
 import { ResumeBook } from '@/modules/resume-book/resume-book.types';
 
@@ -15,7 +9,7 @@ export function ResumeBookEndDateField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <FormField
+    <Field
       description="The date that the resume book should stop accepting responses."
       error={error}
       label="End Date"
@@ -29,7 +23,7 @@ export function ResumeBookEndDateField({
         type="date"
         required
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -38,7 +32,7 @@ export function ResumeBookHiddenField({
   error,
 }: Omit<FieldProps<boolean>, 'name'>) {
   return (
-    <FormField
+    <Field
       description='If you choose "Hidden", the resume book will only be accessible to members who have the link. If you choose "Visible", the resume book will be accessible in the Member Profile navigation to all members.'
       error={error}
       label="Visibility"
@@ -65,7 +59,7 @@ export function ResumeBookHiddenField({
           value="0"
         />
       </Radio.Group>
-    </FormField>
+    </Field>
   );
 }
 
@@ -74,7 +68,7 @@ export function ResumeBookNameField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <FormField
+    <Field
       description={`Please don't add "Resume Book" to the title. Example: Spring '24`}
       error={error}
       label="Name"
@@ -87,7 +81,7 @@ export function ResumeBookNameField({
         name={keys.name}
         required
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -96,7 +90,7 @@ export function ResumeBookStartDateField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <FormField
+    <Field
       description="The date that the resume book should start accepting responses."
       error={error}
       label="Start Date"
@@ -110,6 +104,6 @@ export function ResumeBookStartDateField({
         type="date"
         required
       />
-    </FormField>
+    </Field>
   );
 }

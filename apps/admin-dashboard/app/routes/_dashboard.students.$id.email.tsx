@@ -13,7 +13,7 @@ import { Student } from '@oyster/types';
 import {
   Button,
   ErrorMessage,
-  FormField,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -116,14 +116,9 @@ function UpdateStudentEmailForm() {
 
   return (
     <Form className="form" method="post">
-      <FormField
-        error={errors.email}
-        label="Email"
-        labelFor={keys.email}
-        required
-      >
+      <Field error={errors.email} label="Email" labelFor={keys.email} required>
         <Input id={keys.email} name={keys.email} required />
-      </FormField>
+      </Field>
 
       <ErrorMessage>{error}</ErrorMessage>
 

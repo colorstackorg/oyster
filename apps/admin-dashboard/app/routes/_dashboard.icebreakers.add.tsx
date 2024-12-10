@@ -11,7 +11,7 @@ import { AddIcebreakerPromptInput } from '@oyster/core/admin-dashboard/ui';
 import {
   Button,
   ErrorMessage,
-  FormField,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -76,14 +76,9 @@ function AddIcebreakerPromptForm() {
 
   return (
     <Form className="form" method="post">
-      <FormField
-        error={errors.text}
-        label="Prompt"
-        labelFor={keys.text}
-        required
-      >
+      <Field error={errors.text} label="Prompt" labelFor={keys.text} required>
         <Input id={keys.text} name={keys.text} required />
-      </FormField>
+      </Field>
 
       <ErrorMessage>{error}</ErrorMessage>
 

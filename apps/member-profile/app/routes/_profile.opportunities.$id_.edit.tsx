@@ -23,7 +23,7 @@ import {
   Button,
   DatePicker,
   ErrorMessage,
-  FormField,
+  Field,
   getButtonCn,
   getErrors,
   Input,
@@ -146,7 +146,7 @@ function EditOpportunityForm() {
 
   return (
     <Form className="form" method="post">
-      <FormField
+      <Field
         error={errors.companyCrunchbaseId}
         label="Company"
         labelFor="companyCrunchbaseId"
@@ -159,13 +159,13 @@ function EditOpportunityForm() {
           }}
           name="companyCrunchbaseId"
         />
-      </FormField>
+      </Field>
 
-      <FormField error={errors.title} label="Title" labelFor="title" required>
+      <Field error={errors.title} label="Title" labelFor="title" required>
         <Input defaultValue={title} id="title" name="title" required />
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         error={errors.description}
         label="Description"
         labelFor="description"
@@ -179,11 +179,11 @@ function EditOpportunityForm() {
           name="description"
           required
         />
-      </FormField>
+      </Field>
 
       <OpportunityTagsField error={errors.tags} tags={tags || []} />
 
-      <FormField
+      <Field
         description="This is the date that the opportunity will no longer be open."
         error={errors.expiresAt}
         label="Expiration Date"
@@ -197,7 +197,7 @@ function EditOpportunityForm() {
           required
           type="date"
         />
-      </FormField>
+      </Field>
 
       <ErrorMessage>{error}</ErrorMessage>
 

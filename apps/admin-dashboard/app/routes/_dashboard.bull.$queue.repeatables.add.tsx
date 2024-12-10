@@ -10,7 +10,7 @@ import { z } from 'zod';
 import {
   Button,
   ErrorMessage,
-  FormField,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -97,11 +97,11 @@ function AddRepeatableForm() {
 
   return (
     <Form className="form" method="post">
-      <FormField error={errors.name} label="Name" labelFor={keys.name} required>
+      <Field error={errors.name} label="Name" labelFor={keys.name} required>
         <Input id={keys.name} name={keys.name} required />
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         description="Please format the job to be in the PT timezone."
         error={errors.pattern}
         label="Pattern (CRON)"
@@ -109,7 +109,7 @@ function AddRepeatableForm() {
         required
       >
         <Input id={keys.pattern} name={keys.pattern} required />
-      </FormField>
+      </Field>
 
       <ErrorMessage>{error}</ErrorMessage>
 

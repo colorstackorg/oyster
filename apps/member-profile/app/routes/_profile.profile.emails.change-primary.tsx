@@ -14,7 +14,7 @@ import { ChangePrimaryEmailInput } from '@oyster/core/member-profile/ui';
 import {
   Button,
   ErrorMessage,
-  FormField,
+  Field,
   getErrors,
   Modal,
   Select,
@@ -90,7 +90,7 @@ export default function ChangePrimaryEmailPage() {
       <Form className="form" method="post">
         <ErrorMessage>{error}</ErrorMessage>
 
-        <FormField
+        <Field
           description="If you don't see your email listed here, please add it to your profile first."
           error={errors.email}
           label="Email"
@@ -110,7 +110,7 @@ export default function ChangePrimaryEmailPage() {
               );
             })}
           </Select>
-        </FormField>
+        </Field>
 
         <Button.Group>
           <Button.Submit>Save</Button.Submit>

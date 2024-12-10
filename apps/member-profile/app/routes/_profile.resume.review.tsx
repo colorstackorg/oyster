@@ -29,8 +29,8 @@ import {
   Button,
   cx,
   ErrorMessage,
+  Field,
   FileUploader,
-  FormField,
   MB_IN_BYTES,
   Text,
   validateForm,
@@ -147,7 +147,7 @@ function UploadForm() {
       encType="multipart/form-data"
       method="post"
     >
-      <FormField required>
+      <Field required>
         <FileUploader
           accept={['application/pdf']}
           id="resume"
@@ -155,7 +155,7 @@ function UploadForm() {
           name="resume"
           required
         />
-      </FormField>
+      </Field>
 
       {actionData && !actionData.ok && (
         <ErrorMessage>{actionData.error}</ErrorMessage>

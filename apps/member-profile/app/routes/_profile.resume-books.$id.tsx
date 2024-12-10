@@ -43,8 +43,8 @@ import {
   Checkbox,
   Divider,
   ErrorMessage,
+  Field,
   FileUploader,
-  FormField,
   getErrors,
   Input,
   MB_IN_BYTES,
@@ -395,7 +395,7 @@ function ResumeBookForm() {
       method="post"
       encType="multipart/form-data"
     >
-      <FormField
+      <Field
         description={run(() => {
           const emailLink = (
             <Link
@@ -436,9 +436,9 @@ function ResumeBookForm() {
           required
           value="1"
         />
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         error={errors.firstName}
         label="First Name"
         labelFor={keys.firstName}
@@ -450,9 +450,9 @@ function ResumeBookForm() {
           name={keys.firstName}
           required
         />
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         error={errors.lastName}
         label="Last Name"
         labelFor={keys.lastName}
@@ -464,9 +464,9 @@ function ResumeBookForm() {
           name={keys.lastName}
           required
         />
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         description={
           <Text>
             If you would like to change your primary email, click{' '}
@@ -491,9 +491,9 @@ function ResumeBookForm() {
           name="email"
           required
         />
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         description="How do you identify?"
         error={errors.race}
         label="Race & Ethnicity"
@@ -522,9 +522,9 @@ function ResumeBookForm() {
             );
           })}
         </Checkbox.Group>
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         error={errors.linkedInUrl}
         label="LinkedIn Profile/URL"
         labelFor={keys.linkedInUrl}
@@ -536,9 +536,9 @@ function ResumeBookForm() {
           name={keys.linkedInUrl}
           required
         />
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         description="For reference, US and Canadian citizens are always authorized, while non-US citizens may be authorized if their immigration status allows them to work."
         error={errors.workAuthorizationStatus}
         label="Are you authorized to work in the US or Canada?"
@@ -558,7 +558,7 @@ function ResumeBookForm() {
           <option value={WorkAuthorizationStatus.UNAUTHORIZED}>No</option>
           <option value={WorkAuthorizationStatus.UNSURE}>I'm not sure</option>
         </Select>
-      </FormField>
+      </Field>
 
       <HometownField
         defaultLatitude={member.hometownCoordinates?.y}
@@ -571,7 +571,7 @@ function ResumeBookForm() {
         name={keys.hometown}
       />
 
-      <FormField
+      <Field
         description="Companies will use this to determine your graduation date, education level, and university location so be sure it's updated."
         error={errors.educationId}
         label="Select your highest level of education."
@@ -613,11 +613,11 @@ function ResumeBookForm() {
             })}
           </Select>
         </div>
-      </FormField>
+      </Field>
 
       <Divider />
 
-      <FormField
+      <Field
         error={errors.codingLanguages}
         label="Which coding language(s) are you most proficient with?"
         labelFor={keys.codingLanguages}
@@ -637,9 +637,9 @@ function ResumeBookForm() {
             );
           })}
         </Checkbox.Group>
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         error={errors.preferredRoles}
         label="Which kind of roles are you interested in?"
         labelFor={keys.preferredRoles}
@@ -659,9 +659,9 @@ function ResumeBookForm() {
             );
           })}
         </Checkbox.Group>
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         error={errors.employmentSearchStatus}
         label="Which is the status of your employment search?"
         labelFor={keys.employmentSearchStatus}
@@ -682,11 +682,11 @@ function ResumeBookForm() {
             );
           })}
         </Radio.Group>
-      </FormField>
+      </Field>
 
       <PreferredSponsorsField />
 
-      <FormField
+      <Field
         description={
           <Text>
             Before you submit your resume, you can get feedback from our{' '}
@@ -720,7 +720,7 @@ function ResumeBookForm() {
             },
           })}
         />
-      </FormField>
+      </Field>
 
       <ErrorMessage>{error}</ErrorMessage>
 
@@ -780,7 +780,7 @@ function PreferredSponsorsField() {
   );
 
   return (
-    <FormField
+    <Field
       error={
         errors.preferredCompany1 ||
         errors.preferredCompany2 ||
@@ -830,6 +830,6 @@ function PreferredSponsorsField() {
           {options}
         </Select>
       </div>
-    </FormField>
+    </Field>
   );
 }

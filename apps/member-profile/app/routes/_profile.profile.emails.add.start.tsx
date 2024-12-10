@@ -16,7 +16,7 @@ import { db } from '@oyster/db';
 import {
   Button,
   ErrorMessage,
-  FormField,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -139,7 +139,7 @@ export default function AddEmailPage() {
       </Modal.Description>
 
       <Form className="form" method="post">
-        <FormField
+        <Field
           error={errors.email}
           label="Email"
           labelFor={keys.email}
@@ -152,7 +152,7 @@ export default function AddEmailPage() {
             placeholder="me@gmail.com"
             required
           />
-        </FormField>
+        </Field>
 
         <ErrorMessage>{error}</ErrorMessage>
 

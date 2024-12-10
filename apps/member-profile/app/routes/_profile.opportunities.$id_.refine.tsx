@@ -23,7 +23,7 @@ import {
 import {
   Button,
   ErrorMessage,
-  FormField,
+  Field,
   getErrors,
   Modal,
   Textarea,
@@ -94,16 +94,16 @@ export default function RefineOpportunity() {
       </Modal.Header>
 
       <Form className="form" data-gap="2rem" method="post">
-        <FormField
+        <Field
           label="Step 1. Open the link that was shared in a new tab."
           required
         >
           <Link className="link line-clamp-1" to={link} target="_blank">
             {link}
           </Link>
-        </FormField>
+        </Field>
 
-        <FormField
+        <Field
           description="You can simply do Ctrl+A and CTRL+C to copy the text content of the page. However, if it is a LinkedIn post, then please only get the actual post content. We'll only use the first 10,000 characters."
           error={errors.content}
           label="Step 2. Paste the website's text content."
@@ -117,7 +117,7 @@ export default function RefineOpportunity() {
             name="content"
             required
           />
-        </FormField>
+        </Field>
 
         <input type="hidden" name="opportunityId" value={id} />
 

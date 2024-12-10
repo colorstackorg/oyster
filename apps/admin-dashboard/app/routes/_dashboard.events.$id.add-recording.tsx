@@ -14,7 +14,7 @@ import { AddEventRecordingLinkInput } from '@oyster/core/admin-dashboard/ui';
 import {
   Button,
   ErrorMessage,
-  FormField,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -91,7 +91,7 @@ function AddEventRecordingForm() {
 
   return (
     <Form className="form" method="post">
-      <FormField
+      <Field
         description="Please add the full URL of the event recording."
         error={errors.recordingLink}
         label="Recording Link"
@@ -105,7 +105,7 @@ function AddEventRecordingForm() {
           placeholder="https://www.youtube.com/watch?v=..."
           required
         />
-      </FormField>
+      </Field>
 
       <ErrorMessage>{error}</ErrorMessage>
 

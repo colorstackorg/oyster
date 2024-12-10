@@ -3,7 +3,7 @@ import { Form } from '@remix-run/react';
 import {
   Button,
   ErrorMessage,
-  FormField,
+  Field,
   Input,
   Select,
   Textarea,
@@ -32,7 +32,7 @@ const ACTIVITY_TYPES = Object.values(ActivityType);
 export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
   return (
     <Form className="form" method="post">
-      <FormField
+      <Field
         description="This will be visible to members."
         error={errors.name}
         label="Name"
@@ -45,9 +45,9 @@ export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
           name={keys.name}
           required
         />
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         error={errors.description}
         label="Description"
         labelFor={keys.description}
@@ -57,9 +57,9 @@ export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
           id={keys.description}
           name={keys.description}
         />
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         description="This tells our system to associate certain activities with certain events."
         error={errors.type}
         label="Type"
@@ -78,9 +78,9 @@ export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
             </option>
           ))}
         </Select>
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         description="This is the period of time that a member has to wait before completing this activity again."
         error={errors.period}
         label="Period"
@@ -97,9 +97,9 @@ export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
             </option>
           ))}
         </Select>
-      </FormField>
+      </Field>
 
-      <FormField
+      <Field
         description="How many points will this activity be worth?"
         error={errors.points}
         label="Points"
@@ -113,7 +113,7 @@ export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
           required
           type="number"
         />
-      </FormField>
+      </Field>
 
       <ErrorMessage>{error}</ErrorMessage>
 

@@ -1,7 +1,7 @@
 import {
   DollarInput,
+  Field,
   type FieldProps,
-  FormField,
   Input,
   Textarea,
 } from '@oyster/ui';
@@ -15,7 +15,7 @@ export function OfferAdditionalNotesField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <FormField
+    <Field
       description="Any additional notes about this offer?"
       error={error}
       label="Additional Notes"
@@ -27,7 +27,7 @@ export function OfferAdditionalNotesField({
         minRows={2}
         name="additionalNotes"
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -36,14 +36,14 @@ export function OfferBaseSalaryField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <FormField error={error} label="Base Salary" labelFor="baseSalary" required>
+    <Field error={error} label="Base Salary" labelFor="baseSalary" required>
       <DollarInput
         defaultValue={defaultValue}
         id="baseSalary"
         name="baseSalary"
         required
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -52,7 +52,7 @@ export function OfferBenefitsField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <FormField
+    <Field
       description="Does this job offer any benefits? (e.g. health insurance, 401k, etc.)"
       error={error}
       label="Benefits"
@@ -64,7 +64,7 @@ export function OfferBenefitsField({
         minRows={2}
         name="benefits"
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -73,7 +73,7 @@ export function OfferCompanyField({
   error,
 }: Omit<FieldProps<{ crunchbaseId: string; name: string }>, 'name'>) {
   return (
-    <FormField
+    <Field
       error={error}
       label="Company"
       labelFor="companyCrunchbaseId"
@@ -85,7 +85,7 @@ export function OfferCompanyField({
         name="companyCrunchbaseId"
         showDescription={false}
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -94,14 +94,14 @@ export function OfferHourlyRateField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <FormField error={error} label="Hourly Rate" labelFor="hourlyRate" required>
+    <Field error={error} label="Hourly Rate" labelFor="hourlyRate" required>
       <DollarInput
         defaultValue={defaultValue}
         id="hourlyRate"
         name="hourlyRate"
         required
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -112,7 +112,7 @@ export function OfferLocationField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <FormField
+    <Field
       description='Please format the location as "City, State".'
       error={error}
       label="Location"
@@ -126,7 +126,7 @@ export function OfferLocationField({
         placeholder="San Francisco, CA"
         required
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -135,14 +135,14 @@ export function OfferNegotiatedField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <FormField
+    <Field
       description="Did you negotiate, and if so, what was the result?"
       error={error}
       label="Negotiated"
       labelFor="negotiated"
     >
       <Input defaultValue={defaultValue} id="negotiated" name="negotiated" />
-    </FormField>
+    </Field>
   );
 }
 
@@ -151,7 +151,7 @@ export function OfferPastExperienceField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <FormField
+    <Field
       description="How many years of experience and/or internships do you have?"
       error={error}
       label="Past Experience"
@@ -162,7 +162,7 @@ export function OfferPastExperienceField({
         id="pastExperience"
         name="pastExperience"
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -171,7 +171,7 @@ export function OfferPerformanceBonusField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <FormField
+    <Field
       description="The maximum performance/annual bonus you can receive."
       error={error}
       label="Performance Bonus"
@@ -182,7 +182,7 @@ export function OfferPerformanceBonusField({
         id="performanceBonus"
         name="performanceBonus"
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -191,14 +191,14 @@ export function OfferRelocationField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <FormField
+    <Field
       description="Does this offer anything for relocation and/or housing?"
       error={error}
       label="Relocation / Housing"
       labelFor="relocation"
     >
       <Input defaultValue={defaultValue} id="relocation" name="relocation" />
-    </FormField>
+    </Field>
   );
 }
 
@@ -207,7 +207,7 @@ export function OfferRoleField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <FormField error={error} label="Role" labelFor="role" required>
+    <Field error={error} label="Role" labelFor="role" required>
       <Input
         defaultValue={defaultValue}
         id="role"
@@ -215,7 +215,7 @@ export function OfferRoleField({
         placeholder="Software Engineer Intern"
         required
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -224,7 +224,7 @@ export function OfferSignOnBonusField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <FormField
+    <Field
       description="The amount of money you will receive upfront."
       error={error}
       label="Sign-On Bonus"
@@ -235,7 +235,7 @@ export function OfferSignOnBonusField({
         id="signOnBonus"
         name="signOnBonus"
       />
-    </FormField>
+    </Field>
   );
 }
 
@@ -244,12 +244,12 @@ export function OfferTotalStockField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <FormField error={error} label="Total Stock" labelFor="totalStock">
+    <Field error={error} label="Total Stock" labelFor="totalStock">
       <DollarInput
         defaultValue={defaultValue}
         id="totalStock"
         name="totalStock"
       />
-    </FormField>
+    </Field>
   );
 }

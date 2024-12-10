@@ -17,8 +17,8 @@ import { Email, EventAttendee } from '@oyster/types';
 import {
   Button,
   ErrorMessage,
+  Field,
   FileUploader,
-  FormField,
   getErrors,
   Modal,
   validateForm,
@@ -184,14 +184,14 @@ function ImportEventAttendeesForm() {
 
   return (
     <Form className="form" method="post" encType="multipart/form-data">
-      <FormField error={errors.file} labelFor={keys.file} required>
+      <Field error={errors.file} labelFor={keys.file} required>
         <FileUploader
           accept={['text/csv']}
           id={keys.file}
           name={keys.file}
           required
         />
-      </FormField>
+      </Field>
 
       <ErrorMessage>{error}</ErrorMessage>
 
