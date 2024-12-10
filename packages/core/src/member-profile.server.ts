@@ -1,6 +1,6 @@
 export { reportException } from './infrastructure/sentry';
-export { getActiveStreak } from './modules/active-status/queries/get-active-streak';
-export { getActiveStreakLeaderboard } from './modules/active-status/queries/get-active-streak-leaderboard';
+export { getActiveStreak } from './modules/active-statuses/queries/get-active-streak';
+export { getActiveStreakLeaderboard } from './modules/active-statuses/queries/get-active-streak-leaderboard';
 export { getGithubProfile } from './modules/authentication/queries/get-github-profile';
 export {
   getGoogleAuthUri,
@@ -19,19 +19,19 @@ export { searchCrunchbaseOrganizations } from './modules/employment/queries/sear
 export { addWorkExperience } from './modules/employment/use-cases/add-work-experience';
 export { deleteWorkExperience } from './modules/employment/use-cases/delete-work-experience';
 export { editWorkExperience } from './modules/employment/use-cases/edit-work-experience';
-export { countEventAttendees } from './modules/event/queries/count-event-attendees';
-export { countPastEvents } from './modules/event/queries/count-past-events';
-export { countUpcomingEvents } from './modules/event/queries/count-upcoming-events';
-export { getEvent } from './modules/event/queries/get-event';
-export { listEventAttendees } from './modules/event/queries/list-event-attendees';
-export { isFeatureFlagEnabled } from './modules/feature-flag/queries/is-feature-flag-enabled';
-export { getIcebreakerPrompts } from './modules/icebreaker/queries/get-icebreaker-prompts';
-export { getIcebreakerResponses } from './modules/icebreaker/queries/get-icebreaker-responses';
-export { upsertIcebreakerResponses } from './modules/icebreaker/use-cases/upsert-icebreaker-responses';
-export { listEmails } from './modules/member/queries/list-emails';
-export { listMembersInDirectory } from './modules/member/queries/list-members-in-directory';
-export { changePrimaryEmail } from './modules/member/use-cases/change-primary-email';
-export { joinMemberDirectory } from './modules/member/use-cases/join-member-directory';
-export { updateAllowEmailShare } from './modules/member/use-cases/update-allow-email-share';
-export { updateMember } from './modules/member/use-cases/update-member';
+export { countEventAttendees } from './modules/events/queries/count-event-attendees';
+export { countPastEvents } from './modules/events/queries/count-past-events';
+export { countUpcomingEvents } from './modules/events/queries/count-upcoming-events';
+export { getEvent } from './modules/events/queries/get-event';
+export { listEventAttendees } from './modules/events/queries/list-event-attendees';
+export { isFeatureFlagEnabled } from './modules/feature-flags/queries/is-feature-flag-enabled';
+export { getIcebreakerPrompts } from './modules/icebreakers/queries/get-icebreaker-prompts';
+export { getIcebreakerResponses } from './modules/icebreakers/queries/get-icebreaker-responses';
+export { upsertIcebreakerResponses } from './modules/icebreakers/use-cases/upsert-icebreaker-responses';
+export { listEmails } from './modules/members/queries/list-emails';
+export { listMembersInDirectory } from './modules/members/queries/list-members-in-directory';
+export { changePrimaryEmail } from './modules/members/use-cases/change-primary-email';
+export { joinMemberDirectory } from './modules/members/use-cases/join-member-directory';
+export { updateAllowEmailShare } from './modules/members/use-cases/update-allow-email-share';
+export { updateMember } from './modules/members/use-cases/update-member';
 export { countMessagesSent } from './modules/slack/queries/count-messages-sent';

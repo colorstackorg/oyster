@@ -15,7 +15,7 @@ import { job } from '@/infrastructure/bull';
 import { track } from '@/infrastructure/mixpanel';
 import { getPineconeIndex } from '@/infrastructure/pinecone';
 import { cache, ONE_HOUR_IN_SECONDS } from '@/infrastructure/redis';
-import { sendSlackNotification } from '@/modules/notification/use-cases/send-slack-notification';
+import { sendSlackNotification } from '@/modules/notifications/use-cases/send-slack-notification';
 import { slack } from '@/modules/slack/instances';
 import { IS_PRODUCTION } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core';
