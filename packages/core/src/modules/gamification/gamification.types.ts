@@ -26,6 +26,7 @@ export const ActivityType = {
   UPDATE_EDUCATION_HISTORY: 'update_education_history',
   UPDATE_WORK_HISTORY: 'update_work_history',
   UPLOAD_PROFILE_PICTURE: 'upload_profile_picture',
+  TWILIO: 'twilio',
 } as const;
 
 export type ActivityType = ExtractValue<typeof ActivityType>;
