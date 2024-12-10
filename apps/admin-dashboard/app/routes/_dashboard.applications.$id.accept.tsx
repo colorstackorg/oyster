@@ -4,14 +4,10 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import { acceptApplication, getApplication } from '@oyster/core/applications';
-import { Button, Form, Modal } from '@oyster/ui';
+import { Button, ErrorMessage, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -79,13 +75,13 @@ export default function AcceptApplicationPage() {
         previously rejected.
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <Form className="form" method="post">
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button type="submit">Accept</Button>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </>
   );
 }

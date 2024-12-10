@@ -4,15 +4,11 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import { getEvent } from '@oyster/core/admin-dashboard/server';
 import { deleteEvent } from '@oyster/core/events';
-import { Button, Form, getErrors, Modal } from '@oyster/ui';
+import { Button, ErrorMessage, getErrors, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -68,13 +64,13 @@ export default function DeleteEventModal() {
         action cannot be undone.
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <Form className="form" method="post">
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit color="error">Delete</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

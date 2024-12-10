@@ -4,12 +4,18 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { uploadOnboardingSession } from '@oyster/core/admin-dashboard/server';
 import { OnboardingSession } from '@oyster/core/admin-dashboard/ui';
-import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
+import {
+  Button,
+  ErrorMessage,
+  getErrors,
+  Modal,
+  validateForm,
+} from '@oyster/ui';
 
 import {
   OnboardingSessionAttendeesField,
@@ -93,19 +99,19 @@ export default function UploadOnboardingSessionPage() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <OnboardingSessionForm.DateField error={errors.date} name={keys.date} />
         <OnboardingSessionAttendeesField
           error={errors.attendees}
           name={keys.attendees}
         />
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Upload</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

@@ -4,18 +4,15 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import { grantPoints } from '@oyster/core/gamification';
 import { GrantPointsInput } from '@oyster/core/gamification/types';
 import { db } from '@oyster/db';
 import {
   Button,
-  Form,
+  ErrorMessage,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -101,8 +98,8 @@ function GrantPointsForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
-      <Form.Field
+    <Form className="form" method="post">
+      <Field
         error={errors.points}
         label="Points"
         labelFor={keys.points}
@@ -115,9 +112,9 @@ function GrantPointsForm() {
           required
           type="number"
         />
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         error={errors.description}
         label="Description"
         labelFor={keys.description}
@@ -129,13 +126,13 @@ function GrantPointsForm() {
           name={keys.description}
           required
         />
-      </Form.Field>
+      </Field>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Grant</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

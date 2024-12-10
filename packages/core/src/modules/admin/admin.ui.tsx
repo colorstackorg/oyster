@@ -1,4 +1,4 @@
-import { generatePath, Link, Form as RemixForm } from '@remix-run/react';
+import { Form, generatePath, Link } from '@remix-run/react';
 import { useState } from 'react';
 import { Trash } from 'react-feather';
 import { match } from 'ts-pattern';
@@ -7,7 +7,8 @@ import { type DB } from '@oyster/db';
 import {
   Button,
   Dropdown,
-  Form,
+  ErrorMessage,
+  Field,
   Input,
   Pill,
   Select,
@@ -28,52 +29,42 @@ type AdminFormProps = {
 
 export function AdminForm({ error, errors }: AdminFormProps) {
   return (
-    <RemixForm className="form" method="post">
-      <Form.Field
+    <Form className="form" method="post">
+      <Field
         error={errors.firstName}
         label="First Name"
         labelFor={keys.firstName}
         required
       >
         <Input id={keys.firstName} name={keys.firstName} required />
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         error={errors.lastName}
         label="Last Name"
         labelFor={keys.lastName}
         required
       >
         <Input id={keys.lastName} name={keys.lastName} required />
-      </Form.Field>
+      </Field>
 
-      <Form.Field
-        error={errors.email}
-        label="Email"
-        labelFor={keys.email}
-        required
-      >
+      <Field error={errors.email} label="Email" labelFor={keys.email} required>
         <Input id={keys.email} name={keys.email} required />
-      </Form.Field>
+      </Field>
 
-      <Form.Field
-        error={errors.role}
-        label="Role"
-        labelFor={keys.role}
-        required
-      >
+      <Field error={errors.role} label="Role" labelFor={keys.role} required>
         <Select id={keys.role} name={keys.role} required>
           <option value={AdminRole.ADMIN}>Admin</option>
           <option value={AdminRole.AMBASSADOR}>Ambassador</option>
         </Select>
-      </Form.Field>
+      </Field>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Add</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }
 

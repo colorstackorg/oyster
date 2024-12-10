@@ -5,8 +5,8 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
-  Form as RemixForm,
   useActionData,
   useSearchParams,
 } from '@remix-run/react';
@@ -29,7 +29,7 @@ import {
 import {
   Button,
   Divider,
-  Form,
+  ErrorMessage,
   getErrors,
   Modal,
   validateForm,
@@ -103,7 +103,7 @@ export default function AddInternshipOffer() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <OfferCompanyField error={errors.companyCrunchbaseId} />
         <OfferRoleField error={errors.role} />
         <OfferLocationField error={errors.location} />
@@ -120,12 +120,12 @@ export default function AddInternshipOffer() {
         <OfferNegotiatedField error={errors.negotiated} />
         <OfferAdditionalNotesField error={errors.additionalNotes} />
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Add</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

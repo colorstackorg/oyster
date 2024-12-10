@@ -4,13 +4,14 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { job } from '@oyster/core/admin-dashboard/server';
 import {
   Button,
-  Form,
+  ErrorMessage,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -83,8 +84,8 @@ function SyncAirmeetEventForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
-      <Form.Field
+    <Form className="form" method="post">
+      <Field
         description="You can find the ID from the Airmeet event URL."
         error={errors.eventId}
         label="Airmeet ID"
@@ -92,13 +93,13 @@ function SyncAirmeetEventForm() {
         required
       >
         <Input id={keys.eventId} name={keys.eventId} required />
-      </Form.Field>
+      </Field>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Sync</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

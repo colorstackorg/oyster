@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useLoaderData } from '@remix-run/react';
+import { Form, useLoaderData } from '@remix-run/react';
 
 import { job } from '@oyster/core/admin-dashboard/server';
 import { db } from '@oyster/db';
@@ -90,7 +90,7 @@ export default function RemoveMemberPage() {
         you sure want to remove this member?
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <Checkbox
           color="amber-100"
           defaultChecked={true}
@@ -105,7 +105,7 @@ export default function RemoveMemberPage() {
             Remove
           </Button>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

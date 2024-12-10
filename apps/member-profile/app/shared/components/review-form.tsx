@@ -1,4 +1,4 @@
-import { Form as RemixForm } from '@remix-run/react';
+import { Form } from '@remix-run/react';
 import { Link, useFetcher } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import { Star } from 'react-feather';
@@ -12,8 +12,9 @@ import {
   Checkbox,
   cx,
   Divider,
+  ErrorMessage,
+  Field,
   type FieldProps,
-  Form,
   Radio,
   Select,
   Text,
@@ -39,7 +40,7 @@ export function AddReviewForm({
   showExperienceField,
 }: AddReviewFormProps) {
   return (
-    <RemixForm className="form" data-gap="2rem" method="post">
+    <Form className="form" data-gap="2rem" method="post">
       {showExperienceField && (
         <ExperienceField
           error={errors.workExperienceId}
@@ -52,12 +53,12 @@ export function AddReviewForm({
       <RatingField error={errors.rating} name={keys.rating} />
       <RecommendField error={errors.recommend} name={keys.recommend} />
       <AnonymousField error={errors.anonymous} name={keys.anonymous} />
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Save</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }
 
@@ -70,7 +71,7 @@ type EditReviewFormProps = Omit<AddReviewFormProps, 'showExperienceField'> & {
 
 export function EditReviewForm({ error, errors, review }: EditReviewFormProps) {
   return (
-    <RemixForm className="form" data-gap="2rem" method="post">
+    <Form className="form" data-gap="2rem" method="post">
       <TextField
         defaultValue={review.text}
         error={errors.text}
@@ -95,12 +96,12 @@ export function EditReviewForm({ error, errors, review }: EditReviewFormProps) {
         name={keys.anonymous}
       />
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Save</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }
 
@@ -108,7 +109,7 @@ export function EditReviewForm({ error, errors, review }: EditReviewFormProps) {
 
 function AnonymousField({ defaultValue, error, name }: FieldProps<boolean>) {
   return (
-    <Form.Field
+    <Field
       description="Your name will not be visible to the public."
       error={error}
       label="Would you like to post this review anonymously?"
@@ -122,7 +123,7 @@ function AnonymousField({ defaultValue, error, name }: FieldProps<boolean>) {
         name={name}
         value="1"
       />
-    </Form.Field>
+    </Field>
   );
 }
 
@@ -136,7 +137,7 @@ function ExperienceField({ defaultValue, error, name }: FieldProps<string>) {
   const experiences = fetcher.data?.experiences || [];
 
   return (
-    <Form.Field
+    <Field
       description={
         <Text>
           If you can't find the work experience you're looking for, you'll need
@@ -165,7 +166,7 @@ function ExperienceField({ defaultValue, error, name }: FieldProps<string>) {
           );
         })}
       </Select>
-    </Form.Field>
+    </Field>
   );
 }
 
@@ -177,7 +178,7 @@ function RatingField({ defaultValue, error, name }: FieldProps<number>) {
   );
 
   return (
-    <Form.Field
+    <Field
       error={error}
       label="On a scale from 1-10, how would you rate this experience?"
       labelFor={name}
@@ -216,13 +217,13 @@ function RatingField({ defaultValue, error, name }: FieldProps<number>) {
       </div>
 
       <input name={name} type="hidden" value={selectedRating || ''} />
-    </Form.Field>
+    </Field>
   );
 }
 
 function RecommendField({ defaultValue, error, name }: FieldProps<boolean>) {
   return (
-    <Form.Field
+    <Field
       error={error}
       label="Would you recommend this company to another ColorStack member?"
       labelFor={name}
@@ -248,13 +249,13 @@ function RecommendField({ defaultValue, error, name }: FieldProps<boolean>) {
           value="0"
         />
       </Radio.Group>
-    </Form.Field>
+    </Field>
   );
 }
 
 function TextField({ defaultValue, error, name }: FieldProps<string>) {
   return (
-    <Form.Field
+    <Field
       description={
         <div>
           Should be at least 750 characters. Feel free to use these guiding
@@ -290,6 +291,6 @@ function TextField({ defaultValue, error, name }: FieldProps<string>) {
         name={name}
         required
       />
-    </Form.Field>
+    </Field>
   );
 }

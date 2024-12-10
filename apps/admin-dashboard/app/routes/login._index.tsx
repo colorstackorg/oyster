@@ -2,7 +2,7 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 
 import { getGoogleAuthUri } from '@oyster/core/admin-dashboard/server';
-import { Form, Login } from '@oyster/ui';
+import { ErrorMessage, Login } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
@@ -43,7 +43,7 @@ export default function LoginPage() {
 
       {error && (
         <div className="mt-4">
-          <Form.ErrorMessage>{error}</Form.ErrorMessage>
+          <ErrorMessage>{error}</ErrorMessage>
         </div>
       )}
     </Login.ButtonGroup>

@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { createEvent } from '@oyster/core/admin-dashboard/server';
@@ -12,7 +12,8 @@ import { Event, EventType } from '@oyster/types';
 import {
   Button,
   DatePicker,
-  Form,
+  ErrorMessage,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -108,22 +109,12 @@ function CreateEventForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
-      <Form.Field
-        error={errors.name}
-        label="Name"
-        labelFor={keys.name}
-        required
-      >
+    <Form className="form" method="post">
+      <Field error={errors.name} label="Name" labelFor={keys.name} required>
         <Input id={keys.name} name={keys.name} required />
-      </Form.Field>
+      </Field>
 
-      <Form.Field
-        error={errors.type}
-        label="Type"
-        labelFor={keys.type}
-        required
-      >
+      <Field error={errors.type} label="Type" labelFor={keys.type} required>
         <Select id={keys.type} name={keys.type} required>
           {EVENT_TYPES.map((type) => {
             return (
@@ -133,17 +124,17 @@ function CreateEventForm() {
             );
           })}
         </Select>
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         error={errors.description}
         label="Description"
         labelFor={keys.description}
       >
         <Textarea id={keys.description} minRows={2} name={keys.description} />
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         error={errors.startTime}
         label="Start Date/Time"
         labelFor={keys.startTime}
@@ -155,9 +146,9 @@ function CreateEventForm() {
           type="datetime-local"
           required
         />
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         error={errors.endTime}
         label="End Date/Time"
         labelFor={keys.endTime}
@@ -169,7 +160,7 @@ function CreateEventForm() {
           type="datetime-local"
           required
         />
-      </Form.Field>
+      </Field>
 
       <input
         name={keys.timezone}
@@ -177,11 +168,11 @@ function CreateEventForm() {
         value={new window.Intl.DateTimeFormat().resolvedOptions().timeZone}
       />
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Create</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

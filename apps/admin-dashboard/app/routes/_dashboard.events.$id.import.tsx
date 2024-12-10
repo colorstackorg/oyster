@@ -8,11 +8,7 @@ import {
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { getEvent, job, parseCsv } from '@oyster/core/admin-dashboard/server';
@@ -20,8 +16,9 @@ import { db } from '@oyster/db';
 import { Email, EventAttendee } from '@oyster/types';
 import {
   Button,
+  ErrorMessage,
+  Field,
   FileUploader,
-  Form,
   getErrors,
   Modal,
   validateForm,
@@ -186,21 +183,21 @@ function ImportEventAttendeesForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post" encType="multipart/form-data">
-      <Form.Field error={errors.file} labelFor={keys.file} required>
+    <Form className="form" method="post" encType="multipart/form-data">
+      <Field error={errors.file} labelFor={keys.file} required>
         <FileUploader
           accept={['text/csv']}
           id={keys.file}
           name={keys.file}
           required
         />
-      </Form.Field>
+      </Field>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Import</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

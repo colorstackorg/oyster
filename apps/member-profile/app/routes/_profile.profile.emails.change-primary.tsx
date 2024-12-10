@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import {
   changePrimaryEmail,
@@ -17,7 +13,8 @@ import {
 import { ChangePrimaryEmailInput } from '@oyster/core/member-profile/ui';
 import {
   Button,
-  Form,
+  ErrorMessage,
+  Field,
   getErrors,
   Modal,
   Select,
@@ -90,10 +87,10 @@ export default function ChangePrimaryEmailPage() {
         be sent to.
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <Form className="form" method="post">
+        <ErrorMessage>{error}</ErrorMessage>
 
-        <Form.Field
+        <Field
           description="If you don't see your email listed here, please add it to your profile first."
           error={errors.email}
           label="Email"
@@ -113,12 +110,12 @@ export default function ChangePrimaryEmailPage() {
               );
             })}
           </Select>
-        </Form.Field>
+        </Field>
 
         <Button.Group>
           <Button.Submit>Save</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }
