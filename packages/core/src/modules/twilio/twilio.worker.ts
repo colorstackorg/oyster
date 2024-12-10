@@ -1,6 +1,6 @@
 import {match} from 'ts-pattern';
 
-import{TwilioMessagingBullJob} from '@/infrastructure/bull.types'
+import{ TwilioMessagingBullJob } from '@/infrastructure/bull.types'
 import { registerWorker } from '@/infrastructure/bull';
 import { sendMessages } from './twilio.service';
 
