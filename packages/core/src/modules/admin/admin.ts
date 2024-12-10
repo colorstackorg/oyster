@@ -2,7 +2,7 @@ import { type DB, db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { type SelectExpression } from '@/shared/types';
-import { fail, type Result, success } from '@/shared/utils/core.utils';
+import { fail, type Result, success } from '@/shared/utils/core';
 import {
   type AddAdminInput,
   AdminRole,

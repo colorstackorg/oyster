@@ -15,9 +15,9 @@ import {
 import { track } from '@/infrastructure/mixpanel';
 import { STUDENT_PROFILE_URL } from '@/shared/env';
 import { ColorStackError } from '@/shared/errors';
-import { fail, type Result, success } from '@/shared/utils/core.utils';
-import { getTextFromPDF } from '@/shared/utils/file.utils';
-import { FileLike } from '@/shared/utils/zod.utils';
+import { fail, type Result, success } from '@/shared/utils/core';
+import { getTextFromPDF } from '@/shared/utils/file';
+import { FileLike } from '@/shared/utils/zod';
 
 // Queries
 

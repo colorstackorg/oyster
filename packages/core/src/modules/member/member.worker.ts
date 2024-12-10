@@ -14,7 +14,7 @@ import {
   AIRTABLE_MEMBERS_TABLE_ID,
 } from '@/modules/airtable';
 import { sendCompanyReviewNotifications } from '@/modules/employment/use-cases/send-company-review-notifications';
-import { success } from '@/shared/utils/core.utils';
+import { success } from '@/shared/utils/core';
 import { onActivationStepCompleted } from './events/activation-step-completed';
 import { onMemberActivated } from './events/member-activated';
 import { onMemberCreated } from './events/member-created';

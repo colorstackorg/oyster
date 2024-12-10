@@ -21,8 +21,8 @@ import {
   ACCENT_COLORS,
   type AccentColor,
   getRandomAccentColor,
-} from '@/shared/utils/color.utils';
-import { fail, type Result, success } from '@/shared/utils/core.utils';
+} from '@/shared/utils/color';
+import { fail, type Result, success } from '@/shared/utils/core';
 
 // Use Case(s)
 

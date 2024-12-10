@@ -2,7 +2,7 @@ import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { ColorStackError } from '@/shared/errors';
-import { fail, type Result, success } from '@/shared/utils/core.utils';
+import { fail, type Result, success } from '@/shared/utils/core';
 import { RateLimiter } from '@/shared/utils/rate-limiter';
 
 // Environment Variables

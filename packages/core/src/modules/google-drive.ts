@@ -2,7 +2,7 @@ import { redis } from '@/infrastructure/redis';
 import { OAuthTokenResponse } from '@/modules/authentication/oauth.service';
 import { API_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '@/shared/env';
 import { ColorStackError } from '@/shared/errors';
-import { validate } from '@/shared/utils/zod.utils';
+import { validate } from '@/shared/utils/zod';
 
 // Core
 

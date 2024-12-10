@@ -28,7 +28,7 @@ import {
   type UpdateResumeBookInput,
 } from '@/modules/resume-book/resume-book.types';
 import { ColorStackError } from '@/shared/errors';
-import { success } from '@/shared/utils/core.utils';
+import { success } from '@/shared/utils/core';
 
 // Environment Variables
 

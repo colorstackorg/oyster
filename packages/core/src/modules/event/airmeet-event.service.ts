@@ -8,7 +8,7 @@ import { redis, RedisKey } from '@/infrastructure/redis';
 import { reportException } from '@/infrastructure/sentry';
 import { IS_PRODUCTION } from '@/shared/env';
 import { ErrorWithContext } from '@/shared/errors';
-import { validate } from '@/shared/utils/zod.utils';
+import { validate } from '@/shared/utils/zod';
 
 // Environment Variables
 

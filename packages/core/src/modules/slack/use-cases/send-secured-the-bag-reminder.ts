@@ -5,7 +5,7 @@ import { job } from '@/infrastructure/bull';
 import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { slack } from '@/modules/slack/instances';
 import { STUDENT_PROFILE_URL } from '@/shared/env';
-import { fail, type Result, success } from '@/shared/utils/core.utils';
+import { fail, type Result, success } from '@/shared/utils/core';
 
 export async function sendSecuredTheBagReminder({
   channelId,

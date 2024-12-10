@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { BooleanInput, Entity, Student } from '@oyster/types';
 
-import { FileLike } from '@/shared/utils/zod.utils';
+import { FileLike } from '@/shared/utils/zod';
 
 export const RESUME_BOOK_CODING_LANGUAGES = [
   'C',

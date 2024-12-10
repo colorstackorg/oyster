@@ -7,8 +7,8 @@ import { MailchimpBullJob } from '@/infrastructure/bull.types';
 import { redis } from '@/infrastructure/redis';
 import { reportException } from '@/infrastructure/sentry';
 import { IS_PRODUCTION } from '@/shared/env';
-import { encodeBasicAuthenticationToken } from '@/shared/utils/auth.utils';
-import { fail, type Result, success } from '@/shared/utils/core.utils';
+import { encodeBasicAuthenticationToken } from '@/shared/utils/auth';
+import { fail, type Result, success } from '@/shared/utils/core';
 
 // Environment Variables
 

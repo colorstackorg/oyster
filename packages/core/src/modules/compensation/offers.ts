@@ -14,7 +14,7 @@ import { redis } from '@/infrastructure/redis';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { STUDENT_PROFILE_URL } from '@/shared/env';
-import { fail, type Result, success } from '@/shared/utils/core.utils';
+import { fail, type Result, success } from '@/shared/utils/core';
 
 // Types
 

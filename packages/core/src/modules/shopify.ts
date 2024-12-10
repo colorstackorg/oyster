@@ -1,5 +1,5 @@
 import { reportException } from '@/infrastructure/sentry';
-import { fail, type Result, success } from '@/shared/utils/core.utils';
+import { fail, type Result, success } from '@/shared/utils/core';
 import { RateLimiter } from '@/shared/utils/rate-limiter';
 
 // Environment Variables

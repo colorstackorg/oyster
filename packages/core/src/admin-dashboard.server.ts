@@ -15,4 +15,4 @@ export { activateMember } from './modules/member/use-cases/activate-member';
 export { updateMemberEmail } from './modules/member/use-cases/update-member-email';
 export { addOnboardingSessionAttendees } from './modules/onboarding-session/use-cases/add-onboarding-session-attendees';
 export { uploadOnboardingSession } from './modules/onboarding-session/use-cases/upload-onboarding-session';
-export { parseCsv } from './shared/utils/csv.utils';
+export { parseCsv } from './shared/utils/csv';

@@ -3,7 +3,7 @@ import { db } from '@oyster/db';
 import { job } from '@/infrastructure/bull';
 import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { ErrorWithContext } from '@/shared/errors';
-import { retryWithBackoff } from '@/shared/utils/core.utils';
+import { retryWithBackoff } from '@/shared/utils/core';
 import { getSlackMessage } from '../services/slack-message.service';
 
 export async function onSlackReactionAdded(
