@@ -30,6 +30,9 @@ export const ENV = {
     .SLACK_INTRODUCTIONS_CHANNEL_ID as string,
   SLACK_SIGNING_SECRET: process.env.SLACK_SIGNING_SECRET as string,
   STUDENT_PROFILE_URL: process.env.STUDENT_PROFILE_URL as string,
+  TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID as string, 
+  TWILIO_PHONE_NUMBER: process.env.TWILIO_PHONE_NUMBER as string, 
+  TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN as string,
 };
 
 // TODO: Below are the only variables that we need to process in the core,
