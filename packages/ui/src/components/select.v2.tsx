@@ -5,18 +5,17 @@ import {
   ItemIndicator,
   ItemText,
   Portal,
+  type SelectProps as RadixSelectProps,
   Root,
   ScrollDownButton,
   ScrollUpButton,
-  type SelectItemProps,
-  type SelectProps as RadixSelectProps,
   type SelectTriggerProps,
   Trigger,
   Value,
   Viewport,
 } from '@radix-ui/react-select';
-import { Check, ChevronDown, ChevronUp } from 'react-feather';
 import { useState } from 'react';
+import { Check, ChevronDown, ChevronUp } from 'react-feather';
 
 import { getInputCn } from './input';
 import { cx } from '../utils/cx';
@@ -61,6 +60,7 @@ function SelectComponent({
 
   const handleValueChange = (newValue: string) => {
     setValue(newValue);
+
     if (onChange) {
       onChange({ currentTarget: { value: newValue } });
     }

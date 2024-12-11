@@ -283,7 +283,9 @@ function FilterForm({ close }: { close: VoidFunction }) {
       <Select
         placeholder="Select a field..."
         onChange={(event) => {
-          setFilterKey((event.currentTarget.value || null) as DirectoryFilterKey);
+          setFilterKey(
+            (event.currentTarget.value || null) as DirectoryFilterKey
+          );
         }}
       >
         {DIRECTORY_FILTER_KEYS.map((key) => (

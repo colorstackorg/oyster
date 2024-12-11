@@ -1,12 +1,7 @@
 import { type Country } from '@oyster/core/location/types';
 import { CityCombobox, type CityComboboxProps } from '@oyster/core/location/ui';
 import { FORMATTED_GENDER, type Gender } from '@oyster/types';
-import {
-  Checkbox,
-  DatePicker,
-  Field,
-  type FieldProps,
-} from '@oyster/ui';
+import { Checkbox, DatePicker, Field, type FieldProps } from '@oyster/ui';
 import { Select } from '@oyster/ui/select';
 
 import { EthnicityMultiCombobox } from '@/shared/components/ethnicity-combobox';
