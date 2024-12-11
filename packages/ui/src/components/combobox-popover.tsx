@@ -47,9 +47,9 @@ export function ComboboxPopoverProvider({ children }: PropsWithChildren) {
   );
 }
 
-type ComboboxPopoverProps = PropsWithChildren & {
+type ComboboxPopoverProps = PropsWithChildren<{
   side?: 'bottom' | 'top';
-};
+}>;
 
 export function ComboboxPopover({
   children,
