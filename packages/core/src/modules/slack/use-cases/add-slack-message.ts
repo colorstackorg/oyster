@@ -9,6 +9,12 @@ import { ErrorWithContext } from '@/shared/errors';
 import { retryWithBackoff } from '@/shared/utils/core';
 import { getSlackMessage } from '../services/slack-message.service';
 
+// Environment Variables
+
+const SLACK_FEED_CHANNEL_ID = process.env.SLACK_FEED_CHANNEL_ID as string;
+
+// Core
+
 type AddSlackMessageInput = GetBullJobData<'slack.message.add'>;
 
 export async function addSlackMessage(data: AddSlackMessageInput) {
@@ -205,8 +211,7 @@ async function notifyBusySlackThreadIfNecessary({
 
   const count = Number(row.count);
 
-  // We will only notify if the thread has exactly 100 replies.
-  if (count !== 100) {
+  if (count !== 100 && count !== 500) {
     return;
   }
 
@@ -215,8 +220,22 @@ async function notifyBusySlackThreadIfNecessary({
     message_ts: id,
   });
 
-  job('notification.slack.send', {
-    message: `🚨 Heads up! This <${permalink}|thread> has over 💯 replies!`,
-    workspace: 'internal',
-  });
+  if (count === 100) {
+    job('notification.slack.send', {
+      channel: SLACK_FEED_CHANNEL_ID,
+      message: `This <${permalink}|thread> hit 100 replies! 👀`,
+      workspace: 'regular',
+    });
+
+    return;
+  }
+
+  if (count === 500) {
+    job('notification.slack.send', {
+      message: `This <${permalink}|thread> hit 500 replies! 🚨`,
+      workspace: 'internal',
+    });
+
+    return;
+  }
 }
