@@ -17,10 +17,11 @@ import {
   getErrors,
   Input,
   Modal,
+  Select,
+  SelectItem,
   Textarea,
   validateForm,
 } from '@oyster/ui';
-import { Select, SelectItem } from '@oyster/ui/select';
 import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';

@@ -24,8 +24,7 @@ import {
   type OtherDemographic,
   type Race,
 } from '@oyster/types';
-import { Button, Dropdown, Field, Text } from '@oyster/ui';
-import { Select } from '@oyster/ui/select';
+import { Button, Dropdown, Field, Select, SelectItem, Text } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
