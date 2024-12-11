@@ -130,13 +130,10 @@ async function removeMailchimpMember(
 
   await releaseMailchimpConnection();
 
-  const data = await response.json();
-
   if (!response.ok) {
     const error = new Error('Failed to remove Mailchimp member.');
 
     reportException(error, {
-      data,
       status: response.status,
     });
 

@@ -28,6 +28,7 @@ import {
   ResourceDescriptionField,
   ResourceLinkField,
   ResourceProvider,
+  ResourceSearchConfirmationField,
   ResourceTagsField,
   ResourceTitleField,
   ResourceTypeField,
@@ -121,6 +122,7 @@ export default function AddResourceModal() {
 
       <Form className="form" method="post" encType="multipart/form-data">
         <ResourceProvider>
+          <ResourceSearchConfirmationField name="confirmation" />
           <ResourceTitleField error={errors.title} name={keys.title} />
           <ResourceDescriptionField
             error={errors.description}
