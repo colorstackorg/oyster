@@ -5,9 +5,9 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
   Link,
-  Form as RemixForm,
   useActionData,
   useLoaderData,
   useSearchParams,
@@ -32,7 +32,7 @@ import { db } from '@oyster/db';
 import {
   Button,
   Divider,
-  Form,
+  ErrorMessage,
   getButtonCn,
   getErrors,
   Modal,
@@ -175,7 +175,7 @@ export default function EditFullTimeOffer() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <OfferCompanyField
           defaultValue={{
             crunchbaseId: companyCrunchbaseId || '',
@@ -231,7 +231,7 @@ export default function EditFullTimeOffer() {
           error={errors.additionalNotes}
         />
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group flexDirection="row-reverse" spacing="between">
           <Button.Submit>Save</Button.Submit>
@@ -243,7 +243,7 @@ export default function EditFullTimeOffer() {
             Delete
           </Link>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

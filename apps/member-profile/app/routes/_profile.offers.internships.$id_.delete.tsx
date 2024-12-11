@@ -5,7 +5,7 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
+  Form,
   useActionData,
   useLoaderData,
   useSearchParams,
@@ -13,7 +13,7 @@ import {
 
 import { deleteOffer, hasOfferWritePermission } from '@oyster/core/offers';
 import { db } from '@oyster/db';
-import { Button, Form, getErrors, Modal } from '@oyster/ui';
+import { Button, ErrorMessage, getErrors, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -105,13 +105,13 @@ export default function DeleteInternshipOffer() {
         Are you sure you want to delete this internship offer for {companyName}?
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <Form className="form" method="post">
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit color="error">Delete</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

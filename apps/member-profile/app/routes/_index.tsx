@@ -1,7 +1,7 @@
 import { redirect } from '@remix-run/node';
 import { generatePath } from '@remix-run/react';
 
-import { getResumeBook } from '@oyster/core/resumes';
+import { getResumeBook } from '@oyster/core/resume-books';
 
 import { Route } from '@/shared/constants';
 

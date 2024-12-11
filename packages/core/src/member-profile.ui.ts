@@ -32,11 +32,11 @@ export { WorkForm } from './modules/employment/ui/work-form';
 export {
   IcebreakerPrompt,
   IcebreakerResponse,
-} from './modules/icebreaker/icebreaker.types';
+} from './modules/icebreakers/icebreakers.types';
 export {
   ChangePrimaryEmailInput,
   ListMembersInDirectoryWhere,
-} from './modules/member/member.types';
-export { CreateResumeBookInput } from './modules/resume/resume.types';
-export { getRandomAccentColor } from './shared/utils/color.utils';
+} from './modules/members/members.types';
+export { CreateResumeBookInput } from './modules/resume-books/resume-books.types';
+export { getRandomAccentColor } from './shared/utils/color';
 export { Environment, ListSearchParams } from './shared/types';

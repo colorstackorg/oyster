@@ -16,7 +16,7 @@ import {
 } from 'react-feather';
 
 import { isFeatureFlagEnabled } from '@oyster/core/member-profile/server';
-import { getResumeBook } from '@oyster/core/resumes';
+import { getResumeBook } from '@oyster/core/resume-books';
 import { Dashboard, Divider } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';

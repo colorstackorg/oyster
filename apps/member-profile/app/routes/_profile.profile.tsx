@@ -102,7 +102,7 @@ function ProfileHeader() {
 function ProfileNavigation() {
   return (
     <nav>
-      <ul className="flex flex-col gap-6">
+      <ul className="sticky top-8 flex flex-col gap-6">
         <ProfileNavigationItem
           icon={<Settings size={20} />}
           label="General"

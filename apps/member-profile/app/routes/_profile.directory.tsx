@@ -4,10 +4,10 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
   Link,
   Outlet,
-  Form as RemixForm,
   useLoaderData,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
@@ -182,8 +182,8 @@ async function getAppliedFilters(
       param: 'joinedDirectoryDate',
       value: searchParams.joinedDirectoryDate
         ? dayjs(searchParams.joinedDirectoryDate)
-            .tz('America/Los_Angeles', true)
-            .format('M/D/YY')
+          .tz('America/Los_Angeles', true)
+          .format('M/D/YY')
         : undefined,
     },
     { name: 'Location', param: keys.location, value: searchParams.location },
@@ -326,7 +326,7 @@ function FilterForm({
   const [searchParams] = useSearchParams(DirectorySearchParams);
 
   return (
-    <RemixForm className="form" method="get" onSubmit={close}>
+    <Form className="form" method="get" onSubmit={close}>
       {filter == 'general' && (
         <Select
           placeholder="Select a field..."
@@ -440,7 +440,7 @@ function FilterForm({
           )
         );
       })}
-    </RemixForm>
+    </Form>
   );
 }
 

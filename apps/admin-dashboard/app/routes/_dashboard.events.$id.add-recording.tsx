@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import {
   addEventRecordingLink,
@@ -17,7 +13,8 @@ import {
 import { AddEventRecordingLinkInput } from '@oyster/core/admin-dashboard/ui';
 import {
   Button,
-  Form,
+  ErrorMessage,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -93,8 +90,8 @@ function AddEventRecordingForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
-      <Form.Field
+    <Form className="form" method="post">
+      <Field
         description="Please add the full URL of the event recording."
         error={errors.recordingLink}
         label="Recording Link"
@@ -108,13 +105,13 @@ function AddEventRecordingForm() {
           placeholder="https://www.youtube.com/watch?v=..."
           required
         />
-      </Form.Field>
+      </Field>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button type="submit">Add</Button>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

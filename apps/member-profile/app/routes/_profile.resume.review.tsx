@@ -9,7 +9,7 @@ import {
   unstable_parseMultipartFormData as parseMultipartFormData,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
+  Form,
   useActionData,
   useLoaderData,
   useNavigation,
@@ -23,13 +23,14 @@ import {
   getLastResumeFeedback,
   type ResumeFeedback,
   reviewResume,
-} from '@oyster/core/resumes';
-import { ReviewResumeInput } from '@oyster/core/resumes/types';
+  ReviewResumeInput,
+} from '@oyster/core/resume-reviews';
 import {
   Button,
   cx,
+  ErrorMessage,
+  Field,
   FileUploader,
-  Form,
   MB_IN_BYTES,
   Text,
   validateForm,
@@ -140,13 +141,13 @@ function UploadForm() {
   const actionData = useActionData<typeof action>();
 
   return (
-    <RemixForm
+    <Form
       className="form"
       data-gap="2rem"
       encType="multipart/form-data"
       method="post"
     >
-      <Form.Field required>
+      <Field required>
         <FileUploader
           accept={['application/pdf']}
           id="resume"
@@ -154,16 +155,16 @@ function UploadForm() {
           name="resume"
           required
         />
-      </Form.Field>
+      </Field>
 
       {actionData && !actionData.ok && (
-        <Form.ErrorMessage>{actionData.error}</Form.ErrorMessage>
+        <ErrorMessage>{actionData.error}</ErrorMessage>
       )}
 
       <Button.Group>
         <Button.Submit>Get Feedback</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }
 

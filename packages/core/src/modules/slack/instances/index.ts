@@ -1,7 +1,11 @@
 import { WebClient } from '@slack/web-api';
 
-import { ENV } from '@/shared/env';
+// Environment Variables
 
-export const slack = new WebClient(ENV.SLACK_BOT_TOKEN);
+const INTERNAL_SLACK_BOT_TOKEN = process.env.INTERNAL_SLACK_BOT_TOKEN;
+const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 
-export const internalSlack = new WebClient(ENV.INTERNAL_SLACK_BOT_TOKEN);
+// Instances
+
+export const internalSlack = new WebClient(INTERNAL_SLACK_BOT_TOKEN);
+export const slack = new WebClient(SLACK_BOT_TOKEN);

@@ -4,14 +4,10 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import { getAdmin, removeAdmin } from '@oyster/core/admins';
-import { Button, Form, Modal } from '@oyster/ui';
+import { Button, ErrorMessage, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -78,13 +74,13 @@ export default function RemoveAdminPage() {
         This is not an undoable action. Are you sure want to remove this admin?
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
-        <Form.ErrorMessage>{actionData?.error}</Form.ErrorMessage>
+      <Form className="form" method="post">
+        <ErrorMessage>{actionData?.error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit color="error">Remove</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

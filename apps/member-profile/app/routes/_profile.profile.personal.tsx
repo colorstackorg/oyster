@@ -3,11 +3,7 @@ import {
   json,
   type LoaderFunctionArgs,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
 import { z } from 'zod';
 
@@ -132,7 +128,7 @@ export default function UpdatePersonalInformationForm() {
         <ProfileTitle>Personal</ProfileTitle>
       </ProfileHeader>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <GenderField
           defaultValue={student.gender}
           error={errors.gender}
@@ -183,7 +179,7 @@ export default function UpdatePersonalInformationForm() {
         <Button.Group>
           <Button.Submit>Save</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </ProfileSection>
   );
 }

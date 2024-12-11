@@ -1,5 +1,5 @@
 import { slack } from '@/modules/slack/instances';
-import { ENV } from '@/shared/env';
+import { SLACK_CLIENT_ID, SLACK_CLIENT_SECRET } from '@/shared/env';
 import {
   type ExchangeCodeForTokenInput,
   type OAuthService,
@@ -8,8 +8,8 @@ import {
 export class SlackOAuthService implements OAuthService {
   async exchangeCodeForToken(input: ExchangeCodeForTokenInput) {
     const { access_token, refresh_token } = await slack.openid.connect.token({
-      client_id: ENV.SLACK_CLIENT_ID,
-      client_secret: ENV.SLACK_CLIENT_SECRET,
+      client_id: SLACK_CLIENT_ID,
+      client_secret: SLACK_CLIENT_SECRET,
       code: input.code,
       redirect_uri: input.redirectUrl,
     });

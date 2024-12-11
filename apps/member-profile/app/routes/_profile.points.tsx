@@ -4,8 +4,8 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
-  Form as RemixForm,
   Link as RemixLink,
   useLoaderData,
   useLocation,
@@ -150,11 +150,6 @@ async function getActivityHistory(
     query
       .leftJoin('activities', 'activities.id', 'completedActivities.activityId')
       .leftJoin('events', 'events.id', 'completedActivities.eventAttended')
-      .leftJoin(
-        'surveys',
-        'surveys.id',
-        'completedActivities.surveyRespondedTo'
-      )
       .leftJoin('slackMessages as threads', (join) => {
         return join
           .onRef('threads.id', '=', 'completedActivities.threadRepliedTo')
@@ -209,7 +204,6 @@ async function getActivityHistory(
         'resourceUpvoters.id as resourceUpvoterId',
         'resourceUpvoters.lastName as resourceUpvoterLastName',
         'resumeBooks.name as resumeBookName',
-        'surveys.title as surveyRespondedTo',
         'threads.channelId as threadRepliedToChannelId',
         'threads.id as threadRepliedToId',
         'threads.text as threadRepliedToText',
@@ -294,7 +288,7 @@ function TimeframeForm() {
   const submit = useSubmit();
 
   return (
-    <RemixForm
+    <Form
       className="flex min-w-[12rem] items-center gap-4"
       method="get"
       onChange={(e) => submit(e.currentTarget)}
@@ -318,7 +312,7 @@ function TimeframeForm() {
         type="hidden"
         value={searchParams.leaderboardLimit}
       />
-    </RemixForm>
+    </Form>
   );
 }
 
@@ -334,7 +328,7 @@ function PointsLeaderboard({ className }: CardProps) {
       <Card.Header>
         <Card.Title>Points Leaderboard</Card.Title>
 
-        <RemixForm
+        <Form
           className="flex min-w-[8rem]"
           method="get"
           onChange={(e) => submit(e.currentTarget)}
@@ -357,7 +351,7 @@ function PointsLeaderboard({ className }: CardProps) {
             type="hidden"
             value={searchParams.timeframe}
           />
-        </RemixForm>
+        </Form>
       </Card.Header>
 
       <Card.Description>
@@ -678,9 +672,6 @@ function ActivityHistoryItemDescription({
           </div>
         </div>
       );
-    })
-    .with('respond_to_survey', () => {
-      return <p>You responded to a survey: "{activity.surveyRespondedTo}"</p>;
     })
     .with('review_company', () => {
       return <p>You reviewed a work experience.</p>;

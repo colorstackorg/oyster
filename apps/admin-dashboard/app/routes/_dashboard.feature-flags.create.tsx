@@ -4,14 +4,15 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 
 import { createFeatureFlag } from '@oyster/core/admin-dashboard/server';
 import { CreateFeatureFlagInput } from '@oyster/core/admin-dashboard/ui';
 import {
   Button,
   Checkbox,
-  Form,
+  ErrorMessage,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -78,8 +79,8 @@ export default function CreateFeatureFlagModal() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
-        <Form.Field
+      <Form className="form" method="post">
+        <Field
           description="This should be snake case (ie: all_lower_with_underscores)."
           error={errors.name}
           label="Name"
@@ -87,9 +88,9 @@ export default function CreateFeatureFlagModal() {
           required
         >
           <Input autoFocus id={keys.name} name={keys.name} required />
-        </Form.Field>
+        </Field>
 
-        <Form.Field
+        <Field
           description="This is the name that will be displayed in the UI."
           error={errors.displayName}
           label="Display Name"
@@ -97,16 +98,16 @@ export default function CreateFeatureFlagModal() {
           required
         >
           <Input id={keys.displayName} name={keys.displayName} required />
-        </Form.Field>
+        </Field>
 
-        <Form.Field
+        <Field
           description="An optional, but recommended, description of what the flag is for."
           error={errors.description}
           label="Description"
           labelFor={keys.description}
         >
           <Textarea id={keys.description} minRows={2} name={keys.description} />
-        </Form.Field>
+        </Field>
 
         <Checkbox
           color="lime-100"
@@ -117,12 +118,12 @@ export default function CreateFeatureFlagModal() {
           value="1"
         />
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Create</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

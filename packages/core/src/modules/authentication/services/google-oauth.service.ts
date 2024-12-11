@@ -1,7 +1,7 @@
 import { type OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 
-import { ENV } from '@/shared/env';
+import { API_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '@/shared/env';
 import {
   type ExchangeCodeForTokenInput,
   type OAuthService,
@@ -12,9 +12,9 @@ export class GoogleOAuthService implements OAuthService {
 
   constructor() {
     this.client = new google.auth.OAuth2({
-      clientId: ENV.GOOGLE_CLIENT_ID,
-      clientSecret: ENV.GOOGLE_CLIENT_SECRET,
-      redirectUri: `${ENV.API_URL}/oauth/google`,
+      clientId: GOOGLE_CLIENT_ID,
+      clientSecret: GOOGLE_CLIENT_SECRET,
+      redirectUri: `${API_URL}/oauth/google`,
     });
   }
 

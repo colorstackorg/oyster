@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { type z } from 'zod';
 
 import { updateMemberEmail } from '@oyster/core/admin-dashboard/server';
@@ -16,7 +12,8 @@ import { db } from '@oyster/db';
 import { Student } from '@oyster/types';
 import {
   Button,
-  Form,
+  ErrorMessage,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -118,21 +115,16 @@ function UpdateStudentEmailForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
-      <Form.Field
-        error={errors.email}
-        label="Email"
-        labelFor={keys.email}
-        required
-      >
+    <Form className="form" method="post">
+      <Field error={errors.email} label="Email" labelFor={keys.email} required>
         <Input id={keys.email} name={keys.email} required />
-      </Form.Field>
+      </Field>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Update</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

@@ -1,8 +1,8 @@
 import {
+  Form,
   Link,
   type LinkProps,
   NavLink,
-  Form as RemixForm,
   useSubmit,
 } from '@remix-run/react';
 import React, {
@@ -87,12 +87,12 @@ const itemClassName = cx(
 
 Dashboard.LogoutForm = function LogoutForm() {
   return (
-    <RemixForm action="/logout" className="mt-auto w-full" method="post">
+    <Form action="/logout" className="mt-auto w-full" method="post">
       <button className={cx(itemClassName, 'hover:text-primary')} type="submit">
         <LogOut />
         Log Out
       </button>
-    </RemixForm>
+    </Form>
   );
 };
 
@@ -203,7 +203,7 @@ Dashboard.SearchForm = function SearchForm({
   }, [delayedSearch]);
 
   return (
-    <RemixForm className="w-full sm:w-auto" method="get">
+    <Form className="w-full sm:w-auto" method="get">
       <SearchBar
         defaultValue={searchParams.search}
         name="search"
@@ -211,7 +211,7 @@ Dashboard.SearchForm = function SearchForm({
         {...rest}
       />
       {children}
-    </RemixForm>
+    </Form>
   );
 };
 

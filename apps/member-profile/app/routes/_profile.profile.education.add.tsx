@@ -4,13 +4,19 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type z } from 'zod';
 
 import { addEducation } from '@oyster/core/member-profile/server';
 import { AddEducationInput } from '@oyster/core/member-profile/ui';
-import { Button, Form, getErrors, Modal, validateForm } from '@oyster/ui';
+import {
+  Button,
+  ErrorMessage,
+  getErrors,
+  Modal,
+  validateForm,
+} from '@oyster/ui';
 
 import { EducationForm } from '@/shared/components/education-form';
 import { Route } from '@/shared/constants';
@@ -92,7 +98,7 @@ export default function AddEducationPage() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <EducationForm.Context>
           <EducationForm.SchoolField
             error={errors.schoolId}
@@ -124,12 +130,12 @@ export default function AddEducationPage() {
           />
         </EducationForm.Context>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Save</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

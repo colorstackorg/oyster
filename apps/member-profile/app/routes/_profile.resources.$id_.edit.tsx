@@ -9,7 +9,9 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
+  Form,
+  generatePath,
+  Link,
   useActionData,
   useLoaderData,
   useSearchParams,
@@ -20,7 +22,8 @@ import { getResource, updateResource } from '@oyster/core/resources/server';
 import {
   Button,
   Divider,
-  Form,
+  ErrorMessage,
+  getButtonCn,
   getErrors,
   Modal,
   validateForm,
@@ -47,6 +50,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const record = await getResource({
     select: [
       'resources.description',
+      'resources.id',
       'resources.link',
       'resources.title',
       'resources.type',
@@ -131,7 +135,7 @@ export default function EditResourceModal() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post" encType="multipart/form-data">
+      <Form className="form" method="post" encType="multipart/form-data">
         <ResourceProvider type={resource.type}>
           <ResourceTitleField
             defaultValue={resource.title || undefined}
@@ -168,12 +172,21 @@ export default function EditResourceModal() {
           />
         </ResourceProvider>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
-        <Button.Group>
+        <Button.Group flexDirection="row-reverse" spacing="between">
           <Button.Submit>Save</Button.Submit>
+
+          <Link
+            className={getButtonCn({ color: 'error', variant: 'secondary' })}
+            to={generatePath(Route['/resources/:id/delete'], {
+              id: resource.id,
+            })}
+          >
+            Delete
+          </Link>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }
