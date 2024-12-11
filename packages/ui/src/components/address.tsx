@@ -46,18 +46,16 @@ Address.Country = function Country(props: SelectProps) {
   return (
     <Select
       defaultValue={country}
-      onChange={(e) => {
-        setCountry(e.currentTarget.value as SupportedCountry);
+      onChange={(event) => {
+        setCountry(event.currentTarget.value as SupportedCountry);
       }}
       {...props}
     >
-      {COUNTRIES.map((country) => {
-        return (
-          <option key={country.abbreviation} value={country.abbreviation}>
-            {country.name}
-          </option>
-        );
-      })}
+      {COUNTRIES.map((country) => (
+        <Select.Option key={country.abbreviation} value={country.abbreviation}>
+          {country.name}
+        </Select.Option>
+      ))}
     </Select>
   );
 };
@@ -167,13 +165,11 @@ Address.State = function State(props: SelectProps) {
 
   return (
     <Select {...props}>
-      {states.map((state) => {
-        return (
-          <option key={state.abbreviation} value={state.abbreviation}>
-            {state.name}
-          </option>
-        );
-      })}
+      {states.map((state) => (
+        <Select.Option key={state.abbreviation} value={state.abbreviation}>
+          {state.name}
+        </Select.Option>
+      ))}
     </Select>
   );
 };

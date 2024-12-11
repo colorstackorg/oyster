@@ -24,7 +24,8 @@ import {
   type OtherDemographic,
   type Race,
 } from '@oyster/types';
-import { Button, Dropdown, Field, Select, Text } from '@oyster/ui';
+import { Button, Dropdown, Field, Text } from '@oyster/ui';
+import { Select } from '@oyster/ui/select';
 
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
@@ -272,19 +273,15 @@ function RejectDropdown() {
               required
             >
               <Select id="reason" name="reason" required>
-                <option value={ApplicationRejectionReason.BAD_LINKEDIN}>
-                  Incorrect or suspicious LinkedIn
-                </option>
-                <option value={ApplicationRejectionReason.IS_INTERNATIONAL}>
-                  Not enrolled in US or Canada
-                </option>
-                <option value={ApplicationRejectionReason.INELIGIBLE_MAJOR}>
-                  Not the right major
-                </option>
-                <option value={ApplicationRejectionReason.NOT_UNDERGRADUATE}>
-                  Not an undergrad student
-                </option>
-                <option value={ApplicationRejectionReason.OTHER}>Other</option>
+                {Object.values(ApplicationRejectionReason).map((reason) => (
+                  <Select.Option key={reason} value={reason}>
+                    {reason === ApplicationRejectionReason.BAD_LINKEDIN && 'Incorrect or suspicious LinkedIn'}
+                    {reason === ApplicationRejectionReason.IS_INTERNATIONAL && 'Not enrolled in US or Canada'}
+                    {reason === ApplicationRejectionReason.INELIGIBLE_MAJOR && 'Not the right major'}
+                    {reason === ApplicationRejectionReason.NOT_UNDERGRADUATE && 'Not an undergrad student'}
+                    {reason === ApplicationRejectionReason.OTHER && 'Other'}
+                  </Select.Option>
+                ))}
               </Select>
             </Field>
 

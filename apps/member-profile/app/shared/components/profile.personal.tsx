@@ -6,8 +6,8 @@ import {
   DatePicker,
   Field,
   type FieldProps,
-  Select,
 } from '@oyster/ui';
+import { Select } from '@oyster/ui/select';
 
 import { EthnicityMultiCombobox } from '@/shared/components/ethnicity-combobox';
 
@@ -84,13 +84,11 @@ export function GenderField({ defaultValue, error, name }: FieldProps<string>) {
   return (
     <Field error={error} label="Gender" labelFor={name} required>
       <Select defaultValue={defaultValue} id={name} name={name} required>
-        {GENDERS_IN_ORDER.map((value) => {
-          return (
-            <option key={value} value={value}>
-              {FORMATTED_GENDER[value]}
-            </option>
-          );
-        })}
+        {GENDERS_IN_ORDER.map((value) => (
+          <Select.Option key={value} value={value}>
+            {FORMATTED_GENDER[value]}
+          </Select.Option>
+        ))}
       </Select>
     </Field>
   );

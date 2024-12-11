@@ -17,10 +17,10 @@ import {
   getErrors,
   Input,
   Modal,
-  Select,
   Textarea,
   validateForm,
 } from '@oyster/ui';
+import { Select } from '@oyster/ui/select';
 import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
@@ -61,10 +61,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const values = Object.fromEntries(form);
 
-  // We get the datetime values directly from the form object instead of the
-  // validated/transformed Zod object because Zod does coercion, which forces
-  // the timezone of the server. However, we want to use the timezone of the
-  // user's browser when forming the datetime string.
   const endTime = values.endTime as string;
   const startTime = values.startTime as string;
 
@@ -116,13 +112,11 @@ function CreateEventForm() {
 
       <Field error={errors.type} label="Type" labelFor={keys.type} required>
         <Select id={keys.type} name={keys.type} required>
-          {EVENT_TYPES.map((type) => {
-            return (
-              <option key={type} value={type}>
-                {type === 'irl' ? 'IRL' : toTitleCase(type)}
-              </option>
-            );
-          })}
+          {EVENT_TYPES.map((type) => (
+            <Select.Option key={type} value={type}>
+              {type === 'irl' ? 'IRL' : toTitleCase(type)}
+            </Select.Option>
+          ))}
         </Select>
       </Field>
 

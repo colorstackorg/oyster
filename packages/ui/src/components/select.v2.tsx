@@ -9,30 +9,72 @@ import {
   ScrollDownButton,
   ScrollUpButton,
   type SelectItemProps,
-  type SelectProps,
+  type SelectProps as RadixSelectProps,
   type SelectTriggerProps,
-  type SelectValueProps,
   Trigger,
   Value,
   Viewport,
 } from '@radix-ui/react-select';
 import { Check, ChevronDown, ChevronUp } from 'react-feather';
+import { useState } from 'react';
 
 import { getInputCn } from './input';
 import { cx } from '../utils/cx';
 
-type Props = SelectProps &
-  Pick<SelectTriggerProps, 'id'> &
-  Pick<SelectValueProps, 'id' | 'placeholder'>;
+export type SelectProps = RadixSelectProps &
+  Pick<SelectTriggerProps, 'id'> & {
+    defaultValue?: string;
+    name?: string;
+    required?: boolean;
+    placeholder?: string;
+    onChange?: (event: { currentTarget: { value: string } }) => void;
+  };
 
-export function Select({
+type OptionProps = {
+  children: React.ReactNode;
+  value: string;
+  disabled?: boolean;
+};
+
+function Option({ children, value, disabled }: OptionProps) {
+  return (
+    <Item value={value} disabled={disabled}>
+      <ItemText>{children}</ItemText>
+      <ItemIndicator className="ml-auto">
+        <Check size={16} />
+      </ItemIndicator>
+    </Item>
+  );
+}
+
+function SelectComponent({
   children,
   id,
+  defaultValue,
+  name,
+  required,
   placeholder = 'Select...',
+  onChange,
   ...props
-}: Props) {
+}: SelectProps) {
+  const [value, setValue] = useState(defaultValue);
+
+  const handleValueChange = (newValue: string) => {
+    setValue(newValue);
+    if (onChange) {
+      onChange({ currentTarget: { value: newValue } });
+    }
+  };
+
   return (
-    <Root {...props}>
+    <Root
+      defaultValue={defaultValue}
+      value={value}
+      onValueChange={handleValueChange}
+      name={name}
+      required={required}
+      {...props}
+    >
       <Trigger
         className={cx(
           getInputCn(),
@@ -65,21 +107,6 @@ export function Select({
   );
 }
 
-export function SelectItem({ className, children, ...props }: SelectItemProps) {
-  return (
-    <Item
-      className={cx(
-        'flex select-none items-center gap-2 rounded-md p-2 text-sm',
-        'data-[highlighted]:bg-primary data-[highlighted]:text-white data-[highlighted]:outline-none',
-        'disabled:pointer-events-none disabled:opacity-50',
-        className
-      )}
-      {...props}
-    >
-      <ItemText>{children}</ItemText>
-      <ItemIndicator>
-        <Check size={16} />
-      </ItemIndicator>
-    </Item>
-  );
-}
+SelectComponent.Option = Option;
+
+export const Select = SelectComponent;
