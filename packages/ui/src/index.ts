@@ -44,7 +44,7 @@ export { ProfilePicture } from './components/profile-picture';
 export { Public } from './components/public';
 export { Radio } from './components/radio';
 export { SearchBar } from './components/search-bar';
-export { Select } from './components/select';
+export { Select, SelectItem } from './components/select.v2';
 export { Spinner } from './components/spinner';
 export { Table } from './components/table';
 export type { TableColumnProps } from './components/table';
