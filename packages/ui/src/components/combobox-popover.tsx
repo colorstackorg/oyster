@@ -47,7 +47,14 @@ export function ComboboxPopoverProvider({ children }: PropsWithChildren) {
   );
 }
 
-export function ComboboxPopover({ children }: PropsWithChildren) {
+type ComboboxPopoverProps = PropsWithChildren & {
+  side?: 'bottom' | 'top';
+};
+
+export function ComboboxPopover({
+  children,
+  side = 'bottom',
+}: ComboboxPopoverProps) {
   const { popoverOpen, ref } = useComboboxPopover();
 
   const scroll = useScrollFromModal();
@@ -64,8 +71,13 @@ export function ComboboxPopover({ children }: PropsWithChildren) {
   return (
     <div
       className={cx(
-        'z-10 mt-1 max-h-60 overflow-auto rounded-lg border border-gray-300 bg-white',
-        position === 'fixed' ? 'fixed' : 'absolute top-full w-full',
+        'z-10 max-h-60 overflow-auto rounded-lg border border-gray-300 bg-white',
+        position === 'absolute' && 'absolute w-full',
+        position === 'fixed' && 'fixed',
+        side === 'bottom' && 'mt-1',
+        side === 'bottom' && position === 'absolute' && 'top-full',
+        side === 'top' && 'mb-1',
+        side === 'top' && position === 'absolute' && 'bottom-full',
         !popoverOpen && 'hidden'
       )}
       style={{
