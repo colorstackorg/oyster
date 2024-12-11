@@ -13,8 +13,5 @@
   "tailwindCSS.experimental.classRegex": [
     ["cx\\(([^)]+)\\)", "'([^']*)'"],
     ["cx\\(([^)]+)\\)", "`([^`]*)`"]
-  ],
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features"
-  }
+  ]
 }
