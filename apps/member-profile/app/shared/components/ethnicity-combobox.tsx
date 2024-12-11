@@ -98,7 +98,7 @@ export function EthnicityMultiCombobox({
       </MultiComboboxDisplay>
 
       {!!countries.length && (
-        <ComboboxPopover>
+        <ComboboxPopover side="top">
           <ul>
             {countries.map((country) => {
               const label = `${country.flagEmoji} ${country.demonym}`;
