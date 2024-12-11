@@ -33,10 +33,11 @@ import {
   Pagination,
   Pill,
   ProfilePicture,
+  Select,
+  SelectItem,
   Text,
   useSearchParams,
 } from '@oyster/ui';
-import { Select, SelectItem } from '@oyster/ui/select';
 import { run, toTitleCase } from '@oyster/utils';
 
 import { CompanyCombobox } from '@/shared/components/company-combobox';

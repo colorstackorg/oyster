@@ -16,10 +16,11 @@ import {
   Field,
   type FieldProps,
   Radio,
+  Select,
+  SelectItem,
   Text,
   Textarea,
 } from '@oyster/ui';
-import { Select, SelectItem } from '@oyster/ui/select';
 
 import { type GetWorkExperiencesResult } from '@/routes/api.me.work-experiences';
 import { Route } from '@/shared/constants';

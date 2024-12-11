@@ -12,8 +12,7 @@ import {
   type School,
 } from '@oyster/core/member-profile/ui';
 import { type Major } from '@oyster/types';
-import { DatePicker, Field, Input } from '@oyster/ui';
-import { Select, SelectItem } from '@oyster/ui/select';
+import { DatePicker, Field, Input, Select, SelectItem } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 const EducationFormContext = React.createContext({

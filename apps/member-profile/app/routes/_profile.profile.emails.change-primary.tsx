@@ -17,9 +17,10 @@ import {
   Field,
   getErrors,
   Modal,
+  Select,
+  SelectItem,
   validateForm,
 } from '@oyster/ui';
-import { Select, SelectItem } from '@oyster/ui/select';
 
 import { Route } from '@/shared/constants';
 import {
