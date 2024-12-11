@@ -19,7 +19,7 @@ import {
   Modal,
   validateForm,
 } from '@oyster/ui';
-import { Select } from '@oyster/ui/select';
+import { Select, SelectItem } from '@oyster/ui/select';
 
 import { Route } from '@/shared/constants';
 import {
@@ -98,15 +98,17 @@ export default function ChangePrimaryEmailPage() {
           required
         >
           <Select id={keys.email} name={keys.email} required>
-            {emails.map((email) => (
-              <Select.Option
-                key={email.email}
-                value={email.email!}
-                disabled={!!email.primary}
-              >
-                {email.email}
-              </Select.Option>
-            ))}
+            {emails.map((email) => {
+              return (
+                <SelectItem
+                  key={email.email}
+                  value={email.email!}
+                  disabled={!!email.primary}
+                >
+                  {email.email}
+                </SelectItem>
+              );
+            })}
           </Select>
         </Field>
 

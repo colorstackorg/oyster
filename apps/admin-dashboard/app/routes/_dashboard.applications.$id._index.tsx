@@ -273,19 +273,21 @@ function RejectDropdown() {
               required
             >
               <Select id="reason" name="reason" required>
-                {Object.values(ApplicationRejectionReason).map((reason) => (
-                  <Select.Option key={reason} value={reason}>
-                    {reason === ApplicationRejectionReason.BAD_LINKEDIN &&
-                      'Incorrect or suspicious LinkedIn'}
-                    {reason === ApplicationRejectionReason.IS_INTERNATIONAL &&
-                      'Not enrolled in US or Canada'}
-                    {reason === ApplicationRejectionReason.INELIGIBLE_MAJOR &&
-                      'Not the right major'}
-                    {reason === ApplicationRejectionReason.NOT_UNDERGRADUATE &&
-                      'Not an undergrad student'}
-                    {reason === ApplicationRejectionReason.OTHER && 'Other'}
-                  </Select.Option>
-                ))}
+                {Object.values(ApplicationRejectionReason).map((reason) => {
+                  return (
+                    <SelectItem key={reason} value={reason}>
+                      {reason === ApplicationRejectionReason.BAD_LINKEDIN &&
+                        'Incorrect or suspicious LinkedIn'}
+                      {reason === ApplicationRejectionReason.IS_INTERNATIONAL &&
+                        'Not enrolled in US or Canada'}
+                      {reason === ApplicationRejectionReason.INELIGIBLE_MAJOR &&
+                        'Not the right major'}
+                      {reason === ApplicationRejectionReason.NOT_UNDERGRADUATE &&
+                        'Not an undergrad student'}
+                      {reason === ApplicationRejectionReason.OTHER && 'Other'}
+                    </SelectItem>
+                  );
+                })}
               </Select>
             </Field>
 

@@ -36,7 +36,7 @@ import {
   Text,
   useSearchParams,
 } from '@oyster/ui';
-import { Select } from '@oyster/ui/select';
+import { Select, SelectItem } from '@oyster/ui/select';
 import { run, toTitleCase } from '@oyster/utils';
 
 import { CompanyCombobox } from '@/shared/components/company-combobox';
@@ -282,17 +282,19 @@ function FilterForm({ close }: { close: VoidFunction }) {
     <Form className="form" method="get" onSubmit={close}>
       <Select
         placeholder="Select a field..."
-        onChange={(event) => {
+        onChange={(e) => {
           setFilterKey(
-            (event.currentTarget.value || null) as DirectoryFilterKey
+            (e.currentTarget.value || null) as DirectoryFilterKey
           );
         }}
       >
-        {DIRECTORY_FILTER_KEYS.map((key) => (
-          <Select.Option key={key} value={key} disabled={!!searchParams[key]}>
-            {toTitleCase(key)}
-          </Select.Option>
-        ))}
+        {DIRECTORY_FILTER_KEYS.map((key) => {
+          return (
+            <SelectItem key={key} value={key} disabled={!!searchParams[key]}>
+              {toTitleCase(key)}
+            </SelectItem>
+          );
+        })}
       </Select>
 
       {!!filterKey && (
@@ -330,11 +332,13 @@ function FilterForm({ close }: { close: VoidFunction }) {
 
           return (
             <Select name={keys.graduationYear}>
-              {years.map((year) => (
-                <Select.Option key={year} value={String(year)}>
-                  {year}
-                </Select.Option>
-              ))}
+              {years.map((year) => {
+                return (
+                  <SelectItem key={year} value={String(year)}>
+                    {year}
+                  </SelectItem>
+                );
+              })}
             </Select>
           );
         })

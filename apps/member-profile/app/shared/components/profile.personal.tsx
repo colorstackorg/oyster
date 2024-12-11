@@ -2,7 +2,7 @@ import { type Country } from '@oyster/core/location/types';
 import { CityCombobox, type CityComboboxProps } from '@oyster/core/location/ui';
 import { FORMATTED_GENDER, type Gender } from '@oyster/types';
 import { Checkbox, DatePicker, Field, type FieldProps } from '@oyster/ui';
-import { Select } from '@oyster/ui/select';
+import { Select, SelectItem } from '@oyster/ui/select';
 
 import { EthnicityMultiCombobox } from '@/shared/components/ethnicity-combobox';
 
@@ -79,11 +79,13 @@ export function GenderField({ defaultValue, error, name }: FieldProps<string>) {
   return (
     <Field error={error} label="Gender" labelFor={name} required>
       <Select defaultValue={defaultValue} id={name} name={name} required>
-        {GENDERS_IN_ORDER.map((value) => (
-          <Select.Option key={value} value={value}>
-            {FORMATTED_GENDER[value]}
-          </Select.Option>
-        ))}
+        {GENDERS_IN_ORDER.map((value) => {
+          return (
+            <SelectItem key={value} value={value}>
+              {FORMATTED_GENDER[value]}
+            </SelectItem>
+          );
+        })}
       </Select>
     </Field>
   );

@@ -5,15 +5,16 @@ import {
   ItemIndicator,
   ItemText,
   Portal,
-  type SelectProps as RadixSelectProps,
   Root,
   ScrollDownButton,
   ScrollUpButton,
-  type SelectTriggerProps,
   Trigger,
   Value,
   Viewport,
 } from '@radix-ui/react-select';
+import type { SelectItemProps } from '@radix-ui/react-select';
+import type { SelectProps as RadixSelectProps } from '@radix-ui/react-select';
+import type { SelectTriggerProps } from '@radix-ui/react-select';
 import { useState } from 'react';
 import { Check, ChevronDown, ChevronUp } from 'react-feather';
 
@@ -26,27 +27,10 @@ export type SelectProps = RadixSelectProps &
     name?: string;
     required?: boolean;
     placeholder?: string;
-    onChange?: (event: { currentTarget: { value: string } }) => void;
+    onChange?: (e: { currentTarget: { value: string } }) => void;
   };
 
-type OptionProps = {
-  children: React.ReactNode;
-  value: string;
-  disabled?: boolean;
-};
-
-function Option({ children, value, disabled }: OptionProps) {
-  return (
-    <Item value={value} disabled={disabled}>
-      <ItemText>{children}</ItemText>
-      <ItemIndicator className="ml-auto">
-        <Check size={16} />
-      </ItemIndicator>
-    </Item>
-  );
-}
-
-function SelectComponent({
+export function Select({
   children,
   id,
   defaultValue,
@@ -107,6 +91,21 @@ function SelectComponent({
   );
 }
 
-SelectComponent.Option = Option;
-
-export const Select = SelectComponent;
+export function SelectItem({ className, children, ...props }: SelectItemProps) {
+  return (
+    <Item
+      className={cx(
+        'flex select-none items-center gap-2 rounded-md p-2 text-sm',
+        'data-[highlighted]:bg-primary data-[highlighted]:text-white data-[highlighted]:outline-none',
+        'disabled:pointer-events-none disabled:opacity-50',
+        className
+      )}
+      {...props}
+    >
+      <ItemText>{children}</ItemText>
+      <ItemIndicator className="ml-auto">
+        <Check size={16} />
+      </ItemIndicator>
+    </Item>
+  );
+}

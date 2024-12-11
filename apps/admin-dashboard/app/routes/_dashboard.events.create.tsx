@@ -20,7 +20,7 @@ import {
   Textarea,
   validateForm,
 } from '@oyster/ui';
-import { Select } from '@oyster/ui/select';
+import { Select, SelectItem } from '@oyster/ui/select';
 import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
@@ -112,11 +112,13 @@ function CreateEventForm() {
 
       <Field error={errors.type} label="Type" labelFor={keys.type} required>
         <Select id={keys.type} name={keys.type} required>
-          {EVENT_TYPES.map((type) => (
-            <Select.Option key={type} value={type}>
-              {type === 'irl' ? 'IRL' : toTitleCase(type)}
-            </Select.Option>
-          ))}
+          {EVENT_TYPES.map((type) => {
+            return (
+              <SelectItem key={type} value={type}>
+                {type === 'irl' ? 'IRL' : toTitleCase(type)}
+              </SelectItem>
+            );
+          })}
         </Select>
       </Field>
 

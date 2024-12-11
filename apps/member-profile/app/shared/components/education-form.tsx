@@ -13,7 +13,7 @@ import {
 } from '@oyster/core/member-profile/ui';
 import { type Major } from '@oyster/types';
 import { DatePicker, Field, Input } from '@oyster/ui';
-import { Select } from '@oyster/ui/select';
+import { Select, SelectItem } from '@oyster/ui/select';
 import { toTitleCase } from '@oyster/utils';
 
 const EducationFormContext = React.createContext({
@@ -59,11 +59,13 @@ EducationForm.DegreeTypeField = function DegreeTypeField({
   return (
     <Field error={error} label="Degree Type" labelFor={name} required>
       <Select defaultValue={defaultValue} id={name} name={name} required>
-        {DEGREE_TYPES.map((degreeType) => (
-          <Select.Option key={degreeType} value={degreeType}>
-            {FORMATTED_DEGREEE_TYPE[degreeType]}
-          </Select.Option>
-        ))}
+        {DEGREE_TYPES.map((degreeType) => {
+          return (
+            <SelectItem key={degreeType} value={degreeType}>
+              {FORMATTED_DEGREEE_TYPE[degreeType]}
+            </SelectItem>
+          );
+        })}
       </Select>
     </Field>
   );

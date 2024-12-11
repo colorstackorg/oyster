@@ -2,7 +2,7 @@ import { type PropsWithChildren } from 'react';
 import React, { useContext, useState } from 'react';
 
 import { Input, type InputProps } from './input';
-import { Select, type SelectProps } from './select';
+import { Select, SelectItem, type SelectProps } from './select.v2';
 
 type SupportedCountry = 'CA' | 'US';
 
@@ -46,16 +46,18 @@ Address.Country = function Country(props: SelectProps) {
   return (
     <Select
       defaultValue={country}
-      onChange={(event) => {
-        setCountry(event.currentTarget.value as SupportedCountry);
+      onChange={(e) => {
+        setCountry(e.currentTarget.value as SupportedCountry);
       }}
       {...props}
     >
-      {COUNTRIES.map((country) => (
-        <Select.Option key={country.abbreviation} value={country.abbreviation}>
-          {country.name}
-        </Select.Option>
-      ))}
+      {COUNTRIES.map((country) => {
+        return (
+          <SelectItem key={country.abbreviation} value={country.abbreviation}>
+            {country.name}
+          </SelectItem>
+        );
+      })}
     </Select>
   );
 };
@@ -165,11 +167,13 @@ Address.State = function State(props: SelectProps) {
 
   return (
     <Select {...props}>
-      {states.map((state) => (
-        <Select.Option key={state.abbreviation} value={state.abbreviation}>
-          {state.name}
-        </Select.Option>
-      ))}
+      {states.map((state) => {
+        return (
+          <SelectItem key={state.abbreviation} value={state.abbreviation}>
+            {state.name}
+          </SelectItem>
+        );
+      })}
     </Select>
   );
 };
