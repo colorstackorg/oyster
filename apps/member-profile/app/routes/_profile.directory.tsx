@@ -33,10 +33,10 @@ import {
   Pagination,
   Pill,
   ProfilePicture,
-  Select,
   Text,
   useSearchParams,
 } from '@oyster/ui';
+import { Select, SelectItem } from '@oyster/ui/select';
 import { run, toTitleCase } from '@oyster/utils';
 
 import { CompanyCombobox } from '@/shared/components/company-combobox';
@@ -283,14 +283,16 @@ function FilterForm({ close }: { close: VoidFunction }) {
       <Select
         placeholder="Select a field..."
         onChange={(e) => {
-          setFilterKey((e.currentTarget.value || null) as DirectoryFilterKey);
+          setFilterKey(
+            (e.currentTarget.value || null) as DirectoryFilterKey
+          );
         }}
       >
         {DIRECTORY_FILTER_KEYS.map((key) => {
           return (
-            <option key={key} disabled={!!searchParams[key]} value={key}>
+            <SelectItem key={key} value={key} disabled={!!searchParams[key]}>
               {toTitleCase(key)}
-            </option>
+            </SelectItem>
           );
         })}
       </Select>
@@ -332,9 +334,9 @@ function FilterForm({ close }: { close: VoidFunction }) {
             <Select name={keys.graduationYear}>
               {years.map((year) => {
                 return (
-                  <option key={year} value={year}>
+                  <SelectItem key={year} value={String(year)}>
                     {year}
-                  </option>
+                  </SelectItem>
                 );
               })}
             </Select>

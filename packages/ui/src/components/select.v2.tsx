@@ -8,31 +8,57 @@ import {
   Root,
   ScrollDownButton,
   ScrollUpButton,
-  type SelectItemProps,
-  type SelectProps,
-  type SelectTriggerProps,
-  type SelectValueProps,
   Trigger,
   Value,
   Viewport,
 } from '@radix-ui/react-select';
+import type { SelectItemProps } from '@radix-ui/react-select';
+import type { SelectProps as RadixSelectProps } from '@radix-ui/react-select';
+import type { SelectTriggerProps } from '@radix-ui/react-select';
+import { useState } from 'react';
 import { Check, ChevronDown, ChevronUp } from 'react-feather';
 
 import { getInputCn } from './input';
 import { cx } from '../utils/cx';
 
-type Props = SelectProps &
-  Pick<SelectTriggerProps, 'id'> &
-  Pick<SelectValueProps, 'id' | 'placeholder'>;
+export type SelectProps = RadixSelectProps &
+  Pick<SelectTriggerProps, 'id'> & {
+    defaultValue?: string;
+    name?: string;
+    required?: boolean;
+    placeholder?: string;
+    onChange?: (e: { currentTarget: { value: string } }) => void;
+  };
 
 export function Select({
   children,
   id,
+  defaultValue,
+  name,
+  required,
   placeholder = 'Select...',
+  onChange,
   ...props
-}: Props) {
+}: SelectProps) {
+  const [value, setValue] = useState(defaultValue);
+
+  const handleValueChange = (newValue: string) => {
+    setValue(newValue);
+
+    if (onChange) {
+      onChange({ currentTarget: { value: newValue } });
+    }
+  };
+
   return (
-    <Root {...props}>
+    <Root
+      defaultValue={defaultValue}
+      value={value}
+      onValueChange={handleValueChange}
+      name={name}
+      required={required}
+      {...props}
+    >
       <Trigger
         className={cx(
           getInputCn(),
@@ -77,7 +103,7 @@ export function SelectItem({ className, children, ...props }: SelectItemProps) {
       {...props}
     >
       <ItemText>{children}</ItemText>
-      <ItemIndicator>
+      <ItemIndicator className="ml-auto">
         <Check size={16} />
       </ItemIndicator>
     </Item>
