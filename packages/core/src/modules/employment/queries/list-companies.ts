@@ -68,10 +68,7 @@ export async function listCompanies<
             .as('employees');
         },
         ({ fn }) => {
-          return fn
-            .count<string>('opportunities.id')
-            .filterWhere('opportunities.expiresAt', '>', new Date())
-            .as('opportunities');
+          return fn.count<string>('opportunities.id').as('opportunities');
         },
         ({ fn }) => {
           return fn.count<string>('companyReviews.id').as('reviews');
