@@ -33,7 +33,6 @@ import {
   Button,
   Divider,
   ErrorMessage,
-  getButtonCn,
   getErrors,
   Modal,
   validateForm,
@@ -236,12 +235,13 @@ export default function EditFullTimeOffer() {
         <Button.Group flexDirection="row-reverse" spacing="between">
           <Button.Submit>Save</Button.Submit>
 
-          <Link
-            className={getButtonCn({ color: 'error', variant: 'secondary' })}
-            to={generatePath(Route['/offers/full-time/:id/delete'], { id })}
-          >
-            Delete
-          </Link>
+          <Button.Slot color="error" variant="secondary">
+            <Link
+              to={generatePath(Route['/offers/full-time/:id/delete'], { id })}
+            >
+              Delete
+            </Link>
+          </Button.Slot>
         </Button.Group>
       </Form>
     </Modal>

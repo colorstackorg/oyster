@@ -8,7 +8,7 @@ import { sql } from 'kysely';
 import { Video } from 'react-feather';
 
 import { db } from '@oyster/db';
-import { cx, getButtonCn, ProfilePicture } from '@oyster/ui';
+import { Button, ProfilePicture } from '@oyster/ui';
 
 import {
   EventDate,
@@ -147,16 +147,16 @@ function PastEventItem({ event }: PastEventItemProps) {
           />
         )}
 
-        <a
-          className={cx(
-            getButtonCn({ fill: true, size: 'small', variant: 'secondary' }),
-            !event.recordingLink && 'invisible'
-          )}
-          href={event.recordingLink || undefined}
-          target="_blank"
+        <Button.Slot
+          className={!event.recordingLink && 'invisible'}
+          fill
+          size="small"
+          variant="secondary"
         >
-          View Recording <Video />
-        </a>
+          <a href={event.recordingLink || undefined} target="_blank">
+            View Recording <Video />
+          </a>
+        </Button.Slot>
       </div>
     </li>
   );
