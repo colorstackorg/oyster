@@ -3,7 +3,6 @@ import { db } from '@oyster/db';
 import { job } from '@/infrastructure/bull';
 import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { redis } from '@/infrastructure/redis';
-import { isFeatureFlagEnabled } from '@/modules/feature-flags/queries/is-feature-flag-enabled';
 import { slack } from '@/modules/slack/instances';
 import { ErrorWithContext } from '@/shared/errors';
 import { retryWithBackoff } from '@/shared/utils/core';
@@ -74,14 +73,12 @@ export async function addSlackMessage(data: AddSlackMessageInput) {
       isOpportunityChannel,
       isResumeReviewChannel,
       isSecuredTheBagChannel,
-      isCompensationEnabled,
     ] = await Promise.all([
       redis.sismember('slack:auto_reply_channels', data.channelId),
       redis.sismember('slack:compensation_channels', data.channelId),
       redis.sismember('slack:opportunity_channels', data.channelId),
       redis.sismember('slack:resume_review_channels', data.channelId),
       redis.sismember('slack:secured_the_bag_channels', data.channelId),
-      isFeatureFlagEnabled('compensation'),
     ]);
 
     if (!data.isBot && isAutoReplyChannel) {
@@ -93,7 +90,7 @@ export async function addSlackMessage(data: AddSlackMessageInput) {
       });
     }
 
-    if (!data.isBot && isCompensationEnabled && isCompensationChannel) {
+    if (!data.isBot && isCompensationChannel) {
       job('offer.share', {
         slackChannelId: data.channelId,
         slackMessageId: data.id,
