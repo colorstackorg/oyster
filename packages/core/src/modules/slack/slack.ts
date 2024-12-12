@@ -1037,7 +1037,7 @@ async function getMostRelevantThreads(
   });
 
   const filteredMatches = matches.filter((match) => {
-    return !options.exclude?.includes(match.id);
+    return !options.exclude?.includes(match.id) && !!match.metadata?.channelId;
   });
 
   let messages = await Promise.all(
@@ -1046,12 +1046,14 @@ async function getMostRelevantThreads(
         db
           .selectFrom('slackMessages')
           .select(['channelId', 'createdAt', 'text'])
+          .where('channelId', '=', match.metadata!.channelId)
           .where('id', '=', match.id)
           .executeTakeFirst(),
 
         db
           .selectFrom('slackMessages')
           .select(['text'])
+          .where('channelId', '=', match.metadata!.channelId)
           .where('threadId', '=', match.id)
           .orderBy('createdAt', 'asc')
           .limit(50)

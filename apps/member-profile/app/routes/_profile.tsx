@@ -15,7 +15,6 @@ import {
   User,
 } from 'react-feather';
 
-import { isFeatureFlagEnabled } from '@oyster/core/member-profile/server';
 import { getResumeBook } from '@oyster/core/resume-books';
 import { Dashboard, Divider } from '@oyster/ui';
 
@@ -25,9 +24,7 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const [isCompensationEnabled, resumeBook] = await Promise.all([
-    isFeatureFlagEnabled('compensation'),
-
+  const [resumeBook] = await Promise.all([
     getResumeBook({
       select: ['resumeBooks.id'],
       where: {
@@ -38,13 +35,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   ]);
 
   return json({
-    isCompensationEnabled,
     resumeBook,
   });
 }
 
 export default function ProfileLayout() {
-  const { isCompensationEnabled, resumeBook } = useLoaderData<typeof loader>();
+  const { resumeBook } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -84,20 +80,17 @@ export default function ProfileLayout() {
             />
             <Dashboard.NavigationLink
               icon={<Layers />}
-              isNew
               label="Opportunities"
               pathname={Route['/opportunities']}
               prefetch="intent"
             />
-            {isCompensationEnabled && (
-              <Dashboard.NavigationLink
-                icon={<DollarSign />}
-                isNew
-                label="Offers"
-                pathname={Route['/offers']}
-                prefetch="intent"
-              />
-            )}
+            <Dashboard.NavigationLink
+              icon={<DollarSign />}
+              isNew
+              label="Offers"
+              pathname={Route['/offers']}
+              prefetch="intent"
+            />
             <Dashboard.NavigationLink
               icon={<Briefcase />}
               label="Companies"
