@@ -209,7 +209,7 @@ async function notifyBusySlackThreadIfNecessary({
 
   const count = Number(row.count);
 
-  if (count !== 100 && count !== 500) {
+  if (count !== 250 && count !== 500) {
     return;
   }
 
@@ -218,10 +218,10 @@ async function notifyBusySlackThreadIfNecessary({
     message_ts: threadId,
   });
 
-  if (count === 100) {
+  if (count === 250) {
     job('notification.slack.send', {
       channel: SLACK_FEED_CHANNEL_ID,
-      message: `This <${permalink}|thread> hit 100 replies! 👀`,
+      message: `This <${permalink}|thread> hit 250 replies! 👀`,
       workspace: 'regular',
     });
 
