@@ -11,9 +11,13 @@ import { id } from '@oyster/utils';
 
 import { getChatCompletion } from '@/infrastructure/ai';
 import { job, registerWorker } from '@/infrastructure/bull';
-import { OpportunityBullJob } from '@/infrastructure/bull.types';
+import {
+  type GetBullJobData,
+  OpportunityBullJob,
+} from '@/infrastructure/bull.types';
 import { track } from '@/infrastructure/mixpanel';
 import { getPageContent } from '@/infrastructure/puppeteer';
+import { redis } from '@/infrastructure/redis';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { STUDENT_PROFILE_URL } from '@/shared/env';
@@ -93,6 +97,49 @@ export async function bookmarkOpportunity({
   }
 
   return success({});
+}
+
+// "Check for Deleted Opportunity (in Slack)"
+
+type CheckForDeletedOpportunityInput = Pick<
+  GetBullJobData<'slack.message.change'>,
+  'channelId' | 'deletedAt' | 'id'
+>;
+
+/**
+ * Checks for a soft-deleted opportunity. This is the case when somebody
+ * posts a message in an opportunity channel, someone else replies to it, and
+ * then the original message is soft-deleted (but still exists because there
+ * are replies).
+ */
+export async function checkForDeletedOpportunity({
+  channelId,
+  deletedAt,
+  id: messageId,
+}: CheckForDeletedOpportunityInput): Promise<void> {
+  if (!deletedAt) {
+    return;
+  }
+
+  const isOpportunityChannel = await redis.sismember(
+    'slack:opportunity_channels',
+    channelId
+  );
+
+  if (!isOpportunityChannel) {
+    return;
+  }
+
+  const opportunity = await db
+    .selectFrom('opportunities')
+    .select('id')
+    .where('slackChannelId', '=', channelId)
+    .where('slackMessageId', '=', messageId)
+    .executeTakeFirst();
+
+  if (opportunity) {
+    await deleteOpportunity({ opportunityId: opportunity.id });
+  }
 }
 
 // "Create Opportunity"
@@ -251,7 +298,7 @@ export async function createOpportunityTag(
 // "Delete Opportunity"
 
 type DeleteOpportunityInput = {
-  memberId: string;
+  memberId?: string;
   opportunityId: string;
 };
 
@@ -267,16 +314,18 @@ export async function deleteOpportunity({
   memberId,
   opportunityId,
 }: DeleteOpportunityInput): Promise<Result> {
-  const hasPermission = await hasOpportunityWritePermission({
-    memberId,
-    opportunityId,
-  });
-
-  if (!hasPermission) {
-    return fail({
-      code: 403,
-      error: 'You do not have permission to delete this opportunity.',
+  if (memberId) {
+    const hasPermission = await hasOpportunityWritePermission({
+      memberId,
+      opportunityId,
     });
+
+    if (!hasPermission) {
+      return fail({
+        code: 403,
+        error: 'You do not have permission to delete this opportunity.',
+      });
+    }
   }
 
   await db.transaction().execute(async (trx) => {
