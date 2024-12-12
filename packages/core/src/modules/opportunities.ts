@@ -214,8 +214,14 @@ async function createOpportunity({
       slackMessageId,
       title: 'Opportunity',
     })
+    .onConflict((oc) => {
+      return oc.columns(['slackChannelId', 'slackMessageId']).doUpdateSet({
+        // This does nothing, just here to ensure the `returning` clause
+        // works w/ the upsert command.
+        description: 'N/A',
+      });
+    })
     .returning(['id'])
-    .onConflict((oc) => oc.doNothing())
     .executeTakeFirstOrThrow();
 
   // If the link is NOT a protected URL, we'll scrape the website content
