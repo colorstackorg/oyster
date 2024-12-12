@@ -146,11 +146,12 @@ async function createOpportunity({
     return success({});
   }
 
-  const isLinkedInURL = link.includes('linkedin.com');
+  const isProtectedURL =
+    link.includes('docs.google.com') || link.includes('linkedin.com');
 
   let websiteContent = '';
 
-  if (!isLinkedInURL) {
+  if (!isProtectedURL) {
     websiteContent = await getPageContent(link);
   }
 
@@ -170,10 +171,10 @@ async function createOpportunity({
     .onConflict((oc) => oc.doNothing())
     .executeTakeFirstOrThrow();
 
-  // If the link is NOT a LinkedIn job posting, we'll scrape the website content
+  // If the link is NOT a protected URL, we'll scrape the website content
   // using puppeteer, create a new "empty" opportunity, and then refine it with
   // AI using that website content.
-  if (!isLinkedInURL) {
+  if (!isProtectedURL) {
     return refineOpportunity({
       content: websiteContent.slice(0, 10_000),
       opportunityId: opportunity.id,
