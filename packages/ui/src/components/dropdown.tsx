@@ -1,7 +1,18 @@
-import React, { type PropsWithChildren, useContext, useRef } from 'react';
+import React, {
+  type PropsWithChildren,
+  useContext,
+  useEffect,
+  useRef,
+} from 'react';
 
 import { useOnClickOutside } from '../hooks/use-on-click-outside';
 import { cx } from '../utils/cx';
+
+declare global {
+  interface Window {
+    [key: string]: any;
+  }
+}
 
 const DropdownContext = React.createContext({
   _initialized: false,
@@ -49,23 +60,51 @@ Dropdown.Container = function DropdownContainer({
   onClose,
 }: DropdownContainerProps) {
   const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
+  const closeFnId = useRef(
+    `dropdownClose${Math.random().toString(36).slice(2)}`
+  );
+
+  useEffect(() => {
+    window[closeFnId.current] = onClose as Window[string];
+
+    return () => {
+      delete window[closeFnId.current];
+    };
+  }, [onClose]);
 
   useOnClickOutside(ref, onClose);
 
   return (
-    <div className="relative" ref={ref}>
+    <div
+      className="relative"
+      ref={ref}
+      data-dropdown-container
+      data-onclose={closeFnId.current}
+    >
       {children}
     </div>
   );
 };
 
 Dropdown.Item = function DropdownItem({ children }: PropsWithChildren) {
+  const handleClick = (e: React.MouseEvent<HTMLLIElement>) => {
+    const container = (e.target as HTMLElement).closest(
+      '[data-dropdown-container]'
+    );
+    const onClose = container?.getAttribute('data-onclose');
+
+    if (onClose && typeof window[onClose] === 'function') {
+      (window[onClose] as () => void)();
+    }
+  };
+
   return (
     <li
       className={cx(
         'border-b border-b-gray-200 last:border-b-0',
         'dropdown-item'
       )}
+      onClick={handleClick}
     >
       {children}
     </li>
