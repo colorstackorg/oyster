@@ -2,8 +2,8 @@ import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
 
-import { getMemberByEmail } from '@/modules/member/queries/get-member-by-email';
-import { signToken } from '@/shared/utils/auth.utils';
+import { getMemberByEmail } from '@/modules/members/queries/get-member-by-email';
+import { signToken } from '@/shared/utils/auth';
 import { type OAuthCodeState } from '../authentication.types';
 import { type OAuthServiceType } from '../oauth.service';
 import { GoogleOAuthService } from '../services/google-oauth.service';

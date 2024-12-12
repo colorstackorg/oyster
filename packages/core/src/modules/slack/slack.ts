@@ -6,19 +6,19 @@ import { z } from 'zod';
 
 import { type DB, db } from '@oyster/db';
 
-import { job } from '@/infrastructure/bull/use-cases/job';
-import { cache, ONE_HOUR_IN_SECONDS } from '@/infrastructure/redis';
 import {
   createEmbedding,
   getChatCompletion,
   rerankDocuments,
-} from '@/modules/ai/ai';
-import { track } from '@/modules/mixpanel';
-import { sendSlackNotification } from '@/modules/notification/use-cases/send-slack-notification';
-import { getPineconeIndex } from '@/modules/pinecone';
+} from '@/infrastructure/ai';
+import { job } from '@/infrastructure/bull';
+import { track } from '@/infrastructure/mixpanel';
+import { getPineconeIndex } from '@/infrastructure/pinecone';
+import { cache, ONE_HOUR_IN_SECONDS } from '@/infrastructure/redis';
+import { sendSlackNotification } from '@/modules/notifications/use-cases/send-slack-notification';
 import { slack } from '@/modules/slack/instances';
 import { IS_PRODUCTION } from '@/shared/env';
-import { fail, type Result, success } from '@/shared/utils/core.utils';
+import { fail, type Result, success } from '@/shared/utils/core';
 
 // Constants
 
@@ -277,7 +277,8 @@ type AnswerPublicQuestionInput = {
 
 /**
  * Answers a question asked in a public Slack message by linking to relevant
- * threads in our Slack workspace.
+ * threads in our Slack workspace. After the answer has been sent, the bot then
+ * reacts to the original message with the ColorStack logo.
  *
  * @param input - The message (public question) to answer.
  * @returns The result of the answer.
@@ -414,6 +415,12 @@ export async function answerPublicQuestion({
     message,
     threadId,
     workspace: 'regular',
+  });
+
+  job('slack.reaction.add', {
+    channelId,
+    messageId: threadId,
+    reaction: 'goldicon',
   });
 
   await db.transaction().execute(async (trx) => {

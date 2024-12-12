@@ -19,6 +19,9 @@ export type SelectProps = Pick<
   width?: 'fit';
 };
 
+/**
+ * @deprecated Use the `Select` component from `@oyster/ui/select` instead.
+ */
 export function Select({
   children,
   defaultValue = '',

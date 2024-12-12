@@ -6,9 +6,9 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import {
+  Form,
   Link,
   Outlet,
-  Form as RemixForm,
   useLoaderData,
   useLocation,
   useNavigate,
@@ -28,7 +28,7 @@ import { generatePath } from 'react-router';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { listQueueNames } from '@oyster/core/admin-dashboard/server';
+import { listQueueNames } from '@oyster/core/bull';
 import {
   cx,
   Dashboard,
@@ -373,7 +373,7 @@ function QueueDropdown() {
               </Link>
             </Dropdown.Item>
             <Dropdown.Item>
-              <RemixForm method="post">
+              <Form method="post">
                 <button
                   name="action"
                   type="submit"
@@ -381,10 +381,10 @@ function QueueDropdown() {
                 >
                   <RefreshCw /> Clean Queue
                 </button>
-              </RemixForm>
+              </Form>
             </Dropdown.Item>
             <Dropdown.Item>
-              <RemixForm method="post">
+              <Form method="post">
                 <button
                   name="action"
                   type="submit"
@@ -392,7 +392,7 @@ function QueueDropdown() {
                 >
                   <Trash2 /> Obliterate Queue
                 </button>
-              </RemixForm>
+              </Form>
             </Dropdown.Item>
           </Dropdown.List>
         </Dropdown>
@@ -464,7 +464,7 @@ function RepeatableDropdown({ id }: RepeatableInView) {
         <Table.Dropdown>
           <Dropdown.List>
             <Dropdown.Item>
-              <RemixForm method="post">
+              <Form method="post">
                 <button
                   name="action"
                   type="submit"
@@ -474,7 +474,7 @@ function RepeatableDropdown({ id }: RepeatableInView) {
                 </button>
 
                 <input type="hidden" name="key" value={id} />
-              </RemixForm>
+              </Form>
             </Dropdown.Item>
           </Dropdown.List>
         </Table.Dropdown>
@@ -620,7 +620,7 @@ function JobDropdown({ id, status }: JobInView) {
           <Dropdown.List>
             {status === 'failed' && (
               <Dropdown.Item>
-                <RemixForm method="post">
+                <Form method="post">
                   <button
                     name="action"
                     type="submit"
@@ -630,12 +630,12 @@ function JobDropdown({ id, status }: JobInView) {
                   </button>
 
                   <input type="hidden" name="id" value={id} />
-                </RemixForm>
+                </Form>
               </Dropdown.Item>
             )}
 
             <Dropdown.Item>
-              <RemixForm method="post">
+              <Form method="post">
                 <button
                   name="action"
                   type="submit"
@@ -645,12 +645,12 @@ function JobDropdown({ id, status }: JobInView) {
                 </button>
 
                 <input type="hidden" name="id" value={id} />
-              </RemixForm>
+              </Form>
             </Dropdown.Item>
 
             {(status === 'delayed' || status === 'waiting') && (
               <Dropdown.Item>
-                <RemixForm method="post">
+                <Form method="post">
                   <button
                     name="action"
                     type="submit"
@@ -660,12 +660,12 @@ function JobDropdown({ id, status }: JobInView) {
                   </button>
 
                   <input type="hidden" name="id" value={id} />
-                </RemixForm>
+                </Form>
               </Dropdown.Item>
             )}
 
             <Dropdown.Item>
-              <RemixForm method="post">
+              <Form method="post">
                 <button
                   name="action"
                   type="submit"
@@ -675,7 +675,7 @@ function JobDropdown({ id, status }: JobInView) {
                 </button>
 
                 <input type="hidden" name="id" value={id} />
-              </RemixForm>
+              </Form>
             </Dropdown.Item>
           </Dropdown.List>
         </Table.Dropdown>

@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/node';
 import { type ZodError } from 'zod';
 
-import { extractZodErrorMessage } from '@/shared/utils/zod.utils';
+import { extractZodErrorMessage } from '@/shared/utils/zod';
 
 export type ErrorContext<
   T extends Record<string, unknown> = Record<string, unknown>,

@@ -5,7 +5,7 @@ import {
   getGoogleAuthUri,
   getSlackAuthUri,
 } from '@oyster/core/member-profile/server';
-import { Form, Login } from '@oyster/ui';
+import { ErrorMessage, Login } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
@@ -53,7 +53,7 @@ export default function LoginPage() {
 
       {error && (
         <div className="mt-4">
-          <Form.ErrorMessage>{error}</Form.ErrorMessage>
+          <ErrorMessage>{error}</ErrorMessage>
         </div>
       )}
     </Login.ButtonGroup>

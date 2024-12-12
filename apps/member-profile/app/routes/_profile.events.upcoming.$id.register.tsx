@@ -4,10 +4,11 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useLoaderData } from '@remix-run/react';
+import { Form, useLoaderData } from '@remix-run/react';
 import { Calendar, Check, ExternalLink } from 'react-feather';
 
-import { getEvent, job } from '@oyster/core/member-profile/server';
+import { job } from '@oyster/core/bull';
+import { getEvent } from '@oyster/core/member-profile/server';
 import { db } from '@oyster/db';
 import { Button, getButtonCn, Modal, Text } from '@oyster/ui';
 
@@ -140,7 +141,7 @@ export default function EventRegisterPage() {
         </Text>
       )}
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <Button.Group>
           {event.externalLink && (
             <a
@@ -158,7 +159,7 @@ export default function EventRegisterPage() {
             </Button.Submit>
           )}
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

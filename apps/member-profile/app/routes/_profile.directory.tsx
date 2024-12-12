@@ -4,10 +4,10 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
   Link,
   Outlet,
-  Form as RemixForm,
   useLoaderData,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
@@ -279,7 +279,7 @@ function FilterForm({ close }: { close: VoidFunction }) {
   const [searchParams] = useSearchParams(DirectorySearchParams);
 
   return (
-    <RemixForm className="form" method="get" onSubmit={close}>
+    <Form className="form" method="get" onSubmit={close}>
       <Select
         placeholder="Select a field..."
         onChange={(e) => {
@@ -386,7 +386,7 @@ function FilterForm({ close }: { close: VoidFunction }) {
           )
         );
       })}
-    </RemixForm>
+    </Form>
   );
 }
 

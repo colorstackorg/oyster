@@ -9,9 +9,9 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
   Link,
-  Form as RemixForm,
   useActionData,
   useLoaderData,
   useSearchParams,
@@ -29,21 +29,22 @@ import {
   getResumeBookSubmission,
   listResumeBookSponsors,
   submitResume,
-} from '@oyster/core/resumes';
+} from '@oyster/core/resume-books';
 import {
   RESUME_BOOK_CODING_LANGUAGES,
   RESUME_BOOK_JOB_SEARCH_STATUSES,
   RESUME_BOOK_ROLES,
   SubmitResumeInput,
-} from '@oyster/core/resumes/types';
+} from '@oyster/core/resume-books/types';
 import { db } from '@oyster/db';
 import { FORMATTED_RACE, Race, WorkAuthorizationStatus } from '@oyster/types';
 import {
   Button,
   Checkbox,
   Divider,
+  ErrorMessage,
+  Field,
   FileUploader,
-  Form,
   getErrors,
   Input,
   MB_IN_BYTES,
@@ -388,13 +389,13 @@ function ResumeBookForm() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm
+    <Form
       className="form mt-4"
       data-gap="2rem"
       method="post"
       encType="multipart/form-data"
     >
-      <Form.Field
+      <Field
         description={run(() => {
           const emailLink = (
             <Link
@@ -435,9 +436,9 @@ function ResumeBookForm() {
           required
           value="1"
         />
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         error={errors.firstName}
         label="First Name"
         labelFor={keys.firstName}
@@ -449,9 +450,9 @@ function ResumeBookForm() {
           name={keys.firstName}
           required
         />
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         error={errors.lastName}
         label="Last Name"
         labelFor={keys.lastName}
@@ -463,9 +464,9 @@ function ResumeBookForm() {
           name={keys.lastName}
           required
         />
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         description={
           <Text>
             If you would like to change your primary email, click{' '}
@@ -490,9 +491,9 @@ function ResumeBookForm() {
           name="email"
           required
         />
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         description="How do you identify?"
         error={errors.race}
         label="Race & Ethnicity"
@@ -521,9 +522,9 @@ function ResumeBookForm() {
             );
           })}
         </Checkbox.Group>
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         error={errors.linkedInUrl}
         label="LinkedIn Profile/URL"
         labelFor={keys.linkedInUrl}
@@ -535,9 +536,9 @@ function ResumeBookForm() {
           name={keys.linkedInUrl}
           required
         />
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         description="For reference, US and Canadian citizens are always authorized, while non-US citizens may be authorized if their immigration status allows them to work."
         error={errors.workAuthorizationStatus}
         label="Are you authorized to work in the US or Canada?"
@@ -557,7 +558,7 @@ function ResumeBookForm() {
           <option value={WorkAuthorizationStatus.UNAUTHORIZED}>No</option>
           <option value={WorkAuthorizationStatus.UNSURE}>I'm not sure</option>
         </Select>
-      </Form.Field>
+      </Field>
 
       <HometownField
         defaultLatitude={member.hometownCoordinates?.y}
@@ -570,7 +571,7 @@ function ResumeBookForm() {
         name={keys.hometown}
       />
 
-      <Form.Field
+      <Field
         description="Companies will use this to determine your graduation date, education level, and university location so be sure it's updated."
         error={errors.educationId}
         label="Select your highest level of education."
@@ -612,11 +613,11 @@ function ResumeBookForm() {
             })}
           </Select>
         </div>
-      </Form.Field>
+      </Field>
 
       <Divider />
 
-      <Form.Field
+      <Field
         error={errors.codingLanguages}
         label="Which coding language(s) are you most proficient with?"
         labelFor={keys.codingLanguages}
@@ -636,9 +637,9 @@ function ResumeBookForm() {
             );
           })}
         </Checkbox.Group>
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         error={errors.preferredRoles}
         label="Which kind of roles are you interested in?"
         labelFor={keys.preferredRoles}
@@ -658,9 +659,9 @@ function ResumeBookForm() {
             );
           })}
         </Checkbox.Group>
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         error={errors.employmentSearchStatus}
         label="Which is the status of your employment search?"
         labelFor={keys.employmentSearchStatus}
@@ -681,11 +682,11 @@ function ResumeBookForm() {
             );
           })}
         </Radio.Group>
-      </Form.Field>
+      </Field>
 
       <PreferredSponsorsField />
 
-      <Form.Field
+      <Field
         description={
           <Text>
             Before you submit your resume, you can get feedback from our{' '}
@@ -719,14 +720,14 @@ function ResumeBookForm() {
             },
           })}
         />
-      </Form.Field>
+      </Field>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Submit</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }
 
@@ -779,7 +780,7 @@ function PreferredSponsorsField() {
   );
 
   return (
-    <Form.Field
+    <Field
       error={
         errors.preferredCompany1 ||
         errors.preferredCompany2 ||
@@ -829,6 +830,6 @@ function PreferredSponsorsField() {
           {options}
         </Select>
       </div>
-    </Form.Field>
+    </Field>
   );
 }

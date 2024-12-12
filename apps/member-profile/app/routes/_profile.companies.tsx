@@ -4,10 +4,10 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
   Link,
   Outlet,
-  Form as RemixForm,
   useLoaderData,
   useSearchParams,
   useSubmit,
@@ -130,7 +130,7 @@ function SortCompaniesForm() {
   const sortKeys = ListCompaniesOrderBy._def.innerType.enum;
 
   return (
-    <RemixForm
+    <Form
       className="flex min-w-[12rem] items-center gap-4"
       method="get"
       onChange={(e) => submit(e.currentTarget)}
@@ -154,7 +154,7 @@ function SortCompaniesForm() {
       </Select>
 
       <ExistingSearchParams exclude={['orderBy']} />
-    </RemixForm>
+    </Form>
   );
 }
 

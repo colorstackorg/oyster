@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import {
   editFeatureFlag,
@@ -18,7 +14,8 @@ import { EditFeatureFlagInput } from '@oyster/core/admin-dashboard/ui';
 import {
   Button,
   Checkbox,
-  Form,
+  ErrorMessage,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -96,8 +93,8 @@ export default function EditFeatureFlagModal() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
-        <Form.Field
+      <Form className="form" method="post">
+        <Field
           description="This is the name that will be displayed in the UI."
           error={errors.displayName}
           label="Display Name"
@@ -110,9 +107,9 @@ export default function EditFeatureFlagModal() {
             name={keys.displayName}
             required
           />
-        </Form.Field>
+        </Field>
 
-        <Form.Field
+        <Field
           description="An optional, but recommended, description of what the flag is for."
           error={errors.description}
           label="Description"
@@ -124,7 +121,7 @@ export default function EditFeatureFlagModal() {
             minRows={2}
             name={keys.description}
           />
-        </Form.Field>
+        </Field>
 
         <Checkbox
           color="lime-100"
@@ -135,12 +132,12 @@ export default function EditFeatureFlagModal() {
           value="1"
         />
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Edit</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

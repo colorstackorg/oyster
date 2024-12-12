@@ -8,10 +8,11 @@ import React, {
 
 import { ResourceType } from '@oyster/core/resources';
 import {
+  Checkbox,
   ComboboxPopover,
+  Field,
   type FieldProps,
   FileUploader,
-  Form,
   Input,
   MB_IN_BYTES,
   MultiCombobox,
@@ -63,7 +64,7 @@ export function ResourceAttachmentField({
   }
 
   return (
-    <Form.Field
+    <Field
       description="Please choose the file you want to upload."
       error={error}
       label="Attachment"
@@ -85,7 +86,7 @@ export function ResourceAttachmentField({
           },
         })}
       />
-    </Form.Field>
+    </Field>
   );
 }
 
@@ -95,7 +96,7 @@ export function ResourceDescriptionField({
   name,
 }: FieldProps<string>) {
   return (
-    <Form.Field
+    <Field
       description="Must be less than 160 characters."
       error={error}
       label="Description"
@@ -110,7 +111,7 @@ export function ResourceDescriptionField({
         name={name}
         required
       />
-    </Form.Field>
+    </Field>
   );
 }
 
@@ -126,7 +127,7 @@ export function ResourceLinkField({
   }
 
   return (
-    <Form.Field
+    <Field
       description="Please include the full URL."
       error={error}
       label="URL"
@@ -134,7 +135,19 @@ export function ResourceLinkField({
       required
     >
       <Input defaultValue={defaultValue} id={name} name={name} required />
-    </Form.Field>
+    </Field>
+  );
+}
+
+export function ResourceSearchConfirmationField({ name }: FieldProps<boolean>) {
+  return (
+    <Checkbox
+      label="I have searched for this resource and it does not exist."
+      id={name}
+      name={name}
+      required
+      value="1"
+    />
   );
 }
 
@@ -160,7 +173,7 @@ export function ResourceTagsField({
   }
 
   return (
-    <Form.Field
+    <Field
       description="To categorize and help others find this resource."
       error={error}
       label="Tags"
@@ -237,7 +250,7 @@ export function ResourceTagsField({
           );
         }}
       </MultiCombobox>
-    </Form.Field>
+    </Field>
   );
 }
 
@@ -247,9 +260,9 @@ export function ResourceTitleField({
   name,
 }: FieldProps<string>) {
   return (
-    <Form.Field error={error} label="Title" labelFor={name} required>
+    <Field error={error} label="Title" labelFor={name} required>
       <Input defaultValue={defaultValue} id={name} name={name} required />
-    </Form.Field>
+    </Field>
   );
 }
 
@@ -261,7 +274,7 @@ export function ResourceTypeField({
   const { setType } = useContext(ResourceFormContext);
 
   return (
-    <Form.Field
+    <Field
       description="What kind of type is this resource?"
       error={error}
       label="Type"
@@ -280,6 +293,6 @@ export function ResourceTypeField({
         <option value={ResourceType.FILE}>File</option>
         <option value={ResourceType.URL}>URL</option>
       </Select>
-    </Form.Field>
+    </Field>
   );
 }

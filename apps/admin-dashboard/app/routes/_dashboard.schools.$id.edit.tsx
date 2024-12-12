@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import { getSchool, updateSchool } from '@oyster/core/education';
 import { UpdateSchoolInput } from '@oyster/core/education/types';
@@ -93,7 +89,7 @@ export default function EditSchoolModal() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <SchoolNameField defaultValue={school.name} error={errors.name} />
         <SchoolTagsField defaultValue={school.tags?.[0]} error={errors.tags} />
         <SchoolCityField
@@ -112,7 +108,7 @@ export default function EditSchoolModal() {
         <Button.Group>
           <Button.Submit>Edit</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

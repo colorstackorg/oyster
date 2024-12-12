@@ -8,11 +8,7 @@ import {
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useSearchParams,
-} from '@remix-run/react';
+import { Form, useActionData, useSearchParams } from '@remix-run/react';
 
 import { track } from '@oyster/core/mixpanel';
 import { AddResourceInput } from '@oyster/core/resources';
@@ -20,7 +16,7 @@ import { addResource } from '@oyster/core/resources/server';
 import {
   Button,
   Divider,
-  Form,
+  ErrorMessage,
   getErrors,
   MB_IN_BYTES,
   Modal,
@@ -32,6 +28,7 @@ import {
   ResourceDescriptionField,
   ResourceLinkField,
   ResourceProvider,
+  ResourceSearchConfirmationField,
   ResourceTagsField,
   ResourceTitleField,
   ResourceTypeField,
@@ -123,8 +120,9 @@ export default function AddResourceModal() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post" encType="multipart/form-data">
+      <Form className="form" method="post" encType="multipart/form-data">
         <ResourceProvider>
+          <ResourceSearchConfirmationField name="confirmation" />
           <ResourceTitleField error={errors.title} name={keys.title} />
           <ResourceDescriptionField
             error={errors.description}
@@ -140,12 +138,12 @@ export default function AddResourceModal() {
           <ResourceLinkField error={errors.link} name={keys.link} />
         </ResourceProvider>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Save</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }
