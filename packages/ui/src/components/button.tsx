@@ -4,7 +4,7 @@ import React, { type PropsWithChildren } from 'react';
 import { match } from 'ts-pattern';
 
 import { Spinner } from './spinner';
-import { cx } from '../utils/cx';
+import { type ClassName, cx } from '../utils/cx';
 
 type ButtonProps = Pick<
   React.HTMLProps<HTMLButtonElement>,
@@ -42,15 +42,25 @@ export const Button = ({
   );
 };
 
+type ButtonSlotProps = Pick<
+  ButtonProps,
+  'children' | 'color' | 'fill' | 'size' | 'variant'
+> & {
+  className?: ClassName;
+};
+
 Button.Slot = function ButtonSlot({
   children,
+  className,
   color,
   fill,
   size,
   variant,
-}: Pick<ButtonProps, 'children' | 'color' | 'fill' | 'size' | 'variant'>) {
+}: ButtonSlotProps) {
   return (
-    <Slot className={getButtonCn({ color, fill, size, variant })}>
+    <Slot
+      className={cx(getButtonCn({ color, fill, size, variant }), className)}
+    >
       {children}
     </Slot>
   );
@@ -74,7 +84,7 @@ Button.Submit = function SubmitButton(
   );
 };
 
-export function getButtonCn({
+function getButtonCn({
   color = 'primary',
   fill = false,
   size = 'regular',

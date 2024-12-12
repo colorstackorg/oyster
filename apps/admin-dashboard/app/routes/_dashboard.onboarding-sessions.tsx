@@ -15,9 +15,9 @@ import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
 import { db } from '@oyster/db';
 import {
   ACCENT_COLORS,
+  Button,
   Dashboard,
   Dropdown,
-  getButtonCn,
   Pagination,
   Pill,
   type PillProps,
@@ -139,12 +139,11 @@ export default function OnboardingSessionsPage() {
 
 function UploadOnboardingSessionButton() {
   return (
-    <Link
-      to={Route['/onboarding-sessions/upload']}
-      className={getButtonCn({ variant: 'primary' })}
-    >
-      <Plus size={16} /> Upload Session
-    </Link>
+    <Button.Slot variant="primary">
+      <Link to={Route['/onboarding-sessions/upload']}>
+        <Plus size={16} /> Upload Session
+      </Link>
+    </Button.Slot>
   );
 }
 

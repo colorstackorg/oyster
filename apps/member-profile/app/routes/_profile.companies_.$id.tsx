@@ -7,7 +7,7 @@ import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import { ExternalLink } from 'react-feather';
 
 import { getCompany } from '@oyster/core/employment/server';
-import { getButtonCn, Text } from '@oyster/ui';
+import { Button, Text } from '@oyster/ui';
 import {
   Tooltip,
   TooltipContent,
@@ -196,15 +196,16 @@ function OpportunitiesAlert() {
           : `${opportunities} open opportunities found.`}
       </Text>
 
-      <Link
-        className={getButtonCn({ size: 'small' })}
-        to={{
-          pathname: Route['/opportunities'],
-          search: `?company=${company.id}`,
-        }}
-      >
-        View
-      </Link>
+      <Button.Slot size="small">
+        <Link
+          to={{
+            pathname: Route['/opportunities'],
+            search: `?company=${company.id}`,
+          }}
+        >
+          View
+        </Link>
+      </Button.Slot>
     </div>
   );
 }

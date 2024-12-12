@@ -23,7 +23,6 @@ import {
   Button,
   Divider,
   ErrorMessage,
-  getButtonCn,
   getErrors,
   Modal,
   validateForm,
@@ -177,14 +176,15 @@ export default function EditResourceModal() {
         <Button.Group flexDirection="row-reverse" spacing="between">
           <Button.Submit>Save</Button.Submit>
 
-          <Link
-            className={getButtonCn({ color: 'error', variant: 'secondary' })}
-            to={generatePath(Route['/resources/:id/delete'], {
-              id: resource.id,
-            })}
-          >
-            Delete
-          </Link>
+          <Button.Slot color="error" variant="secondary">
+            <Link
+              to={generatePath(Route['/resources/:id/delete'], {
+                id: resource.id,
+              })}
+            >
+              Delete
+            </Link>
+          </Button.Slot>
         </Button.Group>
       </Form>
     </Modal>

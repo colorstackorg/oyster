@@ -10,7 +10,7 @@ import { Calendar, Check, ExternalLink } from 'react-feather';
 import { job } from '@oyster/core/bull';
 import { getEvent } from '@oyster/core/member-profile/server';
 import { db } from '@oyster/db';
-import { Button, getButtonCn, Modal, Text } from '@oyster/ui';
+import { Button, Modal, Text } from '@oyster/ui';
 
 import { formatEventDate } from '@/shared/components/event';
 import { Route } from '@/shared/constants';
@@ -144,13 +144,11 @@ export default function EventRegisterPage() {
       <Form className="form" method="post">
         <Button.Group>
           {event.externalLink && (
-            <a
-              className={getButtonCn({ variant: 'secondary' })}
-              href={event.externalLink}
-              target="_blank"
-            >
-              <ExternalLink className="h-5 w-5" /> See Details
-            </a>
+            <Button.Slot variant="secondary">
+              <a href={event.externalLink} target="_blank">
+                <ExternalLink className="h-5 w-5" /> See Details
+              </a>
+            </Button.Slot>
           )}
 
           {!event.isRegistered && (

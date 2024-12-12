@@ -22,9 +22,9 @@ import { listResources, listTags } from '@oyster/core/resources/server';
 import { getPresignedURL } from '@oyster/core/s3';
 import { ISO8601Date } from '@oyster/types';
 import {
+  Button,
   Dashboard,
   ExistingSearchParams,
-  getButtonCn,
   Pagination,
   Pill,
   Select,
@@ -240,15 +240,16 @@ function AddResourceLink() {
   const [searchParams] = useSearchParams();
 
   return (
-    <Link
-      className={getButtonCn({ size: 'small' })}
-      to={{
-        pathname: Route['/resources/add'],
-        search: searchParams.toString(),
-      }}
-    >
-      <Plus size={20} /> Add Resource
-    </Link>
+    <Button.Slot size="small">
+      <Link
+        to={{
+          pathname: Route['/resources/add'],
+          search: searchParams.toString(),
+        }}
+      >
+        <Plus size={20} /> Add Resource
+      </Link>
+    </Button.Slot>
   );
 }
 

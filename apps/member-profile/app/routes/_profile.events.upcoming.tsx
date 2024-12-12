@@ -9,7 +9,7 @@ import { Check, CheckCircle, ExternalLink } from 'react-feather';
 import { generatePath } from 'react-router';
 
 import { db } from '@oyster/db';
-import { Button, getButtonCn, ProfilePicture, Text } from '@oyster/ui';
+import { Button, ProfilePicture, Text } from '@oyster/ui';
 
 import {
   EventDate,
@@ -177,17 +177,11 @@ function UpcomingEventItem({ event }: UpcomingEventItemProps) {
 
         <Button.Group fill>
           {event.externalLink && (
-            <a
-              className={getButtonCn({
-                fill: true,
-                size: 'small',
-                variant: 'secondary',
-              })}
-              href={event.externalLink}
-              target="_blank"
-            >
-              <ExternalLink className="h-5 w-5 text-primary" /> See Details
-            </a>
+            <Button.Slot fill size="small" variant="secondary">
+              <a href={event.externalLink} target="_blank">
+                <ExternalLink className="h-5 w-5 text-primary" /> See Details
+              </a>
+            </Button.Slot>
           )}
 
           {!event.isRegistered && <RegisterButton id={event.id} />}
@@ -244,11 +238,10 @@ function RegisteredStatus({ registered }: { registered: boolean }) {
 
 function RegisterButton({ id }: Pick<UpcomingEvent, 'id'>) {
   return (
-    <Link
-      className={getButtonCn({ fill: true, size: 'small' })}
-      to={generatePath(Route['/events/upcoming/:id/register'], { id })}
-    >
-      <Check className="h-5 w-5 text-white" /> Register
-    </Link>
+    <Button.Slot fill size="small">
+      <Link to={generatePath(Route['/events/upcoming/:id/register'], { id })}>
+        <Check size={20} /> Register
+      </Link>
+    </Button.Slot>
   );
 }
