@@ -63,7 +63,6 @@ export async function addSlackMessage(data: AddSlackMessageInput) {
   // We don't need to await this since it's not a critical path.
   notifyBusySlackThreadIfNecessary({
     channelId: data.channelId,
-    id: data.id,
     threadId: data.threadId,
   });
 
@@ -194,9 +193,8 @@ async function ensureThreadExistsIfNecessary(data: AddSlackMessageInput) {
  */
 async function notifyBusySlackThreadIfNecessary({
   channelId,
-  id,
   threadId,
-}: Pick<AddSlackMessageInput, 'channelId' | 'id' | 'threadId'>) {
+}: Pick<AddSlackMessageInput, 'channelId' | 'threadId'>) {
   // We only need to check the # of replies if this is a reply itself.
   if (!threadId) {
     return;
@@ -217,7 +215,7 @@ async function notifyBusySlackThreadIfNecessary({
 
   const { permalink } = await slack.chat.getPermalink({
     channel: channelId,
-    message_ts: id,
+    message_ts: threadId,
   });
 
   if (count === 100) {
