@@ -1,5 +1,5 @@
 export { Address } from './components/address';
-export { Button, getButtonCn } from './components/button';
+export { Button } from './components/button';
 export { Checkbox } from './components/checkbox';
 export { Combobox, ComboboxInput, ComboboxItem } from './components/combobox';
 export type { ComboboxProps } from './components/combobox';
