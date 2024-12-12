@@ -1,3 +1,4 @@
+import { Slot } from '@radix-ui/react-slot';
 import { useNavigation } from '@remix-run/react';
 import React, { type PropsWithChildren } from 'react';
 import { match } from 'ts-pattern';
@@ -38,6 +39,20 @@ export const Button = ({
       {children}
       {submitting && <Spinner color={color} />}
     </button>
+  );
+};
+
+Button.Slot = function ButtonSlot({
+  children,
+  color,
+  fill,
+  size,
+  variant,
+}: Pick<ButtonProps, 'children' | 'color' | 'fill' | 'size' | 'variant'>) {
+  return (
+    <Slot className={getButtonCn({ color, fill, size, variant })}>
+      {children}
+    </Slot>
   );
 };
 
