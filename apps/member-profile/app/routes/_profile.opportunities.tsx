@@ -19,8 +19,8 @@ import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
 import {
   type AccentColor,
+  Button,
   Dashboard,
-  getButtonCn,
   Pagination,
   Pill,
   ProfilePicture,
@@ -463,15 +463,16 @@ function TagsColumn({ id, tags }: OpportunityInView) {
 
   if (!tags.length) {
     return (
-      <Link
-        className={getButtonCn({ size: 'xs', variant: 'secondary' })}
-        to={{
-          pathname: generatePath(Route['/opportunities/:id/refine'], { id }),
-          search: searchParams.toString(),
-        }}
-      >
-        Generate Tags <Zap size={16} />
-      </Link>
+      <Button.Slot size="xs" variant="secondary">
+        <Link
+          to={{
+            pathname: generatePath(Route['/opportunities/:id/refine'], { id }),
+            search: searchParams.toString(),
+          }}
+        >
+          Generate Tags <Zap size={16} />
+        </Link>
+      </Button.Slot>
     );
   }
 

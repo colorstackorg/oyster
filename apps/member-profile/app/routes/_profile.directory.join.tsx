@@ -4,7 +4,7 @@ import { type PropsWithChildren } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { Button, cx, getButtonCn, Modal, Text } from '@oyster/ui';
+import { Button, cx, Modal, Text } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
@@ -123,9 +123,11 @@ export function JoinDirectoryBackButton({
     | (typeof Route)['/directory/join/3'];
 }>) {
   return (
-    <Link to={to} className={getButtonCn({ variant: 'secondary' })}>
-      <ArrowLeft size={20} /> {children}
-    </Link>
+    <Button.Slot variant="secondary">
+      <Link to={to}>
+        <ArrowLeft size={20} /> {children}
+      </Link>
+    </Button.Slot>
   );
 }
 

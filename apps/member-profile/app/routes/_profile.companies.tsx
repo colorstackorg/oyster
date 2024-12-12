@@ -21,10 +21,10 @@ import {
 import { listCompanies } from '@oyster/core/employment/server';
 import { track } from '@oyster/core/mixpanel';
 import {
+  Button,
   cx,
   Dashboard,
   ExistingSearchParams,
-  getButtonCn,
   getTextCn,
   Pagination,
   Select,
@@ -111,15 +111,16 @@ function AddReviewLink() {
   const [searchParams] = useSearchParams();
 
   return (
-    <Link
-      className={getButtonCn({ size: 'small' })}
-      to={{
-        pathname: Route['/companies/reviews/add'],
-        search: searchParams.toString(),
-      }}
-    >
-      <Plus size={20} /> Add Review
-    </Link>
+    <Button.Slot size="small">
+      <Link
+        to={{
+          pathname: Route['/companies/reviews/add'],
+          search: searchParams.toString(),
+        }}
+      >
+        <Plus size={20} /> Add Review
+      </Link>
+    </Button.Slot>
   );
 }
 

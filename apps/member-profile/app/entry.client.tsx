@@ -7,8 +7,6 @@ Sentry.init({
   dsn: window.env.SENTRY_DSN,
   enabled: window.env.ENVIRONMENT !== 'development',
   environment: window.env.ENVIRONMENT,
-  replaysSessionSampleRate: 0.0,
-  replaysOnErrorSampleRate: 1.0,
   tracesSampleRate: 0.25,
   integrations: [
     new Sentry.BrowserTracing({
@@ -17,11 +15,6 @@ Sentry.init({
         useLocation,
         useMatches
       ),
-    }),
-    new Sentry.Replay({
-      blockAllMedia: false,
-      maskAllInputs: true,
-      maskAllText: false,
     }),
   ],
 });

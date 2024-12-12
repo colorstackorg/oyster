@@ -26,7 +26,7 @@ import {
   StudentActiveStatus,
   Timezone,
 } from '@oyster/types';
-import { Button, cx, Divider, getButtonCn, Text } from '@oyster/ui';
+import { Button, cx, Divider, Text } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import { Card, type CardProps } from '@/shared/components/card';
@@ -365,13 +365,14 @@ function OnboardingSessionCard() {
       </Card.Description>
 
       <Button.Group>
-        <a
-          className={getButtonCn({ size: 'small', variant: 'primary' })}
-          href="https://calendly.com/colorstack-onboarding-ambassador/onboarding"
-          target="_blank"
-        >
-          Book Onboarding Session <ExternalLink size={20} />
-        </a>
+        <Button.Slot size="small" variant="primary">
+          <Link
+            target="_blank"
+            to="https://calendly.com/colorstack-onboarding-ambassador/onboarding"
+          >
+            Book Onboarding Session <ExternalLink size={20} />
+          </Link>
+        </Button.Slot>
       </Button.Group>
     </Card>
   );
@@ -392,12 +393,9 @@ function ActivationCard() {
       </Card.Description>
 
       <Button.Group>
-        <Link
-          className={getButtonCn({ size: 'small', variant: 'primary' })}
-          to={Route['/home/activation']}
-        >
-          See Progress
-        </Link>
+        <Button.Slot size="small" variant="primary">
+          <Link to={Route['/home/activation']}>See Progress</Link>
+        </Button.Slot>
       </Button.Group>
     </Card>
   );
@@ -637,13 +635,11 @@ function MerchStoreCard() {
       </ul>
 
       <Button.Group>
-        <a
-          href="https://colorstackmerch.org"
-          target="_blank"
-          className={getButtonCn({ variant: 'primary' })}
-        >
-          Shop Now <ExternalLink size={20} />
-        </a>
+        <Button.Slot variant="primary">
+          <a href="https://colorstackmerch.org" target="_blank">
+            Shop Now <ExternalLink size={20} />
+          </a>
+        </Button.Slot>
       </Button.Group>
     </Card>
   );

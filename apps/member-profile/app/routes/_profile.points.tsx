@@ -28,7 +28,6 @@ import { db } from '@oyster/db';
 import {
   Button,
   cx,
-  getButtonCn,
   Link,
   Pill,
   Select,
@@ -439,15 +438,14 @@ function ActivityHistory() {
           </ul>
 
           {completedActivities.length < totalActivitiesCompleted && (
-            <RemixLink
-              className={cx(
-                getButtonCn({ variant: 'secondary' }),
-                'mx-auto mt-8 w-[50%] min-w-[10rem]'
-              )}
-              to={{ search: searchParams.toString() }}
+            <Button.Slot
+              className="mx-auto mt-8 w-[50%] min-w-[10rem]"
+              variant="secondary"
             >
-              Show {increaseLimitBy} More
-            </RemixLink>
+              <RemixLink to={{ search: searchParams.toString() }}>
+                Show {increaseLimitBy} More
+              </RemixLink>
+            </Button.Slot>
           )}
         </>
       ) : (
@@ -466,19 +464,17 @@ function ActivityHistory() {
                   </Text>
 
                   <Button.Group>
-                    <RemixLink
-                      to={Route['/profile/education/add']}
-                      className={getButtonCn({ variant: 'secondary' })}
-                    >
-                      <Plus /> Add Education
-                    </RemixLink>
+                    <Button.Slot variant="secondary">
+                      <RemixLink to={Route['/profile/education/add']}>
+                        <Plus /> Add Education
+                      </RemixLink>
+                    </Button.Slot>
 
-                    <RemixLink
-                      to={Route['/profile/work/add']}
-                      className={getButtonCn({ variant: 'secondary' })}
-                    >
-                      <Plus /> Add Work Experience
-                    </RemixLink>
+                    <Button.Slot variant="secondary">
+                      <RemixLink to={Route['/profile/work/add']}>
+                        <Plus /> Add Work Experience
+                      </RemixLink>
+                    </Button.Slot>
                   </Button.Group>
                 </>
               );
