@@ -214,8 +214,14 @@ async function createOpportunity({
       slackMessageId,
       title: 'Opportunity',
     })
+    .onConflict((oc) => {
+      return oc.columns(['slackChannelId', 'slackMessageId']).doUpdateSet({
+        // This does nothing, just here to ensure the `returning` clause
+        // works w/ the upsert command.
+        description: 'N/A',
+      });
+    })
     .returning(['id'])
-    .onConflict((oc) => oc.doNothing())
     .executeTakeFirstOrThrow();
 
   // If the link is NOT a protected URL, we'll scrape the website content
@@ -462,7 +468,7 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
 
   <output>
     {
-      "company": "string",
+      "company": "string | null",
       "description": "string",
       "expiresAt": "string | null",
       "tags": "string[]",
@@ -472,7 +478,7 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
 `;
 
 const RefineOpportunityResponse = z.object({
-  company: z.string().trim().min(1),
+  company: z.string().trim().min(1).nullable(),
   description: z.string().trim().min(1).max(500),
   expiresAt: z.string().nullable(),
   tags: z.array(z.string().trim().min(1)).min(1),
@@ -524,19 +530,39 @@ export async function refineOpportunity(
     return completionResult;
   }
 
+  let json: JSON;
+
+  try {
+    json = JSON.parse(completionResult.data);
+  } catch (e) {
+    console.debug(
+      'Failed to parse JSON from AI response.',
+      completionResult.data
+    );
+
+    return fail({
+      code: 400,
+      error: 'Failed to parse JSON from AI response.',
+    });
+  }
+
   let data: RefineOpportunityResponse;
 
   try {
-    data = RefineOpportunityResponse.parse(JSON.parse(completionResult.data));
+    data = RefineOpportunityResponse.parse(json);
   } catch (error) {
+    console.error(error);
+
     return fail({
       code: 400,
-      error: 'Failed to parse or validate JSON from AI response.',
+      error: 'Failed to validate JSON from AI response.',
     });
   }
 
   const opportunity = await db.transaction().execute(async (trx) => {
-    const companyId = await getMostRelevantCompany(trx, data.company);
+    const companyId = data.company
+      ? await getMostRelevantCompany(trx, data.company)
+      : null;
 
     const expiresAt = data.expiresAt ? new Date(data.expiresAt) : undefined;
 
