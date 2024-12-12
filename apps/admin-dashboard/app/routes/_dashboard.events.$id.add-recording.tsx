@@ -83,8 +83,6 @@ export default function AddEventRecordingModal() {
   );
 }
 
-const keys = AddEventRecordingLinkInput.keyof().enum;
-
 function AddEventRecordingForm() {
   const { event } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
@@ -95,13 +93,13 @@ function AddEventRecordingForm() {
         description="Please add the full URL of the event recording."
         error={errors.recordingLink}
         label="Recording Link"
-        labelFor={keys.recordingLink}
+        labelFor="recordingLink"
         required
       >
         <Input
           defaultValue={event.recordingLink || undefined}
-          id={keys.recordingLink}
-          name={keys.recordingLink}
+          id="recordingLink"
+          name="recordingLink"
           placeholder="https://www.youtube.com/watch?v=..."
           required
         />

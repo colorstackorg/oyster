@@ -11,7 +11,7 @@ import { airtableWorker } from './modules/airtable';
 import { applicationWorker } from './modules/applications/applications';
 import { oneTimeCodeWorker } from './modules/authentication/one-time-code.worker';
 import { offerWorker } from './modules/compensation/offers';
-import { eventWorker } from './modules/events/events.worker';
+import { eventWorker } from './modules/events/events';
 import { feedWorker } from './modules/feed';
 import { gamificationWorker } from './modules/gamification/gamification';
 import { mailchimpWorker } from './modules/mailchimp';

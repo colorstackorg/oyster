@@ -7,7 +7,7 @@ export {
   CreateSchoolInput,
   EducationLevel,
 } from './modules/education/education.types';
-export { AddEventRecordingLinkInput } from './modules/events/events.types';
+export { AddEventRecordingLinkInput } from './modules/events/events';
 export {
   CreateFeatureFlagInput,
   EditFeatureFlagInput,
