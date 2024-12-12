@@ -53,7 +53,6 @@ export async function listCompanies<
 
   const [companies, { count }] = await Promise.all([
     query
-      .groupBy('companies.id')
       .select([
         ...select,
         ({ fn }) => {
@@ -68,12 +67,16 @@ export async function listCompanies<
             .as('employees');
         },
         ({ fn }) => {
-          return fn.count<string>('opportunities.id').as('opportunities');
+          return fn
+            .count<string>('opportunities.id')
+            .distinct()
+            .as('opportunities');
         },
         ({ fn }) => {
-          return fn.count<string>('companyReviews.id').as('reviews');
+          return fn.count<string>('companyReviews.id').distinct().as('reviews');
         },
       ])
+      .groupBy('companies.id')
       .$if(!!where.search, (qb) => {
         // If we have a search term, we want to order by the similarity of the
         // company name to the search term.
