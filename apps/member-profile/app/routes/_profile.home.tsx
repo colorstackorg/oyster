@@ -13,8 +13,8 @@ import {
 } from 'react-feather';
 import { match } from 'ts-pattern';
 
+import { countEventAttendees } from '@oyster/core/events/attendees';
 import {
-  countEventAttendees,
   countMessagesSent,
   getActiveStreakLeaderboard,
 } from '@oyster/core/member-profile/server';
@@ -55,9 +55,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   ] = await Promise.all([
     getActiveStreakLeaderboard(),
     getStudent(id),
-    countEventAttendees({
-      where: { studentId: id },
-    }),
+    countEventAttendees({ studentId: id }),
     countMessagesSent(id),
     getRecentActiveStatuses(id, timezone),
     getThisWeekActiveStatus(id, timezone),

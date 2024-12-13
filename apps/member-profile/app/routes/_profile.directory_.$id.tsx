@@ -5,9 +5,9 @@ import React, { type PropsWithChildren } from 'react';
 import { BookOpen, Calendar, Globe, Home, Link, MapPin } from 'react-feather';
 
 import { job } from '@oyster/core/bull';
+import { countEventAttendees } from '@oyster/core/events/attendees';
 import { getTotalPoints } from '@oyster/core/gamification';
 import {
-  countEventAttendees,
   countMessagesSent,
   getActiveStreak,
   getIcebreakerResponses,
@@ -48,9 +48,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   ] = await Promise.all([
     getActiveStreak(memberId),
     getEducationExperiences(memberId),
-    countEventAttendees({
-      where: { studentId: memberId },
-    }),
+    countEventAttendees({ studentId: memberId }),
     getIcebreakerResponses(memberId, [
       'icebreakerResponses.promptId',
       'icebreakerResponses.text',
