@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { type SelectExpression } from 'kysely';
+import { type SelectExpression, sql } from 'kysely';
 import { match } from 'ts-pattern';
 import { type z } from 'zod';
 
@@ -98,23 +98,6 @@ export async function deleteEvent(id: string) {
 
 // Read
 
-type CountEventsInput = {
-  status: 'past' | 'upcoming';
-};
-
-export async function countEvents({ status }: CountEventsInput) {
-  const result = await db
-    .selectFrom('events')
-    .select((eb) => eb.fn.countAll<string>().as('count'))
-    .where('events.endTime', status === 'past' ? '<=' : '>', new Date())
-    .where('events.hidden', '=', false)
-    .executeTakeFirstOrThrow();
-
-  const count = parseInt(result.count);
-
-  return count;
-}
-
 type GetEventOptions = {
   include?: 'isCheckedIn'[];
   memberId?: string;
@@ -195,6 +178,218 @@ export async function listEvents<
     events,
     totalEvents: parseInt(countResult.count),
   };
+}
+
+type ListPastEventsInput = {
+  timezone: string;
+};
+
+export async function listPastEvents({ timezone }: ListPastEventsInput) {
+  const records = await db
+    .selectFrom('events')
+    .select([
+      'endTime',
+      'id',
+      'name',
+      'recordingLink',
+      'startTime',
+      (eb) => {
+        return eb
+          .selectFrom(
+            eb
+              .selectFrom('eventAttendees')
+              .leftJoin('students', 'students.id', 'eventAttendees.studentId')
+              .select(['students.profilePicture'])
+              .whereRef('eventAttendees.eventId', '=', 'events.id')
+              .where('students.profilePicture', 'is not', null)
+              .orderBy('eventAttendees.createdAt', 'asc')
+              .limit(3)
+              .as('rows')
+          )
+          .select([
+            sql<string>`string_agg(profile_picture, ',')`.as('profilePictures'),
+          ])
+          .as('profilePictures');
+      },
+      (eb) => {
+        return eb
+          .selectFrom('eventAttendees')
+          .select(eb.fn.countAll<string>().as('count'))
+          .whereRef('eventAttendees.eventId', '=', 'events.id')
+          .as('attendeesCount');
+      },
+    ])
+    .where('endTime', '<=', new Date())
+    .where('events.hidden', '=', false)
+    .orderBy('startTime', 'desc')
+    .execute();
+
+  const events = records.map(
+    ({
+      attendeesCount,
+      endTime,
+      profilePictures: _profilePictures,
+      startTime,
+      ...record
+    }) => {
+      const date = formatEventDate(
+        { endTime, startTime },
+        { format: 'short', timezone }
+      );
+
+      const profilePictures = (_profilePictures || '')
+        .split(',')
+        .filter(Boolean);
+
+      return {
+        ...record,
+        attendeesCount: Number(attendeesCount),
+        date,
+        profilePictures,
+      };
+    }
+  );
+
+  return events;
+}
+
+type ListUpcomingEventsInput = {
+  memberId: string;
+  timezone: string;
+};
+
+export async function listUpcomingEvents({
+  memberId,
+  timezone,
+}: ListUpcomingEventsInput) {
+  const records = await db
+    .selectFrom('events')
+    .select([
+      'endTime',
+      'externalLink',
+      'id',
+      'name',
+      'startTime',
+      (eb) => {
+        return eb
+          .exists(
+            eb
+              .selectFrom('eventRegistrations')
+              .whereRef('eventRegistrations.eventId', '=', 'events.id')
+              .where('eventRegistrations.studentId', '=', memberId)
+          )
+          .as('isRegistered');
+      },
+      (eb) => {
+        return eb
+          .selectFrom(
+            eb
+              .selectFrom('eventRegistrations')
+              .leftJoin(
+                'students',
+                'students.id',
+                'eventRegistrations.studentId'
+              )
+              .select([
+                'eventRegistrations.registeredAt',
+                'students.profilePicture',
+              ])
+              .whereRef('eventRegistrations.eventId', '=', 'events.id')
+              .where('students.profilePicture', 'is not', null)
+              .orderBy('eventRegistrations.registeredAt', 'desc')
+              .limit(3)
+              .as('rows')
+          )
+          .select([
+            sql<string>`string_agg(profile_picture, ',')`.as('profilePictures'),
+          ])
+          .as('profilePictures');
+      },
+      (eb) => {
+        return eb
+          .selectFrom('eventRegistrations')
+          .select(eb.fn.countAll<string>().as('count'))
+          .whereRef('eventRegistrations.eventId', '=', 'events.id')
+          .as('registrationsCount');
+      },
+    ])
+    .where('endTime', '>', new Date())
+    .where('events.hidden', '=', false)
+    .orderBy('startTime', 'asc')
+    .execute();
+
+  const events = records.map(
+    ({
+      endTime,
+      profilePictures: _profilePictures,
+      registrationsCount,
+      startTime,
+      ...record
+    }) => {
+      const date = formatEventDate(
+        { endTime, startTime },
+        { format: 'short', timezone }
+      );
+
+      const profilePictures = (_profilePictures || '')
+        .split(',')
+        .filter(Boolean);
+
+      return {
+        ...record,
+        date,
+        profilePictures,
+        registrationsCount: Number(registrationsCount),
+      };
+    }
+  );
+
+  return events;
+}
+
+type FormatEventDateArgs = {
+  endTime: Date;
+  startTime: Date;
+};
+
+type FormatEventDateOptions = {
+  format: 'short' | 'long';
+  timezone: string;
+};
+
+function formatEventDate(
+  { endTime, startTime }: FormatEventDateArgs,
+  { format, timezone }: FormatEventDateOptions
+) {
+  const startTimeObject = dayjs(startTime).tz(timezone);
+  const endTimeObject = dayjs(endTime).tz(timezone);
+
+  let start = '';
+  let end = '';
+
+  match({
+    isSameDate: startTimeObject.date() === endTimeObject.date(),
+    format,
+  })
+    .with({ format: 'short', isSameDate: true }, () => {
+      start = startTimeObject.format('ddd, MMM D, YYYY, h:mm A');
+      end = endTimeObject.format('h:mm A');
+    })
+    .with({ format: 'long', isSameDate: true }, () => {
+      start = startTimeObject.format('dddd, MMMM D, YYYY, h:mm A');
+      end = endTimeObject.format('h:mm A');
+    })
+    .with({ format: 'short', isSameDate: false }, () => {
+      start = startTimeObject.format('ddd, MMM D, YYYY, h:mm A');
+      end = endTimeObject.format('ddd, MMM D, YYYY, h:mm A');
+    })
+    .with({ format: 'long', isSameDate: false }, () => {
+      start = startTimeObject.format('dddd, MMMM D, YYYY, h:mm A');
+      end = endTimeObject.format('dddd, MMMM D, YYYY, h:mm A');
+    })
+    .exhaustive();
+
+  return `${start} - ${end}`;
 }
 
 // Worker

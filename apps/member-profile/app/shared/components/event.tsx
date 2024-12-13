@@ -1,42 +1,5 @@
 import dayjs from 'dayjs';
-import { type PropsWithChildren } from 'react';
-import { Calendar } from 'react-feather';
 import { match } from 'ts-pattern';
-
-import { Text } from '@oyster/ui';
-
-// Components
-
-export function EventSection({ children }: PropsWithChildren) {
-  return <section className="flex flex-col gap-4">{children}</section>;
-}
-
-export function EventList({ children }: PropsWithChildren) {
-  return (
-    <ul className="grid grid-cols-1 gap-4 @[720px]:grid-cols-2 @[1080px]:grid-cols-3 @[1440px]:grid-cols-4">
-      {children}
-    </ul>
-  );
-}
-
-export function EventName({ name }: { name: string }) {
-  return (
-    <Text className="mb-auto" variant="lg" weight="600">
-      {name}
-    </Text>
-  );
-}
-
-export function EventDate({ date }: { date: string }) {
-  return (
-    <div className="flex gap-2">
-      <Calendar className="h-5 w-5 text-gray-500" />
-      <Text color="gray-500" variant="sm">
-        {date}
-      </Text>
-    </div>
-  );
-}
 
 // Utilities
 
