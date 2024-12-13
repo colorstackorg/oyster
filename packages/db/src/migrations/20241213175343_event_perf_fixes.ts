@@ -1,10 +1,9 @@
-import { type Kysely } from 'kysely';
+import { type Kysely, sql } from 'kysely';
 
 export async function up(db: Kysely<any>) {
-  await db.schema
-    .alterTable('event_attendees')
-    .dropConstraint('UQ_9d32xlhph8j7')
-    .execute();
+  await sql`alter table "event_attendees" drop constraint "UQ_9d32xlhph8j7"`.execute(
+    db
+  );
 
   await db.schema
     .alterTable('event_attendees')
