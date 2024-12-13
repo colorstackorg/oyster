@@ -266,63 +266,48 @@ export async function listUpcomingEvents({
 }: ListUpcomingEventsInput) {
   const records = await db
     .selectFrom('events')
+    .leftJoin('eventRegistrations', 'eventRegistrations.eventId', 'events.id')
+    .leftJoin('students', 'students.id', 'eventRegistrations.studentId')
     .select([
-      'endTime',
-      'externalLink',
-      'id',
-      'name',
-      'startTime',
+      'events.endTime',
+      'events.externalLink',
+      'events.id',
+      'events.name',
+      'events.startTime',
       (eb) => {
-        return eb
-          .exists(
+        return eb.fn
+          .max(
             eb
-              .selectFrom('eventRegistrations')
-              .whereRef('eventRegistrations.eventId', '=', 'events.id')
-              .where('eventRegistrations.studentId', '=', memberId)
+              .case()
+              .when('eventRegistrations.studentId', '=', memberId)
+              .then(1)
+              .else(0)
+              .end()
           )
           .as('isRegistered');
       },
-      (eb) => {
-        return eb
-          .selectFrom(
-            eb
-              .selectFrom('eventRegistrations')
-              .leftJoin(
-                'students',
-                'students.id',
-                'eventRegistrations.studentId'
-              )
-              .select([
-                'eventRegistrations.registeredAt',
-                'students.profilePicture',
-              ])
-              .whereRef('eventRegistrations.eventId', '=', 'events.id')
-              .where('students.profilePicture', 'is not', null)
-              .orderBy('eventRegistrations.registeredAt', 'desc')
-              .limit(3)
-              .as('rows')
-          )
-          .select([
-            sql<string>`string_agg(profile_picture, ',')`.as('profilePictures'),
-          ])
-          .as('profilePictures');
+      ({ ref }) => {
+        const field = sql<string>`string_agg(${ref('students.profilePicture')}, ',' order by ${ref('eventRegistrations.registeredAt')} desc)`;
+
+        return field.as('profilePictures');
       },
-      (eb) => {
-        return eb
-          .selectFrom('eventRegistrations')
-          .select(eb.fn.countAll<string>().as('count'))
-          .whereRef('eventRegistrations.eventId', '=', 'events.id')
+      ({ fn }) => {
+        return fn
+          .count<string>('eventRegistrations.email')
+          .distinct()
           .as('registrationsCount');
       },
     ])
-    .where('endTime', '>', new Date())
+    .where('events.endTime', '>', new Date())
     .where('events.hidden', '=', false)
-    .orderBy('startTime', 'asc')
+    .groupBy('events.id')
+    .orderBy('events.startTime', 'asc')
     .execute();
 
   const events = records.map(
     ({
       endTime,
+      isRegistered,
       profilePictures: _profilePictures,
       registrationsCount,
       startTime,
@@ -335,11 +320,13 @@ export async function listUpcomingEvents({
 
       const profilePictures = (_profilePictures || '')
         .split(',')
-        .filter(Boolean);
+        .filter(Boolean)
+        .slice(0, 3);
 
       return {
         ...record,
         date,
+        isRegistered: Boolean(isRegistered),
         profilePictures,
         registrationsCount: Number(registrationsCount),
       };
