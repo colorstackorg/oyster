@@ -95,24 +95,15 @@ export async function deleteEvent(id: string) {
 
 // Read
 
-export async function countPastEvents() {
+type CountEventsInput = {
+  status: 'past' | 'upcoming';
+};
+
+export async function countEvents({ status }: CountEventsInput) {
   const result = await db
     .selectFrom('events')
     .select((eb) => eb.fn.countAll<string>().as('count'))
-    .where('events.endTime', '<=', new Date())
-    .where('events.hidden', '=', false)
-    .executeTakeFirstOrThrow();
-
-  const count = parseInt(result.count);
-
-  return count;
-}
-
-export async function countUpcomingEvents() {
-  const result = await db
-    .selectFrom('events')
-    .select((eb) => eb.fn.countAll<string>().as('count'))
-    .where('events.endTime', '>', new Date())
+    .where('events.endTime', status === 'past' ? '<=' : '>', new Date())
     .where('events.hidden', '=', false)
     .executeTakeFirstOrThrow();
 

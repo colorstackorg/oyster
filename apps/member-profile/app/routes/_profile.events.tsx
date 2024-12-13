@@ -1,10 +1,7 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
 
-import {
-  countPastEvents,
-  countUpcomingEvents,
-} from '@oyster/core/member-profile/server';
+import { countEvents } from '@oyster/core/member-profile/server';
 import { Text } from '@oyster/ui';
 
 import { NavigationItem } from '@/shared/components/navigation';
@@ -15,8 +12,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
   const [pastEventsCount, upcomingEventsCount] = await Promise.all([
-    countPastEvents(),
-    countUpcomingEvents(),
+    countEvents({ status: 'past' }),
+    countEvents({ status: 'upcoming' }),
   ]);
 
   return json({

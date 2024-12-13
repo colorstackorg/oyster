@@ -23,9 +23,7 @@ export {
   countEventAttendees,
   listEventAttendees,
 } from './modules/events/event-attendees';
-export { countPastEvents } from './modules/events/queries/count-past-events';
-export { countUpcomingEvents } from './modules/events/queries/count-upcoming-events';
-export { getEvent } from './modules/events/queries/get-event';
+export { countEvents, getEvent } from './modules/events/events';
 export { isFeatureFlagEnabled } from './modules/feature-flags/queries/is-feature-flag-enabled';
 export { getIcebreakerPrompts } from './modules/icebreakers/queries/get-icebreaker-prompts';
 export { getIcebreakerResponses } from './modules/icebreakers/queries/get-icebreaker-responses';

@@ -3,7 +3,7 @@ import { type EventAttendee } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull';
 
-// Write
+// Use Cases
 
 type CheckIntoEventInput = {
   eventId: string;
