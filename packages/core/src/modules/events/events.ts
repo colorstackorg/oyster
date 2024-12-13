@@ -22,6 +22,8 @@ import {
 
 // Write
 
+// "Add Event Recording Link"
+
 export const AddEventRecordingLinkInput = Event.pick({
   recordingLink: true,
 });
@@ -40,6 +42,8 @@ export async function addEventRecordingLink(
     .where('id', '=', id)
     .executeTakeFirst();
 }
+
+// "Create Event"
 
 type CreateEventInput = Pick<Event, 'description' | 'name' | 'type'> & {
   endTime: string;
@@ -69,6 +73,8 @@ export async function createEvent({
     .execute();
 }
 
+// "Delete Event"
+
 /**
  * Deletes an event. This will also delete any associated records/data, such as:
  * - `completed_activities` (for `ActivityType.ATTEND_EVENT`)
@@ -97,6 +103,8 @@ export async function deleteEvent(id: string) {
 }
 
 // Read
+
+// "Get Event"
 
 type GetEventOptions = {
   include?: 'isCheckedIn'[];
@@ -148,6 +156,8 @@ export async function getEvent<
   return result;
 }
 
+// "List Events"
+
 type ListEventsQuery = Partial<{
   limit: number;
   page: number;
@@ -180,6 +190,8 @@ export async function listEvents<
   };
 }
 
+// "List Past Events"
+
 type ListPastEventsInput = {
   timezone: string;
 };
@@ -187,41 +199,30 @@ type ListPastEventsInput = {
 export async function listPastEvents({ timezone }: ListPastEventsInput) {
   const records = await db
     .selectFrom('events')
+    .leftJoin('eventAttendees', 'eventAttendees.eventId', 'events.id')
+    .leftJoin('students', 'students.id', 'eventAttendees.studentId')
     .select([
-      'endTime',
-      'id',
-      'name',
-      'recordingLink',
-      'startTime',
-      (eb) => {
-        return eb
-          .selectFrom(
-            eb
-              .selectFrom('eventAttendees')
-              .leftJoin('students', 'students.id', 'eventAttendees.studentId')
-              .select(['students.profilePicture'])
-              .whereRef('eventAttendees.eventId', '=', 'events.id')
-              .where('students.profilePicture', 'is not', null)
-              .orderBy('eventAttendees.createdAt', 'asc')
-              .limit(3)
-              .as('rows')
-          )
-          .select([
-            sql<string>`string_agg(profile_picture, ',')`.as('profilePictures'),
-          ])
-          .as('profilePictures');
+      'events.endTime',
+      'events.id',
+      'events.name',
+      'events.recordingLink',
+      'events.startTime',
+      ({ ref }) => {
+        const field = sql<string>`string_agg(${ref('students.profilePicture')}, ',' order by ${ref('eventAttendees.createdAt')} asc)`;
+
+        return field.as('profilePictures');
       },
-      (eb) => {
-        return eb
-          .selectFrom('eventAttendees')
-          .select(eb.fn.countAll<string>().as('count'))
-          .whereRef('eventAttendees.eventId', '=', 'events.id')
+      ({ fn }) => {
+        return fn
+          .count<string>('eventAttendees.email')
+          .distinct()
           .as('attendeesCount');
       },
     ])
-    .where('endTime', '<=', new Date())
+    .where('events.endTime', '<=', new Date())
     .where('events.hidden', '=', false)
-    .orderBy('startTime', 'desc')
+    .groupBy('events.id')
+    .orderBy('events.startTime', 'desc')
     .execute();
 
   const events = records.map(
@@ -239,7 +240,8 @@ export async function listPastEvents({ timezone }: ListPastEventsInput) {
 
       const profilePictures = (_profilePictures || '')
         .split(',')
-        .filter(Boolean);
+        .filter(Boolean)
+        .slice(0, 3);
 
       return {
         ...record,
@@ -447,9 +449,7 @@ async function syncRecentAirmeetEvents(_: GetBullJobData<'event.recent.sync'>) {
   });
 }
 
-export async function syncAirmeetEvent({
-  eventId,
-}: GetBullJobData<'event.sync'>) {
+async function syncAirmeetEvent({ eventId }: GetBullJobData<'event.sync'>) {
   const event = await getAirmeetEvent(eventId);
 
   if (!event) {
