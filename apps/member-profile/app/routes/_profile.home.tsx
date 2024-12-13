@@ -55,7 +55,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   ] = await Promise.all([
     getActiveStreakLeaderboard(),
     getStudent(id),
-    countEventAttendees({ memberId: id }),
+    countEventAttendees({ studentId: id }),
     countMessagesSent(id),
     getRecentActiveStatuses(id, timezone),
     getThisWeekActiveStatus(id, timezone),

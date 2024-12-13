@@ -63,10 +63,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  await registerForEvent({
+  const result = await registerForEvent({
     eventId: params.id as string,
     studentId: user(session),
   });
+
+  if (!result.ok) {
+    return json({ error: result.error }, { status: result.code });
+  }
 
   toast(session, {
     message: 'Registered!',

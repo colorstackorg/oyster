@@ -2,6 +2,7 @@ import { db } from '@oyster/db';
 import { type EventAttendee } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull';
+import { fail, type Result, success } from '@/shared/utils/core';
 
 // Use Cases
 
@@ -10,30 +11,40 @@ type CheckIntoEventInput = {
   memberId: string;
 };
 
+/**
+ * This checks a member into an IRL event. This feature uses a QR code
+ * that is available in the Admin Dashboard. If the attendance record is new,
+ * a job is queued to process the event attendance.
+ */
 export async function checkIntoEvent({
   eventId,
   memberId,
-}: CheckIntoEventInput) {
-  const isNewCheckIn = await db.transaction().execute(async (trx) => {
-    const member = await trx
-      .selectFrom('students')
-      .select(['email', 'firstName', 'lastName'])
-      .where('id', '=', memberId)
-      .executeTakeFirstOrThrow();
+}: CheckIntoEventInput): Promise<Result> {
+  const member = await db
+    .selectFrom('students')
+    .select(['email', 'firstName', 'lastName'])
+    .where('id', '=', memberId)
+    .executeTakeFirst();
 
-    const record = await trx
-      .insertInto('eventAttendees')
-      .values({
-        email: member.email,
-        eventId,
-        name: member.firstName + ' ' + member.lastName,
-        studentId: memberId,
-      })
-      .onConflict((oc) => oc.doNothing())
-      .executeTakeFirst();
+  if (!member) {
+    return fail({
+      code: 404,
+      error: 'The member trying to check in was not found.',
+    });
+  }
 
-    return !!Number(record.numInsertedOrUpdatedRows);
-  });
+  const { numInsertedOrUpdatedRows } = await db
+    .insertInto('eventAttendees')
+    .values({
+      email: member.email,
+      eventId,
+      name: member.firstName + ' ' + member.lastName,
+      studentId: memberId,
+    })
+    .onConflict((oc) => oc.doNothing())
+    .executeTakeFirst();
+
+  const isNewCheckIn = !!Number(numInsertedOrUpdatedRows || 0);
 
   if (isNewCheckIn) {
     job('event.attended', {
@@ -41,31 +52,28 @@ export async function checkIntoEvent({
       studentId: memberId,
     });
   }
+
+  return success({});
 }
 
 // Read
 
-type CountEventAttendeesInput = {
-  eventId?: string;
-  memberId?: string;
-};
-
 export async function countEventAttendees({
   eventId,
-  memberId,
-}: CountEventAttendeesInput) {
+  studentId,
+}: Partial<Pick<EventAttendee, 'eventId' | 'studentId'>>) {
   const row = await db
     .selectFrom('eventAttendees')
     .select(({ fn }) => fn.countAll<string>().as('count'))
     .$if(!!eventId, (qb) => {
       return qb.where('eventId', '=', eventId!);
     })
-    .$if(!!memberId, (qb) => {
-      return qb.where('studentId', '=', memberId!);
+    .$if(!!studentId, (qb) => {
+      return qb.where('studentId', '=', studentId!);
     })
-    .executeTakeFirstOrThrow();
+    .executeTakeFirst();
 
-  const count = parseInt(row.count);
+  const count = Number(row?.count || 0);
 
   return count;
 }
@@ -80,7 +88,6 @@ export async function listEventAttendees({
       'students.firstName',
       'students.id',
       'students.lastName',
-      'students.preferredName',
       'students.profilePicture',
     ])
     .where('eventAttendees.eventId', '=', eventId)

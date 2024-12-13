@@ -1,29 +1,43 @@
 import { db } from '@oyster/db';
-import { FORMATTED_GENDER, type Gender } from '@oyster/types';
+import {
+  type EventRegistration,
+  FORMATTED_GENDER,
+  type Gender,
+} from '@oyster/types';
 
 import { job } from '@/infrastructure/bull';
 import { type GetBullJobData } from '@/infrastructure/bull.types';
+import { fail, type Result, success } from '@/shared/utils/core';
 import { registerForAirmeetEvent } from './airmeet';
 
 // Use Cases
 
+/**
+ * Creates an attendance record for a member in an event. This does NOT
+ * actually register the member on Airmeet. Instead, we queue a job called
+ * `event.register` that is non-blocking and will register the member on Airmeet.
+ */
 export async function registerForEvent({
   eventId,
   studentId,
-}: {
-  eventId: string;
-  studentId: string;
-}) {
-  const student = await db
+}: Pick<EventRegistration, 'eventId' | 'studentId'>): Promise<Result> {
+  const member = await db
     .selectFrom('students')
-    .select(['email'])
+    .select('email')
     .where('id', '=', studentId)
-    .executeTakeFirstOrThrow();
+    .executeTakeFirst();
+
+  if (!member) {
+    return fail({
+      code: 404,
+      error: 'The member trying to register was not found.',
+    });
+  }
 
   await db
     .insertInto('eventRegistrations')
     .values({
-      email: student.email,
+      email: member.email,
       eventId,
       registeredAt: new Date(),
       studentId,
@@ -35,8 +49,15 @@ export async function registerForEvent({
     eventId,
     studentId,
   });
+
+  return success({});
 }
 
+/**
+ * Registers a member for the given event on Airmeet. After the member is
+ * registered, a job called `event.registered` is queued to create an Airtable
+ * record for the registration.
+ */
 export async function registerForEventOnAirmeet({
   eventId,
   studentId,
