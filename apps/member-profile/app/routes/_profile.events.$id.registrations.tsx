@@ -37,7 +37,7 @@ export default function EventRegistrationsPage() {
   const { registrations } = useLoaderData<typeof loader>();
 
   return (
-    <Modal onCloseTo={Route['/events/upcoming']}>
+    <Modal onCloseTo={Route['/events']}>
       <Modal.Header>
         <Modal.Title>Guest List ({registrations.length})</Modal.Title>
         <Modal.CloseButton />

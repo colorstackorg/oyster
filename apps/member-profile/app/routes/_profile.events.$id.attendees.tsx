@@ -28,7 +28,7 @@ export default function EventAttendeesPage() {
   const { attendees, attendeesCount } = useLoaderData<typeof loader>();
 
   return (
-    <Modal onCloseTo={Route['/events/past']}>
+    <Modal onCloseTo={Route['/events']}>
       <Modal.Header>
         <Modal.Title>Attendees List ({attendeesCount})</Modal.Title>
         <Modal.CloseButton />

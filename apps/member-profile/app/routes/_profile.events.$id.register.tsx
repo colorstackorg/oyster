@@ -115,7 +115,7 @@ export default function EventRegisterPage() {
   const { event } = useLoaderData<typeof loader>();
 
   return (
-    <Modal onCloseTo={Route['/events/upcoming']}>
+    <Modal onCloseTo={Route['/events']}>
       <Modal.Header>
         <Modal.Title>{event.name}</Modal.Title>
         <Modal.CloseButton />
