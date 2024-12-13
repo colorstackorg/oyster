@@ -7,11 +7,10 @@ import {
 import { Form, useLoaderData } from '@remix-run/react';
 import { Calendar, Check, ExternalLink } from 'react-feather';
 
-import { getEvent } from '@oyster/core/events';
+import { formatEventDate, getEvent } from '@oyster/core/events';
 import { registerForEvent } from '@oyster/core/events/registrations';
 import { Button, Modal, Text } from '@oyster/ui';
 
-import { formatEventDate } from '@/shared/components/event';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import {

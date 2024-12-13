@@ -357,7 +357,7 @@ type FormatEventDateOptions = {
   timezone: string;
 };
 
-function formatEventDate(
+export function formatEventDate(
   { endTime, startTime }: FormatEventDateArgs,
   { format, timezone }: FormatEventDateOptions
 ) {
