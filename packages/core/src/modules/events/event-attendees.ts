@@ -1,9 +1,9 @@
-import { type SelectExpression } from 'kysely';
-
-import { type DB, db } from '@oyster/db';
+import { db } from '@oyster/db';
 import { type EventAttendee } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull';
+
+// Write
 
 type CheckIntoEventInput = {
   eventId: string;
@@ -43,21 +43,25 @@ export async function checkIntoEvent({
   }
 }
 
-type CountEventAttendeesOptions = {
-  where: Partial<Pick<EventAttendee, 'eventId' | 'studentId'>>;
+// Read
+
+type CountEventAttendeesInput = {
+  eventId?: string;
+  memberId?: string;
 };
 
-export async function countEventAttendees(options: CountEventAttendeesOptions) {
-  const { where } = options;
-
+export async function countEventAttendees({
+  eventId,
+  memberId,
+}: CountEventAttendeesInput) {
   const row = await db
     .selectFrom('eventAttendees')
-    .select((eb) => eb.fn.count<string>('eventId').as('count'))
-    .$if(!!where.eventId, (qb) => {
-      return qb.where('eventId', '=', where.eventId!);
+    .select(({ fn }) => fn.countAll<string>().as('count'))
+    .$if(!!eventId, (qb) => {
+      return qb.where('eventId', '=', eventId!);
     })
-    .$if(!!where.studentId, (qb) => {
-      return qb.where('studentId', '=', where.studentId!);
+    .$if(!!memberId, (qb) => {
+      return qb.where('studentId', '=', memberId!);
     })
     .executeTakeFirstOrThrow();
 
@@ -66,21 +70,20 @@ export async function countEventAttendees(options: CountEventAttendeesOptions) {
   return count;
 }
 
-type ListEventAttendeesOptions<Selection> = {
-  select: Selection[];
-  where: Pick<EventAttendee, 'eventId'>;
-};
-
-export async function listEventAttendees<
-  Selection extends SelectExpression<DB, 'eventAttendees' | 'students'>,
->(options: ListEventAttendeesOptions<Selection>) {
-  const { select, where } = options;
-
+export async function listEventAttendees({
+  eventId,
+}: Pick<EventAttendee, 'eventId'>) {
   const attendees = await db
     .selectFrom('eventAttendees')
     .leftJoin('students', 'students.id', 'eventAttendees.studentId')
-    .select(select)
-    .where('eventAttendees.eventId', '=', where.eventId)
+    .select([
+      'students.firstName',
+      'students.id',
+      'students.lastName',
+      'students.preferredName',
+      'students.profilePicture',
+    ])
+    .where('eventAttendees.eventId', '=', eventId)
     .where('eventAttendees.studentId', 'is not', null)
     .orderBy('eventAttendees.createdAt', 'asc')
     .execute();

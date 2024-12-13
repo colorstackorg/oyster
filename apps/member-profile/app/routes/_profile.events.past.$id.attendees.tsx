@@ -14,19 +14,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const eventId = params.id as string;
 
   const [attendees, attendeesCount] = await Promise.all([
-    listEventAttendees({
-      select: [
-        'students.firstName',
-        'students.id',
-        'students.lastName',
-        'students.preferredName',
-        'students.profilePicture',
-      ],
-      where: { eventId },
-    }),
-    countEventAttendees({
-      where: { eventId },
-    }),
+    listEventAttendees({ eventId }),
+    countEventAttendees({ eventId }),
   ]);
 
   return json({

@@ -48,9 +48,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   ] = await Promise.all([
     getActiveStreak(memberId),
     getEducationExperiences(memberId),
-    countEventAttendees({
-      where: { studentId: memberId },
-    }),
+    countEventAttendees({ memberId }),
     getIcebreakerResponses(memberId, [
       'icebreakerResponses.promptId',
       'icebreakerResponses.text',
