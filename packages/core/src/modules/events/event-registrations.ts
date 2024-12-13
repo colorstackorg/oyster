@@ -10,6 +10,36 @@ import { registerForAirmeetEvent } from './airmeet';
 export async function registerForEvent({
   eventId,
   studentId,
+}: {
+  eventId: string;
+  studentId: string;
+}) {
+  const student = await db
+    .selectFrom('students')
+    .select(['email'])
+    .where('id', '=', studentId)
+    .executeTakeFirstOrThrow();
+
+  await db
+    .insertInto('eventRegistrations')
+    .values({
+      email: student.email,
+      eventId,
+      registeredAt: new Date(),
+      studentId,
+    })
+    .onConflict((oc) => oc.doNothing())
+    .execute();
+
+  job('event.register', {
+    eventId,
+    studentId,
+  });
+}
+
+export async function registerForEventOnAirmeet({
+  eventId,
+  studentId,
 }: GetBullJobData<'event.register'>) {
   const student = await db
     .selectFrom('students')
@@ -71,4 +101,24 @@ export async function onRegisteredForEvent({
       'Registered On': new Date().toISOString(),
     },
   });
+}
+
+// Queries
+
+export async function listEventRegistrations(eventId: string) {
+  const registrations = await db
+    .selectFrom('eventRegistrations')
+    .leftJoin('students', 'students.id', 'eventRegistrations.studentId')
+    .select([
+      'students.firstName',
+      'students.id',
+      'students.lastName',
+      'students.preferredName',
+      'students.profilePicture',
+    ])
+    .where('eventRegistrations.eventId', '=', eventId)
+    .orderBy('eventRegistrations.registeredAt', 'desc')
+    .execute();
+
+  return registrations;
 }

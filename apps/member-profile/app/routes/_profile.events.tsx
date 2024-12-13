@@ -8,7 +8,7 @@ import { sql } from 'kysely';
 import { Check, CheckCircle, ExternalLink, Video } from 'react-feather';
 import { generatePath } from 'react-router';
 
-import { countEvents } from '@oyster/core/member-profile/server';
+import { countEvents } from '@oyster/core/events';
 import { db } from '@oyster/db';
 import { Button, ProfilePicture, Text } from '@oyster/ui';
 

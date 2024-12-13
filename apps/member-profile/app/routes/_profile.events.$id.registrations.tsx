@@ -1,36 +1,18 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, Link, useLoaderData } from '@remix-run/react';
 
-import { db } from '@oyster/db';
+import { listEventRegistrations } from '@oyster/core/events/registrations';
 import { type Student } from '@oyster/types';
 import { Modal, ProfilePicture } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 
 export async function loader({ params }: LoaderFunctionArgs) {
-  const registrations = await getEventRegistrations(params.id as string);
+  const registrations = await listEventRegistrations(params.id as string);
 
   return json({
     registrations,
   });
-}
-
-async function getEventRegistrations(eventId: string) {
-  const registrations = await db
-    .selectFrom('eventRegistrations')
-    .leftJoin('students', 'students.id', 'eventRegistrations.studentId')
-    .select([
-      'students.firstName',
-      'students.id',
-      'students.lastName',
-      'students.preferredName',
-      'students.profilePicture',
-    ])
-    .where('eventRegistrations.eventId', '=', eventId)
-    .orderBy('eventRegistrations.registeredAt', 'desc')
-    .execute();
-
-  return registrations;
 }
 
 export default function EventRegistrationsPage() {

@@ -8,9 +8,9 @@ import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import {
   addEventRecordingLink,
+  AddEventRecordingLinkInput,
   getEvent,
-} from '@oyster/core/admin-dashboard/server';
-import { AddEventRecordingLinkInput } from '@oyster/core/admin-dashboard/ui';
+} from '@oyster/core/events';
 import {
   Button,
   ErrorMessage,

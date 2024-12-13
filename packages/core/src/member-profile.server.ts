@@ -19,11 +19,6 @@ export { searchCrunchbaseOrganizations } from './modules/employment/queries/sear
 export { addWorkExperience } from './modules/employment/use-cases/add-work-experience';
 export { deleteWorkExperience } from './modules/employment/use-cases/delete-work-experience';
 export { editWorkExperience } from './modules/employment/use-cases/edit-work-experience';
-export {
-  countEventAttendees,
-  listEventAttendees,
-} from './modules/events/event-attendees';
-export { countEvents, getEvent } from './modules/events/events';
 export { isFeatureFlagEnabled } from './modules/feature-flags/queries/is-feature-flag-enabled';
 export { getIcebreakerPrompts } from './modules/icebreakers/queries/get-icebreaker-prompts';
 export { getIcebreakerResponses } from './modules/icebreakers/queries/get-icebreaker-responses';

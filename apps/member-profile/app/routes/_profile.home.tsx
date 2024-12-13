@@ -13,8 +13,8 @@ import {
 } from 'react-feather';
 import { match } from 'ts-pattern';
 
+import { countEventAttendees } from '@oyster/core/events/attendees';
 import {
-  countEventAttendees,
   countMessagesSent,
   getActiveStreakLeaderboard,
 } from '@oyster/core/member-profile/server';

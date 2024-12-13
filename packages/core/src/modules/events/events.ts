@@ -15,7 +15,10 @@ import { ActivityType } from '@/modules/gamification/gamification.types';
 import { getMemberByEmail } from '@/modules/members/queries/get-member-by-email';
 import { NotFoundError } from '@/shared/errors';
 import { getAirmeetEvent, listAirmeetAttendees } from './airmeet';
-import { onRegisteredForEvent, registerForEvent } from './event-registrations';
+import {
+  onRegisteredForEvent,
+  registerForEventOnAirmeet,
+} from './event-registrations';
 
 // Write
 
@@ -208,7 +211,7 @@ export const eventWorker = registerWorker(
         return syncRecentAirmeetEvents(data);
       })
       .with({ name: 'event.register' }, ({ data }) => {
-        return registerForEvent(data);
+        return registerForEventOnAirmeet(data);
       })
       .with({ name: 'event.registered' }, ({ data }) => {
         return onRegisteredForEvent(data);

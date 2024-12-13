@@ -7,9 +7,8 @@ import {
 import { Form, useLoaderData } from '@remix-run/react';
 import { Calendar, Check, ExternalLink } from 'react-feather';
 
-import { job } from '@oyster/core/bull';
-import { getEvent } from '@oyster/core/member-profile/server';
-import { db } from '@oyster/db';
+import { getEvent } from '@oyster/core/events';
+import { registerForEvent } from '@oyster/core/events/registrations';
 import { Button, Modal, Text } from '@oyster/ui';
 
 import { formatEventDate } from '@/shared/components/event';
@@ -78,36 +77,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
-  });
-}
-
-async function registerForEvent({
-  eventId,
-  studentId,
-}: {
-  eventId: string;
-  studentId: string;
-}) {
-  const student = await db
-    .selectFrom('students')
-    .select(['email'])
-    .where('id', '=', studentId)
-    .executeTakeFirstOrThrow();
-
-  await db
-    .insertInto('eventRegistrations')
-    .values({
-      email: student.email,
-      eventId,
-      registeredAt: new Date(),
-      studentId,
-    })
-    .onConflict((oc) => oc.doNothing())
-    .execute();
-
-  job('event.register', {
-    eventId,
-    studentId,
   });
 }
 
