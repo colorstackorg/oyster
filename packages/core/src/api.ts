@@ -23,7 +23,6 @@ import { onboardingSessionWorker } from './modules/onboarding-sessions/onboardin
 import { opportunityWorker } from './modules/opportunities';
 import { resumeReviewWorker } from './modules/resume-reviews';
 import { slackWorker } from './modules/slack/slack.worker';
-import { twilioWorker } from './modules/twilio/twilio.worker';
 
 export { job } from './infrastructure/bull';
 export { OAuthCodeState } from './modules/authentication/authentication.types';
@@ -54,5 +53,4 @@ export function startBullWorkers(): void {
   profileWorker.run();
   resumeReviewWorker.run();
   slackWorker.run();
-  twilioWorker.run();
 }

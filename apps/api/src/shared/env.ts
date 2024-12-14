@@ -58,6 +58,9 @@ const BaseEnvironmentConfig = z.object({
   SLACK_INTRODUCTIONS_CHANNEL_ID: EnvironmentVariable,
   SLACK_SIGNING_SECRET: EnvironmentVariable,
   STUDENT_PROFILE_URL: EnvironmentVariable,
+  TWILIO_ACCOUNT_SID: EnvironmentVariable,
+  TWILIO_AUTH_TOKEN: EnvironmentVariable,
+  TWILIO_PHONE_NUMBER: EnvironmentVariable,
 });
 
 const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
@@ -100,6 +103,9 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     SLACK_FEED_CHANNEL_ID: true,
     SLACK_INTRODUCTIONS_CHANNEL_ID: true,
     SLACK_SIGNING_SECRET: true,
+    TWILIO_ACCOUNT_SID: true,
+    TWILIO_AUTH_TOKEN: true,
+    TWILIO_PHONE_NUMBER: true,
   }).extend({
     ENVIRONMENT: z.literal(Environment.DEVELOPMENT),
     SMTP_HOST: EnvironmentVariable.optional(),

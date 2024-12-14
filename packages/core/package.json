@@ -82,7 +82,6 @@
     "nodemailer": "^6.9.13",
     "pdfjs-dist": "^4.5.136",
     "postmark": "^3.0.15",
-    "twilio": "^5.3.7",
     "ua-parser-js": "^1.0.36",
     "zod": "^3.20.2"
   },
