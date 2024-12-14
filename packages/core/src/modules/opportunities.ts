@@ -11,9 +11,13 @@ import { id } from '@oyster/utils';
 
 import { getChatCompletion } from '@/infrastructure/ai';
 import { job, registerWorker } from '@/infrastructure/bull';
-import { OpportunityBullJob } from '@/infrastructure/bull.types';
+import {
+  type GetBullJobData,
+  OpportunityBullJob,
+} from '@/infrastructure/bull.types';
 import { track } from '@/infrastructure/mixpanel';
 import { getPageContent } from '@/infrastructure/puppeteer';
+import { redis } from '@/infrastructure/redis';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { STUDENT_PROFILE_URL } from '@/shared/env';
@@ -95,6 +99,49 @@ export async function bookmarkOpportunity({
   return success({});
 }
 
+// "Check for Deleted Opportunity (in Slack)"
+
+type CheckForDeletedOpportunityInput = Pick<
+  GetBullJobData<'slack.message.change'>,
+  'channelId' | 'deletedAt' | 'id'
+>;
+
+/**
+ * Checks for a soft-deleted opportunity. This is the case when somebody
+ * posts a message in an opportunity channel, someone else replies to it, and
+ * then the original message is soft-deleted (but still exists because there
+ * are replies).
+ */
+export async function checkForDeletedOpportunity({
+  channelId,
+  deletedAt,
+  id: messageId,
+}: CheckForDeletedOpportunityInput): Promise<void> {
+  if (!deletedAt) {
+    return;
+  }
+
+  const isOpportunityChannel = await redis.sismember(
+    'slack:opportunity_channels',
+    channelId
+  );
+
+  if (!isOpportunityChannel) {
+    return;
+  }
+
+  const opportunity = await db
+    .selectFrom('opportunities')
+    .select('id')
+    .where('slackChannelId', '=', channelId)
+    .where('slackMessageId', '=', messageId)
+    .executeTakeFirst();
+
+  if (opportunity) {
+    await deleteOpportunity({ opportunityId: opportunity.id });
+  }
+}
+
 // "Create Opportunity"
 
 type CreateOpportunityInput = {
@@ -146,11 +193,12 @@ async function createOpportunity({
     return success({});
   }
 
-  const isLinkedInURL = link.includes('linkedin.com');
+  const isProtectedURL =
+    link.includes('docs.google.com') || link.includes('linkedin.com');
 
   let websiteContent = '';
 
-  if (!isLinkedInURL) {
+  if (!isProtectedURL) {
     websiteContent = await getPageContent(link);
   }
 
@@ -166,14 +214,20 @@ async function createOpportunity({
       slackMessageId,
       title: 'Opportunity',
     })
+    .onConflict((oc) => {
+      return oc.columns(['slackChannelId', 'slackMessageId']).doUpdateSet({
+        // This does nothing, just here to ensure the `returning` clause
+        // works w/ the upsert command.
+        description: 'N/A',
+      });
+    })
     .returning(['id'])
-    .onConflict((oc) => oc.doNothing())
     .executeTakeFirstOrThrow();
 
-  // If the link is NOT a LinkedIn job posting, we'll scrape the website content
+  // If the link is NOT a protected URL, we'll scrape the website content
   // using puppeteer, create a new "empty" opportunity, and then refine it with
   // AI using that website content.
-  if (!isLinkedInURL) {
+  if (!isProtectedURL) {
     return refineOpportunity({
       content: websiteContent.slice(0, 10_000),
       opportunityId: opportunity.id,
@@ -250,7 +304,7 @@ export async function createOpportunityTag(
 // "Delete Opportunity"
 
 type DeleteOpportunityInput = {
-  memberId: string;
+  memberId?: string;
   opportunityId: string;
 };
 
@@ -266,16 +320,18 @@ export async function deleteOpportunity({
   memberId,
   opportunityId,
 }: DeleteOpportunityInput): Promise<Result> {
-  const hasPermission = await hasOpportunityWritePermission({
-    memberId,
-    opportunityId,
-  });
-
-  if (!hasPermission) {
-    return fail({
-      code: 403,
-      error: 'You do not have permission to delete this opportunity.',
+  if (memberId) {
+    const hasPermission = await hasOpportunityWritePermission({
+      memberId,
+      opportunityId,
     });
+
+    if (!hasPermission) {
+      return fail({
+        code: 403,
+        error: 'You do not have permission to delete this opportunity.',
+      });
+    }
   }
 
   await db.transaction().execute(async (trx) => {
@@ -412,7 +468,7 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
 
   <output>
     {
-      "company": "string",
+      "company": "string | null",
       "description": "string",
       "expiresAt": "string | null",
       "tags": "string[]",
@@ -422,7 +478,7 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
 `;
 
 const RefineOpportunityResponse = z.object({
-  company: z.string().trim().min(1),
+  company: z.string().trim().min(1).nullable(),
   description: z.string().trim().min(1).max(500),
   expiresAt: z.string().nullable(),
   tags: z.array(z.string().trim().min(1)).min(1),
@@ -474,19 +530,39 @@ export async function refineOpportunity(
     return completionResult;
   }
 
+  let json: JSON;
+
+  try {
+    json = JSON.parse(completionResult.data);
+  } catch (e) {
+    console.debug(
+      'Failed to parse JSON from AI response.',
+      completionResult.data
+    );
+
+    return fail({
+      code: 400,
+      error: 'Failed to parse JSON from AI response.',
+    });
+  }
+
   let data: RefineOpportunityResponse;
 
   try {
-    data = RefineOpportunityResponse.parse(JSON.parse(completionResult.data));
+    data = RefineOpportunityResponse.parse(json);
   } catch (error) {
+    console.error(error);
+
     return fail({
       code: 400,
-      error: 'Failed to parse or validate JSON from AI response.',
+      error: 'Failed to validate JSON from AI response.',
     });
   }
 
   const opportunity = await db.transaction().execute(async (trx) => {
-    const companyId = await getMostRelevantCompany(trx, data.company);
+    const companyId = data.company
+      ? await getMostRelevantCompany(trx, data.company)
+      : null;
 
     const expiresAt = data.expiresAt ? new Date(data.expiresAt) : undefined;
 

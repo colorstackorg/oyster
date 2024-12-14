@@ -21,22 +21,23 @@ export async function listCompanies<
 >({ orderBy, pagination, select, where }: ListCompaniesOptions<Selection>) {
   const query = db
     .selectFrom('companies')
+    .leftJoin('opportunities', (join) => {
+      return join
+        .onRef('opportunities.companyId', '=', 'companies.id')
+        .on('opportunities.expiresAt', '>', new Date());
+    })
+    .leftJoin('workExperiences', 'workExperiences.companyId', 'companies.id')
+    .leftJoin(
+      'companyReviews',
+      'companyReviews.workExperienceId',
+      'workExperiences.id'
+    )
     .where((eb) => {
       // We only want to return companies that have at least one employee (past
       // or present) or opportunity.
       return eb.or([
-        eb.exists(() => {
-          return eb
-            .selectFrom('workExperiences')
-            .whereRef('workExperiences.companyId', '=', 'companies.id');
-        }),
-
-        eb.exists(() => {
-          return eb
-            .selectFrom('opportunities')
-            .whereRef('opportunities.companyId', '=', 'companies.id')
-            .where('opportunities.expiresAt', '>', new Date());
-        }),
+        eb('opportunities.companyId', 'is not', null),
+        eb('workExperiences.companyId', 'is not', null),
       ]);
     })
     .$if(!!where.search, (qb) => {
@@ -54,59 +55,28 @@ export async function listCompanies<
     query
       .select([
         ...select,
-
-        (eb) => {
-          return eb
-            .selectFrom('workExperiences')
-            .select((eb) => {
-              return eb.fn
-                .count<string>('workExperiences.studentId')
-                .distinct()
-                .as('count');
-            })
-            .whereRef('workExperiences.companyId', '=', 'companies.id')
+        ({ fn }) => {
+          return fn<string>('round', [fn.avg('rating'), sql.lit(1)]).as(
+            'averageRating'
+          );
+        },
+        ({ fn }) => {
+          return fn
+            .count<string>('workExperiences.studentId')
+            .distinct()
             .as('employees');
         },
-
-        (eb) => {
-          return eb
-            .selectFrom('companyReviews')
-            .leftJoin(
-              'workExperiences',
-              'workExperiences.id',
-              'companyReviews.workExperienceId'
-            )
-            .select((eb) => {
-              return eb
-                .fn<string>('round', [eb.fn.avg('rating'), sql.lit(1)])
-                .as('rating');
-            })
-            .whereRef('workExperiences.companyId', '=', 'companies.id')
-            .as('averageRating');
-        },
-
-        (eb) => {
-          return eb
-            .selectFrom('opportunities')
-            .select(eb.fn.countAll<string>().as('count'))
-            .whereRef('opportunities.companyId', '=', 'companies.id')
-            .where('opportunities.expiresAt', '>', new Date())
+        ({ fn }) => {
+          return fn
+            .count<string>('opportunities.id')
+            .distinct()
             .as('opportunities');
         },
-
-        (eb) => {
-          return eb
-            .selectFrom('companyReviews')
-            .leftJoin(
-              'workExperiences',
-              'workExperiences.id',
-              'companyReviews.workExperienceId'
-            )
-            .select(eb.fn.countAll<string>().as('count'))
-            .whereRef('workExperiences.companyId', '=', 'companies.id')
-            .as('reviews');
+        ({ fn }) => {
+          return fn.count<string>('companyReviews.id').distinct().as('reviews');
         },
       ])
+      .groupBy('companies.id')
       .$if(!!where.search, (qb) => {
         // If we have a search term, we want to order by the similarity of the
         // company name to the search term.
@@ -131,19 +101,8 @@ export async function listCompanies<
           })
           .with('most_recently_reviewed', () => {
             return qb
-              .select((eb) => {
-                return eb
-                  .selectFrom('companyReviews')
-                  .leftJoin(
-                    'workExperiences',
-                    'workExperiences.id',
-                    'companyReviews.workExperienceId'
-                  )
-                  .select('companyReviews.createdAt')
-                  .whereRef('workExperiences.companyId', '=', 'companies.id')
-                  .orderBy('companyReviews.createdAt', 'desc')
-                  .limit(1)
-                  .as('lastReviewedAt');
+              .select(({ fn }) => {
+                return fn.max('companyReviews.createdAt').as('lastReviewedAt');
               })
               .orderBy('lastReviewedAt', sql`desc nulls last`);
           })
@@ -154,7 +113,9 @@ export async function listCompanies<
       .execute(),
 
     query
-      .select((eb) => eb.fn.countAll<string>().as('count'))
+      .select(({ fn }) => {
+        return fn.count<string>('companies.id').distinct().as('count');
+      })
       .executeTakeFirstOrThrow(),
   ]);
 

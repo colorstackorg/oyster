@@ -2,7 +2,7 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Link } from '@remix-run/react';
 import { ArrowRight } from 'react-feather';
 
-import { Button, getButtonCn, Modal } from '@oyster/ui';
+import { Button, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
@@ -24,12 +24,11 @@ export default function JoinDirectoryIntroduction() {
       </Modal.Description>
 
       <Button.Group>
-        <Link
-          className={getButtonCn({ variant: 'primary' })}
-          to={Route['/directory/join/1']}
-        >
-          Get Started <ArrowRight size={20} />
-        </Link>
+        <Button.Slot variant="primary">
+          <Link to={Route['/directory/join/1']}>
+            Get Started <ArrowRight size={20} />
+          </Link>
+        </Button.Slot>
       </Button.Group>
     </>
   );

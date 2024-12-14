@@ -24,7 +24,6 @@ import {
   DatePicker,
   ErrorMessage,
   Field,
-  getButtonCn,
   getErrors,
   Input,
   Modal,
@@ -204,14 +203,15 @@ function EditOpportunityForm() {
       <Button.Group flexDirection="row-reverse" spacing="between">
         <Button.Submit>Save</Button.Submit>
 
-        <Link
-          className={getButtonCn({ color: 'error', variant: 'secondary' })}
-          to={generatePath(Route['/opportunities/:id/delete'], {
-            id: id as string,
-          })}
-        >
-          Delete
-        </Link>
+        <Button.Slot color="error" variant="secondary">
+          <Link
+            to={generatePath(Route['/opportunities/:id/delete'], {
+              id: id as string,
+            })}
+          >
+            Delete
+          </Link>
+        </Button.Slot>
       </Button.Group>
     </Form>
   );

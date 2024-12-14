@@ -6,8 +6,8 @@ import {
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { Check } from 'react-feather';
 
-import { checkIntoEvent } from '@oyster/core/events';
-import { getEvent } from '@oyster/core/member-profile/server';
+import { getEvent } from '@oyster/core/events';
+import { checkIntoEvent } from '@oyster/core/events/attendees';
 import { Button, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
@@ -72,7 +72,7 @@ export default function EventCheckIn() {
   const isCheckedIn = event.isCheckedIn || actionData?.checkedIn;
 
   return (
-    <Modal onCloseTo={Route['/events/upcoming']} size="400">
+    <Modal onCloseTo={Route['/events']} size="400">
       <Modal.Header>
         <Modal.Title>{event.name}: Check In! 👋</Modal.Title>
         <Modal.CloseButton />

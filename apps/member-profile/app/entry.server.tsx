@@ -53,7 +53,7 @@ Sentry.init({
   dsn: ENV.SENTRY_DSN,
   enabled: ENV.ENVIRONMENT !== 'development',
   environment: ENV.ENVIRONMENT,
-  tracesSampleRate: 0.25,
+  tracesSampleRate: 0.5,
 });
 
 const ABORT_DELAY = 5000;

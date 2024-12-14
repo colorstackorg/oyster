@@ -7,7 +7,7 @@ import {
 import { Form, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
-import { createEvent } from '@oyster/core/admin-dashboard/server';
+import { createEvent } from '@oyster/core/events';
 import { Event, EventType } from '@oyster/types';
 import {
   Button,

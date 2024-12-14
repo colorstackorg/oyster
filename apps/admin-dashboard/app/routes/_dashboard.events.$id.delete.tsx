@@ -6,7 +6,7 @@ import {
 } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
-import { getEvent } from '@oyster/core/admin-dashboard/server';
+import { getEvent } from '@oyster/core/events';
 import { deleteEvent } from '@oyster/core/events';
 import { Button, ErrorMessage, getErrors, Modal } from '@oyster/ui';
 

@@ -9,8 +9,8 @@ import { useState } from 'react';
 import { Camera, Menu, Plus, RefreshCw, Trash2, Upload } from 'react-feather';
 import { generatePath } from 'react-router';
 
-import { listEvents } from '@oyster/core/admin-dashboard/server';
 import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
+import { listEvents } from '@oyster/core/events';
 import { type Event, EventType } from '@oyster/types';
 import {
   Dashboard,

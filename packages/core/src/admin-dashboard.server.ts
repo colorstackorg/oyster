@@ -1,10 +1,6 @@
 export { getGoogleAuthUri } from './modules/authentication/shared/oauth.utils';
 export { sendOneTimeCode } from './modules/authentication/use-cases/send-one-time-code';
 export { verifyOneTimeCode } from './modules/authentication/use-cases/verify-one-time-code';
-export { getEvent } from './modules/events/queries/get-event';
-export { listEvents } from './modules/events/queries/list-events';
-export { addEventRecordingLink } from './modules/events/use-cases/add-event-recording-link';
-export { createEvent } from './modules/events/use-cases/create-event';
 export { getFeatureFlag } from './modules/feature-flags/queries/get-feature-flag';
 export { listFeatureFlags } from './modules/feature-flags/queries/list-feature-flags';
 export { createFeatureFlag } from './modules/feature-flags/use-cases/create-feature-flag';

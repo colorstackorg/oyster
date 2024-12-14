@@ -10,9 +10,9 @@ import { generatePath } from 'react-router';
 
 import { listFeatureFlags } from '@oyster/core/admin-dashboard/server';
 import {
+  Button,
   Dashboard,
   Dropdown,
-  getButtonCn,
   Pill,
   Table,
   type TableColumnProps,
@@ -39,9 +39,11 @@ export default function FeatureFlagsPage() {
       <div className="flex items-center justify-between gap-4">
         <Dashboard.Title>Feature Flags</Dashboard.Title>
 
-        <Link className={getButtonCn({})} to={Route['/feature-flags/create']}>
-          <Plus size={16} /> Create Flag
-        </Link>
+        <Button.Slot>
+          <Link to={Route['/feature-flags/create']}>
+            <Plus size={16} /> Create Flag
+          </Link>
+        </Button.Slot>
       </div>
 
       <FeatureFlagsTable />

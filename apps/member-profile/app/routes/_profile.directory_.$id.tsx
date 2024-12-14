@@ -5,9 +5,9 @@ import React, { type PropsWithChildren } from 'react';
 import { BookOpen, Calendar, Globe, Home, Link, MapPin } from 'react-feather';
 
 import { job } from '@oyster/core/bull';
+import { countEventAttendees } from '@oyster/core/events/attendees';
 import { getTotalPoints } from '@oyster/core/gamification';
 import {
-  countEventAttendees,
   countMessagesSent,
   getActiveStreak,
   getIcebreakerResponses,
@@ -15,13 +15,7 @@ import {
 } from '@oyster/core/member-profile/server';
 import { WorkExperienceItem } from '@oyster/core/member-profile/ui';
 import { type MixpanelEvent } from '@oyster/core/mixpanel';
-import {
-  cx,
-  getButtonCn,
-  ProfilePicture,
-  Text,
-  type TextProps,
-} from '@oyster/ui';
+import { Button, cx, ProfilePicture, Text, type TextProps } from '@oyster/ui';
 
 import { Card } from '@/shared/components/card';
 import { EducationExperienceItem } from '@/shared/components/education-experience';
@@ -54,9 +48,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   ] = await Promise.all([
     getActiveStreak(memberId),
     getEducationExperiences(memberId),
-    countEventAttendees({
-      where: { studentId: memberId },
-    }),
+    countEventAttendees({ studentId: memberId }),
     getIcebreakerResponses(memberId, [
       'icebreakerResponses.promptId',
       'icebreakerResponses.text',
@@ -198,23 +190,24 @@ function MemberHeader() {
       />
 
       {!!member.slackUrl && (
-        <a
-          // TODO: Move this button style to `ui`.
-          className={cx(
-            getButtonCn({ size: 'small', variant: 'secondary' }),
-            'border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200'
-          )}
-          href={member.slackUrl}
-          onClick={() => {
-            trackFromClient({
-              event: 'Directory - CTA Clicked',
-              properties: { CTA: 'Slack' },
-            });
-          }}
+        <Button.Slot
+          className="border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200"
+          size="small"
+          variant="secondary"
         >
-          <img alt="Slack Logo" className="h-5 w-5" src="/images/slack.svg" />{' '}
-          DM on Slack
-        </a>
+          <a
+            href={member.slackUrl}
+            onClick={() => {
+              trackFromClient({
+                event: 'Directory - CTA Clicked',
+                properties: { CTA: 'Slack' },
+              });
+            }}
+          >
+            <img alt="Slack Logo" className="h-5 w-5" src="/images/slack.svg" />{' '}
+            DM on Slack
+          </a>
+        </Button.Slot>
       )}
     </header>
   );

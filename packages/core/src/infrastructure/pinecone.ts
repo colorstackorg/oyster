@@ -11,6 +11,7 @@ let pinecone: Pinecone;
 if (PINECONE_API_KEY) {
   pinecone = new Pinecone({
     apiKey: PINECONE_API_KEY,
+    fetchApi: fetch,
   });
 } else {
   console.warn(

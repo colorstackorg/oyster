@@ -7,12 +7,10 @@ import {
 import { Form, useLoaderData } from '@remix-run/react';
 import { Calendar, Check, ExternalLink } from 'react-feather';
 
-import { job } from '@oyster/core/bull';
-import { getEvent } from '@oyster/core/member-profile/server';
-import { db } from '@oyster/db';
-import { Button, getButtonCn, Modal, Text } from '@oyster/ui';
+import { formatEventDate, getEvent } from '@oyster/core/events';
+import { registerForEvent } from '@oyster/core/events/registrations';
+import { Button, Modal, Text } from '@oyster/ui';
 
-import { formatEventDate } from '@/shared/components/event';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import {
@@ -65,10 +63,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  await registerForEvent({
+  const result = await registerForEvent({
     eventId: params.id as string,
     studentId: user(session),
   });
+
+  if (!result.ok) {
+    return json({ error: result.error }, { status: result.code });
+  }
 
   toast(session, {
     message: 'Registered!',
@@ -81,41 +83,11 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 }
 
-async function registerForEvent({
-  eventId,
-  studentId,
-}: {
-  eventId: string;
-  studentId: string;
-}) {
-  const student = await db
-    .selectFrom('students')
-    .select(['email'])
-    .where('id', '=', studentId)
-    .executeTakeFirstOrThrow();
-
-  await db
-    .insertInto('eventRegistrations')
-    .values({
-      email: student.email,
-      eventId,
-      registeredAt: new Date(),
-      studentId,
-    })
-    .onConflict((oc) => oc.doNothing())
-    .execute();
-
-  job('event.register', {
-    eventId,
-    studentId,
-  });
-}
-
 export default function EventRegisterPage() {
   const { event } = useLoaderData<typeof loader>();
 
   return (
-    <Modal onCloseTo={Route['/events/upcoming']}>
+    <Modal onCloseTo={Route['/events']}>
       <Modal.Header>
         <Modal.Title>{event.name}</Modal.Title>
         <Modal.CloseButton />
@@ -144,13 +116,11 @@ export default function EventRegisterPage() {
       <Form className="form" method="post">
         <Button.Group>
           {event.externalLink && (
-            <a
-              className={getButtonCn({ variant: 'secondary' })}
-              href={event.externalLink}
-              target="_blank"
-            >
-              <ExternalLink className="h-5 w-5" /> See Details
-            </a>
+            <Button.Slot variant="secondary">
+              <a href={event.externalLink} target="_blank">
+                <ExternalLink className="h-5 w-5" /> See Details
+              </a>
+            </Button.Slot>
           )}
 
           {!event.isRegistered && (

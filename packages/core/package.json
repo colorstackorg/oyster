@@ -26,6 +26,8 @@
     "./employment": "./src/modules/employment/index.ts",
     "./employment/server": "./src/modules/employment/index.server.ts",
     "./events": "./src/modules/events/events.ts",
+    "./events/attendees": "./src/modules/events/event-attendees.ts",
+    "./events/registrations": "./src/modules/events/event-registrations.ts",
     "./gamification": "./src/modules/gamification/gamification.ts",
     "./gamification/types": "./src/modules/gamification/gamification.types.ts",
     "./gamification/ui": "./src/modules/gamification/gamification.ui.tsx",

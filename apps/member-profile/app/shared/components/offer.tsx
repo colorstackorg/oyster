@@ -2,7 +2,7 @@ import { Link, useLocation, useSearchParams } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import { Edit, Info, Plus } from 'react-feather';
 
-import { getButtonCn, getIconButtonCn, Text } from '@oyster/ui';
+import { Button, getIconButtonCn, Text } from '@oyster/ui';
 import {
   Tooltip,
   TooltipContent,
@@ -24,15 +24,16 @@ export function AddOfferButton() {
     : Route['/offers/full-time/add'];
 
   return (
-    <Link
-      className={getButtonCn({ size: 'small' })}
-      to={{
-        pathname,
-        search: searchParams.toString(),
-      }}
-    >
-      <Plus size={20} /> Add Offer
-    </Link>
+    <Button.Slot size="small">
+      <Link
+        to={{
+          pathname,
+          search: searchParams.toString(),
+        }}
+      >
+        <Plus size={20} /> Add Offer
+      </Link>
+    </Button.Slot>
   );
 }
 

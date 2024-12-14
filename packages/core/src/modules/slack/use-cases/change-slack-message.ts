@@ -2,6 +2,7 @@ import { db } from '@oyster/db';
 
 import { job } from '@/infrastructure/bull';
 import { type GetBullJobData } from '@/infrastructure/bull.types';
+import { checkForDeletedOpportunity } from '@/modules/opportunities';
 
 export async function changeSlackMessage({
   channelId,
@@ -23,4 +24,6 @@ export async function changeSlackMessage({
       threadId: message.threadId || message.id,
     });
   }
+
+  checkForDeletedOpportunity({ channelId, deletedAt, id });
 }

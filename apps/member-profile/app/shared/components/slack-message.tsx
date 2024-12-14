@@ -3,13 +3,7 @@ import React from 'react';
 import parseSlackMessage, { type Node, NodeType } from 'slack-message-parser';
 import { match } from 'ts-pattern';
 
-import {
-  cx,
-  getButtonCn,
-  ProfilePicture,
-  Text,
-  type TextProps,
-} from '@oyster/ui';
+import { Button, cx, ProfilePicture, Text, type TextProps } from '@oyster/ui';
 
 import { Card } from '@/shared/components/card';
 
@@ -56,17 +50,23 @@ export function SlackMessageCard({
         </div>
 
         {channelId && messageId && (
-          <Link
-            className={cx(
-              getButtonCn({ size: 'small', variant: 'secondary' }),
-              'border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200'
-            )}
-            target="_blank"
-            to={SLACK_WORKSPACE_URL + `/archives/${channelId}/p${messageId}`}
+          <Button.Slot
+            className="border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200"
+            size="small"
+            variant="secondary"
           >
-            <img alt="Slack Logo" className="h-5 w-5" src="/images/slack.svg" />{' '}
-            View in Slack
-          </Link>
+            <Link
+              target="_blank"
+              to={SLACK_WORKSPACE_URL + `/archives/${channelId}/p${messageId}`}
+            >
+              <img
+                alt="Slack Logo"
+                className="h-5 w-5"
+                src="/images/slack.svg"
+              />{' '}
+              View in Slack
+            </Link>
+          </Button.Slot>
         )}
       </header>
 
@@ -186,16 +186,18 @@ export function ViewInSlackButton({
   }
 
   return (
-    <Link
-      className={cx(
-        getButtonCn({ size: 'small', variant: 'secondary' }),
-        'border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200'
-      )}
-      target="_blank"
-      to={SLACK_WORKSPACE_URL + `/archives/${channelId}/p${messageId}`}
+    <Button.Slot
+      className="border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200"
+      size="small"
+      variant="secondary"
     >
-      <img alt="Slack Logo" className="h-5 w-5" src="/images/slack.svg" /> View
-      in Slack
-    </Link>
+      <Link
+        target="_blank"
+        to={SLACK_WORKSPACE_URL + `/archives/${channelId}/p${messageId}`}
+      >
+        <img alt="Slack Logo" className="h-5 w-5" src="/images/slack.svg" />{' '}
+        View in Slack
+      </Link>
+    </Button.Slot>
   );
 }

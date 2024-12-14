@@ -3,7 +3,6 @@ import { db } from '@oyster/db';
 import { job } from '@/infrastructure/bull';
 import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { redis } from '@/infrastructure/redis';
-import { isFeatureFlagEnabled } from '@/modules/feature-flags/queries/is-feature-flag-enabled';
 import { slack } from '@/modules/slack/instances';
 import { ErrorWithContext } from '@/shared/errors';
 import { retryWithBackoff } from '@/shared/utils/core';
@@ -63,7 +62,6 @@ export async function addSlackMessage(data: AddSlackMessageInput) {
   // We don't need to await this since it's not a critical path.
   notifyBusySlackThreadIfNecessary({
     channelId: data.channelId,
-    id: data.id,
     threadId: data.threadId,
   });
 
@@ -75,14 +73,12 @@ export async function addSlackMessage(data: AddSlackMessageInput) {
       isOpportunityChannel,
       isResumeReviewChannel,
       isSecuredTheBagChannel,
-      isCompensationEnabled,
     ] = await Promise.all([
       redis.sismember('slack:auto_reply_channels', data.channelId),
       redis.sismember('slack:compensation_channels', data.channelId),
       redis.sismember('slack:opportunity_channels', data.channelId),
       redis.sismember('slack:resume_review_channels', data.channelId),
       redis.sismember('slack:secured_the_bag_channels', data.channelId),
-      isFeatureFlagEnabled('compensation'),
     ]);
 
     if (!data.isBot && isAutoReplyChannel) {
@@ -94,7 +90,7 @@ export async function addSlackMessage(data: AddSlackMessageInput) {
       });
     }
 
-    if (!data.isBot && isCompensationEnabled && isCompensationChannel) {
+    if (!data.isBot && isCompensationChannel) {
       job('offer.share', {
         slackChannelId: data.channelId,
         slackMessageId: data.id,
@@ -194,9 +190,8 @@ async function ensureThreadExistsIfNecessary(data: AddSlackMessageInput) {
  */
 async function notifyBusySlackThreadIfNecessary({
   channelId,
-  id,
   threadId,
-}: Pick<AddSlackMessageInput, 'channelId' | 'id' | 'threadId'>) {
+}: Pick<AddSlackMessageInput, 'channelId' | 'threadId'>) {
   // We only need to check the # of replies if this is a reply itself.
   if (!threadId) {
     return;
@@ -211,19 +206,19 @@ async function notifyBusySlackThreadIfNecessary({
 
   const count = Number(row.count);
 
-  if (count !== 100 && count !== 500) {
+  if (count !== 250 && count !== 500) {
     return;
   }
 
   const { permalink } = await slack.chat.getPermalink({
     channel: channelId,
-    message_ts: id,
+    message_ts: threadId,
   });
 
-  if (count === 100) {
+  if (count === 250) {
     job('notification.slack.send', {
       channel: SLACK_FEED_CHANNEL_ID,
-      message: `This <${permalink}|thread> hit 100 replies! 👀`,
+      message: `This <${permalink}|thread> hit 250 replies! 👀`,
       workspace: 'regular',
     });
 

@@ -2,7 +2,7 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, Link, useLoaderData } from '@remix-run/react';
 import { ArrowRight, Eye } from 'react-feather';
 
-import { Button, getButtonCn, Text } from '@oyster/ui';
+import { Button, Text } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -30,19 +30,17 @@ export default function DirectoryJoinedConfirmation() {
       </div>
 
       <Button.Group spacing="center">
-        <Link
-          className={getButtonCn({ variant: 'secondary' })}
-          to={Route['/directory']}
-        >
-          <ArrowRight size={20} /> Explore the Directory
-        </Link>
+        <Button.Slot variant="secondary">
+          <Link to={Route['/directory']}>
+            <ArrowRight size={20} /> Explore the Directory
+          </Link>
+        </Button.Slot>
 
-        <Link
-          className={getButtonCn({ variant: 'primary' })}
-          to={generatePath(Route['/directory/:id'], { id: memberId })}
-        >
-          <Eye size={20} /> Preview My Profile
-        </Link>
+        <Button.Slot variant="primary">
+          <Link to={generatePath(Route['/directory/:id'], { id: memberId })}>
+            <Eye size={20} /> Preview My Profile
+          </Link>
+        </Button.Slot>
       </Button.Group>
     </div>
   );

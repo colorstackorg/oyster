@@ -4,7 +4,7 @@ import { generatePath, Link, useLoaderData } from '@remix-run/react';
 import {
   countEventAttendees,
   listEventAttendees,
-} from '@oyster/core/member-profile/server';
+} from '@oyster/core/events/attendees';
 import { type Student } from '@oyster/types';
 import { Modal, ProfilePicture } from '@oyster/ui';
 
@@ -14,19 +14,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const eventId = params.id as string;
 
   const [attendees, attendeesCount] = await Promise.all([
-    listEventAttendees({
-      select: [
-        'students.firstName',
-        'students.id',
-        'students.lastName',
-        'students.preferredName',
-        'students.profilePicture',
-      ],
-      where: { eventId },
-    }),
-    countEventAttendees({
-      where: { eventId },
-    }),
+    listEventAttendees({ eventId }),
+    countEventAttendees({ eventId }),
   ]);
 
   return json({
@@ -39,7 +28,7 @@ export default function EventAttendeesPage() {
   const { attendees, attendeesCount } = useLoaderData<typeof loader>();
 
   return (
-    <Modal onCloseTo={Route['/events/past']}>
+    <Modal onCloseTo={Route['/events']}>
       <Modal.Header>
         <Modal.Title>Attendees List ({attendeesCount})</Modal.Title>
         <Modal.CloseButton />

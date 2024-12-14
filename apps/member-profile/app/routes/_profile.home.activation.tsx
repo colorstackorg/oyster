@@ -197,7 +197,7 @@ function ActivationList() {
   );
 
   const upcomingEventsLink = (
-    <Link className="link" target="_blank" to={Route['/events/upcoming']}>
+    <Link className="link" target="_blank" to={Route['/events']}>
       upcoming events
     </Link>
   );
