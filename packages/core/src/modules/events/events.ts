@@ -198,34 +198,42 @@ type ListPastEventsInput = {
 
 export async function listPastEvents({ timezone }: ListPastEventsInput) {
   const records = await db
-    .with('attendees', (db) => {
-      return db
-        .selectFrom('eventAttendees')
-        .select(['eventId', ({ fn }) => fn.count('email').as('attendees')])
-        .groupBy('eventId');
-    })
-    .with('pictures', (db) => {
-      return db
-        .selectFrom('eventAttendees')
-        .leftJoin('students', 'students.id', 'eventAttendees.studentId')
-        .select([
-          'eventId',
-          'profilePicture',
-          ({ ref }) => {
-            const field = sql<number>`row_number() over (partition by ${ref('eventId')} order by ${ref('eventAttendees.createdAt')} asc)`;
-
-            return field.as('rank');
-          },
-        ])
-        .where('students.profilePicture', 'is not', null);
-    })
     .selectFrom('events')
-    .leftJoin('attendees', 'attendees.eventId', 'events.id')
-    .leftJoin('pictures', (join) => {
-      return join
-        .onRef('pictures.eventId', '=', 'events.id')
-        .on('pictures.rank', '<=', 3);
-    })
+    .leftJoin(
+      (eb) => {
+        return eb
+          .selectFrom('eventAttendees')
+          .select(['eventId', ({ fn }) => fn.count('email').as('attendees')])
+          .groupBy('eventId')
+          .as('attendees');
+      },
+      (join) => {
+        return join.onRef('attendees.eventId', '=', 'events.id');
+      }
+    )
+    .leftJoin(
+      (eb) => {
+        return eb
+          .selectFrom('eventAttendees')
+          .leftJoin('students', 'students.id', 'eventAttendees.studentId')
+          .select([
+            'eventId',
+            'profilePicture',
+            ({ ref }) => {
+              const field = sql<number>`row_number() over (partition by ${ref('eventId')} order by ${ref('eventAttendees.createdAt')} asc)`;
+
+              return field.as('rank');
+            },
+          ])
+          .where('students.profilePicture', 'is not', null)
+          .as('pictures');
+      },
+      (join) => {
+        return join
+          .onRef('pictures.eventId', '=', 'events.id')
+          .on('pictures.rank', '<=', 3);
+      }
+    )
     .select([
       'events.endTime',
       'events.id',
@@ -262,8 +270,7 @@ export async function listPastEvents({ timezone }: ListPastEventsInput) {
 
       const profilePictures = (_profilePictures || '')
         .split(',')
-        .filter(Boolean)
-        .slice(0, 3);
+        .filter(Boolean);
 
       return {
         ...record,
