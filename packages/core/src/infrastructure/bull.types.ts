@@ -332,6 +332,13 @@ export const NotificationBullJob = z.discriminatedUnion('name', [
       }),
     ]),
   }),
+  z.object({
+    name: z.literal('notification.sms.send'),
+    data: z.object({
+      message: z.string().trim().min(1),
+      phoneNumber: z.string().trim().min(1),
+    }),
+  }),
 ]);
 
 export const OfferBullJob = z.discriminatedUnion('name', [
