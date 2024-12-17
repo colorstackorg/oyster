@@ -4,6 +4,7 @@ import { listEventAttendees } from '@/member-profile.server';
 import { sendEmail } from '@/modules/notification/use-cases/send-email';
 import { StudentActivatedEmail } from '@oyster/email-templates';
 export async function eventReminder(input: Event) {
+  
   //selects students who are undergrad
   let RegisteredStudentIDs: string[] = [];
   const eventAttendees = await listEventAttendees({
@@ -12,12 +13,14 @@ export async function eventReminder(input: Event) {
       eventId: input.id,
     },
   });
-  //extrack student id  for the event attendee
+  
+  //extract student id for the event attendee
   eventAttendees.forEach((attendee) => {
     if (attendee.studentId) {
       RegisteredStudentIDs.push(attendee.studentId);
     }
   });
+  
   //filter down to just the undergrads that are not register for the event
   const unregisteredStudents = await db
     .selectFrom('students')
