@@ -1,3 +1,4 @@
+import { Anthropic } from '@anthropic-ai/sdk';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
@@ -12,6 +13,10 @@ const COHERE_API_KEY = process.env.COHERE_API_KEY as string;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
 
 // Instances
+
+const anthropic = new Anthropic({
+  apiKey: ANTHROPIC_API_KEY,
+});
 
 // Generic Rate Limiter(s)
 
@@ -255,6 +260,27 @@ export async function getChatCompletion({
   const message = result.content[0].text;
 
   return success(message);
+}
+
+export type MessageStream = ReturnType<typeof anthropic.messages.stream>;
+
+export function streamChatCompletion({
+  maxTokens,
+  messages,
+  system: _system,
+  temperature = 0.5,
+}: GetChatCompletionInput) {
+  const stream = anthropic.messages.stream({
+    max_tokens: maxTokens,
+    messages: messages.map(({ content, role }) => {
+      return { content, role };
+    }),
+    model: 'claude-3-5-sonnet-20240620',
+    system: _system?.[0].text,
+    temperature,
+  });
+
+  return stream;
 }
 
 // "Rerank Documents"
