@@ -187,7 +187,11 @@ async function getAppliedFilters(
         : undefined,
     },
     { name: 'Location', param: keys.location, value: searchParams.location },
-    { name: 'School', param: keys.school, value: school },
+    {
+      name: 'School',
+      param: keys.school,
+      value: school,
+    },
   ].filter((item) => {
     return !!item.value;
   });
@@ -204,9 +208,10 @@ export default function DirectoryPage() {
 
       <Dashboard.Subheader>
         <Dashboard.SearchForm placeholder="Search by name or email..." />
-
+        <FilterDirectoryDropdown filter="company" />
+        <FilterDirectoryDropdown filter="school" />
         <div className="ml-auto flex items-center gap-2">
-          <FilterDirectoryDropdown />
+          <FilterDirectoryDropdown filter="general" />
         </div>
       </Dashboard.Subheader>
 
@@ -240,7 +245,7 @@ function DirectoryPagination() {
 
 const DIRECTORY_FILTER_KEYS = Object.values(DirectoryFilterKey);
 
-function FilterDirectoryDropdown() {
+function FilterDirectoryDropdown({ filter }: { filter: string }) {
   const [open, setOpen] = useState<boolean>(false);
 
   function onClose() {
@@ -253,47 +258,96 @@ function FilterDirectoryDropdown() {
 
   return (
     <Dropdown.Container onClose={onClose}>
-      <IconButton
-        backgroundColor="gray-100"
-        backgroundColorOnHover="gray-200"
-        icon={<Filter />}
-        onClick={onClick}
-        shape="square"
-      />
+      {filter === 'general' ? (
+        <IconButton
+          backgroundColor="gray-100"
+          backgroundColorOnHover="gray-200"
+          icon={<Filter />}
+          onClick={onClick}
+          shape="square"
+        />
+      ) : (
+        <Button onClick={onClick}>{toTitleCase(filter)}</Button>
+      )}
 
-      {open && (
+      {open && filter == 'general' && (
         <Dropdown>
           <div className="flex min-w-[18rem] flex-col gap-2 p-2">
             <Text>Add Filter</Text>
-            <FilterForm close={() => setOpen(false)} />
+            <FilterForm filter={filter} close={() => setOpen(false)} />
           </div>
         </Dropdown>
+      )}
+
+      {open && filter != 'general' && (
+        <FilterForm filter={filter} close={onClose} />
       )}
     </Dropdown.Container>
   );
 }
 
-function FilterForm({ close }: { close: VoidFunction }) {
+function CompanyDropdown() {
+  return (
+    <Dropdown>
+      <div className="flex min-w-[18rem] flex-col gap-2 p-2">
+        <Text>Company</Text>
+        <CompanyCombobox name={keys.company} />
+        <Button fill size="small" type="submit">
+          <Plus size={20} /> Add Filter
+        </Button>
+      </div>
+    </Dropdown>
+  );
+}
+
+function SchoolDropdown() {
+  return (
+    <Dropdown>
+      <div className="flex min-w-[18rem] flex-col gap-2 p-2">
+        <Text>School</Text>
+        <SchoolCombobox name={keys.school} />
+        <Button fill size="small" type="submit">
+          <Plus size={20} /> Add Filter
+        </Button>
+      </div>
+    </Dropdown>
+  );
+}
+
+function FilterForm({
+  close,
+  filter,
+}: {
+  close: VoidFunction;
+  filter: string;
+}) {
   const [filterKey, setFilterKey] = useState<DirectoryFilterKey | null>(null);
 
   const [searchParams] = useSearchParams(DirectorySearchParams);
 
   return (
     <Form className="form" method="get" onSubmit={close}>
-      <Select
-        placeholder="Select a field..."
-        onChange={(e) => {
-          setFilterKey((e.currentTarget.value || null) as DirectoryFilterKey);
-        }}
-      >
-        {DIRECTORY_FILTER_KEYS.map((key) => {
-          return (
-            <option key={key} disabled={!!searchParams[key]} value={key}>
-              {toTitleCase(key)}
-            </option>
-          );
-        })}
-      </Select>
+      {filter == 'general' && (
+        <Select
+          placeholder="Select a field..."
+          onChange={(e) => {
+            setFilterKey((e.currentTarget.value || null) as DirectoryFilterKey);
+          }}
+        >
+          {DIRECTORY_FILTER_KEYS.filter(
+            (key) => key != 'company' && key != 'school'
+          ).map((key) => {
+            return (
+              <option key={key} disabled={!!searchParams[key]} value={key}>
+                {toTitleCase(key)}
+              </option>
+            );
+          })}
+        </Select>
+      )}
+
+      {filter == 'company' && <CompanyDropdown />}
+      {filter == 'school' && <SchoolDropdown />}
 
       {!!filterKey && (
         <Text color="gray-500" variant="sm">
