@@ -193,6 +193,13 @@ async function createOpportunity({
     return success({});
   }
 
+  // Check for duplicate link
+  const existingOpportunity = await findOpportunityWithLink(link);
+
+  if (existingOpportunity) {
+    return success({}); // Exit gracefully if duplicate found
+  }
+
   const isProtectedURL =
     link.includes('docs.google.com') || link.includes('linkedin.com');
 
@@ -653,6 +660,29 @@ export async function refineOpportunity(
  */
 function getFirstLinkInMessage(message: string) {
   return message.match(/<(https?:\/\/[^\s|>]+)(?:\|[^>]+)?>/)?.[1];
+}
+
+/**
+ * Checks if an opportunity with the given link already exists.
+ *
+ * @param link - URL to check for duplicates.
+ * @returns The ID of an existing opportunity with this link, or null if none exists.
+ */
+async function findOpportunityWithLink(
+  link: string
+): Promise<{ id: string } | null> {
+  const opportunities = await db
+    .selectFrom('opportunities')
+    .leftJoin('slackMessages', (join) => {
+      return join
+        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
+        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
+    })
+    .select('opportunities.id')
+    .where('slackMessages.text', 'like', `%${link}%`)
+    .executeTakeFirst();
+
+  return opportunities || null;
 }
 
 // Queries
