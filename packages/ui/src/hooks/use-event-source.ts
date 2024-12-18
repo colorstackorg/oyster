@@ -31,8 +31,11 @@ export function useEventSource<T = any>(
 
     const eventSource = new EventSource(url);
 
+    eventSource.onerror = (event) => {
+      console.log(event);
+    };
+
     function handler(event: MessageEvent<T>) {
-      console.log('EVENT', event);
       setData(event.data);
     }
 

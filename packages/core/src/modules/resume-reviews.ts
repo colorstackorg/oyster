@@ -1,12 +1,13 @@
 import dedent from 'dedent';
 import { sql } from 'kysely';
+import { ARR, OBJ, parse } from 'partial-json';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { db, relativeTime } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { getChatCompletion } from '@/infrastructure/ai';
+import { getChatCompletion, streamChatCompletion } from '@/infrastructure/ai';
 import { job, registerWorker } from '@/infrastructure/bull';
 import {
   type GetBullJobData,
@@ -42,6 +43,26 @@ export async function getLastResumeFeedback(memberId: string) {
 }
 
 // Use Cases
+
+export async function createResumeReview({
+  memberId,
+  resume,
+}: ReviewResumeInput) {
+  const resumeText = await getTextFromPDF(resume);
+
+  const review = await db
+    .insertInto('resumeReviews')
+    .values({
+      feedback: sql`cast('{}' as jsonb)`,
+      id: id(),
+      memberId,
+      resumeText,
+    })
+    .returning(['id'])
+    .executeTakeFirstOrThrow();
+
+  return review;
+}
 
 export const ReviewResumeInput = z.object({
   memberId: z.string().trim().min(1),
@@ -85,10 +106,13 @@ export type ResumeFeedback = z.infer<typeof ResumeFeedback>;
  *
  * @todo Implement the ability to review the rest of the resume.
  */
-export async function reviewResume({
-  memberId,
-  resume,
-}: ReviewResumeInput): Promise<Result<ResumeFeedback>> {
+export async function reviewResume(id: string): Promise<ReadableStream> {
+  const review = await db
+    .selectFrom('resumeReviews')
+    .select(['id', 'memberId', 'resumeText'])
+    .where('id', '=', id)
+    .executeTakeFirstOrThrow();
+
   const systemPrompt = dedent`
     You are the best resume reviewer in the world, specifically for resumes
     aimed at getting a software engineering internship/new grad role.
@@ -156,16 +180,14 @@ export async function reviewResume({
     });
   `;
 
-  const resumeText = await getTextFromPDF(resume);
-
-  const completionResult = await getChatCompletion({
+  const messageStream = await streamChatCompletion({
     maxTokens: 8192,
     messages: [
       {
         role: 'user',
         content: [
           { type: 'text', text: userPrompt },
-          { type: 'text', text: resumeText },
+          { type: 'text', text: review.resumeText as string },
         ],
       },
     ],
@@ -173,41 +195,139 @@ export async function reviewResume({
     temperature: 0.25,
   });
 
-  if (!completionResult.ok) {
-    return completionResult;
-  }
+  // const stream = new ReadableStream({
+  //   async start(controller) {
+  //     // const result: Partial<ResumeFeedback> = {
+  //     //   experiences: [],
+  //     //   projects: [],
+  //     // };
 
-  track({
-    event: 'Resume Reviewed',
-    properties: undefined,
-    user: memberId,
+  //     // const text = '';
+  //     // let closed = false;
+
+  //     // function close() {
+  //     //   if (closed) {
+  //     //     console.log('STREAM ALREADY CLOSED');
+
+  //     //     return;
+  //     //   }
+
+  //     //   closed = true;
+  //     //   console.log('CLOSING STREAM');
+  //     //   messageStream.controller.abort();
+  //     //   controller.close();
+  //     // }
+
+  //     // try {
+  //     for await (const chunk of messageStream) {
+  //       console.count('HERE');
+  //       controller.enqueue('YERRR');
+  //     }
+
+  //     // console.count('Stream processing complete');
+
+  //     // const feedback = ResumeFeedback.parse(JSON.parse(text));
+
+  //     // controller.enqueue('event: done\n');
+  //     // controller.enqueue(`data: ${JSON.stringify(feedback)}\n\n`);
+
+  //     // await db
+  //     //   .updateTable('resumeReviews')
+  //     //   .set({ feedback: sql`cast(${JSON.stringify(feedback)} as jsonb)` })
+  //     //   .where('id', '=', id)
+  //     //   .execute();
+
+  //     // track({
+  //     //   event: 'Resume Reviewed',
+  //     //   properties: undefined,
+  //     //   user: review.memberId as string,
+  //     // });
+
+  //     // close();
+  //     // }
+
+  //     // catch (e) {
+  //     //   const error = new ColorStackError()
+  //     //     .withMessage('Failed to parse the AI response.')
+  //     //     .withContext({ data: text, error: e })
+  //     //     .report();
+
+  //     //   controller.error(error);
+  //     // } finally {
+  //     //   close();
+  //     // }
+  //   },
+  // });
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      let result = null;
+      let text = '';
+
+      console.count('START');
+
+      for await (const chunk of messageStream) {
+        if (chunk.type !== 'content_block_delta') {
+          continue;
+        }
+
+        if (chunk.delta.type !== 'text_delta') {
+          continue;
+        }
+
+        text += chunk.delta.text;
+
+        try {
+          const json = parse(text, ARR | OBJ);
+
+          if (!json.experiences) {
+            json.experiences = [];
+          }
+
+          if (!json.projects) {
+            json.projects = [];
+          }
+
+          const feedback = ResumeFeedback.parse(json);
+
+          if (JSON.stringify(feedback) !== JSON.stringify(result)) {
+            controller.enqueue('event: data\n');
+            controller.enqueue(`data: ${JSON.stringify(feedback)}\n\n`);
+            result = feedback;
+          }
+        } catch (e) {
+          continue;
+        }
+      }
+
+      console.count('Stream processing complete');
+
+      try {
+        const feedback = ResumeFeedback.parse(JSON.parse(text));
+
+        await db
+          .updateTable('resumeReviews')
+          .set({ feedback: sql`cast(${JSON.stringify(feedback)} as jsonb)` })
+          .where('id', '=', id)
+          .execute();
+
+        track({
+          event: 'Resume Reviewed',
+          properties: undefined,
+          user: review.memberId as string,
+        });
+      } catch (e) {
+        const error = new ColorStackError()
+          .withMessage('Failed to parse the AI response.')
+          .withContext({ data: text, error: e })
+          .report();
+
+        controller.error(error);
+      }
+    },
   });
 
-  try {
-    const object = JSON.parse(completionResult.data);
-    const feedback = ResumeFeedback.parse(object);
-
-    await db
-      .insertInto('resumeReviews')
-      .values({
-        feedback: sql`cast(${JSON.stringify(feedback)} as jsonb)`,
-        id: id(),
-        memberId,
-      })
-      .execute();
-
-    return success(feedback);
-  } catch (e) {
-    const error = new ColorStackError()
-      .withMessage('Failed to parse the AI response.')
-      .withContext({ data: completionResult.data, error: e })
-      .report();
-
-    return fail({
-      code: 500,
-      error: error.message,
-    });
-  }
+  return stream;
 }
 
 // Worker

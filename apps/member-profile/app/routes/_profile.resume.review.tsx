@@ -20,6 +20,7 @@ import { match } from 'ts-pattern';
 
 import { buildMeta } from '@oyster/core/remix';
 import {
+  createResumeReview,
   getLastResumeFeedback,
   type ResumeFeedback,
   reviewResume,
@@ -33,6 +34,7 @@ import {
   FileUploader,
   MB_IN_BYTES,
   Text,
+  useEventSource,
   validateForm,
 } from '@oyster/ui';
 import { Progress, useProgress } from '@oyster/ui/progress';
@@ -54,11 +56,11 @@ export const meta: MetaFunction = () => {
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const feedback = await getLastResumeFeedback(user(session));
+  // const feedback = await getLastResumeFeedback(user(session));
 
   return json({
-    experiences: feedback?.experiences,
-    projects: feedback?.projects,
+    // experiences: feedback?.experiences,
+    // projects: feedback?.projects,
   });
 }
 
@@ -91,13 +93,9 @@ export async function action({ request }: ActionFunctionArgs) {
     );
   }
 
-  const result = await reviewResume(data);
+  const { id } = await createResumeReview(data);
 
-  if (!result.ok) {
-    return json(result, { status: result.code });
-  }
-
-  return json(result);
+  return json({ id });
 }
 
 export default function ReviewResume() {
@@ -114,6 +112,8 @@ export default function ReviewResume() {
 function UploadSection() {
   const navigation = useNavigation();
 
+  console.log(navigation.state);
+
   return (
     <section className="flex flex-col gap-4">
       <Text variant="2xl">Resume Review</Text>
@@ -126,13 +126,14 @@ function UploadSection() {
         feedback, so take it with a grain of salt.
       </Text>
 
-      {navigation.state === 'submitting' && !!navigation.formMethod ? (
+      <UploadForm />
+
+      {/* {navigation.state === 'submitting' && !!navigation.formMethod ? (
         <div className="mt-8">
           <UploadProgress />
         </div>
       ) : (
-        <UploadForm />
-      )}
+      )} */}
     </section>
   );
 }
@@ -157,7 +158,7 @@ function UploadForm() {
         />
       </Field>
 
-      {actionData && !actionData.ok && (
+      {actionData && 'error' in actionData && (
         <ErrorMessage>{actionData.error}</ErrorMessage>
       )}
 
@@ -187,18 +188,37 @@ function UploadProgress() {
 // Feedback
 
 function FeedbackSection() {
-  const loaderData = useLoaderData<typeof loader>();
+  // const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
-  const experiences =
-    (!!actionData?.ok && actionData?.data.experiences) ||
-    loaderData.experiences ||
-    [];
+  let id = '';
 
-  const projects =
-    (!!actionData?.ok && actionData?.data.projects) ||
-    loaderData.projects ||
-    [];
+  if (!!actionData && 'id' in actionData && !!actionData.id) {
+    id = actionData.id;
+  }
+
+  const data = useEventSource(`/resume/review/${id}/stream`, {
+    enabled: !!id,
+    event: 'data',
+  });
+
+  let feedback: ResumeFeedback | null = null;
+
+  try {
+    feedback = JSON.parse(data) as ResumeFeedback;
+  } catch (e) {
+    console.error(e);
+  }
+
+  if (!feedback) {
+    return null;
+  }
+
+  const { experiences, projects } = feedback;
+
+  if (!experiences || !projects) {
+    return null;
+  }
 
   return (
     <section className="flex flex-col gap-4 @5xl:max-h-[calc(100vh-4rem)] @5xl:overflow-auto">
@@ -206,39 +226,43 @@ function FeedbackSection() {
 
       {!!experiences.length || !!projects.length ? (
         <>
-          <section className="flex flex-col gap-2">
-            <Text variant="xl">Experiences ({experiences.length})</Text>
+          {!!experiences.length && (
+            <section className="flex flex-col gap-2">
+              <Text variant="xl">Experiences ({experiences.length})</Text>
 
-            <ExperienceList>
-              {experiences.map((experience) => {
-                const title = `${experience.role}, ${experience.company}`;
+              <ExperienceList>
+                {experiences.map((experience) => {
+                  const title = `${experience.role}, ${experience.company}`;
 
-                return (
-                  <Experience
-                    bullets={experience.bullets}
-                    key={title}
-                    title={title}
-                  />
-                );
-              })}
-            </ExperienceList>
-          </section>
+                  return (
+                    <Experience
+                      bullets={experience.bullets}
+                      key={title}
+                      title={title}
+                    />
+                  );
+                })}
+              </ExperienceList>
+            </section>
+          )}
 
-          <section className="flex flex-col gap-2">
-            <Text variant="xl">Projects ({projects.length})</Text>
+          {!!projects.length && (
+            <section className="flex flex-col gap-2">
+              <Text variant="xl">Projects ({projects.length})</Text>
 
-            <ExperienceList>
-              {projects.map((project) => {
-                return (
-                  <Experience
-                    bullets={project.bullets}
-                    key={project.title}
-                    title={project.title}
-                  />
-                );
-              })}
-            </ExperienceList>
-          </section>
+              <ExperienceList>
+                {projects.map((project) => {
+                  return (
+                    <Experience
+                      bullets={project.bullets}
+                      key={project.title}
+                      title={project.title}
+                    />
+                  );
+                })}
+              </ExperienceList>
+            </section>
+          )}
         </>
       ) : (
         <EmptyStateContainer>

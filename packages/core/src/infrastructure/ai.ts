@@ -264,19 +264,20 @@ export async function getChatCompletion({
 
 export type MessageStream = ReturnType<typeof anthropic.messages.stream>;
 
-export function streamChatCompletion({
+export async function streamChatCompletion({
   maxTokens,
   messages,
   system: _system,
   temperature = 0.5,
 }: GetChatCompletionInput) {
-  const stream = anthropic.messages.stream({
+  const stream = await anthropic.messages.create({
     max_tokens: maxTokens,
     messages: messages.map(({ content, role }) => {
       return { content, role };
     }),
     model: 'claude-3-5-sonnet-20240620',
-    // system: _system?.[0].text,
+    stream: true,
+    system: _system?.[0].text,
     temperature,
   });
 
