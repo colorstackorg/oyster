@@ -1,3 +1,4 @@
+export { streamChatCompletion } from './infrastructure/ai';
 export { reportException } from './infrastructure/sentry';
 export { getActiveStreak } from './modules/active-statuses/queries/get-active-streak';
 export { getActiveStreakLeaderboard } from './modules/active-statuses/queries/get-active-streak-leaderboard';

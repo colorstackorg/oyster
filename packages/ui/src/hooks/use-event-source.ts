@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react';
 
 type EventSourceOptions = {
-  event?: string;
+  enabled?: boolean;
+  event: string;
+};
+
+const defaultOptions: EventSourceOptions = {
+  enabled: true,
+  event: 'message',
 };
 
 /**
@@ -12,14 +18,21 @@ type EventSourceOptions = {
  */
 export function useEventSource<T = any>(
   url: string | URL,
-  { event = 'message' }: EventSourceOptions = {}
+  options: EventSourceOptions = defaultOptions
 ) {
+  const { enabled, event } = options;
+
   const [data, setData] = useState<T | null>(null);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     const eventSource = new EventSource(url);
 
     function handler(event: MessageEvent<T>) {
+      console.log('EVENT', event);
       setData(event.data);
     }
 
@@ -29,7 +42,7 @@ export function useEventSource<T = any>(
       eventSource.removeEventListener(event, handler);
       eventSource.close();
     };
-  }, []);
+  }, [enabled, url]);
 
   return data;
 }

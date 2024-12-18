@@ -54,6 +54,7 @@ export { Textarea } from './components/textarea';
 export { Toast } from './components/toast';
 export type { ToastProps } from './components/toast';
 export { useDelayedValue } from './hooks/use-delayed-value';
+export { useEventSource } from './hooks/use-event-source';
 export { useHydrated } from './hooks/use-hydrated';
 export { useOnClickOutside } from './hooks/use-on-click-outside';
 export { useRevalidateOnFocus } from './hooks/use-revalidate-on-focus';

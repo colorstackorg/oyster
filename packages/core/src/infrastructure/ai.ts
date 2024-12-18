@@ -276,7 +276,7 @@ export function streamChatCompletion({
       return { content, role };
     }),
     model: 'claude-3-5-sonnet-20240620',
-    system: _system?.[0].text,
+    // system: _system?.[0].text,
     temperature,
   });
 
