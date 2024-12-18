@@ -10,6 +10,7 @@ import {
   createEmbedding,
   getChatCompletion,
   rerankDocuments,
+  streamChatCompletion,
 } from '@/infrastructure/ai';
 import { job } from '@/infrastructure/bull';
 import { track } from '@/infrastructure/mixpanel';
@@ -575,7 +576,7 @@ export async function answerMemberProfileQuestion({
     <threads>${formattedThreads.join('\n\n')}</threads>
   `;
 
-  const completionResult = await getChatCompletion({
+  const messageStream = streamChatCompletion({
     maxTokens: 1000,
     messages: [
       {
@@ -598,9 +599,30 @@ export async function answerMemberProfileQuestion({
     temperature: 0,
   });
 
-  if (!completionResult.ok) {
-    return fail(completionResult);
-  }
+  let accumulator = '';
+
+  const answer: ParsedChatbotAnswer = {
+    answerSegments: [],
+    threads: [],
+  };
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      for await (const chunk of messageStream) {
+        if (chunk.type === 'content_block_delta' && chunk.delta) {
+          accumulator += chunk.delta.text;
+        }
+
+        const [metadataSection, ...answerParts] = accumulator.split('---');
+
+        if (!metadataSection || answerParts.length === 0) {
+          continue;
+        }
+
+        const metadataJSON = JSON.parse(metadataSection.trim());
+      }
+    },
+  });
 
   const parseResult = await parseAnswerForMemberProfile(completionResult.data);
 

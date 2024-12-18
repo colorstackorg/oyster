@@ -136,7 +136,7 @@ function ChatbotAnswer() {
     }
   }
 
-  return <Text>{formatted}</Text>;
+  return <Text className="whitespace-pre-wrap">{formatted}</Text>;
 }
 
 function ChatbotHeader() {
@@ -189,10 +189,6 @@ function ChatbotForm() {
           autoFocus
           className="w-full text-base"
           name="question"
-          onChange={(e) => {
-            console.log('CHANGE');
-            // setQuestion(e.currentTarget.value);
-          }}
           ref={questionRef}
           required
           type="text"
