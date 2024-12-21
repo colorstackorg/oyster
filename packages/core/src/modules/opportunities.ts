@@ -471,20 +471,20 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
   <output>
     {
       "company": "string | null",
-      "description": "string",
+      "description": "string | null",
       "expiresAt": "string | null",
       "tags": "string[]",
-      "title": "string"
+      "title": "string | null"
     }
   </output>
 `;
 
 const RefineOpportunityResponse = z.object({
   company: z.string().trim().min(1).nullable(),
-  description: z.string().trim().min(1).max(500),
+  description: z.string().trim().min(1).max(500).nullable(),
   expiresAt: z.string().nullable(),
   tags: z.array(z.string().trim().min(1)).min(1),
-  title: z.string().trim().min(1).max(100),
+  title: z.string().trim().min(1).max(100).nullable(),
 });
 
 type RefineOpportunityResponse = z.infer<typeof RefineOpportunityResponse>;
@@ -571,10 +571,10 @@ export async function refineOpportunity(
     const opportunity = await trx
       .updateTable('opportunities')
       .set({
+        ...(data.description && { description: data.description }),
+        ...(data.title && { title: data.title }),
         companyId,
-        description: data.description,
         expiresAt,
-        title: data.title,
       })
       .where('id', '=', input.opportunityId)
       .returning(['id', 'refinedAt', 'slackChannelId', 'slackMessageId'])
