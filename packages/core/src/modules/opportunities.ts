@@ -461,6 +461,8 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
 
   Follow these guidelines:
   - If you cannot confidently infer a field, set it to null.
+  - Double check that your output is based on the website content. Don't make
+    up information that you cannot confidently infer from the website content.
 
   Your output should be a single JSON object containing these fields. Do not
   provide any explanation or text outside of the JSON object. Ensure your JSON
