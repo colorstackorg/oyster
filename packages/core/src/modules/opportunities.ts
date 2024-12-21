@@ -461,6 +461,8 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
 
   Follow these guidelines:
   - If you cannot confidently infer a field, set it to null.
+  - If the page is not found, expired, or otherwise not a valid opportunity,
+    set all fields to null.
   - Double check that your output is based on the website content. Don't make
     up information that you cannot confidently infer from the website content.
 
@@ -473,7 +475,7 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
       "company": "string | null",
       "description": "string | null",
       "expiresAt": "string | null",
-      "tags": "string[]",
+      "tags": "string[] | null",
       "title": "string | null"
     }
   </output>
@@ -483,7 +485,7 @@ const RefineOpportunityResponse = z.object({
   company: z.string().trim().min(1).nullable(),
   description: z.string().trim().min(1).max(500).nullable(),
   expiresAt: z.string().nullable(),
-  tags: z.array(z.string().trim().min(1)).min(1),
+  tags: z.array(z.string().trim().min(1)).min(1).nullable(),
   title: z.string().trim().min(1).max(100).nullable(),
 });
 
@@ -588,6 +590,10 @@ export async function refineOpportunity(
       .where('id', '=', input.opportunityId)
       .where('refinedAt', 'is', null)
       .executeTakeFirst();
+
+    if (!data.tags) {
+      return opportunity;
+    }
 
     const upsertedTags = await trx
       .insertInto('opportunityTags')
