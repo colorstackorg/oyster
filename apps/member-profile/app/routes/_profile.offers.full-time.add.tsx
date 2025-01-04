@@ -105,7 +105,10 @@ export default function AddFullTimeOffer() {
 
       <Form className="form" method="post">
         <OfferCompanyField error={errors.companyCrunchbaseId} />
-        <OfferRoleField error={errors.role} />
+        <OfferRoleField
+          error={errors.role}
+          placeholderText="Software Engineer I"
+        />
         <OfferLocationField error={errors.location} />
 
         <Divider my="1" />

@@ -182,7 +182,11 @@ export default function EditFullTimeOffer() {
           }}
           error={errors.companyCrunchbaseId}
         />
-        <OfferRoleField defaultValue={role} error={errors.role} />
+        <OfferRoleField
+          defaultValue={role}
+          error={errors.role}
+          placeholderText="Software Engineer I"
+        />
         <OfferLocationField defaultValue={location} error={errors.location} />
 
         <Divider my="1" />
