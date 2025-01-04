@@ -212,7 +212,7 @@ export function OfferRoleField({
         defaultValue={defaultValue}
         id="role"
         name="role"
-        placeholder="Software Engineer Intern"
+        placeholder="Software Engineer I"
         required
       />
     </Field>
