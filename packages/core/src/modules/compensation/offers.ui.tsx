@@ -205,7 +205,7 @@ export function OfferRelocationField({
 export function OfferRoleField({
   defaultValue,
   error,
-  placeholderText = "Software Engineer Intern", // default if not provided
+  placeholderText = 'Software Engineer Intern', // default if not provided
 }: Omit<FieldProps<string>, 'name'> & { placeholderText?: string }) {
   return (
     <Field error={error} label="Role" labelFor="role" required>
