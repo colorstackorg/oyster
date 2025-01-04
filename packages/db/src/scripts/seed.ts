@@ -257,7 +257,6 @@ async function seed(trx: Transaction<DB>) {
         link: null,
         postedBy: memberId,
         postedAt: new Date(),
-        attachments: [],
       },
       {
         id: id(),
@@ -267,7 +266,6 @@ async function seed(trx: Transaction<DB>) {
         link: 'https://example.com/resume-tips',
         postedBy: additionalStudentIds[0].id,
         postedAt: new Date(),
-        attachments: [],
       },
     ])
     .execute();
@@ -279,7 +277,8 @@ async function seed(trx: Transaction<DB>) {
       .values({
         id: id(),
         title: 'Software Engineering Internship',
-        description: 'Summer internship opportunity working on cloud infrastructure',
+        description:
+          'Summer internship opportunity working on cloud infrastructure',
         createdAt: new Date(),
         expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
         postedBy: memberId,
@@ -322,10 +321,10 @@ async function seed(trx: Transaction<DB>) {
     .execute();
 
   // Create work experiences
-  await trx
-    .insertInto('workExperiences')
-    .values([
-      {
+  const workExperiences = await Promise.all([
+    trx
+      .insertInto('workExperiences')
+      .values({
         id: id(),
         companyId: companies[0].id,
         studentId: memberId,
@@ -334,8 +333,12 @@ async function seed(trx: Transaction<DB>) {
         startDate: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000),
         endDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
         locationType: 'remote',
-      },
-      {
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow(),
+    trx
+      .insertInto('workExperiences')
+      .values({
         id: id(),
         companyId: companies[1].id,
         studentId: additionalStudentIds[1].id,
@@ -343,17 +346,18 @@ async function seed(trx: Transaction<DB>) {
         employmentType: 'full_time',
         startDate: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
         locationType: 'hybrid',
-      },
-    ])
-    .execute();
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow(),
+  ]);
 
-  // Create company reviews
+  // Create company reviews linked to work experiences
   await trx
     .insertInto('companyReviews')
     .values([
       {
         id: id(),
-        companyId: companies[0].id,
+        workExperienceId: workExperiences[0].id,
         studentId: memberId,
         rating: 9,
         recommend: true,
@@ -362,7 +366,7 @@ async function seed(trx: Transaction<DB>) {
       },
       {
         id: id(),
-        companyId: companies[1].id,
+        workExperienceId: workExperiences[1].id,
         studentId: additionalStudentIds[1].id,
         rating: 8,
         recommend: true,
