@@ -174,6 +174,228 @@ async function seed(trx: Transaction<DB>) {
       },
     ])
     .execute();
+
+  // Create additional students from different schools
+  const additionalStudentIds = await Promise.all([
+    trx
+      .insertInto('students')
+      .values({
+        acceptedAt: new Date(),
+        currentLocation: 'Berkeley, CA',
+        currentLocationCoordinates: sql`point(-122.272747, 37.871899)`,
+        educationLevel: 'undergraduate',
+        email: 'student3@berkeley.edu',
+        firstName: 'Cal',
+        gender: '',
+        graduationYear: (new Date().getFullYear() + 1).toString(),
+        id: id(),
+        lastName: 'Bear',
+        major: 'computer_science',
+        otherDemographics: [],
+        race: [],
+        schoolId: schoolId3,
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow(),
+    trx
+      .insertInto('students')
+      .values({
+        acceptedAt: new Date(),
+        currentLocation: 'Ithaca, NY',
+        currentLocationCoordinates: sql`point(-76.473183, 42.453098)`,
+        educationLevel: 'graduate',
+        email: 'student4@cornell.edu',
+        firstName: 'Big',
+        gender: '',
+        graduationYear: (new Date().getFullYear() + 2).toString(),
+        id: id(),
+        lastName: 'Red',
+        major: 'information_science',
+        otherDemographics: [],
+        race: [],
+        schoolId: schoolId2,
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow(),
+  ]);
+
+  // Create sample companies
+  const companies = await Promise.all([
+    trx
+      .insertInto('companies')
+      .values({
+        id: id(),
+        name: 'TechCorp',
+        description: 'Leading technology solutions provider',
+        domain: 'techcorp.example.com',
+        crunchbaseId: 'techcorp',
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow(),
+    trx
+      .insertInto('companies')
+      .values({
+        id: id(),
+        name: 'StartupHub',
+        description: 'Innovative startup accelerator',
+        domain: 'startuphub.example.com',
+        crunchbaseId: 'startuphub',
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow(),
+  ]);
+
+  // Create resources
+  await trx
+    .insertInto('resources')
+    .values([
+      {
+        id: id(),
+        title: 'Interview Preparation Guide',
+        description: 'Comprehensive guide for technical interviews',
+        type: 'file',
+        link: null,
+        postedBy: memberId,
+        postedAt: new Date(),
+        attachments: [],
+      },
+      {
+        id: id(),
+        title: 'Resume Writing Tips',
+        description: 'Best practices for crafting your tech resume',
+        type: 'url',
+        link: 'https://example.com/resume-tips',
+        postedBy: additionalStudentIds[0].id,
+        postedAt: new Date(),
+        attachments: [],
+      },
+    ])
+    .execute();
+
+  // Create opportunities
+  const opportunities = await Promise.all([
+    trx
+      .insertInto('opportunities')
+      .values({
+        id: id(),
+        title: 'Software Engineering Internship',
+        description: 'Summer internship opportunity working on cloud infrastructure',
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+        postedBy: memberId,
+        companyId: companies[0].id,
+        slackChannelId: 'C123456',
+        slackMessageId: 'M123456',
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow(),
+    trx
+      .insertInto('opportunities')
+      .values({
+        id: id(),
+        title: 'Full Stack Developer',
+        description: 'Full-time position for recent graduates',
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
+        postedBy: additionalStudentIds[1].id,
+        companyId: companies[1].id,
+        slackChannelId: 'C234567',
+        slackMessageId: 'M234567',
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow(),
+  ]);
+
+  // Create opportunity bookmarks
+  await trx
+    .insertInto('opportunityBookmarks')
+    .values([
+      {
+        opportunityId: opportunities[0].id,
+        studentId: additionalStudentIds[0].id,
+      },
+      {
+        opportunityId: opportunities[1].id,
+        studentId: memberId,
+      },
+    ])
+    .execute();
+
+  // Create work experiences
+  await trx
+    .insertInto('workExperiences')
+    .values([
+      {
+        id: id(),
+        companyId: companies[0].id,
+        studentId: memberId,
+        title: 'Software Engineering Intern',
+        employmentType: 'internship',
+        startDate: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000),
+        endDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+        locationType: 'remote',
+      },
+      {
+        id: id(),
+        companyId: companies[1].id,
+        studentId: additionalStudentIds[1].id,
+        title: 'Full Stack Engineer',
+        employmentType: 'full_time',
+        startDate: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
+        locationType: 'hybrid',
+      },
+    ])
+    .execute();
+
+  // Create company reviews
+  await trx
+    .insertInto('companyReviews')
+    .values([
+      {
+        id: id(),
+        companyId: companies[0].id,
+        studentId: memberId,
+        rating: 9,
+        recommend: true,
+        text: 'Great work culture and learning opportunities. The team is very supportive and there are plenty of chances to work on impactful projects. The mentorship program is excellent and the work-life balance is respected.',
+        anonymous: false,
+      },
+      {
+        id: id(),
+        companyId: companies[1].id,
+        studentId: additionalStudentIds[1].id,
+        rating: 8,
+        recommend: true,
+        text: 'Exciting startup environment with lots of opportunities for growth. Fast-paced work environment with cutting-edge technologies. Good compensation and benefits. Sometimes work-life balance can be challenging but overall a great place to work and learn.',
+        anonymous: true,
+      },
+    ])
+    .execute();
+
+  // Create completed activities for gamification
+  await trx
+    .insertInto('completedActivities')
+    .values([
+      {
+        id: id(),
+        studentId: memberId,
+        type: 'post_resource',
+        points: 10,
+        createdAt: new Date(),
+        occurredAt: new Date(),
+        description: 'Posted a helpful interview preparation guide',
+      },
+      {
+        id: id(),
+        studentId: additionalStudentIds[0].id,
+        type: 'review_company',
+        points: 15,
+        createdAt: new Date(),
+        occurredAt: new Date(),
+        description: 'Shared detailed company review',
+      },
+    ])
+    .execute();
 }
 
 async function setEmailFromCommandLine() {
