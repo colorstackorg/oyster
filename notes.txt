@@ -1,0 +1,52 @@
+# Seed Data Requirements
+
+## Current Seed Coverage (seed.ts)
+- Schools (6 universities)
+- Admin (1 record)
+- Student/Member (1 record)
+- Applications (2 pending applications)
+
+## Missing Data Types to Add
+
+### Resources (resources.types.ts)
+- File and URL types supported
+- Has tags, descriptions, upvotes
+- Needs posted date, title, type
+- Can have attachments and links
+
+### Employment/Companies (employment.types.ts)
+- Companies with reviews
+- Work experiences (internships, full-time, etc)
+- Location types (remote, hybrid, in-person)
+- Company reviews with ratings
+
+### Opportunities (opportunities.ts + migrations)
+- Company associations
+- Tags and bookmarks
+- Slack channel integration
+- Expiration dates
+- Posted by member
+
+### Gamification (gamification.types.ts)
+Activities to seed:
+- ATTEND_EVENT
+- GET_ACTIVATED
+- GET_OPPORTUNITY_BOOKMARK
+- GET_RESOURCE_UPVOTE
+- JOIN_MEMBER_DIRECTORY
+- POST_RESOURCE
+- REACT_TO_MESSAGE
+- REFER_FRIEND
+- REPLY_TO_THREAD
+- REVIEW_COMPANY
+- SUBMIT_CENSUS_RESPONSE
+- SUBMIT_RESUME
+- UPDATE_EDUCATION_HISTORY
+- UPDATE_WORK_HISTORY
+- UPLOAD_PROFILE_PICTURE
+
+## Dependencies
+- Members need to exist before creating resources/opportunities
+- Companies need to exist before work experiences
+- Resources need to exist before upvotes
+- Opportunities need companies and members

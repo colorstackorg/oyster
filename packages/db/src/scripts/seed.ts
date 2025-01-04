@@ -175,49 +175,88 @@ async function seed(trx: Transaction<DB>) {
     ])
     .execute();
 
-  // Create additional students from different schools
-  const additionalStudentIds = await Promise.all([
-    trx
-      .insertInto('students')
-      .values({
-        acceptedAt: new Date(),
-        currentLocation: 'Berkeley, CA',
-        currentLocationCoordinates: sql`point(-122.272747, 37.871899)`,
-        educationLevel: 'undergraduate',
-        email: 'student3@berkeley.edu',
-        firstName: 'Cal',
-        gender: '',
+  // Create additional student emails first
+  const additionalStudents = [
+    {
+      email: 'student3@berkeley.edu',
+      firstName: 'Cal',
+      lastName: 'Bear',
+      schoolId: schoolId3,
+      location: {
+        city: 'Berkeley, CA',
+        longitude: -122.272747,
+        latitude: 37.871899,
+      },
+      education: {
+        level: 'undergraduate',
         graduationYear: (new Date().getFullYear() + 1).toString(),
-        id: id(),
-        lastName: 'Bear',
         major: 'computer_science',
-        otherDemographics: [],
-        race: [],
-        schoolId: schoolId3,
-      })
-      .returning('id')
-      .executeTakeFirstOrThrow(),
-    trx
-      .insertInto('students')
-      .values({
-        acceptedAt: new Date(),
-        currentLocation: 'Ithaca, NY',
-        currentLocationCoordinates: sql`point(-76.473183, 42.453098)`,
-        educationLevel: 'graduate',
-        email: 'student4@cornell.edu',
-        firstName: 'Big',
-        gender: '',
+      },
+    },
+    {
+      email: 'student4@cornell.edu',
+      firstName: 'Big',
+      lastName: 'Red',
+      schoolId: schoolId2,
+      location: {
+        city: 'Ithaca, NY',
+        longitude: -76.473183,
+        latitude: 42.453098,
+      },
+      education: {
+        level: 'graduate',
         graduationYear: (new Date().getFullYear() + 2).toString(),
-        id: id(),
-        lastName: 'Red',
         major: 'information_science',
-        otherDemographics: [],
-        race: [],
-        schoolId: schoolId2,
-      })
-      .returning('id')
-      .executeTakeFirstOrThrow(),
-  ]);
+      },
+    },
+  ];
+
+  // Insert student emails first
+  await Promise.all(
+    additionalStudents.map((student) =>
+      trx
+        .insertInto('studentEmails')
+        .values({
+          email: student.email,
+        })
+        .execute(),
+    ),
+  );
+
+  // Then create student records
+  const additionalStudentIds = await Promise.all(
+    additionalStudents.map(async (student) => {
+      const { id: studentId } = await trx
+        .insertInto('students')
+        .values({
+          id: id(),
+          email: student.email,
+          firstName: student.firstName,
+          lastName: student.lastName,
+          schoolId: student.schoolId,
+          currentLocation: student.location.city,
+          currentLocationCoordinates: sql`point(${student.location.longitude}, ${student.location.latitude})`,
+          educationLevel: student.education.level,
+          graduationYear: student.education.graduationYear,
+          major: student.education.major,
+          gender: '',
+          otherDemographics: [],
+          race: [],
+          acceptedAt: new Date(),
+        })
+        .returning('id')
+        .executeTakeFirstOrThrow();
+
+      // Update studentEmails with the new studentId
+      await trx
+        .updateTable('studentEmails')
+        .set({ studentId })
+        .where('email', '=', student.email)
+        .execute();
+
+      return { id: studentId, email: student.email };
+    }),
+  );
 
   // Create sample companies
   const companies = await Promise.all([
@@ -270,7 +309,59 @@ async function seed(trx: Transaction<DB>) {
     ])
     .execute();
 
-  // Create opportunities
+  // Create slack channels first
+  const slackChannels = await Promise.all([
+    trx
+      .insertInto('slackChannels')
+      .values({
+        id: 'C123456',
+        name: 'opportunities',
+        type: 'public',
+        createdAt: new Date(),
+        deletedAt: null,
+      })
+      .execute(),
+    trx
+      .insertInto('slackChannels')
+      .values({
+        id: 'C234567',
+        name: 'jobs',
+        type: 'public',
+        createdAt: new Date(),
+        deletedAt: null,
+      })
+      .execute(),
+  ]);
+
+  // Create slack messages that reference the channels
+  const slackMessages = await Promise.all([
+    trx
+      .insertInto('slackMessages')
+      .values({
+        id: 'M123456',
+        channelId: 'C123456',
+        text: 'New opportunity: Software Engineering Internship',
+        userId: 'U123456',
+        createdAt: new Date(),
+        deletedAt: null,
+        threadId: null,
+      })
+      .execute(),
+    trx
+      .insertInto('slackMessages')
+      .values({
+        id: 'M234567',
+        channelId: 'C234567',
+        text: 'New opportunity: Full Stack Developer',
+        userId: 'U234567',
+        createdAt: new Date(),
+        deletedAt: null,
+        threadId: null,
+      })
+      .execute(),
+  ]);
+
+  // Create opportunities with slack message references
   const opportunities = await Promise.all([
     trx
       .insertInto('opportunities')
