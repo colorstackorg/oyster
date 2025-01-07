@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Link, Outlet, useLoaderData, generatePath } from '@remix-run/react';
+import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren } from 'react';
 import {
@@ -464,7 +464,7 @@ function LeaderboardCard({ className }: CardProps) {
           return (
             <Link
               className="gap-4 rounded-2xl p-2 hover:bg-gray-100 sm:grid-cols-[4rem,1fr]"
-              to={generatePath(Route['/directory/:id'], { id: position.id })}            
+              to={generatePath(Route['/directory/:id'], { id: position.id })}
             >
               <Leaderboard.Item
                 key={position.id}
