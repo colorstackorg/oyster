@@ -361,15 +361,20 @@ function PointsLeaderboard({ className }: CardProps) {
       <Leaderboard.List scroll>
         {pointsLeaderboard.map((position) => {
           return (
-            <Leaderboard.Item
-              key={position.id}
-              firstName={position.firstName}
-              isMe={position.me}
-              label={<LeaderboardItemLabel points={position.points} />}
-              lastName={position.lastName}
-              position={position.rank}
-              profilePicture={position.profilePicture || undefined}
-            />
+            <RemixLink
+              className="gap-4 rounded-2xl p-2 hover:bg-gray-100 sm:grid-cols-[4rem,1fr]"
+              to={generatePath(Route['/directory/:id'], { id: position.id })}
+            >
+              <Leaderboard.Item
+                key={position.id}
+                firstName={position.firstName}
+                isMe={position.me}
+                label={<LeaderboardItemLabel points={position.points} />}
+                lastName={position.lastName}
+                position={position.rank}
+                profilePicture={position.profilePicture || undefined}
+              />
+            </RemixLink>
           );
         })}
       </Leaderboard.List>
