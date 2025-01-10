@@ -231,7 +231,7 @@ function CompanyLogo({ imageUrl }: Pick<CompanyInView, 'imageUrl'>) {
   return (
     <div className="h-10 w-10 rounded-lg border border-gray-200 p-1">
       <img
-        className="aspect-square h-full w-full rounded-md"
+        className="aspect-square h-full w-full rounded-md object-contain"
         src={imageUrl as string}
       />
     </div>

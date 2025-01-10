@@ -55,7 +55,7 @@ export default function CompanyPage() {
       <header className="flex items-center gap-4">
         <div className="h-14 w-14 rounded-lg border border-gray-200 p-1">
           <img
-            className="aspect-square h-full w-full rounded-md"
+            className="aspect-square h-full w-full rounded-md object-contain"
             src={company.imageUrl as string}
           />
         </div>
