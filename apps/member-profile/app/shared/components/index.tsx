@@ -61,7 +61,7 @@ export function CompanyLink({
       <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
         <img
           alt={companyName}
-          className="aspect-square h-full w-full rounded-md"
+          className="aspect-square h-full w-full rounded-md object-contain"
           src={companyLogo as string}
         />
       </div>

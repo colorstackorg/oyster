@@ -600,6 +600,26 @@ async function shareOffer({
     });
   }
 
+  const [existingInternshipOffer, existingFullTimeOffer] = await Promise.all([
+    db
+      .selectFrom('internshipOffers')
+      .where('slackChannelId', '=', slackChannelId)
+      .where('slackMessageId', '=', slackMessageId)
+      .executeTakeFirst(),
+
+    db
+      .selectFrom('fullTimeOffers')
+      .where('slackChannelId', '=', slackChannelId)
+      .where('slackMessageId', '=', slackMessageId)
+      .executeTakeFirst(),
+  ]);
+
+  // In case something happens and we process the same Bull job multiple times,
+  // we'll just bail early (fail with success).
+  if (existingInternshipOffer || existingFullTimeOffer) {
+    return success({});
+  }
+
   // Sometimes a member will post multiple offer details in a single Slack
   // message. We'll split the message into multiple chunks and process each
   // chunk individually.
