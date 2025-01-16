@@ -13,7 +13,7 @@ import {
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
-import { Bookmark, Calendar, Circle, Tag, Zap } from 'react-feather';
+import { Bookmark, Calendar, Tag, Zap } from 'react-feather';
 
 import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
@@ -179,18 +179,14 @@ async function listOpportunities(
   searchParams: URLSearchParams,
   { limit, page, memberId }: ListOpportunitiesOptions
 ) {
-  const {
-    bookmarked,
-    company,
-    since,
-    status = 'open',
-  } = Object.fromEntries(searchParams);
+  const { bookmarked, company, since } = Object.fromEntries(searchParams);
 
   const tags = searchParams.getAll('tag');
 
   const query = db
     .selectFrom('opportunities')
     .leftJoin('companies', 'companies.id', 'opportunities.companyId')
+    .where('opportunities.expiresAt', '>', new Date())
     .$if(!!bookmarked, (qb) => {
       return qb.where((eb) => {
         return eb.exists(() => {
@@ -219,17 +215,6 @@ async function listOpportunities(
       const date = dayjs().subtract(daysAgo, 'day').toDate();
 
       return qb.where('opportunities.createdAt', '>=', date);
-    })
-    .$if(!!status, (qb) => {
-      if (status.toLowerCase() === 'open') {
-        return qb.where('opportunities.expiresAt', '>', new Date());
-      }
-
-      if (status.toLowerCase() === 'expired') {
-        return qb.where('opportunities.expiresAt', '<', new Date());
-      }
-
-      return qb;
     })
     .$if(!!tags.length, (qb) => {
       return qb.where((eb) => {
@@ -348,7 +333,6 @@ export default function OpportunitiesPage() {
             selectedCompany={appliedCompany}
           />
           <DatePostedFilter />
-          <StatusFilter />
         </div>
 
         <ClearFiltersButton />
@@ -641,46 +625,6 @@ function DatePostedFilter() {
                 key={option.value}
                 label={option.label}
                 name="since"
-                value={option.value}
-              />
-            );
-          })}
-        </ul>
-      </FilterPopover>
-    </FilterRoot>
-  );
-}
-
-function StatusFilter() {
-  const [searchParams] = useSearchParams();
-
-  const status = searchParams.get('status') || 'open';
-
-  const options: FilterValue[] = [
-    { color: 'orange-100', label: 'Open', value: 'open' },
-    { color: 'red-100', label: 'Expired', value: 'expired' },
-  ];
-
-  const selectedValues = options.filter((option) => {
-    return status === option.value;
-  });
-
-  return (
-    <FilterRoot>
-      <FilterButton icon={<Circle />} popover selectedValues={selectedValues}>
-        Status
-      </FilterButton>
-
-      <FilterPopover>
-        <ul>
-          {options.map((option) => {
-            return (
-              <FilterItem
-                checked={status === option.value}
-                color={option.color}
-                key={option.value}
-                label={option.label}
-                name="status"
                 value={option.value}
               />
             );
