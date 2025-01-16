@@ -179,8 +179,12 @@ async function listOpportunities(
   searchParams: URLSearchParams,
   { limit, page, memberId }: ListOpportunitiesOptions
 ) {
-  const { bookmarked, company, since, status } =
-    Object.fromEntries(searchParams);
+  const {
+    bookmarked,
+    company,
+    since,
+    status = 'open',
+  } = Object.fromEntries(searchParams);
 
   const tags = searchParams.getAll('tag');
 
@@ -217,13 +221,11 @@ async function listOpportunities(
       return qb.where('opportunities.createdAt', '>=', date);
     })
     .$if(!!status, (qb) => {
-      const regex = new RegExp(status as string, 'i');
-
-      if (regex.test('open')) {
+      if (status.toLowerCase() === 'open') {
         return qb.where('opportunities.expiresAt', '>', new Date());
       }
 
-      if (regex.test('expired')) {
+      if (status.toLowerCase() === 'expired') {
         return qb.where('opportunities.expiresAt', '<', new Date());
       }
 
@@ -652,7 +654,7 @@ function DatePostedFilter() {
 function StatusFilter() {
   const [searchParams] = useSearchParams();
 
-  const status = searchParams.get('status');
+  const status = searchParams.get('status') || 'open';
 
   const options: FilterValue[] = [
     { color: 'orange-100', label: 'Open', value: 'open' },
