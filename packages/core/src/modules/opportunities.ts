@@ -207,7 +207,7 @@ async function createOpportunity({
     .values({
       createdAt: new Date(),
       description: 'N/A',
-      expiresAt: dayjs().add(3, 'months').toDate(),
+      expiresAt: dayjs().add(1, 'month').toDate(),
       id: id(),
       postedBy: slackMessage.studentId,
       slackChannelId,
