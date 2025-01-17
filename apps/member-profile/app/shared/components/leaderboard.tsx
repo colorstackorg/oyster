@@ -1,4 +1,4 @@
-import { generatePath, Link } from '@remix-run/react'
+import { generatePath, Link } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 
 import { cx, getTextCn, ProfilePicture, Text } from '@oyster/ui';
