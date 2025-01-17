@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
+import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren } from 'react';
 import {
@@ -462,23 +462,19 @@ function LeaderboardCard({ className }: CardProps) {
       <Leaderboard.List>
         {leaderboard.map((position) => {
           return (
-            <Link
-              className="gap-4 rounded-2xl p-2 hover:bg-gray-100 sm:grid-cols-[4rem,1fr]"
-              to={generatePath(Route['/directory/:id'], { id: position.id })}
-            >
-              <Leaderboard.Item
-                key={position.id}
-                firstName={position.firstName}
-                isMe={position.id === student.id}
-                label={<LeaderboardItemLabel weeks={position.value} />}
-                lastName={position.lastName}
-                position={position.position}
-                profilePicture={position.profilePicture || undefined}
-              />
-            </Link>
+            <Leaderboard.Item
+              id = {position.id}
+              key={position.id}
+              firstName={position.firstName}
+              isMe={position.id === student.id}
+              label={<LeaderboardItemLabel weeks={position.value} />}
+              lastName={position.lastName}
+              position={position.position}
+              profilePicture={position.profilePicture || undefined}
+            />
           );
         })}
-        {/*If not in top-10 display position show position for active streak */}
+        {/*If not in top-10 position display position for active streak */}
         {/*TO-DO */}
       </Leaderboard.List>
     </Card>
