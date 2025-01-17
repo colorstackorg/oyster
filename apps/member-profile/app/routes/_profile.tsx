@@ -86,7 +86,6 @@ export default function ProfileLayout() {
             />
             <Dashboard.NavigationLink
               icon={<DollarSign />}
-              isNew
               label="Offers"
               pathname={Route['/offers']}
               prefetch="intent"
@@ -117,7 +116,6 @@ export default function ProfileLayout() {
             />
             <Dashboard.NavigationLink
               icon={<MessageCircle />}
-              isNew
               label="Ask AI"
               pathname={Route['/ask-ai']}
               prefetch="intent"
