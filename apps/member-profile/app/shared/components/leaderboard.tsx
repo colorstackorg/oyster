@@ -1,12 +1,14 @@
+import { generatePath, Link } from '@remix-run/react'
 import { type PropsWithChildren } from 'react';
-import {generatePath, Link } from '@remix-run/react'
+
 import { cx, getTextCn, ProfilePicture, Text } from '@oyster/ui';
+
 import { Route } from '@/shared/constants';
 
 export const Leaderboard = () => {};
 
 type LeaderboardItemProps = {
-  id:string;
+  id: string;
   firstName: string;
   isMe: boolean;
   label: React.ReactNode;
