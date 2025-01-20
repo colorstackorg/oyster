@@ -581,6 +581,22 @@ export const SlackBullJob = z.discriminatedUnion('name', [
     name : z.literal('slack.leetcode.reminder'),
     data : z.object({})
   }),
+  z.object({
+    name: z.literal('slack.leetcode.add'),
+    data: z.object({
+      channelId: z.string().trim().min(1),
+      slackId: z.string().trim().min(1),
+      threadId: z.string().trim().min(1)
+    }),
+  }),
+  z.object({
+    name: z.literal('slack.leetcode.remove'),
+    data: z.object({
+      channelId: z.string().trim().min(1),
+      slackId: Student.shape.slackId.unwrap(),
+      threadId: z.string().trim().min(1)
+    }),
+  }),
 ]);
 
 export const StudentBullJob = z.discriminatedUnion('name', [
