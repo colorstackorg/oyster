@@ -22,6 +22,7 @@ export async function addToLeetcodeList({
       threadId: threadId,
       workspace: 'regular',
     });
+
     return;
   }
 
@@ -63,6 +64,7 @@ export async function removeFromLeetcodeList({
       .deleteFrom('leetcodeTags')
       .where('slackId', '=', slackId)
       .execute();
+
     // Send confirmation message
     job('notification.slack.send', {
       channel: channelId,

@@ -11,7 +11,8 @@ import { getSlackMessage } from '../services/slack-message.service';
 // Environment Variables
 
 const SLACK_FEED_CHANNEL_ID = process.env.SLACK_FEED_CHANNEL_ID as string;
-const SLACK_CAREER_LEETCODE_CHANNEL_ID = process.env.SLACK_CAREER_LEETCODE_CHANNEL_ID as string;
+const SLACK_CAREER_LEETCODE_CHANNEL_ID = process.env
+  .SLACK_CAREER_LEETCODE_CHANNEL_ID as string;
 // Core
 
 type AddSlackMessageInput = GetBullJobData<'slack.message.add'>;
@@ -51,35 +52,33 @@ export async function addSlackMessage(data: AddSlackMessageInput) {
         threadRepliedTo: data.threadId,
         type: 'reply_to_thread',
       });
+
       //creates or removes a leetcode bulljob if a student they replies to a thread in the leetcode channel
-      if (data.channelId === SLACK_CAREER_LEETCODE_CHANNEL_ID){
+      if (data.channelId === SLACK_CAREER_LEETCODE_CHANNEL_ID) {
         //check if the parent message is a leetcode thread
         const parentMessage = await db
-        .selectFrom('slackMessages')
-        .select(['text'])
-        .where('id', '=', data.threadId)
-        .executeTakeFirst();
+          .selectFrom('slackMessages')
+          .select(['text'])
+          .where('id', '=', data.threadId)
+          .executeTakeFirst();
 
-        if (parentMessage?.text?.includes('leetcode thread!!!')){
+        if (parentMessage?.text?.includes('leetcode thread!!!')) {
           //if the student replies to the leetcode thread with "add" then add them to the leetcode add bulljob
-          if (data.text?.toLowerCase() == "add"){
-            job(
-              'slack.leetcode.add', {
+          if (data.text?.toLowerCase() == 'add') {
+            job('slack.leetcode.add', {
               channelId: data.channelId,
-              slackId:data.userId,
-              threadId: data.threadId});
+              slackId: data.userId,
+              threadId: data.threadId,
+            });
           }
           //if the student replies to the leetcode thread with "remove" then remove them using the leetcode remove bulljob
-          else if (data.text?.toLowerCase() == "remove"){
-          job(
-            'slack.leetcode.remove', {
+          else if (data.text?.toLowerCase() == 'remove') {
+            job('slack.leetcode.remove', {
               channelId: data.channelId,
-              slackId:student.id,
-              threadId: data.threadId
-            }
-          )
-        }
-
+              slackId: student.id,
+              threadId: data.threadId,
+            });
+          }
         }
       }
     }
@@ -264,9 +263,4 @@ async function notifyBusySlackThreadIfNecessary({
 
     return;
   }
-}
-
-//adds a student to the leetcode bulljob
-async function addStudentToLeetcodeBulljob(data: AddSlackMessageInput){
-
 }
