@@ -24,8 +24,11 @@ import { deleteSlackMessage } from './use-cases/delete-slack-message';
 import { inviteToSlackWorkspace } from './use-cases/invite-to-slack-workspace';
 import { removeSlackReaction } from './use-cases/remove-slack-reaction';
 import { renameSlackChannel } from './use-cases/rename-slack-channel';
+import { sendLeetcodeReminder } from './use-cases/send-leetcode-reminder';
 import { sendSecuredTheBagReminder } from './use-cases/send-secured-the-bag-reminder';
 import { unarchiveSlackChannel } from './use-cases/unarchive-slack-channel';
+import { removeFromLeetcodeList } from './use-cases/update-leetcode-reminder-list';
+import { addToLeetcodeList } from './use-cases/update-leetcode-reminder-list';
 
 export const slackWorker = registerWorker(
   'slack',
@@ -34,6 +37,15 @@ export const slackWorker = registerWorker(
     return match(job)
       .with({ name: 'slack.birthdates.update' }, async () => {
         return updateBirthdatesFromSlack();
+      })
+      .with({ name: 'slack.leetcode.reminder' }, async ({ data }) => {
+        return sendLeetcodeReminder(data);
+      })
+      .with({ name: 'slack.leetcode.add' }, async ({ data }) => {
+        return addToLeetcodeList(data);
+      })
+      .with({ name: 'slack.leetcode.remove' }, async ({ data }) => {
+        return removeFromLeetcodeList(data);
       })
       .with({ name: 'slack.channel.archive' }, async ({ data }) => {
         return archiveSlackChannel(data);
