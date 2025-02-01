@@ -6,13 +6,16 @@ import { Email, Entity, type ExtractValue, Student } from '@oyster/types';
 
 export const OneTimeCodePurpose = {
   ADD_STUDENT_EMAIL: 'add_student_email',
+  ADD_MENTOR_EMAIL: 'add_mentor_email',
   ADMIN_LOGIN: 'admin_login',
+  MENTOR_LOGIN: 'mentor_login',
   STUDENT_LOGIN: 'student_login',
 } as const;
 
 export const OneTimeCode = Entity.extend({
   adminId: z.string().trim().min(1).optional(),
   email: Email,
+  mentorId: z.string().trim().min(1).optional(),
   purpose: z.nativeEnum(OneTimeCodePurpose),
   studentId: Student.shape.id.optional(),
   value: z.string().trim().length(6),

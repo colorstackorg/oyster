@@ -90,6 +90,31 @@ async function seed(trx: Transaction<DB>) {
     ])
     .execute();
 
+  // Add mentor records
+  await trx
+    .insertInto('mentors')
+    .values([
+      {
+        id: id(),
+        email,
+        firstName: 'First',
+        lastName: 'Last',
+      },
+      {
+        id: id(),
+        email: 'mentor1@example.com',
+        firstName: 'Jane',
+        lastName: 'Smith',
+      },
+      {
+        id: id(),
+        email: 'mentor2@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+      },
+    ])
+    .execute();
+
   await trx
     .insertInto('admins')
     .values([

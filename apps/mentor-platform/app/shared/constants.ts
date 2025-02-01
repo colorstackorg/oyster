@@ -1,4 +1,5 @@
 const ROUTES = [
+  '/',
   '/home',
   '/home/activation',
   '/login',

@@ -18,7 +18,7 @@ const {
   cookie: {
     httpOnly: true,
     maxAge: 60 * 60 * 24 * 365,
-    name: `__session_member-profile_${ENV.ENVIRONMENT}`,
+    name: `__session_mentor-platform_${ENV.ENVIRONMENT}`,
     secrets: [ENV.SESSION_SECRET],
     secure: ENV.ENVIRONMENT !== 'development',
   },
