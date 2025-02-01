@@ -23,6 +23,13 @@ export async function sendOneTimeCode({
         .where('admins.email', 'ilike', email)
         .executeTakeFirst();
     })
+    .with('mentor_login', 'add_mentor_email', () => {
+      return db
+        .selectFrom('mentors')
+        .select(['mentors.id', 'mentors.firstName'])
+        .where('mentors.email', 'ilike', email)
+        .executeTakeFirst();
+    })
     .with('student_login', 'add_student_email', () => {
       return db
         .selectFrom('studentEmails')
@@ -35,19 +42,29 @@ export async function sendOneTimeCode({
 
   if (!entity) {
     throw new Error(
-      purpose === 'admin_login'
-        ? `There was no admin found with this email (${email}).`
-        : `There was no member found with this email (${email}).`
+      match(purpose)
+        .with(
+          'admin_login',
+          () => `There was no admin found with this email (${email}).`
+        )
+        .with(
+          'mentor_login',
+          'add_mentor_email',
+          () => `There was no mentor found with this email (${email}).`
+        )
+        .with(
+          'student_login',
+          'add_student_email',
+          () => `There was no member found with this email (${email}).`
+        )
+        .exhaustive()
     );
   }
 
   const entityKey: keyof OneTimeCode = match(purpose)
-    .with('admin_login', () => {
-      return 'adminId' as const;
-    })
-    .with('student_login', 'add_student_email', () => {
-      return 'studentId' as const;
-    })
+    .with('admin_login', () => 'adminId' as const)
+    .with('mentor_login', 'add_mentor_email', () => 'mentorId' as const)
+    .with('student_login', 'add_student_email', () => 'studentId' as const)
     .exhaustive();
 
   const oneTimeCode = await db

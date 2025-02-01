@@ -12,7 +12,7 @@ import {
 export async function verifyOneTimeCode({ id, value }: VerifyOneTimeCodeInput) {
   const oneTimeCode = await db
     .selectFrom('oneTimeCodes')
-    .select(['adminId', 'purpose', 'studentId', 'value'])
+    .select(['adminId', 'mentorId', 'purpose', 'studentId', 'value'])
     .where('id', '=', id)
     .executeTakeFirst();
 
@@ -34,6 +34,9 @@ export async function verifyOneTimeCode({ id, value }: VerifyOneTimeCodeInput) {
     })
     .with('admin_login', () => {
       return oneTimeCode.adminId as string;
+    })
+    .with('add_mentor_email', 'mentor_login', () => {
+      return oneTimeCode.mentorId as string;
     })
     .exhaustive();
 
