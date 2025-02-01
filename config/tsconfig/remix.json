@@ -10,6 +10,6 @@
     "moduleResolution": "Bundler",
     "noEmit": true,
     "resolveJsonModule": true,
-    "target": "ESNext",
-  },
+    "target": "ESNext"
+  }
 }
