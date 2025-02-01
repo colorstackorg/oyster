@@ -463,6 +463,7 @@ function LeaderboardCard({ className }: CardProps) {
         {leaderboard.map((position) => {
           return (
             <Leaderboard.Item
+              id={position.id}
               key={position.id}
               firstName={position.firstName}
               isMe={position.id === student.id}
@@ -473,6 +474,8 @@ function LeaderboardCard({ className }: CardProps) {
             />
           );
         })}
+        {/*If not in top-10 position display position for active streak */}
+        {/*TO-DO */}
       </Leaderboard.List>
     </Card>
   );

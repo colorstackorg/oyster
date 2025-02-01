@@ -362,6 +362,7 @@ function PointsLeaderboard({ className }: CardProps) {
         {pointsLeaderboard.map((position) => {
           return (
             <Leaderboard.Item
+              id={position.id}
               key={position.id}
               firstName={position.firstName}
               isMe={position.me}
