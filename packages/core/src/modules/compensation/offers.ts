@@ -165,9 +165,46 @@ export const AddInternshipOfferInput = InternshipOffer.omit({
 
 type AddInternshipOfferInput = z.infer<typeof AddInternshipOfferInput>;
 
+const LOCATION_PROMPT = dedent`
+  Your goal is to clean up the location input from the user.
+
+  Here is the location input from the user:
+
+  <location>
+    $LOCATION_INPUT
+  </location>
+
+  Rules:
+  - Format as "City, State".
+  - The state should an abbreviation (ie: CA).
+  - If the location mentions being remote, then just use "Remote".
+  - If the user specifies a short-hand city, then use the full location (ie:
+    SF -> San Francisco, CA, NYC -> New York, NY).
+  - If the user specifies multiple locations, then use the first location.
+  - ONLY return the cleaned up location, don't include any other text.
+  - If you can't determine the location, then return "N/A".
+`;
+
 export async function addInternshipOffer(
   input: AddInternshipOfferInput
 ): Promise<Result<{ id: string }>> {
+  const prompt = LOCATION_PROMPT.replace('$LOCATION_INPUT', input.location);
+
+  const completionResult = await getChatCompletion({
+    maxTokens: 50,
+    messages: [{ role: 'user', content: prompt }],
+    system: [],
+    temperature: 0,
+  });
+
+  if (!completionResult.ok) {
+    return completionResult;
+  }
+
+  const location = completionResult.data;
+
+  console.log(location);
+
   const offer = await db.transaction().execute(async (trx) => {
     const companyId = await saveCompanyIfNecessary(
       trx,
@@ -183,7 +220,7 @@ export async function addInternshipOffer(
         createdAt: new Date(),
         hourlyRate: input.hourlyRate,
         id: id(),
-        location: input.location,
+        location,
         negotiated: input.negotiated,
         pastExperience: input.pastExperience,
         postedAt: new Date(),
