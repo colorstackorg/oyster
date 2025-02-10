@@ -105,15 +105,13 @@ export function OfferHourlyRateField({
   );
 }
 
-// TODO: Convert this to use the Google Places API.
-
 export function OfferLocationField({
   defaultValue,
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
     <Field
-      description='Please format the location as "City, State".'
+      description='Please format the location as "City, State". For remote positions, write "Remote".'
       error={error}
       label="Location"
       labelFor="location"
