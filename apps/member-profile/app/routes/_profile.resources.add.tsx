@@ -162,7 +162,7 @@ export default function AddResourceModal() {
                 <span>
                   {errors.link.message}{' '}
                   <Link
-                    to={`/resources/${errors.link.resourceId}`}
+                    to={`/resources?id=${errors.link.resourceId}`}
                     className="text-blue-600 hover:underline"
                   >
                     View it here
