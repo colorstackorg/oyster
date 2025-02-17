@@ -18,7 +18,11 @@ import {
 } from '@remix-run/react';
 
 import { type ResourceType, UpdateResourceInput } from '@oyster/core/resources';
-import { getResource, updateResource } from '@oyster/core/resources/server';
+import {
+  findResourceByUrl,
+  getResource,
+  updateResource,
+} from '@oyster/core/resources/server';
 import {
   Button,
   Divider,
@@ -93,6 +97,25 @@ export async function action({ params, request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
+  if (data.link) {
+    const existingResource = await findResourceByUrl(data.link);
+
+    // Editing resource with a new link that already exisits
+    if (existingResource && existingResource.id !== params.id) {
+      return json(
+        {
+          errors: {
+            link: {
+              message: 'A resource with this link has already been added.',
+              resourceId: existingResource.id,
+            },
+          },
+        },
+        { status: 400 }
+      );
+    }
+  }
+
   await updateResource(params.id as string, {
     attachments: data.attachments,
     description: data.description,
@@ -161,7 +184,21 @@ export default function EditResourceModal() {
 
           <ResourceLinkField
             defaultValue={resource.link || undefined}
-            error={errors.link}
+            error={
+              errors.link && typeof errors.link === 'object' ? (
+                <span>
+                  {errors.link.message}{' '}
+                  <Link
+                    to={`/resources/${errors.link.resourceId}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    View it here
+                  </Link>
+                </span>
+              ) : (
+                errors.link
+              )
+            }
             name={keys.link}
           />
           <ResourceAttachmentField

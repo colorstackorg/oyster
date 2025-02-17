@@ -8,11 +8,11 @@ import {
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
-import { Form, useActionData, useSearchParams } from '@remix-run/react';
+import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
 
 import { track } from '@oyster/core/mixpanel';
 import { AddResourceInput } from '@oyster/core/resources';
-import { addResource } from '@oyster/core/resources/server';
+import { addResource, findResourceByUrl } from '@oyster/core/resources/server';
 import {
   Button,
   Divider,
@@ -69,6 +69,27 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (!ok) {
     return json({ errors }, { status: 400 });
+  }
+
+  // Check for duplicate URL if a link is provided
+  if (data.link) {
+    const existingResource = await findResourceByUrl(data.link);
+
+    console.log('ftc45', existingResource);
+
+    if (existingResource) {
+      return json(
+        {
+          errors: {
+            link: {
+              message: 'A resource with this link has already been added.',
+              resourceId: existingResource.id,
+            },
+          },
+        },
+        { status: 400 }
+      );
+    }
   }
 
   await addResource({
@@ -135,7 +156,24 @@ export default function AddResourceModal() {
             error={errors.attachments}
             name={keys.attachments}
           />
-          <ResourceLinkField error={errors.link} name={keys.link} />
+          <ResourceLinkField
+            error={
+              errors.link && typeof errors.link === 'object' ? (
+                <span>
+                  {errors.link.message}{' '}
+                  <Link
+                    to={`/resources/${errors.link.resourceId}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    View it here
+                  </Link>
+                </span>
+              ) : (
+                errors.link
+              )
+            }
+            name={keys.link}
+          />
         </ResourceProvider>
 
         <ErrorMessage>{error}</ErrorMessage>
