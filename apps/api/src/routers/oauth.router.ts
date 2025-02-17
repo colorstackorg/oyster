@@ -11,9 +11,9 @@ import {
 export const oauthRouter = express.Router();
 
 oauthRouter.get('/oauth/google', async (req, res) => {
-  const query = AuthorizationCodeQuery.parse(req.query);
-
   try {
+    const query = AuthorizationCodeQuery.parse(req.query);
+
     const to = await handleLogin({
       query,
       type: 'google',
@@ -44,9 +44,9 @@ oauthRouter.get('/oauth/google/drive', async (req, res) => {
 });
 
 oauthRouter.get('/oauth/slack', async (req, res) => {
-  const query = AuthorizationCodeQuery.parse(req.query);
-
   try {
+    const query = AuthorizationCodeQuery.parse(req.query);
+
     const to = await handleLogin({
       query,
       type: 'slack',
