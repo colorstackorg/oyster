@@ -156,6 +156,7 @@ To enable the **Slack** integration:
    SLACK_CLIENT_SECRET
    SLACK_INTRODUCTIONS_CHANNEL_ID
    SLACK_SIGNING_SECRET
+   SLACK_EMOJI_UPDATES_CHANNEL_ID
    ```
 3. In `/member-profile/.env`, set the following variables:
    ```
