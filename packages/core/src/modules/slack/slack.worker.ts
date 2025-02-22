@@ -26,7 +26,7 @@ import { removeSlackReaction } from './use-cases/remove-slack-reaction';
 import { renameSlackChannel } from './use-cases/rename-slack-channel';
 import { sendSecuredTheBagReminder } from './use-cases/send-secured-the-bag-reminder';
 import { unarchiveSlackChannel } from './use-cases/unarchive-slack-channel';
-
+import { onSlackEmojiAdded } from './use-cases/send-emoji-update';
 export const slackWorker = registerWorker(
   'slack',
   SlackBullJob,
@@ -125,6 +125,11 @@ export const slackWorker = registerWorker(
         }
 
         return result.data;
+      })
+      .with({ name: 'slack.emoji.changed' }, async ({ data }) => {
+        if (data.subtype === 'add') {
+          return onSlackEmojiAdded(data);
+        }
       })
       .exhaustive();
   }

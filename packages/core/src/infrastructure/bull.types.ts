@@ -577,6 +577,29 @@ export const SlackBullJob = z.discriminatedUnion('name', [
       threadId: z.string().trim().min(1),
     }),
   }),
+  z.object({
+    name: z.literal('slack.emoji.changed'),
+    data: z.discriminatedUnion('subtype', [
+      z.object({
+        subtype: z.literal('add'),
+        name: z.string(),
+        value: z.string(),
+        event_ts: z.string()
+      }),
+      z.object({
+        subtype: z.literal('remove'),
+        names: z.array(z.string()),
+        event_ts: z.string()
+      }),
+      z.object({
+        subtype: z.literal('rename'),
+        old_name: z.string(),
+        new_name: z.string(),
+        value: z.string(),
+        event_ts: z.string()
+      })
+    ])
+  }),
 ]);
 
 export const StudentBullJob = z.discriminatedUnion('name', [
