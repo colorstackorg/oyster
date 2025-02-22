@@ -6,7 +6,8 @@ export type FeatureFlagName =
   | 'chatbot'
   | 'compensation'
   | 'family_application'
-  | 'send_slack_messages';
+  | 'send_slack_messages'
+  | 'slack_emoji_updates';
 
 // Domain
 
