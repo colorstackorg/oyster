@@ -97,24 +97,38 @@ export async function action({ params, request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
+  // Editing resource with a new link that already exisits
   if (data.link) {
     const existingResource = await findResourceByUrl(data.link);
 
-    // Editing resource with a new link that already exisits
     if (existingResource && existingResource.id !== params.id) {
-      return json(
-        {
-          errors: {
-            link: {
-              message: 'A resource with this link has already been added.',
-              resourceId: existingResource.id,
-            },
-          },
-        },
-        { status: 400 }
-      );
+      const errors: Record<'message' | 'resourceId', string> = {
+        message: 'A resource with this link has already been added.',
+        resourceId: existingResource.id,
+      };
+
+      return json({ errors });
     }
   }
+
+  // if (data.link) {
+  //   const existingResource = await findResourceByUrl(data.link);
+
+  //   // Editing resource with a new link that already exisits
+  //   if (existingResource && existingResource.id !== params.id) {
+  //     return json(
+  //       {
+  //         errors: {
+  //           link: {
+  //             message: 'A resource with this link has already been added.',
+  //             resourceId: existingResource.id,
+  //           },
+  //         },
+  //       },
+  //       { status: 400 }
+  //     );
+  //   }
+  // }
 
   await updateResource(params.id as string, {
     attachments: data.attachments,
@@ -185,11 +199,12 @@ export default function EditResourceModal() {
           <ResourceLinkField
             defaultValue={resource.link || undefined}
             error={
-              errors.link && typeof errors.link === 'object' ? (
+              // TODO: fix "property does not exist on type issue"
+              errors.message && errors.resourceId ? (
                 <span>
-                  {errors.link.message}{' '}
+                  {errors.message}{' '}
                   <Link
-                    to={`/resources?id=${errors.link.resourceId}`}
+                    to={`/resources?id=${errors.resourceId}`}
                     className="text-blue-600 hover:underline"
                   >
                     View it here
