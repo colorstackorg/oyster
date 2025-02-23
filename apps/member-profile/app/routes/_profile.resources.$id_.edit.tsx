@@ -111,25 +111,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
     }
   }
 
-  // if (data.link) {
-  //   const existingResource = await findResourceByUrl(data.link);
-
-  //   // Editing resource with a new link that already exisits
-  //   if (existingResource && existingResource.id !== params.id) {
-  //     return json(
-  //       {
-  //         errors: {
-  //           link: {
-  //             message: 'A resource with this link has already been added.',
-  //             resourceId: existingResource.id,
-  //           },
-  //         },
-  //       },
-  //       { status: 400 }
-  //     );
-  //   }
-  // }
-
   await updateResource(params.id as string, {
     attachments: data.attachments,
     description: data.description,
