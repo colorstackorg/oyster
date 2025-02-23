@@ -68,27 +68,20 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!ok) {
-    return json({ errors }, { status: 400 });
+    return json({ errors });
   }
 
   // Check for duplicate URL if a link is provided
   if (data.link) {
     const existingResource = await findResourceByUrl(data.link);
 
-    console.log('ftc45', existingResource);
-
     if (existingResource) {
-      return json(
-        {
-          errors: {
-            link: {
-              message: 'A resource with this link has already been added.',
-              resourceId: existingResource.id,
-            },
-          },
-        },
-        { status: 400 }
-      );
+      const errors: Record<'message' | 'resourceId', string> = {
+        message: 'A resource with this link has already been added.',
+        resourceId: existingResource.id,
+      };
+
+      return json({ errors });
     }
   }
 
@@ -158,11 +151,12 @@ export default function AddResourceModal() {
           />
           <ResourceLinkField
             error={
-              errors.link && typeof errors.link === 'object' ? (
+              // TODO: fix "property does not exist on type issue"
+              errors.message && errors.resourceId ? (
                 <span>
-                  {errors.link.message}{' '}
+                  {errors.message}{' '}
                   <Link
-                    to={`/resources?id=${errors.link.resourceId}`}
+                    to={`/resources?id=${errors.resourceId}`}
                     className="text-blue-600 hover:underline"
                   >
                     View it here

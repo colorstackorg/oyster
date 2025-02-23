@@ -17,7 +17,7 @@ export function ErrorMessage({ children }: PropsWithChildren) {
 type FormFieldProps = {
   children: React.ReactNode;
   description?: string | React.ReactElement;
-  error?: string | null;
+  error?: string | React.ReactElement | null;
   label?: string;
   labelFor?: string;
   required?: boolean;
@@ -187,6 +187,6 @@ export async function validateForm<T extends z.AnyZodObject>(
 
 export type FieldProps<T> = {
   defaultValue?: T;
-  error?: string;
+  error?: string | React.ReactElement;
   name: string;
 };
