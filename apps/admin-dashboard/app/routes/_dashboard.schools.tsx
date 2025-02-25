@@ -7,7 +7,7 @@ import {
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
 import { useState } from 'react';
-import { Edit, Menu, Plus } from 'react-feather';
+import { BookOpen, Edit, Menu, Plus } from 'react-feather';
 import { generatePath } from 'react-router';
 import { match } from 'ts-pattern';
 
@@ -56,12 +56,14 @@ async function listSchools({ limit, page, search }: ListSearchParams) {
 
   const [rows, countResult] = await Promise.all([
     query
+      .leftJoin('chapters', 'chapters.schoolId', 'schools.id')
       .select([
-        'addressCity',
-        'addressState',
-        'id',
-        'name',
-        'tags',
+        'chapters.id as chapterId',
+        'schools.addressCity',
+        'schools.addressState',
+        'schools.id',
+        'schools.name',
+        'schools.tags',
         (eb) => {
           return eb
             .selectFrom('students')
@@ -228,7 +230,7 @@ function SchoolsPagination() {
   );
 }
 
-function SchoolsTableDropdown({ id }: SchoolInView) {
+function SchoolsTableDropdown({ chapterId, id }: SchoolInView) {
   const [open, setOpen] = useState<boolean>(false);
 
   function onClose() {
@@ -249,6 +251,18 @@ function SchoolsTableDropdown({ id }: SchoolInView) {
                 <Edit /> Edit School
               </Link>
             </Dropdown.Item>
+
+            {!chapterId && (
+              <Dropdown.Item>
+                <Link
+                  to={generatePath(Route['/schools/:id/chapter/create'], {
+                    id,
+                  })}
+                >
+                  <BookOpen /> Create Chapter
+                </Link>
+              </Dropdown.Item>
+            )}
           </Dropdown.List>
         </Table.Dropdown>
       )}
