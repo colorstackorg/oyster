@@ -8,15 +8,11 @@ const Chapter = z.object({
   schoolId: z.string().trim().min(1),
 });
 
+type Chapter = z.infer<typeof Chapter>;
+
 // Create Chapter
 
-export const CreateChapterInput = Chapter.pick({
-  schoolId: true,
-});
-
-export type CreateChapterInput = z.infer<typeof CreateChapterInput>;
-
-export async function createChapter({ schoolId }: CreateChapterInput) {
+export async function createChapter({ schoolId }: Pick<Chapter, 'schoolId'>) {
   const chapterId = id();
 
   const chapter = await db

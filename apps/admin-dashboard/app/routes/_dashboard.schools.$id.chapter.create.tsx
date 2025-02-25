@@ -26,7 +26,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 
   if (!school) {
-    throw new Response(null, { status: 404 });
+    throw new Response(null, {
+      status: 404,
+      statusText: 'The school you are looking for does not exist.',
+    });
   }
 
   return json({
