@@ -1,7 +1,7 @@
 import { generatePath, Link } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 
-import { cx, getTextCn, ProfilePicture, Text } from '@oyster/ui';
+import { cx, ProfilePicture, Text } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 
@@ -18,8 +18,8 @@ type LeaderboardItemProps = {
 };
 
 Leaderboard.Item = function Item({
-  id,
   firstName,
+  id,
   isMe,
   label,
   lastName,
@@ -43,17 +43,13 @@ Leaderboard.Item = function Item({
           src={profilePicture || undefined}
         />
         <Link
-          className={cx(
-            getTextCn({ color: 'gray-500', variant: 'sm' }),
-            'hover:underline'
-          )}
+          className="[data-me='true']:font-semibold line-clamp-1 hover:text-primary hover:underline"
+          data-me={!!isMe}
           to={generatePath(Route['/directory/:id'], { id })}
         >
-          <Text className="line-clamp-1" weight={isMe ? '600' : undefined}>
-            {firstName} <span className="hidden sm:inline">{lastName}</span>
-            <span className="inline sm:hidden">{lastName[0]}.</span>{' '}
-            {isMe && <span>(You)</span>}
-          </Text>
+          {firstName} <span className="hidden sm:inline">{lastName}</span>
+          <span className="inline sm:hidden">{lastName[0]}.</span>{' '}
+          {isMe && <span>(You)</span>}
         </Link>
       </div>
 
