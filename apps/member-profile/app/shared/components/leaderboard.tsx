@@ -8,8 +8,8 @@ import { Route } from '@/shared/constants';
 export const Leaderboard = () => {};
 
 type LeaderboardItemProps = {
-  id: string;
   firstName: string;
+  id: string;
   isMe: boolean;
   label: React.ReactNode;
   lastName: string;
