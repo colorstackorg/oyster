@@ -154,9 +154,9 @@ const EXPIRED_PHRASES = [
   'no longer exists',
   'no longer open',
   'not accepting',
-  'not currently accepting',
   'not available',
   'not be found',
+  'not currently accepting',
   'not found',
   'not open',
   'oops',
@@ -210,6 +210,13 @@ async function checkForExpiredOpportunity({
   return success(hasExpired);
 }
 
+/**
+ * Checks for expired opportunities and marks them as expired. This can be
+ * triggered via a Bull job. This is limited to 100 opportunities at a time
+ * to prevent overwhelming our server with too many puppeteer instances.
+ *
+ * @returns The number of opportunities marked as expired.
+ */
 async function checkForExpiredOpportunities(): Promise<Result<number>> {
   const opportunities = await db
     .selectFrom('opportunities')
@@ -307,7 +314,7 @@ async function createOpportunity({
     .values({
       createdAt: new Date(),
       description: 'N/A',
-      expiresAt: dayjs().add(3, 'month').toDate(),
+      expiresAt: dayjs().add(1, 'month').toDate(),
       id: id(),
       postedBy: slackMessage.studentId,
       slackChannelId,
