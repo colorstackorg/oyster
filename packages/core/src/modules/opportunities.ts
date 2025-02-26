@@ -164,18 +164,30 @@ const EXPIRED_PHRASES = [
   'sorry',
 ];
 
+type CheckForExpiredOpportunityInput = {
+  link?: string | null;
+  opportunityId: string;
+};
+
 /**
  * This function uses puppeteer to scrape the opportunity's website and
  * determine whether or not the opportunity has closed or not. If it has,
  * the opportunity will be marked as "expired" and thus will no longer appear
  * in the opportunities board.
  *
- * @param opportunityId - The ID of the opportunity to check.
+ * Returns `true` if the opportunity has expired, `false` otherwise.
+ *
+ * @param input - The opportunity to check for expiration.
  */
-async function checkForExpiredOpportunity(
-  opportunityId: string
-): Promise<Result<boolean>> {
-  const link = await getLinkFromOpportunity(opportunityId);
+async function checkForExpiredOpportunity({
+  link = null,
+  opportunityId,
+}: CheckForExpiredOpportunityInput): Promise<Result<boolean>> {
+  // If the link is passed in, we'll use that. Otherwise, we'll scrape the
+  // opportunity's website to get the link.
+  if (!link) {
+    link = await getLinkFromOpportunity(opportunityId);
+  }
 
   if (!link) {
     return success(false);
@@ -201,7 +213,12 @@ async function checkForExpiredOpportunity(
 async function checkForExpiredOpportunities(): Promise<Result<number>> {
   const opportunities = await db
     .selectFrom('opportunities')
-    .select('id')
+    .leftJoin('slackMessages', (join) => {
+      return join
+        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
+        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
+    })
+    .select(['opportunities.id', 'slackMessages.text'])
     .where('expiresAt', '>', new Date())
     .orderBy('createdAt', 'asc')
     .limit(100)
@@ -210,12 +227,19 @@ async function checkForExpiredOpportunities(): Promise<Result<number>> {
   let count = 0;
 
   for (const opportunity of opportunities) {
-    const hasExpired = await checkForExpiredOpportunity(opportunity.id);
+    const result = await checkForExpiredOpportunity({
+      link: getFirstLinkInMessage(opportunity.text!),
+      opportunityId: opportunity.id,
+    });
 
-    if (hasExpired.ok && hasExpired.data === true) {
+    if (result.ok && result.data === true) {
       count += 1;
     }
   }
+
+  console.log(
+    `Checked ${opportunities.length} opportunities and found ${count} expired opportunities.`
+  );
 
   return success(count);
 }
@@ -741,7 +765,7 @@ export async function refineOpportunity(
  * @param message - Slack message to extract the URL from.
  * @returns First URL found in the message or `null` if it doesn't exist.
  */
-function getFirstLinkInMessage(message: string) {
+function getFirstLinkInMessage(message: string): string | undefined {
   return message.match(/<(https?:\/\/[^\s|>]+)(?:\|[^>]+)?>/)?.[1];
 }
 
@@ -962,7 +986,7 @@ export const opportunityWorker = registerWorker(
     const result = await match(job)
       .with({ name: 'opportunity.check_expired' }, async ({ data }) => {
         return data.opportunityId
-          ? checkForExpiredOpportunity(data.opportunityId)
+          ? checkForExpiredOpportunity({ opportunityId: data.opportunityId })
           : checkForExpiredOpportunities();
       })
       .with({ name: 'opportunity.create' }, async ({ data }) => {
