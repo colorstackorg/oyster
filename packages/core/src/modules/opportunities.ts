@@ -142,7 +142,114 @@ export async function checkForDeletedOpportunity({
   }
 }
 
-// "Create Opportunity"
+const EXPIRED_PHRASES = [
+  '404',
+  'closed',
+  'does not exist',
+  "doesn't exist",
+  'expired',
+  'filled',
+  'no longer accepting',
+  'no longer available',
+  'no longer exists',
+  'no longer open',
+  'not accepting',
+  'not available',
+  'not be found',
+  'not currently accepting',
+  'not found',
+  'not open',
+  'oops',
+  'removed',
+  'sorry',
+];
+
+type CheckForExpiredOpportunityInput = {
+  link?: string | null;
+  opportunityId: string;
+};
+
+/**
+ * This function uses puppeteer to scrape the opportunity's website and
+ * determine whether or not the opportunity has closed or not. If it has,
+ * the opportunity will be marked as "expired" and thus will no longer appear
+ * in the opportunities board.
+ *
+ * Returns `true` if the opportunity has expired, `false` otherwise.
+ *
+ * @param input - The opportunity to check for expiration.
+ */
+async function checkForExpiredOpportunity({
+  link = null,
+  opportunityId,
+}: CheckForExpiredOpportunityInput): Promise<Result<boolean>> {
+  // If the link is passed in, we'll use that. Otherwise, we'll scrape the
+  // opportunity's website to get the link.
+  if (!link) {
+    link = await getLinkFromOpportunity(opportunityId);
+  }
+
+  if (!link) {
+    return success(false);
+  }
+
+  const content = await getPageContent(link);
+
+  const hasExpired = EXPIRED_PHRASES.some((phrase) => {
+    return content.toLowerCase().includes(phrase);
+  });
+
+  if (hasExpired) {
+    await db
+      .updateTable('opportunities')
+      .set({ expiresAt: new Date() })
+      .where('id', '=', opportunityId)
+      .executeTakeFirst();
+  }
+
+  return success(hasExpired);
+}
+
+/**
+ * Checks for expired opportunities and marks them as expired. This can be
+ * triggered via a Bull job. This is limited to 100 opportunities at a time
+ * to prevent overwhelming our server with too many puppeteer instances.
+ *
+ * @returns The number of opportunities marked as expired.
+ */
+async function checkForExpiredOpportunities(): Promise<Result<number>> {
+  const opportunities = await db
+    .selectFrom('opportunities')
+    .leftJoin('slackMessages', (join) => {
+      return join
+        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
+        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
+    })
+    .select(['opportunities.id', 'slackMessages.text'])
+    .where('expiresAt', '>', new Date())
+    .orderBy('createdAt', 'asc')
+    .limit(100)
+    .execute();
+
+  let count = 0;
+
+  for (const opportunity of opportunities) {
+    const result = await checkForExpiredOpportunity({
+      link: getFirstLinkInMessage(opportunity.text!),
+      opportunityId: opportunity.id,
+    });
+
+    if (result.ok && result.data === true) {
+      count += 1;
+    }
+  }
+
+  console.log(
+    `Checked ${opportunities.length} opportunities and found ${count} expired opportunities.`
+  );
+
+  return success(count);
+}
 
 type CreateOpportunityInput = {
   sendNotification?: boolean;
@@ -563,6 +670,12 @@ export async function refineOpportunity(
     });
   }
 
+  // If the AI didn't return a title, then we don't want to finish the process
+  // because there was no opportunity to refine. We exit gracefully.
+  if (!data.title || !data.description) {
+    return success({});
+  }
+
   const opportunity = await db.transaction().execute(async (trx) => {
     const companyId = data.company
       ? await getMostRelevantCompany(trx, data.company)
@@ -659,7 +772,7 @@ export async function refineOpportunity(
  * @param message - Slack message to extract the URL from.
  * @returns First URL found in the message or `null` if it doesn't exist.
  */
-function getFirstLinkInMessage(message: string) {
+function getFirstLinkInMessage(message: string): string | undefined {
   return message.match(/<(https?:\/\/[^\s|>]+)(?:\|[^>]+)?>/)?.[1];
 }
 
@@ -878,6 +991,11 @@ export const opportunityWorker = registerWorker(
   OpportunityBullJob,
   async (job) => {
     const result = await match(job)
+      .with({ name: 'opportunity.check_expired' }, async ({ data }) => {
+        return data.opportunityId
+          ? checkForExpiredOpportunity({ opportunityId: data.opportunityId })
+          : checkForExpiredOpportunities();
+      })
       .with({ name: 'opportunity.create' }, async ({ data }) => {
         return createOpportunity(data);
       })
