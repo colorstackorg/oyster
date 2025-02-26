@@ -165,11 +165,6 @@ const EXPIRED_PHRASES = [
   'sorry',
 ];
 
-type CheckForExpiredOpportunityInput = {
-  link?: string | null;
-  opportunityId: string;
-};
-
 /**
  * This function uses puppeteer to scrape the opportunity's website and
  * determine whether or not the opportunity has closed or not. If it has,
@@ -180,16 +175,36 @@ type CheckForExpiredOpportunityInput = {
  *
  * @param input - The opportunity to check for expiration.
  */
-async function checkForExpiredOpportunity({
-  link = null,
-  opportunityId,
-}: CheckForExpiredOpportunityInput): Promise<Result<boolean>> {
-  // If the link is passed in, we'll use that. Otherwise, we'll scrape the
-  // opportunity's website to get the link.
-  if (!link) {
-    link = await getLinkFromOpportunity(opportunityId);
+async function checkForExpiredOpportunity(
+  opportunityId: string
+): Promise<Result<boolean>> {
+  await db
+    .updateTable('opportunities')
+    .set({ lastExpirationCheck: new Date() })
+    .where('id', '=', opportunityId)
+    .executeTakeFirst();
+
+  const opportunity = await db
+    .selectFrom('opportunities')
+    .leftJoin('slackMessages', (join) => {
+      return join
+        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
+        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
+    })
+    .select(['opportunities.expiresAt', 'slackMessages.text'])
+    .where('opportunities.id', '=', opportunityId)
+    .where('opportunities.expiresAt', '>', new Date())
+    .executeTakeFirst();
+
+  // If the opportunity isn't found or there is no text, then we'll just exit
+  // gracefully.
+  if (!opportunity || !opportunity.text) {
+    return success(false);
   }
 
+  const link = getFirstLinkInMessage(opportunity.text);
+
+  // This is a very unlikely case, almost all messages have a link in it.
   if (!link) {
     return success(false);
   }
@@ -222,6 +237,10 @@ async function checkForExpiredOpportunity({
   return success(hasExpired);
 }
 
+type CheckForExpiredOpportunitiesInput = {
+  limit: number;
+};
+
 /**
  * Checks for expired opportunities and marks them as expired. This can be
  * triggered via a Bull job. This is limited to 100 opportunities at a time
@@ -229,38 +248,25 @@ async function checkForExpiredOpportunity({
  *
  * @returns The number of opportunities marked as expired.
  */
-async function checkForExpiredOpportunities(): Promise<Result<number>> {
+async function checkForExpiredOpportunities({
+  limit,
+}: CheckForExpiredOpportunitiesInput): Promise<Result> {
   const opportunities = await db
     .selectFrom('opportunities')
-    .leftJoin('slackMessages', (join) => {
-      return join
-        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
-        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
-    })
-    .select(['opportunities.id', 'slackMessages.text'])
-    .where('opportunities.expiresAt', '>', new Date())
-    .orderBy('opportunities.createdAt', 'asc')
-    .limit(100)
+    .select('id')
+    .where('expiresAt', '>', new Date())
+    .where('lastExpirationCheck', 'is', null)
+    .orderBy('createdAt', 'asc')
+    .limit(limit)
     .execute();
 
-  let count = 0;
-
   for (const opportunity of opportunities) {
-    const result = await checkForExpiredOpportunity({
-      link: getFirstLinkInMessage(opportunity.text!),
+    job('opportunity.check_expired', {
       opportunityId: opportunity.id,
     });
-
-    if (result.ok && result.data === true) {
-      count += 1;
-    }
   }
 
-  console.log(
-    `Checked ${opportunities.length} opportunities and found ${count} expired opportunities.`
-  );
-
-  return success(count);
+  return success({});
 }
 
 type CreateOpportunityInput = {
@@ -1004,9 +1010,10 @@ export const opportunityWorker = registerWorker(
   async (job) => {
     const result = await match(job)
       .with({ name: 'opportunity.check_expired' }, async ({ data }) => {
-        return data.opportunityId
-          ? checkForExpiredOpportunity({ opportunityId: data.opportunityId })
-          : checkForExpiredOpportunities();
+        return checkForExpiredOpportunity(data.opportunityId);
+      })
+      .with({ name: 'opportunity.check_expired.all' }, async ({ data }) => {
+        return checkForExpiredOpportunities(data);
       })
       .with({ name: 'opportunity.create' }, async ({ data }) => {
         return createOpportunity(data);
