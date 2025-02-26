@@ -172,13 +172,13 @@ const EXPIRED_PHRASES = [
  *
  * @param opportunityId - The ID of the opportunity to check.
  */
-export async function checkForExpiredOpportunity(
+async function checkForExpiredOpportunity(
   opportunityId: string
-): Promise<void> {
+): Promise<Result<boolean>> {
   const link = await getLinkFromOpportunity(opportunityId);
 
   if (!link) {
-    return;
+    return success(false);
   }
 
   const content = await getPageContent(link);
@@ -194,6 +194,30 @@ export async function checkForExpiredOpportunity(
       .where('id', '=', opportunityId)
       .executeTakeFirst();
   }
+
+  return success(hasExpired);
+}
+
+async function checkForExpiredOpportunities(): Promise<Result<number>> {
+  const opportunities = await db
+    .selectFrom('opportunities')
+    .select('id')
+    .where('expiresAt', '>', new Date())
+    .orderBy('createdAt', 'asc')
+    .limit(100)
+    .execute();
+
+  let count = 0;
+
+  for (const opportunity of opportunities) {
+    const hasExpired = await checkForExpiredOpportunity(opportunity.id);
+
+    if (hasExpired.ok && hasExpired.data === true) {
+      count += 1;
+    }
+  }
+
+  return success(count);
 }
 
 type CreateOpportunityInput = {
@@ -259,7 +283,7 @@ async function createOpportunity({
     .values({
       createdAt: new Date(),
       description: 'N/A',
-      expiresAt: dayjs().add(1, 'month').toDate(),
+      expiresAt: dayjs().add(3, 'month').toDate(),
       id: id(),
       postedBy: slackMessage.studentId,
       slackChannelId,
@@ -936,6 +960,11 @@ export const opportunityWorker = registerWorker(
   OpportunityBullJob,
   async (job) => {
     const result = await match(job)
+      .with({ name: 'opportunity.check_expired' }, async ({ data }) => {
+        return data.opportunityId
+          ? checkForExpiredOpportunity(data.opportunityId)
+          : checkForExpiredOpportunities();
+      })
       .with({ name: 'opportunity.create' }, async ({ data }) => {
         return createOpportunity(data);
       })
