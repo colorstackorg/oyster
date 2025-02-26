@@ -187,6 +187,7 @@ async function listOpportunities(
     .selectFrom('opportunities')
     .leftJoin('companies', 'companies.id', 'opportunities.companyId')
     .where('opportunities.expiresAt', '>', new Date())
+    .where('opportunities.refinedAt', 'is not', null)
     .$if(!!bookmarked, (qb) => {
       return qb.where((eb) => {
         return eb.exists(() => {
