@@ -142,7 +142,59 @@ export async function checkForDeletedOpportunity({
   }
 }
 
-// "Create Opportunity"
+const EXPIRED_PHRASES = [
+  '404',
+  'closed',
+  'does not exist',
+  "doesn't exist",
+  'expired',
+  'filled',
+  'no longer accepting',
+  'no longer available',
+  'no longer exists',
+  'no longer open',
+  'not accepting',
+  'not currently accepting',
+  'not available',
+  'not be found',
+  'not found',
+  'not open',
+  'oops',
+  'removed',
+  'sorry',
+];
+
+/**
+ * This function uses puppeteer to scrape the opportunity's website and
+ * determine whether or not the opportunity has closed or not. If it has,
+ * the opportunity will be marked as "expired" and thus will no longer appear
+ * in the opportunities board.
+ *
+ * @param opportunityId - The ID of the opportunity to check.
+ */
+export async function checkForExpiredOpportunity(
+  opportunityId: string
+): Promise<void> {
+  const link = await getLinkFromOpportunity(opportunityId);
+
+  if (!link) {
+    return;
+  }
+
+  const content = await getPageContent(link);
+
+  const hasExpired = EXPIRED_PHRASES.some((phrase) => {
+    return content.toLowerCase().includes(phrase);
+  });
+
+  if (hasExpired) {
+    await db
+      .updateTable('opportunities')
+      .set({ expiresAt: new Date() })
+      .where('id', '=', opportunityId)
+      .executeTakeFirst();
+  }
+}
 
 type CreateOpportunityInput = {
   sendNotification?: boolean;
@@ -561,6 +613,12 @@ export async function refineOpportunity(
       code: 400,
       error: 'Failed to validate JSON from AI response.',
     });
+  }
+
+  // If the AI didn't return a title, then we don't want to finish the process
+  // because there was no opportunity to refine. We exit gracefully.
+  if (!data.title || !data.description) {
+    return success({});
   }
 
   const opportunity = await db.transaction().execute(async (trx) => {
