@@ -12,6 +12,7 @@ import { Edit } from 'react-feather';
 import { track } from '@oyster/core/mixpanel';
 import { getOpportunityDetails } from '@oyster/core/opportunities';
 import { getIconButtonCn, Modal, Pill, Text } from '@oyster/ui';
+import { run } from '@oyster/utils';
 
 import {
   BookmarkButton,
@@ -43,10 +44,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   Object.assign(opportunity, {
     createdAt: dayjs().to(opportunity.createdAt),
 
-    expiresAt:
-      opportunity.expiresAt > new Date()
-        ? dayjs(opportunity.expiresAt).to(new Date())
-        : dayjs().to(opportunity.expiresAt),
+    expiresAt: run(() => {
+      const expiresAt = dayjs(opportunity.expiresAt);
+
+      return expiresAt.isAfter(new Date())
+        ? `Expires in ${expiresAt.toNow()}`
+        : `Expired ${expiresAt.fromNow()} ago`;
+    }),
 
     slackMessageText: emojify(opportunity.slackMessageText || '', {
       fallback: '',
@@ -118,7 +122,7 @@ function OpportunityTitle() {
       </BookmarkForm>
 
       <Text color="gray-500" variant="sm">
-        Posted {createdAt} ago &bull; Expires in {expiresAt}
+        Posted {createdAt} ago &bull; {expiresAt}
       </Text>
     </div>
   );

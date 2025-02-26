@@ -226,8 +226,8 @@ async function checkForExpiredOpportunities(): Promise<Result<number>> {
         .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
     })
     .select(['opportunities.id', 'slackMessages.text'])
-    .where('expiresAt', '>', new Date())
-    .orderBy('createdAt', 'asc')
+    .where('opportunities.expiresAt', '>', new Date())
+    .orderBy('opportunities.createdAt', 'asc')
     .limit(100)
     .execute();
 
