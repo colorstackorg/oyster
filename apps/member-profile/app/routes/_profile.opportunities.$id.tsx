@@ -14,7 +14,6 @@ import { getOpportunityDetails } from '@oyster/core/opportunities';
 import { getIconButtonCn, Modal, Pill, Text } from '@oyster/ui';
 import { run } from '@oyster/utils';
 
-import { job } from '@/infrastructure/bull';
 import {
   BookmarkButton,
   BookmarkForm,
@@ -41,10 +40,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       statusText: 'The opportunity you are looking for does not exist.',
     });
   }
-
-  job('opportunity.check_expired', {
-    opportunityId,
-  });
 
   Object.assign(opportunity, {
     createdAt: dayjs().to(opportunity.createdAt),
