@@ -58,10 +58,10 @@ export function CompanyLink({
       target="_blank"
       to={generatePath(Route['/companies/:id'], { id: companyId })}
     >
-      <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
+      <div className="aspect-square h-8 w-8 rounded-lg border border-gray-200 p-1">
         <img
           alt={companyName}
-          className="aspect-square h-full w-full rounded-md object-contain"
+          className="h-full w-full rounded-md object-contain"
           src={companyLogo as string}
         />
       </div>
