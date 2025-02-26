@@ -184,11 +184,11 @@ function OpportunityDescription() {
 
 function OpportunitySlackMessage() {
   const {
-    id,
     posterFirstName,
     posterLastName,
     posterProfilePicture,
     slackMessageChannelId,
+    slackMessageId,
     slackMessagePostedAt,
     slackMessageText,
   } = useLoaderData<typeof loader>();
@@ -196,7 +196,7 @@ function OpportunitySlackMessage() {
   return (
     <SlackMessageCard
       channelId={slackMessageChannelId || ''}
-      messageId={id}
+      messageId={slackMessageId || ''}
       postedAt={slackMessagePostedAt || ''}
       posterFirstName={posterFirstName || ''}
       posterLastName={posterLastName || ''}
