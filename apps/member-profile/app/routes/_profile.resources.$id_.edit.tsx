@@ -180,10 +180,9 @@ export default function EditResourceModal() {
           <ResourceLinkField
             defaultValue={resource.link || undefined}
             error={
-              // TODO: fix "property does not exist on type issue"
-              errors.message && errors.resourceId ? (
+              'message' in errors && 'resourceId' in errors ? (
                 <span>
-                  {errors.message}{' '}
+                  {errors.message as string}{' '}
                   <Link
                     to={`/resources?id=${errors.resourceId}`}
                     className="text-blue-600 hover:underline"
