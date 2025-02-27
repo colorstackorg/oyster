@@ -9,6 +9,7 @@ import dayjs from 'dayjs';
 import { emojify } from 'node-emoji';
 import { Edit } from 'react-feather';
 
+import { job } from '@oyster/core/bull';
 import { track } from '@oyster/core/mixpanel';
 import { getOpportunityDetails } from '@oyster/core/opportunities';
 import { getIconButtonCn, Modal, Pill, Text } from '@oyster/ui';
@@ -40,6 +41,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       statusText: 'The opportunity you are looking for does not exist.',
     });
   }
+
+  job('opportunity.check_expired', {
+    opportunityId,
+  });
 
   Object.assign(opportunity, {
     createdAt: dayjs().to(opportunity.createdAt),

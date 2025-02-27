@@ -16,10 +16,10 @@ import {
 import { Plus } from 'react-feather';
 
 import {
-  getLinkFromOpportunity,
   refineOpportunity,
   RefineOpportunityInput,
 } from '@oyster/core/opportunities';
+import { db } from '@oyster/db';
 import {
   Button,
   ErrorMessage,
@@ -36,16 +36,20 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const link = await getLinkFromOpportunity(params.id as string);
+  const opportunity = await db
+    .selectFrom('opportunities')
+    .select('link')
+    .where('id', '=', params.id as string)
+    .executeTakeFirst();
 
-  if (!link) {
+  if (!opportunity || !opportunity.link) {
     throw new Response(null, {
       status: 404,
       statusText: 'Could not find a link in the opportunity shared.',
     });
   }
 
-  return json({ link });
+  return json({ link: opportunity.link });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
