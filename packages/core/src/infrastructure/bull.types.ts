@@ -381,6 +381,7 @@ export const OpportunityBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('opportunity.check_expired'),
     data: z.object({
+      force: z.coerce.boolean().optional(),
       opportunityId: z.string().trim().min(1),
     }),
   }),

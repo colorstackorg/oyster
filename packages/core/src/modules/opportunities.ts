@@ -176,43 +176,42 @@ const EXPIRED_PHRASES = [
  * @param input - The opportunity to check for expiration.
  */
 async function checkForExpiredOpportunity(
-  opportunityId: string
+  opportunityId: string,
+  force: boolean = false
 ): Promise<Result<boolean>> {
+  const opportunity = await db
+    .selectFrom('opportunities')
+    .select(['expiresAt', 'link'])
+    .where('id', '=', opportunityId)
+    .where('expiresAt', '>', new Date())
+    .$if(!force, (qb) => {
+      return qb.where((eb) => {
+        const threeHoursAgo = dayjs().subtract(3, 'hour').toDate();
+
+        return eb.or([
+          eb('lastExpirationCheck', 'is', null),
+          eb('lastExpirationCheck', '<=', threeHoursAgo),
+        ]);
+      });
+    })
+    .executeTakeFirst();
+
+  // If the opportunity isn't found or there is no link, then we'll just exit
+  // gracefully.
+  if (!opportunity || !opportunity.link) {
+    return success(false);
+  }
+
   await db
     .updateTable('opportunities')
     .set({ lastExpirationCheck: new Date() })
     .where('id', '=', opportunityId)
     .executeTakeFirst();
 
-  const opportunity = await db
-    .selectFrom('opportunities')
-    .leftJoin('slackMessages', (join) => {
-      return join
-        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
-        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
-    })
-    .select(['opportunities.expiresAt', 'slackMessages.text'])
-    .where('opportunities.id', '=', opportunityId)
-    .where('opportunities.expiresAt', '>', new Date())
-    .executeTakeFirst();
-
-  // If the opportunity isn't found or there is no text, then we'll just exit
-  // gracefully.
-  if (!opportunity || !opportunity.text) {
-    return success(false);
-  }
-
-  const link = getFirstLinkInMessage(opportunity.text);
-
-  // This is a very unlikely case, almost all messages have a link in it.
-  if (!link) {
-    return success(false);
-  }
-
   let content = '';
 
   try {
-    content = await getPageContent(link);
+    content = await getPageContent(opportunity.link);
   } catch (e) {
     reportException(e);
 
@@ -262,6 +261,7 @@ async function checkForExpiredOpportunities({
 
   for (const opportunity of opportunities) {
     job('opportunity.check_expired', {
+      force: true,
       opportunityId: opportunity.id,
     });
   }
@@ -804,40 +804,6 @@ function getFirstLinkInMessage(message: string): string | undefined {
 
 // Queries
 
-// "Get Link From Opportunity"
-
-/**
- * Extracts the first URL found in the Slack message associated with the
- * opportunity.
- *
- * @param opportunityId - ID of the opportunity to get the link from.
- * @returns First URL of the opportunity or `null` if it doesn't exist.
- */
-export async function getLinkFromOpportunity(opportunityId: string) {
-  const opportunity = await db
-    .selectFrom('opportunities')
-    .leftJoin('slackMessages', (join) => {
-      return join
-        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
-        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
-    })
-    .select('slackMessages.text')
-    .where('opportunities.id', '=', opportunityId)
-    .executeTakeFirst();
-
-  if (!opportunity || !opportunity.text) {
-    return null;
-  }
-
-  const link = getFirstLinkInMessage(opportunity.text);
-
-  if (!link) {
-    return null;
-  }
-
-  return link;
-}
-
 // "Get Opportunity"
 
 export async function getOpportunity(opportunityId: string) {
@@ -1018,7 +984,7 @@ export const opportunityWorker = registerWorker(
   async (job) => {
     const result = await match(job)
       .with({ name: 'opportunity.check_expired' }, async ({ data }) => {
-        return checkForExpiredOpportunity(data.opportunityId);
+        return checkForExpiredOpportunity(data.opportunityId, data.force);
       })
       .with({ name: 'opportunity.check_expired.all' }, async ({ data }) => {
         return checkForExpiredOpportunities(data);
