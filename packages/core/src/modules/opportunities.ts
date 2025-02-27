@@ -181,7 +181,7 @@ async function checkForExpiredOpportunity(
 ): Promise<Result<boolean>> {
   const opportunity = await db
     .selectFrom('opportunities')
-    .select(['createdAt', 'expiresAt', 'lastExpirationCheck', 'link'])
+    .select(['expiresAt', 'link'])
     .where('id', '=', opportunityId)
     .where('expiresAt', '>', new Date())
     .$if(!force, (qb) => {
