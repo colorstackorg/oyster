@@ -318,6 +318,16 @@ async function createOpportunity({
     return success({});
   }
 
+  const existingOpportunity = await db
+    .selectFrom('opportunities')
+    .where('link', 'ilike', link)
+    .executeTakeFirst();
+
+  // If someone already posted this exact opportunity, we'll just exit early.
+  if (existingOpportunity) {
+    return success({});
+  }
+
   const isProtectedURL =
     link.includes('docs.google.com') || link.includes('linkedin.com');
 
@@ -334,6 +344,7 @@ async function createOpportunity({
       description: 'N/A',
       expiresAt: dayjs().add(1, 'month').toDate(),
       id: id(),
+      link,
       postedBy: slackMessage.studentId,
       slackChannelId,
       slackMessageId,
@@ -567,10 +578,7 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
   5. "tags": A list of tags that fit this opportunity, maximum 5 tags and
      minimum 1 tag. This is the MOST IMPORTANT FIELD. We have a list of existing
      tags in our database that are available to associate with this opportunity.
-     If there are no relevant tags, create a NEW tag that you think we should
-     add to the opportunity. If you create a new tag, be sure 1) it is different
-     enough from the existing tags, 2) it will be useful for MANY opportunities
-     and 3) use sentence case.
+     If there are no relevant tags, return null for this field.
 
   Here's the webpage you need to analyze:
 
