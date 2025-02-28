@@ -18,11 +18,7 @@ import {
 } from '@remix-run/react';
 
 import { type ResourceType, UpdateResourceInput } from '@oyster/core/resources';
-import {
-  findResourceByUrl,
-  getResource,
-  updateResource,
-} from '@oyster/core/resources/server';
+import { getResource, updateResource } from '@oyster/core/resources/server';
 import {
   Button,
   Divider,
@@ -33,6 +29,7 @@ import {
 } from '@oyster/ui';
 
 import {
+  formatResourceLinkError,
   ResourceAttachmentField,
   ResourceDescriptionField,
   ResourceLinkField,
@@ -97,27 +94,25 @@ export async function action({ params, request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  // Editing resource with a new link that already exisits
-  if (data.link) {
-    const existingResource = await findResourceByUrl(data.link);
-
-    if (existingResource && existingResource.id !== params.id) {
-      const errors: Record<'message' | 'resourceId', string> = {
-        message: 'A resource with this link has already been added.',
-        resourceId: existingResource.id,
-      };
-
-      return json({ errors });
-    }
-  }
-
-  await updateResource(params.id as string, {
+  const result = await updateResource(params.id as string, {
     attachments: data.attachments,
     description: data.description,
     link: data.link,
     tags: data.tags,
     title: data.title,
   });
+
+  if (!result.ok) {
+    // Handle duplicate URL error
+    if ('duplicateResourceId' in result) {
+      return json({
+        errors: {
+          message: result.error,
+          resourceId: result.duplicateResourceId,
+        },
+      });
+    }
+  }
 
   toast(session, {
     message: 'Edited resource!',
@@ -179,21 +174,7 @@ export default function EditResourceModal() {
 
           <ResourceLinkField
             defaultValue={resource.link || undefined}
-            error={
-              'message' in errors && 'resourceId' in errors ? (
-                <span>
-                  {errors.message as string}{' '}
-                  <Link
-                    to={`/resources?id=${errors.resourceId}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    View it here
-                  </Link>
-                </span>
-              ) : (
-                errors.link
-              )
-            }
+            error={formatResourceLinkError(errors)}
             name={keys.link}
           />
           <ResourceAttachmentField

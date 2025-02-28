@@ -8,11 +8,11 @@ import {
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
-import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
+import { Form, useActionData, useSearchParams } from '@remix-run/react';
 
 import { track } from '@oyster/core/mixpanel';
 import { AddResourceInput } from '@oyster/core/resources';
-import { addResource, findResourceByUrl } from '@oyster/core/resources/server';
+import { addResource } from '@oyster/core/resources/server';
 import {
   Button,
   Divider,
@@ -24,6 +24,7 @@ import {
 } from '@oyster/ui';
 
 import {
+  formatResourceLinkError,
   ResourceAttachmentField,
   ResourceDescriptionField,
   ResourceLinkField,
@@ -71,21 +72,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ errors });
   }
 
-  // Check for duplicate URL if a link is provided
-  if (data.link) {
-    const existingResource = await findResourceByUrl(data.link);
-
-    if (existingResource) {
-      const errors: Record<'message' | 'resourceId', string> = {
-        message: 'A resource with this link has already been added.',
-        resourceId: existingResource.id,
-      };
-
-      return json({ errors });
-    }
-  }
-
-  await addResource({
+  const result = await addResource({
     attachments: data.attachments,
     description: data.description,
     link: data.link,
@@ -94,6 +81,18 @@ export async function action({ request }: ActionFunctionArgs) {
     title: data.title,
     type: data.type,
   });
+
+  if (!result.ok) {
+    // Handle duplicate URL error
+    if ('duplicateResourceId' in result) {
+      return json({
+        errors: {
+          message: result.error,
+          resourceId: result.duplicateResourceId,
+        },
+      });
+    }
+  }
 
   track({
     event: 'Resource Added',
@@ -150,21 +149,7 @@ export default function AddResourceModal() {
             name={keys.attachments}
           />
           <ResourceLinkField
-            error={
-              'message' in errors && 'resourceId' in errors ? (
-                <span>
-                  {errors.message as string}{' '}
-                  <Link
-                    to={`/resources?id=${errors.resourceId}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    View it here
-                  </Link>
-                </span>
-              ) : (
-                errors.link
-              )
-            }
+            error={formatResourceLinkError(errors)}
             name={keys.link}
           />
         </ResourceProvider>
