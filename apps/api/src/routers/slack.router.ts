@@ -157,6 +157,15 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
         });
       }
     })
+    .with({ type: 'emoji_changed' }, (event) => {
+      if (event.subtype !== 'add') return;
+      job('slack.emoji.changed', {
+        name: event.name,
+        subtype: event.subtype,
+        value: event.value,
+        event_ts: event.event_ts,
+      });
+    })
     .otherwise(() => {
       console.error('Unknown event type!', body.event);
     });

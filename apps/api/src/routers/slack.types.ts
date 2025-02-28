@@ -114,6 +114,17 @@ type SlackTeamJoinEvent = {
   };
 };
 
+// Emoji
+
+type SlackEmojiChangedEvent = {
+  type: 'emoji_changed';
+  event_ts: string;
+} & (
+  | { subtype: 'add'; name: string; value: string }
+  | { subtype: 'remove'; names: string[] }
+  | { subtype: 'rename'; old_name: string; new_name: string; value: string }
+);
+
 // User
 
 type SlackUserProfileChangedEvent = {
@@ -148,7 +159,8 @@ export type SlackRequestBody =
         | SlackReactionAddedEvent
         | SlackReactionRemovedEvent
         | SlackTeamJoinEvent
-        | SlackUserProfileChangedEvent;
+        | SlackUserProfileChangedEvent
+        | SlackEmojiChangedEvent;
       type: 'event_callback';
     };
 
