@@ -24,6 +24,7 @@ import {
 } from '@oyster/ui';
 
 import {
+  formatResourceLinkError,
   ResourceAttachmentField,
   ResourceDescriptionField,
   ResourceLinkField,
@@ -68,10 +69,10 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!ok) {
-    return json({ errors }, { status: 400 });
+    return json({ errors });
   }
 
-  await addResource({
+  const result = await addResource({
     attachments: data.attachments,
     description: data.description,
     link: data.link,
@@ -80,6 +81,18 @@ export async function action({ request }: ActionFunctionArgs) {
     title: data.title,
     type: data.type,
   });
+
+  if (!result.ok) {
+    // Handle duplicate URL error
+    if ('duplicateResourceId' in result) {
+      return json({
+        errors: {
+          message: result.error,
+          resourceId: result.duplicateResourceId,
+        },
+      });
+    }
+  }
 
   track({
     event: 'Resource Added',
@@ -135,7 +148,10 @@ export default function AddResourceModal() {
             error={errors.attachments}
             name={keys.attachments}
           />
-          <ResourceLinkField error={errors.link} name={keys.link} />
+          <ResourceLinkField
+            error={formatResourceLinkError(errors)}
+            name={keys.link}
+          />
         </ResourceProvider>
 
         <ErrorMessage>{error}</ErrorMessage>

@@ -4,8 +4,36 @@ import { id } from '@oyster/utils';
 import { job } from '@/infrastructure/bull';
 import { putObject } from '@/infrastructure/s3';
 import { type AddResourceInput } from '@/modules/resources/resources.types';
+import { fail, type Result, success } from '@/shared/utils/core';
+import { findResourceByUrl } from '../queries/find-resource-by-url';
 
-export async function addResource(input: AddResourceInput) {
+type AddResourceResult = {
+  id: string;
+};
+
+// Extend the Result type to include the duplicateResourceId property
+type ExtendedResult<T> =
+  | Result<T>
+  | (Result<T> & { duplicateResourceId: string });
+
+export async function addResource(
+  input: AddResourceInput
+): Promise<ExtendedResult<AddResourceResult>> {
+  // Check for duplicate URL if a link is provided
+  if (input.link) {
+    const existingResource = await findResourceByUrl(input.link);
+
+    if (existingResource) {
+      return {
+        ...fail({
+          code: 409,
+          error: 'A resource with this link has already been added.',
+        }),
+        duplicateResourceId: existingResource.id,
+      };
+    }
+  }
+
   const result = await db.transaction().execute(async (trx) => {
     const resourceId = id();
 
@@ -65,5 +93,5 @@ export async function addResource(input: AddResourceInput) {
     type: 'post_resource',
   });
 
-  return result;
+  return success(result);
 }

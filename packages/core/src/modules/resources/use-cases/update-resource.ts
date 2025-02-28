@@ -3,11 +3,38 @@ import { id } from '@oyster/utils';
 
 import { deleteObject, putObject } from '@/infrastructure/s3';
 import { type UpdateResourceInput } from '@/modules/resources/resources.types';
+import { fail, type Result, success } from '@/shared/utils/core';
+import { findResourceByUrl } from '../queries/find-resource-by-url';
+
+type UpdateResourceResult = {
+  id: string;
+};
+
+// Extend the Result type to include the duplicateResourceId property
+type ExtendedResult<T> =
+  | Result<T>
+  | (ReturnType<typeof fail> & { duplicateResourceId: string });
 
 export async function updateResource(
   resourceId: string,
   input: UpdateResourceInput
-) {
+): Promise<ExtendedResult<UpdateResourceResult>> {
+  // Check for duplicate URL if a link is provided
+  if (input.link) {
+    const existingResource = await findResourceByUrl(input.link);
+
+    if (existingResource && existingResource.id !== resourceId) {
+      return {
+        ...fail({
+          code: 409,
+          error: 'A resource with this link has already been added.',
+        }),
+        duplicateResourceId: existingResource.id,
+      };
+    }
+  }
+
+  // try {
   const result = await db.transaction().execute(async (trx) => {
     await trx
       .updateTable('resources')
@@ -103,4 +130,6 @@ export async function updateResource(
       });
     }
   }
+
+  return success({ id: resourceId });
 }

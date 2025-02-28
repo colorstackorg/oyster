@@ -1,4 +1,4 @@
-import { useFetcher } from '@remix-run/react';
+import { Link, useFetcher } from '@remix-run/react';
 import React, {
   type PropsWithChildren,
   useContext,
@@ -295,4 +295,25 @@ export function ResourceTypeField({
       </Select>
     </Field>
   );
+}
+
+export function formatResourceLinkError(
+  errors: Record<string, unknown>
+): React.ReactElement | string | undefined {
+  // Duplicate resource URL found
+  if ('message' in errors && 'resourceId' in errors) {
+    return (
+      <span>
+        {errors.message as string}{' '}
+        <Link
+          to={`/resources?id=${errors.resourceId as string}`}
+          className="text-blue-600 hover:underline"
+        >
+          View it here
+        </Link>
+      </span>
+    );
+  }
+
+  return errors.link as string | undefined;
 }
