@@ -9,9 +9,11 @@ import dayjs from 'dayjs';
 import { emojify } from 'node-emoji';
 import { Edit } from 'react-feather';
 
+import { job } from '@oyster/core/bull';
 import { track } from '@oyster/core/mixpanel';
 import { getOpportunityDetails } from '@oyster/core/opportunities';
 import { getIconButtonCn, Modal, Pill, Text } from '@oyster/ui';
+import { run } from '@oyster/utils';
 
 import {
   BookmarkButton,
@@ -40,13 +42,20 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
+  job('opportunity.check_expired', {
+    opportunityId,
+  });
+
   Object.assign(opportunity, {
     createdAt: dayjs().to(opportunity.createdAt),
 
-    expiresAt:
-      opportunity.expiresAt > new Date()
-        ? dayjs(opportunity.expiresAt).to(new Date())
-        : dayjs().to(opportunity.expiresAt),
+    expiresAt: run(() => {
+      const expiresAt = dayjs(opportunity.expiresAt);
+
+      return expiresAt.isAfter(new Date())
+        ? `Expires in ${expiresAt.toNow()}`
+        : `Expired ${expiresAt.fromNow()} ago`;
+    }),
 
     slackMessageText: emojify(opportunity.slackMessageText || '', {
       fallback: '',
@@ -118,7 +127,7 @@ function OpportunityTitle() {
       </BookmarkForm>
 
       <Text color="gray-500" variant="sm">
-        Posted {createdAt} ago &bull; Expires in {expiresAt}
+        Posted {createdAt} ago &bull; {expiresAt}
       </Text>
     </div>
   );
@@ -184,11 +193,11 @@ function OpportunityDescription() {
 
 function OpportunitySlackMessage() {
   const {
-    id,
     posterFirstName,
     posterLastName,
     posterProfilePicture,
     slackMessageChannelId,
+    slackMessageId,
     slackMessagePostedAt,
     slackMessageText,
   } = useLoaderData<typeof loader>();
@@ -196,7 +205,7 @@ function OpportunitySlackMessage() {
   return (
     <SlackMessageCard
       channelId={slackMessageChannelId || ''}
-      messageId={id}
+      messageId={slackMessageId || ''}
       postedAt={slackMessagePostedAt || ''}
       posterFirstName={posterFirstName || ''}
       posterLastName={posterLastName || ''}

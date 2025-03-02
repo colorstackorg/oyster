@@ -187,6 +187,7 @@ async function listOpportunities(
     .selectFrom('opportunities')
     .leftJoin('companies', 'companies.id', 'opportunities.companyId')
     .where('opportunities.expiresAt', '>', new Date())
+    .where('opportunities.refinedAt', 'is not', null)
     .$if(!!bookmarked, (qb) => {
       return qb.where((eb) => {
         return eb.exists(() => {
@@ -241,7 +242,7 @@ async function listOpportunities(
       });
     });
 
-  const [{ count }, opportunities] = await Promise.all([
+  const [{ count }, _opportunities] = await Promise.all([
     query
       .select((eb) => eb.fn.countAll().as('count'))
       .executeTakeFirstOrThrow(),
@@ -252,6 +253,7 @@ async function listOpportunities(
         'companies.id as companyId',
         'companies.name as companyName',
         'companies.imageUrl as companyLogo',
+        'opportunities.createdAt',
         'opportunities.id',
         'opportunities.title',
         'students.id as posterId',
@@ -305,6 +307,13 @@ async function listOpportunities(
       .offset((page - 1) * limit)
       .execute(),
   ]);
+
+  const opportunities = _opportunities.map(({ createdAt, ...opportunity }) => {
+    return {
+      ...opportunity,
+      sharedAt: dayjs().to(createdAt),
+    };
+  });
 
   return {
     opportunities,
@@ -408,6 +417,17 @@ function OpportunitiesTable() {
               </TooltipText>
             </TooltipContent>
           </Tooltip>
+        );
+      },
+    },
+    {
+      displayName: '',
+      size: '80',
+      render: (opportunity) => {
+        return (
+          <Text as="span" color="gray-500" variant="sm">
+            {opportunity.sharedAt} ago
+          </Text>
         );
       },
     },
