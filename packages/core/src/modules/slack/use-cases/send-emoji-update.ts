@@ -2,7 +2,7 @@ import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { isFeatureFlagEnabled } from '@/member-profile.server';
 import { slack } from '@/modules/slack/instances';
 
-const CHANNEL_ID = process.env.SLACK_EMOJI_UPDATES_CHANNEL_ID!;
+const CHANNEL_ID = process.env.SLACK_FEED_CHANNEL_ID!;
 
 const buildMessage = (alias: string, value: string) => `\`:${alias}:\` is now available.<${value}|\u200b>`;
 
