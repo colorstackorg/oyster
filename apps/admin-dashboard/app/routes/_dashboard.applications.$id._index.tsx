@@ -253,7 +253,7 @@ function RejectDropdown() {
     state === 'submitting' && formData?.get('action') === 'reject';
 
   return (
-    <Dropdown.Container onClose={() => setOpen(false)}>
+    <Dropdown.Root open={open} setOpen={setOpen}>
       <Button
         color="error"
         onClick={() => setOpen(true)}
@@ -263,46 +263,44 @@ function RejectDropdown() {
         Reject <ChevronDown size={16} />
       </Button>
 
-      {open && (
-        <Dropdown className="p-2">
-          <Form className="form" method="post">
-            <Field
-              description="Select a reason for rejecting this application."
-              label="Rejection Reason"
-              required
-            >
-              <Select id="reason" name="reason" required>
-                <option value={ApplicationRejectionReason.BAD_LINKEDIN}>
-                  Incorrect or suspicious LinkedIn
-                </option>
-                <option value={ApplicationRejectionReason.IS_INTERNATIONAL}>
-                  Not enrolled in US or Canada
-                </option>
-                <option value={ApplicationRejectionReason.INELIGIBLE_MAJOR}>
-                  Not the right major
-                </option>
-                <option value={ApplicationRejectionReason.NOT_UNDERGRADUATE}>
-                  Not an undergrad student
-                </option>
-                <option value={ApplicationRejectionReason.OTHER}>Other</option>
-              </Select>
-            </Field>
+      <Dropdown className="p-2">
+        <Form className="form" method="post">
+          <Field
+            description="Select a reason for rejecting this application."
+            label="Rejection Reason"
+            required
+          >
+            <Select id="reason" name="reason" required>
+              <option value={ApplicationRejectionReason.BAD_LINKEDIN}>
+                Incorrect or suspicious LinkedIn
+              </option>
+              <option value={ApplicationRejectionReason.IS_INTERNATIONAL}>
+                Not enrolled in US or Canada
+              </option>
+              <option value={ApplicationRejectionReason.INELIGIBLE_MAJOR}>
+                Not the right major
+              </option>
+              <option value={ApplicationRejectionReason.NOT_UNDERGRADUATE}>
+                Not an undergrad student
+              </option>
+              <option value={ApplicationRejectionReason.OTHER}>Other</option>
+            </Select>
+          </Field>
 
-            <Button
-              color="error"
-              fill
-              name="action"
-              size="small"
-              submitting={submitting}
-              type="submit"
-              value="reject"
-            >
-              Reject
-            </Button>
-          </Form>
-        </Dropdown>
-      )}
-    </Dropdown.Container>
+          <Button
+            color="error"
+            fill
+            name="action"
+            size="small"
+            submitting={submitting}
+            type="submit"
+            value="reject"
+          >
+            Reject
+          </Button>
+        </Form>
+      </Dropdown>
+    </Dropdown.Root>
   );
 }
 

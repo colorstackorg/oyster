@@ -110,36 +110,28 @@ function FeatureFlagsTable() {
 function FeatureFlagsTableDropdown({ id }: FeatureFlagInView) {
   const [open, setOpen] = useState<boolean>(false);
 
-  function onClose() {
-    setOpen(false);
-  }
-
   function onOpen() {
     setOpen(true);
   }
 
   return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link to={generatePath(Route['/feature-flags/:id/edit'], { id })}>
-                <Edit /> Edit Flag
-              </Link>
-            </Dropdown.Item>
-            <Dropdown.Item>
-              <Link
-                to={generatePath(Route['/feature-flags/:id/delete'], { id })}
-              >
-                <Trash /> Delete Flag
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
+    <Dropdown.Root open={open} setOpen={setOpen}>
+      <Table.Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Link to={generatePath(Route['/feature-flags/:id/edit'], { id })}>
+              <Edit /> Edit Flag
+            </Link>
+          </Dropdown.Item>
+          <Dropdown.Item>
+            <Link to={generatePath(Route['/feature-flags/:id/delete'], { id })}>
+              <Trash /> Delete Flag
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Table.Dropdown>
 
       <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
+    </Dropdown.Root>
   );
 }

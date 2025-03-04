@@ -255,52 +255,46 @@ function ApplicationDropdown({ id }: ApplicationInView) {
 
   const [searchParams] = useSearchParams(ApplicationsSearchParams);
 
-  function onClose() {
-    setOpen(false);
-  }
-
   function onOpen() {
     setOpen(true);
   }
 
   return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            {searchParams.status === 'pending' && (
-              <Dropdown.Item>
-                <Link
-                  to={{
-                    pathname: generatePath(Route['/applications/:id/email'], {
-                      id,
-                    }),
-                    search,
-                  }}
-                >
-                  <Edit /> Update Email
-                </Link>
-              </Dropdown.Item>
-            )}
-            {searchParams.status === 'rejected' && (
-              <Dropdown.Item>
-                <Link
-                  to={{
-                    pathname: generatePath(Route['/applications/:id/accept'], {
-                      id,
-                    }),
-                    search,
-                  }}
-                >
-                  <Edit /> Accept Application
-                </Link>
-              </Dropdown.Item>
-            )}
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
+    <Dropdown.Root open={open} setOpen={setOpen}>
+      <Table.Dropdown>
+        <Dropdown.List>
+          {searchParams.status === 'pending' && (
+            <Dropdown.Item>
+              <Link
+                to={{
+                  pathname: generatePath(Route['/applications/:id/email'], {
+                    id,
+                  }),
+                  search,
+                }}
+              >
+                <Edit /> Update Email
+              </Link>
+            </Dropdown.Item>
+          )}
+          {searchParams.status === 'rejected' && (
+            <Dropdown.Item>
+              <Link
+                to={{
+                  pathname: generatePath(Route['/applications/:id/accept'], {
+                    id,
+                  }),
+                  search,
+                }}
+              >
+                <Edit /> Accept Application
+              </Link>
+            </Dropdown.Item>
+          )}
+        </Dropdown.List>
+      </Table.Dropdown>
 
       <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
+    </Dropdown.Root>
   );
 }

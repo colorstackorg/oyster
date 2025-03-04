@@ -5,6 +5,8 @@ import { cx } from '../utils/cx';
 
 const DropdownContext = React.createContext({
   _initialized: false,
+  open: false,
+  setOpen: (_: boolean) => {},
 });
 
 export function useIsDropdownParent() {
@@ -25,47 +27,40 @@ export const Dropdown = ({
   children,
   className,
 }: DropdownProps) => {
-  return (
-    <DropdownContext.Provider value={{ _initialized: true }}>
-      <div
-        className={cx(
-          'absolute z-20 mt-2 max-h-[300px] w-max min-w-[240px] overflow-auto rounded-lg border border-gray-200 bg-white',
-          align === 'left' ? 'left-0' : 'right-0',
-          className
-        )}
-      >
-        {children}
-      </div>
-    </DropdownContext.Provider>
-  );
-};
+  const { open } = useContext(DropdownContext);
 
-type DropdownContainerProps = PropsWithChildren<{
-  onClose(): void;
-}>;
-
-Dropdown.Container = function DropdownContainer({
-  children,
-  onClose,
-}: DropdownContainerProps) {
-  const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
-
-  useOnClickOutside(ref, onClose);
+  if (!open) {
+    return null;
+  }
 
   return (
-    <div className="relative" ref={ref}>
+    <div
+      className={cx(
+        'absolute z-20 mt-2 max-h-[300px] w-max min-w-[240px] overflow-auto rounded-lg border border-gray-200 bg-white shadow-sm',
+        align === 'left' ? 'left-0' : 'right-0',
+        className
+      )}
+    >
       {children}
     </div>
   );
 };
 
 Dropdown.Item = function DropdownItem({ children }: PropsWithChildren) {
+  const { setOpen } = useContext(DropdownContext);
+
   return (
     <li
       className={cx(
         'border-b border-b-gray-200 last:border-b-0',
         'dropdown-item'
       )}
+      onClick={() => {
+        // Ensures that child click handlers execute first.
+        requestAnimationFrame(() => {
+          setOpen(false);
+        });
+      }}
     >
       {children}
     </li>
@@ -74,4 +69,29 @@ Dropdown.Item = function DropdownItem({ children }: PropsWithChildren) {
 
 Dropdown.List = function DropdownList({ children }: PropsWithChildren) {
   return <ul>{children}</ul>;
+};
+
+type DropdownRootProps = PropsWithChildren<{
+  open: boolean;
+  setOpen(_: boolean): void;
+}>;
+
+Dropdown.Root = function DropdownRoot({
+  children,
+  open,
+  setOpen,
+}: DropdownRootProps) {
+  const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
+
+  useOnClickOutside(ref, () => {
+    setOpen(false);
+  });
+
+  return (
+    <DropdownContext.Provider value={{ _initialized: true, open, setOpen }}>
+      <div className="relative" ref={ref}>
+        {children}
+      </div>
+    </DropdownContext.Provider>
+  );
 };

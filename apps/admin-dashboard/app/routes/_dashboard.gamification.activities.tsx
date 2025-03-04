@@ -49,16 +49,12 @@ export default function GamificationPage() {
 function ActivitiesDropdown() {
   const [open, setOpen] = useState<boolean>(false);
 
-  function onClose() {
-    setOpen(false);
-  }
-
   function onClick() {
     setOpen(true);
   }
 
   return (
-    <Dropdown.Container onClose={onClose}>
+    <Dropdown.Root open={open} setOpen={setOpen}>
       <IconButton
         backgroundColor="gray-100"
         backgroundColorOnHover="gray-200"
@@ -67,18 +63,16 @@ function ActivitiesDropdown() {
         shape="square"
       />
 
-      {open && (
-        <Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link to={Route['/gamification/activities/add']}>
-                <Plus /> Add Activity
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Dropdown>
-      )}
-    </Dropdown.Container>
+      <Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Link to={Route['/gamification/activities/add']}>
+              <Plus /> Add Activity
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Dropdown>
+    </Dropdown.Root>
   );
 }
 
@@ -135,45 +129,38 @@ function ActivitiesTable() {
 function ActivitiesTableDropdown({ id }: ActivityInView) {
   const [open, setOpen] = useState<boolean>(false);
 
-  function onClose() {
-    setOpen(false);
-  }
-
   function onOpen() {
     setOpen(true);
   }
 
   return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link
-                to={generatePath(Route['/gamification/activities/:id/edit'], {
-                  id,
-                })}
-              >
-                <Edit /> Edit Activity
-              </Link>
-            </Dropdown.Item>
+    <Dropdown.Root open={open} setOpen={setOpen}>
+      <Table.Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Link
+              to={generatePath(Route['/gamification/activities/:id/edit'], {
+                id,
+              })}
+            >
+              <Edit /> Edit Activity
+            </Link>
+          </Dropdown.Item>
 
-            <Dropdown.Item>
-              <Link
-                to={generatePath(
-                  Route['/gamification/activities/:id/archive'],
-                  { id }
-                )}
-              >
-                <Trash /> Archive Activity
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
+          <Dropdown.Item>
+            <Link
+              to={generatePath(Route['/gamification/activities/:id/archive'], {
+                id,
+              })}
+            >
+              <Trash /> Archive Activity
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Table.Dropdown>
 
       <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
+    </Dropdown.Root>
   );
 }
 

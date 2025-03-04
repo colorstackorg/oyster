@@ -207,73 +207,65 @@ function StudentDropdown({
 }: StudentInView) {
   const [open, setOpen] = useState<boolean>(false);
 
-  function onClose() {
-    setOpen(false);
-  }
-
   function onOpen() {
     setOpen(true);
   }
 
   return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            {!activatedAt && (
-              <Dropdown.Item>
-                <Link
-                  to={generatePath(Route['/students/:id/activate'], { id })}
-                >
-                  <Zap /> Activate Member
-                </Link>
-              </Dropdown.Item>
-            )}
-
+    <Dropdown.Root open={open} setOpen={setOpen}>
+      <Table.Dropdown>
+        <Dropdown.List>
+          {!activatedAt && (
             <Dropdown.Item>
-              <Link
-                to={generatePath(Route['/students/:id/points/grant'], { id })}
-              >
-                <Star /> Grant Points
+              <Link to={generatePath(Route['/students/:id/activate'], { id })}>
+                <Zap /> Activate Member
               </Link>
             </Dropdown.Item>
+          )}
 
+          <Dropdown.Item>
+            <Link
+              to={generatePath(Route['/students/:id/points/grant'], { id })}
+            >
+              <Star /> Grant Points
+            </Link>
+          </Dropdown.Item>
+
+          <Dropdown.Item>
+            <Link to={generatePath(Route['/students/:id/email'], { id })}>
+              <Edit /> Update Email
+            </Link>
+          </Dropdown.Item>
+
+          {applicationUri && (
             <Dropdown.Item>
-              <Link to={generatePath(Route['/students/:id/email'], { id })}>
-                <Edit /> Update Email
+              <Link target="_blank" to={applicationUri}>
+                <CornerUpLeft /> View Application
               </Link>
             </Dropdown.Item>
+          )}
 
-            {applicationUri && (
-              <Dropdown.Item>
-                <Link target="_blank" to={applicationUri}>
-                  <CornerUpLeft /> View Application
-                </Link>
-              </Dropdown.Item>
-            )}
+          <Dropdown.Item>
+            <Link target="_blank" to={airtableUri} rel="noopener noreferrer">
+              <ExternalLink /> View Airtable Record
+            </Link>
+          </Dropdown.Item>
 
-            <Dropdown.Item>
-              <Link target="_blank" to={airtableUri} rel="noopener noreferrer">
-                <ExternalLink /> View Airtable Record
-              </Link>
-            </Dropdown.Item>
+          <Dropdown.Item>
+            <Link to={generatePath(Route['/students/:id/gift'], { id })}>
+              <Gift /> Send Goody Gift
+            </Link>
+          </Dropdown.Item>
 
-            <Dropdown.Item>
-              <Link to={generatePath(Route['/students/:id/gift'], { id })}>
-                <Gift /> Send Goody Gift
-              </Link>
-            </Dropdown.Item>
-
-            <Dropdown.Item>
-              <Link to={generatePath(Route['/students/:id/remove'], { id })}>
-                <Trash /> Remove Member
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
+          <Dropdown.Item>
+            <Link to={generatePath(Route['/students/:id/remove'], { id })}>
+              <Trash /> Remove Member
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Table.Dropdown>
 
       <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
+    </Dropdown.Root>
   );
 }

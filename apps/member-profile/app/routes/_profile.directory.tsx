@@ -243,16 +243,12 @@ const DIRECTORY_FILTER_KEYS = Object.values(DirectoryFilterKey);
 function FilterDirectoryDropdown() {
   const [open, setOpen] = useState<boolean>(false);
 
-  function onClose() {
-    setOpen(false);
-  }
-
   function onClick() {
     setOpen(true);
   }
 
   return (
-    <Dropdown.Container onClose={onClose}>
+    <Dropdown.Root open={open} setOpen={setOpen}>
       <IconButton
         backgroundColor="gray-100"
         backgroundColorOnHover="gray-200"
@@ -261,15 +257,13 @@ function FilterDirectoryDropdown() {
         shape="square"
       />
 
-      {open && (
-        <Dropdown>
-          <div className="flex min-w-[18rem] flex-col gap-2 p-2">
-            <Text>Add Filter</Text>
-            <FilterForm close={() => setOpen(false)} />
-          </div>
-        </Dropdown>
-      )}
-    </Dropdown.Container>
+      <Dropdown>
+        <div className="flex min-w-[18rem] flex-col gap-2 p-2">
+          <Text>Add Filter</Text>
+          <FilterForm close={() => setOpen(false)} />
+        </div>
+      </Dropdown>
+    </Dropdown.Root>
   );
 }
 

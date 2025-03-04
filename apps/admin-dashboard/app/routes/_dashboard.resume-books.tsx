@@ -94,16 +94,12 @@ export default function ResumeBooksPage() {
 function ResumeBooksMenuDropdown() {
   const [open, setOpen] = useState<boolean>(false);
 
-  function onClose() {
-    setOpen(false);
-  }
-
   function onClick() {
     setOpen(true);
   }
 
   return (
-    <Dropdown.Container onClose={onClose}>
+    <Dropdown.Root open={open} setOpen={setOpen}>
       <IconButton
         backgroundColor="gray-100"
         backgroundColorOnHover="gray-200"
@@ -112,18 +108,16 @@ function ResumeBooksMenuDropdown() {
         shape="square"
       />
 
-      {open && (
-        <Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link to={Route['/resume-books/create']}>
-                <Plus /> Create Resume Book
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Dropdown>
-      )}
-    </Dropdown.Container>
+      <Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Link to={Route['/resume-books/create']}>
+              <Plus /> Create Resume Book
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Dropdown>
+    </Dropdown.Root>
   );
 }
 
@@ -189,54 +183,48 @@ function ResumeBookDropdown({
   const [open, setOpen] = useState<boolean>(false);
   const toast = useToast();
 
-  function onClose() {
-    setOpen(false);
-  }
-
   function onOpen() {
     setOpen(true);
   }
 
   return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link to={generatePath(Route['/resume-books/:id/edit'], { id })}>
-                <Edit /> Edit Resume Book
-              </Link>
-            </Dropdown.Item>
+    <Dropdown.Root open={open} setOpen={setOpen}>
+      <Table.Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Link to={generatePath(Route['/resume-books/:id/edit'], { id })}>
+              <Edit /> Edit Resume Book
+            </Link>
+          </Dropdown.Item>
 
-            <Dropdown.Item>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(resumeBookUri);
-                  toast({ message: 'Copied URL to clipboard!' });
-                  setOpen(false);
-                }}
-                type="button"
-              >
-                <Clipboard /> Copy Resume Book URL
-              </button>
-            </Dropdown.Item>
+          <Dropdown.Item>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(resumeBookUri);
+                toast({ message: 'Copied URL to clipboard!' });
+                setOpen(false);
+              }}
+              type="button"
+            >
+              <Clipboard /> Copy Resume Book URL
+            </button>
+          </Dropdown.Item>
 
-            <Dropdown.Item>
-              <Link to={airtableUri} target="_blank">
-                <ExternalLink /> Go to Airtable
-              </Link>
-            </Dropdown.Item>
+          <Dropdown.Item>
+            <Link to={airtableUri} target="_blank">
+              <ExternalLink /> Go to Airtable
+            </Link>
+          </Dropdown.Item>
 
-            <Dropdown.Item>
-              <Link to={googleDriveUri} target="_blank">
-                <ExternalLink /> Go to Google Drive
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
+          <Dropdown.Item>
+            <Link to={googleDriveUri} target="_blank">
+              <ExternalLink /> Go to Google Drive
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Table.Dropdown>
 
       <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
+    </Dropdown.Root>
   );
 }

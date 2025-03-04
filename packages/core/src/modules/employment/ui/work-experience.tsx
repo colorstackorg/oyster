@@ -122,46 +122,40 @@ function WorkExperienceDropdown({
 }: WorkExperienceMenuProps) {
   const [open, setOpen] = useState<boolean>(false);
 
-  function onClose() {
-    setOpen(false);
-  }
-
   function onClick() {
     setOpen(true);
   }
 
   return (
-    <Dropdown.Container onClose={onClose}>
+    <Dropdown.Root open={open} setOpen={setOpen}>
       <IconButton
         backgroundColorOnHover="gray-100"
         icon={<MoreVertical />}
         onClick={onClick}
       />
 
-      {open && (
-        <Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link to={editTo}>
-                <Edit /> Edit Experience
-              </Link>
-            </Dropdown.Item>
-            <Dropdown.Item>
-              <Link to={reviewTo}>
-                {hasReviewed ? (
-                  <>
-                    <Edit /> Edit Review
-                  </>
-                ) : (
-                  <>
-                    <Plus /> Add Review
-                  </>
-                )}
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Dropdown>
-      )}
-    </Dropdown.Container>
+      <Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Link to={editTo}>
+              <Edit /> Edit Experience
+            </Link>
+          </Dropdown.Item>
+          <Dropdown.Item>
+            <Link to={reviewTo}>
+              {hasReviewed ? (
+                <>
+                  <Edit /> Edit Review
+                </>
+              ) : (
+                <>
+                  <Plus /> Add Review
+                </>
+              )}
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Dropdown>
+    </Dropdown.Root>
   );
 }

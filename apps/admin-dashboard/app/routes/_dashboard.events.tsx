@@ -107,16 +107,12 @@ export default function EventsPage() {
 function EventsMenuDropdown() {
   const [open, setOpen] = useState<boolean>(false);
 
-  function onClose() {
-    setOpen(false);
-  }
-
   function onClick() {
     setOpen(true);
   }
 
   return (
-    <Dropdown.Container onClose={onClose}>
+    <Dropdown.Root open={open} setOpen={setOpen}>
       <IconButton
         backgroundColor="gray-100"
         backgroundColorOnHover="gray-200"
@@ -125,23 +121,21 @@ function EventsMenuDropdown() {
         shape="square"
       />
 
-      {open && (
-        <Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link to={Route['/events/create']}>
-                <Plus /> Create Event
-              </Link>
-            </Dropdown.Item>
-            <Dropdown.Item>
-              <Link to={Route['/events/sync-airmeet-event']}>
-                <RefreshCw /> Sync Airmeet Event
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Dropdown>
-      )}
-    </Dropdown.Container>
+      <Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Link to={Route['/events/create']}>
+              <Plus /> Create Event
+            </Link>
+          </Dropdown.Item>
+          <Dropdown.Item>
+            <Link to={Route['/events/sync-airmeet-event']}>
+              <RefreshCw /> Sync Airmeet Event
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Dropdown>
+    </Dropdown.Root>
   );
 }
 
@@ -219,48 +213,40 @@ function EventsPagination() {
 function EventDropdown({ id, type }: EventInView) {
   const [open, setOpen] = useState<boolean>(false);
 
-  function onClose() {
-    setOpen(false);
-  }
-
   function onOpen() {
     setOpen(true);
   }
 
   return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            {type === EventType.IRL && (
-              <Dropdown.Item>
-                <Link to={generatePath(Route['/events/:id/check-in'], { id })}>
-                  <Camera /> Check-In QR Code
-                </Link>
-              </Dropdown.Item>
-            )}
+    <Dropdown.Root open={open} setOpen={setOpen}>
+      <Table.Dropdown>
+        <Dropdown.List>
+          {type === EventType.IRL && (
             <Dropdown.Item>
-              <Link to={generatePath(Route['/events/:id/import'], { id })}>
-                <Upload /> Import Attendees
+              <Link to={generatePath(Route['/events/:id/check-in'], { id })}>
+                <Camera /> Check-In QR Code
               </Link>
             </Dropdown.Item>
-            <Dropdown.Item>
-              <Link
-                to={generatePath(Route['/events/:id/add-recording'], { id })}
-              >
-                <Upload /> Add Recording
-              </Link>
-            </Dropdown.Item>
-            <Dropdown.Item>
-              <Link to={generatePath(Route['/events/:id/delete'], { id })}>
-                <Trash2 /> Delete Event
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
+          )}
+          <Dropdown.Item>
+            <Link to={generatePath(Route['/events/:id/import'], { id })}>
+              <Upload /> Import Attendees
+            </Link>
+          </Dropdown.Item>
+          <Dropdown.Item>
+            <Link to={generatePath(Route['/events/:id/add-recording'], { id })}>
+              <Upload /> Add Recording
+            </Link>
+          </Dropdown.Item>
+          <Dropdown.Item>
+            <Link to={generatePath(Route['/events/:id/delete'], { id })}>
+              <Trash2 /> Delete Event
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Table.Dropdown>
 
       <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
+    </Dropdown.Root>
   );
 }
