@@ -174,6 +174,210 @@ async function seed(trx: Transaction<DB>) {
       },
     ])
     .execute();
+
+  const companyId1 = id();
+  const companyId2 = id();
+  const companyId3 = id();
+  const companyId4 = id();
+  const companyId5 = id();
+
+  await trx
+    .insertInto('companies')
+    .values([
+      {
+        createdAt: new Date(),
+        crunchbaseId: '172a34b4-9edd-b0ae-c768-cbfa8e1ab52c',
+        description:
+          'Adobe is a software company that provides its users with digital marketing and media solutions.',
+        domain: 'adobe.com',
+        id: companyId1,
+        imageUrl:
+          'https://images.crunchbase.com/image/upload/t_cb-default-original/qnbpcajqvlw8bkul1tru',
+        leetcodeSlug: 'adobe',
+        levelsFyiSlug: 'adobe',
+        name: 'Adobe',
+        stockSymbol: 'NASDAQ:ADBE',
+      },
+      {
+        createdAt: new Date(),
+        crunchbaseId: '05554f65-6aa9-4dd1-6271-8ce2d60f10c4',
+        description:
+          'Amazon is an e-commerce website for consumers, sellers, and content creators.',
+        domain: 'amazon.com',
+        id: companyId2,
+        imageUrl:
+          'https://images.crunchbase.com/image/upload/t_cb-default-original/mwsza2s38epb8olssp3j',
+        leetcodeSlug: 'amazon',
+        levelsFyiSlug: 'amazon',
+        name: 'Amazon',
+        stockSymbol: 'NASDAQ:AMZN',
+      },
+      {
+        createdAt: new Date(),
+        crunchbaseId: '6acfa7da-1dbd-936e-d985-cf07a1b27711',
+        description:
+          'Google is a multinational corporation that specializes in Internet-related services and products.',
+        domain: 'google.com',
+        id: companyId3,
+        imageUrl:
+          'https://images.crunchbase.com/image/upload/t_cb-default-original/fa8nmvofinznny6rkwvf',
+        leetcodeSlug: 'google',
+        levelsFyiSlug: 'google',
+        name: 'Google',
+        stockSymbol: 'NASDAQ:GOOG',
+      },
+      {
+        createdAt: new Date(),
+        crunchbaseId: 'df662812-7f97-0b43-9d3e-12f64f504fbb',
+        description:
+          'Meta is a social technology company that enables people to connect, find communities, and grow businesses.',
+        domain: 'meta.com',
+        id: companyId4,
+        imageUrl:
+          'https://images.crunchbase.com/image/upload/t_cb-default-original/whm4ed1rrc8skbdi3biv',
+        leetcodeSlug: 'facebook',
+        levelsFyiSlug: 'facebook',
+        name: 'Meta',
+        stockSymbol: 'NASDAQ:META',
+      },
+      {
+        createdAt: new Date(),
+        crunchbaseId: 'fd80725f-53fc-7009-9878-aeecf1e9ffbb',
+        description:
+          'Microsoft is a software corporation that develops, manufactures, licenses, supports, and sells a range of software products and services.',
+        domain: 'microsoft.com',
+        id: companyId5,
+        imageUrl:
+          'https://images.crunchbase.com/image/upload/t_cb-default-original/v1501613147',
+        leetcodeSlug: 'microsoft',
+        levelsFyiSlug: 'microsoft',
+        name: 'Microsoft',
+        stockSymbol: 'NASDAQ:MSFT',
+      },
+    ])
+    .execute();
+
+  const opportunityId1 = id();
+  const opportunityId2 = id();
+  const opportunityId3 = id();
+  const opportunityId4 = id();
+  const opportunityId5 = id();
+
+  await trx
+    .insertInto('opportunities')
+    .values([
+      {
+        companyId: companyId1,
+        createdAt: new Date(),
+        description: `Join Adobe Experience Cloud as a web front-end engineer on a mobile experience team. Develop UI components using JavaScript, TypeScript, and React. Collaborate with engineers, product managers, and designers. Requires 1-3 years of experience. Salary range: $93,200 - $170,600 annually, varies by location.`,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+        id: opportunityId1,
+        lastExpirationCheck: undefined,
+        link: 'https://careers.adobe.com/us/en/job/R152882/Software-Development-Engineer-Front-end',
+        postedBy: memberId,
+        refinedAt: new Date(),
+        slackChannelId: undefined,
+        slackMessageId: undefined,
+        title: 'Software Development Engineer, Frontend',
+      },
+      {
+        companyId: companyId2,
+        createdAt: new Date(),
+        description: `12-week summer internship at Amazon Web Services (AWS) for students pursuing a Bachelor's or Master's in Engineering. Work on data center design, troubleshooting, and support operational issues. Gain experience in power systems, HVAC, and innovative solutions for AWS data centers.`,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+        id: opportunityId2,
+        lastExpirationCheck: undefined,
+        link: 'https://amazon.jobs/en/jobs/2847022/data-center-infrastructure-engineer-intern',
+        postedBy: memberId,
+        refinedAt: new Date(),
+        slackChannelId: undefined,
+        slackMessageId: undefined,
+        title: 'Data Center Infrastructure Engineer Intern',
+      },
+      {
+        companyId: companyId3,
+        createdAt: new Date(),
+        description: `Google seeks a UX Designer for their Searchbox and Suggest team. The role involves creating intuitive user experiences, from concept to execution, for consumer-facing digital products. Candidates should have a Bachelor's degree in Design or related field, 1 year of UX design experience, and proficiency in design tools.`,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+        id: opportunityId3,
+        lastExpirationCheck: undefined,
+        link: 'https://www.google.com/about/careers/applications/jobs/results/109175665332232902-user-experience-designer-early-career-search',
+        postedBy: memberId,
+        refinedAt: new Date(),
+        slackChannelId: undefined,
+        slackMessageId: undefined,
+        title: 'User Experience Designer, Early Career, Search',
+      },
+      {
+        companyId: companyId4,
+        createdAt: new Date(),
+        description: `Shape the future of Meta's products by applying technical skills and analytical mindset to one of the world's richest data sets. Collaborate with cross-functional teams, influence product strategy, and solve product development challenges. Opportunity for recent graduates with experience in data analysis and programming.`,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+        id: opportunityId4,
+        lastExpirationCheck: undefined,
+        link: 'https://www.metacareers.com/jobs/1132866414844525/',
+        postedBy: memberId,
+        refinedAt: new Date(),
+        slackChannelId: undefined,
+        slackMessageId: undefined,
+        title: 'Data Scientist, Product Analytics',
+      },
+      {
+        companyId: companyId5,
+        createdAt: new Date(),
+        description: `Microsoft offers 55 scholarships totaling $150,000 for Black and African American high school seniors planning to pursue technology-related degrees. Awards range from $2,500 to $5,000, with some renewable. Applicants must demonstrate leadership, financial need, and a passion for technology.`,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+        id: opportunityId5,
+        lastExpirationCheck: undefined,
+        link: 'https://www.microsoft.com/en-us/diversity/programs/bam-scholarship?oneroute=true',
+        postedBy: memberId,
+        refinedAt: new Date(),
+        slackChannelId: undefined,
+        slackMessageId: undefined,
+        title: 'Black at Microsoft (BAM) Scholarships',
+      },
+    ])
+    .execute();
+
+  const aiTagId = id();
+  const earlyCareerTagId = id();
+  const hardwareTagId = id();
+  const internshipTagId = id();
+  const pmTagId = id();
+  const quantTagId = id();
+  const scholarshipTagId = id();
+  const sweTagId = id();
+  const uxTagId = id();
+
+  await trx
+    .insertInto('opportunityTags')
+    .values([
+      { color: 'amber-100', id: aiTagId, name: 'AI/ML' },
+      { color: 'purple-100', id: earlyCareerTagId, name: 'Early Career' },
+      { color: 'orange-100', id: hardwareTagId, name: 'Hardware' },
+      { color: 'blue-100', id: internshipTagId, name: 'Internship' },
+      { color: 'red-100', id: pmTagId, name: 'PM' },
+      { color: 'cyan-100', id: quantTagId, name: 'Quantitative' },
+      { color: 'amber-100', id: scholarshipTagId, name: 'Scholarship' },
+      { color: 'lime-100', id: sweTagId, name: 'SWE' },
+      { color: 'orange-100', id: uxTagId, name: 'UI/UX Design' },
+    ])
+    .execute();
+
+  await trx
+    .insertInto('opportunityTagAssociations')
+    .values([
+      { opportunityId: opportunityId1, tagId: earlyCareerTagId },
+      { opportunityId: opportunityId1, tagId: sweTagId },
+      { opportunityId: opportunityId2, tagId: internshipTagId },
+      { opportunityId: opportunityId2, tagId: hardwareTagId },
+      { opportunityId: opportunityId3, tagId: earlyCareerTagId },
+      { opportunityId: opportunityId3, tagId: uxTagId },
+      { opportunityId: opportunityId4, tagId: aiTagId },
+      { opportunityId: opportunityId4, tagId: earlyCareerTagId },
+      { opportunityId: opportunityId5, tagId: scholarshipTagId },
+    ])
+    .execute();
 }
 
 async function setEmailFromCommandLine() {
