@@ -785,7 +785,11 @@ export async function refineOpportunity(
 
   // If this is the first time the opportunity has been refined, we want to send
   // a notification to the channel.
-  if (!opportunity.refinedAt) {
+  if (
+    opportunity.slackChannelId &&
+    opportunity.slackMessageId &&
+    !opportunity.refinedAt
+  ) {
     const message = `I added this to our <${STUDENT_PROFILE_URL}/opportunities/${opportunity.id}|opportunities board>! 📌`;
 
     job('notification.slack.send', {
@@ -797,6 +801,62 @@ export async function refineOpportunity(
   }
 
   return success(opportunity);
+}
+
+type ReportOpportunityInput = {
+  opportunityId: string;
+  reason: string;
+  reporterId: string;
+};
+
+/**
+ * Reports an opportunity if it is no longer working or is otherwise
+ * useless.
+ *
+ * If an opportunity receives 2 or more reports, or if it's reported by an
+ * admin, it will be automatically removed (expired).
+ *
+ * @param opportunityId - ID of the opportunity to report
+ * @param reason - Reason for reporting the opportunity.
+ * @param reporterId - ID of the member reporting the opportunity.
+ * @returns Object indicating whether the opportunity was removed
+ */
+
+export async function reportOpportunity({
+  opportunityId,
+  reason,
+  reporterId,
+}: ReportOpportunityInput) {
+  await db
+    .insertInto('opportunityReports')
+    .values({ opportunityId, reason, reporterId })
+    .onConflict((oc) => oc.doNothing())
+    .execute();
+
+  const [{ reports }, admin] = await Promise.all([
+    db
+      .selectFrom('opportunityReports')
+      .select(({ fn }) => fn.countAll<number>().as('reports'))
+      .where('opportunityId', '=', opportunityId)
+      .executeTakeFirstOrThrow(),
+
+    db
+      .selectFrom('admins')
+      .where('memberId', '=', reporterId)
+      .executeTakeFirst(),
+  ]);
+
+  const shouldRemove = reports >= 2 || !!admin;
+
+  if (shouldRemove) {
+    await db
+      .updateTable('opportunities')
+      .set({ expiresAt: new Date() })
+      .where('id', '=', opportunityId)
+      .executeTakeFirstOrThrow();
+  }
+
+  return success({ removed: shouldRemove });
 }
 
 // Helpers

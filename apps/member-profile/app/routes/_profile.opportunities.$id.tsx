@@ -1,18 +1,41 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
 import {
   generatePath,
   Link,
+  useFetcher,
   useLoaderData,
   useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { emojify } from 'node-emoji';
-import { Edit } from 'react-feather';
+import { useState } from 'react';
+import { Edit, Flag } from 'react-feather';
 
 import { job } from '@oyster/core/bull';
 import { track } from '@oyster/core/mixpanel';
-import { getOpportunityDetails } from '@oyster/core/opportunities';
-import { getIconButtonCn, Modal, Pill, Text } from '@oyster/ui';
+import {
+  getOpportunityDetails,
+  reportOpportunity,
+} from '@oyster/core/opportunities';
+import { db } from '@oyster/db';
+import {
+  Dropdown,
+  getIconButtonCn,
+  IconButton,
+  Modal,
+  Pill,
+  Text,
+} from '@oyster/ui';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipText,
+  TooltipTrigger,
+} from '@oyster/ui/tooltip';
 import { run } from '@oyster/utils';
 
 import {
@@ -22,7 +45,12 @@ import {
 import { CompanyLink } from '@/shared/components';
 import { SlackMessageCard } from '@/shared/components/slack-message';
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated, user } from '@/shared/session.server';
+import {
+  commitSession,
+  ensureUserAuthenticated,
+  toast,
+  user,
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -30,10 +58,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const memberId = user(session);
   const opportunityId = params.id as string;
 
-  const opportunity = await getOpportunityDetails({
-    memberId,
-    opportunityId,
-  });
+  const [opportunity, report] = await Promise.all([
+    getOpportunityDetails({
+      memberId,
+      opportunityId,
+    }),
+
+    db
+      .selectFrom('opportunityReports')
+      .where('opportunityId', '=', opportunityId)
+      .where('reporterId', '=', memberId)
+      .executeTakeFirst(),
+  ]);
 
   if (!opportunity) {
     throw new Response(null, {
@@ -71,12 +107,46 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     user: memberId,
   });
 
-  return json(opportunity);
+  return json({ ...opportunity, reported: !!report });
+}
+
+export async function action({ params, request }: ActionFunctionArgs) {
+  const session = await ensureUserAuthenticated(request);
+
+  const formData = await request.formData();
+
+  const result = await reportOpportunity({
+    reporterId: user(session),
+    opportunityId: params.id as string,
+    reason: formData.get('reason') as string,
+  });
+
+  if (!result.ok) {
+    return json({ error: result.error }, { status: result.code });
+  }
+
+  toast(session, {
+    message: 'Opportunity reported!',
+  });
+
+  return json(
+    {},
+    {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    }
+  );
 }
 
 export default function Opportunity() {
-  const { companyId, companyLogo, companyName } =
-    useLoaderData<typeof loader>();
+  const {
+    companyId,
+    companyLogo,
+    companyName,
+    slackMessageChannelId,
+    slackMessageId,
+  } = useLoaderData<typeof loader>();
 
   const [searchParams] = useSearchParams();
 
@@ -99,14 +169,21 @@ export default function Opportunity() {
 
         <div className="flex items-center gap-[inherit]">
           <EditOpportunityButton />
+          <ReportButton />
+          <div className="h-6 w-[1px] bg-gray-100" />
           <Modal.CloseButton />
         </div>
       </Modal.Header>
 
       <OpportunityTags />
       <OpportunityDescription />
-      <div />
-      <OpportunitySlackMessage />
+
+      {slackMessageChannelId && slackMessageId && (
+        <>
+          <div />
+          <OpportunitySlackMessage />
+        </>
+      )}
     </Modal>
   );
 }
@@ -133,6 +210,73 @@ function OpportunityTitle() {
   );
 }
 
+function ReportButton() {
+  const { reported } = useLoaderData<typeof loader>();
+  const [open, setOpen] = useState<boolean>(false);
+  const fetcher = useFetcher();
+
+  let disabled = reported;
+
+  if (fetcher.formData) {
+    disabled = !!fetcher.formData?.get('reason');
+  }
+
+  return (
+    <Dropdown.Container open={open} setOpen={setOpen}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <IconButton
+            backgroundColor="gray-100"
+            backgroundColorOnHover="gray-200"
+            className="cursor-pointer"
+            disabled={disabled}
+            icon={<Flag />}
+            onClick={() => setOpen(true)}
+          />
+        </TooltipTrigger>
+
+        <TooltipContent side="bottom">
+          <TooltipText>
+            {reported ? 'You reported this opportunity.' : 'Report'}
+          </TooltipText>
+        </TooltipContent>
+      </Tooltip>
+
+      <Dropdown>
+        <fetcher.Form method="post">
+          <Dropdown.List>
+            <ReportItem label="This is no longer open." value="closed" />
+            <ReportItem label="This link is broken." value="broken" />
+            <ReportItem label="This is a duplicate." value="duplicate" />
+          </Dropdown.List>
+        </fetcher.Form>
+
+        <div className="max-w-80 gap-2 border-t border-t-gray-200 p-2">
+          <Text color="gray-500" variant="xs">
+            When an opportunity is reported 2 times, it will be removed from the
+            board.
+          </Text>
+        </div>
+      </Dropdown>
+    </Dropdown.Container>
+  );
+}
+
+type ReportItemProps = {
+  label: string;
+  value: string;
+};
+
+function ReportItem({ label, value }: ReportItemProps) {
+  return (
+    <Dropdown.Item>
+      <button className="text-sm" name="reason" type="submit" value={value}>
+        {label}
+      </button>
+    </Dropdown.Item>
+  );
+}
+
 function EditOpportunityButton() {
   const { hasWritePermission, id } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
@@ -142,22 +286,18 @@ function EditOpportunityButton() {
   }
 
   return (
-    <>
-      <Link
-        className={getIconButtonCn({
-          backgroundColor: 'gray-100',
-          backgroundColorOnHover: 'gray-200',
-        })}
-        to={{
-          pathname: generatePath(Route['/opportunities/:id/edit'], { id }),
-          search: searchParams.toString(),
-        }}
-      >
-        <Edit />
-      </Link>
-
-      <div className="h-6 w-[1px] bg-gray-100" />
-    </>
+    <Link
+      className={getIconButtonCn({
+        backgroundColor: 'gray-100',
+        backgroundColorOnHover: 'gray-200',
+      })}
+      to={{
+        pathname: generatePath(Route['/opportunities/:id/edit'], { id }),
+        search: searchParams.toString(),
+      }}
+    >
+      <Edit />
+    </Link>
   );
 }
 
