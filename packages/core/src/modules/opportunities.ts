@@ -578,7 +578,16 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
   5. "tags": A list of tags that fit this opportunity, maximum 5 tags and
      minimum 1 tag. This is the MOST IMPORTANT FIELD. We have a list of existing
      tags in our database that are available to associate with this opportunity.
-     If there are no relevant tags, return null for this field.
+     If there are no relevant tags, DO NOT create new tags and instead return
+     null for this field. Some rules for tags:
+      - There shouldn't be more than one of the following tags: AI/ML,
+        Cybersecurity, Data Science, DevOps, PM, QA, Quant, SWE or UI/UX Design.
+      - There shouldn't be more than one of the following tags: Co-op,
+        Early Career, Fellowship, or Internship.
+      - Only use "Fall", "Spring" or "Winter" tags if it is an internship/co-op
+        opportunity that is in those seasons.
+      - Use the "Event" tag if the opportunity is related to an event,
+        conference, or short-term (< 1 week) program.
 
   Here's the webpage you need to analyze:
 
@@ -586,7 +595,7 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
     $WEBSITE_CONTENT
   </website_content>
 
-  Here are some existing tags in our database that you can choose from:
+  Here are the existing tags in our database that you can choose from:
 
   <tags>
     $TAGS
