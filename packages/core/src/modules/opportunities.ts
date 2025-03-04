@@ -581,7 +581,7 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
      If there are no relevant tags, DO NOT create new tags and instead return
      null for this field. Some rules for tags:
       - There shouldn't be more than one of the following tags: AI/ML,
-        Data Science, DevOps, PM, QA, Quant, SWE or UI/UX Design.
+        Cybersecurity, Data Science, DevOps, PM, QA, Quant, SWE or UI/UX Design.
       - There shouldn't be more than one of the following tags: Co-op,
         Early Career, Fellowship, or Internship.
       - Only use "Fall", "Spring" or "Winter" tags if it is an internship/co-op
