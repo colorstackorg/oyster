@@ -15,38 +15,44 @@ type IconButtonProps = Pick<
   type?: 'button' | 'submit';
 };
 
-export function IconButton({
-  backgroundColor,
-  backgroundColorOnHover,
-  className,
-  disabled,
-  icon,
-  label = 'Icon Button',
-  shape = 'circle',
-  size = 'md',
-  type = 'button',
-  ...rest
-}: IconButtonProps) {
-  return (
-    <button
-      aria-label={label}
-      className={cx(
-        getIconButtonCn({
-          backgroundColor,
-          backgroundColorOnHover,
-          shape,
-          size,
-        }),
-        className
-      )}
-      disabled={!!disabled}
-      type={type}
-      {...rest}
-    >
-      {icon}
-    </button>
-  );
-}
+export const IconButton = React.forwardRef(
+  (
+    {
+      backgroundColor,
+      backgroundColorOnHover,
+      className,
+      disabled,
+      icon,
+      label = 'Icon Button',
+      shape = 'circle',
+      size = 'md',
+      type = 'button',
+      ...rest
+    }: IconButtonProps,
+    ref: React.Ref<HTMLButtonElement>
+  ) => {
+    return (
+      <button
+        aria-label={label}
+        className={cx(
+          getIconButtonCn({
+            backgroundColor,
+            backgroundColorOnHover,
+            shape,
+            size,
+          }),
+          className
+        )}
+        disabled={!!disabled}
+        ref={ref}
+        type={type}
+        {...rest}
+      >
+        {icon}
+      </button>
+    );
+  }
+);
 
 export function getIconButtonCn({
   backgroundColor,
