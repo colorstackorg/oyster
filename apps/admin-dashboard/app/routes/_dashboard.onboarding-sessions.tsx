@@ -6,7 +6,6 @@ import {
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
-import { useState } from 'react';
 import { Plus } from 'react-feather';
 import { generatePath } from 'react-router';
 import { type z } from 'zod';
@@ -209,38 +208,26 @@ function OnboardingSessionsPagination() {
 }
 
 function OnboardingSessionsDropdown({ id }: OnboardingSessionInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onOpen() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link
-                to={generatePath(
-                  Route['/onboarding-sessions/:id/add-attendees'],
-                  {
-                    id,
-                  }
-                )}
-              >
-                <Plus /> Add Attendees
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
+    <Dropdown.Root>
+      <Table.Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Link
+              to={generatePath(
+                Route['/onboarding-sessions/:id/add-attendees'],
+                {
+                  id,
+                }
+              )}
+            >
+              <Plus /> Add Attendees
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Table.Dropdown>
 
-      <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
+      <Table.DropdownOpenButton />
+    </Dropdown.Root>
   );
 }
