@@ -4,7 +4,6 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
-import { useState } from 'react';
 import { Edit, Plus, Trash } from 'react-feather';
 import { generatePath } from 'react-router';
 
@@ -108,14 +107,8 @@ function FeatureFlagsTable() {
 }
 
 function FeatureFlagsTableDropdown({ id }: FeatureFlagInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onOpen() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Root open={open} setOpen={setOpen}>
+    <Dropdown.Root>
       <Table.Dropdown>
         <Dropdown.List>
           <Dropdown.Item>
@@ -131,7 +124,7 @@ function FeatureFlagsTableDropdown({ id }: FeatureFlagInView) {
         </Dropdown.List>
       </Table.Dropdown>
 
-      <Table.DropdownOpenButton onClick={onOpen} />
+      <Table.DropdownOpenButton />
     </Dropdown.Root>
   );
 }

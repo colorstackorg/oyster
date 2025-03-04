@@ -14,7 +14,6 @@ import {
   useNavigate,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { useState } from 'react';
 import {
   ArrowUp,
   Copy,
@@ -331,21 +330,17 @@ function QueueSelector() {
 
 function QueueDropdown() {
   const { queue } = useLoaderData<typeof loader>();
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClick() {
-    setOpen(true);
-  }
 
   return (
-    <Dropdown.Root open={open} setOpen={setOpen}>
-      <IconButton
-        backgroundColor="gray-100"
-        backgroundColorOnHover="gray-200"
-        icon={<Menu />}
-        onClick={onClick}
-        shape="square"
-      />
+    <Dropdown.Root>
+      <Dropdown.Trigger>
+        <IconButton
+          backgroundColor="gray-100"
+          backgroundColorOnHover="gray-200"
+          icon={<Menu />}
+          shape="square"
+        />
+      </Dropdown.Trigger>
 
       <Dropdown>
         <Dropdown.List>
@@ -442,14 +437,8 @@ function RepeatablesTable() {
 }
 
 function RepeatableDropdown({ id }: RepeatableInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onOpen() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Root open={open} setOpen={setOpen}>
+    <Dropdown.Root>
       <Table.Dropdown>
         <Dropdown.List>
           <Dropdown.Item>
@@ -468,7 +457,7 @@ function RepeatableDropdown({ id }: RepeatableInView) {
         </Dropdown.List>
       </Table.Dropdown>
 
-      <Table.DropdownOpenButton onClick={onOpen} />
+      <Table.DropdownOpenButton />
     </Dropdown.Root>
   );
 }
@@ -591,14 +580,8 @@ function JobsTable() {
 }
 
 function JobDropdown({ id, status }: JobInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onOpen() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Root open={open} setOpen={setOpen}>
+    <Dropdown.Root>
       <Table.Dropdown>
         <Dropdown.List>
           {status === 'failed' && (
@@ -663,7 +646,7 @@ function JobDropdown({ id, status }: JobInView) {
         </Dropdown.List>
       </Table.Dropdown>
 
-      <Table.DropdownOpenButton onClick={onOpen} />
+      <Table.DropdownOpenButton />
     </Dropdown.Root>
   );
 }

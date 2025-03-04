@@ -6,7 +6,6 @@ import {
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
-import { useState } from 'react';
 import {
   CornerUpLeft,
   Edit,
@@ -205,14 +204,8 @@ function StudentDropdown({
   applicationUri,
   id,
 }: StudentInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onOpen() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Root open={open} setOpen={setOpen}>
+    <Dropdown.Root>
       <Table.Dropdown>
         <Dropdown.List>
           {!activatedAt && (
@@ -265,7 +258,7 @@ function StudentDropdown({
         </Dropdown.List>
       </Table.Dropdown>
 
-      <Table.DropdownOpenButton onClick={onOpen} />
+      <Table.DropdownOpenButton />
     </Dropdown.Root>
   );
 }

@@ -6,7 +6,6 @@ import {
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
-import { useState } from 'react';
 import { Plus } from 'react-feather';
 import { generatePath } from 'react-router';
 import { type z } from 'zod';
@@ -209,14 +208,8 @@ function OnboardingSessionsPagination() {
 }
 
 function OnboardingSessionsDropdown({ id }: OnboardingSessionInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onOpen() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Root open={open} setOpen={setOpen}>
+    <Dropdown.Root>
       <Table.Dropdown>
         <Dropdown.List>
           <Dropdown.Item>
@@ -234,7 +227,7 @@ function OnboardingSessionsDropdown({ id }: OnboardingSessionInView) {
         </Dropdown.List>
       </Table.Dropdown>
 
-      <Table.DropdownOpenButton onClick={onOpen} />
+      <Table.DropdownOpenButton />
     </Dropdown.Root>
   );
 }

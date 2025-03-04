@@ -6,7 +6,6 @@ import {
 } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
-import { useState } from 'react';
 import { BookOpen, Edit, Menu, Plus } from 'react-feather';
 import { generatePath } from 'react-router';
 import { match } from 'ts-pattern';
@@ -117,21 +116,16 @@ export default function SchoolsPage() {
 }
 
 function SchoolsActionDropdown() {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClick() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Root open={open} setOpen={setOpen}>
-      <IconButton
-        backgroundColor="gray-100"
-        backgroundColorOnHover="gray-200"
-        icon={<Menu />}
-        onClick={onClick}
-        shape="square"
-      />
+    <Dropdown.Root>
+      <Dropdown.Trigger>
+        <IconButton
+          backgroundColor="gray-100"
+          backgroundColorOnHover="gray-200"
+          icon={<Menu />}
+          shape="square"
+        />
+      </Dropdown.Trigger>
 
       <Dropdown>
         <Dropdown.List>
@@ -225,14 +219,8 @@ function SchoolsPagination() {
 }
 
 function SchoolsTableDropdown({ chapterId, id }: SchoolInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onOpen() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Root open={open} setOpen={setOpen}>
+    <Dropdown.Root>
       <Table.Dropdown>
         <Dropdown.List>
           <Dropdown.Item>
@@ -255,7 +243,7 @@ function SchoolsTableDropdown({ chapterId, id }: SchoolInView) {
         </Dropdown.List>
       </Table.Dropdown>
 
-      <Table.DropdownOpenButton onClick={onOpen} />
+      <Table.DropdownOpenButton />
     </Dropdown.Root>
   );
 }

@@ -245,23 +245,18 @@ export default function ApplicationPage() {
 }
 
 function RejectDropdown() {
-  const [open, setOpen] = useState<boolean>(false);
-
   const { formData, state } = useNavigation();
 
   const submitting =
     state === 'submitting' && formData?.get('action') === 'reject';
 
   return (
-    <Dropdown.Root open={open} setOpen={setOpen}>
-      <Button
-        color="error"
-        onClick={() => setOpen(true)}
-        type="button"
-        variant="secondary"
-      >
-        Reject <ChevronDown size={16} />
-      </Button>
+    <Dropdown.Root>
+      <Dropdown.Trigger>
+        <Button color="error" type="button" variant="secondary">
+          Reject <ChevronDown size={16} />
+        </Button>
+      </Dropdown.Trigger>
 
       <Dropdown className="p-2">
         <Form className="form" method="post">

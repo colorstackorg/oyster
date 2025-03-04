@@ -5,7 +5,6 @@ import {
 } from '@remix-run/node';
 import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { useState } from 'react';
 import { Clipboard, Edit, ExternalLink, Menu, Plus } from 'react-feather';
 
 import { listResumeBooks } from '@oyster/core/resume-books';
@@ -92,21 +91,16 @@ export default function ResumeBooksPage() {
 }
 
 function ResumeBooksMenuDropdown() {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClick() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Root open={open} setOpen={setOpen}>
-      <IconButton
-        backgroundColor="gray-100"
-        backgroundColorOnHover="gray-200"
-        icon={<Menu />}
-        onClick={onClick}
-        shape="square"
-      />
+    <Dropdown.Root>
+      <Dropdown.Trigger>
+        <IconButton
+          backgroundColor="gray-100"
+          backgroundColorOnHover="gray-200"
+          icon={<Menu />}
+          shape="square"
+        />
+      </Dropdown.Trigger>
 
       <Dropdown>
         <Dropdown.List>
@@ -180,15 +174,10 @@ function ResumeBookDropdown({
   id,
   resumeBookUri,
 }: ResumeBookInView) {
-  const [open, setOpen] = useState<boolean>(false);
   const toast = useToast();
 
-  function onOpen() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Root open={open} setOpen={setOpen}>
+    <Dropdown.Root>
       <Table.Dropdown>
         <Dropdown.List>
           <Dropdown.Item>
@@ -202,7 +191,6 @@ function ResumeBookDropdown({
               onClick={() => {
                 navigator.clipboard.writeText(resumeBookUri);
                 toast({ message: 'Copied URL to clipboard!' });
-                setOpen(false);
               }}
               type="button"
             >
@@ -224,7 +212,7 @@ function ResumeBookDropdown({
         </Dropdown.List>
       </Table.Dropdown>
 
-      <Table.DropdownOpenButton onClick={onOpen} />
+      <Table.DropdownOpenButton />
     </Dropdown.Root>
   );
 }

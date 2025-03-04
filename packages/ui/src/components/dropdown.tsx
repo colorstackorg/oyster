@@ -1,9 +1,14 @@
-import React, { type PropsWithChildren, useContext, useRef } from 'react';
+import React, {
+  type PropsWithChildren,
+  useContext,
+  useRef,
+  useState,
+} from 'react';
 
 import { useOnClickOutside } from '../hooks/use-on-click-outside';
 import { cx } from '../utils/cx';
 
-const DropdownContext = React.createContext({
+export const DropdownContext = React.createContext({
   _initialized: false,
   open: false,
   setOpen: (_: boolean) => {},
@@ -71,16 +76,8 @@ Dropdown.List = function DropdownList({ children }: PropsWithChildren) {
   return <ul>{children}</ul>;
 };
 
-type DropdownRootProps = PropsWithChildren<{
-  open: boolean;
-  setOpen(_: boolean): void;
-}>;
-
-Dropdown.Root = function DropdownRoot({
-  children,
-  open,
-  setOpen,
-}: DropdownRootProps) {
+Dropdown.Root = function DropdownRoot({ children }: PropsWithChildren) {
+  const [open, setOpen] = useState<boolean>(false);
   const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
 
   useOnClickOutside(ref, () => {
@@ -93,5 +90,30 @@ Dropdown.Root = function DropdownRoot({
         {children}
       </div>
     </DropdownContext.Provider>
+  );
+};
+
+Dropdown.Trigger = function DropdownTrigger({ children }: PropsWithChildren) {
+  const { setOpen } = useContext(DropdownContext);
+
+  return (
+    <>
+      {React.Children.map(children, (child) => {
+        if (React.isValidElement(child)) {
+          return React.cloneElement(child, {
+            // @ts-expect-error b/c we're adding an onClick handler and
+            onClick: (e: React.MouseEvent) => {
+              if (child.props.onClick) {
+                child.props.onClick(e);
+              }
+
+              setOpen(true);
+            },
+          });
+        }
+
+        return child;
+      })}
+    </>
   );
 };

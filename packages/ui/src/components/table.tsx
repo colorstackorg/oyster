@@ -249,24 +249,17 @@ Table.Dropdown = function TableDropdown({ children }: PropsWithChildren) {
   return <Dropdown className="fixed right-20 mt-[unset]">{children}</Dropdown>;
 };
 
-type TableDropdownOpenButtonProps = {
-  onClick(): void;
-};
-
-Table.DropdownOpenButton = function TableDropdownOpenButton({
-  onClick,
-}: TableDropdownOpenButtonProps) {
-  const onClickWithEvent = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    onClick();
-  };
-
+Table.DropdownOpenButton = function TableDropdownOpenButton() {
   return (
-    <IconButton
-      backgroundColorOnHover="gray-200"
-      className="ml-auto"
-      icon={<MoreVertical />}
-      onClick={onClickWithEvent}
-    />
+    <Dropdown.Trigger>
+      <IconButton
+        backgroundColorOnHover="gray-200"
+        className="ml-auto"
+        icon={<MoreVertical />}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      />
+    </Dropdown.Trigger>
   );
 };

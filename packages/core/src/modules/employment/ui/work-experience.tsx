@@ -1,5 +1,4 @@
 import { Link } from '@remix-run/react';
-import { useState } from 'react';
 import { Check, Edit, MoreVertical, Plus } from 'react-feather';
 
 import { Dropdown, IconButton, Text } from '@oyster/ui';
@@ -120,19 +119,11 @@ function WorkExperienceDropdown({
   hasReviewed,
   reviewTo,
 }: WorkExperienceMenuProps) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClick() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Root open={open} setOpen={setOpen}>
-      <IconButton
-        backgroundColorOnHover="gray-100"
-        icon={<MoreVertical />}
-        onClick={onClick}
-      />
+    <Dropdown.Root>
+      <Dropdown.Trigger>
+        <IconButton backgroundColorOnHover="gray-100" icon={<MoreVertical />} />
+      </Dropdown.Trigger>
 
       <Dropdown>
         <Dropdown.List>

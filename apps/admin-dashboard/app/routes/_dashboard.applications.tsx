@@ -11,7 +11,6 @@ import {
   useLocation,
   useSubmit,
 } from '@remix-run/react';
-import { useState } from 'react';
 import { Edit } from 'react-feather';
 import { generatePath } from 'react-router';
 import { match } from 'ts-pattern';
@@ -249,18 +248,12 @@ function ApplicationsPagination() {
 }
 
 function ApplicationDropdown({ id }: ApplicationInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
   const { search } = useLocation();
 
   const [searchParams] = useSearchParams(ApplicationsSearchParams);
 
-  function onOpen() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Root open={open} setOpen={setOpen}>
+    <Dropdown.Root>
       <Table.Dropdown>
         <Dropdown.List>
           {searchParams.status === 'pending' && (
@@ -294,7 +287,7 @@ function ApplicationDropdown({ id }: ApplicationInView) {
         </Dropdown.List>
       </Table.Dropdown>
 
-      <Table.DropdownOpenButton onClick={onOpen} />
+      <Table.DropdownOpenButton />
     </Dropdown.Root>
   );
 }

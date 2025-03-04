@@ -11,7 +11,7 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Filter, Plus } from 'react-feather';
 import { match } from 'ts-pattern';
 import { type z } from 'zod';
@@ -29,6 +29,7 @@ import {
   Button,
   Dashboard,
   Dropdown,
+  DropdownContext,
   IconButton,
   Pagination,
   Pill,
@@ -241,39 +242,40 @@ function DirectoryPagination() {
 const DIRECTORY_FILTER_KEYS = Object.values(DirectoryFilterKey);
 
 function FilterDirectoryDropdown() {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClick() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Root open={open} setOpen={setOpen}>
-      <IconButton
-        backgroundColor="gray-100"
-        backgroundColorOnHover="gray-200"
-        icon={<Filter />}
-        onClick={onClick}
-        shape="square"
-      />
+    <Dropdown.Root>
+      <Dropdown.Trigger>
+        <IconButton
+          backgroundColor="gray-100"
+          backgroundColorOnHover="gray-200"
+          icon={<Filter />}
+          shape="square"
+        />
+      </Dropdown.Trigger>
 
       <Dropdown>
         <div className="flex min-w-[18rem] flex-col gap-2 p-2">
           <Text>Add Filter</Text>
-          <FilterForm close={() => setOpen(false)} />
+          <FilterForm />
         </div>
       </Dropdown>
     </Dropdown.Root>
   );
 }
 
-function FilterForm({ close }: { close: VoidFunction }) {
+function FilterForm() {
+  const { setOpen } = useContext(DropdownContext);
   const [filterKey, setFilterKey] = useState<DirectoryFilterKey | null>(null);
-
   const [searchParams] = useSearchParams(DirectorySearchParams);
 
   return (
-    <Form className="form" method="get" onSubmit={close}>
+    <Form
+      className="form"
+      method="get"
+      onSubmit={() => {
+        setOpen(false);
+      }}
+    >
       <Select
         placeholder="Select a field..."
         onChange={(e) => {
