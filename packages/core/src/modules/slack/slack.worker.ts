@@ -24,6 +24,7 @@ import { deleteSlackMessage } from './use-cases/delete-slack-message';
 import { inviteToSlackWorkspace } from './use-cases/invite-to-slack-workspace';
 import { removeSlackReaction } from './use-cases/remove-slack-reaction';
 import { renameSlackChannel } from './use-cases/rename-slack-channel';
+import { onSlackEmojiAdded } from './use-cases/send-emoji-update';
 import { sendSecuredTheBagReminder } from './use-cases/send-secured-the-bag-reminder';
 import { unarchiveSlackChannel } from './use-cases/unarchive-slack-channel';
 
@@ -55,6 +56,11 @@ export const slackWorker = registerWorker(
       })
       .with({ name: 'slack.deactivate' }, async ({ data }) => {
         return deactivateSlackUser(data);
+      })
+      .with({ name: 'slack.emoji.changed' }, async ({ data }) => {
+        if (data.subtype === 'add') {
+          return onSlackEmojiAdded(data);
+        }
       })
       .with({ name: 'slack.invite' }, async ({ data }) => {
         return inviteToSlackWorkspace(data);

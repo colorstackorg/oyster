@@ -70,6 +70,18 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
         id: event.channel,
       });
     })
+    .with({ type: 'emoji_changed' }, (event) => {
+      if (event.subtype !== 'add') {
+        return;
+      }
+
+      job('slack.emoji.changed', {
+        event_ts: event.event_ts,
+        name: event.name,
+        subtype: event.subtype,
+        value: event.value,
+      });
+    })
     .with({ type: 'message', subtype: 'message_changed' }, (event) => {
       job('slack.message.change', {
         channelId: event.channel,

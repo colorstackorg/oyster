@@ -34,6 +34,17 @@ type SlackChannelUnarchivedEvent = {
   type: 'channel_unarchive';
 };
 
+// Emoji
+
+type SlackEmojiChangedEvent = {
+  type: 'emoji_changed';
+  event_ts: string;
+} & (
+  | { subtype: 'add'; name: string; value: string }
+  | { subtype: 'remove'; names: string[] }
+  | { subtype: 'rename'; old_name: string; new_name: string; value: string }
+);
+
 // Message
 
 type SlackMessageChangedEvent = {
@@ -142,6 +153,7 @@ export type SlackRequestBody =
         | SlackChannelDeletedEvent
         | SlackChannelRenamedEvent
         | SlackChannelUnarchivedEvent
+        | SlackEmojiChangedEvent
         | SlackMessageChangedEvent
         | SlackMessageDeletedEvent
         | SlackMessageSentEvent
