@@ -465,6 +465,7 @@ function LeaderboardCard({ className }: CardProps) {
             <Leaderboard.Item
               key={position.id}
               firstName={position.firstName}
+              id={position.id}
               isMe={position.id === student.id}
               label={<LeaderboardItemLabel weeks={position.value} />}
               lastName={position.lastName}

@@ -20,6 +20,7 @@
     "./applications/types": "./src/modules/applications/applications.types.ts",
     "./applications/ui": "./src/modules/applications/applications.ui.tsx",
     "./bull": "./src/infrastructure/bull.ts",
+    "./chapters": "./src/modules/chapters/chapters.ts",
     "./education": "./src/modules/education/education.ts",
     "./education/types": "./src/modules/education/education.types.ts",
     "./education/ui": "./src/modules/education/education.ui.tsx",

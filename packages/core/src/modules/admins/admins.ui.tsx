@@ -1,5 +1,4 @@
 import { Form, generatePath, Link } from '@remix-run/react';
-import { useState } from 'react';
 import { Trash } from 'react-feather';
 import { match } from 'ts-pattern';
 
@@ -141,31 +140,19 @@ export function AdminTable({ admins }: AdminTableProps) {
 }
 
 function AdminDropdown({ id }: AdminInTable) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onOpen() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link to={generatePath('/admins/:id/remove', { id })}>
-                <Trash /> Remove Admin
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
+    <Dropdown.Root>
+      <Table.Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Link to={generatePath('/admins/:id/remove', { id })}>
+              <Trash /> Remove Admin
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Table.Dropdown>
 
-      <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
+      <Table.DropdownOpenButton />
+    </Dropdown.Root>
   );
 }

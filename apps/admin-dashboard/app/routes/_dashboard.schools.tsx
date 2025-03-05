@@ -6,8 +6,7 @@ import {
 } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
-import { useState } from 'react';
-import { Edit, Menu, Plus } from 'react-feather';
+import { BookOpen, Edit, Menu, Plus } from 'react-feather';
 import { generatePath } from 'react-router';
 import { match } from 'ts-pattern';
 
@@ -56,12 +55,14 @@ async function listSchools({ limit, page, search }: ListSearchParams) {
 
   const [rows, countResult] = await Promise.all([
     query
+      .leftJoin('chapters', 'chapters.schoolId', 'schools.id')
       .select([
-        'addressCity',
-        'addressState',
-        'id',
-        'name',
-        'tags',
+        'chapters.id as chapterId',
+        'schools.addressCity',
+        'schools.addressState',
+        'schools.id',
+        'schools.name',
+        'schools.tags',
         (eb) => {
           return eb
             .selectFrom('students')
@@ -115,38 +116,27 @@ export default function SchoolsPage() {
 }
 
 function SchoolsActionDropdown() {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onClick() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Container onClose={onClose}>
-      <IconButton
-        backgroundColor="gray-100"
-        backgroundColorOnHover="gray-200"
-        icon={<Menu />}
-        onClick={onClick}
-        shape="square"
-      />
+    <Dropdown.Root>
+      <Dropdown.Trigger>
+        <IconButton
+          backgroundColor="gray-100"
+          backgroundColorOnHover="gray-200"
+          icon={<Menu />}
+          shape="square"
+        />
+      </Dropdown.Trigger>
 
-      {open && (
-        <Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link to={Route['/schools/create']}>
-                <Plus /> Create School
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Dropdown>
-      )}
-    </Dropdown.Container>
+      <Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Link to={Route['/schools/create']}>
+              <Plus /> Create School
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Dropdown>
+    </Dropdown.Root>
   );
 }
 
@@ -228,32 +218,32 @@ function SchoolsPagination() {
   );
 }
 
-function SchoolsTableDropdown({ id }: SchoolInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onOpen() {
-    setOpen(true);
-  }
-
+function SchoolsTableDropdown({ chapterId, id }: SchoolInView) {
   return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
+    <Dropdown.Root>
+      <Table.Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Link to={generatePath(Route['/schools/:id/edit'], { id })}>
+              <Edit /> Edit School
+            </Link>
+          </Dropdown.Item>
+
+          {!chapterId && (
             <Dropdown.Item>
-              <Link to={generatePath(Route['/schools/:id/edit'], { id })}>
-                <Edit /> Edit School
+              <Link
+                to={generatePath(Route['/schools/:id/chapter/create'], {
+                  id,
+                })}
+              >
+                <BookOpen /> Create Chapter
               </Link>
             </Dropdown.Item>
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
+          )}
+        </Dropdown.List>
+      </Table.Dropdown>
 
-      <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
+      <Table.DropdownOpenButton />
+    </Dropdown.Root>
   );
 }

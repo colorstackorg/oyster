@@ -1,11 +1,15 @@
+import { generatePath, Link } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 
 import { cx, ProfilePicture, Text } from '@oyster/ui';
+
+import { Route } from '@/shared/constants';
 
 export const Leaderboard = () => {};
 
 type LeaderboardItemProps = {
   firstName: string;
+  id: string;
   isMe: boolean;
   label: React.ReactNode;
   lastName: string;
@@ -15,6 +19,7 @@ type LeaderboardItemProps = {
 
 Leaderboard.Item = function Item({
   firstName,
+  id,
   isMe,
   label,
   lastName,
@@ -37,12 +42,15 @@ Leaderboard.Item = function Item({
           initials={firstName[0] + lastName[0]}
           src={profilePicture || undefined}
         />
-
-        <Text className="line-clamp-1" weight={isMe ? '600' : undefined}>
+        <Link
+          className="[data-me='true']:font-semibold line-clamp-1 hover:text-primary hover:underline"
+          data-me={!!isMe}
+          to={generatePath(Route['/directory/:id'], { id })}
+        >
           {firstName} <span className="hidden sm:inline">{lastName}</span>
           <span className="inline sm:hidden">{lastName[0]}.</span>{' '}
           {isMe && <span>(You)</span>}
-        </Text>
+        </Link>
       </div>
 
       {label}

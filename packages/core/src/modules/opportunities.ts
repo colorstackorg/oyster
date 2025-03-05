@@ -18,6 +18,7 @@ import {
 import { track } from '@/infrastructure/mixpanel';
 import { getPageContent } from '@/infrastructure/puppeteer';
 import { redis } from '@/infrastructure/redis';
+import { reportException } from '@/infrastructure/sentry';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { STUDENT_PROFILE_URL } from '@/shared/env';
@@ -142,7 +143,131 @@ export async function checkForDeletedOpportunity({
   }
 }
 
-// "Create Opportunity"
+const EXPIRED_PHRASES = [
+  '404',
+  'closed',
+  'does not exist',
+  "doesn't exist",
+  'expired',
+  'filled',
+  'no longer accepting',
+  'no longer available',
+  'no longer exists',
+  'no longer open',
+  'not accepting',
+  'not available',
+  'not be found',
+  'not currently accepting',
+  'not found',
+  'not open',
+  'oops',
+  'removed',
+  'sorry',
+];
+
+/**
+ * This function uses puppeteer to scrape the opportunity's website and
+ * determine whether or not the opportunity has closed or not. If it has,
+ * the opportunity will be marked as "expired" and thus will no longer appear
+ * in the opportunities board.
+ *
+ * Returns `true` if the opportunity has expired, `false` otherwise.
+ *
+ * @param input - The opportunity to check for expiration.
+ */
+async function checkForExpiredOpportunity(
+  opportunityId: string,
+  force: boolean = false
+): Promise<Result<boolean>> {
+  const opportunity = await db
+    .selectFrom('opportunities')
+    .select(['expiresAt', 'link'])
+    .where('id', '=', opportunityId)
+    .where('expiresAt', '>', new Date())
+    .$if(!force, (qb) => {
+      return qb.where((eb) => {
+        const threeHoursAgo = dayjs().subtract(3, 'hour').toDate();
+
+        return eb.or([
+          eb('lastExpirationCheck', 'is', null),
+          eb('lastExpirationCheck', '<=', threeHoursAgo),
+        ]);
+      });
+    })
+    .executeTakeFirst();
+
+  // If the opportunity isn't found or there is no link, then we'll just exit
+  // gracefully.
+  if (!opportunity || !opportunity.link) {
+    return success(false);
+  }
+
+  await db
+    .updateTable('opportunities')
+    .set({ lastExpirationCheck: new Date() })
+    .where('id', '=', opportunityId)
+    .executeTakeFirst();
+
+  let content = '';
+
+  try {
+    content = await getPageContent(opportunity.link);
+  } catch (e) {
+    reportException(e);
+
+    return fail({
+      code: 500,
+      error: 'Failed to get page content.',
+    });
+  }
+
+  const hasExpired = EXPIRED_PHRASES.some((phrase) => {
+    return content.toLowerCase().includes(phrase);
+  });
+
+  if (hasExpired) {
+    await db
+      .updateTable('opportunities')
+      .set({ expiresAt: new Date() })
+      .where('id', '=', opportunityId)
+      .executeTakeFirst();
+  }
+
+  return success(hasExpired);
+}
+
+type CheckForExpiredOpportunitiesInput = {
+  limit: number;
+};
+
+/**
+ * Checks for expired opportunities and marks them as expired. This can be
+ * triggered via a Bull job. This is limited to 100 opportunities at a time
+ * to prevent overwhelming our server with too many puppeteer instances.
+ *
+ * @returns The number of opportunities marked as expired.
+ */
+async function checkForExpiredOpportunities({
+  limit,
+}: CheckForExpiredOpportunitiesInput): Promise<Result> {
+  const opportunities = await db
+    .selectFrom('opportunities')
+    .select('id')
+    .where('expiresAt', '>', new Date())
+    .where('lastExpirationCheck', 'is', null)
+    .orderBy('createdAt', 'asc')
+    .limit(limit)
+    .execute();
+
+  for (const opportunity of opportunities) {
+    job('opportunity.check_expired', {
+      force: true,
+      opportunityId: opportunity.id,
+    });
+  }
+
+  return success({});
+}
 
 type CreateOpportunityInput = {
   sendNotification?: boolean;
@@ -193,6 +318,16 @@ async function createOpportunity({
     return success({});
   }
 
+  const existingOpportunity = await db
+    .selectFrom('opportunities')
+    .where('link', 'ilike', link)
+    .executeTakeFirst();
+
+  // If someone already posted this exact opportunity, we'll just exit early.
+  if (existingOpportunity) {
+    return success({});
+  }
+
   const isProtectedURL =
     link.includes('docs.google.com') || link.includes('linkedin.com');
 
@@ -209,6 +344,7 @@ async function createOpportunity({
       description: 'N/A',
       expiresAt: dayjs().add(1, 'month').toDate(),
       id: id(),
+      link,
       postedBy: slackMessage.studentId,
       slackChannelId,
       slackMessageId,
@@ -442,10 +578,18 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
   5. "tags": A list of tags that fit this opportunity, maximum 5 tags and
      minimum 1 tag. This is the MOST IMPORTANT FIELD. We have a list of existing
      tags in our database that are available to associate with this opportunity.
-     If there are no relevant tags, create a NEW tag that you think we should
-     add to the opportunity. If you create a new tag, be sure 1) it is different
-     enough from the existing tags, 2) it will be useful for MANY opportunities
-     and 3) use sentence case.
+     If there are no relevant tags, DO NOT create new tags and instead return
+     null for this field. Some rules for tags:
+      - There shouldn't be more than one of the following tags: AI/ML,
+        Cybersecurity, Data Science, DevOps, PM, QA, Quant, SWE or UI/UX Design.
+      - There shouldn't be more than one of the following tags: Co-op,
+        Early Career, Fellowship, or Internship.
+      - "Early Career" should only be used for full-time roles targeted at
+        recent graduates.
+      - Only use "Fall", "Spring" or "Winter" tags if it is an internship/co-op
+        opportunity that is in those seasons.
+      - Use the "Event" tag if the opportunity is related to an event,
+        conference, or short-term (< 1 week) program.
 
   Here's the webpage you need to analyze:
 
@@ -453,7 +597,7 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
     $WEBSITE_CONTENT
   </website_content>
 
-  Here are some existing tags in our database that you can choose from:
+  Here are the existing tags in our database that you can choose from:
 
   <tags>
     $TAGS
@@ -563,6 +707,12 @@ export async function refineOpportunity(
     });
   }
 
+  // If the AI didn't return a title, then we don't want to finish the process
+  // because there was no opportunity to refine. We exit gracefully.
+  if (!data.title || !data.description) {
+    return success({});
+  }
+
   const opportunity = await db.transaction().execute(async (trx) => {
     const companyId = data.company
       ? await getMostRelevantCompany(trx, data.company)
@@ -637,7 +787,11 @@ export async function refineOpportunity(
 
   // If this is the first time the opportunity has been refined, we want to send
   // a notification to the channel.
-  if (!opportunity.refinedAt) {
+  if (
+    opportunity.slackChannelId &&
+    opportunity.slackMessageId &&
+    !opportunity.refinedAt
+  ) {
     const message = `I added this to our <${STUDENT_PROFILE_URL}/opportunities/${opportunity.id}|opportunities board>! 📌`;
 
     job('notification.slack.send', {
@@ -651,6 +805,62 @@ export async function refineOpportunity(
   return success(opportunity);
 }
 
+type ReportOpportunityInput = {
+  opportunityId: string;
+  reason: string;
+  reporterId: string;
+};
+
+/**
+ * Reports an opportunity if it is no longer working or is otherwise
+ * useless.
+ *
+ * If an opportunity receives 2 or more reports, or if it's reported by an
+ * admin, it will be automatically removed (expired).
+ *
+ * @param opportunityId - ID of the opportunity to report
+ * @param reason - Reason for reporting the opportunity.
+ * @param reporterId - ID of the member reporting the opportunity.
+ * @returns Object indicating whether the opportunity was removed
+ */
+
+export async function reportOpportunity({
+  opportunityId,
+  reason,
+  reporterId,
+}: ReportOpportunityInput) {
+  await db
+    .insertInto('opportunityReports')
+    .values({ opportunityId, reason, reporterId })
+    .onConflict((oc) => oc.doNothing())
+    .execute();
+
+  const [{ reports }, admin] = await Promise.all([
+    db
+      .selectFrom('opportunityReports')
+      .select(({ fn }) => fn.countAll<number>().as('reports'))
+      .where('opportunityId', '=', opportunityId)
+      .executeTakeFirstOrThrow(),
+
+    db
+      .selectFrom('admins')
+      .where('memberId', '=', reporterId)
+      .executeTakeFirst(),
+  ]);
+
+  const shouldRemove = reports >= 2 || !!admin;
+
+  if (shouldRemove) {
+    await db
+      .updateTable('opportunities')
+      .set({ expiresAt: new Date() })
+      .where('id', '=', opportunityId)
+      .executeTakeFirstOrThrow();
+  }
+
+  return success({ removed: shouldRemove });
+}
+
 // Helpers
 
 /**
@@ -659,45 +869,11 @@ export async function refineOpportunity(
  * @param message - Slack message to extract the URL from.
  * @returns First URL found in the message or `null` if it doesn't exist.
  */
-function getFirstLinkInMessage(message: string) {
+function getFirstLinkInMessage(message: string): string | undefined {
   return message.match(/<(https?:\/\/[^\s|>]+)(?:\|[^>]+)?>/)?.[1];
 }
 
 // Queries
-
-// "Get Link From Opportunity"
-
-/**
- * Extracts the first URL found in the Slack message associated with the
- * opportunity.
- *
- * @param opportunityId - ID of the opportunity to get the link from.
- * @returns First URL of the opportunity or `null` if it doesn't exist.
- */
-export async function getLinkFromOpportunity(opportunityId: string) {
-  const opportunity = await db
-    .selectFrom('opportunities')
-    .leftJoin('slackMessages', (join) => {
-      return join
-        .onRef('slackMessages.channelId', '=', 'opportunities.slackChannelId')
-        .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
-    })
-    .select('slackMessages.text')
-    .where('opportunities.id', '=', opportunityId)
-    .executeTakeFirst();
-
-  if (!opportunity || !opportunity.text) {
-    return null;
-  }
-
-  const link = getFirstLinkInMessage(opportunity.text);
-
-  if (!link) {
-    return null;
-  }
-
-  return link;
-}
 
 // "Get Opportunity"
 
@@ -878,6 +1054,12 @@ export const opportunityWorker = registerWorker(
   OpportunityBullJob,
   async (job) => {
     const result = await match(job)
+      .with({ name: 'opportunity.check_expired' }, async ({ data }) => {
+        return checkForExpiredOpportunity(data.opportunityId, data.force);
+      })
+      .with({ name: 'opportunity.check_expired.all' }, async ({ data }) => {
+        return checkForExpiredOpportunities(data);
+      })
       .with({ name: 'opportunity.create' }, async ({ data }) => {
         return createOpportunity(data);
       })
