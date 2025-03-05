@@ -83,7 +83,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (!result.ok) {
     return json(
-      { errors: { duplicateResourceId: result.data!.duplicateResourceId } },
+      { errors: { duplicateResourceId: result.context!.duplicateResourceId } },
       { status: result.code }
     );
   }

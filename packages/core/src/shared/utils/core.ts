@@ -7,7 +7,7 @@ export type Result<T = object, E = object> =
     }
   | {
       code: number;
-      data: E;
+      context?: E;
       error: string;
       ok: false;
     };
@@ -22,11 +22,11 @@ type SuccessResult<T> = Extract<Result<T>, { ok: true }>;
  * standard way of returning results from core functions.
  */
 export function fail<E>(
-  input: Pick<ErrorResult<E>, 'code' | 'data' | 'error'>
+  input: Pick<ErrorResult<E>, 'code' | 'context' | 'error'>
 ): ErrorResult<E> {
   return {
     code: input.code,
-    data: input.data,
+    context: input.context,
     error: input.error,
     ok: false,
   };

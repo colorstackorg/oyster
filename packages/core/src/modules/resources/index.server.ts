@@ -1,7 +1,6 @@
 export { getResource } from './queries/get-resource';
 export { listResources } from './queries/list-resources';
 export { listTags } from './queries/list-tags';
-export { findResourceByUrl } from './queries/find-resource-by-url';
 export { addResource } from './use-cases/add-resource';
 export { createTag } from './use-cases/create-tag';
 export { deleteResource } from './use-cases/delete-resource';

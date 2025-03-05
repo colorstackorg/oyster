@@ -14,7 +14,6 @@ export async function updateResource(
   resourceId: string,
   input: UpdateResourceInput
 ): Promise<UpdateResourceResult> {
-  // Check for duplicate URL if a link is provided.
   if (input.link) {
     const existingResource = await db
       .selectFrom('resources')
@@ -26,13 +25,12 @@ export async function updateResource(
     if (existingResource) {
       return fail({
         code: 409,
-        data: { duplicateResourceId: existingResource.id },
+        context: { duplicateResourceId: existingResource.id },
         error: 'A resource with this link has already been added.',
       });
     }
   }
 
-  // try {
   const result = await db.transaction().execute(async (trx) => {
     await trx
       .updateTable('resources')

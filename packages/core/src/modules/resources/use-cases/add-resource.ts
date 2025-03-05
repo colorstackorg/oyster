@@ -24,7 +24,7 @@ export async function addResource(
     if (existingResource) {
       return fail({
         code: 409,
-        data: { duplicateResourceId: existingResource.id },
+        context: { duplicateResourceId: existingResource.id },
         error: 'A resource with this link has already been added.',
       });
     }
