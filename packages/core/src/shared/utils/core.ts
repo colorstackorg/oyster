@@ -12,8 +12,7 @@ export type Result<T = object, E = object> =
       ok: false;
     };
 
-type ErrorResult<E> = Extract<Result<unknown, E>, { ok: false }>;
-type SuccessResult<T> = Extract<Result<T>, { ok: true }>;
+type ErrorResult<T, E> = Extract<Result<T, E>, { ok: false }>;
 
 /**
  * Returns a "failed" result object, including the error code and message.
@@ -21,9 +20,9 @@ type SuccessResult<T> = Extract<Result<T>, { ok: true }>;
  * This and the `success` function are intended to be used together to create a
  * standard way of returning results from core functions.
  */
-export function fail<E>(
-  input: Pick<ErrorResult<E>, 'code' | 'context' | 'error'>
-): ErrorResult<E> {
+export function fail<T, E>(
+  input: Pick<ErrorResult<T, E>, 'code' | 'context' | 'error'>
+): Result<T, E> {
   return {
     code: input.code,
     context: input.context,
@@ -38,7 +37,7 @@ export function fail<E>(
  * This and the `fail` function are intended to be used together to create a
  * standard way of returning results from core functions.
  */
-export function success<T>(data: T): SuccessResult<T> {
+export function success<T, E>(data: T): Result<T, E> {
   return {
     data,
     ok: true,
