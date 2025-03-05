@@ -93,13 +93,20 @@ export async function action({ params, request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  await updateResource(params.id as string, {
+  const result = await updateResource(params.id as string, {
     attachments: data.attachments,
     description: data.description,
     link: data.link,
     tags: data.tags,
     title: data.title,
   });
+
+  if (!result.ok) {
+    return json(
+      { errors: { duplicateResourceId: result.context!.duplicateResourceId } },
+      { status: result.code }
+    );
+  }
 
   toast(session, {
     message: 'Edited resource!',
@@ -161,6 +168,9 @@ export default function EditResourceModal() {
 
           <ResourceLinkField
             defaultValue={resource.link || undefined}
+            duplicateResourceId={
+              'duplicateResourceId' in errors && errors.duplicateResourceId
+            }
             error={errors.link}
             name={keys.link}
           />

@@ -4,8 +4,32 @@ import { id } from '@oyster/utils';
 import { job } from '@/infrastructure/bull';
 import { putObject } from '@/infrastructure/s3';
 import { type AddResourceInput } from '@/modules/resources/resources.types';
+import { fail, type Result, success } from '@/shared/utils/core';
 
-export async function addResource(input: AddResourceInput) {
+type AddResourceResult = Result<
+  { id: string },
+  { duplicateResourceId: string }
+>;
+
+export async function addResource(
+  input: AddResourceInput
+): Promise<AddResourceResult> {
+  if (input.link) {
+    const existingResource = await db
+      .selectFrom('resources')
+      .select('id')
+      .where('link', '=', input.link)
+      .executeTakeFirst();
+
+    if (existingResource) {
+      return fail({
+        code: 409,
+        context: { duplicateResourceId: existingResource.id },
+        error: 'A resource with this link has already been added.',
+      });
+    }
+  }
+
   const result = await db.transaction().execute(async (trx) => {
     const resourceId = id();
 
@@ -65,5 +89,5 @@ export async function addResource(input: AddResourceInput) {
     type: 'post_resource',
   });
 
-  return result;
+  return success(result);
 }

@@ -71,7 +71,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  await addResource({
+  const result = await addResource({
     attachments: data.attachments,
     description: data.description,
     link: data.link,
@@ -80,6 +80,13 @@ export async function action({ request }: ActionFunctionArgs) {
     title: data.title,
     type: data.type,
   });
+
+  if (!result.ok) {
+    return json(
+      { errors: { duplicateResourceId: result.context!.duplicateResourceId } },
+      { status: result.code }
+    );
+  }
 
   track({
     event: 'Resource Added',
@@ -135,7 +142,13 @@ export default function AddResourceModal() {
             error={errors.attachments}
             name={keys.attachments}
           />
-          <ResourceLinkField error={errors.link} name={keys.link} />
+          <ResourceLinkField
+            duplicateResourceId={
+              'duplicateResourceId' in errors && errors.duplicateResourceId
+            }
+            error={errors.link}
+            name={keys.link}
+          />
         </ResourceProvider>
 
         <ErrorMessage>{error}</ErrorMessage>
