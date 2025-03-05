@@ -473,6 +473,29 @@ export const SlackBullJob = z.discriminatedUnion('name', [
     }),
   }),
   z.object({
+    name: z.literal('slack.emoji.changed'),
+    data: z.discriminatedUnion('subtype', [
+      z.object({
+        subtype: z.literal('add'),
+        event_ts: z.string(),
+        name: z.string(),
+        value: z.string(),
+      }),
+      z.object({
+        subtype: z.literal('remove'),
+        event_ts: z.string(),
+        names: z.array(z.string()),
+      }),
+      z.object({
+        subtype: z.literal('rename'),
+        event_ts: z.string(),
+        new_name: z.string(),
+        old_name: z.string(),
+        value: z.string(),
+      }),
+    ]),
+  }),
+  z.object({
     name: z.literal('slack.invite'),
     data: z.object({
       email: Student.shape.email,
@@ -589,29 +612,6 @@ export const SlackBullJob = z.discriminatedUnion('name', [
       action: z.enum(['add', 'delete', 'update']),
       threadId: z.string().trim().min(1),
     }),
-  }),
-  z.object({
-    name: z.literal('slack.emoji.changed'),
-    data: z.discriminatedUnion('subtype', [
-      z.object({
-        subtype: z.literal('add'),
-        name: z.string(),
-        value: z.string(),
-        event_ts: z.string()
-      }),
-      z.object({
-        subtype: z.literal('remove'),
-        names: z.array(z.string()),
-        event_ts: z.string()
-      }),
-      z.object({
-        subtype: z.literal('rename'),
-        old_name: z.string(),
-        new_name: z.string(),
-        value: z.string(),
-        event_ts: z.string()
-      })
-    ])
   }),
 ]);
 
