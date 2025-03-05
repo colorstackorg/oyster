@@ -12,7 +12,6 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { emojify } from 'node-emoji';
-import { useState } from 'react';
 import { Edit, Flag } from 'react-feather';
 
 import { job } from '@oyster/core/bull';
@@ -212,7 +211,6 @@ function OpportunityTitle() {
 
 function ReportButton() {
   const { reported } = useLoaderData<typeof loader>();
-  const [open, setOpen] = useState<boolean>(false);
   const fetcher = useFetcher();
 
   let disabled = reported;
@@ -222,18 +220,19 @@ function ReportButton() {
   }
 
   return (
-    <Dropdown.Container open={open} setOpen={setOpen}>
+    <Dropdown.Root>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <IconButton
-            backgroundColor="gray-100"
-            backgroundColorOnHover="gray-200"
-            className="cursor-pointer"
-            disabled={disabled}
-            icon={<Flag />}
-            onClick={() => setOpen(true)}
-          />
-        </TooltipTrigger>
+        <Dropdown.Trigger>
+          <TooltipTrigger asChild>
+            <IconButton
+              backgroundColor="gray-100"
+              backgroundColorOnHover="gray-200"
+              className="cursor-pointer"
+              disabled={disabled}
+              icon={<Flag />}
+            />
+          </TooltipTrigger>
+        </Dropdown.Trigger>
 
         <TooltipContent side="bottom">
           <TooltipText>
@@ -251,14 +250,14 @@ function ReportButton() {
           </Dropdown.List>
         </fetcher.Form>
 
-        <div className="max-w-80 gap-2 border-t border-t-gray-200 p-2">
+        <div className="max-w-72 gap-2 border-t border-t-gray-200 p-2">
           <Text color="gray-500" variant="xs">
             When an opportunity is reported 2 times, it will be removed from the
             board.
           </Text>
         </div>
       </Dropdown>
-    </Dropdown.Container>
+    </Dropdown.Root>
   );
 }
 

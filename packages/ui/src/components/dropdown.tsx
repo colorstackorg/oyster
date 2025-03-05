@@ -99,20 +99,20 @@ Dropdown.Trigger = function DropdownTrigger({ children }: PropsWithChildren) {
   return (
     <>
       {React.Children.map(children, (child) => {
-        if (React.isValidElement(child)) {
-          return React.cloneElement(child, {
-            // @ts-expect-error b/c we're adding an onClick handler and
-            onClick: (e: React.MouseEvent) => {
-              if (child.props.onClick) {
-                child.props.onClick(e);
-              }
-
-              setOpen(true);
-            },
-          });
+        if (!React.isValidElement(child)) {
+          return child;
         }
 
-        return child;
+        return React.cloneElement(child, {
+          // @ts-expect-error b/c we're adding an onClick handler and
+          onClick: (e: React.MouseEvent) => {
+            if (child.props.onClick) {
+              child.props.onClick(e);
+            }
+
+            setOpen(true);
+          },
+        });
       })}
     </>
   );
