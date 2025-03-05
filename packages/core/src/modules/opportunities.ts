@@ -584,6 +584,8 @@ const REFINE_OPPORTUNITY_PROMPT = dedent`
         Cybersecurity, Data Science, DevOps, PM, QA, Quant, SWE or UI/UX Design.
       - There shouldn't be more than one of the following tags: Co-op,
         Early Career, Fellowship, or Internship.
+      - "Early Career" should only be used for full-time roles targeted at
+        recent graduates.
       - Only use "Fall", "Spring" or "Winter" tags if it is an internship/co-op
         opportunity that is in those seasons.
       - Use the "Event" tag if the opportunity is related to an event,
