@@ -20,9 +20,10 @@ export async function updateResource(
       .selectFrom('resources')
       .select('id')
       .where('link', '=', input.link)
+      .where('id', '!=', resourceId)
       .executeTakeFirst();
 
-    if (existingResource && existingResource.id !== resourceId) {
+    if (existingResource) {
       return fail({
         code: 409,
         data: { duplicateResourceId: existingResource.id },
