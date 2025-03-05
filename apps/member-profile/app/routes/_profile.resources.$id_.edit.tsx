@@ -29,7 +29,6 @@ import {
 } from '@oyster/ui';
 
 import {
-  formatResourceLinkError,
   ResourceAttachmentField,
   ResourceDescriptionField,
   ResourceLinkField,
@@ -103,15 +102,10 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 
   if (!result.ok) {
-    // Handle duplicate URL error
-    if ('duplicateResourceId' in result) {
-      return json({
-        errors: {
-          message: result.error,
-          resourceId: result.duplicateResourceId,
-        },
-      });
-    }
+    return json(
+      { errors: { duplicateResourceId: result.data!.duplicateResourceId } },
+      { status: result.code }
+    );
   }
 
   toast(session, {
@@ -174,7 +168,10 @@ export default function EditResourceModal() {
 
           <ResourceLinkField
             defaultValue={resource.link || undefined}
-            error={formatResourceLinkError(errors)}
+            duplicateResourceId={
+              'duplicateResourceId' in errors && errors.duplicateResourceId
+            }
+            error={errors.link}
             name={keys.link}
           />
           <ResourceAttachmentField

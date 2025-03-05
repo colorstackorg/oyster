@@ -5,32 +5,28 @@ import { job } from '@/infrastructure/bull';
 import { putObject } from '@/infrastructure/s3';
 import { type AddResourceInput } from '@/modules/resources/resources.types';
 import { fail, type Result, success } from '@/shared/utils/core';
-import { findResourceByUrl } from '../queries/find-resource-by-url';
 
-type AddResourceResult = {
-  id: string;
-};
-
-// Extend the Result type to include the duplicateResourceId property
-type ExtendedResult<T> =
-  | Result<T>
-  | (Result<T> & { duplicateResourceId: string });
+type AddResourceResult = Result<
+  { id: string },
+  { duplicateResourceId: string }
+>;
 
 export async function addResource(
   input: AddResourceInput
-): Promise<ExtendedResult<AddResourceResult>> {
-  // Check for duplicate URL if a link is provided
+): Promise<AddResourceResult> {
   if (input.link) {
-    const existingResource = await findResourceByUrl(input.link);
+    const existingResource = await db
+      .selectFrom('resources')
+      .select('id')
+      .where('link', '=', input.link)
+      .executeTakeFirst();
 
     if (existingResource) {
-      return {
-        ...fail({
-          code: 409,
-          error: 'A resource with this link has already been added.',
-        }),
-        duplicateResourceId: existingResource.id,
-      };
+      return fail({
+        code: 409,
+        data: { duplicateResourceId: existingResource.id },
+        error: 'A resource with this link has already been added.',
+      });
     }
   }
 
