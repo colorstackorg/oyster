@@ -32,6 +32,11 @@ export async function getPageContent(url: string): Promise<string> {
       return document.body.innerText;
     });
 
+    console.log('Page content found.', {
+      length: content.length,
+      url,
+    });
+
     return content;
   });
 }
