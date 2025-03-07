@@ -19,7 +19,7 @@ const DEFAULT_TIMEOUT = 10_000; // 10s
  */
 export async function getPageContent(url: string): Promise<string> {
   return withBrowser(async (_, page) => {
-    await page.goto(url, {
+    const response = await page.goto(url, {
       timeout: DEFAULT_TIMEOUT,
       waitUntil: 'domcontentloaded',
     });
@@ -34,7 +34,8 @@ export async function getPageContent(url: string): Promise<string> {
 
     console.log('Page content found.', {
       length: content.length,
-      url,
+      status: response?.status(),
+      url: url.slice(0, 50) + '...',
     });
 
     return content;
@@ -78,13 +79,13 @@ async function withBrowser<T>(
 }
 
 async function escapeBotDetection(page: Page) {
+  await page.setUserAgent(getUserAgent());
+
   await page.setViewport({
     deviceScaleFactor: 1,
     height: 1080,
     width: 1920,
   });
-
-  await page.setUserAgent(getUserAgent());
 
   // Add random mouse movements.
   await page.mouse.move(
