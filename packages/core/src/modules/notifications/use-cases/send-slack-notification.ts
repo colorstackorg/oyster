@@ -33,6 +33,7 @@ export async function sendSlackNotification(input: SendNotificationInput) {
     channel,
     text: input.message,
     thread_ts: input.threadId,
+    unfurl_links: false, // This is b/c most links we send require auth.
   });
 
   return ts;
