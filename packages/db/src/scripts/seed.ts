@@ -179,7 +179,19 @@ async function seed(trx: Transaction<DB>) {
   await trx
     .updateTable('studentEmails')
     .set({ studentId: memberId1 })
-    .where('email', '=', email)
+    .where('email', '=', memberEmail1)
+    .execute();
+
+  await trx
+    .updateTable('studentEmails')
+    .set({ studentId: memberId2 })
+    .where('email', '=', memberEmail2)
+    .execute();
+
+  await trx
+    .updateTable('studentEmails')
+    .set({ studentId: memberId3 })
+    .where('email', '=', memberEmail3)
     .execute();
 
   await trx
