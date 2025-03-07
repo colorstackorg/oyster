@@ -103,9 +103,22 @@ async function seed(trx: Transaction<DB>) {
     ])
     .execute();
 
-  await trx.insertInto('studentEmails').values([{ email }]).execute();
+  const memberId1 = id();
+  const memberId2 = id();
+  const memberId3 = id();
 
-  const memberId = id();
+  const memberEmail1 = email;
+  const memberEmail2 = 'savannah@james.com';
+  const memberEmail3 = 'lebron@james.com';
+
+  await trx
+    .insertInto('studentEmails')
+    .values([
+      { email: memberEmail1 },
+      { email: memberEmail2 },
+      { email: memberEmail3 },
+    ])
+    .execute();
 
   await trx
     .insertInto('students')
@@ -115,24 +128,70 @@ async function seed(trx: Transaction<DB>) {
         currentLocation: 'New York, NY',
         currentLocationCoordinates: sql`point(-73.935242, 40.73061)`,
         educationLevel: 'undergraduate',
-        email,
+        email: memberEmail1,
         firstName: 'First',
         gender: '',
         graduationYear: new Date().getFullYear().toString(),
-        id: memberId,
+        id: memberId1,
         lastName: 'Last',
         major: 'computer_science',
         otherDemographics: [],
         race: [],
         schoolId: schoolId1,
       },
+      {
+        acceptedAt: new Date(),
+        currentLocation: 'New York, NY',
+        currentLocationCoordinates: sql`point(-73.935242, 40.73061)`,
+        educationLevel: 'undergraduate',
+        email: memberEmail2,
+        firstName: 'LeBron',
+        gender: '',
+        graduationYear: new Date().getFullYear().toString(),
+        id: memberId2,
+        lastName: 'James',
+        joinedMemberDirectoryAt: new Date(),
+        major: 'computer_science',
+        otherDemographics: [],
+        race: [],
+        schoolId: schoolId2,
+      },
+      {
+        acceptedAt: new Date(),
+        currentLocation: 'New York, NY',
+        currentLocationCoordinates: sql`point(-73.935242, 40.73061)`,
+        educationLevel: 'undergraduate',
+        email: memberEmail3,
+        firstName: 'Savannah',
+        gender: '',
+        graduationYear: new Date().getFullYear().toString(),
+        id: memberId3,
+        lastName: 'James',
+        joinedMemberDirectoryAt: new Date(),
+        major: 'computer_science',
+        otherDemographics: [],
+        race: [],
+        schoolId: schoolId2,
+      },
     ])
     .execute();
 
   await trx
     .updateTable('studentEmails')
-    .set({ studentId: memberId })
-    .where('email', '=', email)
+    .set({ studentId: memberId1 })
+    .where('email', '=', memberEmail1)
+    .execute();
+
+  await trx
+    .updateTable('studentEmails')
+    .set({ studentId: memberId2 })
+    .where('email', '=', memberEmail2)
+    .execute();
+
+  await trx
+    .updateTable('studentEmails')
+    .set({ studentId: memberId3 })
+    .where('email', '=', memberEmail3)
     .execute();
 
   await trx
@@ -174,6 +233,8 @@ async function seed(trx: Transaction<DB>) {
       },
     ])
     .execute();
+
+  // Companies
 
   const companyId1 = id();
   const companyId2 = id();
@@ -257,6 +318,8 @@ async function seed(trx: Transaction<DB>) {
     ])
     .execute();
 
+  // Opportunities
+
   const opportunityId1 = id();
   const opportunityId2 = id();
   const opportunityId3 = id();
@@ -274,7 +337,7 @@ async function seed(trx: Transaction<DB>) {
         id: opportunityId1,
         lastExpirationCheck: undefined,
         link: 'https://careers.adobe.com/us/en/job/R152882/Software-Development-Engineer-Front-end',
-        postedBy: memberId,
+        postedBy: memberId1,
         refinedAt: new Date(),
         slackChannelId: undefined,
         slackMessageId: undefined,
@@ -288,7 +351,7 @@ async function seed(trx: Transaction<DB>) {
         id: opportunityId2,
         lastExpirationCheck: undefined,
         link: 'https://amazon.jobs/en/jobs/2847022/data-center-infrastructure-engineer-intern',
-        postedBy: memberId,
+        postedBy: memberId2,
         refinedAt: new Date(),
         slackChannelId: undefined,
         slackMessageId: undefined,
@@ -302,7 +365,7 @@ async function seed(trx: Transaction<DB>) {
         id: opportunityId3,
         lastExpirationCheck: undefined,
         link: 'https://www.google.com/about/careers/applications/jobs/results/109175665332232902-user-experience-designer-early-career-search',
-        postedBy: memberId,
+        postedBy: memberId3,
         refinedAt: new Date(),
         slackChannelId: undefined,
         slackMessageId: undefined,
@@ -316,7 +379,7 @@ async function seed(trx: Transaction<DB>) {
         id: opportunityId4,
         lastExpirationCheck: undefined,
         link: 'https://www.metacareers.com/jobs/1132866414844525/',
-        postedBy: memberId,
+        postedBy: memberId1,
         refinedAt: new Date(),
         slackChannelId: undefined,
         slackMessageId: undefined,
@@ -330,7 +393,7 @@ async function seed(trx: Transaction<DB>) {
         id: opportunityId5,
         lastExpirationCheck: undefined,
         link: 'https://www.microsoft.com/en-us/diversity/programs/bam-scholarship?oneroute=true',
-        postedBy: memberId,
+        postedBy: memberId2,
         refinedAt: new Date(),
         slackChannelId: undefined,
         slackMessageId: undefined,
@@ -376,6 +439,101 @@ async function seed(trx: Transaction<DB>) {
       { opportunityId: opportunityId4, tagId: aiTagId },
       { opportunityId: opportunityId4, tagId: earlyCareerTagId },
       { opportunityId: opportunityId5, tagId: scholarshipTagId },
+    ])
+    .execute();
+
+  // Resources
+
+  const resourceId1 = id();
+  const resourceId2 = id();
+  const resourceId3 = id();
+
+  await trx
+    .insertInto('resources')
+    .values([
+      {
+        description: `Here's a curated list of tagged LeetCode questions, all for free without the need for LeetCode Premium.`,
+        id: resourceId1,
+        link: 'https://github.com/krishnadey30/LeetCode-Questions-CompanyWise',
+        postedAt: new Date(),
+        postedBy: memberId1,
+        title: 'Tagged Leetcode Questions',
+        type: 'url',
+      },
+      {
+        description: `A session from our May '23 Fam Friday: Do You, held on 5/26/23. Hosted by Bloomberg.`,
+        id: resourceId2,
+        link: 'https://www.youtube.com/watch?v=mz2xcQ6KjF0',
+        postedAt: new Date(),
+        postedBy: memberId2,
+        title: 'How to Succeed in Your Internship',
+        type: 'url',
+      },
+      {
+        description: `CodeSignal's course paths offer structured learning in coding, covering topics like data structures, algorithms, and web development for all skill levels.`,
+        id: resourceId3,
+        link: 'https://codesignal.com/learn',
+        postedAt: new Date(),
+        postedBy: memberId3,
+        title: 'CodeSignal Learn',
+        type: 'url',
+      },
+    ])
+    .execute();
+
+  const academicTagId = id();
+  const careerAdviceTagId = id();
+  const interviewPrepTagId = id();
+  const learningTagId = id();
+  const videoTagId = id();
+
+  await trx
+    .insertInto('tags')
+    .values([
+      { id: academicTagId, name: 'Academic' },
+      { id: careerAdviceTagId, name: 'Career Advice' },
+      { id: interviewPrepTagId, name: 'Interview Prep' },
+      { id: learningTagId, name: 'Learning' },
+      { id: videoTagId, name: 'Video' },
+    ])
+    .execute();
+
+  await trx
+    .insertInto('resourceTags')
+    .values([
+      { resourceId: resourceId1, tagId: interviewPrepTagId },
+      { resourceId: resourceId1, tagId: learningTagId },
+      { resourceId: resourceId2, tagId: careerAdviceTagId },
+      { resourceId: resourceId2, tagId: videoTagId },
+      { resourceId: resourceId3, tagId: academicTagId },
+      { resourceId: resourceId3, tagId: learningTagId },
+    ])
+    .execute();
+
+  await trx
+    .insertInto('resourceUpvotes')
+    .values([
+      { resourceId: resourceId1, studentId: memberId1 },
+      { resourceId: resourceId1, studentId: memberId2 },
+      { resourceId: resourceId1, studentId: memberId3 },
+      { resourceId: resourceId2, studentId: memberId1 },
+      { resourceId: resourceId2, studentId: memberId3 },
+      { resourceId: resourceId3, studentId: memberId2 },
+    ])
+    .execute();
+
+  // Slack Channels
+
+  const slackChannelId1 = id();
+  const slackChannelId2 = id();
+  const slackChannelId3 = id();
+
+  await trx
+    .insertInto('slackChannels')
+    .values([
+      { id: slackChannelId1, name: 'announcements', type: 'public' },
+      { id: slackChannelId2, name: 'general', type: 'public' },
+      { id: slackChannelId3, name: 'random', type: 'public' },
     ])
     .execute();
 }
