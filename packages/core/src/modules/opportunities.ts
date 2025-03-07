@@ -22,11 +22,7 @@ import { reportException } from '@/infrastructure/sentry';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { STUDENT_PROFILE_URL } from '@/shared/env';
-import {
-  ACCENT_COLORS,
-  type AccentColor,
-  getRandomAccentColor,
-} from '@/shared/utils/color';
+import { ACCENT_COLORS, type AccentColor } from '@/shared/utils/color';
 import { fail, type Result, success } from '@/shared/utils/core';
 
 // Use Case(s)
@@ -754,34 +750,16 @@ export async function refineOpportunity(
       return opportunity;
     }
 
-    const upsertedTags = await trx
-      .insertInto('opportunityTags')
-      .values(
-        data.tags.map((tag) => {
-          return {
-            color: getRandomAccentColor(),
-            id: id(),
-            name: tag,
-          };
-        })
-      )
-      .onConflict((oc) => {
-        // Typically we would just "do nothing", but since we're returning the
-        // "id", we need to update something, even if it's not actually changing
-        // anything.
-        return oc.column('name').doUpdateSet((eb) => {
-          return {
-            name: eb.ref('excluded.name'),
-          };
-        });
-      })
-      .returning(['id'])
+    const matchedTags = await trx
+      .selectFrom('opportunityTags')
+      .select('id')
+      .where('name', 'in', data.tags)
       .execute();
 
     await trx
       .insertInto('opportunityTagAssociations')
       .values(
-        upsertedTags.map((tag) => {
+        matchedTags.map((tag) => {
           return {
             opportunityId: opportunity.id,
             tagId: tag.id,
