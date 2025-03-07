@@ -469,6 +469,35 @@ async function seed(trx: Transaction<DB>) {
     ])
     .execute();
 
+  const academicTagId = id();
+  const careerAdviceTagId = id();
+  const interviewPrepTagId = id();
+  const learningTagId = id();
+  const videoTagId = id();
+
+  await trx
+    .insertInto('tags')
+    .values([
+      { id: academicTagId, name: 'Academic' },
+      { id: careerAdviceTagId, name: 'Career Advice' },
+      { id: interviewPrepTagId, name: 'Interview Prep' },
+      { id: learningTagId, name: 'Learning' },
+      { id: videoTagId, name: 'Video' },
+    ])
+    .execute();
+
+  await trx
+    .insertInto('resourceTags')
+    .values([
+      { resourceId: resourceId1, tagId: interviewPrepTagId },
+      { resourceId: resourceId1, tagId: learningTagId },
+      { resourceId: resourceId2, tagId: careerAdviceTagId },
+      { resourceId: resourceId2, tagId: videoTagId },
+      { resourceId: resourceId3, tagId: academicTagId },
+      { resourceId: resourceId3, tagId: learningTagId },
+    ])
+    .execute();
+
   await trx
     .insertInto('resourceUpvotes')
     .values([
