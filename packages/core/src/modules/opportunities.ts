@@ -367,19 +367,16 @@ async function createOpportunity({
     return refineOpportunity({
       content: websiteContent.slice(0, 10_000),
       opportunityId: opportunity.id,
+      slackChannelId,
+      slackUserId: slackMessage.slackUserId,
     });
   }
 
   if (sendNotification) {
-    const message =
-      `Thanks for sharing an opportunity in <#${slackChannelId}> -- I added it to our <${STUDENT_PROFILE_URL}/opportunities|opportunities board>! 🙂\n\n` +
-      `To generate tags and a description, please paste the opportunity's website content <${STUDENT_PROFILE_URL}/opportunities/${opportunity.id}/refine|*HERE*>.\n\n` +
-      'Thanks again!';
-
-    job('notification.slack.send', {
-      channel: slackMessage.slackUserId,
-      message,
-      workspace: 'regular',
+    sendOpportunityRefinementNotification({
+      opportunityId: opportunity.id,
+      slackChannelId,
+      slackUserId: slackMessage.slackUserId,
     });
   }
 
@@ -640,7 +637,11 @@ export const RefineOpportunityInput = z.object({
   opportunityId: z.string().trim().min(1),
 });
 
-type RefineOpportunityInput = z.infer<typeof RefineOpportunityInput>;
+type RefineOpportunityInput = z.infer<typeof RefineOpportunityInput> &
+  Partial<{
+    slackChannelId: string;
+    slackUserId: string;
+  }>;
 
 /**
  * Refines an opportunity by extracting structured data from the given
@@ -710,6 +711,14 @@ export async function refineOpportunity(
   // If the AI didn't return a title, then we don't want to finish the process
   // because there was no opportunity to refine. We exit gracefully.
   if (!data.title || !data.description) {
+    if (input.slackChannelId && input.slackUserId) {
+      sendOpportunityRefinementNotification({
+        opportunityId: input.opportunityId,
+        slackChannelId: input.slackChannelId,
+        slackUserId: input.slackUserId,
+      });
+    }
+
     return success({});
   }
 
@@ -871,6 +880,36 @@ export async function reportOpportunity({
  */
 function getFirstLinkInMessage(message: string): string | undefined {
   return message.match(/<(https?:\/\/[^\s|>]+)(?:\|[^>]+)?>/)?.[1];
+}
+
+type SendOpportunityRefinementNotificationInput = {
+  opportunityId: string;
+  slackChannelId: string;
+  slackUserId: string;
+};
+
+/**
+ * Sends a notification to the original poster of an opportunity to refine
+ * the opportunity using AI w/ the website content. This is likely because
+ * our automated system was unable to extract the necessary information from
+ * the website content.
+ *
+ * @param input - The opportunity to refine.
+ */
+function sendOpportunityRefinementNotification({
+  opportunityId,
+  slackChannelId,
+  slackUserId,
+}: SendOpportunityRefinementNotificationInput) {
+  const message =
+    `Thanks for sharing an opportunity in <#${slackChannelId}>! To add it to our <${STUDENT_PROFILE_URL}/opportunities|opportunities board>, please paste the opportunity's website content <${STUDENT_PROFILE_URL}/opportunities/${opportunityId}/refine|*HERE*>.\n\n` +
+    'Appreciate you! 🙂';
+
+  job('notification.slack.send', {
+    channel: slackUserId,
+    message,
+    workspace: 'regular',
+  });
 }
 
 // Queries
