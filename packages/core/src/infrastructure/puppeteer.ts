@@ -58,7 +58,7 @@ async function withBrowser<T>(
 
   const page = await browser.newPage();
 
-  page.setUserAgent(getUserAgent());
+  await escapeBotDetection(page);
 
   try {
     const result = await fn(browser, page);
@@ -70,6 +70,23 @@ async function withBrowser<T>(
       console.log('Closed Puppeteer browser.');
     }
   }
+}
+
+async function escapeBotDetection(page: Page) {
+  await page.setViewport({
+    deviceScaleFactor: 1,
+    height: 1080,
+    width: 1920,
+  });
+
+  await page.setUserAgent(getUserAgent());
+
+  // Add random mouse movements.
+  await page.mouse.move(
+    100 + Math.random() * 100, // x
+    100 + Math.random() * 100, // y
+    { steps: 10 }
+  );
 }
 
 const USER_AGENTS = [
