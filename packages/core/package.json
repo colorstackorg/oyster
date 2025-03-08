@@ -13,6 +13,8 @@
     "./admin-dashboard/ui": "./src/admin-dashboard.ui.ts",
     "./member-profile/server": "./src/member-profile.server.ts",
     "./member-profile/ui": "./src/member-profile.ui.ts",
+    "./mentor-platform/server": "./src/mentor-platform.server.ts",
+    "./mentor-platform/ui": "./src/mentor-platform.ui.ts",
     "./admins": "./src/modules/admins/admins.ts",
     "./admins/types": "./src/modules/admins/admins.types.ts",
     "./admins/ui": "./src/modules/admins/admins.ui.tsx",
