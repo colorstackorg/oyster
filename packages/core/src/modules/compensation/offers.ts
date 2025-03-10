@@ -83,6 +83,12 @@ type AddFullTimeOfferInput = z.infer<typeof AddFullTimeOfferInput>;
 export async function addFullTimeOffer(
   input: AddFullTimeOfferInput
 ): Promise<Result<{ id: string }>> {
+  const locationResult = await extractLocation(input.location);
+
+  if (!locationResult.ok) {
+    return locationResult;
+  }
+
   const offer = await db.transaction().execute(async (trx) => {
     const companyId = await saveCompanyIfNecessary(
       trx,
@@ -98,7 +104,7 @@ export async function addFullTimeOffer(
         companyId,
         createdAt: new Date(),
         id: id(),
-        location: input.location,
+        location: locationResult.data,
         negotiated: input.negotiated,
         pastExperience: input.pastExperience,
         performanceBonus: input.performanceBonus,
@@ -165,45 +171,14 @@ export const AddInternshipOfferInput = InternshipOffer.omit({
 
 type AddInternshipOfferInput = z.infer<typeof AddInternshipOfferInput>;
 
-const LOCATION_PROMPT = dedent`
-  Your goal is to clean up the location input from the user.
-
-  Here is the location input from the user:
-
-  <location>
-    $LOCATION_INPUT
-  </location>
-
-  Rules:
-  - Format as "City, State".
-  - The state should an abbreviation (ie: CA).
-  - If the location mentions being remote, then just use "Remote".
-  - If the user specifies a short-hand city, then use the full location (ie:
-    SF -> San Francisco, CA, NYC -> New York, NY).
-  - If the user specifies multiple locations, then use the first location.
-  - ONLY return the cleaned up location, don't include any other text.
-  - If you can't determine the location, then return "N/A".
-`;
-
 export async function addInternshipOffer(
   input: AddInternshipOfferInput
 ): Promise<Result<{ id: string }>> {
-  const prompt = LOCATION_PROMPT.replace('$LOCATION_INPUT', input.location);
+  const locationResult = await extractLocation(input.location);
 
-  const completionResult = await getChatCompletion({
-    maxTokens: 50,
-    messages: [{ role: 'user', content: prompt }],
-    system: [],
-    temperature: 0,
-  });
-
-  if (!completionResult.ok) {
-    return completionResult;
+  if (!locationResult.ok) {
+    return locationResult;
   }
-
-  const location = completionResult.data;
-
-  console.log(location);
 
   const offer = await db.transaction().execute(async (trx) => {
     const companyId = await saveCompanyIfNecessary(
@@ -220,7 +195,7 @@ export async function addInternshipOffer(
         createdAt: new Date(),
         hourlyRate: input.hourlyRate,
         id: id(),
-        location,
+        location: locationResult.data,
         negotiated: input.negotiated,
         pastExperience: input.pastExperience,
         postedAt: new Date(),
@@ -383,6 +358,12 @@ export async function editFullTimeOffer(
   offerId: string,
   input: EditFullTimeOfferInput
 ): Promise<Result> {
+  const locationResult = await extractLocation(input.location);
+
+  if (!locationResult.ok) {
+    return locationResult;
+  }
+
   const offer = await db.transaction().execute(async (trx) => {
     const companyId = await saveCompanyIfNecessary(
       trx,
@@ -396,7 +377,7 @@ export async function editFullTimeOffer(
         baseSalary: input.baseSalary,
         benefits: input.benefits,
         companyId,
-        location: input.location,
+        location: locationResult.data,
         negotiated: input.negotiated,
         pastExperience: input.pastExperience,
         performanceBonus: input.performanceBonus,
@@ -446,6 +427,12 @@ export async function editInternshipOffer(
   offerId: string,
   input: EditInternshipOfferInput
 ): Promise<Result> {
+  const locationResult = await extractLocation(input.location);
+
+  if (!locationResult.ok) {
+    return locationResult;
+  }
+
   const offer = await db.transaction().execute(async (trx) => {
     const companyId = await saveCompanyIfNecessary(
       trx,
@@ -459,7 +446,7 @@ export async function editInternshipOffer(
         benefits: input.benefits,
         companyId,
         hourlyRate: input.hourlyRate,
-        location: input.location,
+        location: locationResult.data,
         negotiated: input.negotiated,
         pastExperience: input.pastExperience,
         relocation: input.relocation,
@@ -843,6 +830,59 @@ function calculateTotalCompensation({
     (signOnBonus ?? 0) / 4 +
     (totalStock ?? 0) / 4
   );
+}
+
+const LOCATION_PROMPT = dedent`
+  Your goal is to clean up the location input from the user.
+
+  Here is the location input from the user:
+
+  <location>
+    $LOCATION_INPUT
+  </location>
+
+  Rules:
+  - Format as "City, State".
+  - The state should an abbreviation (ie: CA).
+  - If the location mentions being remote, then just use "Remote".
+  - If the user specifies a short-hand city, then use the full location (ie:
+    SF -> San Francisco, CA, NYC -> New York, NY).
+  - If the user specifies multiple locations, then use the first location.
+  - ONLY return the cleaned up location, don't include any other text.
+  - If you can't determine the location, then return "N/A".
+`;
+
+/**
+ * Extracts the location from the user's input. Uses AI to format the location
+ * into a more standard format.
+ *
+ * @example
+ * extractLocation('SF') // 'San Francisco, CA'
+ * extractLocation('San Francisco') // 'San Francisco, CA'
+ * extractLocation('San Francisco, CA') // 'San Francisco, CA'
+ * extractLocation('Remote') // 'Remote'
+ * extractLocation('N/A') // 'N/A'
+ *
+ * @param location - Location input from the user.
+ * @returns Result indicating the success or failure of the operation.
+ */
+async function extractLocation(location: string): Promise<Result<string>> {
+  const prompt = LOCATION_PROMPT.replace('$LOCATION_INPUT', location);
+
+  const completionResult = await getChatCompletion({
+    maxTokens: 50,
+    messages: [{ role: 'user', content: prompt }],
+    system: [],
+    temperature: 0,
+  });
+
+  if (!completionResult.ok) {
+    return completionResult;
+  }
+
+  const extractedLocation = completionResult.data;
+
+  return success(extractedLocation);
 }
 
 /**
