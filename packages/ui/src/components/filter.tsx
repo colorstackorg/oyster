@@ -163,7 +163,7 @@ export function FilterPopover({
   return (
     <div
       className={cx(
-        'absolute top-full z-10 mt-1 flex w-max max-w-[300px] flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2',
+        'absolute top-full z-10 mt-1 flex w-max min-w-full max-w-[300px] flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2',
         height === 'fixed' && 'max-h-60'
       )}
       id="popover"
@@ -210,7 +210,7 @@ export function FilterEmptyMessage({ children }: PropsWithChildren) {
 type FilterItemProps = PropsWithChildren<{
   checked: boolean;
   color?: PillColor;
-  label: string;
+  label: string | React.ReactElement;
   name: string;
   value: string;
 }>;
