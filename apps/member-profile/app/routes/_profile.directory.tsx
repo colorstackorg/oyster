@@ -134,10 +134,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
+type Company = {
+  count: number;
+  id: string;
+  name: string;
+};
+
 async function listAllCompanies() {
-  const companies = await db
-    .selectFrom('companies')
-    .leftJoin('workExperiences', 'workExperiences.companyId', 'companies.id')
+  const rows = await db
+    .selectFrom('workExperiences')
+    .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
     .select([
       'companies.id',
       'companies.name',
@@ -146,13 +152,21 @@ async function listAllCompanies() {
       },
     ])
     .groupBy('companies.id')
-    .having((eb) => eb.fn.count('workExperiences.studentId').distinct(), '>', 0)
     .orderBy('count', 'desc')
     .orderBy('companies.name', 'asc')
     .execute();
 
+  const companies = rows as Company[];
+
   return companies;
 }
+
+type Ethnicity = {
+  code: string;
+  count: number;
+  demonym: string;
+  flagEmoji: string;
+};
 
 async function listAllEthnicities() {
   const rows = await db
@@ -174,12 +188,7 @@ async function listAllEthnicities() {
     .orderBy('countries.demonym', 'asc')
     .execute();
 
-  const ethnicities = rows as Array<{
-    code: string;
-    count: number;
-    demonym: string;
-    flagEmoji: string;
-  }>;
+  const ethnicities = rows as Ethnicity[];
 
   return ethnicities;
 }
