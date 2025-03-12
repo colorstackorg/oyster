@@ -64,7 +64,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       where: {
         company: null,
         ethnicity: null,
-        graduationYear: null,
+        graduationYear: [],
         hometown: null,
         hometownLatitude: null,
         hometownLongitude: null,

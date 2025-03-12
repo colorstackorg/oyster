@@ -13,7 +13,7 @@ export const ListMembersInDirectoryWhere = ListSearchParams.pick({
 }).extend({
   company: Company.shape.id.nullable().catch(null),
   ethnicity: Country.shape.code.nullable().catch(null),
-  graduationYear: Student.shape.graduationYear.nullable().catch(null),
+  graduationYear: Student.shape.graduationYear.array().catch([]),
   hometown: z.string().trim().min(1).nullable().catch(null),
   hometownLatitude: z.coerce.number().nullable().catch(null),
   hometownLongitude: z.coerce.number().nullable().catch(null),

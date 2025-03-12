@@ -63,9 +63,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const url = new URL(request.url);
 
-  const searchParams = DirectorySearchParams.parse(
-    Object.fromEntries(url.searchParams)
-  );
+  const values = Object.fromEntries(url.searchParams);
+
+  const searchParams = DirectorySearchParams.parse({
+    ...values,
+    graduationYear: url.searchParams.getAll('graduationYear'),
+  });
 
   const { limit, page, ...where } = searchParams;
 
@@ -117,7 +120,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     members,
     page: searchParams.page,
     totalCount,
-    url,
   });
 }
 
@@ -134,7 +136,7 @@ async function getAppliedCity(id: string) {
 async function listAllCompanies() {
   const companies = await db
     .selectFrom('companies')
-    .select(['id', 'name', 'imageUrl'])
+    .select(['id', 'name'])
     .where((eb) => {
       return eb.exists(() => {
         return eb
@@ -385,16 +387,7 @@ function CompanyList() {
           <FilterItem
             checked={selectedCompany === company.id}
             key={company.id}
-            label={
-              <div className="flex items-center gap-2">
-                <img
-                  alt={company.name}
-                  className="aspect-square h-4 w-4 rounded-sm object-contain"
-                  src={company.imageUrl as string}
-                />
-                {company.name}
-              </div>
-            }
+            label={company.name}
             name="company"
             value={company.id}
           />

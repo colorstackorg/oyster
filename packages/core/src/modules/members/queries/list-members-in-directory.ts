@@ -47,7 +47,12 @@ export async function listMembersInDirectory(options: GetMembersOptions) {
             .selectFrom('workExperiences')
             .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
             .whereRef('workExperiences.studentId', '=', 'students.id')
-            .where('companies.crunchbaseId', '=', company)
+            .where((eb) => {
+              return eb.or([
+                eb('companies.crunchbaseId', '=', company),
+                eb('companies.id', '=', company),
+              ]);
+            })
         );
       });
     })
@@ -61,11 +66,11 @@ export async function listMembersInDirectory(options: GetMembersOptions) {
         );
       });
     })
-    .$if(!!graduationYear, (query) => {
+    .$if(!!graduationYear?.length, (query) => {
       return query.where(
         'students.graduationYear',
-        '=',
-        graduationYear!.toString()
+        'in',
+        graduationYear.map(String)
       );
     })
     .$if(!!hometownLatitude && !!hometownLongitude, (query) => {
@@ -84,12 +89,15 @@ export async function listMembersInDirectory(options: GetMembersOptions) {
     })
     .$if(!!school, (query) => {
       return query.where((eb) => {
-        return eb.exists(
-          eb
-            .selectFrom('educations')
-            .whereRef('educations.studentId', '=', 'students.id')
-            .where('educations.schoolId', '=', school)
-        );
+        return eb.or([
+          eb('students.schoolId', '=', school),
+          eb.exists(
+            eb
+              .selectFrom('educations')
+              .whereRef('educations.studentId', '=', 'students.id')
+              .where('educations.schoolId', '=', school)
+          ),
+        ]);
       });
     })
     .$if(!!joinedDirectoryAfter, (query) => {
