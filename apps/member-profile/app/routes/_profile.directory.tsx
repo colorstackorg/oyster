@@ -191,7 +191,7 @@ async function listAllHometowns() {
     set.add(coordinates);
 
     hometowns.push({
-      coordinates: x + ',' + y,
+      coordinates,
       name: row.hometown!,
     });
   });
@@ -229,7 +229,7 @@ async function listAllLocations() {
     set.add(coordinates);
 
     locations.push({
-      coordinates: x + ',' + y,
+      coordinates,
       name: row.currentLocation!,
     });
   });
