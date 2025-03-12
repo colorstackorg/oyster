@@ -309,18 +309,31 @@ async function listAllLocations() {
 async function listAllSchools() {
   const schools = await db
     .selectFrom('schools')
-    .leftJoin('students', 'students.schoolId', 'schools.id')
-    .leftJoin('educations', 'educations.schoolId', 'schools.id')
+    .innerJoin(
+      (eb) => {
+        return eb
+          .selectFrom('students')
+          .select(['students.id as studentId', 'schoolId'])
+          .where('joinedMemberDirectoryAt', 'is not', null)
+          .union(
+            eb
+              .selectFrom('educations')
+              .innerJoin('students', 'students.id', 'educations.studentId')
+              .select(['educations.studentId', 'educations.schoolId'])
+              .where('students.joinedMemberDirectoryAt', 'is not', null)
+          )
+          .as('combined');
+      },
+      (join) => {
+        return join.onRef('schools.id', '=', 'combined.schoolId');
+      }
+    )
     .select([
       'schools.id',
       'schools.name',
-      (eb) => {
-        return eb.fn.count('students.id').distinct().as('count');
-      },
+      (eb) => eb.fn.count('combined.studentId').distinct().as('count'),
     ])
-    .where('students.joinedMemberDirectoryAt', 'is not', null)
     .groupBy('schools.id')
-    .having((eb) => eb.fn.count('students.id').distinct(), '>', 0)
     .orderBy('count', 'desc')
     .orderBy('schools.name', 'asc')
     .execute();
