@@ -141,8 +141,8 @@ type Company = {
 async function listAllCompanies() {
   const rows = await db
     .selectFrom('workExperiences')
-    .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
-    .leftJoin('students', 'students.id', 'workExperiences.studentId')
+    .innerJoin('companies', 'companies.id', 'workExperiences.companyId')
+    .innerJoin('students', 'students.id', 'workExperiences.studentId')
     .select([
       'companies.id',
       'companies.name',
@@ -152,7 +152,6 @@ async function listAllCompanies() {
     ])
     .groupBy('companies.id')
     .where('students.joinedMemberDirectoryAt', 'is not', null)
-    .where('workExperiences.companyId', 'is not', null)
     .orderBy('count', 'desc')
     .orderBy('companies.name', 'asc')
     .execute();
