@@ -11,7 +11,8 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import React, { useState } from 'react';
+import { sql } from 'kysely';
+import { useState } from 'react';
 import { BookOpen, Briefcase, Calendar, Globe, MapPin } from 'react-feather';
 import { z } from 'zod';
 
@@ -210,37 +211,49 @@ async function listAllGraduationYears() {
 async function listAllHometowns() {
   const rows = await db
     .selectFrom('students')
-    .select(['hometown', 'hometownCoordinates'])
-    .distinctOn('hometown')
+    .select([
+      'hometown',
+      (eb) =>
+        sql<string>`concat(${eb.ref('hometownCoordinates')}[0], ',', ${eb.ref('hometownCoordinates')}[1])`.as(
+          'coordinates'
+        ),
+      (eb) => eb.fn.countAll().as('count'),
+    ])
+    .groupBy([
+      'hometown',
+      (eb) =>
+        sql<string>`concat(${eb.ref('hometownCoordinates')}[0], ',', ${eb.ref('hometownCoordinates')}[1])`,
+    ])
     .where('hometown', 'is not', null)
     .where('hometownCoordinates', 'is not', null)
+    .orderBy('count', 'desc')
     .orderBy('hometown', 'asc')
     .execute();
 
-  // This is janky, but we're doing this because there are some hometowns
+  // This is janky, but we're doing this because there are some locations
   // that have the same coordinates. We should figure out a way to do this
   // unique check in the database while still maintaining our sort order.
 
-  const set = new Set<string>();
-
-  const hometowns: Array<{ coordinates: string; name: string }> = [];
+  const map: Record<
+    string,
+    { coordinates: string; count: number; name: string }
+  > = {};
 
   rows.forEach((row) => {
-    const { x, y } = row.hometownCoordinates!;
+    if (row.coordinates in map) {
+      map[row.coordinates].count += Number(row.count);
 
-    const coordinates = x + ',' + y;
-
-    if (set.has(coordinates)) {
       return;
     }
 
-    set.add(coordinates);
-
-    hometowns.push({
-      coordinates,
+    map[row.coordinates] = {
+      coordinates: row.coordinates,
+      count: Number(row.count),
       name: row.hometown!,
-    });
+    };
   });
+
+  const hometowns = Object.values(map).sort((a, b) => b.count - a.count);
 
   return hometowns;
 }
@@ -248,10 +261,22 @@ async function listAllHometowns() {
 async function listAllLocations() {
   const rows = await db
     .selectFrom('students')
-    .select(['currentLocation', 'currentLocationCoordinates'])
-    .distinctOn('currentLocation')
+    .select([
+      'currentLocation',
+      (eb) =>
+        sql<string>`concat(${eb.ref('currentLocationCoordinates')}[0], ',', ${eb.ref('currentLocationCoordinates')}[1])`.as(
+          'coordinates'
+        ),
+      (eb) => eb.fn.countAll().as('count'),
+    ])
+    .groupBy([
+      'currentLocation',
+      (eb) =>
+        sql<string>`concat(${eb.ref('currentLocationCoordinates')}[0], ',', ${eb.ref('currentLocationCoordinates')}[1])`,
+    ])
     .where('currentLocation', 'is not', null)
     .where('currentLocationCoordinates', 'is not', null)
+    .orderBy('count', 'desc')
     .orderBy('currentLocation', 'asc')
     .execute();
 
@@ -259,26 +284,26 @@ async function listAllLocations() {
   // that have the same coordinates. We should figure out a way to do this
   // unique check in the database while still maintaining our sort order.
 
-  const set = new Set<string>();
-
-  const locations: Array<{ coordinates: string; name: string }> = [];
+  const map: Record<
+    string,
+    { coordinates: string; count: number; name: string }
+  > = {};
 
   rows.forEach((row) => {
-    const { x, y } = row.currentLocationCoordinates!;
+    if (row.coordinates in map) {
+      map[row.coordinates].count += Number(row.count);
 
-    const coordinates = x + ',' + y;
-
-    if (set.has(coordinates)) {
       return;
     }
 
-    set.add(coordinates);
-
-    locations.push({
-      coordinates,
+    map[row.coordinates] = {
+      coordinates: row.coordinates,
+      count: Number(row.count),
       name: row.currentLocation!,
-    });
+    };
   });
+
+  const locations = Object.values(map).sort((a, b) => b.count - a.count);
 
   return locations;
 }
@@ -693,7 +718,7 @@ function HometownList() {
           <FilterItem
             checked={hometown.coordinates === appliedHometown}
             key={hometown.coordinates}
-            label={hometown.name}
+            label={`${hometown.name} (${hometown.count})`}
             name="hometown"
             value={hometown.coordinates}
           />
@@ -763,7 +788,7 @@ function LocationList() {
           <FilterItem
             checked={location.coordinates === appliedLocation}
             key={location.coordinates}
-            label={location.name}
+            label={`${location.name} (${location.count})`}
             name="location"
             value={location.coordinates}
           />
