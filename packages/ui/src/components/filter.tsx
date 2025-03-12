@@ -147,10 +147,12 @@ export function FilterButton({
 // Filter Popover
 
 type FilterPopoverProps = PropsWithChildren<{
+  align?: 'left' | 'right';
   height?: 'fixed' | 'max';
 }>;
 
 export function FilterPopover({
+  align = 'left',
   children,
   height = 'fixed',
 }: FilterPopoverProps) {
@@ -163,8 +165,9 @@ export function FilterPopover({
   return (
     <div
       className={cx(
-        'absolute top-full z-10 mt-1 flex w-max max-w-[300px] flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2',
-        height === 'fixed' && 'max-h-60'
+        'absolute top-full z-10 mt-1 flex w-max min-w-full max-w-[300px] flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2',
+        height === 'fixed' && 'max-h-60',
+        align === 'right' && 'right-0'
       )}
       id="popover"
     >
@@ -175,7 +178,11 @@ export function FilterPopover({
 
 // Filter Search
 
-export function FilterSearch() {
+type FilterSearchProps = {
+  placeholder?: string;
+};
+
+export function FilterSearch({ placeholder = 'Search...' }: FilterSearchProps) {
   const { setSearch } = useContext(FilterContext);
 
   return (
@@ -187,7 +194,7 @@ export function FilterSearch() {
       onChange={(e) => {
         setSearch(e.currentTarget.value);
       }}
-      placeholder="Search..."
+      placeholder={placeholder}
       type="text"
     />
   );
@@ -210,7 +217,7 @@ export function FilterEmptyMessage({ children }: PropsWithChildren) {
 type FilterItemProps = PropsWithChildren<{
   checked: boolean;
   color?: PillColor;
-  label: string;
+  label: string | React.ReactElement;
   name: string;
   value: string;
 }>;
