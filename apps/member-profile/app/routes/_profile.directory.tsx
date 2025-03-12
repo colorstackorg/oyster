@@ -410,8 +410,10 @@ function CompanyList() {
   let filteredCompanies = allCompanies;
 
   if (search) {
+    const regex = new RegExp(toEscapedString(search), 'i');
+
     filteredCompanies = allCompanies.filter((company) => {
-      return new RegExp(toEscapedString(search), 'i').test(company.name);
+      return regex.test(company.name);
     });
   }
 
@@ -478,8 +480,10 @@ function EthnicityList() {
   let filteredEthnicities = allEthnicities;
 
   if (search) {
+    const regex = new RegExp(toEscapedString(search), 'i');
+
     filteredEthnicities = allEthnicities.filter((ethnicity) => {
-      return new RegExp(toEscapedString(search), 'i').test(ethnicity.demonym);
+      return regex.test(ethnicity.demonym);
     });
   }
 
@@ -596,8 +600,10 @@ function HometownList() {
   let filteredHometowns = allHometowns;
 
   if (search) {
+    const regex = new RegExp(toEscapedString(search), 'i');
+
     filteredHometowns = allHometowns.filter((hometown) => {
-      return new RegExp(toEscapedString(search), 'i').test(hometown.name);
+      return regex.test(hometown.name);
     });
   }
 
@@ -664,8 +670,10 @@ function LocationList() {
   let filteredLocations = allLocations;
 
   if (search) {
+    const regex = new RegExp(toEscapedString(search), 'i');
+
     filteredLocations = allLocations.filter((location) => {
-      return new RegExp(toEscapedString(search), 'i').test(location.name);
+      return regex.test(location.name);
     });
   }
 
@@ -732,8 +740,10 @@ function SchoolList() {
   let filteredSchools = allSchools;
 
   if (search) {
+    const regex = new RegExp(toEscapedString(search), 'i');
+
     filteredSchools = allSchools.filter((school) => {
-      return new RegExp(toEscapedString(search), 'i').test(school.name);
+      return regex.test(school.name);
     });
   }
 
