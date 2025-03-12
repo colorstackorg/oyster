@@ -45,6 +45,7 @@ import {
   TooltipText,
   TooltipTrigger,
 } from '@oyster/ui/tooltip';
+import { toEscapedString } from '@oyster/utils';
 
 import {
   BookmarkButton,
@@ -584,7 +585,7 @@ function TagList() {
   const { search } = useFilterContext();
 
   const filteredTags = allTags.filter((tag) => {
-    return new RegExp(search, 'i').test(tag.name);
+    return new RegExp(toEscapedString(search), 'i').test(tag.name);
   });
 
   if (!filteredTags.length) {

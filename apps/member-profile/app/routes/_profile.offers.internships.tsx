@@ -27,6 +27,7 @@ import {
   type FilterValue,
   useFilterContext,
 } from '@oyster/ui/filter';
+import { toEscapedString } from '@oyster/utils';
 
 import { CompanyColumn, CompanyFilter } from '@/shared/components';
 import { OfferAggregation } from '@/shared/components/offer';
@@ -482,7 +483,7 @@ function LocationList() {
 
   if (search) {
     filteredLocations = allLocations.filter((location) => {
-      return new RegExp(search, 'i').test(location);
+      return new RegExp(toEscapedString(search), 'i').test(location);
     });
   }
 

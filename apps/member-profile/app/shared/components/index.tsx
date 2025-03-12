@@ -14,6 +14,7 @@ import {
   useFilterContext,
 } from '@oyster/ui/filter';
 import { FilterRoot } from '@oyster/ui/filter';
+import { toEscapedString } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
 
@@ -132,7 +133,7 @@ function CompanyFilterList({
   const { search } = useFilterContext();
 
   const filteredCompanies = allCompanies.filter((company) => {
-    return new RegExp(search, 'i').test(company.name);
+    return new RegExp(toEscapedString(search), 'i').test(company.name);
   });
 
   if (!filteredCompanies.length) {

@@ -42,7 +42,7 @@ import {
   type FilterValue,
   useFilterContext,
 } from '@oyster/ui/filter';
-import { run } from '@oyster/utils';
+import { run, toEscapedString } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
 import { useMixpanelTracker } from '@/shared/hooks/use-mixpanel-tracker';
@@ -152,7 +152,6 @@ async function listAllEthnicities() {
   const ethnicities = await db
     .selectFrom('countries')
     .select(['code', 'demonym', 'flagEmoji'])
-    .distinct()
     .orderBy('demonym', 'asc')
     .execute();
 
@@ -369,7 +368,7 @@ function CompanyList() {
 
   if (search) {
     filteredCompanies = allCompanies.filter((company) => {
-      return new RegExp(search, 'i').test(company.name);
+      return new RegExp(toEscapedString(search), 'i').test(company.name);
     });
   }
 
@@ -446,7 +445,7 @@ function EthnicityList() {
 
   if (search) {
     filteredEthnicities = allEthnicities.filter((ethnicity) => {
-      return new RegExp(search, 'i').test(ethnicity.demonym);
+      return new RegExp(toEscapedString(search), 'i').test(ethnicity.demonym);
     });
   }
 
@@ -686,7 +685,7 @@ function SchoolList() {
 
   if (search) {
     filteredSchools = allSchools.filter((school) => {
-      return new RegExp(search, 'i').test(school.name);
+      return new RegExp(toEscapedString(search), 'i').test(school.name);
     });
   }
 
