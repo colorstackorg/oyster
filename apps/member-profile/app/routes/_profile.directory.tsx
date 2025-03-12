@@ -591,8 +591,17 @@ function HometownFilter() {
 function HometownList() {
   const [searchParams] = useSearchParams();
   const { allHometowns } = useLoaderData<typeof loader>();
+  const { search } = useFilterContext();
 
-  if (!allHometowns.length) {
+  let filteredHometowns = allHometowns;
+
+  if (search) {
+    filteredHometowns = allHometowns.filter((hometown) => {
+      return new RegExp(toEscapedString(search), 'i').test(hometown.name);
+    });
+  }
+
+  if (!filteredHometowns.length) {
     return <FilterEmptyMessage>No hometowns found.</FilterEmptyMessage>;
   }
 
@@ -600,7 +609,7 @@ function HometownList() {
 
   return (
     <ul className="overflow-auto">
-      {allHometowns.map((hometown) => {
+      {filteredHometowns.map((hometown) => {
         return (
           <FilterItem
             checked={hometown.coordinates === appliedHometown}
@@ -650,8 +659,17 @@ function LocationFilter() {
 function LocationList() {
   const [searchParams] = useSearchParams();
   const { allLocations } = useLoaderData<typeof loader>();
+  const { search } = useFilterContext();
 
-  if (!allLocations.length) {
+  let filteredLocations = allLocations;
+
+  if (search) {
+    filteredLocations = allLocations.filter((location) => {
+      return new RegExp(toEscapedString(search), 'i').test(location.name);
+    });
+  }
+
+  if (!filteredLocations.length) {
     return <FilterEmptyMessage>No locations found.</FilterEmptyMessage>;
   }
 
@@ -659,7 +677,7 @@ function LocationList() {
 
   return (
     <ul className="overflow-auto">
-      {allLocations.map((location) => {
+      {filteredLocations.map((location) => {
         return (
           <FilterItem
             checked={location.coordinates === appliedLocation}
