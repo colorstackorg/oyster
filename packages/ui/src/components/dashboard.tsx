@@ -5,6 +5,7 @@ import {
   NavLink,
   useSubmit,
 } from '@remix-run/react';
+import { useSearchParams } from '@remix-run/react';
 import React, {
   type PropsWithChildren,
   useContext,
@@ -12,13 +13,11 @@ import React, {
   useState,
 } from 'react';
 import { LogOut, Menu, X } from 'react-feather';
-import { z } from 'zod';
 
 import { IconButton } from './icon-button';
 import { SearchBar, type SearchBarProps } from './search-bar';
 import { Text } from './text';
 import { useDelayedValue } from '../hooks/use-delayed-value';
-import { useSearchParams } from '../hooks/use-search-params';
 import { cx } from '../utils/cx';
 
 type DashboardContextValue = {
@@ -178,20 +177,13 @@ Dashboard.Page = function Page({ children }: PropsWithChildren) {
   );
 };
 
-const DashboardSearchParams = z.object({
-  search: z.string().optional().catch(''),
-});
-
 Dashboard.SearchForm = function SearchForm({
   children,
   ...rest
 }: PropsWithChildren<Pick<SearchBarProps, 'placeholder'>>) {
-  const [searchParams] = useSearchParams(DashboardSearchParams);
-
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState<string | undefined>(undefined);
-
   const delayedSearch = useDelayedValue(search, 250);
-
   const submit = useSubmit();
 
   useEffect(() => {
@@ -199,13 +191,19 @@ Dashboard.SearchForm = function SearchForm({
       return;
     }
 
-    submit({ search: delayedSearch });
+    if (delayedSearch === '') {
+      searchParams.delete('search');
+    } else {
+      searchParams.set('search', delayedSearch);
+    }
+
+    submit(searchParams);
   }, [delayedSearch]);
 
   return (
     <Form className="w-full sm:w-auto" method="get">
       <SearchBar
-        defaultValue={searchParams.search}
+        defaultValue={searchParams.get('search') || ''}
         name="search"
         onChange={(e) => setSearch(e.currentTarget.value)}
         {...rest}
