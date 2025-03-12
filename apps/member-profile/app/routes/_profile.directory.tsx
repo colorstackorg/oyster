@@ -11,7 +11,8 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import React, { useState } from 'react';
+import { type ExpressionBuilder, sql } from 'kysely';
+import { useState } from 'react';
 import { BookOpen, Briefcase, Calendar, Globe, MapPin } from 'react-feather';
 import { z } from 'zod';
 
@@ -20,7 +21,7 @@ import {
   ListMembersInDirectoryWhere,
   ListSearchParams,
 } from '@oyster/core/member-profile/ui';
-import { db } from '@oyster/db';
+import { type DB, db } from '@oyster/db';
 import { ISO8601Date } from '@oyster/types';
 import {
   ACCENT_COLORS,
@@ -84,6 +85,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const [
     allCompanies,
     allEthnicities,
+    allGraduationYears,
     allHometowns,
     allLocations,
     allSchools,
@@ -91,6 +93,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   ] = await Promise.all([
     listAllCompanies(),
     listAllEthnicities(),
+    listAllGraduationYears(),
     listAllHometowns(),
     listAllLocations(),
     listAllSchools(),
@@ -124,6 +127,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     allCompanies,
     allEthnicities,
+    allGraduationYears,
     allHometowns,
     allLocations,
     allSchools,
@@ -134,67 +138,122 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
+type Company = {
+  count: number;
+  id: string;
+  name: string;
+};
+
 async function listAllCompanies() {
-  const companies = await db
-    .selectFrom('companies')
-    .select(['id', 'name'])
-    .where((eb) => {
-      return eb.exists(() => {
-        return eb
-          .selectFrom('workExperiences')
-          .whereRef('workExperiences.companyId', '=', 'companies.id');
-      });
-    })
-    .orderBy('name', 'asc')
+  const rows = await db
+    .selectFrom('workExperiences')
+    .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
+    .select([
+      'companies.id',
+      'companies.name',
+      (eb) => {
+        return eb.fn.count('workExperiences.studentId').distinct().as('count');
+      },
+    ])
+    .groupBy('companies.id')
+    .orderBy('count', 'desc')
+    .orderBy('companies.name', 'asc')
     .execute();
+
+  const companies = rows as Company[];
 
   return companies;
 }
 
+type Ethnicity = {
+  code: string;
+  count: number;
+  demonym: string;
+  flagEmoji: string;
+};
+
 async function listAllEthnicities() {
-  const ethnicities = await db
-    .selectFrom('countries')
-    .select(['code', 'demonym', 'flagEmoji'])
-    .orderBy('demonym', 'asc')
+  const rows = await db
+    .selectFrom('memberEthnicities')
+    .leftJoin('countries', 'countries.code', 'memberEthnicities.countryCode')
+    .select([
+      'countries.code',
+      'countries.demonym',
+      'countries.flagEmoji',
+      (eb) => {
+        return eb.fn
+          .count('memberEthnicities.studentId')
+          .distinct()
+          .as('count');
+      },
+    ])
+    .groupBy('countries.code')
+    .orderBy('count', 'desc')
+    .orderBy('countries.demonym', 'asc')
     .execute();
 
+  const ethnicities = rows as Ethnicity[];
+
   return ethnicities;
+}
+
+async function listAllGraduationYears() {
+  const years = await db
+    .selectFrom('students')
+    .select(['graduationYear', (eb) => eb.fn.countAll().as('count')])
+    .groupBy('graduationYear')
+    .orderBy('graduationYear', 'asc')
+    .execute();
+
+  return years;
+}
+
+function coordinates(
+  eb: ExpressionBuilder<DB, 'students'>,
+  column: 'currentLocationCoordinates' | 'hometownCoordinates'
+) {
+  return sql<string>`concat(${eb.ref(column)}[0], ',', ${eb.ref(column)}[1])`;
 }
 
 async function listAllHometowns() {
   const rows = await db
     .selectFrom('students')
-    .select(['hometown', 'hometownCoordinates'])
-    .distinctOn('hometown')
+    .select([
+      'hometown',
+      (eb) => coordinates(eb, 'hometownCoordinates').as('coordinates'),
+      (eb) => eb.fn.countAll().as('count'),
+    ])
+    .groupBy(['hometown', (eb) => coordinates(eb, 'hometownCoordinates')])
     .where('hometown', 'is not', null)
     .where('hometownCoordinates', 'is not', null)
+    .orderBy('count', 'desc')
     .orderBy('hometown', 'asc')
     .execute();
 
-  // This is janky, but we're doing this because there are some hometowns
+  // This is janky, but we're doing this because there are some locations
   // that have the same coordinates. We should figure out a way to do this
   // unique check in the database while still maintaining our sort order.
 
-  const set = new Set<string>();
-
-  const hometowns: Array<{ coordinates: string; name: string }> = [];
+  const map: Record<
+    string,
+    { coordinates: string; count: number; name: string }
+  > = {};
 
   rows.forEach((row) => {
-    const { x, y } = row.hometownCoordinates!;
+    if (row.coordinates in map) {
+      map[row.coordinates].count += Number(row.count);
 
-    const coordinates = x + ',' + y;
-
-    if (set.has(coordinates)) {
       return;
     }
 
-    set.add(coordinates);
-
-    hometowns.push({
-      coordinates,
+    map[row.coordinates] = {
+      coordinates: row.coordinates,
+      count: Number(row.count),
       name: row.hometown!,
-    });
+    };
   });
+
+  const hometowns = Object.values(map).sort((a, b) => b.count - a.count);
 
   return hometowns;
 }
@@ -202,10 +261,18 @@ async function listAllHometowns() {
 async function listAllLocations() {
   const rows = await db
     .selectFrom('students')
-    .select(['currentLocation', 'currentLocationCoordinates'])
-    .distinctOn('currentLocation')
+    .select([
+      'currentLocation',
+      (eb) => coordinates(eb, 'currentLocationCoordinates').as('coordinates'),
+      (eb) => eb.fn.countAll().as('count'),
+    ])
+    .groupBy([
+      'currentLocation',
+      (eb) => coordinates(eb, 'currentLocationCoordinates'),
+    ])
     .where('currentLocation', 'is not', null)
     .where('currentLocationCoordinates', 'is not', null)
+    .orderBy('count', 'desc')
     .orderBy('currentLocation', 'asc')
     .execute();
 
@@ -213,52 +280,49 @@ async function listAllLocations() {
   // that have the same coordinates. We should figure out a way to do this
   // unique check in the database while still maintaining our sort order.
 
-  const set = new Set<string>();
-
-  const locations: Array<{ coordinates: string; name: string }> = [];
+  const map: Record<
+    string,
+    { coordinates: string; count: number; name: string }
+  > = {};
 
   rows.forEach((row) => {
-    const { x, y } = row.currentLocationCoordinates!;
+    if (row.coordinates in map) {
+      map[row.coordinates].count += Number(row.count);
 
-    const coordinates = x + ',' + y;
-
-    if (set.has(coordinates)) {
       return;
     }
 
-    set.add(coordinates);
-
-    locations.push({
-      coordinates,
+    map[row.coordinates] = {
+      coordinates: row.coordinates,
+      count: Number(row.count),
       name: row.currentLocation!,
-    });
+    };
   });
+
+  const locations = Object.values(map).sort((a, b) => b.count - a.count);
 
   return locations;
 }
 
 async function listAllSchools() {
-  const companies = await db
+  const schools = await db
     .selectFrom('schools')
-    .select(['id', 'name'])
-    .where((eb) => {
-      return eb.or([
-        eb.exists(() => {
-          return eb
-            .selectFrom('educations')
-            .whereRef('educations.schoolId', '=', 'schools.id');
-        }),
-        eb.exists(() => {
-          return eb
-            .selectFrom('students')
-            .whereRef('students.schoolId', '=', 'schools.id');
-        }),
-      ]);
-    })
-    .orderBy('name', 'asc')
+    .leftJoin('students', 'students.schoolId', 'schools.id')
+    .leftJoin('educations', 'educations.schoolId', 'schools.id')
+    .select([
+      'schools.id',
+      'schools.name',
+      (eb) => {
+        return eb.fn.count('students.id').distinct().as('count');
+      },
+    ])
+    .groupBy('schools.id')
+    .having((eb) => eb.fn.count('students.id').distinct(), '>', 0)
+    .orderBy('count', 'desc')
+    .orderBy('schools.name', 'asc')
     .execute();
 
-  return companies;
+  return schools;
 }
 
 export function ErrorBoundary() {
@@ -462,7 +526,7 @@ function CompanyList() {
           <FilterItem
             checked={selectedCompany === company.id}
             key={company.id}
-            label={company.name}
+            label={`${company.name} (${company.count})`}
             name="company"
             value={company.id}
           />
@@ -532,7 +596,7 @@ function EthnicityList() {
           <FilterItem
             checked={selectedEthnicity === ethnicity.code}
             key={ethnicity.code}
-            label={ethnicity.flagEmoji + ' ' + ethnicity.demonym}
+            label={`${ethnicity.flagEmoji} ${ethnicity.demonym} (${ethnicity.count})`}
             name="ethnicity"
             value={ethnicity.code}
           />
@@ -544,21 +608,15 @@ function EthnicityList() {
 
 function GraduationYearFilter() {
   const [searchParams] = useSearchParams();
+  const { allGraduationYears } = useLoaderData<typeof loader>();
 
   const graduationYears = searchParams.getAll('graduationYear');
 
-  const lowestYear = 2018;
-  const currentYear = new Date().getFullYear();
-
-  const years = Array.from({ length: currentYear + 4 - lowestYear }, (_, i) => {
-    return lowestYear + i;
-  });
-
-  const options: FilterValue[] = years.map((year, i) => {
+  const options: FilterValue[] = allGraduationYears.map((value, i) => {
     return {
       color: ACCENT_COLORS[i % ACCENT_COLORS.length],
-      label: year.toString(),
-      value: year.toString(),
+      label: value.graduationYear,
+      value: value.graduationYear,
     };
   });
 
@@ -575,12 +633,16 @@ function GraduationYearFilter() {
       <FilterPopover>
         <ul className="overflow-auto">
           {options.reverse().map((option) => {
+            const year = allGraduationYears.find((year) => {
+              return year.graduationYear === option.value;
+            });
+
             return (
               <FilterItem
                 checked={graduationYears.includes(option.value)}
                 color={option.color}
                 key={option.value}
-                label={option.label}
+                label={`${option.label} (${year?.count || 0})`}
                 name="graduationYear"
                 value={option.value}
               />
@@ -652,7 +714,7 @@ function HometownList() {
           <FilterItem
             checked={hometown.coordinates === appliedHometown}
             key={hometown.coordinates}
-            label={hometown.name}
+            label={`${hometown.name} (${hometown.count})`}
             name="hometown"
             value={hometown.coordinates}
           />
@@ -722,7 +784,7 @@ function LocationList() {
           <FilterItem
             checked={location.coordinates === appliedLocation}
             key={location.coordinates}
-            label={location.name}
+            label={`${location.name} (${location.count})`}
             name="location"
             value={location.coordinates}
           />
@@ -792,7 +854,7 @@ function SchoolList() {
           <FilterItem
             checked={selectedSchool === school.id}
             key={school.id}
-            label={school.name}
+            label={`${school.name} (${school.count})`}
             name="school"
             value={school.id}
           />
