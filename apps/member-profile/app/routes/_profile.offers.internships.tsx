@@ -482,8 +482,10 @@ function LocationList() {
   let filteredLocations = allLocations;
 
   if (search) {
+    const regex = new RegExp(toEscapedString(search), 'i');
+
     filteredLocations = allLocations.filter((location) => {
-      return new RegExp(toEscapedString(search), 'i').test(location);
+      return regex.test(location);
     });
   }
 
