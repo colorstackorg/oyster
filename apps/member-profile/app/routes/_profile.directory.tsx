@@ -241,27 +241,24 @@ async function listAllLocations() {
 }
 
 async function listAllSchools() {
-  const companies = await db
+  const schools = await db
     .selectFrom('schools')
-    .select(['id', 'name'])
-    .where((eb) => {
-      return eb.or([
-        eb.exists(() => {
-          return eb
-            .selectFrom('educations')
-            .whereRef('educations.schoolId', '=', 'schools.id');
-        }),
-        eb.exists(() => {
-          return eb
-            .selectFrom('students')
-            .whereRef('students.schoolId', '=', 'schools.id');
-        }),
-      ]);
-    })
-    .orderBy('name', 'asc')
+    .leftJoin('students', 'students.schoolId', 'schools.id')
+    .leftJoin('educations', 'educations.schoolId', 'schools.id')
+    .select([
+      'schools.id',
+      'schools.name',
+      (eb) => {
+        return eb.fn.count('students.id').distinct().as('count');
+      },
+    ])
+    .groupBy('schools.id')
+    .having((eb) => eb.fn.count('students.id').distinct(), '>', 0)
+    .orderBy('count', 'desc')
+    .orderBy('schools.name', 'asc')
     .execute();
 
-  return companies;
+  return schools;
 }
 
 export function ErrorBoundary() {
@@ -795,7 +792,7 @@ function SchoolList() {
           <FilterItem
             checked={selectedSchool === school.id}
             key={school.id}
-            label={school.name}
+            label={`${school.name} (${school.count})`}
             name="school"
             value={school.id}
           />
