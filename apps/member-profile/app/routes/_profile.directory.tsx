@@ -171,6 +171,10 @@ async function listAllHometowns() {
     .orderBy('hometown', 'asc')
     .execute();
 
+  // This is janky, but we're doing this because there are some hometowns
+  // that have the same coordinates. We should figure out a way to do this
+  // unique check in the database while still maintaining our sort order.
+
   const set = new Set<string>();
 
   const hometowns: Array<{ coordinates: string; name: string }> = [];
@@ -204,6 +208,10 @@ async function listAllLocations() {
     .where('currentLocationCoordinates', 'is not', null)
     .orderBy('currentLocation', 'asc')
     .execute();
+
+  // This is janky, but we're doing this because there are some locations
+  // that have the same coordinates. We should figure out a way to do this
+  // unique check in the database while still maintaining our sort order.
 
   const set = new Set<string>();
 
