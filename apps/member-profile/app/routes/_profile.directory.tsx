@@ -137,15 +137,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
 async function listAllCompanies() {
   const companies = await db
     .selectFrom('companies')
-    .select(['id', 'name'])
-    .where((eb) => {
-      return eb.exists(() => {
-        return eb
-          .selectFrom('workExperiences')
-          .whereRef('workExperiences.companyId', '=', 'companies.id');
-      });
-    })
-    .orderBy('name', 'asc')
+    .leftJoin('workExperiences', 'workExperiences.companyId', 'companies.id')
+    .select([
+      'companies.id',
+      'companies.name',
+      (eb) => {
+        return eb.fn.count('workExperiences.studentId').distinct().as('count');
+      },
+    ])
+    .groupBy('companies.id')
+    .having((eb) => eb.fn.count('workExperiences.studentId').distinct(), '>', 0)
+    .orderBy('count', 'desc')
+    .orderBy('companies.name', 'asc')
     .execute();
 
   return companies;
@@ -462,7 +465,7 @@ function CompanyList() {
           <FilterItem
             checked={selectedCompany === company.id}
             key={company.id}
-            label={company.name}
+            label={`${company.name} (${company.count})`}
             name="company"
             value={company.id}
           />
