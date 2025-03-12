@@ -689,7 +689,7 @@ function HometownFilter() {
         Hometown
       </FilterButton>
 
-      <FilterPopover>
+      <FilterPopover height="max-h-80">
         <FilterSearch />
         <HometownList />
       </FilterPopover>
@@ -719,19 +719,26 @@ function HometownList() {
   const appliedHometown = searchParams.get('hometown');
 
   return (
-    <ul className="overflow-auto">
-      {filteredHometowns.map((hometown) => {
-        return (
-          <FilterItem
-            checked={hometown.coordinates === appliedHometown}
-            key={hometown.coordinates}
-            label={`${hometown.name} (${hometown.count})`}
-            name="hometown"
-            value={hometown.coordinates}
-          />
-        );
-      })}
-    </ul>
+    <>
+      <ul className="overflow-auto">
+        {filteredHometowns.map((hometown) => {
+          return (
+            <FilterItem
+              checked={hometown.coordinates === appliedHometown}
+              key={hometown.coordinates}
+              label={`${hometown.name} (${hometown.count})`}
+              name="hometown"
+              value={hometown.coordinates}
+            />
+          );
+        })}
+      </ul>
+
+      <FilterEmptyMessage>
+        Results will include members within a 25 mile radius of the selected
+        location.
+      </FilterEmptyMessage>
+    </>
   );
 }
 
@@ -759,7 +766,7 @@ function LocationFilter() {
         Location
       </FilterButton>
 
-      <FilterPopover>
+      <FilterPopover height="max-h-80">
         <FilterSearch />
         <LocationList />
       </FilterPopover>
@@ -789,19 +796,26 @@ function LocationList() {
   const appliedLocation = searchParams.get('location');
 
   return (
-    <ul className="overflow-auto">
-      {filteredLocations.map((location) => {
-        return (
-          <FilterItem
-            checked={location.coordinates === appliedLocation}
-            key={location.coordinates}
-            label={`${location.name} (${location.count})`}
-            name="location"
-            value={location.coordinates}
-          />
-        );
-      })}
-    </ul>
+    <>
+      <ul className="overflow-auto">
+        {filteredLocations.map((location) => {
+          return (
+            <FilterItem
+              checked={location.coordinates === appliedLocation}
+              key={location.coordinates}
+              label={`${location.name} (${location.count})`}
+              name="location"
+              value={location.coordinates}
+            />
+          );
+        })}
+      </ul>
+
+      <FilterEmptyMessage>
+        Results will include members within a 25 mile radius of the selected
+        location.
+      </FilterEmptyMessage>
+    </>
   );
 }
 

@@ -153,8 +153,8 @@ async function seed(trx: Transaction<DB>) {
   const memberId3 = id();
 
   const memberEmail1 = email;
-  const memberEmail2 = 'savannah@james.com';
-  const memberEmail3 = 'lebron@james.com';
+  const memberEmail2 = 'lebron@james.com';
+  const memberEmail3 = 'savannah@james.com';
 
   await trx
     .insertInto('studentEmails')
