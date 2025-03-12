@@ -84,6 +84,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const [
     allCompanies,
     allEthnicities,
+    allGraduationYears,
     allHometowns,
     allLocations,
     allSchools,
@@ -91,6 +92,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   ] = await Promise.all([
     listAllCompanies(),
     listAllEthnicities(),
+    listAllGraduationYears(),
     listAllHometowns(),
     listAllLocations(),
     listAllSchools(),
@@ -124,6 +126,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     allCompanies,
     allEthnicities,
+    allGraduationYears,
     allHometowns,
     allLocations,
     allSchools,
@@ -191,6 +194,17 @@ async function listAllEthnicities() {
   const ethnicities = rows as Ethnicity[];
 
   return ethnicities;
+}
+
+async function listAllGraduationYears() {
+  const years = await db
+    .selectFrom('students')
+    .select(['graduationYear', (eb) => eb.fn.countAll().as('count')])
+    .groupBy('graduationYear')
+    .orderBy('graduationYear', 'asc')
+    .execute();
+
+  return years;
 }
 
 async function listAllHometowns() {
@@ -573,21 +587,15 @@ function EthnicityList() {
 
 function GraduationYearFilter() {
   const [searchParams] = useSearchParams();
+  const { allGraduationYears } = useLoaderData<typeof loader>();
 
   const graduationYears = searchParams.getAll('graduationYear');
 
-  const lowestYear = 2018;
-  const currentYear = new Date().getFullYear();
-
-  const years = Array.from({ length: currentYear + 4 - lowestYear }, (_, i) => {
-    return lowestYear + i;
-  });
-
-  const options: FilterValue[] = years.map((year, i) => {
+  const options: FilterValue[] = allGraduationYears.map((value, i) => {
     return {
       color: ACCENT_COLORS[i % ACCENT_COLORS.length],
-      label: year.toString(),
-      value: year.toString(),
+      label: value.graduationYear,
+      value: value.graduationYear,
     };
   });
 
@@ -604,12 +612,16 @@ function GraduationYearFilter() {
       <FilterPopover>
         <ul className="overflow-auto">
           {options.reverse().map((option) => {
+            const year = allGraduationYears.find((year) => {
+              return year.graduationYear === option.value;
+            });
+
             return (
               <FilterItem
                 checked={graduationYears.includes(option.value)}
                 color={option.color}
                 key={option.value}
-                label={option.label}
+                label={`${option.label} (${year?.count || 0})`}
                 name="graduationYear"
                 value={option.value}
               />
