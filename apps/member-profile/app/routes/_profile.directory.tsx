@@ -11,12 +11,10 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import React from 'react';
+import React, { useState } from 'react';
 import { BookOpen, Briefcase, Calendar, Globe, MapPin } from 'react-feather';
-import { type z } from 'zod';
+import { z } from 'zod';
 
-import { getCityDetails } from '@oyster/core/location';
-import { useAutocompletedCities } from '@oyster/core/location/ui';
 import { listMembersInDirectory } from '@oyster/core/member-profile/server';
 import {
   ListMembersInDirectoryWhere,
@@ -58,6 +56,14 @@ const DirectorySearchParams = ListSearchParams.pick({
 
 type DirectorySearchParams = z.infer<typeof DirectorySearchParams>;
 
+const Coordinates = z
+  .string()
+  .trim()
+  .min(1)
+  .nullable()
+  .transform((value) => value?.split(',')?.map(Number))
+  .catch(null);
+
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
@@ -65,72 +71,67 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const values = Object.fromEntries(url.searchParams);
 
-  const searchParams = DirectorySearchParams.parse({
+  const searchParams = DirectorySearchParams.extend({
+    hometown: Coordinates,
+    location: Coordinates,
+  }).parse({
     ...values,
     graduationYear: url.searchParams.getAll('graduationYear'),
   });
 
-  const { limit, page, ...where } = searchParams;
+  const { hometown, location, limit, page, ...where } = searchParams;
 
   const [
-    appliedHometown,
-    appliedLocation,
     allCompanies,
     allEthnicities,
+    allHometowns,
+    allLocations,
     allSchools,
+    { members, totalCount },
   ] = await Promise.all([
-    getAppliedCity(searchParams.hometown || ''),
-    getAppliedCity(searchParams.location || ''),
     listAllCompanies(),
     listAllEthnicities(),
+    listAllHometowns(),
+    listAllLocations(),
     listAllSchools(),
+    listMembersInDirectory({
+      limit,
+      page,
+      where: {
+        ...where,
+        ...(searchParams.joinedDirectoryDate &&
+          run(() => {
+            const date = dayjs(searchParams.joinedDirectoryDate).tz(
+              'America/Los_Angeles',
+              true
+            );
+
+            return {
+              joinedDirectoryAfter: date.startOf('day').toDate(),
+              joinedDirectoryBefore: date.endOf('day').toDate(),
+            };
+          })),
+        hometown: null,
+        hometownLatitude: hometown?.[1],
+        hometownLongitude: hometown?.[0],
+        location: null,
+        locationLatitude: location?.[1],
+        locationLongitude: location?.[0],
+      },
+    }),
   ]);
-
-  const { members, totalCount } = await listMembersInDirectory({
-    limit,
-    page,
-    where: {
-      ...where,
-      ...(searchParams.joinedDirectoryDate &&
-        run(() => {
-          const date = dayjs(searchParams.joinedDirectoryDate).tz(
-            'America/Los_Angeles',
-            true
-          );
-
-          return {
-            joinedDirectoryAfter: date.startOf('day').toDate(),
-            joinedDirectoryBefore: date.endOf('day').toDate(),
-          };
-        })),
-      hometownLatitude: appliedHometown?.latitude || null,
-      hometownLongitude: appliedHometown?.longitude || null,
-      locationLatitude: appliedLocation?.latitude || null,
-      locationLongitude: appliedLocation?.longitude || null,
-    },
-  });
 
   return json({
     allCompanies,
     allEthnicities,
+    allHometowns,
+    allLocations,
     allSchools,
-    appliedHometown,
-    appliedLocation,
     limit: searchParams.limit,
     members,
     page: searchParams.page,
     totalCount,
   });
-}
-
-async function getAppliedCity(id: string) {
-  if (!id) {
-    return null;
-  }
-
-  const details = await getCityDetails(id);
-
-  return details;
 }
 
 async function listAllCompanies() {
@@ -158,6 +159,50 @@ async function listAllEthnicities() {
     .execute();
 
   return ethnicities;
+}
+
+async function listAllHometowns() {
+  const rows = await db
+    .selectFrom('students')
+    .select(['hometown', 'hometownCoordinates'])
+    .distinctOn('hometown')
+    .where('hometown', 'is not', null)
+    .where('hometownCoordinates', 'is not', null)
+    .orderBy('hometown', 'asc')
+    .execute();
+
+  const hometowns = rows.map((row) => {
+    const { x, y } = row.hometownCoordinates!;
+
+    return {
+      coordinates: x + ',' + y,
+      name: row.hometown!,
+    };
+  });
+
+  return hometowns;
+}
+
+async function listAllLocations() {
+  const rows = await db
+    .selectFrom('students')
+    .select(['currentLocation', 'currentLocationCoordinates'])
+    .distinctOn('currentLocation')
+    .where('currentLocation', 'is not', null)
+    .where('currentLocationCoordinates', 'is not', null)
+    .orderBy('currentLocation', 'asc')
+    .execute();
+
+  const locations = rows.map((row) => {
+    const { x, y } = row.currentLocationCoordinates!;
+
+    return {
+      coordinates: x + ',' + y,
+      name: row.currentLocation!,
+    };
+  });
+
+  return locations;
 }
 
 async function listAllSchools() {
@@ -210,13 +255,13 @@ export default function DirectoryPage() {
 }
 
 function DirectoryFilterGroup() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
-  const showAll =
+  const [showAll, setShowAll] = useState(
     !!searchParams.get('ethnicity') ||
-    !!searchParams.get('graduationYear') ||
-    !!searchParams.get('hometown') ||
-    searchParams.get('showAll') === 'true';
+      !!searchParams.get('graduationYear') ||
+      !!searchParams.get('hometown')
+  );
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -234,11 +279,7 @@ function DirectoryFilterGroup() {
         <button
           className="ml-1 text-sm hover:underline"
           onClick={() => {
-            setSearchParams((params) => {
-              params.set('showAll', 'true');
-
-              return params;
-            });
+            setShowAll(true);
           }}
           type="button"
         >
@@ -516,17 +557,22 @@ function GraduationYearFilter() {
 }
 
 function HometownFilter() {
-  const { appliedHometown } = useLoaderData<typeof loader>();
+  const [searchParams] = useSearchParams();
+  const { allHometowns } = useLoaderData<typeof loader>();
 
-  const selectedValues: FilterValue[] = [];
+  const hometown = searchParams.get('hometown');
 
-  if (appliedHometown) {
-    selectedValues.push({
+  const options: FilterValue[] = allHometowns.map((value) => {
+    return {
       color: 'pink-100',
-      label: appliedHometown.name,
-      value: appliedHometown.id,
-    });
-  }
+      label: value.name,
+      value: value.coordinates,
+    };
+  });
+
+  const selectedValues = options.filter((value) => {
+    return hometown === value.value;
+  });
 
   return (
     <FilterRoot>
@@ -535,7 +581,7 @@ function HometownFilter() {
       </FilterButton>
 
       <FilterPopover>
-        <FilterSearch placeholder="Search by city..." />
+        <FilterSearch />
         <HometownList />
       </FilterPopover>
     </FilterRoot>
@@ -544,32 +590,25 @@ function HometownFilter() {
 
 function HometownList() {
   const [searchParams] = useSearchParams();
-  const { search } = useFilterContext();
-  const cities = useAutocompletedCities(search);
+  const { allHometowns } = useLoaderData<typeof loader>();
 
-  if (!cities) {
-    return <FilterEmptyMessage>Filter within 25 mi...</FilterEmptyMessage>;
+  if (!allHometowns.length) {
+    return <FilterEmptyMessage>No hometowns found.</FilterEmptyMessage>;
   }
 
-  if (!cities.length) {
-    return <FilterEmptyMessage>No cities found.</FilterEmptyMessage>;
-  }
-
-  const hometown = searchParams.get('hometown');
+  const appliedHometown = searchParams.get('hometown');
 
   return (
     <ul className="overflow-auto">
-      {cities.map((city) => {
+      {allHometowns.map((hometown) => {
         return (
-          <React.Fragment key={city.id}>
-            <FilterItem
-              checked={city.id === hometown}
-              key={city.id}
-              label={city.description}
-              name="hometown"
-              value={city.id}
-            />
-          </React.Fragment>
+          <FilterItem
+            checked={hometown.coordinates === appliedHometown}
+            key={hometown.coordinates}
+            label={hometown.name}
+            name="hometown"
+            value={hometown.coordinates}
+          />
         );
       })}
     </ul>
@@ -577,17 +616,22 @@ function HometownList() {
 }
 
 function LocationFilter() {
-  const { appliedLocation } = useLoaderData<typeof loader>();
+  const [searchParams] = useSearchParams();
+  const { allLocations } = useLoaderData<typeof loader>();
 
-  const selectedValues: FilterValue[] = [];
+  const location = searchParams.get('location');
 
-  if (appliedLocation) {
-    selectedValues.push({
+  const options: FilterValue[] = allLocations.map((value) => {
+    return {
       color: 'pink-100',
-      label: appliedLocation.name,
-      value: appliedLocation.id,
-    });
-  }
+      label: value.name,
+      value: value.coordinates,
+    };
+  });
+
+  const selectedValues = options.filter((value) => {
+    return location === value.value;
+  });
 
   return (
     <FilterRoot>
@@ -596,7 +640,7 @@ function LocationFilter() {
       </FilterButton>
 
       <FilterPopover>
-        <FilterSearch placeholder="Search by city..." />
+        <FilterSearch />
         <LocationList />
       </FilterPopover>
     </FilterRoot>
@@ -605,32 +649,25 @@ function LocationFilter() {
 
 function LocationList() {
   const [searchParams] = useSearchParams();
-  const { search } = useFilterContext();
-  const cities = useAutocompletedCities(search);
+  const { allLocations } = useLoaderData<typeof loader>();
 
-  if (!cities) {
-    return <FilterEmptyMessage>Filter within 25 mi...</FilterEmptyMessage>;
+  if (!allLocations.length) {
+    return <FilterEmptyMessage>No locations found.</FilterEmptyMessage>;
   }
 
-  if (!cities.length) {
-    return <FilterEmptyMessage>No cities found.</FilterEmptyMessage>;
-  }
-
-  const location = searchParams.get('location');
+  const appliedLocation = searchParams.get('location');
 
   return (
     <ul className="overflow-auto">
-      {cities.map((city) => {
+      {allLocations.map((location) => {
         return (
-          <React.Fragment key={city.id}>
-            <FilterItem
-              checked={city.id === location}
-              key={city.id}
-              label={city.description}
-              name="location"
-              value={city.id}
-            />
-          </React.Fragment>
+          <FilterItem
+            checked={location.coordinates === appliedLocation}
+            key={location.coordinates}
+            label={location.name}
+            name="location"
+            value={location.coordinates}
+          />
         );
       })}
     </ul>
