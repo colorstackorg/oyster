@@ -23,13 +23,7 @@ import {
 } from '@oyster/core/member-profile/ui';
 import { type DB, db } from '@oyster/db';
 import { ISO8601Date } from '@oyster/types';
-import {
-  ACCENT_COLORS,
-  Dashboard,
-  Pagination,
-  ProfilePicture,
-  Text,
-} from '@oyster/ui';
+import { Dashboard, Pagination, ProfilePicture, Text } from '@oyster/ui';
 import {
   ClearFiltersButton,
   FilterButton,
@@ -208,7 +202,7 @@ async function listAllGraduationYears() {
     .select(['graduationYear', (eb) => eb.fn.countAll().as('count')])
     .where('students.joinedMemberDirectoryAt', 'is not', null)
     .groupBy('graduationYear')
-    .orderBy('graduationYear', 'asc')
+    .orderBy('graduationYear', 'desc')
     .execute();
 
   return years;
@@ -621,9 +615,9 @@ function GraduationYearFilter() {
 
   const graduationYears = searchParams.getAll('graduationYear');
 
-  const options: FilterValue[] = allGraduationYears.map((value, i) => {
+  const options: FilterValue[] = allGraduationYears.map((value) => {
     return {
-      color: ACCENT_COLORS[i % ACCENT_COLORS.length],
+      color: 'amber-100',
       label: value.graduationYear,
       value: value.graduationYear,
     };
@@ -641,19 +635,14 @@ function GraduationYearFilter() {
 
       <FilterPopover>
         <ul className="overflow-auto">
-          {options.reverse().map((option) => {
-            const year = allGraduationYears.find((year) => {
-              return year.graduationYear === option.value;
-            });
-
+          {allGraduationYears.map((year) => {
             return (
               <FilterItem
-                checked={graduationYears.includes(option.value)}
-                color={option.color}
-                key={option.value}
-                label={`${option.label} (${year?.count || 0})`}
+                checked={graduationYears.includes(year.graduationYear)}
+                key={year.graduationYear}
+                label={`${year.graduationYear} (${year.count})`}
                 name="graduationYear"
-                value={option.value}
+                value={year.graduationYear}
               />
             );
           })}
