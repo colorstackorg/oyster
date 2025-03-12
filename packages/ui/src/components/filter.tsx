@@ -178,11 +178,7 @@ export function FilterPopover({
 
 // Filter Search
 
-type FilterSearchProps = {
-  placeholder?: string;
-};
-
-export function FilterSearch({ placeholder = 'Search...' }: FilterSearchProps) {
+export function FilterSearch() {
   const { setSearch } = useContext(FilterContext);
 
   return (
@@ -194,7 +190,7 @@ export function FilterSearch({ placeholder = 'Search...' }: FilterSearchProps) {
       onChange={(e) => {
         setSearch(e.currentTarget.value);
       }}
-      placeholder={placeholder}
+      placeholder="Search..."
       type="text"
     />
   );
