@@ -63,9 +63,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const url = new URL(request.url);
 
-  const searchParams = DirectorySearchParams.parse(
-    Object.fromEntries(url.searchParams)
-  );
+  const values = Object.fromEntries(url.searchParams);
+
+  const searchParams = DirectorySearchParams.parse({
+    ...values,
+    graduationYear: url.searchParams.getAll('graduationYear'),
+  });
 
   const { limit, page, ...where } = searchParams;
 
@@ -117,7 +120,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     members,
     page: searchParams.page,
     totalCount,
-    url,
   });
 }
 
