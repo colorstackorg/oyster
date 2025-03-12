@@ -141,8 +141,8 @@ type Company = {
 async function listAllCompanies() {
   const rows = await db
     .selectFrom('workExperiences')
-    .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
-    .leftJoin('students', 'students.id', 'workExperiences.studentId')
+    .innerJoin('companies', 'companies.id', 'workExperiences.companyId')
+    .innerJoin('students', 'students.id', 'workExperiences.studentId')
     .select([
       'companies.id',
       'companies.name',
@@ -152,7 +152,6 @@ async function listAllCompanies() {
     ])
     .groupBy('companies.id')
     .where('students.joinedMemberDirectoryAt', 'is not', null)
-    .where('workExperiences.companyId', 'is not', null)
     .orderBy('count', 'desc')
     .orderBy('companies.name', 'asc')
     .execute();
@@ -309,18 +308,32 @@ async function listAllLocations() {
 async function listAllSchools() {
   const schools = await db
     .selectFrom('schools')
-    .leftJoin('students', 'students.schoolId', 'schools.id')
-    .leftJoin('educations', 'educations.schoolId', 'schools.id')
+    .innerJoin(
+      (eb) => {
+        return eb
+          .selectFrom('students')
+          .select(['students.id as studentId', 'schoolId'])
+          .where('joinedMemberDirectoryAt', 'is not', null)
+          .union(
+            // This union automatically removes duplicates...
+            eb
+              .selectFrom('educations')
+              .innerJoin('students', 'students.id', 'educations.studentId')
+              .select(['educations.studentId', 'educations.schoolId'])
+              .where('students.joinedMemberDirectoryAt', 'is not', null)
+          )
+          .as('combined');
+      },
+      (join) => {
+        return join.onRef('schools.id', '=', 'combined.schoolId');
+      }
+    )
     .select([
       'schools.id',
       'schools.name',
-      (eb) => {
-        return eb.fn.count('students.id').distinct().as('count');
-      },
+      (eb) => eb.fn.count('combined.studentId').as('count'),
     ])
-    .where('students.joinedMemberDirectoryAt', 'is not', null)
     .groupBy('schools.id')
-    .having((eb) => eb.fn.count('students.id').distinct(), '>', 0)
     .orderBy('count', 'desc')
     .orderBy('schools.name', 'asc')
     .execute();
