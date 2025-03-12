@@ -315,6 +315,7 @@ async function listAllSchools() {
           .select(['students.id as studentId', 'schoolId'])
           .where('joinedMemberDirectoryAt', 'is not', null)
           .union(
+            // This union automatically removes duplicates...
             eb
               .selectFrom('educations')
               .innerJoin('students', 'students.id', 'educations.studentId')
@@ -330,7 +331,7 @@ async function listAllSchools() {
     .select([
       'schools.id',
       'schools.name',
-      (eb) => eb.fn.count('combined.studentId').distinct().as('count'),
+      (eb) => eb.fn.count('combined.studentId').as('count'),
     ])
     .groupBy('schools.id')
     .orderBy('count', 'desc')
