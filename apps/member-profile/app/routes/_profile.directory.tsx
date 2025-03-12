@@ -171,13 +171,25 @@ async function listAllHometowns() {
     .orderBy('hometown', 'asc')
     .execute();
 
-  const hometowns = rows.map((row) => {
+  const set = new Set<string>();
+
+  const hometowns: Array<{ coordinates: string; name: string }> = [];
+
+  rows.forEach((row) => {
     const { x, y } = row.hometownCoordinates!;
 
-    return {
+    const coordinates = x + ',' + y;
+
+    if (set.has(coordinates)) {
+      return;
+    }
+
+    set.add(coordinates);
+
+    hometowns.push({
       coordinates: x + ',' + y,
       name: row.hometown!,
-    };
+    });
   });
 
   return hometowns;
@@ -193,13 +205,25 @@ async function listAllLocations() {
     .orderBy('currentLocation', 'asc')
     .execute();
 
-  const locations = rows.map((row) => {
+  const set = new Set<string>();
+
+  const locations: Array<{ coordinates: string; name: string }> = [];
+
+  rows.forEach((row) => {
     const { x, y } = row.currentLocationCoordinates!;
 
-    return {
+    const coordinates = x + ',' + y;
+
+    if (set.has(coordinates)) {
+      return;
+    }
+
+    set.add(coordinates);
+
+    locations.push({
       coordinates: x + ',' + y,
       name: row.currentLocation!,
-    };
+    });
   });
 
   return locations;
