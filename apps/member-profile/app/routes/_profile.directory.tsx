@@ -11,7 +11,7 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { sql } from 'kysely';
+import { type ExpressionBuilder, sql } from 'kysely';
 import { useState } from 'react';
 import { BookOpen, Briefcase, Calendar, Globe, MapPin } from 'react-feather';
 import { z } from 'zod';
@@ -21,7 +21,7 @@ import {
   ListMembersInDirectoryWhere,
   ListSearchParams,
 } from '@oyster/core/member-profile/ui';
-import { db } from '@oyster/db';
+import { type DB, db } from '@oyster/db';
 import { ISO8601Date } from '@oyster/types';
 import {
   ACCENT_COLORS,
@@ -208,22 +208,22 @@ async function listAllGraduationYears() {
   return years;
 }
 
+function coordinates(
+  eb: ExpressionBuilder<DB, 'students'>,
+  column: 'currentLocationCoordinates' | 'hometownCoordinates'
+) {
+  return sql<string>`concat(${eb.ref(column)}[0], ',', ${eb.ref(column)}[1])`;
+}
+
 async function listAllHometowns() {
   const rows = await db
     .selectFrom('students')
     .select([
       'hometown',
-      (eb) =>
-        sql<string>`concat(${eb.ref('hometownCoordinates')}[0], ',', ${eb.ref('hometownCoordinates')}[1])`.as(
-          'coordinates'
-        ),
+      (eb) => coordinates(eb, 'hometownCoordinates').as('coordinates'),
       (eb) => eb.fn.countAll().as('count'),
     ])
-    .groupBy([
-      'hometown',
-      (eb) =>
-        sql<string>`concat(${eb.ref('hometownCoordinates')}[0], ',', ${eb.ref('hometownCoordinates')}[1])`,
-    ])
+    .groupBy(['hometown', (eb) => coordinates(eb, 'hometownCoordinates')])
     .where('hometown', 'is not', null)
     .where('hometownCoordinates', 'is not', null)
     .orderBy('count', 'desc')
@@ -263,16 +263,12 @@ async function listAllLocations() {
     .selectFrom('students')
     .select([
       'currentLocation',
-      (eb) =>
-        sql<string>`concat(${eb.ref('currentLocationCoordinates')}[0], ',', ${eb.ref('currentLocationCoordinates')}[1])`.as(
-          'coordinates'
-        ),
+      (eb) => coordinates(eb, 'currentLocationCoordinates').as('coordinates'),
       (eb) => eb.fn.countAll().as('count'),
     ])
     .groupBy([
       'currentLocation',
-      (eb) =>
-        sql<string>`concat(${eb.ref('currentLocationCoordinates')}[0], ',', ${eb.ref('currentLocationCoordinates')}[1])`,
+      (eb) => coordinates(eb, 'currentLocationCoordinates'),
     ])
     .where('currentLocation', 'is not', null)
     .where('currentLocationCoordinates', 'is not', null)
