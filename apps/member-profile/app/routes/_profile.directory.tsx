@@ -171,13 +171,29 @@ async function listAllHometowns() {
     .orderBy('hometown', 'asc')
     .execute();
 
-  const hometowns = rows.map((row) => {
+  // This is janky, but we're doing this because there are some hometowns
+  // that have the same coordinates. We should figure out a way to do this
+  // unique check in the database while still maintaining our sort order.
+
+  const set = new Set<string>();
+
+  const hometowns: Array<{ coordinates: string; name: string }> = [];
+
+  rows.forEach((row) => {
     const { x, y } = row.hometownCoordinates!;
 
-    return {
-      coordinates: x + ',' + y,
+    const coordinates = x + ',' + y;
+
+    if (set.has(coordinates)) {
+      return;
+    }
+
+    set.add(coordinates);
+
+    hometowns.push({
+      coordinates,
       name: row.hometown!,
-    };
+    });
   });
 
   return hometowns;
@@ -193,13 +209,29 @@ async function listAllLocations() {
     .orderBy('currentLocation', 'asc')
     .execute();
 
-  const locations = rows.map((row) => {
+  // This is janky, but we're doing this because there are some locations
+  // that have the same coordinates. We should figure out a way to do this
+  // unique check in the database while still maintaining our sort order.
+
+  const set = new Set<string>();
+
+  const locations: Array<{ coordinates: string; name: string }> = [];
+
+  rows.forEach((row) => {
     const { x, y } = row.currentLocationCoordinates!;
 
-    return {
-      coordinates: x + ',' + y,
+    const coordinates = x + ',' + y;
+
+    if (set.has(coordinates)) {
+      return;
+    }
+
+    set.add(coordinates);
+
+    locations.push({
+      coordinates,
       name: row.currentLocation!,
-    };
+    });
   });
 
   return locations;
@@ -410,8 +442,10 @@ function CompanyList() {
   let filteredCompanies = allCompanies;
 
   if (search) {
+    const regex = new RegExp(toEscapedString(search), 'i');
+
     filteredCompanies = allCompanies.filter((company) => {
-      return new RegExp(toEscapedString(search), 'i').test(company.name);
+      return regex.test(company.name);
     });
   }
 
@@ -478,8 +512,10 @@ function EthnicityList() {
   let filteredEthnicities = allEthnicities;
 
   if (search) {
+    const regex = new RegExp(toEscapedString(search), 'i');
+
     filteredEthnicities = allEthnicities.filter((ethnicity) => {
-      return new RegExp(toEscapedString(search), 'i').test(ethnicity.demonym);
+      return regex.test(ethnicity.demonym);
     });
   }
 
@@ -596,8 +632,10 @@ function HometownList() {
   let filteredHometowns = allHometowns;
 
   if (search) {
+    const regex = new RegExp(toEscapedString(search), 'i');
+
     filteredHometowns = allHometowns.filter((hometown) => {
-      return new RegExp(toEscapedString(search), 'i').test(hometown.name);
+      return regex.test(hometown.name);
     });
   }
 
@@ -664,8 +702,10 @@ function LocationList() {
   let filteredLocations = allLocations;
 
   if (search) {
+    const regex = new RegExp(toEscapedString(search), 'i');
+
     filteredLocations = allLocations.filter((location) => {
-      return new RegExp(toEscapedString(search), 'i').test(location.name);
+      return regex.test(location.name);
     });
   }
 
@@ -732,8 +772,10 @@ function SchoolList() {
   let filteredSchools = allSchools;
 
   if (search) {
+    const regex = new RegExp(toEscapedString(search), 'i');
+
     filteredSchools = allSchools.filter((school) => {
-      return new RegExp(toEscapedString(search), 'i').test(school.name);
+      return regex.test(school.name);
     });
   }
 

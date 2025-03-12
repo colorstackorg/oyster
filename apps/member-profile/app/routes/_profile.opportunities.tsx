@@ -584,8 +584,10 @@ function TagList() {
   const { allTags, appliedTags } = useLoaderData<typeof loader>();
   const { search } = useFilterContext();
 
+  const regex = new RegExp(toEscapedString(search), 'i');
+
   const filteredTags = allTags.filter((tag) => {
-    return new RegExp(toEscapedString(search), 'i').test(tag.name);
+    return regex.test(tag.name);
   });
 
   if (!filteredTags.length) {

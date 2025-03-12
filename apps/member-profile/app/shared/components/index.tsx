@@ -132,8 +132,10 @@ function CompanyFilterList({
 }: CompanyFilterProps) {
   const { search } = useFilterContext();
 
+  const regex = new RegExp(toEscapedString(search), 'i');
+
   const filteredCompanies = allCompanies.filter((company) => {
-    return new RegExp(toEscapedString(search), 'i').test(company.name);
+    return regex.test(company.name);
   });
 
   if (!filteredCompanies.length) {
