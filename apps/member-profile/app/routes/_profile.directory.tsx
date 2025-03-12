@@ -4,7 +4,6 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import {
-  Form,
   generatePath,
   Link,
   Outlet,
@@ -12,39 +11,24 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { useContext, useState } from 'react';
-import {
-  Briefcase,
-  Calendar,
-  Filter,
-  Flag,
-  Globe,
-  MapPin,
-  Plus,
-} from 'react-feather';
-import { match } from 'ts-pattern';
+import React from 'react';
+import { Briefcase, Calendar, Globe, MapPin } from 'react-feather';
 import { type z } from 'zod';
 
-import { SchoolCombobox } from '@oyster/core/education/ui';
-import { CityCombobox } from '@oyster/core/location/ui';
+import { getCityDetails } from '@oyster/core/location';
+import { useAutocompletedCities } from '@oyster/core/location/ui';
 import { listMembersInDirectory } from '@oyster/core/member-profile/server';
 import {
   ListMembersInDirectoryWhere,
   ListSearchParams,
 } from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
-import { type ExtractValue, ISO8601Date } from '@oyster/types';
+import { ISO8601Date } from '@oyster/types';
 import {
   ACCENT_COLORS,
-  Button,
   Dashboard,
-  Dropdown,
-  DropdownContext,
-  IconButton,
   Pagination,
-  Pill,
   ProfilePicture,
-  Select,
   Text,
 } from '@oyster/ui';
 import {
@@ -58,26 +42,12 @@ import {
   type FilterValue,
   useFilterContext,
 } from '@oyster/ui/filter';
-import { run, toTitleCase } from '@oyster/utils';
+import { run } from '@oyster/utils';
 
-import { CompanyCombobox } from '@/shared/components/company-combobox';
-import { EthnicityCombobox } from '@/shared/components/ethnicity-combobox';
 import { Route } from '@/shared/constants';
 import { useMixpanelTracker } from '@/shared/hooks/use-mixpanel-tracker';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 import { formatName } from '@/shared/utils/format.utils';
-
-const DirectoryFilterKey = ListMembersInDirectoryWhere.omit({
-  hometownLatitude: true,
-  hometownLongitude: true,
-  locationLatitude: true,
-  locationLongitude: true,
-  joinedDirectoryAfter: true,
-  joinedDirectoryBefore: true,
-  search: true,
-}).keyof().enum;
-
-type DirectoryFilterKey = ExtractValue<typeof DirectoryFilterKey>;
 
 const DirectorySearchParams = ListSearchParams.pick({
   limit: true,
@@ -100,48 +70,65 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const { limit, page, ...where } = searchParams;
 
   const [
-    filters,
+    appliedHometown,
+    appliedLocation,
     allCompanies,
     allEthnicities,
     allSchools,
-    { members, totalCount },
   ] = await Promise.all([
-    getAppliedFilters(searchParams),
+    getAppliedCity(searchParams.hometown || ''),
+    getAppliedCity(searchParams.location || ''),
     listAllCompanies(),
     listAllEthnicities(),
     listAllSchools(),
-    listMembersInDirectory({
-      limit,
-      page,
-      where: {
-        ...where,
-        ...(searchParams.joinedDirectoryDate &&
-          run(() => {
-            const date = dayjs(searchParams.joinedDirectoryDate).tz(
-              'America/Los_Angeles',
-              true
-            );
-
-            return {
-              joinedDirectoryAfter: date.startOf('day').toDate(),
-              joinedDirectoryBefore: date.endOf('day').toDate(),
-            };
-          })),
-      },
-    }),
   ]);
+
+  const { members, totalCount } = await listMembersInDirectory({
+    limit,
+    page,
+    where: {
+      ...where,
+      ...(searchParams.joinedDirectoryDate &&
+        run(() => {
+          const date = dayjs(searchParams.joinedDirectoryDate).tz(
+            'America/Los_Angeles',
+            true
+          );
+
+          return {
+            joinedDirectoryAfter: date.startOf('day').toDate(),
+            joinedDirectoryBefore: date.endOf('day').toDate(),
+          };
+        })),
+      hometownLatitude: appliedHometown?.latitude || null,
+      hometownLongitude: appliedHometown?.longitude || null,
+      locationLatitude: appliedLocation?.latitude || null,
+      locationLongitude: appliedLocation?.longitude || null,
+    },
+  });
 
   return json({
     allCompanies,
     allEthnicities,
     allSchools,
-    filters,
+    appliedHometown,
+    appliedLocation,
     limit: searchParams.limit,
     members,
     page: searchParams.page,
     totalCount,
     url,
   });
+}
+
+async function getAppliedCity(id: string) {
+  if (!id) {
+    return null;
+  }
+
+  const details = await getCityDetails(id);
+
+  return details;
 }
 
 async function listAllCompanies() {
@@ -196,120 +183,25 @@ async function listAllSchools() {
   return companies;
 }
 
-async function getAppliedFilters(
-  searchParams: Pick<
-    DirectorySearchParams,
-    | 'company'
-    | 'ethnicity'
-    | 'graduationYear'
-    | 'hometown'
-    | 'joinedDirectoryDate'
-    | 'location'
-    | 'school'
-  >
-) {
-  const [company, ethnicity, school] = await Promise.all([
-    match(!!searchParams.company)
-      .with(true, async () => {
-        const row = await db
-          .selectFrom('companies')
-          .select(['companies.name'])
-          .where('companies.crunchbaseId', '=', searchParams.company)
-          .executeTakeFirst();
-
-        return row?.name || null;
-      })
-      .with(false, () => null)
-      .exhaustive(),
-
-    match(!!searchParams.ethnicity)
-      .with(true, async () => {
-        const row = await db
-          .selectFrom('countries')
-          .select(['countries.demonym', 'countries.flagEmoji'])
-          .where('countries.code', '=', searchParams.ethnicity)
-          .executeTakeFirst();
-
-        return row ? `${row.flagEmoji} ${row.demonym}` : null;
-      })
-      .with(false, () => null)
-      .exhaustive(),
-
-    match(!!searchParams.school)
-      .with(true, async () => {
-        const row = await db
-          .selectFrom('schools')
-          .select(['schools.name'])
-          .where('schools.id', '=', searchParams.school)
-          .executeTakeFirst();
-
-        return row?.name || null;
-      })
-      .with(false, () => null)
-      .exhaustive(),
-  ]);
-
-  const result: Array<{
-    name: string;
-    param: string;
-    value: string | number | null | undefined;
-  }> = [
-    { name: 'Company', param: keys.company, value: company },
-    { name: 'Ethnicity', param: keys.ethnicity, value: ethnicity },
-    {
-      name: 'Graduation Year',
-      param: keys.graduationYear,
-      value: searchParams.graduationYear,
-    },
-    { name: 'Hometown', param: keys.hometown, value: searchParams.hometown },
-    {
-      name: 'Joined Directory On',
-      param: 'joinedDirectoryDate',
-      value: searchParams.joinedDirectoryDate
-        ? dayjs(searchParams.joinedDirectoryDate)
-            .tz('America/Los_Angeles', true)
-            .format('M/D/YY')
-        : undefined,
-    },
-    { name: 'Location', param: keys.location, value: searchParams.location },
-    { name: 'School', param: keys.school, value: school },
-  ].filter((item) => {
-    return !!item.value;
-  });
-
-  return result;
-}
-
-const keys = ListMembersInDirectoryWhere.keyof().enum;
-
 export default function DirectoryPage() {
   return (
     <>
       <Text variant="2xl">Directory 🗂️</Text>
 
+      <Dashboard.SearchForm placeholder="Search by name or email..." />
+
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-2">
-          <Dashboard.SearchForm placeholder="Search by name or email..." />
           <SchoolFilter />
           <GraduationYearFilter />
           <CompanyFilter />
           <EthnicityFilter />
-          {/* <BookmarkFilter />
-          <TagFilter />
-          <CompanyFilter
-            allCompanies={allCompanies}
-            emptyMessage="No companies found that are linked to opportunities."
-            selectedCompany={appliedCompany}
-          />
-          <DatePostedFilter /> */}
+          <LocationFilter />
+          <HometownFilter />
         </div>
 
         <ClearFiltersButton />
       </div>
-
-      {/* <div>
-        <AppliedFilterGroup />
-      </div> */}
 
       <MembersGrid />
       <DirectoryPagination />
@@ -317,8 +209,6 @@ export default function DirectoryPage() {
     </>
   );
 }
-
-// Company, Ethnicity, Graduation Year, Hometown, Location, School
 
 export function ErrorBoundary() {
   return <></>;
@@ -552,7 +442,7 @@ function EthnicityList() {
 function GraduationYearFilter() {
   const [searchParams] = useSearchParams();
 
-  const graduationYear = searchParams.get('graduationYear');
+  const graduationYears = searchParams.getAll('graduationYear');
 
   const lowestYear = 2018;
   const currentYear = new Date().getFullYear();
@@ -561,32 +451,30 @@ function GraduationYearFilter() {
     return lowestYear + i;
   });
 
-  const options: FilterValue[] = years
-    .map((year, i) => {
-      return {
-        color: ACCENT_COLORS[i % ACCENT_COLORS.length],
-        label: year.toString(),
-        value: year.toString(),
-      };
-    })
-    .reverse();
+  const options: FilterValue[] = years.map((year, i) => {
+    return {
+      color: ACCENT_COLORS[i % ACCENT_COLORS.length],
+      label: year.toString(),
+      value: year.toString(),
+    };
+  });
 
   const selectedValues = options.filter((value) => {
-    return graduationYear === value.value;
+    return graduationYears.includes(value.value);
   });
 
   return (
-    <FilterRoot>
+    <FilterRoot multiple>
       <FilterButton icon={<Calendar />} popover selectedValues={selectedValues}>
         Graduation Year
       </FilterButton>
 
       <FilterPopover>
         <ul className="overflow-auto">
-          {options.map((option) => {
+          {options.reverse().map((option) => {
             return (
               <FilterItem
-                checked={graduationYear === option.value}
+                checked={graduationYears.includes(option.value)}
                 color={option.color}
                 key={option.value}
                 label={option.label}
@@ -598,6 +486,132 @@ function GraduationYearFilter() {
         </ul>
       </FilterPopover>
     </FilterRoot>
+  );
+}
+
+function HometownFilter() {
+  const { appliedHometown } = useLoaderData<typeof loader>();
+
+  const selectedValues: FilterValue[] = [];
+
+  if (appliedHometown) {
+    selectedValues.push({
+      color: 'pink-100',
+      label: appliedHometown.name,
+      value: appliedHometown.id,
+    });
+  }
+
+  return (
+    <FilterRoot>
+      <FilterButton icon={<MapPin />} popover selectedValues={selectedValues}>
+        Hometown
+      </FilterButton>
+
+      <FilterPopover>
+        <FilterSearch />
+        <HometownList />
+      </FilterPopover>
+    </FilterRoot>
+  );
+}
+
+function HometownList() {
+  const [searchParams] = useSearchParams();
+  const { search } = useFilterContext();
+  const cities = useAutocompletedCities(search);
+
+  if (!cities) {
+    return (
+      <FilterEmptyMessage>Search for a city within 25 mi...</FilterEmptyMessage>
+    );
+  }
+
+  if (!cities.length) {
+    return <FilterEmptyMessage>No cities found.</FilterEmptyMessage>;
+  }
+
+  const hometown = searchParams.get('hometown');
+
+  return (
+    <ul className="overflow-auto">
+      {cities.map((city) => {
+        return (
+          <React.Fragment key={city.id}>
+            <FilterItem
+              checked={city.id === hometown}
+              key={city.id}
+              label={city.description}
+              name="hometown"
+              value={city.id}
+            />
+          </React.Fragment>
+        );
+      })}
+    </ul>
+  );
+}
+
+function LocationFilter() {
+  const { appliedLocation } = useLoaderData<typeof loader>();
+
+  const selectedValues: FilterValue[] = [];
+
+  if (appliedLocation) {
+    selectedValues.push({
+      color: 'pink-100',
+      label: appliedLocation.name,
+      value: appliedLocation.id,
+    });
+  }
+
+  return (
+    <FilterRoot>
+      <FilterButton icon={<MapPin />} popover selectedValues={selectedValues}>
+        Location
+      </FilterButton>
+
+      <FilterPopover>
+        <FilterSearch />
+        <LocationList />
+      </FilterPopover>
+    </FilterRoot>
+  );
+}
+
+function LocationList() {
+  const [searchParams] = useSearchParams();
+  const { search } = useFilterContext();
+  const cities = useAutocompletedCities(search);
+
+  if (!cities) {
+    return (
+      <FilterEmptyMessage>Search for a city within 25 mi...</FilterEmptyMessage>
+    );
+  }
+
+  if (!cities.length) {
+    return <FilterEmptyMessage>No cities found.</FilterEmptyMessage>;
+  }
+
+  const location = searchParams.get('location');
+
+  return (
+    <ul className="overflow-auto">
+      {cities.map((city) => {
+        return (
+          <React.Fragment key={city.id}>
+            <FilterItem
+              checked={city.id === location}
+              key={city.id}
+              label={city.description}
+              name="location"
+              value={city.id}
+            />
+          </React.Fragment>
+        );
+      })}
+    </ul>
   );
 }
 

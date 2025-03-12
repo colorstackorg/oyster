@@ -147,10 +147,12 @@ export function FilterButton({
 // Filter Popover
 
 type FilterPopoverProps = PropsWithChildren<{
+  align?: 'left' | 'right';
   height?: 'fixed' | 'max';
 }>;
 
 export function FilterPopover({
+  align = 'left',
   children,
   height = 'fixed',
 }: FilterPopoverProps) {
@@ -164,7 +166,8 @@ export function FilterPopover({
     <div
       className={cx(
         'absolute top-full z-10 mt-1 flex w-max min-w-full max-w-[300px] flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2',
-        height === 'fixed' && 'max-h-60'
+        height === 'fixed' && 'max-h-60',
+        align === 'right' && 'right-0'
       )}
       id="popover"
     >
