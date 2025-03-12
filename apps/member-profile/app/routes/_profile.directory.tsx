@@ -12,7 +12,7 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import React from 'react';
-import { Briefcase, Calendar, Globe, MapPin } from 'react-feather';
+import { BookOpen, Briefcase, Calendar, Globe, MapPin } from 'react-feather';
 import { type z } from 'zod';
 
 import { getCityDetails } from '@oyster/core/location';
@@ -183,21 +183,19 @@ async function listAllSchools() {
   return companies;
 }
 
+export function ErrorBoundary() {
+  return <></>;
+}
+
 export default function DirectoryPage() {
   return (
     <>
       <Text variant="2xl">Directory 🗂️</Text>
 
-      <Dashboard.SearchForm placeholder="Search by name or email..." />
-
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <SchoolFilter />
-          <GraduationYearFilter />
-          <CompanyFilter />
-          <EthnicityFilter />
-          <LocationFilter />
-          <HometownFilter />
+        <div className="flex flex-wrap items-center gap-[inherit]">
+          <Dashboard.SearchForm placeholder="Search by name or email..." />
+          <DirectoryFilterGroup />
         </div>
 
         <ClearFiltersButton />
@@ -210,8 +208,44 @@ export default function DirectoryPage() {
   );
 }
 
-export function ErrorBoundary() {
-  return <></>;
+function DirectoryFilterGroup() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const showAll =
+    !!searchParams.get('ethnicity') ||
+    !!searchParams.get('graduationYear') ||
+    !!searchParams.get('hometown') ||
+    searchParams.get('showAll') === 'true';
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <SchoolFilter />
+      <CompanyFilter />
+      <LocationFilter />
+
+      {showAll ? (
+        <>
+          <EthnicityFilter />
+          <GraduationYearFilter />
+          <HometownFilter />
+        </>
+      ) : (
+        <button
+          className="ml-1 text-sm hover:underline"
+          onClick={() => {
+            setSearchParams((params) => {
+              params.set('showAll', 'true');
+
+              return params;
+            });
+          }}
+          type="button"
+        >
+          Show All
+        </button>
+      )}
+    </div>
+  );
 }
 
 function DirectoryPagination() {
@@ -509,7 +543,7 @@ function HometownFilter() {
       </FilterButton>
 
       <FilterPopover>
-        <FilterSearch />
+        <FilterSearch placeholder="Search by city..." />
         <HometownList />
       </FilterPopover>
     </FilterRoot>
@@ -522,9 +556,7 @@ function HometownList() {
   const cities = useAutocompletedCities(search);
 
   if (!cities) {
-    return (
-      <FilterEmptyMessage>Search for a city within 25 mi...</FilterEmptyMessage>
-    );
+    return <FilterEmptyMessage>Filter within 25 mi...</FilterEmptyMessage>;
   }
 
   if (!cities.length) {
@@ -572,7 +604,7 @@ function LocationFilter() {
       </FilterButton>
 
       <FilterPopover>
-        <FilterSearch />
+        <FilterSearch placeholder="Search by city..." />
         <LocationList />
       </FilterPopover>
     </FilterRoot>
@@ -585,9 +617,7 @@ function LocationList() {
   const cities = useAutocompletedCities(search);
 
   if (!cities) {
-    return (
-      <FilterEmptyMessage>Search for a city within 25 mi...</FilterEmptyMessage>
-    );
+    return <FilterEmptyMessage>Filter within 25 mi...</FilterEmptyMessage>;
   }
 
   if (!cities.length) {
@@ -635,11 +665,7 @@ function SchoolFilter() {
 
   return (
     <FilterRoot>
-      <FilterButton
-        icon={<Briefcase />}
-        popover
-        selectedValues={selectedValues}
-      >
+      <FilterButton icon={<BookOpen />} popover selectedValues={selectedValues}>
         School
       </FilterButton>
 
