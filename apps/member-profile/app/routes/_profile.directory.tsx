@@ -148,6 +148,7 @@ async function listAllCompanies() {
   const rows = await db
     .selectFrom('workExperiences')
     .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
+    .leftJoin('students', 'students.id', 'workExperiences.studentId')
     .select([
       'companies.id',
       'companies.name',
@@ -156,6 +157,7 @@ async function listAllCompanies() {
       },
     ])
     .groupBy('companies.id')
+    .where('students.joinedMemberDirectoryAt', 'is not', null)
     .orderBy('count', 'desc')
     .orderBy('companies.name', 'asc')
     .execute();
@@ -176,6 +178,7 @@ async function listAllEthnicities() {
   const rows = await db
     .selectFrom('memberEthnicities')
     .leftJoin('countries', 'countries.code', 'memberEthnicities.countryCode')
+    .leftJoin('students', 'students.id', 'memberEthnicities.studentId')
     .select([
       'countries.code',
       'countries.demonym',
@@ -187,6 +190,7 @@ async function listAllEthnicities() {
           .as('count');
       },
     ])
+    .where('students.joinedMemberDirectoryAt', 'is not', null)
     .groupBy('countries.code')
     .orderBy('count', 'desc')
     .orderBy('countries.demonym', 'asc')
@@ -201,6 +205,7 @@ async function listAllGraduationYears() {
   const years = await db
     .selectFrom('students')
     .select(['graduationYear', (eb) => eb.fn.countAll().as('count')])
+    .where('students.joinedMemberDirectoryAt', 'is not', null)
     .groupBy('graduationYear')
     .orderBy('graduationYear', 'asc')
     .execute();
@@ -226,6 +231,7 @@ async function listAllHometowns() {
     .groupBy(['hometown', (eb) => coordinates(eb, 'hometownCoordinates')])
     .where('hometown', 'is not', null)
     .where('hometownCoordinates', 'is not', null)
+    .where('students.joinedMemberDirectoryAt', 'is not', null)
     .orderBy('count', 'desc')
     .orderBy('hometown', 'asc')
     .execute();
@@ -272,6 +278,7 @@ async function listAllLocations() {
     ])
     .where('currentLocation', 'is not', null)
     .where('currentLocationCoordinates', 'is not', null)
+    .where('students.joinedMemberDirectoryAt', 'is not', null)
     .orderBy('count', 'desc')
     .orderBy('currentLocation', 'asc')
     .execute();
@@ -316,6 +323,7 @@ async function listAllSchools() {
         return eb.fn.count('students.id').distinct().as('count');
       },
     ])
+    .where('students.joinedMemberDirectoryAt', 'is not', null)
     .groupBy('schools.id')
     .having((eb) => eb.fn.count('students.id').distinct(), '>', 0)
     .orderBy('count', 'desc')
