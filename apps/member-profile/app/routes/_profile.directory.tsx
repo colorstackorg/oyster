@@ -23,13 +23,7 @@ import {
 } from '@oyster/core/member-profile/ui';
 import { type DB, db } from '@oyster/db';
 import { ISO8601Date } from '@oyster/types';
-import {
-  ACCENT_COLORS,
-  Dashboard,
-  Pagination,
-  ProfilePicture,
-  Text,
-} from '@oyster/ui';
+import { Dashboard, Pagination, ProfilePicture, Text } from '@oyster/ui';
 import {
   ClearFiltersButton,
   FilterButton,
@@ -148,6 +142,7 @@ async function listAllCompanies() {
   const rows = await db
     .selectFrom('workExperiences')
     .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
+    .leftJoin('students', 'students.id', 'workExperiences.studentId')
     .select([
       'companies.id',
       'companies.name',
@@ -156,6 +151,8 @@ async function listAllCompanies() {
       },
     ])
     .groupBy('companies.id')
+    .where('students.joinedMemberDirectoryAt', 'is not', null)
+    .where('workExperiences.companyId', 'is not', null)
     .orderBy('count', 'desc')
     .orderBy('companies.name', 'asc')
     .execute();
@@ -176,6 +173,7 @@ async function listAllEthnicities() {
   const rows = await db
     .selectFrom('memberEthnicities')
     .leftJoin('countries', 'countries.code', 'memberEthnicities.countryCode')
+    .leftJoin('students', 'students.id', 'memberEthnicities.studentId')
     .select([
       'countries.code',
       'countries.demonym',
@@ -187,6 +185,7 @@ async function listAllEthnicities() {
           .as('count');
       },
     ])
+    .where('students.joinedMemberDirectoryAt', 'is not', null)
     .groupBy('countries.code')
     .orderBy('count', 'desc')
     .orderBy('countries.demonym', 'asc')
@@ -201,8 +200,9 @@ async function listAllGraduationYears() {
   const years = await db
     .selectFrom('students')
     .select(['graduationYear', (eb) => eb.fn.countAll().as('count')])
+    .where('students.joinedMemberDirectoryAt', 'is not', null)
     .groupBy('graduationYear')
-    .orderBy('graduationYear', 'asc')
+    .orderBy('graduationYear', 'desc')
     .execute();
 
   return years;
@@ -226,6 +226,7 @@ async function listAllHometowns() {
     .groupBy(['hometown', (eb) => coordinates(eb, 'hometownCoordinates')])
     .where('hometown', 'is not', null)
     .where('hometownCoordinates', 'is not', null)
+    .where('students.joinedMemberDirectoryAt', 'is not', null)
     .orderBy('count', 'desc')
     .orderBy('hometown', 'asc')
     .execute();
@@ -272,6 +273,7 @@ async function listAllLocations() {
     ])
     .where('currentLocation', 'is not', null)
     .where('currentLocationCoordinates', 'is not', null)
+    .where('students.joinedMemberDirectoryAt', 'is not', null)
     .orderBy('count', 'desc')
     .orderBy('currentLocation', 'asc')
     .execute();
@@ -316,6 +318,7 @@ async function listAllSchools() {
         return eb.fn.count('students.id').distinct().as('count');
       },
     ])
+    .where('students.joinedMemberDirectoryAt', 'is not', null)
     .groupBy('schools.id')
     .having((eb) => eb.fn.count('students.id').distinct(), '>', 0)
     .orderBy('count', 'desc')
@@ -612,9 +615,9 @@ function GraduationYearFilter() {
 
   const graduationYears = searchParams.getAll('graduationYear');
 
-  const options: FilterValue[] = allGraduationYears.map((value, i) => {
+  const options: FilterValue[] = allGraduationYears.map((value) => {
     return {
-      color: ACCENT_COLORS[i % ACCENT_COLORS.length],
+      color: 'amber-100',
       label: value.graduationYear,
       value: value.graduationYear,
     };
@@ -632,19 +635,14 @@ function GraduationYearFilter() {
 
       <FilterPopover>
         <ul className="overflow-auto">
-          {options.reverse().map((option) => {
-            const year = allGraduationYears.find((year) => {
-              return year.graduationYear === option.value;
-            });
-
+          {allGraduationYears.map((year) => {
             return (
               <FilterItem
-                checked={graduationYears.includes(option.value)}
-                color={option.color}
-                key={option.value}
-                label={`${option.label} (${year?.count || 0})`}
+                checked={graduationYears.includes(year.graduationYear)}
+                key={year.graduationYear}
+                label={`${year.graduationYear} (${year.count})`}
                 name="graduationYear"
-                value={option.value}
+                value={year.graduationYear}
               />
             );
           })}
