@@ -17,7 +17,6 @@ import { hourlyToMonthlyRate } from '@oyster/core/offers';
 import { db } from '@oyster/db';
 import { Pagination, Table, type TableColumnProps, Text } from '@oyster/ui';
 import {
-  ClearFiltersButton,
   FilterButton,
   FilterEmptyMessage,
   FilterItem,
@@ -25,6 +24,7 @@ import {
   FilterRoot,
   FilterSearch,
   type FilterValue,
+  ResetFiltersButton,
   useFilterContext,
 } from '@oyster/ui/filter';
 import { toEscapedString } from '@oyster/utils';
@@ -281,9 +281,8 @@ export default function InternshipOffersPage() {
           />
           <HourlyRateFilter />
           <LocationFilter />
+          <ResetFiltersButton />
         </div>
-
-        <ClearFiltersButton />
       </div>
 
       <OfferAggregationGroup>

@@ -12,7 +12,6 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type ExpressionBuilder, sql } from 'kysely';
-import { useState } from 'react';
 import { BookOpen, Briefcase, Calendar, Globe, MapPin } from 'react-feather';
 import { z } from 'zod';
 
@@ -25,7 +24,6 @@ import { type DB, db } from '@oyster/db';
 import { ISO8601Date } from '@oyster/types';
 import { Dashboard, Pagination, ProfilePicture, Text } from '@oyster/ui';
 import {
-  ClearFiltersButton,
   FilterButton,
   FilterEmptyMessage,
   FilterItem,
@@ -33,6 +31,7 @@ import {
   FilterRoot,
   FilterSearch,
   type FilterValue,
+  ResetFiltersButton,
   useFilterContext,
 } from '@oyster/ui/filter';
 import { run, toEscapedString } from '@oyster/utils';
@@ -353,52 +352,23 @@ export default function DirectoryPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-[inherit]">
           <Dashboard.SearchForm placeholder="Search by name or email..." />
-          <DirectoryFilterGroup />
-        </div>
 
-        <ClearFiltersButton />
+          <div className="flex flex-wrap items-center gap-2">
+            <SchoolFilter />
+            <CompanyFilter />
+            <LocationFilter />
+            <EthnicityFilter />
+            <GraduationYearFilter />
+            <HometownFilter />
+            <ResetFiltersButton />
+          </div>
+        </div>
       </div>
 
       <MembersGrid />
       <DirectoryPagination />
       <Outlet />
     </>
-  );
-}
-
-function DirectoryFilterGroup() {
-  const [searchParams] = useSearchParams();
-
-  const [showAll, setShowAll] = useState(
-    !!searchParams.get('ethnicity') ||
-      !!searchParams.get('graduationYear') ||
-      !!searchParams.get('hometown')
-  );
-
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <SchoolFilter />
-      <CompanyFilter />
-      <LocationFilter />
-
-      {showAll ? (
-        <>
-          <EthnicityFilter />
-          <GraduationYearFilter />
-          <HometownFilter />
-        </>
-      ) : (
-        <button
-          className="ml-1 text-sm hover:underline"
-          onClick={() => {
-            setShowAll(true);
-          }}
-          type="button"
-        >
-          Show All
-        </button>
-      )}
-    </div>
   );
 }
 

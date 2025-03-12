@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Check, ChevronDown, X } from 'react-feather';
+import { Check, ChevronDown } from 'react-feather';
 
 import { Pill, type PillProps } from './pill';
 import { Text } from './text';
@@ -289,7 +289,7 @@ export function FilterItem({
 
 // Clear Filters Button
 
-export function ClearFiltersButton() {
+export function ResetFiltersButton() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   if (searchParams.size === 0) {
@@ -302,13 +302,13 @@ export function ClearFiltersButton() {
 
   return (
     <button
-      className="flex items-center gap-2 rounded-lg border border-gray-300 p-2 text-sm hover:bg-gray-50 active:bg-gray-100"
+      className="rounded-md p-2 text-sm text-gray-500 underline hover:bg-gray-50 active:bg-gray-100"
       onClick={() => {
         setSearchParams({});
       }}
       type="button"
     >
-      Clear Filters <X className="text-gray-500" size={16} />
+      Reset
     </button>
   );
 }

@@ -29,7 +29,6 @@ import {
   Text,
 } from '@oyster/ui';
 import {
-  ClearFiltersButton,
   FilterButton,
   FilterEmptyMessage,
   FilterItem,
@@ -37,6 +36,7 @@ import {
   FilterRoot,
   FilterSearch,
   type FilterValue,
+  ResetFiltersButton,
   useFilterContext,
 } from '@oyster/ui/filter';
 import {
@@ -343,9 +343,8 @@ export default function OpportunitiesPage() {
             selectedCompany={appliedCompany}
           />
           <DatePostedFilter />
+          <ResetFiltersButton />
         </div>
-
-        <ClearFiltersButton />
       </div>
 
       <OpportunitiesTable />

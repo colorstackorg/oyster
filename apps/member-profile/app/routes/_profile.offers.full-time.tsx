@@ -16,7 +16,6 @@ import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
 import { Pagination, Table, type TableColumnProps, Text } from '@oyster/ui';
 import {
-  ClearFiltersButton,
   FilterButton,
   FilterEmptyMessage,
   FilterItem,
@@ -24,6 +23,7 @@ import {
   FilterRoot,
   FilterSearch,
   type FilterValue,
+  ResetFiltersButton,
   useFilterContext,
 } from '@oyster/ui/filter';
 import { toEscapedString } from '@oyster/utils';
@@ -293,9 +293,8 @@ export default function FullTimeOffersPage() {
           />
           <TotalCompensationFilter />
           <LocationFilter />
+          <ResetFiltersButton />
         </div>
-
-        <ClearFiltersButton />
       </div>
 
       <OfferAggregationGroup>
