@@ -155,11 +155,31 @@ async function listAllCompanies() {
 }
 
 async function listAllEthnicities() {
-  const ethnicities = await db
-    .selectFrom('countries')
-    .select(['code', 'demonym', 'flagEmoji'])
-    .orderBy('demonym', 'asc')
+  const rows = await db
+    .selectFrom('memberEthnicities')
+    .leftJoin('countries', 'countries.code', 'memberEthnicities.countryCode')
+    .select([
+      'countries.code',
+      'countries.demonym',
+      'countries.flagEmoji',
+      (eb) => {
+        return eb.fn
+          .count('memberEthnicities.studentId')
+          .distinct()
+          .as('count');
+      },
+    ])
+    .groupBy('countries.code')
+    .orderBy('count', 'desc')
+    .orderBy('countries.demonym', 'asc')
     .execute();
+
+  const ethnicities = rows as Array<{
+    code: string;
+    count: number;
+    demonym: string;
+    flagEmoji: string;
+  }>;
 
   return ethnicities;
 }
@@ -532,7 +552,7 @@ function EthnicityList() {
           <FilterItem
             checked={selectedEthnicity === ethnicity.code}
             key={ethnicity.code}
-            label={ethnicity.flagEmoji + ' ' + ethnicity.demonym}
+            label={`${ethnicity.flagEmoji} ${ethnicity.demonym} (${ethnicity.count})`}
             name="ethnicity"
             value={ethnicity.code}
           />
