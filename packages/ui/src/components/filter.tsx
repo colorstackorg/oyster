@@ -3,6 +3,7 @@ import React, {
   createContext,
   type PropsWithChildren,
   useContext,
+  useEffect,
   useRef,
   useState,
 } from 'react';
@@ -19,21 +20,27 @@ type PillColor = PillProps['color'];
 // Context
 
 type FilterContext = {
+  highlightedIndex: number;
+  itemRefs: React.MutableRefObject<Record<number, HTMLButtonElement | null>>;
   multiple?: boolean;
   name: string;
   open: boolean;
   search: string;
   selectedValues: FilterValue[];
+  setHighlightedIndex: React.Dispatch<React.SetStateAction<number>>;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setSearch: React.Dispatch<React.SetStateAction<string>>;
 };
 
 const FilterContext = createContext<FilterContext>({
+  highlightedIndex: 0,
+  itemRefs: { current: {} },
   multiple: false,
   name: '',
   open: false,
   search: '',
   selectedValues: [],
+  setHighlightedIndex: () => {},
   setOpen: () => {},
   setSearch: () => {},
 });
@@ -54,24 +61,98 @@ export function FilterRoot({
 }: PropsWithChildren<
   Pick<FilterContext, 'multiple' | 'name' | 'selectedValues'>
 >) {
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
-  const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
+  const ref = useRef<HTMLDivElement | null>(null);
+  const itemRefs = useRef<Record<number, HTMLButtonElement | null>>({});
 
   useOnClickOutside(ref, () => {
+    reset();
+  });
+
+  function reset() {
+    setHighlightedIndex(0);
     setOpen(false);
     setSearch('');
-  });
+  }
+
+  // TODO: Add comment about why we need this ref.
+
+  const highlightedIndexRef = useRef<number>(highlightedIndex);
+
+  useEffect(() => {
+    highlightedIndexRef.current = highlightedIndex;
+  }, [highlightedIndex]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    document.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
+  function onKeyDown(e: KeyboardEvent) {
+    if (!open) {
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      reset();
+
+      return;
+    }
+
+    const indices = Object.keys(itemRefs.current).map(Number);
+
+    if (indices.length === 0) {
+      // Just a sanity check...this should never happen.
+      setHighlightedIndex(0);
+
+      return;
+    }
+
+    const maxIndex = Math.max(...indices);
+
+    switch (e.key) {
+      case 'ArrowDown': {
+        return setHighlightedIndex((index) => {
+          return index < maxIndex ? index + 1 : 0;
+        });
+      }
+
+      case 'ArrowUp': {
+        return setHighlightedIndex((index) => {
+          return index > 0 ? index - 1 : maxIndex;
+        });
+      }
+
+      case 'Enter': {
+        return itemRefs.current[highlightedIndexRef.current]?.click();
+      }
+
+      default:
+        return;
+    }
+  }
 
   return (
     <FilterContext.Provider
       value={{
+        highlightedIndex,
+        itemRefs,
         multiple,
         name,
         open,
         search,
         selectedValues,
+        setHighlightedIndex,
         setOpen,
         setSearch,
       }}
@@ -206,7 +287,8 @@ export function FilterPopover({
 // Filter Search
 
 export function FilterSearch() {
-  const { setSearch } = useContext(FilterContext);
+  const { itemRefs, setHighlightedIndex, setSearch } =
+    useContext(FilterContext);
 
   return (
     <input
@@ -216,6 +298,8 @@ export function FilterSearch() {
       name="search"
       onChange={(e) => {
         setSearch(e.currentTarget.value);
+        itemRefs.current = {};
+        setHighlightedIndex(0);
       }}
       placeholder="Search..."
       type="text"
@@ -253,17 +337,27 @@ export function FilterList({ children, height = 'max-h-60' }: FilterListProps) {
 
 type FilterItemProps = PropsWithChildren<{
   color?: PillColor;
+  index: number;
   label: string | React.ReactElement;
   value: string;
 }>;
 
-export function FilterItem({ color, label, value }: FilterItemProps) {
+export function FilterItem({ color, index, label, value }: FilterItemProps) {
   const [_, setSearchParams] = useSearchParams();
-  const { multiple, name, selectedValues, setOpen } = useContext(FilterContext);
+  const {
+    highlightedIndex,
+    itemRefs,
+    multiple,
+    name,
+    selectedValues,
+    setHighlightedIndex,
+    setOpen,
+  } = useContext(FilterContext);
 
   function onClick(e: React.MouseEvent<HTMLButtonElement>) {
     if (!multiple) {
       setOpen(false);
+      setHighlightedIndex(0);
     }
 
     setSearchParams((params) => {
@@ -307,8 +401,18 @@ export function FilterItem({ color, label, value }: FilterItemProps) {
   return (
     <li>
       <button
-        className="flex w-full items-center justify-between gap-4 rounded-lg p-2 text-left text-sm hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
+        className={cx(
+          'flex w-full items-center justify-between gap-4 rounded-lg p-2 text-left text-sm',
+          'hover:bg-gray-50',
+          'focus:bg-gray-50 focus:outline-none',
+          'active:bg-gray-100',
+          'data-[highlighted=true]:bg-gray-50'
+        )}
+        data-highlighted={index === highlightedIndex}
         onClick={onClick}
+        ref={(element) => {
+          itemRefs.current[index] = element;
+        }}
         type="button"
         value={value}
       >
@@ -323,7 +427,7 @@ export function FilterItem({ color, label, value }: FilterItemProps) {
   );
 }
 
-// Clear Filters Button
+// Reset Filters Button
 
 export function ResetFiltersButton() {
   const [searchParams, setSearchParams] = useSearchParams();
