@@ -24,13 +24,13 @@ import { type DB, db } from '@oyster/db';
 import { ISO8601Date } from '@oyster/types';
 import { Dashboard, Pagination, ProfilePicture, Text } from '@oyster/ui';
 import {
-  FilterButton,
   FilterEmptyMessage,
   FilterItem,
   FilterList,
   FilterPopover,
   FilterRoot,
   FilterSearch,
+  FilterTrigger,
   type FilterValue,
   ResetFiltersButton,
   useFilterContext,
@@ -467,7 +467,7 @@ function CompanyFilter() {
 
   return (
     <FilterRoot name="company" selectedValues={selectedValues}>
-      <FilterButton icon={<Briefcase />}>Company</FilterButton>
+      <FilterTrigger icon={<Briefcase />}>Company</FilterTrigger>
 
       <FilterPopover>
         <FilterSearch />
@@ -530,7 +530,7 @@ function EthnicityFilter() {
 
   return (
     <FilterRoot name="ethnicity" selectedValues={selectedValues}>
-      <FilterButton icon={<Globe />}>Ethnicity</FilterButton>
+      <FilterTrigger icon={<Globe />}>Ethnicity</FilterTrigger>
 
       <FilterPopover>
         <FilterSearch />
@@ -593,7 +593,7 @@ function GraduationYearFilter() {
 
   return (
     <FilterRoot multiple name="graduationYear" selectedValues={selectedValues}>
-      <FilterButton icon={<Calendar />}>Graduation Year</FilterButton>
+      <FilterTrigger icon={<Calendar />}>Graduation Year</FilterTrigger>
 
       <FilterPopover>
         <FilterList>
@@ -632,7 +632,7 @@ function HometownFilter() {
 
   return (
     <FilterRoot name="hometown" selectedValues={selectedValues}>
-      <FilterButton icon={<MapPin />}>Hometown</FilterButton>
+      <FilterTrigger icon={<MapPin />}>Hometown</FilterTrigger>
 
       <FilterPopover align="right">
         <FilterSearch />
@@ -702,7 +702,7 @@ function LocationFilter() {
 
   return (
     <FilterRoot name="location" selectedValues={selectedValues}>
-      <FilterButton icon={<MapPin />}>Location</FilterButton>
+      <FilterTrigger icon={<MapPin />}>Location</FilterTrigger>
 
       <FilterPopover align="right">
         <FilterSearch />
@@ -772,7 +772,7 @@ function SchoolFilter() {
 
   return (
     <FilterRoot name="school" selectedValues={selectedValues}>
-      <FilterButton icon={<BookOpen />}>School</FilterButton>
+      <FilterTrigger icon={<BookOpen />}>School</FilterTrigger>
 
       <FilterPopover>
         <FilterSearch />

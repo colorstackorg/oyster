@@ -6,12 +6,12 @@ import { Briefcase } from 'react-feather';
 
 import { Text } from '@oyster/ui';
 import {
-  FilterButton,
   FilterEmptyMessage,
   FilterItem,
   FilterList,
   FilterPopover,
   FilterSearch,
+  FilterTrigger,
   useFilterContext,
 } from '@oyster/ui/filter';
 import { FilterRoot } from '@oyster/ui/filter';
@@ -109,7 +109,7 @@ export function CompanyFilter({
           : []
       }
     >
-      <FilterButton icon={<Briefcase />}>Company</FilterButton>
+      <FilterTrigger icon={<Briefcase />}>Company</FilterTrigger>
 
       <FilterPopover>
         <FilterSearch />

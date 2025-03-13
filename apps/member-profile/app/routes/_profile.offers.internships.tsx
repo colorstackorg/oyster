@@ -17,13 +17,13 @@ import { hourlyToMonthlyRate } from '@oyster/core/offers';
 import { db } from '@oyster/db';
 import { Pagination, Table, type TableColumnProps, Text } from '@oyster/ui';
 import {
-  FilterButton,
   FilterEmptyMessage,
   FilterItem,
   FilterList,
   FilterPopover,
   FilterRoot,
   FilterSearch,
+  FilterTrigger,
   type FilterValue,
   ResetFiltersButton,
   useFilterContext,
@@ -413,7 +413,7 @@ function HourlyRateFilter() {
 
   return (
     <FilterRoot multiple name="hourlyRate" selectedValues={selectedValues}>
-      <FilterButton icon={<DollarSign />}>Hourly Rate</FilterButton>
+      <FilterTrigger icon={<DollarSign />}>Hourly Rate</FilterTrigger>
 
       <FilterPopover>
         <FilterList height="max">
@@ -450,7 +450,7 @@ function LocationFilter() {
         };
       })}
     >
-      <FilterButton icon={<MapPin />}>Location</FilterButton>
+      <FilterTrigger icon={<MapPin />}>Location</FilterTrigger>
 
       <FilterPopover>
         <FilterSearch />

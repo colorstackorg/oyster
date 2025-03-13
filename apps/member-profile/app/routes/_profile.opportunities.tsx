@@ -29,13 +29,13 @@ import {
   Text,
 } from '@oyster/ui';
 import {
-  FilterButton,
   FilterEmptyMessage,
   FilterItem,
   FilterList,
   FilterPopover,
   FilterRoot,
   FilterSearch,
+  FilterTrigger,
   type FilterValue,
   ResetFiltersButton,
   useFilterContext,
@@ -543,14 +543,14 @@ function BookmarkFilter() {
   }
 
   return (
-    <FilterButton
+    <FilterTrigger
       active={bookmarked}
       icon={<Bookmark />}
       onClick={toggleBookmark}
       popover={false}
     >
       Bookmarked
-    </FilterButton>
+    </FilterTrigger>
   );
 }
 
@@ -569,7 +569,7 @@ function TagFilter() {
         };
       })}
     >
-      <FilterButton icon={<Tag />}>Tags</FilterButton>
+      <FilterTrigger icon={<Tag />}>Tags</FilterTrigger>
 
       <FilterPopover>
         <FilterSearch />
@@ -627,7 +627,7 @@ function DatePostedFilter() {
 
   return (
     <FilterRoot name="since" selectedValues={selectedValues}>
-      <FilterButton icon={<Calendar />}>Date Posted</FilterButton>
+      <FilterTrigger icon={<Calendar />}>Date Posted</FilterTrigger>
 
       <FilterPopover>
         <FilterList>
