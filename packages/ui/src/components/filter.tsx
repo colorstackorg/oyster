@@ -150,7 +150,9 @@ export function FilterRoot({
       }
 
       case 'Enter': {
-        return itemRefs.current[highlightedIndexRef.current]?.click();
+        const element = itemRefs.current[highlightedIndexRef.current];
+
+        return element?.click();
       }
 
       default:
@@ -341,6 +343,20 @@ type FilterListProps = PropsWithChildren<{
 }>;
 
 export function FilterList({ children, height = 'max-h-60' }: FilterListProps) {
+  const { highlightedIndex, itemRefs } = useContext(FilterContext);
+
+  useEffect(() => {
+    if (highlightedIndex !== -1) {
+      const element = itemRefs.current[highlightedIndex];
+
+      element?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest',
+      });
+    }
+  }, [highlightedIndex]);
+
   // We clone the children so that we can pass in the `index` prop to each
   // child, taking the responsibility off of the caller to do so.
   const clonedChildren = React.Children.map(children, (child, index) => {
