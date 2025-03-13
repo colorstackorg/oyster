@@ -96,6 +96,7 @@ export function CompanyFilter({
 }: CompanyFilterProps) {
   return (
     <FilterRoot
+      name="company"
       selectedValues={
         selectedCompany
           ? [
@@ -143,7 +144,6 @@ function CompanyFilterList({ allCompanies, emptyMessage }: CompanyFilterProps) {
           <FilterItem
             key={company.id}
             label={company.name}
-            name="company"
             value={company.id}
           />
         );

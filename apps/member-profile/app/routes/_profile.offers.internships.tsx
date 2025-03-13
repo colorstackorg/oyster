@@ -412,7 +412,7 @@ function HourlyRateFilter() {
   });
 
   return (
-    <FilterRoot multiple selectedValues={selectedValues}>
+    <FilterRoot multiple name="hourlyRate" selectedValues={selectedValues}>
       <FilterButton icon={<DollarSign />} popover>
         Hourly Rate
       </FilterButton>
@@ -425,7 +425,6 @@ function HourlyRateFilter() {
                 color={option.color}
                 key={option.value}
                 label={option.label}
-                name="hourlyRate"
                 value={option.value}
               />
             );
@@ -444,6 +443,7 @@ function LocationFilter() {
   return (
     <FilterRoot
       multiple
+      name="location"
       selectedValues={locations.map((location) => {
         return {
           color: 'purple-100',
@@ -485,14 +485,7 @@ function LocationList() {
   return (
     <FilterList>
       {filteredLocations.map((location) => {
-        return (
-          <FilterItem
-            key={location}
-            label={location}
-            name="location"
-            value={location}
-          />
-        );
+        return <FilterItem key={location} label={location} value={location} />;
       })}
     </FilterList>
   );

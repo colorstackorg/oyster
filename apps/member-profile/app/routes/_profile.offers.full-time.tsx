@@ -438,7 +438,11 @@ function TotalCompensationFilter() {
   });
 
   return (
-    <FilterRoot multiple selectedValues={selectedValues}>
+    <FilterRoot
+      multiple
+      name="totalCompensation"
+      selectedValues={selectedValues}
+    >
       <FilterButton icon={<DollarSign />} popover>
         Total Compensation
       </FilterButton>
@@ -451,7 +455,6 @@ function TotalCompensationFilter() {
                 color={option.color}
                 key={option.value}
                 label={option.label}
-                name="totalCompensation"
                 value={option.value}
               />
             );
@@ -470,6 +473,7 @@ function LocationFilter() {
   return (
     <FilterRoot
       multiple
+      name="location"
       selectedValues={locations.map((location) => {
         return {
           color: 'purple-100',
@@ -511,14 +515,7 @@ function LocationList() {
   return (
     <FilterList>
       {filteredLocations.map((location) => {
-        return (
-          <FilterItem
-            key={location}
-            label={location}
-            name="location"
-            value={location}
-          />
-        );
+        return <FilterItem key={location} label={location} value={location} />;
       })}
     </FilterList>
   );

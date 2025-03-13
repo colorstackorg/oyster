@@ -559,6 +559,7 @@ function TagFilter() {
   return (
     <FilterRoot
       multiple
+      name="tag"
       selectedValues={appliedTags.map((tag) => {
         return {
           color: tag.color as AccentColor,
@@ -601,7 +602,6 @@ function TagList() {
             color={tag.color as AccentColor}
             key={tag.id}
             label={tag.name}
-            name="tag"
             value={tag.id}
           />
         );
@@ -627,7 +627,7 @@ function DatePostedFilter() {
   });
 
   return (
-    <FilterRoot selectedValues={selectedValues}>
+    <FilterRoot name="since" selectedValues={selectedValues}>
       <FilterButton icon={<Calendar />} popover>
         Date Posted
       </FilterButton>
@@ -640,7 +640,6 @@ function DatePostedFilter() {
                 color={option.color}
                 key={option.value}
                 label={option.label}
-                name="since"
                 value={option.value}
               />
             );

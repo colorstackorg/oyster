@@ -466,7 +466,7 @@ function CompanyFilter() {
   });
 
   return (
-    <FilterRoot selectedValues={selectedValues}>
+    <FilterRoot name="company" selectedValues={selectedValues}>
       <FilterButton icon={<Briefcase />} popover>
         Company
       </FilterButton>
@@ -504,7 +504,6 @@ function CompanyList() {
           <FilterItem
             key={company.id}
             label={`${company.name} (${company.count})`}
-            name="company"
             value={company.id}
           />
         );
@@ -532,7 +531,7 @@ function EthnicityFilter() {
   });
 
   return (
-    <FilterRoot selectedValues={selectedValues}>
+    <FilterRoot name="ethnicity" selectedValues={selectedValues}>
       <FilterButton icon={<Globe />} popover>
         Ethnicity
       </FilterButton>
@@ -570,7 +569,6 @@ function EthnicityList() {
           <FilterItem
             key={ethnicity.code}
             label={`${ethnicity.flagEmoji} ${ethnicity.demonym} (${ethnicity.count})`}
-            name="ethnicity"
             value={ethnicity.code}
           />
         );
@@ -598,7 +596,7 @@ function GraduationYearFilter() {
   });
 
   return (
-    <FilterRoot multiple selectedValues={selectedValues}>
+    <FilterRoot multiple name="graduationYear" selectedValues={selectedValues}>
       <FilterButton icon={<Calendar />} popover>
         Graduation Year
       </FilterButton>
@@ -610,7 +608,6 @@ function GraduationYearFilter() {
               <FilterItem
                 key={year.graduationYear}
                 label={`${year.graduationYear} (${year.count})`}
-                name="graduationYear"
                 value={year.graduationYear}
               />
             );
@@ -640,7 +637,7 @@ function HometownFilter() {
   });
 
   return (
-    <FilterRoot selectedValues={selectedValues}>
+    <FilterRoot name="hometown" selectedValues={selectedValues}>
       <FilterButton icon={<MapPin />} popover>
         Hometown
       </FilterButton>
@@ -679,7 +676,6 @@ function HometownList() {
             <FilterItem
               key={hometown.coordinates}
               label={`${hometown.name} (${hometown.count})`}
-              name="hometown"
               value={hometown.coordinates}
             />
           );
@@ -713,7 +709,7 @@ function LocationFilter() {
   });
 
   return (
-    <FilterRoot selectedValues={selectedValues}>
+    <FilterRoot name="location" selectedValues={selectedValues}>
       <FilterButton icon={<MapPin />} popover>
         Location
       </FilterButton>
@@ -752,7 +748,6 @@ function LocationList() {
             <FilterItem
               key={location.coordinates}
               label={`${location.name} (${location.count})`}
-              name="location"
               value={location.coordinates}
             />
           );
@@ -786,7 +781,7 @@ function SchoolFilter() {
   });
 
   return (
-    <FilterRoot selectedValues={selectedValues}>
+    <FilterRoot name="school" selectedValues={selectedValues}>
       <FilterButton icon={<BookOpen />} popover>
         School
       </FilterButton>
@@ -824,7 +819,6 @@ function SchoolList() {
           <FilterItem
             key={school.id}
             label={`${school.name} (${school.count})`}
-            name="school"
             value={school.id}
           />
         );
