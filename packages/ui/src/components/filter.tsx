@@ -2,6 +2,7 @@ import { useSearchParams } from '@remix-run/react';
 import React, {
   createContext,
   type PropsWithChildren,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -297,7 +298,7 @@ export function FilterPopover({
 // Filter Search
 
 export function FilterSearch() {
-  const { itemRefs, search, searchRef, setHighlightedIndex, setSearch } =
+  const { search, searchRef, setHighlightedIndex, setSearch } =
     useContext(FilterContext);
 
   return (
@@ -307,7 +308,6 @@ export function FilterSearch() {
       className="border-b border-b-gray-300 p-2 text-sm"
       name="search"
       onChange={(e) => {
-        itemRefs.current = {};
         setSearch(e.currentTarget.value);
         setHighlightedIndex(0);
       }}
@@ -382,14 +382,30 @@ export function FilterItem({ color, label, value, ...rest }: FilterItemProps) {
   // from accidentally passing it in.
   const index = 'index' in rest ? (rest.index as number) : -1;
 
+  const ref = useCallback(
+    (element: HTMLButtonElement | null) => {
+      if (element) {
+        // Element is mounting or updating...
+        itemRefs.current[index] = element;
+      } else {
+        // Element is unmounting...
+        delete itemRefs.current[index];
+      }
+    },
+    [index, itemRefs]
+  );
+
   function onClick(e: React.MouseEvent<HTMLButtonElement>) {
     if (!multiple) {
       setOpen(false);
     }
 
     setSearch('');
-    setHighlightedIndex(0);
     searchRef.current?.focus();
+
+    if (searchRef.current?.value) {
+      setHighlightedIndex(0);
+    }
 
     setSearchParams((params) => {
       params.delete('page');
@@ -430,9 +446,7 @@ export function FilterItem({ color, label, value, ...rest }: FilterItemProps) {
         )}
         data-highlighted={index === highlightedIndex}
         onClick={onClick}
-        ref={(element) => {
-          itemRefs.current[index] = element;
-        }}
+        ref={ref}
         type="button"
         value={value}
       >
