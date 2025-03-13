@@ -467,9 +467,7 @@ function CompanyFilter() {
 
   return (
     <FilterRoot name="company" selectedValues={selectedValues}>
-      <FilterButton icon={<Briefcase />} popover>
-        Company
-      </FilterButton>
+      <FilterButton icon={<Briefcase />}>Company</FilterButton>
 
       <FilterPopover>
         <FilterSearch />
@@ -520,7 +518,7 @@ function EthnicityFilter() {
 
   const options: FilterValue[] = allEthnicities.map((value) => {
     return {
-      color: 'pink-100',
+      color: 'lime-100',
       label: value.flagEmoji + ' ' + value.demonym,
       value: value.code,
     };
@@ -532,9 +530,7 @@ function EthnicityFilter() {
 
   return (
     <FilterRoot name="ethnicity" selectedValues={selectedValues}>
-      <FilterButton icon={<Globe />} popover>
-        Ethnicity
-      </FilterButton>
+      <FilterButton icon={<Globe />}>Ethnicity</FilterButton>
 
       <FilterPopover>
         <FilterSearch />
@@ -597,9 +593,7 @@ function GraduationYearFilter() {
 
   return (
     <FilterRoot multiple name="graduationYear" selectedValues={selectedValues}>
-      <FilterButton icon={<Calendar />} popover>
-        Graduation Year
-      </FilterButton>
+      <FilterButton icon={<Calendar />}>Graduation Year</FilterButton>
 
       <FilterPopover>
         <FilterList>
@@ -626,7 +620,7 @@ function HometownFilter() {
 
   const options: FilterValue[] = allHometowns.map((value) => {
     return {
-      color: 'pink-100',
+      color: 'orange-100',
       label: value.name,
       value: value.coordinates,
     };
@@ -638,9 +632,7 @@ function HometownFilter() {
 
   return (
     <FilterRoot name="hometown" selectedValues={selectedValues}>
-      <FilterButton icon={<MapPin />} popover>
-        Hometown
-      </FilterButton>
+      <FilterButton icon={<MapPin />}>Hometown</FilterButton>
 
       <FilterPopover align="right">
         <FilterSearch />
@@ -698,7 +690,7 @@ function LocationFilter() {
 
   const options: FilterValue[] = allLocations.map((value) => {
     return {
-      color: 'pink-100',
+      color: 'purple-100',
       label: value.name,
       value: value.coordinates,
     };
@@ -710,9 +702,7 @@ function LocationFilter() {
 
   return (
     <FilterRoot name="location" selectedValues={selectedValues}>
-      <FilterButton icon={<MapPin />} popover>
-        Location
-      </FilterButton>
+      <FilterButton icon={<MapPin />}>Location</FilterButton>
 
       <FilterPopover align="right">
         <FilterSearch />
@@ -770,7 +760,7 @@ function SchoolFilter() {
 
   const options: FilterValue[] = allSchools.map((value) => {
     return {
-      color: 'pink-100',
+      color: 'cyan-100',
       label: value.name,
       value: value.id,
     };
@@ -782,9 +772,7 @@ function SchoolFilter() {
 
   return (
     <FilterRoot name="school" selectedValues={selectedValues}>
-      <FilterButton icon={<BookOpen />} popover>
-        School
-      </FilterButton>
+      <FilterButton icon={<BookOpen />}>School</FilterButton>
 
       <FilterPopover>
         <FilterSearch />

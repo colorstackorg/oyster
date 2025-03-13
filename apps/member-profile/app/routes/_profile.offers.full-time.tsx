@@ -443,9 +443,7 @@ function TotalCompensationFilter() {
       name="totalCompensation"
       selectedValues={selectedValues}
     >
-      <FilterButton icon={<DollarSign />} popover>
-        Total Compensation
-      </FilterButton>
+      <FilterButton icon={<DollarSign />}>Total Compensation</FilterButton>
 
       <FilterPopover>
         <FilterList height="max">
@@ -482,9 +480,7 @@ function LocationFilter() {
         };
       })}
     >
-      <FilterButton icon={<MapPin />} popover>
-        Location
-      </FilterButton>
+      <FilterButton icon={<MapPin />}>Location</FilterButton>
 
       <FilterPopover>
         <FilterSearch />

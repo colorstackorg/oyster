@@ -413,9 +413,7 @@ function HourlyRateFilter() {
 
   return (
     <FilterRoot multiple name="hourlyRate" selectedValues={selectedValues}>
-      <FilterButton icon={<DollarSign />} popover>
-        Hourly Rate
-      </FilterButton>
+      <FilterButton icon={<DollarSign />}>Hourly Rate</FilterButton>
 
       <FilterPopover>
         <FilterList height="max">
@@ -452,9 +450,7 @@ function LocationFilter() {
         };
       })}
     >
-      <FilterButton icon={<MapPin />} popover>
-        Location
-      </FilterButton>
+      <FilterButton icon={<MapPin />}>Location</FilterButton>
 
       <FilterPopover>
         <FilterSearch />

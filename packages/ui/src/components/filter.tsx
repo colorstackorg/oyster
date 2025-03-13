@@ -105,7 +105,7 @@ export function FilterButton({
   className,
   icon,
   onClick,
-  popover,
+  popover = true,
 }: FilterButtonProps) {
   const [_searchParams] = useSearchParams();
   const { name, open, selectedValues, setOpen } = useContext(FilterContext);

@@ -547,6 +547,7 @@ function BookmarkFilter() {
       active={bookmarked}
       icon={<Bookmark />}
       onClick={toggleBookmark}
+      popover={false}
     >
       Bookmarked
     </FilterButton>
@@ -568,9 +569,7 @@ function TagFilter() {
         };
       })}
     >
-      <FilterButton icon={<Tag />} popover>
-        Tags
-      </FilterButton>
+      <FilterButton icon={<Tag />}>Tags</FilterButton>
 
       <FilterPopover>
         <FilterSearch />
@@ -628,9 +627,7 @@ function DatePostedFilter() {
 
   return (
     <FilterRoot name="since" selectedValues={selectedValues}>
-      <FilterButton icon={<Calendar />} popover>
-        Date Posted
-      </FilterButton>
+      <FilterButton icon={<Calendar />}>Date Posted</FilterButton>
 
       <FilterPopover>
         <FilterList>

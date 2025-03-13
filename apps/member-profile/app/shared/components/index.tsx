@@ -109,9 +109,7 @@ export function CompanyFilter({
           : []
       }
     >
-      <FilterButton icon={<Briefcase />} popover>
-        Company
-      </FilterButton>
+      <FilterButton icon={<Briefcase />}>Company</FilterButton>
 
       <FilterPopover>
         <FilterSearch />
