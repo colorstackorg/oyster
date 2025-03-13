@@ -27,6 +27,7 @@ import {
   FilterButton,
   FilterEmptyMessage,
   FilterItem,
+  FilterList,
   FilterPopover,
   FilterRoot,
   FilterSearch,
@@ -497,7 +498,7 @@ function CompanyList() {
   }
 
   return (
-    <ul className="overflow-auto">
+    <FilterList>
       {filteredCompanies.map((company) => {
         return (
           <FilterItem
@@ -508,7 +509,7 @@ function CompanyList() {
           />
         );
       })}
-    </ul>
+    </FilterList>
   );
 }
 
@@ -563,7 +564,7 @@ function EthnicityList() {
   }
 
   return (
-    <ul className="overflow-auto">
+    <FilterList>
       {filteredEthnicities.map((ethnicity) => {
         return (
           <FilterItem
@@ -574,7 +575,7 @@ function EthnicityList() {
           />
         );
       })}
-    </ul>
+    </FilterList>
   );
 }
 
@@ -603,7 +604,7 @@ function GraduationYearFilter() {
       </FilterButton>
 
       <FilterPopover>
-        <ul className="overflow-auto">
+        <FilterList>
           {allGraduationYears.map((year) => {
             return (
               <FilterItem
@@ -614,7 +615,7 @@ function GraduationYearFilter() {
               />
             );
           })}
-        </ul>
+        </FilterList>
       </FilterPopover>
     </FilterRoot>
   );
@@ -644,7 +645,7 @@ function HometownFilter() {
         Hometown
       </FilterButton>
 
-      <FilterPopover align="right" height="max-h-80">
+      <FilterPopover align="right">
         <FilterSearch />
         <HometownList />
       </FilterPopover>
@@ -672,7 +673,7 @@ function HometownList() {
 
   return (
     <>
-      <ul className="overflow-auto">
+      <FilterList height="max-h-80">
         {filteredHometowns.map((hometown) => {
           return (
             <FilterItem
@@ -683,7 +684,7 @@ function HometownList() {
             />
           );
         })}
-      </ul>
+      </FilterList>
 
       <FilterEmptyMessage>
         Results will include members within a 25 mile radius of the selected
@@ -717,7 +718,7 @@ function LocationFilter() {
         Location
       </FilterButton>
 
-      <FilterPopover align="right" height="max-h-80">
+      <FilterPopover align="right">
         <FilterSearch />
         <LocationList />
       </FilterPopover>
@@ -745,7 +746,7 @@ function LocationList() {
 
   return (
     <>
-      <ul className="overflow-auto">
+      <FilterList height="max-h-80">
         {filteredLocations.map((location) => {
           return (
             <FilterItem
@@ -756,7 +757,7 @@ function LocationList() {
             />
           );
         })}
-      </ul>
+      </FilterList>
 
       <FilterEmptyMessage>
         Results will include members within a 25 mile radius of the selected
@@ -817,7 +818,7 @@ function SchoolList() {
   }
 
   return (
-    <ul className="overflow-auto">
+    <FilterList>
       {filteredSchools.map((school) => {
         return (
           <FilterItem
@@ -828,6 +829,6 @@ function SchoolList() {
           />
         );
       })}
-    </ul>
+    </FilterList>
   );
 }
