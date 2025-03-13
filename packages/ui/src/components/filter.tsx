@@ -20,6 +20,7 @@ type PillColor = PillProps['color'];
 
 type FilterContext = {
   multiple?: boolean;
+  name: string;
   open: boolean;
   search: string;
   selectedValues: FilterValue[];
@@ -29,6 +30,7 @@ type FilterContext = {
 
 const FilterContext = createContext<FilterContext>({
   multiple: false,
+  name: '',
   open: false,
   search: '',
   selectedValues: [],
@@ -47,8 +49,11 @@ export function useFilterContext() {
 export function FilterRoot({
   children,
   multiple,
+  name,
   selectedValues = [],
-}: PropsWithChildren<Pick<FilterContext, 'multiple' | 'selectedValues'>>) {
+}: PropsWithChildren<
+  Pick<FilterContext, 'multiple' | 'name' | 'selectedValues'>
+>) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -63,6 +68,7 @@ export function FilterRoot({
     <FilterContext.Provider
       value={{
         multiple,
+        name,
         open,
         search,
         selectedValues,
@@ -101,7 +107,8 @@ export function FilterButton({
   onClick,
   popover,
 }: FilterButtonProps) {
-  const { open, selectedValues, setOpen } = useContext(FilterContext);
+  const [_searchParams] = useSearchParams();
+  const { name, open, selectedValues, setOpen } = useContext(FilterContext);
 
   icon = React.cloneElement(icon, {
     className: active ? '' : 'text-primary',
@@ -112,9 +119,22 @@ export function FilterButton({
     selectedValues && selectedValues.length ? (
       <ul className="flex items-center gap-1">
         {selectedValues.map((value) => {
+          // Need to create a new instance or else the search params will be
+          // mutated whenever there are multiple values selected for the same
+          // filter.
+          const searchParams = new URLSearchParams(_searchParams);
+
+          searchParams.delete(name, value.value);
+          searchParams.delete('page');
+
           return (
             <li key={value.label}>
-              <Pill color={value.color}>{value.label}</Pill>
+              <Pill
+                color={value.color}
+                onCloseHref={{ search: searchParams.toString() }}
+              >
+                {value.label}
+              </Pill>
             </li>
           );
         })}
@@ -131,7 +151,15 @@ export function FilterButton({
         open && 'border-primary',
         className
       )}
-      onClick={() => {
+      onClick={(e) => {
+        const link = (e.target as Element).closest('a');
+
+        // If a user clicks on the "x" link within a `Pill`, we want to prevent
+        // the default behavior of opening the popover.
+        if (link) {
+          return;
+        }
+
         if (onClick) {
           onClick();
         } else {
@@ -232,13 +260,12 @@ export function FilterList({ children, height = 'max-h-60' }: FilterListProps) {
 type FilterItemProps = PropsWithChildren<{
   color?: PillColor;
   label: string | React.ReactElement;
-  name: string;
   value: string;
 }>;
 
-export function FilterItem({ color, label, name, value }: FilterItemProps) {
+export function FilterItem({ color, label, value }: FilterItemProps) {
   const [_, setSearchParams] = useSearchParams();
-  const { multiple, selectedValues, setOpen } = useContext(FilterContext);
+  const { multiple, name, selectedValues, setOpen } = useContext(FilterContext);
 
   function onClick(e: React.MouseEvent<HTMLButtonElement>) {
     if (!multiple) {
