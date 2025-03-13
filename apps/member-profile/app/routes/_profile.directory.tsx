@@ -670,7 +670,7 @@ function HometownList() {
 
   return (
     <>
-      <FilterList height="max-h-80">
+      <FilterList>
         {filteredHometowns.map((hometown) => {
           return (
             <FilterItem
@@ -742,7 +742,7 @@ function LocationList() {
 
   return (
     <>
-      <FilterList height="max-h-80">
+      <FilterList>
         {filteredLocations.map((location) => {
           return (
             <FilterItem

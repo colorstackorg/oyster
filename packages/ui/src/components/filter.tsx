@@ -238,18 +238,12 @@ export function FilterEmptyMessage({ children }: PropsWithChildren) {
 // Filter List
 
 type FilterListProps = PropsWithChildren<{
-  height?: 'max' | 'max-h-60' | 'max-h-80';
+  height?: 'max' | 'max-h-60';
 }>;
 
 export function FilterList({ children, height = 'max-h-60' }: FilterListProps) {
   return (
-    <ul
-      className={cx(
-        'overflow-auto',
-        height === 'max-h-60' && 'max-h-60',
-        height === 'max-h-80' && 'max-h-80'
-      )}
-    >
+    <ul className={cx('overflow-auto', height === 'max-h-60' && 'max-h-60')}>
       {children}
     </ul>
   );
