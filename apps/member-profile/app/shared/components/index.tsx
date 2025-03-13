@@ -9,6 +9,7 @@ import {
   FilterButton,
   FilterEmptyMessage,
   FilterItem,
+  FilterList,
   FilterPopover,
   FilterSearch,
   useFilterContext,
@@ -136,7 +137,7 @@ function CompanyFilterList({ allCompanies, emptyMessage }: CompanyFilterProps) {
   }
 
   return (
-    <ul className="overflow-auto">
+    <FilterList>
       {filteredCompanies.map((company) => {
         return (
           <FilterItem
@@ -147,6 +148,6 @@ function CompanyFilterList({ allCompanies, emptyMessage }: CompanyFilterProps) {
           />
         );
       })}
-    </ul>
+    </FilterList>
   );
 }

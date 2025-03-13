@@ -20,6 +20,7 @@ import {
   FilterButton,
   FilterEmptyMessage,
   FilterItem,
+  FilterList,
   FilterPopover,
   FilterRoot,
   FilterSearch,
@@ -416,8 +417,8 @@ function HourlyRateFilter() {
         Hourly Rate
       </FilterButton>
 
-      <FilterPopover height="max">
-        <ul className="overflow-auto">
+      <FilterPopover>
+        <FilterList height="max">
           {options.map((option) => {
             return (
               <FilterItem
@@ -429,7 +430,7 @@ function HourlyRateFilter() {
               />
             );
           })}
-        </ul>
+        </FilterList>
       </FilterPopover>
     </FilterRoot>
   );
@@ -482,7 +483,7 @@ function LocationList() {
   }
 
   return (
-    <ul className="overflow-auto">
+    <FilterList>
       {filteredLocations.map((location) => {
         return (
           <FilterItem
@@ -493,6 +494,6 @@ function LocationList() {
           />
         );
       })}
-    </ul>
+    </FilterList>
   );
 }

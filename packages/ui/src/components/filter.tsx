@@ -210,7 +210,7 @@ export function FilterEmptyMessage({ children }: PropsWithChildren) {
 // Filter List
 
 type FilterListProps = PropsWithChildren<{
-  height?: 'max-h-60' | 'max-h-80';
+  height?: 'max' | 'max-h-60' | 'max-h-80';
 }>;
 
 export function FilterList({ children, height = 'max-h-60' }: FilterListProps) {

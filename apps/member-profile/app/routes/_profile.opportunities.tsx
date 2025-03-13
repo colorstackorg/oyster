@@ -32,6 +32,7 @@ import {
   FilterButton,
   FilterEmptyMessage,
   FilterItem,
+  FilterList,
   FilterPopover,
   FilterRoot,
   FilterSearch,
@@ -593,7 +594,7 @@ function TagList() {
   }
 
   return (
-    <ul className="overflow-auto">
+    <FilterList>
       {filteredTags.map((tag) => {
         return (
           <FilterItem
@@ -605,7 +606,7 @@ function TagList() {
           />
         );
       })}
-    </ul>
+    </FilterList>
   );
 }
 
@@ -632,7 +633,7 @@ function DatePostedFilter() {
       </FilterButton>
 
       <FilterPopover>
-        <ul>
+        <FilterList>
           {options.map((option) => {
             return (
               <FilterItem
@@ -644,7 +645,7 @@ function DatePostedFilter() {
               />
             );
           })}
-        </ul>
+        </FilterList>
       </FilterPopover>
     </FilterRoot>
   );
