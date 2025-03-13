@@ -81,7 +81,9 @@ export function FilterRoot({
   const triggerRef = useRef<HTMLButtonElement | null>(null);
 
   useOnClickOutside(rootRef, () => {
-    close();
+    if (open) {
+      close();
+    }
   });
 
   function close() {
