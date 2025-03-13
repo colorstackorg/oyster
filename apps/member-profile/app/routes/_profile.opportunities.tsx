@@ -32,6 +32,7 @@ import {
   FilterButton,
   FilterEmptyMessage,
   FilterItem,
+  FilterList,
   FilterPopover,
   FilterRoot,
   FilterSearch,
@@ -546,6 +547,7 @@ function BookmarkFilter() {
       active={bookmarked}
       icon={<Bookmark />}
       onClick={toggleBookmark}
+      popover={false}
     >
       Bookmarked
     </FilterButton>
@@ -556,20 +558,18 @@ function TagFilter() {
   const { appliedTags } = useLoaderData<typeof loader>();
 
   return (
-    <FilterRoot multiple>
-      <FilterButton
-        icon={<Tag />}
-        popover
-        selectedValues={appliedTags.map((tag) => {
-          return {
-            color: tag.color as AccentColor,
-            label: tag.name,
-            value: tag.id,
-          };
-        })}
-      >
-        Tags
-      </FilterButton>
+    <FilterRoot
+      multiple
+      name="tag"
+      selectedValues={appliedTags.map((tag) => {
+        return {
+          color: tag.color as AccentColor,
+          label: tag.name,
+          value: tag.id,
+        };
+      })}
+    >
+      <FilterButton icon={<Tag />}>Tags</FilterButton>
 
       <FilterPopover>
         <FilterSearch />
@@ -580,7 +580,7 @@ function TagFilter() {
 }
 
 function TagList() {
-  const { allTags, appliedTags } = useLoaderData<typeof loader>();
+  const { allTags } = useLoaderData<typeof loader>();
   const { search } = useFilterContext();
 
   const regex = new RegExp(toEscapedString(search), 'i');
@@ -594,24 +594,18 @@ function TagList() {
   }
 
   return (
-    <ul className="overflow-auto">
+    <FilterList>
       {filteredTags.map((tag) => {
-        const checked = appliedTags.some((appliedTag) => {
-          return appliedTag.id === tag.id;
-        });
-
         return (
           <FilterItem
-            checked={checked}
             color={tag.color as AccentColor}
             key={tag.id}
             label={tag.name}
-            name="tag"
-            value={tag.name}
+            value={tag.id}
           />
         );
       })}
-    </ul>
+    </FilterList>
   );
 }
 
@@ -632,26 +626,22 @@ function DatePostedFilter() {
   });
 
   return (
-    <FilterRoot>
-      <FilterButton icon={<Calendar />} popover selectedValues={selectedValues}>
-        Date Posted
-      </FilterButton>
+    <FilterRoot name="since" selectedValues={selectedValues}>
+      <FilterButton icon={<Calendar />}>Date Posted</FilterButton>
 
       <FilterPopover>
-        <ul>
+        <FilterList>
           {options.map((option) => {
             return (
               <FilterItem
-                checked={since === option.value}
                 color={option.color}
                 key={option.value}
                 label={option.label}
-                name="since"
                 value={option.value}
               />
             );
           })}
-        </ul>
+        </FilterList>
       </FilterPopover>
     </FilterRoot>
   );

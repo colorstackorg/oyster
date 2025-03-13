@@ -27,6 +27,7 @@ import {
   FilterButton,
   FilterEmptyMessage,
   FilterItem,
+  FilterList,
   FilterPopover,
   FilterRoot,
   FilterSearch,
@@ -349,19 +350,17 @@ export default function DirectoryPage() {
     <>
       <Text variant="2xl">Directory 🗂️</Text>
 
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-[inherit]">
-          <Dashboard.SearchForm placeholder="Search by name or email..." />
+      <div className="flex flex-wrap items-center gap-4">
+        <Dashboard.SearchForm placeholder="Search by name or email..." />
 
-          <div className="flex flex-wrap items-center gap-2">
-            <SchoolFilter />
-            <CompanyFilter />
-            <LocationFilter />
-            <EthnicityFilter />
-            <GraduationYearFilter />
-            <HometownFilter />
-            <ResetFiltersButton />
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <SchoolFilter />
+          <CompanyFilter />
+          <LocationFilter />
+          <EthnicityFilter />
+          <GraduationYearFilter />
+          <HometownFilter />
+          <ResetFiltersButton />
         </div>
       </div>
 
@@ -467,14 +466,8 @@ function CompanyFilter() {
   });
 
   return (
-    <FilterRoot>
-      <FilterButton
-        icon={<Briefcase />}
-        popover
-        selectedValues={selectedValues}
-      >
-        Company
-      </FilterButton>
+    <FilterRoot name="company" selectedValues={selectedValues}>
+      <FilterButton icon={<Briefcase />}>Company</FilterButton>
 
       <FilterPopover>
         <FilterSearch />
@@ -485,7 +478,6 @@ function CompanyFilter() {
 }
 
 function CompanyList() {
-  const [searchParams] = useSearchParams();
   const { allCompanies } = useLoaderData<typeof loader>();
   const { search } = useFilterContext();
 
@@ -503,22 +495,18 @@ function CompanyList() {
     return <FilterEmptyMessage>No companies found.</FilterEmptyMessage>;
   }
 
-  const selectedCompany = searchParams.get('company');
-
   return (
-    <ul className="overflow-auto">
+    <FilterList>
       {filteredCompanies.map((company) => {
         return (
           <FilterItem
-            checked={selectedCompany === company.id}
             key={company.id}
             label={`${company.name} (${company.count})`}
-            name="company"
             value={company.id}
           />
         );
       })}
-    </ul>
+    </FilterList>
   );
 }
 
@@ -530,7 +518,7 @@ function EthnicityFilter() {
 
   const options: FilterValue[] = allEthnicities.map((value) => {
     return {
-      color: 'pink-100',
+      color: 'lime-100',
       label: value.flagEmoji + ' ' + value.demonym,
       value: value.code,
     };
@@ -541,10 +529,8 @@ function EthnicityFilter() {
   });
 
   return (
-    <FilterRoot>
-      <FilterButton icon={<Globe />} popover selectedValues={selectedValues}>
-        Ethnicity
-      </FilterButton>
+    <FilterRoot name="ethnicity" selectedValues={selectedValues}>
+      <FilterButton icon={<Globe />}>Ethnicity</FilterButton>
 
       <FilterPopover>
         <FilterSearch />
@@ -555,7 +541,6 @@ function EthnicityFilter() {
 }
 
 function EthnicityList() {
-  const [searchParams] = useSearchParams();
   const { allEthnicities } = useLoaderData<typeof loader>();
   const { search } = useFilterContext();
 
@@ -573,22 +558,18 @@ function EthnicityList() {
     return <FilterEmptyMessage>No ethnicities found.</FilterEmptyMessage>;
   }
 
-  const selectedEthnicity = searchParams.get('ethnicity');
-
   return (
-    <ul className="overflow-auto">
+    <FilterList>
       {filteredEthnicities.map((ethnicity) => {
         return (
           <FilterItem
-            checked={selectedEthnicity === ethnicity.code}
             key={ethnicity.code}
             label={`${ethnicity.flagEmoji} ${ethnicity.demonym} (${ethnicity.count})`}
-            name="ethnicity"
             value={ethnicity.code}
           />
         );
       })}
-    </ul>
+    </FilterList>
   );
 }
 
@@ -611,25 +592,21 @@ function GraduationYearFilter() {
   });
 
   return (
-    <FilterRoot multiple>
-      <FilterButton icon={<Calendar />} popover selectedValues={selectedValues}>
-        Graduation Year
-      </FilterButton>
+    <FilterRoot multiple name="graduationYear" selectedValues={selectedValues}>
+      <FilterButton icon={<Calendar />}>Graduation Year</FilterButton>
 
       <FilterPopover>
-        <ul className="overflow-auto">
+        <FilterList>
           {allGraduationYears.map((year) => {
             return (
               <FilterItem
-                checked={graduationYears.includes(year.graduationYear)}
                 key={year.graduationYear}
                 label={`${year.graduationYear} (${year.count})`}
-                name="graduationYear"
                 value={year.graduationYear}
               />
             );
           })}
-        </ul>
+        </FilterList>
       </FilterPopover>
     </FilterRoot>
   );
@@ -643,7 +620,7 @@ function HometownFilter() {
 
   const options: FilterValue[] = allHometowns.map((value) => {
     return {
-      color: 'pink-100',
+      color: 'orange-100',
       label: value.name,
       value: value.coordinates,
     };
@@ -654,12 +631,10 @@ function HometownFilter() {
   });
 
   return (
-    <FilterRoot>
-      <FilterButton icon={<MapPin />} popover selectedValues={selectedValues}>
-        Hometown
-      </FilterButton>
+    <FilterRoot name="hometown" selectedValues={selectedValues}>
+      <FilterButton icon={<MapPin />}>Hometown</FilterButton>
 
-      <FilterPopover height="max-h-80">
+      <FilterPopover align="right">
         <FilterSearch />
         <HometownList />
       </FilterPopover>
@@ -668,7 +643,6 @@ function HometownFilter() {
 }
 
 function HometownList() {
-  const [searchParams] = useSearchParams();
   const { allHometowns } = useLoaderData<typeof loader>();
   const { search } = useFilterContext();
 
@@ -686,23 +660,19 @@ function HometownList() {
     return <FilterEmptyMessage>No hometowns found.</FilterEmptyMessage>;
   }
 
-  const appliedHometown = searchParams.get('hometown');
-
   return (
     <>
-      <ul className="overflow-auto">
+      <FilterList>
         {filteredHometowns.map((hometown) => {
           return (
             <FilterItem
-              checked={hometown.coordinates === appliedHometown}
               key={hometown.coordinates}
               label={`${hometown.name} (${hometown.count})`}
-              name="hometown"
               value={hometown.coordinates}
             />
           );
         })}
-      </ul>
+      </FilterList>
 
       <FilterEmptyMessage>
         Results will include members within a 25 mile radius of the selected
@@ -720,7 +690,7 @@ function LocationFilter() {
 
   const options: FilterValue[] = allLocations.map((value) => {
     return {
-      color: 'pink-100',
+      color: 'purple-100',
       label: value.name,
       value: value.coordinates,
     };
@@ -731,12 +701,10 @@ function LocationFilter() {
   });
 
   return (
-    <FilterRoot>
-      <FilterButton icon={<MapPin />} popover selectedValues={selectedValues}>
-        Location
-      </FilterButton>
+    <FilterRoot name="location" selectedValues={selectedValues}>
+      <FilterButton icon={<MapPin />}>Location</FilterButton>
 
-      <FilterPopover height="max-h-80">
+      <FilterPopover align="right">
         <FilterSearch />
         <LocationList />
       </FilterPopover>
@@ -745,7 +713,6 @@ function LocationFilter() {
 }
 
 function LocationList() {
-  const [searchParams] = useSearchParams();
   const { allLocations } = useLoaderData<typeof loader>();
   const { search } = useFilterContext();
 
@@ -763,23 +730,19 @@ function LocationList() {
     return <FilterEmptyMessage>No locations found.</FilterEmptyMessage>;
   }
 
-  const appliedLocation = searchParams.get('location');
-
   return (
     <>
-      <ul className="overflow-auto">
+      <FilterList>
         {filteredLocations.map((location) => {
           return (
             <FilterItem
-              checked={location.coordinates === appliedLocation}
               key={location.coordinates}
               label={`${location.name} (${location.count})`}
-              name="location"
               value={location.coordinates}
             />
           );
         })}
-      </ul>
+      </FilterList>
 
       <FilterEmptyMessage>
         Results will include members within a 25 mile radius of the selected
@@ -797,7 +760,7 @@ function SchoolFilter() {
 
   const options: FilterValue[] = allSchools.map((value) => {
     return {
-      color: 'pink-100',
+      color: 'cyan-100',
       label: value.name,
       value: value.id,
     };
@@ -808,10 +771,8 @@ function SchoolFilter() {
   });
 
   return (
-    <FilterRoot>
-      <FilterButton icon={<BookOpen />} popover selectedValues={selectedValues}>
-        School
-      </FilterButton>
+    <FilterRoot name="school" selectedValues={selectedValues}>
+      <FilterButton icon={<BookOpen />}>School</FilterButton>
 
       <FilterPopover>
         <FilterSearch />
@@ -822,7 +783,6 @@ function SchoolFilter() {
 }
 
 function SchoolList() {
-  const [searchParams] = useSearchParams();
   const { allSchools } = useLoaderData<typeof loader>();
   const { search } = useFilterContext();
 
@@ -840,21 +800,17 @@ function SchoolList() {
     return <FilterEmptyMessage>No schools found.</FilterEmptyMessage>;
   }
 
-  const selectedSchool = searchParams.get('school');
-
   return (
-    <ul className="overflow-auto">
+    <FilterList>
       {filteredSchools.map((school) => {
         return (
           <FilterItem
-            checked={selectedSchool === school.id}
             key={school.id}
             label={`${school.name} (${school.count})`}
-            name="school"
             value={school.id}
           />
         );
       })}
-    </ul>
+    </FilterList>
   );
 }

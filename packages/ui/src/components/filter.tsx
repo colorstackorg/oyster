@@ -20,16 +20,20 @@ type PillColor = PillProps['color'];
 
 type FilterContext = {
   multiple?: boolean;
+  name: string;
   open: boolean;
   search: string;
+  selectedValues: FilterValue[];
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setSearch: React.Dispatch<React.SetStateAction<string>>;
 };
 
 const FilterContext = createContext<FilterContext>({
   multiple: false,
+  name: '',
   open: false,
   search: '',
+  selectedValues: [],
   setOpen: () => {},
   setSearch: () => {},
 });
@@ -45,7 +49,11 @@ export function useFilterContext() {
 export function FilterRoot({
   children,
   multiple,
-}: PropsWithChildren<Pick<FilterContext, 'multiple'>>) {
+  name,
+  selectedValues = [],
+}: PropsWithChildren<
+  Pick<FilterContext, 'multiple' | 'name' | 'selectedValues'>
+>) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -60,8 +68,10 @@ export function FilterRoot({
     <FilterContext.Provider
       value={{
         multiple,
+        name,
         open,
         search,
+        selectedValues,
         setOpen,
         setSearch,
       }}
@@ -87,7 +97,6 @@ type FilterButtonProps = PropsWithChildren<{
   icon: React.ReactElement;
   onClick?(): void;
   popover?: boolean;
-  selectedValues?: FilterValue[];
 }>;
 
 export function FilterButton({
@@ -96,10 +105,10 @@ export function FilterButton({
   className,
   icon,
   onClick,
-  popover,
-  selectedValues = [],
+  popover = true,
 }: FilterButtonProps) {
-  const { open, setOpen } = useContext(FilterContext);
+  const [_searchParams] = useSearchParams();
+  const { name, open, selectedValues, setOpen } = useContext(FilterContext);
 
   icon = React.cloneElement(icon, {
     className: active ? '' : 'text-primary',
@@ -110,9 +119,22 @@ export function FilterButton({
     selectedValues && selectedValues.length ? (
       <ul className="flex items-center gap-1">
         {selectedValues.map((value) => {
+          // Need to create a new instance or else the search params will be
+          // mutated whenever there are multiple values selected for the same
+          // filter.
+          const searchParams = new URLSearchParams(_searchParams);
+
+          searchParams.delete(name, value.value);
+          searchParams.delete('page');
+
           return (
             <li key={value.label}>
-              <Pill color={value.color}>{value.label}</Pill>
+              <Pill
+                color={value.color}
+                onCloseHref={{ search: searchParams.toString() }}
+              >
+                {value.label}
+              </Pill>
             </li>
           );
         })}
@@ -129,7 +151,15 @@ export function FilterButton({
         open && 'border-primary',
         className
       )}
-      onClick={() => {
+      onClick={(e) => {
+        const link = (e.target as Element).closest('a');
+
+        // If a user clicks on the "x" link within a `Pill`, we want to prevent
+        // the default behavior of opening the popover.
+        if (link) {
+          return;
+        }
+
         if (onClick) {
           onClick();
         } else {
@@ -148,13 +178,11 @@ export function FilterButton({
 
 type FilterPopoverProps = PropsWithChildren<{
   align?: 'left' | 'right';
-  height?: 'max-h-60' | 'max-h-80' | 'max';
 }>;
 
 export function FilterPopover({
   align = 'left',
   children,
-  height = 'max-h-60',
 }: FilterPopoverProps) {
   const { open } = useContext(FilterContext);
 
@@ -166,8 +194,6 @@ export function FilterPopover({
     <div
       className={cx(
         'absolute top-full z-10 mt-1 flex w-max min-w-full max-w-[300px] flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2',
-        height === 'max-h-60' && 'max-h-60',
-        height === 'max-h-80' && 'max-h-80',
         align === 'right' && 'right-0'
       )}
       id="popover"
@@ -209,25 +235,31 @@ export function FilterEmptyMessage({ children }: PropsWithChildren) {
   );
 }
 
+// Filter List
+
+type FilterListProps = PropsWithChildren<{
+  height?: 'max' | 'max-h-60';
+}>;
+
+export function FilterList({ children, height = 'max-h-60' }: FilterListProps) {
+  return (
+    <ul className={cx('overflow-auto', height === 'max-h-60' && 'max-h-60')}>
+      {children}
+    </ul>
+  );
+}
+
 // Filter Item
 
 type FilterItemProps = PropsWithChildren<{
-  checked: boolean;
   color?: PillColor;
   label: string | React.ReactElement;
-  name: string;
   value: string;
 }>;
 
-export function FilterItem({
-  checked,
-  color,
-  label,
-  name,
-  value,
-}: FilterItemProps) {
+export function FilterItem({ color, label, value }: FilterItemProps) {
   const [_, setSearchParams] = useSearchParams();
-  const { multiple, setOpen } = useContext(FilterContext);
+  const { multiple, name, selectedValues, setOpen } = useContext(FilterContext);
 
   function onClick(e: React.MouseEvent<HTMLButtonElement>) {
     if (!multiple) {
@@ -268,6 +300,10 @@ export function FilterItem({
     }
   }
 
+  const selected = selectedValues.some((selectedValue) => {
+    return selectedValue.value === value;
+  });
+
   return (
     <li>
       <button
@@ -278,8 +314,8 @@ export function FilterItem({
       >
         {color ? <Pill color={color}>{label}</Pill> : label}
         <Check
-          className="text-primary data-[checked=false]:invisible"
-          data-checked={checked}
+          className="text-primary data-[selected=false]:invisible"
+          data-selected={selected}
           size={20}
         />
       </button>

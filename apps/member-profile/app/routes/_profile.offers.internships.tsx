@@ -20,6 +20,7 @@ import {
   FilterButton,
   FilterEmptyMessage,
   FilterItem,
+  FilterList,
   FilterPopover,
   FilterRoot,
   FilterSearch,
@@ -411,34 +412,22 @@ function HourlyRateFilter() {
   });
 
   return (
-    <FilterRoot multiple>
-      <FilterButton
-        icon={<DollarSign />}
-        popover
-        selectedValues={selectedValues}
-      >
-        Hourly Rate
-      </FilterButton>
+    <FilterRoot multiple name="hourlyRate" selectedValues={selectedValues}>
+      <FilterButton icon={<DollarSign />}>Hourly Rate</FilterButton>
 
-      <FilterPopover height="max">
-        <ul className="overflow-auto">
+      <FilterPopover>
+        <FilterList height="max">
           {options.map((option) => {
-            const checked = selectedValues.some(({ value }) => {
-              return option.value === value;
-            });
-
             return (
               <FilterItem
-                checked={checked}
                 color={option.color}
                 key={option.value}
                 label={option.label}
-                name="hourlyRate"
                 value={option.value}
               />
             );
           })}
-        </ul>
+        </FilterList>
       </FilterPopover>
     </FilterRoot>
   );
@@ -450,20 +439,18 @@ function LocationFilter() {
   const locations = searchParams.getAll('location');
 
   return (
-    <FilterRoot multiple>
-      <FilterButton
-        icon={<MapPin />}
-        popover
-        selectedValues={locations.map((location) => {
-          return {
-            color: 'purple-100',
-            label: location,
-            value: location,
-          };
-        })}
-      >
-        Location
-      </FilterButton>
+    <FilterRoot
+      multiple
+      name="location"
+      selectedValues={locations.map((location) => {
+        return {
+          color: 'purple-100',
+          label: location,
+          value: location,
+        };
+      })}
+    >
+      <FilterButton icon={<MapPin />}>Location</FilterButton>
 
       <FilterPopover>
         <FilterSearch />
@@ -474,7 +461,6 @@ function LocationFilter() {
 }
 
 function LocationList() {
-  const [searchParams] = useSearchParams();
   const { allLocations } = useLoaderData<typeof loader>();
   const { search } = useFilterContext();
 
@@ -492,21 +478,11 @@ function LocationList() {
     return <FilterEmptyMessage>No locations found.</FilterEmptyMessage>;
   }
 
-  const selectedLocations = searchParams.getAll('location');
-
   return (
-    <ul className="overflow-auto">
+    <FilterList>
       {filteredLocations.map((location) => {
-        return (
-          <FilterItem
-            checked={selectedLocations.includes(location)}
-            key={location}
-            label={location}
-            name="location"
-            value={location}
-          />
-        );
+        return <FilterItem key={location} label={location} value={location} />;
       })}
-    </ul>
+    </FilterList>
   );
 }

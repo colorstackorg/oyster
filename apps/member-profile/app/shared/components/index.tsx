@@ -9,6 +9,7 @@ import {
   FilterButton,
   FilterEmptyMessage,
   FilterItem,
+  FilterList,
   FilterPopover,
   FilterSearch,
   useFilterContext,
@@ -94,42 +95,34 @@ export function CompanyFilter({
   selectedCompany,
 }: CompanyFilterProps) {
   return (
-    <FilterRoot>
-      <FilterButton
-        icon={<Briefcase />}
-        popover
-        selectedValues={
-          selectedCompany
-            ? [
-                {
-                  color: 'gray-100',
-                  label: selectedCompany.name,
-                  value: selectedCompany.id,
-                },
-              ]
-            : []
-        }
-      >
-        Company
-      </FilterButton>
+    <FilterRoot
+      name="company"
+      selectedValues={
+        selectedCompany
+          ? [
+              {
+                color: 'gray-100',
+                label: selectedCompany.name,
+                value: selectedCompany.id,
+              },
+            ]
+          : []
+      }
+    >
+      <FilterButton icon={<Briefcase />}>Company</FilterButton>
 
       <FilterPopover>
         <FilterSearch />
         <CompanyFilterList
           allCompanies={allCompanies}
           emptyMessage={emptyMessage}
-          selectedCompany={selectedCompany}
         />
       </FilterPopover>
     </FilterRoot>
   );
 }
 
-function CompanyFilterList({
-  allCompanies,
-  emptyMessage,
-  selectedCompany,
-}: CompanyFilterProps) {
+function CompanyFilterList({ allCompanies, emptyMessage }: CompanyFilterProps) {
   const { search } = useFilterContext();
 
   const regex = new RegExp(toEscapedString(search), 'i');
@@ -143,18 +136,16 @@ function CompanyFilterList({
   }
 
   return (
-    <ul className="overflow-auto">
+    <FilterList>
       {filteredCompanies.map((company) => {
         return (
           <FilterItem
-            checked={company.id === selectedCompany?.id}
             key={company.id}
             label={company.name}
-            name="company"
             value={company.id}
           />
         );
       })}
-    </ul>
+    </FilterList>
   );
 }
