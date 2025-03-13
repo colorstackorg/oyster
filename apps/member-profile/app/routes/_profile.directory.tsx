@@ -497,10 +497,11 @@ function CompanyList() {
 
   return (
     <FilterList>
-      {filteredCompanies.map((company) => {
+      {filteredCompanies.map((company, i) => {
         return (
           <FilterItem
             key={company.id}
+            index={i}
             label={`${company.name} (${company.count})`}
             value={company.id}
           />
@@ -560,9 +561,10 @@ function EthnicityList() {
 
   return (
     <FilterList>
-      {filteredEthnicities.map((ethnicity) => {
+      {filteredEthnicities.map((ethnicity, i) => {
         return (
           <FilterItem
+            index={i}
             key={ethnicity.code}
             label={`${ethnicity.flagEmoji} ${ethnicity.demonym} (${ethnicity.count})`}
             value={ethnicity.code}
@@ -597,9 +599,10 @@ function GraduationYearFilter() {
 
       <FilterPopover>
         <FilterList>
-          {allGraduationYears.map((year) => {
+          {allGraduationYears.map((year, i) => {
             return (
               <FilterItem
+                index={i}
                 key={year.graduationYear}
                 label={`${year.graduationYear} (${year.count})`}
                 value={year.graduationYear}
@@ -663,9 +666,10 @@ function HometownList() {
   return (
     <>
       <FilterList>
-        {filteredHometowns.map((hometown) => {
+        {filteredHometowns.map((hometown, i) => {
           return (
             <FilterItem
+              index={i}
               key={hometown.coordinates}
               label={`${hometown.name} (${hometown.count})`}
               value={hometown.coordinates}
@@ -733,9 +737,10 @@ function LocationList() {
   return (
     <>
       <FilterList>
-        {filteredLocations.map((location) => {
+        {filteredLocations.map((location, i) => {
           return (
             <FilterItem
+              index={i}
               key={location.coordinates}
               label={`${location.name} (${location.count})`}
               value={location.coordinates}
@@ -802,9 +807,10 @@ function SchoolList() {
 
   return (
     <FilterList>
-      {filteredSchools.map((school) => {
+      {filteredSchools.map((school, i) => {
         return (
           <FilterItem
+            index={i}
             key={school.id}
             label={`${school.name} (${school.count})`}
             value={school.id}
