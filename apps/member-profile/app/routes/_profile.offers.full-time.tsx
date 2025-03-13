@@ -16,13 +16,13 @@ import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
 import { Pagination, Table, type TableColumnProps, Text } from '@oyster/ui';
 import {
-  FilterButton,
   FilterEmptyMessage,
   FilterItem,
   FilterList,
   FilterPopover,
   FilterRoot,
   FilterSearch,
+  FilterTrigger,
   type FilterValue,
   ResetFiltersButton,
   useFilterContext,
@@ -443,7 +443,7 @@ function TotalCompensationFilter() {
       name="totalCompensation"
       selectedValues={selectedValues}
     >
-      <FilterButton icon={<DollarSign />}>Total Compensation</FilterButton>
+      <FilterTrigger icon={<DollarSign />}>Total Compensation</FilterTrigger>
 
       <FilterPopover>
         <FilterList height="max">
@@ -480,7 +480,7 @@ function LocationFilter() {
         };
       })}
     >
-      <FilterButton icon={<MapPin />}>Location</FilterButton>
+      <FilterTrigger icon={<MapPin />}>Location</FilterTrigger>
 
       <FilterPopover>
         <FilterSearch />

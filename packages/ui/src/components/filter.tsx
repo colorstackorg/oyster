@@ -2,7 +2,9 @@ import { useSearchParams } from '@remix-run/react';
 import React, {
   createContext,
   type PropsWithChildren,
+  useCallback,
   useContext,
+  useEffect,
   useRef,
   useState,
 } from 'react';
@@ -11,31 +13,46 @@ import { Check, ChevronDown } from 'react-feather';
 import { Pill, type PillProps } from './pill';
 import { Text } from './text';
 import { useOnClickOutside } from '../hooks/use-on-click-outside';
-import { setInputValue } from '../utils/core';
 import { cx } from '../utils/cx';
 
 type PillColor = PillProps['color'];
 
+export type FilterValue = {
+  color: PillColor;
+  label: string;
+  value: string;
+};
+
 // Context
 
 type FilterContext = {
+  highlightedIndex: number;
+  itemRefs: React.MutableRefObject<Record<number, HTMLButtonElement | null>>;
   multiple?: boolean;
   name: string;
   open: boolean;
   search: string;
+  searchRef: React.MutableRefObject<HTMLInputElement | null>;
   selectedValues: FilterValue[];
+  setHighlightedIndex: React.Dispatch<React.SetStateAction<number>>;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setSearch: React.Dispatch<React.SetStateAction<string>>;
+  triggerRef: React.MutableRefObject<HTMLButtonElement | null>;
 };
 
 const FilterContext = createContext<FilterContext>({
+  highlightedIndex: 0,
+  itemRefs: { current: {} },
   multiple: false,
   name: '',
   open: false,
   search: '',
+  searchRef: { current: null },
   selectedValues: [],
+  setHighlightedIndex: () => {},
   setOpen: () => {},
   setSearch: () => {},
+  triggerRef: { current: null },
 });
 
 // Hook
@@ -54,44 +71,120 @@ export function FilterRoot({
 }: PropsWithChildren<
   Pick<FilterContext, 'multiple' | 'name' | 'selectedValues'>
 >) {
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
-  const ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
+  const itemRefs = useRef<Record<number, HTMLButtonElement | null>>({});
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const searchRef = useRef<HTMLInputElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
 
-  useOnClickOutside(ref, () => {
+  useOnClickOutside(rootRef, () => {
+    close();
+  });
+
+  function close() {
+    setHighlightedIndex(0);
     setOpen(false);
     setSearch('');
-  });
+    triggerRef.current?.focus();
+  }
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    document.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
+  // We need this ref because we need to use the `highlightedIndex` when
+  // pressing "Enter" on a particular item...but we don't want to pass in the
+  // `highlightedIndex` prop into the event listener registration since it
+  // changes frequently and it could be memory intensive to re-register the
+  // event listener on every change.
+  const highlightedIndexRef = useRef<number>(highlightedIndex);
+
+  useEffect(() => {
+    highlightedIndexRef.current = highlightedIndex;
+  }, [highlightedIndex]);
+
+  function onKeyDown(e: KeyboardEvent) {
+    if (!open) {
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      close();
+
+      return;
+    }
+
+    const indices = Object.keys(itemRefs.current).map(Number);
+
+    if (indices.length === 0) {
+      // This should already be 0, but setting just in case.
+      setHighlightedIndex(0);
+
+      return;
+    }
+
+    const maxIndex = Math.max(...indices);
+
+    switch (e.key) {
+      case 'ArrowDown': {
+        return setHighlightedIndex((index) => {
+          return index < maxIndex ? index + 1 : 0;
+        });
+      }
+
+      case 'ArrowUp': {
+        return setHighlightedIndex((index) => {
+          return index > 0 ? index - 1 : maxIndex;
+        });
+      }
+
+      case 'Enter': {
+        return itemRefs.current[highlightedIndexRef.current]?.click();
+      }
+
+      default:
+        return;
+    }
+  }
 
   return (
     <FilterContext.Provider
       value={{
+        highlightedIndex,
+        itemRefs,
         multiple,
         name,
         open,
         search,
+        searchRef,
         selectedValues,
+        setHighlightedIndex,
         setOpen,
         setSearch,
+        triggerRef,
       }}
     >
-      <div className="relative" ref={ref}>
+      <div className="relative" ref={rootRef}>
         {children}
       </div>
     </FilterContext.Provider>
   );
 }
 
-// Filter Button
+// Filter Trigger
 
-export type FilterValue = {
-  color: PillColor;
-  label: string;
-  value: string;
-};
-
-type FilterButtonProps = PropsWithChildren<{
+type FilterTriggerProps = PropsWithChildren<{
   active?: boolean;
   className?: string;
   icon: React.ReactElement;
@@ -99,16 +192,17 @@ type FilterButtonProps = PropsWithChildren<{
   popover?: boolean;
 }>;
 
-export function FilterButton({
+export function FilterTrigger({
   active,
   children,
   className,
   icon,
   onClick,
   popover = true,
-}: FilterButtonProps) {
+}: FilterTriggerProps) {
   const [_searchParams] = useSearchParams();
-  const { name, open, selectedValues, setOpen } = useContext(FilterContext);
+  const { name, open, selectedValues, setOpen, triggerRef } =
+    useContext(FilterContext);
 
   icon = React.cloneElement(icon, {
     className: active ? '' : 'text-primary',
@@ -166,6 +260,7 @@ export function FilterButton({
           setOpen((value) => !value);
         }
       }}
+      ref={triggerRef}
       type="button"
     >
       {icon} {children} {selectedList}{' '}
@@ -206,7 +301,8 @@ export function FilterPopover({
 // Filter Search
 
 export function FilterSearch() {
-  const { setSearch } = useContext(FilterContext);
+  const { search, searchRef, setHighlightedIndex, setSearch } =
+    useContext(FilterContext);
 
   return (
     <input
@@ -216,9 +312,12 @@ export function FilterSearch() {
       name="search"
       onChange={(e) => {
         setSearch(e.currentTarget.value);
+        setHighlightedIndex(0);
       }}
       placeholder="Search..."
+      ref={searchRef}
       type="text"
+      value={search}
     />
   );
 }
@@ -242,9 +341,22 @@ type FilterListProps = PropsWithChildren<{
 }>;
 
 export function FilterList({ children, height = 'max-h-60' }: FilterListProps) {
+  // We clone the children so that we can pass in the `index` prop to each
+  // child, taking the responsibility off of the caller to do so.
+  const clonedChildren = React.Children.map(children, (child, index) => {
+    if (!React.isValidElement(child) || child.type !== FilterItem) {
+      return null;
+    }
+
+    return React.cloneElement(child, {
+      ...child.props,
+      index,
+    });
+  });
+
   return (
     <ul className={cx('overflow-auto', height === 'max-h-60' && 'max-h-60')}>
-      {children}
+      {clonedChildren}
     </ul>
   );
 }
@@ -257,14 +369,51 @@ type FilterItemProps = PropsWithChildren<{
   value: string;
 }>;
 
-export function FilterItem({ color, label, value }: FilterItemProps) {
+export function FilterItem({ color, label, value, ...rest }: FilterItemProps) {
   const [_, setSearchParams] = useSearchParams();
-  const { multiple, name, selectedValues, setOpen } = useContext(FilterContext);
+  const {
+    highlightedIndex,
+    itemRefs,
+    multiple,
+    name,
+    searchRef,
+    selectedValues,
+    setHighlightedIndex,
+    setOpen,
+    setSearch,
+  } = useContext(FilterContext);
+
+  // This is a hacky way to get the index from the props but prevent the caller
+  // from accidentally passing it in.
+  const index = 'index' in rest ? (rest.index as number) : -1;
+
+  // This is the key piece that "registers" the item in our context state.
+  const ref = useCallback(
+    (element: HTMLButtonElement | null) => {
+      if (element) {
+        // Element is mounting or updating...
+        itemRefs.current[index] = element;
+      } else {
+        // Element is unmounting...
+        delete itemRefs.current[index];
+      }
+    },
+    [index, itemRefs]
+  );
 
   function onClick(e: React.MouseEvent<HTMLButtonElement>) {
     if (!multiple) {
       setOpen(false);
     }
+
+    // We'll only reset the highlighted index if the user already had some
+    // search query. We won't reset if it was blank.
+    if (searchRef.current?.value) {
+      setHighlightedIndex(0);
+    }
+
+    setSearch('');
+    searchRef.current?.focus();
 
     setSearchParams((params) => {
       params.delete('page');
@@ -287,17 +436,6 @@ export function FilterItem({ color, label, value }: FilterItemProps) {
 
       return params;
     });
-
-    const popoverElement = (e.target as Element).closest('#popover');
-
-    const searchElement = popoverElement?.querySelector(
-      'input[name="search"]'
-    ) as HTMLInputElement;
-
-    if (searchElement) {
-      setInputValue(searchElement, '');
-      searchElement.focus();
-    }
   }
 
   const selected = selectedValues.some((selectedValue) => {
@@ -307,8 +445,16 @@ export function FilterItem({ color, label, value }: FilterItemProps) {
   return (
     <li>
       <button
-        className="flex w-full items-center justify-between gap-4 rounded-lg p-2 text-left text-sm hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
+        className={cx(
+          'flex w-full items-center justify-between gap-4 rounded-lg p-2 text-left text-sm',
+          'hover:bg-gray-50',
+          'focus:bg-gray-50 focus:outline-none',
+          'active:bg-gray-100',
+          'data-[highlighted=true]:bg-gray-50'
+        )}
+        data-highlighted={index === highlightedIndex}
         onClick={onClick}
+        ref={ref}
         type="button"
         value={value}
       >
@@ -323,7 +469,7 @@ export function FilterItem({ color, label, value }: FilterItemProps) {
   );
 }
 
-// Clear Filters Button
+// Reset Filters Button
 
 export function ResetFiltersButton() {
   const [searchParams, setSearchParams] = useSearchParams();
