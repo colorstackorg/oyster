@@ -150,13 +150,11 @@ export function FilterButton({
 
 type FilterPopoverProps = PropsWithChildren<{
   align?: 'left' | 'right';
-  height?: 'max-h-60' | 'max-h-80' | 'max';
 }>;
 
 export function FilterPopover({
   align = 'left',
   children,
-  height = 'max-h-60',
 }: FilterPopoverProps) {
   const { open } = useContext(FilterContext);
 
@@ -168,8 +166,6 @@ export function FilterPopover({
     <div
       className={cx(
         'absolute top-full z-10 mt-1 flex w-max min-w-full max-w-[300px] flex-col gap-2 rounded-lg border border-gray-300 bg-white p-2',
-        height === 'max-h-60' && 'max-h-60',
-        height === 'max-h-80' && 'max-h-80',
         align === 'right' && 'right-0'
       )}
       id="popover"
@@ -208,6 +204,26 @@ export function FilterEmptyMessage({ children }: PropsWithChildren) {
         {children}
       </Text>
     </div>
+  );
+}
+
+// Filter List
+
+type FilterListProps = PropsWithChildren<{
+  height?: 'max-h-60' | 'max-h-80';
+}>;
+
+export function FilterList({ children, height = 'max-h-60' }: FilterListProps) {
+  return (
+    <ul
+      className={cx(
+        'overflow-auto',
+        height === 'max-h-60' && 'max-h-60',
+        height === 'max-h-80' && 'max-h-80'
+      )}
+    >
+      {children}
+    </ul>
   );
 }
 
