@@ -94,22 +94,20 @@ export function CompanyFilter({
   selectedCompany,
 }: CompanyFilterProps) {
   return (
-    <FilterRoot>
-      <FilterButton
-        icon={<Briefcase />}
-        popover
-        selectedValues={
-          selectedCompany
-            ? [
-                {
-                  color: 'gray-100',
-                  label: selectedCompany.name,
-                  value: selectedCompany.id,
-                },
-              ]
-            : []
-        }
-      >
+    <FilterRoot
+      selectedValues={
+        selectedCompany
+          ? [
+              {
+                color: 'gray-100',
+                label: selectedCompany.name,
+                value: selectedCompany.id,
+              },
+            ]
+          : []
+      }
+    >
+      <FilterButton icon={<Briefcase />} popover>
         Company
       </FilterButton>
 
@@ -118,18 +116,13 @@ export function CompanyFilter({
         <CompanyFilterList
           allCompanies={allCompanies}
           emptyMessage={emptyMessage}
-          selectedCompany={selectedCompany}
         />
       </FilterPopover>
     </FilterRoot>
   );
 }
 
-function CompanyFilterList({
-  allCompanies,
-  emptyMessage,
-  selectedCompany,
-}: CompanyFilterProps) {
+function CompanyFilterList({ allCompanies, emptyMessage }: CompanyFilterProps) {
   const { search } = useFilterContext();
 
   const regex = new RegExp(toEscapedString(search), 'i');
@@ -147,7 +140,6 @@ function CompanyFilterList({
       {filteredCompanies.map((company) => {
         return (
           <FilterItem
-            checked={company.id === selectedCompany?.id}
             key={company.id}
             label={company.name}
             name="company"

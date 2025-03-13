@@ -556,18 +556,17 @@ function TagFilter() {
   const { appliedTags } = useLoaderData<typeof loader>();
 
   return (
-    <FilterRoot multiple>
-      <FilterButton
-        icon={<Tag />}
-        popover
-        selectedValues={appliedTags.map((tag) => {
-          return {
-            color: tag.color as AccentColor,
-            label: tag.name,
-            value: tag.id,
-          };
-        })}
-      >
+    <FilterRoot
+      multiple
+      selectedValues={appliedTags.map((tag) => {
+        return {
+          color: tag.color as AccentColor,
+          label: tag.name,
+          value: tag.id,
+        };
+      })}
+    >
+      <FilterButton icon={<Tag />} popover>
         Tags
       </FilterButton>
 
@@ -580,7 +579,7 @@ function TagFilter() {
 }
 
 function TagList() {
-  const { allTags, appliedTags } = useLoaderData<typeof loader>();
+  const { allTags } = useLoaderData<typeof loader>();
   const { search } = useFilterContext();
 
   const regex = new RegExp(toEscapedString(search), 'i');
@@ -596,18 +595,13 @@ function TagList() {
   return (
     <ul className="overflow-auto">
       {filteredTags.map((tag) => {
-        const checked = appliedTags.some((appliedTag) => {
-          return appliedTag.id === tag.id;
-        });
-
         return (
           <FilterItem
-            checked={checked}
             color={tag.color as AccentColor}
             key={tag.id}
             label={tag.name}
             name="tag"
-            value={tag.name}
+            value={tag.id}
           />
         );
       })}
@@ -632,8 +626,8 @@ function DatePostedFilter() {
   });
 
   return (
-    <FilterRoot>
-      <FilterButton icon={<Calendar />} popover selectedValues={selectedValues}>
+    <FilterRoot selectedValues={selectedValues}>
+      <FilterButton icon={<Calendar />} popover>
         Date Posted
       </FilterButton>
 
@@ -642,7 +636,6 @@ function DatePostedFilter() {
           {options.map((option) => {
             return (
               <FilterItem
-                checked={since === option.value}
                 color={option.color}
                 key={option.value}
                 label={option.label}

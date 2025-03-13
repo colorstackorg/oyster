@@ -22,6 +22,7 @@ type FilterContext = {
   multiple?: boolean;
   open: boolean;
   search: string;
+  selectedValues: FilterValue[];
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setSearch: React.Dispatch<React.SetStateAction<string>>;
 };
@@ -30,6 +31,7 @@ const FilterContext = createContext<FilterContext>({
   multiple: false,
   open: false,
   search: '',
+  selectedValues: [],
   setOpen: () => {},
   setSearch: () => {},
 });
@@ -45,7 +47,8 @@ export function useFilterContext() {
 export function FilterRoot({
   children,
   multiple,
-}: PropsWithChildren<Pick<FilterContext, 'multiple'>>) {
+  selectedValues = [],
+}: PropsWithChildren<Pick<FilterContext, 'multiple' | 'selectedValues'>>) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -62,6 +65,7 @@ export function FilterRoot({
         multiple,
         open,
         search,
+        selectedValues,
         setOpen,
         setSearch,
       }}
@@ -87,7 +91,6 @@ type FilterButtonProps = PropsWithChildren<{
   icon: React.ReactElement;
   onClick?(): void;
   popover?: boolean;
-  selectedValues?: FilterValue[];
 }>;
 
 export function FilterButton({
@@ -97,9 +100,8 @@ export function FilterButton({
   icon,
   onClick,
   popover,
-  selectedValues = [],
 }: FilterButtonProps) {
-  const { open, setOpen } = useContext(FilterContext);
+  const { open, selectedValues, setOpen } = useContext(FilterContext);
 
   icon = React.cloneElement(icon, {
     className: active ? '' : 'text-primary',
@@ -212,22 +214,15 @@ export function FilterEmptyMessage({ children }: PropsWithChildren) {
 // Filter Item
 
 type FilterItemProps = PropsWithChildren<{
-  checked: boolean;
   color?: PillColor;
   label: string | React.ReactElement;
   name: string;
   value: string;
 }>;
 
-export function FilterItem({
-  checked,
-  color,
-  label,
-  name,
-  value,
-}: FilterItemProps) {
+export function FilterItem({ color, label, name, value }: FilterItemProps) {
   const [_, setSearchParams] = useSearchParams();
-  const { multiple, setOpen } = useContext(FilterContext);
+  const { multiple, selectedValues, setOpen } = useContext(FilterContext);
 
   function onClick(e: React.MouseEvent<HTMLButtonElement>) {
     if (!multiple) {
@@ -268,6 +263,10 @@ export function FilterItem({
     }
   }
 
+  const selected = selectedValues.some((selectedValue) => {
+    return selectedValue.value === value;
+  });
+
   return (
     <li>
       <button
@@ -278,8 +277,8 @@ export function FilterItem({
       >
         {color ? <Pill color={color}>{label}</Pill> : label}
         <Check
-          className="text-primary data-[checked=false]:invisible"
-          data-checked={checked}
+          className="text-primary data-[selected=false]:invisible"
+          data-selected={selected}
           size={20}
         />
       </button>
