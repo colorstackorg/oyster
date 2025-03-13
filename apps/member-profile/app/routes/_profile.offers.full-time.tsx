@@ -447,11 +447,10 @@ function TotalCompensationFilter() {
 
       <FilterPopover>
         <FilterList height="max">
-          {options.map((option, i) => {
+          {options.map((option) => {
             return (
               <FilterItem
                 color={option.color}
-                index={i}
                 key={option.value}
                 label={option.label}
                 value={option.value}
@@ -511,15 +510,8 @@ function LocationList() {
 
   return (
     <FilterList>
-      {filteredLocations.map((location, i) => {
-        return (
-          <FilterItem
-            index={i}
-            key={location}
-            label={location}
-            value={location}
-          />
-        );
+      {filteredLocations.map((location) => {
+        return <FilterItem key={location} label={location} value={location} />;
       })}
     </FilterList>
   );

@@ -137,10 +137,9 @@ function CompanyFilterList({ allCompanies, emptyMessage }: CompanyFilterProps) {
 
   return (
     <FilterList>
-      {filteredCompanies.map((company, i) => {
+      {filteredCompanies.map((company) => {
         return (
           <FilterItem
-            index={i}
             key={company.id}
             label={company.name}
             value={company.id}

@@ -595,11 +595,10 @@ function TagList() {
 
   return (
     <FilterList>
-      {filteredTags.map((tag, i) => {
+      {filteredTags.map((tag) => {
         return (
           <FilterItem
             color={tag.color as AccentColor}
-            index={i}
             key={tag.id}
             label={tag.name}
             value={tag.id}
@@ -632,11 +631,10 @@ function DatePostedFilter() {
 
       <FilterPopover>
         <FilterList>
-          {options.map((option, i) => {
+          {options.map((option) => {
             return (
               <FilterItem
                 color={option.color}
-                index={i}
                 key={option.value}
                 label={option.label}
                 value={option.value}

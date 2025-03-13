@@ -326,9 +326,20 @@ type FilterListProps = PropsWithChildren<{
 }>;
 
 export function FilterList({ children, height = 'max-h-60' }: FilterListProps) {
+  const clonedChildren = React.Children.map(children, (child, index) => {
+    if (!React.isValidElement(child) || child.type !== FilterItem) {
+      return null;
+    }
+
+    return React.cloneElement(child, {
+      ...child.props,
+      index,
+    });
+  });
+
   return (
     <ul className={cx('overflow-auto', height === 'max-h-60' && 'max-h-60')}>
-      {children}
+      {clonedChildren}
     </ul>
   );
 }
@@ -337,12 +348,11 @@ export function FilterList({ children, height = 'max-h-60' }: FilterListProps) {
 
 type FilterItemProps = PropsWithChildren<{
   color?: PillColor;
-  index: number;
   label: string | React.ReactElement;
   value: string;
 }>;
 
-export function FilterItem({ color, index, label, value }: FilterItemProps) {
+export function FilterItem({ color, label, value, ...rest }: FilterItemProps) {
   const [_, setSearchParams] = useSearchParams();
   const {
     highlightedIndex,
@@ -353,6 +363,10 @@ export function FilterItem({ color, index, label, value }: FilterItemProps) {
     setHighlightedIndex,
     setOpen,
   } = useContext(FilterContext);
+
+  // This is a hacky way to get the index from the props but prevent the caller
+  // from accidentally passing it in.
+  const index = 'index' in rest ? (rest.index as number) : -1;
 
   function onClick(e: React.MouseEvent<HTMLButtonElement>) {
     if (!multiple) {
