@@ -1,12 +1,19 @@
 import puppeteer, { type Browser, type Page } from 'puppeteer-core';
+import UserAgent from 'user-agents';
 
 // Environment Variable(s)
 
 const BROWSER_WS_ENDPOINT = process.env.BROWSER_WS_ENDPOINT as string;
+const OXYLABS_PASSWORD = process.env.OXYLABS_PASSWORD as string;
+const OXYLABS_USERNAME = process.env.OXYLABS_USERNAME as string;
 
-// Constants
-
-const DEFAULT_TIMEOUT = 10_000; // 10s
+/**
+ * This is a comma-separated list of proxy URLs that will be used to connect to
+ * the Puppeteer browser.
+ */
+const OXYLABS_PROXIES = (process.env.OXYLABS_PROXIES || '')
+  .split(',')
+  .filter(Boolean);
 
 // Core
 
@@ -20,13 +27,10 @@ const DEFAULT_TIMEOUT = 10_000; // 10s
 export async function getPageContent(url: string): Promise<string> {
   return withBrowser(async (_, page) => {
     const response = await page.goto(url, {
-      timeout: DEFAULT_TIMEOUT,
       waitUntil: 'domcontentloaded',
     });
 
-    await page.waitForNetworkIdle({
-      timeout: DEFAULT_TIMEOUT,
-    });
+    await page.waitForNetworkIdle();
 
     const content = await page.evaluate(() => {
       return document.body.innerText;
@@ -60,11 +64,9 @@ async function withBrowser<T>(
     browserWSEndpoint: BROWSER_WS_ENDPOINT,
   });
 
-  console.log('Launched Puppeteer browser.');
+  console.log('Connected to Puppeteer browser.');
 
-  const page = await browser.newPage();
-
-  await escapeBotDetection(page);
+  const page = await createPage(browser);
 
   try {
     const result = await fn(browser, page);
@@ -78,13 +80,45 @@ async function withBrowser<T>(
   }
 }
 
+async function createPage(browser: Browser) {
+  let page: Page;
+
+  // We randomly select a proxy from our available list of proxies.
+  const proxy =
+    OXYLABS_PROXIES[Math.floor(Math.random() * OXYLABS_PROXIES.length)];
+
+  if (!proxy) {
+    // If no proxy is found (which will only be the case in development when
+    // we don't have the `OXYLABS_PROXIES` environment variable set), we use
+    // the default browser context.
+    page = await browser.newPage();
+  } else {
+    // Otherwise, we create a new browser context with the selected proxy and
+    // authenticate with the proxy.
+    const context = await browser.createBrowserContext({ proxyServer: proxy });
+
+    page = await context.newPage();
+
+    await page.authenticate({
+      password: OXYLABS_PASSWORD,
+      username: OXYLABS_USERNAME,
+    });
+  }
+
+  await escapeBotDetection(page);
+
+  return page;
+}
+
 async function escapeBotDetection(page: Page) {
-  await page.setUserAgent(getUserAgent());
+  await page.setUserAgent(new UserAgent().toString());
 
   await page.setViewport({
-    deviceScaleFactor: 1,
-    height: 1080,
-    width: 1920,
+    deviceScaleFactor: Math.random() > 0.5 ? 1 : 2,
+    hasTouch: Math.random() > 0.5,
+    height: 1080 + Math.floor(Math.random() * 200),
+    isMobile: Math.random() > 0.5,
+    width: 1920 + Math.floor(Math.random() * 200),
   });
 
   // Add random mouse movements.
@@ -93,34 +127,4 @@ async function escapeBotDetection(page: Page) {
     100 + Math.random() * 100, // y
     { steps: 10 }
   );
-}
-
-const USER_AGENTS = [
-  // Chrome
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-
-  // Firefox
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:123.0) Gecko/20100101 Firefox/123.0',
-
-  // Safari
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Safari/605.1.15',
-
-  // Edge
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.2365.66',
-] as const;
-
-/**
- * Returns a random user agent string from the list of `USER_AGENTS`. This
- * helps us avoid detection by some websites and also allows us to follow
- * redirects.
- *
- * @returns Random user agent string.
- */
-function getUserAgent() {
-  return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
 }
