@@ -86,6 +86,7 @@
     "pdfjs-dist": "^4.5.136",
     "postmark": "^3.0.15",
     "ua-parser-js": "^1.0.36",
+    "user-agents": "^1.1.478",
     "zod": "^3.20.2"
   },
   "devDependencies": {
@@ -96,6 +97,7 @@
     "@types/dedent": "^0.7.2",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/nodemailer": "^6.4.14",
+    "@types/user-agents": "^1.0.4",
     "nanoid": "^3.0.0",
     "puppeteer-core": "^23.7.0",
     "react": "^18.2.0",
