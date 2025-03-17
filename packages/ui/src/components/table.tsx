@@ -84,7 +84,7 @@ type TableProps<T extends TableData = any> = {
 
 export const Table = ({ columns, data, emptyMessage, rowTo }: TableProps) => {
   return (
-    <div className="overflow-auto rounded-lg border border-gray-200">
+    <div className="rounded-lg border border-gray-200">
       {!data.length ? (
         <div className="box-border flex w-full flex-col items-center justify-center gap-4 p-12">
           <Text>{emptyMessage}</Text>
@@ -219,8 +219,8 @@ function TableBody({
                   <td
                     className={cx(
                       dataCellCn,
-                      column.sticky && 'sticky right-0',
-                      'overflow-hidden text-ellipsis text-left'
+                      column.sticky ? 'sticky right-0' : 'overflow-hidden',
+                      'text-ellipsis text-left'
                     )}
                   >
                     {column.render(row)}
@@ -246,7 +246,7 @@ function getFilteredColumns(columns: TableProps['columns']) {
 // Dropdown
 
 Table.Dropdown = function TableDropdown({ children }: PropsWithChildren) {
-  return <Dropdown className="fixed right-20 mt-[unset]">{children}</Dropdown>;
+  return <Dropdown className="absolute right-10">{children}</Dropdown>;
 };
 
 Table.DropdownOpenButton = function TableDropdownOpenButton() {
