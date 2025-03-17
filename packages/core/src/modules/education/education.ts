@@ -1,8 +1,13 @@
 import { type SelectExpression, sql } from 'kysely';
 
 import { db, type DB } from '@oyster/db';
-import { id } from '@oyster/utils';
+import { id, splitArray } from '@oyster/utils';
 
+import { job } from '@/infrastructure/bull';
+import {
+  AIRTABLE_FAMILY_BASE_ID,
+  AIRTABLE_MEMBERS_TABLE_ID,
+} from '@/modules/airtable';
 import {
   type CreateSchoolInput,
   type UpdateSchoolInput,
@@ -87,6 +92,12 @@ export async function updateSchool({
   name,
   tags,
 }: UpdateSchoolInput) {
+  const previousSchool = await db
+    .selectFrom('schools')
+    .select('name')
+    .where('id', '=', id)
+    .executeTakeFirstOrThrow();
+
   await db.transaction().execute(async (trx) => {
     await trx
       .updateTable('schools')
@@ -100,4 +111,33 @@ export async function updateSchool({
       .where('id', '=', id)
       .execute();
   });
+
+  // If the name of the school has changed, then we need to update the Airtable
+  // record for all members of the school (unfortunately because we're not
+  // storing the schools in SQL-esque way).
+  if (previousSchool.name !== name) {
+    const members = await db
+      .selectFrom('students')
+      .select('airtableId')
+      .where('schoolId', '=', id)
+      .where('airtableId', 'is not', null)
+      .execute();
+
+    const memberChunks = splitArray(members, 10);
+
+    memberChunks.forEach((chunk) => {
+      job('airtable.record.update.bulk', {
+        airtableBaseId: AIRTABLE_FAMILY_BASE_ID!,
+        airtableTableId: AIRTABLE_MEMBERS_TABLE_ID!,
+        records: chunk.map((member) => {
+          return {
+            id: member.airtableId!,
+            data: {
+              School: name,
+            },
+          };
+        }),
+      });
+    });
+  }
 }
