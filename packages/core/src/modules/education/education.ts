@@ -107,6 +107,7 @@ export async function updateSchool({
         addressZip,
         name,
         tags,
+        updatedAt: new Date(),
       })
       .where('id', '=', id)
       .execute();
