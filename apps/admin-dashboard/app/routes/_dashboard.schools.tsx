@@ -4,7 +4,12 @@ import {
   type LoaderFunctionArgs,
   type SerializeFrom,
 } from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
+import {
+  useSearchParams as _useSearchParams,
+  Link,
+  Outlet,
+  useLoaderData,
+} from '@remix-run/react';
 import { sql } from 'kysely';
 import { BookOpen, Edit, Menu, Plus } from 'react-feather';
 import { generatePath } from 'react-router';
@@ -219,6 +224,8 @@ function SchoolsPagination() {
 }
 
 function SchoolsTableDropdown({ chapterId, id }: SchoolInView) {
+  const [searchParams] = _useSearchParams();
+
   return (
     <Dropdown.Root>
       <Table.Dropdown>
@@ -226,7 +233,10 @@ function SchoolsTableDropdown({ chapterId, id }: SchoolInView) {
           <Dropdown.Item>
             <Link
               preventScrollReset
-              to={generatePath(Route['/schools/:id/edit'], { id })}
+              to={{
+                pathname: generatePath(Route['/schools/:id/edit'], { id }),
+                search: searchParams.toString(),
+              }}
             >
               <Edit /> Edit School
             </Link>
@@ -236,9 +246,12 @@ function SchoolsTableDropdown({ chapterId, id }: SchoolInView) {
             <Dropdown.Item>
               <Link
                 preventScrollReset
-                to={generatePath(Route['/schools/:id/chapter/create'], {
-                  id,
-                })}
+                to={{
+                  pathname: generatePath(Route['/schools/:id/chapter/create'], {
+                    id,
+                  }),
+                  search: searchParams.toString(),
+                }}
               >
                 <BookOpen /> Create Chapter
               </Link>
