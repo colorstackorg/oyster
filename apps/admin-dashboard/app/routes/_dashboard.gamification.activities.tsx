@@ -127,6 +127,7 @@ function ActivitiesTableDropdown({ id }: ActivityInView) {
         <Dropdown.List>
           <Dropdown.Item>
             <Link
+              preventScrollReset
               to={generatePath(Route['/gamification/activities/:id/edit'], {
                 id,
               })}
@@ -137,6 +138,7 @@ function ActivitiesTableDropdown({ id }: ActivityInView) {
 
           <Dropdown.Item>
             <Link
+              preventScrollReset
               to={generatePath(Route['/gamification/activities/:id/archive'], {
                 id,
               })}

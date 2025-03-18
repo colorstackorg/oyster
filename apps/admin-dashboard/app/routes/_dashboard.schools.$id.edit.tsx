@@ -71,7 +71,11 @@ export async function action({ params, request }: ActionFunctionArgs) {
     message: 'Updated school.',
   });
 
-  return redirect(Route['/schools'], {
+  const url = new URL(request.url);
+
+  url.pathname = Route['/schools'];
+
+  return redirect(url.toString(), {
     headers: {
       'Set-Cookie': await commitSession(session),
     },

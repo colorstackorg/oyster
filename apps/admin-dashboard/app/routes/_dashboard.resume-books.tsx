@@ -181,7 +181,10 @@ function ResumeBookDropdown({
       <Table.Dropdown>
         <Dropdown.List>
           <Dropdown.Item>
-            <Link to={generatePath(Route['/resume-books/:id/edit'], { id })}>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/resume-books/:id/edit'], { id })}
+            >
               <Edit /> Edit Resume Book
             </Link>
           </Dropdown.Item>
@@ -199,13 +202,13 @@ function ResumeBookDropdown({
           </Dropdown.Item>
 
           <Dropdown.Item>
-            <Link to={airtableUri} target="_blank">
+            <Link preventScrollReset to={airtableUri} target="_blank">
               <ExternalLink /> Go to Airtable
             </Link>
           </Dropdown.Item>
 
           <Dropdown.Item>
-            <Link to={googleDriveUri} target="_blank">
+            <Link preventScrollReset to={googleDriveUri} target="_blank">
               <ExternalLink /> Go to Google Drive
             </Link>
           </Dropdown.Item>
