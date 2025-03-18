@@ -112,12 +112,18 @@ function FeatureFlagsTableDropdown({ id }: FeatureFlagInView) {
       <Table.Dropdown>
         <Dropdown.List>
           <Dropdown.Item>
-            <Link to={generatePath(Route['/feature-flags/:id/edit'], { id })}>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/feature-flags/:id/edit'], { id })}
+            >
               <Edit /> Edit Flag
             </Link>
           </Dropdown.Item>
           <Dropdown.Item>
-            <Link to={generatePath(Route['/feature-flags/:id/delete'], { id })}>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/feature-flags/:id/delete'], { id })}
+            >
               <Trash /> Delete Flag
             </Link>
           </Dropdown.Item>

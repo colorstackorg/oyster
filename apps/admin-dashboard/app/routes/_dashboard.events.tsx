@@ -211,23 +211,35 @@ function EventDropdown({ id, type }: EventInView) {
         <Dropdown.List>
           {type === EventType.IRL && (
             <Dropdown.Item>
-              <Link to={generatePath(Route['/events/:id/check-in'], { id })}>
+              <Link
+                preventScrollReset
+                to={generatePath(Route['/events/:id/check-in'], { id })}
+              >
                 <Camera /> Check-In QR Code
               </Link>
             </Dropdown.Item>
           )}
           <Dropdown.Item>
-            <Link to={generatePath(Route['/events/:id/import'], { id })}>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/events/:id/import'], { id })}
+            >
               <Upload /> Import Attendees
             </Link>
           </Dropdown.Item>
           <Dropdown.Item>
-            <Link to={generatePath(Route['/events/:id/add-recording'], { id })}>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/events/:id/add-recording'], { id })}
+            >
               <Upload /> Add Recording
             </Link>
           </Dropdown.Item>
           <Dropdown.Item>
-            <Link to={generatePath(Route['/events/:id/delete'], { id })}>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/events/:id/delete'], { id })}
+            >
               <Trash2 /> Delete Event
             </Link>
           </Dropdown.Item>

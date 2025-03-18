@@ -259,6 +259,7 @@ function ApplicationDropdown({ id }: ApplicationInView) {
           {searchParams.status === 'pending' && (
             <Dropdown.Item>
               <Link
+                preventScrollReset
                 to={{
                   pathname: generatePath(Route['/applications/:id/email'], {
                     id,
@@ -273,6 +274,7 @@ function ApplicationDropdown({ id }: ApplicationInView) {
           {searchParams.status === 'rejected' && (
             <Dropdown.Item>
               <Link
+                preventScrollReset
                 to={{
                   pathname: generatePath(Route['/applications/:id/accept'], {
                     id,

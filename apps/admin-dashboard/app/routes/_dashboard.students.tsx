@@ -210,7 +210,10 @@ function StudentDropdown({
         <Dropdown.List>
           {!activatedAt && (
             <Dropdown.Item>
-              <Link to={generatePath(Route['/students/:id/activate'], { id })}>
+              <Link
+                preventScrollReset
+                to={generatePath(Route['/students/:id/activate'], { id })}
+              >
                 <Zap /> Activate Member
               </Link>
             </Dropdown.Item>
@@ -218,6 +221,7 @@ function StudentDropdown({
 
           <Dropdown.Item>
             <Link
+              preventScrollReset
               to={generatePath(Route['/students/:id/points/grant'], { id })}
             >
               <Star /> Grant Points
@@ -225,33 +229,47 @@ function StudentDropdown({
           </Dropdown.Item>
 
           <Dropdown.Item>
-            <Link to={generatePath(Route['/students/:id/email'], { id })}>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/students/:id/email'], { id })}
+            >
               <Edit /> Update Email
             </Link>
           </Dropdown.Item>
 
           {applicationUri && (
             <Dropdown.Item>
-              <Link target="_blank" to={applicationUri}>
+              <Link preventScrollReset target="_blank" to={applicationUri}>
                 <CornerUpLeft /> View Application
               </Link>
             </Dropdown.Item>
           )}
 
           <Dropdown.Item>
-            <Link target="_blank" to={airtableUri} rel="noopener noreferrer">
+            <Link
+              preventScrollReset
+              target="_blank"
+              to={airtableUri}
+              rel="noopener noreferrer"
+            >
               <ExternalLink /> View Airtable Record
             </Link>
           </Dropdown.Item>
 
           <Dropdown.Item>
-            <Link to={generatePath(Route['/students/:id/gift'], { id })}>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/students/:id/gift'], { id })}
+            >
               <Gift /> Send Goody Gift
             </Link>
           </Dropdown.Item>
 
           <Dropdown.Item>
-            <Link to={generatePath(Route['/students/:id/remove'], { id })}>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/students/:id/remove'], { id })}
+            >
               <Trash /> Remove Member
             </Link>
           </Dropdown.Item>

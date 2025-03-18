@@ -224,7 +224,10 @@ function SchoolsTableDropdown({ chapterId, id }: SchoolInView) {
       <Table.Dropdown>
         <Dropdown.List>
           <Dropdown.Item>
-            <Link to={generatePath(Route['/schools/:id/edit'], { id })}>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/schools/:id/edit'], { id })}
+            >
               <Edit /> Edit School
             </Link>
           </Dropdown.Item>
@@ -232,6 +235,7 @@ function SchoolsTableDropdown({ chapterId, id }: SchoolInView) {
           {!chapterId && (
             <Dropdown.Item>
               <Link
+                preventScrollReset
                 to={generatePath(Route['/schools/:id/chapter/create'], {
                   id,
                 })}

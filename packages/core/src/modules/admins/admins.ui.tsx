@@ -145,7 +145,10 @@ function AdminDropdown({ id }: AdminInTable) {
       <Table.Dropdown>
         <Dropdown.List>
           <Dropdown.Item>
-            <Link to={generatePath('/admins/:id/remove', { id })}>
+            <Link
+              preventScrollReset
+              to={generatePath('/admins/:id/remove', { id })}
+            >
               <Trash /> Remove Admin
             </Link>
           </Dropdown.Item>

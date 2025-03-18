@@ -214,6 +214,7 @@ function OnboardingSessionsDropdown({ id }: OnboardingSessionInView) {
         <Dropdown.List>
           <Dropdown.Item>
             <Link
+              preventScrollReset
               to={generatePath(
                 Route['/onboarding-sessions/:id/add-attendees'],
                 {
