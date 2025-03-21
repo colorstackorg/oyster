@@ -41,6 +41,7 @@
     "./offers": "./src/modules/compensation/offers.ts",
     "./offers/ui": "./src/modules/compensation/offers.ui.tsx",
     "./opportunities": "./src/modules/opportunities.ts",
+    "./peer-help": "./src/modules/peer-help.ts",
     "./referrals": "./src/modules/referrals/referrals.ts",
     "./referrals/ui": "./src/modules/referrals/referrals.ui.tsx",
     "./remix": "./src/shared/utils/remix.ts",
