@@ -6,6 +6,9 @@ export async function up(db: Kysely<any>) {
     .addColumn('created_at', 'timestamptz', (column) => {
       return column.notNull().defaultTo(sql`now()`);
     })
+    .addColumn('description', 'text', (column) => {
+      return column.notNull();
+    })
     .addColumn('help_by', 'date', (column) => {
       return column.notNull();
     })
@@ -17,9 +20,6 @@ export async function up(db: Kysely<any>) {
     })
     .addColumn('id', 'text', (column) => {
       return column.primaryKey();
-    })
-    .addColumn('message', 'text', (column) => {
-      return column.notNull();
     })
     .addColumn('status', 'text', (column) => {
       return column.notNull();
