@@ -1,12 +1,6 @@
 import { promises as fs } from 'fs';
-import {
-  type Kysely,
-  type Migration,
-  type MigrationProvider,
-  Migrator,
-} from 'kysely';
-import os from 'os';
-import path from 'path';
+import { FileMigrationProvider, type Kysely, Migrator } from 'kysely';
+import path from 'pathe';
 import { fileURLToPath } from 'url';
 
 import { createDatabaseConnection } from './create-database-connection';
@@ -39,9 +33,16 @@ export async function migrate(options: MigrateOptions = defaultOptions) {
 
   const db = options.db || createDatabaseConnection();
 
+  const filename = fileURLToPath(import.meta.url);
+  const dirname = path.dirname(filename);
+
   const migrator = new Migrator({
     db,
-    provider: new FileMigrationProvider(),
+    provider: new FileMigrationProvider({
+      fs,
+      path,
+      migrationFolder: path.join(dirname, '../migrations'),
+    }),
     migrationTableName: 'kysely_migrations',
     migrationLockTableName: 'kysely_migrations_lock',
   });
@@ -82,49 +83,5 @@ export async function migrate(options: MigrateOptions = defaultOptions) {
   // destroying it to the caller. Otherwise, we'll destroy it here.
   if (!options.db) {
     await db.destroy();
-  }
-}
-
-// NOTE: Kysely's built-in `FileMigrationProvider` does not work on Windows,
-// due to Windows not supporting `import()` of absolute URLs which are not
-// file URLs. Kysely has decided not to fix this issue since they don't want
-// to have any platform-specific code in their library, so we have to fix it
-// ourselves. You can reference the original implementation here:
-// https://github.com/kysely-org/kysely/blob/0.27.2/src/migration/file-migration-provider.ts
-
-class FileMigrationProvider implements MigrationProvider {
-  async getMigrations() {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-
-    // This is the absolute path to the "migrations" directory.
-    const directoryPath = path.join(__dirname, '../migrations');
-
-    // This is a list of file names in the "migrations" directory.
-    const files = await fs.readdir(directoryPath);
-
-    const migrations: Record<string, Migration> = {};
-
-    for (const file of files) {
-      const pathParts = [directoryPath, file];
-
-      // This is the main addition we're making to the original code from
-      // Kysely. On Windows, we need all absolute URLs to be "file URLs", so
-      // we add this prefix.
-      if (os.platform() === 'win32') {
-        pathParts.unshift('file://');
-      }
-
-      const absolutePathToMigration = path.join(...pathParts);
-
-      const migration = await import(absolutePathToMigration);
-
-      // We remove the extension form the file name to get the migration key.
-      const migrationKey = file.substring(0, file.lastIndexOf('.'));
-
-      migrations[migrationKey] = migration;
-    }
-
-    return migrations;
   }
 }
