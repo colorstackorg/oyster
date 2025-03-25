@@ -1,11 +1,13 @@
 import { type LinkProps, useNavigate } from '@remix-run/react';
-import React, { type PropsWithChildren } from 'react';
+import React, { type PropsWithChildren, useContext } from 'react';
 import { MoreVertical } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { Dropdown } from './dropdown';
+import { Dropdown, DropdownContext } from './dropdown';
 import { IconButton } from './icon-button';
+import { Portal } from './portal';
 import { Text } from './text';
+import { usePosition } from '../hooks/use-position';
 import { cx } from '../utils/cx';
 
 type TableData = Record<string, unknown>;
@@ -84,7 +86,7 @@ type TableProps<T extends TableData = any> = {
 
 export const Table = ({ columns, data, emptyMessage, rowTo }: TableProps) => {
   return (
-    <div className="rounded-lg border border-gray-200">
+    <div className="overflow-auto rounded-lg border border-gray-200">
       {!data.length ? (
         <div className="box-border flex w-full flex-col items-center justify-center gap-4 p-12">
           <Text>{emptyMessage}</Text>
@@ -246,7 +248,19 @@ function getFilteredColumns(columns: TableProps['columns']) {
 // Dropdown
 
 Table.Dropdown = function TableDropdown({ children }: PropsWithChildren) {
-  return <Dropdown className="absolute right-10">{children}</Dropdown>;
+  const { ref } = useContext(DropdownContext);
+  const { x, y } = usePosition(ref);
+
+  return (
+    <Portal>
+      <Dropdown
+        className="fixed -ml-2 mt-[unset] -translate-x-full"
+        style={{ left: x, top: y }}
+      >
+        {children}
+      </Dropdown>
+    </Portal>
+  );
 };
 
 Table.DropdownOpenButton = function TableDropdownOpenButton() {
