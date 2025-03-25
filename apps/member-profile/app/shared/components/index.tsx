@@ -81,6 +81,7 @@ type CompanyForFilter = {
   id: string;
   imageUrl: string | null;
   name: string;
+  activeOpportunityCount?: number;
 };
 
 type CompanyFilterProps = {
@@ -138,13 +139,11 @@ function CompanyFilterList({ allCompanies, emptyMessage }: CompanyFilterProps) {
   return (
     <FilterList>
       {filteredCompanies.map((company) => {
-        return (
-          <FilterItem
-            key={company.id}
-            label={company.name}
-            value={company.id}
-          />
-        );
+        const label = company.activeOpportunityCount
+          ? `${company.name} (${company.activeOpportunityCount})`
+          : company.name;
+
+        return <FilterItem key={company.id} label={label} value={company.id} />;
       })}
     </FilterList>
   );
