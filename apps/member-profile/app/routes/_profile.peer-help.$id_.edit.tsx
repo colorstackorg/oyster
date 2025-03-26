@@ -12,7 +12,7 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 
-import { requestHelp, RequestHelpInput } from '@oyster/core/peer-help';
+import { editHelpRequest, EditHelpRequestInput } from '@oyster/core/peer-help';
 import { db } from '@oyster/db';
 import {
   Button,
@@ -60,29 +60,26 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   return json(helpRequest);
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const { data, errors, ok } = await validateForm(
     request,
-    RequestHelpInput.omit({ helpeeId: true })
+    EditHelpRequestInput
   );
 
   if (!ok) {
     return json({ errors }, { status: 400 });
   }
 
-  const result = await requestHelp({
-    ...data,
-    helpeeId: user(session),
-  });
+  const result = await editHelpRequest(params.id as string, data);
 
   if (!result.ok) {
     return json({ error: result.error }, { status: result.code });
   }
 
   toast(session, {
-    message: 'Request submitted!',
+    message: 'Help request updated!',
   });
 
   const url = new URL(request.url);
@@ -170,7 +167,7 @@ export default function EditHelpRequestModal() {
         <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
-          <Button.Submit>Request</Button.Submit>
+          <Button.Submit>Edit</Button.Submit>
         </Button.Group>
       </Form>
     </Modal>
