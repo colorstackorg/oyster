@@ -13,7 +13,7 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren } from 'react';
-import { Calendar, Clock, Edit, Info } from 'react-feather';
+import { Edit, Info, User } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
@@ -29,6 +29,10 @@ import {
   ProfilePicture,
   Text,
 } from '@oyster/ui';
+import { FilterList } from '@oyster/ui/filter';
+import { FilterPopover, FilterRoot, FilterTrigger } from '@oyster/ui/filter';
+import { type FilterValue } from '@oyster/ui/filter';
+import { FilterItem } from '@oyster/ui/filter';
 import {
   Tooltip,
   TooltipContent,
@@ -38,7 +42,6 @@ import {
 import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
-import { useToast } from '@/shared/hooks/use-toast';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 const PeerHelpSearchParams = ListSearchParams.pick({
@@ -127,17 +130,12 @@ async function listHelpRequests({ memberId, view }: listHelpRequestsProps) {
         'helpers.profilePicture as helperProfilePicture',
         'helpRequests.createdAt',
         'helpRequests.description',
-        'helpRequests.helpBy',
         'helpRequests.helpeeId',
         'helpRequests.id',
         'helpRequests.summary',
         'helpRequests.type',
-        (eb) => {
-          // editable = true if the logged-in user is the helpee
-          return eb('helpeeId', '=', memberId).as('editable');
-        },
+        (eb) => eb('helpeeId', '=', memberId).as('editable'),
       ])
-      .orderBy('helpRequests.helpBy', 'asc')
       .orderBy('helpRequests.createdAt', 'desc')
       .execute(),
 
@@ -146,13 +144,14 @@ async function listHelpRequests({ memberId, view }: listHelpRequestsProps) {
       .executeTakeFirstOrThrow(),
   ]);
 
-  const helpRequests = records.map(({ createdAt, ...record }) => {
+  const helpRequests = records.map(({ createdAt, editable, ...record }) => {
     const createdAtObject = dayjs(createdAt);
 
     return {
       ...record,
       createdAt: createdAtObject.fromNow(),
       createdAtExpanded: createdAtObject.format('MMM DD, YYYY • h:mm A'),
+      editable: !!editable,
     };
   });
 
@@ -172,7 +171,15 @@ export default function PeerHelpLayout() {
         <RequestHelpButton />
       </Dashboard.Header>
 
-      <HelpRequestsNavigation />
+      <Text className="-mt-3" color="gray-500" variant="sm">
+        Peer Help is an easy way for members to get 1:1 help from each other.
+      </Text>
+
+      <div className="flex items-center gap-2">
+        <MeFilter />
+        <TypeFilter />
+      </div>
+
       <HelpRequestsList />
       <HelpRequestsPagination />
       <Outlet />
@@ -180,33 +187,69 @@ export default function PeerHelpLayout() {
   );
 }
 
-function HelpRequestsNavigation() {
-  const { myCount, openCount, view } = useLoaderData<typeof loader>();
+function MeFilter() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  function toggle() {
+    setSearchParams((params) => {
+      params.delete('page');
+
+      if (searchParams.get('view') === 'me') {
+        params.delete('view');
+      } else {
+        params.set('view', 'me');
+      }
+
+      return params;
+    });
+  }
 
   return (
-    <nav>
-      <ul className="flex items-center gap-4">
-        <NavigationItem
-          active={view === 'open'}
-          to={{
-            pathname: Route['/peer-help'],
-            search: '', // The default view is open requests.
-          }}
-        >
-          Open Requests ({openCount})
-        </NavigationItem>
+    <FilterTrigger
+      active={searchParams.get('view') === 'me'}
+      icon={<User />}
+      onClick={toggle}
+      popover={false}
+    >
+      My Requests
+    </FilterTrigger>
+  );
+}
 
-        <NavigationItem
-          active={view === 'me'}
-          to={{
-            pathname: Route['/peer-help'],
-            search: new URLSearchParams({ view: 'me' }).toString(),
-          }}
-        >
-          My Requests ({myCount})
-        </NavigationItem>
-      </ul>
-    </nav>
+function TypeFilter() {
+  const [searchParams] = useSearchParams();
+
+  const ranges = searchParams.getAll('type');
+
+  const options: FilterValue[] = [
+    { color: 'pink-100', label: 'Career Advice', value: 'career_advice' },
+    { color: 'purple-100', label: 'Mock Interview', value: 'mock_interview' },
+    { color: 'blue-100', label: 'Resume Review', value: 'resume_review' },
+  ];
+
+  const selectedValues = options.filter((option) => {
+    return ranges.includes(option.value);
+  });
+
+  return (
+    <FilterRoot name="type" selectedValues={selectedValues}>
+      <FilterTrigger icon={<Info />}>Type</FilterTrigger>
+
+      <FilterPopover>
+        <FilterList height="max">
+          {options.map((option) => {
+            return (
+              <FilterItem
+                color={option.color}
+                key={option.value}
+                label={option.label}
+                value={option.value}
+              />
+            );
+          })}
+        </FilterList>
+      </FilterPopover>
+    </FilterRoot>
   );
 }
 
@@ -283,7 +326,7 @@ function HelpRequestItem({
   createdAt,
   createdAtExpanded,
   description,
-  helpBy,
+  editable,
   helpeeFirstName,
   helpeeId,
   helpeeLastName,
@@ -322,9 +365,17 @@ function HelpRequestItem({
         </Link>
       </div>
 
-      <Text className="line-clamp-3" color="gray-500" variant="sm">
-        {description}
-      </Text>
+      <Tooltip>
+        <TooltipTrigger cursor="default">
+          <Text className="line-clamp-3" color="gray-500" variant="sm">
+            {description}
+          </Text>
+        </TooltipTrigger>
+
+        <TooltipContent side="bottom">
+          <TooltipText>{description}</TooltipText>
+        </TooltipContent>
+      </Tooltip>
 
       <footer className="mt-auto flex items-center justify-between gap-2">
         <div className="flex items-center gap-1">
@@ -349,11 +400,7 @@ function HelpRequestItem({
           </Tooltip>
         </div>
 
-        {/* <ResourceActionGroup
-          editable={editable}
-          id={id}
-          shareableUri={shareableUri}
-        /> */}
+        <HelpRequestActionGroup editable={editable} id={id} />
       </footer>
     </li>
   );
@@ -393,37 +440,35 @@ function HelpRequestActionGroup({
 }: Pick<HelpRequest, 'editable' | 'id'>) {
   const [searchParams] = useSearchParams();
 
-  const buttonClassName = getIconButtonCn({
-    backgroundColor: 'gray-100',
-    backgroundColorOnHover: 'gray-200',
-  });
+  if (!editable) {
+    return null;
+  }
 
   return (
     <ul className="flex items-center gap-1">
-      {!!editable && (
-        <li>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <IconButton.Slot>
-                <Link
-                  className={buttonClassName}
-                  to={{
-                    pathname: generatePath(Route['/peer-help/:id/edit'], {
-                      id,
-                    }),
-                    search: searchParams.toString(),
-                  }}
-                >
-                  <Edit />
-                </Link>
-              </IconButton.Slot>
-            </TooltipTrigger>
-            <TooltipContent>
-              <TooltipText>Edit Resource</TooltipText>
-            </TooltipContent>
-          </Tooltip>
-        </li>
-      )}
+      <li>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <IconButton.Slot
+              backgroundColor="gray-100"
+              backgroundColorOnHover="gray-200"
+            >
+              <Link
+                to={{
+                  pathname: generatePath(Route['/peer-help/:id/edit'], { id }),
+                  search: searchParams.toString(),
+                }}
+              >
+                <Edit />
+              </Link>
+            </IconButton.Slot>
+          </TooltipTrigger>
+
+          <TooltipContent>
+            <TooltipText>Edit Resource</TooltipText>
+          </TooltipContent>
+        </Tooltip>
+      </li>
     </ul>
   );
 }
