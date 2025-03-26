@@ -102,13 +102,7 @@ export const Resource = ({
           </Text>
 
           <Tooltip>
-            <TooltipTrigger
-              className={getTextCn({
-                className: 'cursor-auto',
-                color: 'gray-500',
-                variant: 'sm',
-              })}
-            >
+            <TooltipTrigger className="text-sm text-gray-500" cursor="default">
               {postedAt}
             </TooltipTrigger>
             <TooltipContent>

@@ -1,4 +1,4 @@
-import { Slot } from '@radix-ui/react-slot';
+import { Root as Slot } from '@radix-ui/react-slot';
 import React from 'react';
 import { match } from 'ts-pattern';
 
@@ -14,6 +14,10 @@ type IconButtonProps = Pick<
   shape?: 'circle' | 'square';
   size?: 'sm' | 'md';
   type?: 'button' | 'submit';
+};
+
+type IconButtonComponent = React.ForwardRefExoticComponent<IconButtonProps> & {
+  Slot: React.FC<IconButtonSlotProps>;
 };
 
 export const IconButton = React.forwardRef(
@@ -53,7 +57,7 @@ export const IconButton = React.forwardRef(
       </button>
     );
   }
-);
+) as IconButtonComponent;
 
 type IconButtonSlotProps = Pick<
   IconButtonProps,
@@ -63,32 +67,38 @@ type IconButtonSlotProps = Pick<
   className?: ClassName;
 };
 
-IconButton.Slot = function IconButtonSlot({
-  backgroundColor,
-  backgroundColorOnHover,
-  children,
-  className,
-  shape,
-  size,
-  ...rest
-}: IconButtonSlotProps) {
-  return (
-    <Slot
-      className={cx(
-        getIconButtonCn({
-          backgroundColor,
-          backgroundColorOnHover,
-          shape,
-          size,
-        }),
-        className
-      )}
-      {...rest}
-    >
-      {children}
-    </Slot>
-  );
-};
+IconButton.Slot = React.forwardRef(
+  (
+    {
+      backgroundColor,
+      backgroundColorOnHover,
+      children,
+      className,
+      shape,
+      size,
+      ...rest
+    }: IconButtonSlotProps,
+    ref: React.Ref<HTMLButtonElement>
+  ) => {
+    return (
+      <Slot
+        className={cx(
+          getIconButtonCn({
+            backgroundColor,
+            backgroundColorOnHover,
+            shape,
+            size,
+          }),
+          className
+        )}
+        ref={ref}
+        {...rest}
+      >
+        {children}
+      </Slot>
+    );
+  }
+);
 
 export function getIconButtonCn({
   backgroundColor,
