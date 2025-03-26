@@ -1,9 +1,10 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useSearchParams } from '@remix-run/react';
-import { type PropsWithChildren } from 'react';
+import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
-import { Modal, Text } from '@oyster/ui';
+import { Modal, Pill, Text } from '@oyster/ui';
+import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
@@ -36,7 +37,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export default function HelpRequestModal() {
-  const { id } = useLoaderData<typeof loader>();
+  const { description, type } = useLoaderData<typeof loader>();
 
   const [searchParams] = useSearchParams();
 
@@ -48,11 +49,22 @@ export default function HelpRequestModal() {
       }}
     >
       <Modal.Header>
-        <Modal.Title>Help Request</Modal.Title>
+        <Modal.Title>
+          Help Request for{' '}
+          <Pill
+            color={match(type)
+              .with('career_advice', () => 'pink-100' as const)
+              .with('resume_review', () => 'blue-100' as const)
+              .with('mock_interview', () => 'purple-100' as const)
+              .otherwise(() => 'gray-100' as const)}
+          >
+            {toTitleCase(type)}
+          </Pill>
+        </Modal.Title>
         <Modal.CloseButton />
       </Modal.Header>
 
-      <Text>Help Request: {id}</Text>
+      <Text color="gray-500">{description}</Text>
     </Modal>
   );
 }

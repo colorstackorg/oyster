@@ -17,6 +17,39 @@ const HelpRequest = z.object({
 
 type HelpRequest = z.infer<typeof HelpRequest>;
 
+// Edit Help Request
+
+export const EditHelpRequestInput = HelpRequest.pick({
+  description: true,
+  type: true,
+});
+
+type EditHelpRequestInput = z.infer<typeof EditHelpRequestInput>;
+
+type EditHelpRequestResult = Result<Pick<HelpRequest, 'id'>>;
+
+export async function editHelpRequest(
+  helpRequestId: string,
+  { description, type }: EditHelpRequestInput
+): Promise<EditHelpRequestResult> {
+  const result = await db.transaction().execute(async (trx) => {
+    const helpRequest = await trx
+      .updateTable('helpRequests')
+      .set({
+        description,
+        type,
+        updatedAt: new Date(),
+      })
+      .where('id', '=', helpRequestId)
+      .returning(['id'])
+      .executeTakeFirstOrThrow();
+
+    return helpRequest;
+  });
+
+  return success({ id: result.id });
+}
+
 // Request Help
 
 export const RequestHelpInput = HelpRequest.pick({

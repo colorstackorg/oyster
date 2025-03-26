@@ -344,7 +344,6 @@ function HelpRequestItem({
     <li className="flex flex-col gap-3 rounded-2xl border border-gray-200 p-4">
       <div className="flex justify-between gap-2">
         <Pill
-          className="flex items-center gap-1"
           color={match(type)
             .with('career_advice', () => 'pink-100' as const)
             .with('resume_review', () => 'blue-100' as const)
