@@ -18,10 +18,10 @@ import {
   Field,
   getErrors,
   Modal,
+  Radio,
   Textarea,
   validateForm,
 } from '@oyster/ui';
-import { Select } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import { commitSession, toast, user } from '@/shared/session.server';
@@ -97,11 +97,32 @@ export default function RequestHelpModal() {
           labelFor="type"
           required
         >
-          <Select id="type" name="type" required>
-            <option value="career_advice">Career Advice</option>
-            <option value="mock_interview">Mock Interview</option>
-            <option value="resume_review">Resume Review</option>
-          </Select>
+          <Radio.Group>
+            <Radio
+              color="pink-100"
+              id="career-advice"
+              label="Career Advice"
+              name="type"
+              required
+              value="career_advice"
+            />
+            <Radio
+              color="purple-100"
+              id="mock-interview"
+              label="Mock Interview"
+              name="type"
+              required
+              value="mock_interview"
+            />
+            <Radio
+              color="blue-100"
+              id="resume-review"
+              label="Resume Review"
+              name="type"
+              required
+              value="resume_review"
+            />
+          </Radio.Group>
         </Field>
 
         <Field
