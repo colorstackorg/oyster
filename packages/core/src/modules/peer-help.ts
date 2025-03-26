@@ -17,6 +17,19 @@ const HelpRequest = z.object({
 
 type HelpRequest = z.infer<typeof HelpRequest>;
 
+// Delete Help Request
+
+export async function deleteHelpRequest(
+  helpRequestId: string
+): Promise<Result> {
+  await db
+    .deleteFrom('helpRequests')
+    .where('id', '=', helpRequestId)
+    .executeTakeFirstOrThrow();
+
+  return success({});
+}
+
 // Edit Help Request
 
 export const EditHelpRequestInput = HelpRequest.pick({
