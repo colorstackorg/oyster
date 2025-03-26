@@ -13,7 +13,7 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren } from 'react';
-import { Calendar, Clock, Info } from 'react-feather';
+import { Calendar, Clock, Edit, Info } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
@@ -23,6 +23,7 @@ import {
   Button,
   cx,
   Dashboard,
+  IconButton,
   Pagination,
   Pill,
   ProfilePicture,
@@ -37,6 +38,7 @@ import {
 import { toTitleCase } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
+import { useToast } from '@/shared/hooks/use-toast';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 const PeerHelpSearchParams = ListSearchParams.pick({
@@ -130,6 +132,10 @@ async function listHelpRequests({ memberId, view }: listHelpRequestsProps) {
         'helpRequests.id',
         'helpRequests.summary',
         'helpRequests.type',
+        (eb) => {
+          // editable = true if the logged-in user is the helpee
+          return eb('helpeeId', '=', memberId).as('editable');
+        },
       ])
       .orderBy('helpRequests.helpBy', 'asc')
       .orderBy('helpRequests.createdAt', 'desc')
@@ -294,22 +300,16 @@ function HelpRequestItem({
   return (
     <li className="flex flex-col gap-3 rounded-2xl border border-gray-200 p-4">
       <div className="flex justify-between gap-2">
-        <div className="flex items-center gap-1">
-          <Pill
-            className="flex items-center gap-1"
-            color={match(type)
-              .with('career_advice', () => 'pink-100' as const)
-              .with('resume_review', () => 'blue-100' as const)
-              .with('mock_interview', () => 'purple-100' as const)
-              .otherwise(() => 'gray-100' as const)}
-          >
-            <Info size={12} /> {toTitleCase(type)}
-          </Pill>
-
-          <Pill className="flex items-center gap-1" color="gray-100">
-            <Clock size={12} /> ASAP
-          </Pill>
-        </div>
+        <Pill
+          className="flex items-center gap-1"
+          color={match(type)
+            .with('career_advice', () => 'pink-100' as const)
+            .with('resume_review', () => 'blue-100' as const)
+            .with('mock_interview', () => 'purple-100' as const)
+            .otherwise(() => 'gray-100' as const)}
+        >
+          {toTitleCase(type)}
+        </Pill>
 
         <Link
           className="link"
@@ -384,5 +384,46 @@ function Helpee({
         {firstName} {lastName}
       </Link>
     </div>
+  );
+}
+
+function HelpRequestActionGroup({
+  editable,
+  id,
+}: Pick<HelpRequest, 'editable' | 'id'>) {
+  const [searchParams] = useSearchParams();
+
+  const buttonClassName = getIconButtonCn({
+    backgroundColor: 'gray-100',
+    backgroundColorOnHover: 'gray-200',
+  });
+
+  return (
+    <ul className="flex items-center gap-1">
+      {!!editable && (
+        <li>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <IconButton.Slot>
+                <Link
+                  className={buttonClassName}
+                  to={{
+                    pathname: generatePath(Route['/peer-help/:id/edit'], {
+                      id,
+                    }),
+                    search: searchParams.toString(),
+                  }}
+                >
+                  <Edit />
+                </Link>
+              </IconButton.Slot>
+            </TooltipTrigger>
+            <TooltipContent>
+              <TooltipText>Edit Resource</TooltipText>
+            </TooltipContent>
+          </Tooltip>
+        </li>
+      )}
+    </ul>
   );
 }
