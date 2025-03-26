@@ -5,7 +5,6 @@ import { match } from 'ts-pattern';
 
 import { Dropdown, DropdownContext } from './dropdown';
 import { IconButton } from './icon-button';
-import { Portal } from './portal';
 import { Text } from './text';
 import { usePosition } from '../hooks/use-position';
 import { cx } from '../utils/cx';
@@ -252,14 +251,12 @@ Table.Dropdown = function TableDropdown({ children }: PropsWithChildren) {
   const { x, y } = usePosition(ref);
 
   return (
-    <Portal>
-      <Dropdown
-        className="fixed -ml-2 mt-[unset] -translate-x-full"
-        style={{ left: x, top: y }}
-      >
-        {children}
-      </Dropdown>
-    </Portal>
+    <Dropdown
+      className="fixed -ml-2 mt-[unset] -translate-x-full"
+      style={{ left: x, top: y }}
+    >
+      {children}
+    </Dropdown>
   );
 };
 
