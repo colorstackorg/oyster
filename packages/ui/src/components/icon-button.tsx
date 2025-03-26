@@ -1,7 +1,8 @@
+import { Slot } from '@radix-ui/react-slot';
 import React from 'react';
 import { match } from 'ts-pattern';
 
-import { cx } from '../utils/cx';
+import { type ClassName, cx } from '../utils/cx';
 
 type IconButtonProps = Pick<
   React.HTMLProps<HTMLButtonElement>,
@@ -53,6 +54,41 @@ export const IconButton = React.forwardRef(
     );
   }
 );
+
+type IconButtonSlotProps = Pick<
+  IconButtonProps,
+  'backgroundColor' | 'backgroundColorOnHover' | 'shape' | 'size'
+> & {
+  children: React.ReactNode;
+  className?: ClassName;
+};
+
+IconButton.Slot = function IconButtonSlot({
+  backgroundColor,
+  backgroundColorOnHover,
+  children,
+  className,
+  shape,
+  size,
+  ...rest
+}: IconButtonSlotProps) {
+  return (
+    <Slot
+      className={cx(
+        getIconButtonCn({
+          backgroundColor,
+          backgroundColorOnHover,
+          shape,
+          size,
+        }),
+        className
+      )}
+      {...rest}
+    >
+      {children}
+    </Slot>
+  );
+};
 
 export function getIconButtonCn({
   backgroundColor,
