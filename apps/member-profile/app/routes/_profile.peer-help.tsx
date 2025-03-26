@@ -6,7 +6,6 @@ import {
 import {
   generatePath,
   Link,
-  type LinkProps,
   Outlet,
   useLoaderData,
   useSearchParams,
@@ -21,7 +20,6 @@ import { ListSearchParams } from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
 import {
   Button,
-  cx,
   Dashboard,
   IconButton,
   Pagination,
@@ -48,6 +46,10 @@ const PeerHelpSearchParams = ListSearchParams.pick({
   limit: true,
   page: true,
 }).extend({
+  type: z
+    .enum(['career_advice', 'mock_interview', 'resume_review'])
+    .nullable()
+    .catch(null),
   view: z.enum(['me', 'open']).catch('open'),
 });
 
@@ -57,7 +59,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const url = new URL(request.url);
 
-  const { limit, page, view } = PeerHelpSearchParams.parse(
+  const { limit, page, type, view } = PeerHelpSearchParams.parse(
     Object.fromEntries(url.searchParams)
   );
 
@@ -83,7 +85,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       })
       .executeTakeFirstOrThrow(),
 
-    listHelpRequests({ memberId, view }),
+    listHelpRequests({ memberId, type, view }),
   ]);
 
   return json({
@@ -99,10 +101,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 type listHelpRequestsProps = {
   memberId: string;
+  type: 'career_advice' | 'mock_interview' | 'resume_review' | null;
   view: 'me' | 'open';
 };
 
-async function listHelpRequests({ memberId, view }: listHelpRequestsProps) {
+async function listHelpRequests({
+  memberId,
+  type,
+  view,
+}: listHelpRequestsProps) {
   const query = db
     .selectFrom('helpRequests')
     .$if(view === 'me', (eb) => {
@@ -115,6 +122,9 @@ async function listHelpRequests({ memberId, view }: listHelpRequestsProps) {
     })
     .$if(view === 'open', (eb) => {
       return eb.where('status', '=', 'open').where('helperId', 'is', null);
+    })
+    .$if(!!type, (eb) => {
+      return eb.where('helpRequests.type', '=', type);
     });
 
   const [records, { count }] = await Promise.all([
@@ -284,29 +294,6 @@ function RequestHelpButton() {
   );
 }
 
-type NavigationItemProps = PropsWithChildren<{
-  active?: boolean;
-  to: LinkProps['to'];
-}>;
-
-// Needed to create a custom navigation item for this because we're using query
-// params to determine the active state, not pathnames.
-function NavigationItem({ active, children, to }: NavigationItemProps) {
-  return (
-    <li>
-      <Link
-        className={cx(
-          'underline hover:text-primary',
-          active && 'text-primary underline'
-        )}
-        to={to}
-      >
-        {children}
-      </Link>
-    </li>
-  );
-}
-
 function HelpRequestsList({ children }: PropsWithChildren) {
   const { helpRequests } = useLoaderData<typeof loader>();
 
@@ -331,11 +318,7 @@ function HelpRequestItem({
   helpeeId,
   helpeeLastName,
   helpeeProfilePicture,
-  helperFirstName,
-  helperLastName,
-  helperProfilePicture,
   id,
-  summary,
   type,
 }: HelpRequest) {
   const [searchParams] = useSearchParams();

@@ -7,6 +7,7 @@ import {
 import {
   Form,
   generatePath,
+  Link,
   useActionData,
   useLoaderData,
   useSearchParams,
@@ -30,7 +31,6 @@ import {
   commitSession,
   ensureUserAuthenticated,
   toast,
-  user,
 } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -96,7 +96,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 export default function EditHelpRequestModal() {
-  const { description, type } = useLoaderData<typeof loader>();
+  const { description, id, type } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
   const [searchParams] = useSearchParams();
 
@@ -166,8 +166,14 @@ export default function EditHelpRequestModal() {
 
         <ErrorMessage>{error}</ErrorMessage>
 
-        <Button.Group>
+        <Button.Group flexDirection="row-reverse" spacing="between">
           <Button.Submit>Edit</Button.Submit>
+
+          <Button.Slot color="error" variant="secondary">
+            <Link to={generatePath(Route['/peer-help/:id/delete'], { id })}>
+              Delete
+            </Link>
+          </Button.Slot>
         </Button.Group>
       </Form>
     </Modal>
