@@ -8,29 +8,57 @@ import {
   Form,
   generatePath,
   useActionData,
+  useLoaderData,
   useSearchParams,
 } from '@remix-run/react';
 
 import { requestHelp, RequestHelpInput } from '@oyster/core/peer-help';
+import { db } from '@oyster/db';
 import {
   Button,
+  DatePicker,
   ErrorMessage,
   Field,
   getErrors,
   Modal,
+  Select,
   Textarea,
   validateForm,
 } from '@oyster/ui';
-import { Select } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
-import { commitSession, toast, user } from '@/shared/session.server';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import {
+  commitSession,
+  ensureUserAuthenticated,
+  toast,
+  user,
+} from '@/shared/session.server';
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  const helpRequest = await db
+    .selectFrom('helpRequests')
+    .select([
+      'helpRequests.description',
+      'helpRequests.helpeeId',
+      'helpRequests.helperId',
+      'helpRequests.id',
+      'helpRequests.status',
+      'helpRequests.summary',
+      'helpRequests.type',
+    ])
+    .where('id', '=', params.id as string)
+    .executeTakeFirstOrThrow();
+
+  if (!helpRequest) {
+    throw new Response(null, {
+      status: 404,
+      statusText: 'The help request you are looking for does not exist.',
+    });
+  }
+
+  return json(helpRequest);
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -71,9 +99,8 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 }
 
-// Page
-
-export default function RequestHelpModal() {
+export default function EditHelpRequestModal() {
+  const { description } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
   const [searchParams] = useSearchParams();
 
@@ -112,6 +139,7 @@ export default function RequestHelpModal() {
           required
         >
           <Textarea
+            defaultValue={description}
             id="description"
             minLength={100}
             name="description"

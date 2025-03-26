@@ -1,14 +1,12 @@
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
-import { ISO8601Date } from '@oyster/types';
 import { id } from '@oyster/utils';
 
 import { type Result, success } from '@/shared/utils/core';
 
 const HelpRequest = z.object({
   description: z.string().trim().min(1),
-  helpBy: ISO8601Date,
   helpeeId: z.string().trim().min(1),
   helperId: z.string().trim().min(1),
   id: z.string().trim().min(1),
@@ -23,7 +21,6 @@ type HelpRequest = z.infer<typeof HelpRequest>;
 
 export const RequestHelpInput = HelpRequest.pick({
   description: true,
-  helpBy: true,
   helpeeId: true,
   type: true,
 });
@@ -34,7 +31,6 @@ type RequestHelpResult = Result<Pick<HelpRequest, 'id'>>;
 
 export async function requestHelp({
   description,
-  helpBy,
   helpeeId,
   type,
 }: RequestHelpInput): Promise<RequestHelpResult> {
@@ -45,7 +41,6 @@ export async function requestHelp({
       .insertInto('helpRequests')
       .values({
         description,
-        helpBy,
         helpeeId,
         id: helpRequestId,
         status: 'open',

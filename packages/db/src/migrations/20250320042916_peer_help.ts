@@ -9,9 +9,6 @@ export async function up(db: Kysely<any>) {
     .addColumn('description', 'text', (column) => {
       return column.notNull();
     })
-    .addColumn('help_by', 'date', (column) => {
-      return column.notNull();
-    })
     .addColumn('helpee_id', 'text', (column) => {
       return column.notNull().references('students.id');
     })
