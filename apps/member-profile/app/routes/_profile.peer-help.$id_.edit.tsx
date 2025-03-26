@@ -16,12 +16,11 @@ import { requestHelp, RequestHelpInput } from '@oyster/core/peer-help';
 import { db } from '@oyster/db';
 import {
   Button,
-  DatePicker,
   ErrorMessage,
   Field,
   getErrors,
   Modal,
-  Select,
+  Radio,
   Textarea,
   validateForm,
 } from '@oyster/ui';
@@ -100,7 +99,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function EditHelpRequestModal() {
-  const { description } = useLoaderData<typeof loader>();
+  const { description, type } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
   const [searchParams] = useSearchParams();
 
@@ -124,11 +123,32 @@ export default function EditHelpRequestModal() {
           labelFor="type"
           required
         >
-          <Select id="type" name="type" required>
-            <option value="career_advice">Career Advice</option>
-            <option value="mock_interview">Mock Interview</option>
-            <option value="resume_review">Resume Review</option>
-          </Select>
+          <Radio.Group defaultValue={type}>
+            <Radio
+              color="pink-100"
+              id="career-advice"
+              label="Career Advice"
+              name="type"
+              required
+              value="career_advice"
+            />
+            <Radio
+              color="purple-100"
+              id="mock-interview"
+              label="Mock Interview"
+              name="type"
+              required
+              value="mock_interview"
+            />
+            <Radio
+              color="blue-100"
+              id="resume-review"
+              label="Resume Review"
+              name="type"
+              required
+              value="resume_review"
+            />
+          </Radio.Group>
         </Field>
 
         <Field
