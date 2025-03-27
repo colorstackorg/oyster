@@ -152,6 +152,9 @@ function getHtml(input: EmailTemplate): string {
     .with({ name: 'student-anniversary' }, ({ data }) => {
       return StudentAnniversaryEmail(data);
     })
+    .with({ name: 'student-graduating' }, ({ data }) => {
+      return StudentGraduatingEmail(data);
+    }
     .with({ name: 'student-attended-onboarding' }, ({ data }) => {
       return StudentAttendedOnboardingEmail(data);
     })
