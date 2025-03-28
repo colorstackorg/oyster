@@ -12,8 +12,7 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren } from 'react';
-import { Edit, Info, User } from 'react-feather';
-import { match } from 'ts-pattern';
+import { Edit, Info, Loader, User } from 'react-feather';
 import { z } from 'zod';
 
 import { ListSearchParams } from '@oyster/core/member-profile/ui';
@@ -23,7 +22,6 @@ import {
   Dashboard,
   IconButton,
   Pagination,
-  Pill,
   ProfilePicture,
   Text,
 } from '@oyster/ui';
@@ -37,8 +35,11 @@ import {
   TooltipText,
   TooltipTrigger,
 } from '@oyster/ui/tooltip';
-import { toTitleCase } from '@oyster/utils';
 
+import {
+  HelpRequestStatus,
+  HelpRequestType,
+} from '@/shared/components/peer-help';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -46,11 +47,15 @@ const PeerHelpSearchParams = ListSearchParams.pick({
   limit: true,
   page: true,
 }).extend({
+  status: z
+    .enum(['open', 'pending', 'complete', 'incomplete'])
+    .nullable()
+    .catch(null),
   type: z
     .enum(['career_advice', 'mock_interview', 'resume_review'])
     .nullable()
     .catch(null),
-  view: z.enum(['me', 'open']).catch('open'),
+  view: z.enum(['me']).nullable().catch(null),
 });
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -59,7 +64,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const url = new URL(request.url);
 
-  const { limit, page, type, view } = PeerHelpSearchParams.parse(
+  const { limit, page, status, type, view } = PeerHelpSearchParams.parse(
     Object.fromEntries(url.searchParams)
   );
 
@@ -85,7 +90,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       })
       .executeTakeFirstOrThrow(),
 
-    listHelpRequests({ memberId, type, view }),
+    listHelpRequests({ memberId, status, type, view }),
   ]);
 
   return json({
@@ -101,12 +106,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 type listHelpRequestsProps = {
   memberId: string;
+  status: 'open' | 'pending' | 'complete' | 'incomplete' | null;
   type: 'career_advice' | 'mock_interview' | 'resume_review' | null;
-  view: 'me' | 'open';
+  view: 'me' | null;
 };
 
 async function listHelpRequests({
   memberId,
+  status,
   type,
   view,
 }: listHelpRequestsProps) {
@@ -120,8 +127,8 @@ async function listHelpRequests({
         ]);
       });
     })
-    .$if(view === 'open', (eb) => {
-      return eb.where('status', '=', 'open').where('helperId', 'is', null);
+    .$if(!!status, (eb) => {
+      return eb.where('helpRequests.status', '=', status);
     })
     .$if(!!type, (eb) => {
       return eb.where('helpRequests.type', '=', type);
@@ -133,19 +140,38 @@ async function listHelpRequests({
       .leftJoin('students as helpers', 'helpers.id', 'helpRequests.helperId')
       .select([
         'helpees.firstName as helpeeFirstName',
+        'helpees.id as helpeeId',
         'helpees.lastName as helpeeLastName',
         'helpees.profilePicture as helpeeProfilePicture',
         'helpers.firstName as helperFirstName',
+        'helpers.id as helperId',
         'helpers.lastName as helperLastName',
-        'helpers.profilePicture as helperProfilePicture',
         'helpRequests.createdAt',
         'helpRequests.description',
-        'helpRequests.helpeeId',
         'helpRequests.id',
+        'helpRequests.status',
         'helpRequests.summary',
         'helpRequests.type',
-        (eb) => eb('helpeeId', '=', memberId).as('editable'),
+        (eb) => {
+          return eb('helpeeId', '=', memberId)
+            .and('status', '!=', 'pending')
+            .as('editable');
+        },
       ])
+      .orderBy((eb) => {
+        return eb
+          .case()
+          .when('helpRequests.status', '=', 'open')
+          .then(1)
+          .when('helpRequests.status', '=', 'pending')
+          .then(2)
+          .when('helpRequests.status', '=', 'complete')
+          .then(3)
+          .when('helpRequests.status', '=', 'incomplete')
+          .then(4)
+          .else(5)
+          .end();
+      })
       .orderBy('helpRequests.createdAt', 'desc')
       .execute(),
 
@@ -188,6 +214,7 @@ export default function PeerHelpLayout() {
       <div className="flex items-center gap-2">
         <MeFilter />
         <TypeFilter />
+        <StatusFilter />
       </div>
 
       <HelpRequestsList />
@@ -223,6 +250,44 @@ function MeFilter() {
     >
       My Requests
     </FilterTrigger>
+  );
+}
+
+function StatusFilter() {
+  const [searchParams] = useSearchParams();
+
+  const status = searchParams.get('status');
+
+  const options: FilterValue[] = [
+    { color: 'amber-100', label: 'Help Needed', value: 'open' },
+    { color: 'orange-100', label: 'Helper Assigned', value: 'pending' },
+    { color: 'lime-100', label: 'Help Received', value: 'complete' },
+    { color: 'red-100', label: 'Help Not Received', value: 'incomplete' },
+  ];
+
+  const selectedValues = options.filter((option) => {
+    return status === option.value;
+  });
+
+  return (
+    <FilterRoot name="status" selectedValues={selectedValues}>
+      <FilterTrigger icon={<Loader />}>Status</FilterTrigger>
+
+      <FilterPopover>
+        <FilterList height="max">
+          {options.map((option) => {
+            return (
+              <FilterItem
+                color={option.color}
+                key={option.value}
+                label={option.label}
+                value={option.value}
+              />
+            );
+          })}
+        </FilterList>
+      </FilterPopover>
+    </FilterRoot>
   );
 }
 
@@ -318,7 +383,11 @@ function HelpRequestItem({
   helpeeId,
   helpeeLastName,
   helpeeProfilePicture,
+  helperFirstName,
+  helperId,
+  helperLastName,
   id,
+  status,
   type,
 }: HelpRequest) {
   const [searchParams] = useSearchParams();
@@ -326,15 +395,10 @@ function HelpRequestItem({
   return (
     <li className="flex flex-col gap-3 rounded-2xl border border-gray-200 p-4">
       <div className="flex justify-between gap-2">
-        <Pill
-          color={match(type)
-            .with('career_advice', () => 'pink-100' as const)
-            .with('resume_review', () => 'blue-100' as const)
-            .with('mock_interview', () => 'purple-100' as const)
-            .otherwise(() => 'gray-100' as const)}
-        >
-          {toTitleCase(type)}
-        </Pill>
+        <div className="flex items-center gap-1">
+          <HelpRequestType type={type} />
+          <HelpRequestStatus status={status} />
+        </div>
 
         <Link
           className="link"
@@ -349,7 +413,11 @@ function HelpRequestItem({
 
       <Tooltip>
         <TooltipTrigger cursor="default">
-          <Text className="line-clamp-3" color="gray-500" variant="sm">
+          <Text
+            className="line-clamp-2 border-l border-gray-300 pl-2"
+            color="gray-500"
+            variant="sm"
+          >
             {description}
           </Text>
         </TooltipTrigger>
@@ -358,6 +426,14 @@ function HelpRequestItem({
           <TooltipText>{description}</TooltipText>
         </TooltipContent>
       </Tooltip>
+
+      {helperId && (
+        <Helper
+          helperFirstName={helperFirstName}
+          helperId={helperId}
+          helperLastName={helperLastName}
+        />
+      )}
 
       <footer className="mt-auto flex items-center justify-between gap-2">
         <div className="flex items-center gap-1">
@@ -407,6 +483,29 @@ function Helpee({
 
       <Link
         className="text-sm text-gray-500 hover:underline"
+        target="_blank"
+        to={generatePath(Route['/directory/:id'], { id })}
+      >
+        {firstName} {lastName}
+      </Link>
+    </div>
+  );
+}
+
+function Helper({
+  helperFirstName: firstName,
+  helperId: id,
+  helperLastName: lastName,
+}: Pick<HelpRequest, 'helperFirstName' | 'helperId' | 'helperLastName'>) {
+  return (
+    <div className="flex w-full items-center gap-1 rounded-lg bg-gray-50 p-2">
+      <User className="text-gray-500" size={16} />
+      <Text color="gray-500" variant="sm">
+        Helper:
+      </Text>
+
+      <Link
+        className="link text-sm hover:underline"
         target="_blank"
         to={generatePath(Route['/directory/:id'], { id })}
       >

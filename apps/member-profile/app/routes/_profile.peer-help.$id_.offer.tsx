@@ -144,7 +144,7 @@ export default function HelpRequestModal() {
           </ul>
         </div>
 
-        <Form method="post">
+        <Form className="form" method="post">
           <ErrorMessage>{actionData?.error}</ErrorMessage>
 
           <Button.Group flexDirection="row-reverse">

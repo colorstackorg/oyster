@@ -14,15 +14,18 @@ import { ArrowRight } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
-import { Button, Modal, Pill, ProfilePicture, Text } from '@oyster/ui';
+import { Button, Modal, ProfilePicture, Text } from '@oyster/ui';
 import {
   Tooltip,
   TooltipContent,
   TooltipText,
   TooltipTrigger,
 } from '@oyster/ui/tooltip';
-import { toTitleCase } from '@oyster/utils';
 
+import {
+  HelpRequestStatus,
+  HelpRequestType,
+} from '@/shared/components/peer-help';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -37,6 +40,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'helpees.firstName as helpeeFirstName',
       'helpees.lastName as helpeeLastName',
       'helpees.profilePicture as helpeeProfilePicture',
+      'helpers.firstName as helperFirstName',
+      'helpers.lastName as helperLastName',
       'helpRequests.createdAt',
       'helpRequests.description',
       'helpRequests.helpeeId',
@@ -75,8 +80,12 @@ export default function HelpRequestModal() {
     helpeeId,
     helpeeLastName,
     helpeeProfilePicture,
+    helperFirstName,
+    helperId,
+    helperLastName,
     id,
     isMe,
+    status,
     type,
   } = useLoaderData<typeof loader>();
 
@@ -95,15 +104,10 @@ export default function HelpRequestModal() {
       </Modal.Header>
 
       <div className="flex flex-col gap-4">
-        <Pill
-          color={match(type)
-            .with('career_advice', () => 'pink-100' as const)
-            .with('resume_review', () => 'blue-100' as const)
-            .with('mock_interview', () => 'purple-100' as const)
-            .otherwise(() => 'gray-100' as const)}
-        >
-          {toTitleCase(type)}
-        </Pill>
+        <div className="flex items-center gap-1">
+          <HelpRequestType type={type} />
+          <HelpRequestStatus status={status} />
+        </div>
 
         <Text
           className="border-l border-gray-300 pl-2"
@@ -112,6 +116,14 @@ export default function HelpRequestModal() {
         >
           {description}
         </Text>
+
+        {helperId && (
+          <Helper
+            helperFirstName={helperFirstName}
+            helperId={helperId}
+            helperLastName={helperLastName}
+          />
+        )}
 
         <footer className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-1">
@@ -136,7 +148,7 @@ export default function HelpRequestModal() {
             </Tooltip>
           </div>
 
-          {!isMe && (
+          {!isMe && status === 'open' && (
             <Button.Slot size="small" variant="primary">
               <Link to={generatePath(Route['/peer-help/:id/offer'], { id })}>
                 Offer Help <ArrowRight />
@@ -170,6 +182,32 @@ function Helpee({
 
       <Link
         className="text-sm text-gray-500 hover:underline"
+        target="_blank"
+        to={generatePath(Route['/directory/:id'], { id })}
+      >
+        {firstName} {lastName}
+      </Link>
+    </div>
+  );
+}
+
+function Helper({
+  helperFirstName: firstName,
+  helperId: id,
+  helperLastName: lastName,
+}: Pick<HelpRequest, 'helperFirstName' | 'helperId' | 'helperLastName'>) {
+  return (
+    <div className="flex w-full items-center gap-1 rounded-lg bg-gray-50 p-2">
+      <Text color="gray-500" variant="sm">
+        {match(status)
+          .with('pending', () => 'Helping...')
+          .with('complete', () => 'Helped!')
+          .with('incomplete', () => 'Help Not Received')
+          .otherwise(() => 'Helped by')}
+      </Text>
+
+      <Link
+        className="link text-sm hover:underline"
         target="_blank"
         to={generatePath(Route['/directory/:id'], { id })}
       >
