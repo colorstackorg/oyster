@@ -78,6 +78,11 @@ async function sendEmailWithPostmark(input: EmailTemplate) {
     .with('student-removed', () => FROM_NOTIFICATIONS)
     .exhaustive();
 
+  const replyTo = match(input.name)
+    .with('application-rejected', () => 'membership@colorstack.org')
+    .with('student-removed', () => 'membership@colorstack.org')
+    .otherwise(() => 'noreply@colorstack.org');
+
   const attachments = await getAttachments(input);
 
   await postmark.sendEmail({
@@ -91,7 +96,7 @@ async function sendEmailWithPostmark(input: EmailTemplate) {
     }),
     From: from,
     HtmlBody: getHtml(input),
-    ReplyTo: 'membership@colorstack.org',
+    ReplyTo: replyTo,
     Subject: getSubject(input),
     To: input.to,
   });
