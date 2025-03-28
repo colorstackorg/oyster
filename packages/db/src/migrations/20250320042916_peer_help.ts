@@ -31,8 +31,38 @@ export async function up(db: Kysely<any>) {
       return column.notNull().defaultTo(sql`now()`);
     })
     .execute();
+
+  await db.schema
+    .createTable('help_request_responses')
+    .addColumn('created_at', 'timestamptz', (column) => {
+      return column.notNull().defaultTo(sql`now()`);
+    })
+    .addColumn('feedback', 'text')
+    .addColumn('help_request_id', 'text', (column) => {
+      return column
+        .notNull()
+        .references('help_requests.id')
+        .onDelete('cascade');
+    })
+    .addColumn('respondent_id', 'text', (column) => {
+      return column.notNull().references('students.id');
+    })
+    .addColumn('respondent_type', 'text', (column) => {
+      return column
+        .notNull()
+        .check(sql`respondent_type in ('helpee', 'helper')`);
+    })
+    .addColumn('response', 'text', (column) => {
+      return column.notNull();
+    })
+    .addPrimaryKeyConstraint('help_request_responses_pkey', [
+      'help_request_id',
+      'respondent_id',
+    ])
+    .execute();
 }
 
 export async function down(db: Kysely<any>) {
+  await db.schema.dropTable('help_request_responses').execute();
   await db.schema.dropTable('help_requests').execute();
 }
