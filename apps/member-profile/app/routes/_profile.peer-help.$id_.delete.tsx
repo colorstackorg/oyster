@@ -96,7 +96,7 @@ export default function DeleteHelpRequestModal() {
         Are you sure you want to delete this help request?
       </Modal.Description>
 
-      <div className="flex flex-col gap-4 border-l border-gray-300 pl-2">
+      <div className="flex flex-col gap-2">
         <Pill
           color={match(type)
             .with('career_advice', () => 'pink-100' as const)
@@ -107,7 +107,11 @@ export default function DeleteHelpRequestModal() {
           {toTitleCase(type)}
         </Pill>
 
-        <Text color="gray-500" variant="sm">
+        <Text
+          className="border-l border-gray-300 pl-2"
+          color="gray-500"
+          variant="sm"
+        >
           {description}
         </Text>
       </div>
