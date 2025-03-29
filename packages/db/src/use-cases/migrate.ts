@@ -1,12 +1,6 @@
 import { promises as fs } from 'fs';
-import {
-  type Kysely,
-  type Migration,
-  type MigrationProvider,
-  Migrator,
-} from 'kysely';
-import os from 'os';
-import path from 'path';
+import { FileMigrationProvider, type Kysely, Migrator } from 'kysely';
+import path from 'pathe';
 import { fileURLToPath } from 'url';
 
 import { createDatabaseConnection } from './create-database-connection';
@@ -39,9 +33,16 @@ export async function migrate(options: MigrateOptions = defaultOptions) {
 
   const db = options.db || createDatabaseConnection();
 
+  const filename = fileURLToPath(import.meta.url);
+  const dirname = path.dirname(filename);
+
   const migrator = new Migrator({
     db,
-    provider: new FileMigrationProvider(),
+    provider: new FileMigrationProvider({
+      fs,
+      path,
+      migrationFolder: path.join(dirname, '../migrations'),
+    }),
     migrationTableName: 'kysely_migrations',
     migrationLockTableName: 'kysely_migrations_lock',
   });
@@ -84,6 +85,7 @@ export async function migrate(options: MigrateOptions = defaultOptions) {
     await db.destroy();
   }
 }
+
 
 // NOTE: Kysely's built-in `FileMigrationProvider` does not work on Windows,
 // due to Windows not supporting `import()` of absolute URLs which are not

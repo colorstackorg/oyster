@@ -330,7 +330,11 @@ async function createOpportunity({
   let websiteContent = '';
 
   if (!isProtectedURL) {
-    websiteContent = await getPageContent(link);
+    try {
+      websiteContent = await getPageContent(link);
+    } catch (e) {
+      reportException(e);
+    }
   }
 
   const opportunity = await db
@@ -359,7 +363,7 @@ async function createOpportunity({
   // If the link is NOT a protected URL, we'll scrape the website content
   // using puppeteer, create a new "empty" opportunity, and then refine it with
   // AI using that website content.
-  if (!isProtectedURL) {
+  if (websiteContent) {
     return refineOpportunity({
       content: websiteContent.slice(0, 10_000),
       opportunityId: opportunity.id,

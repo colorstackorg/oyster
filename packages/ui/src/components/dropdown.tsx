@@ -1,4 +1,5 @@
 import React, {
+  createRef,
   type PropsWithChildren,
   useContext,
   useRef,
@@ -11,6 +12,7 @@ import { cx } from '../utils/cx';
 export const DropdownContext = React.createContext({
   _initialized: false,
   open: false,
+  ref: createRef<HTMLElement>(),
   setOpen: (_: boolean) => {},
 });
 
@@ -22,7 +24,7 @@ export function useIsDropdownParent() {
 
 type DropdownProps = Pick<
   React.HTMLProps<HTMLElement>,
-  'children' | 'className'
+  'children' | 'className' | 'style'
 > & {
   align?: 'left' | 'right';
 };
@@ -31,6 +33,7 @@ export const Dropdown = ({
   align = 'right',
   children,
   className,
+  ...rest
 }: DropdownProps) => {
   const { open } = useContext(DropdownContext);
 
@@ -45,6 +48,7 @@ export const Dropdown = ({
         align === 'left' ? 'left-0' : 'right-0',
         className
       )}
+      {...rest}
     >
       {children}
     </div>
@@ -85,7 +89,14 @@ Dropdown.Root = function DropdownRoot({ children }: PropsWithChildren) {
   });
 
   return (
-    <DropdownContext.Provider value={{ _initialized: true, open, setOpen }}>
+    <DropdownContext.Provider
+      value={{
+        _initialized: true,
+        ref,
+        open,
+        setOpen,
+      }}
+    >
       <div className="relative" ref={ref}>
         {children}
       </div>

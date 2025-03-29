@@ -12,8 +12,8 @@ import React, { type PropsWithChildren } from 'react';
 
 type EmailBaseProps<T> = PropsWithChildren<
   T & {
-    marginBottom?: '0px' | '16px' | '32px';
-    marginTop?: '0px' | '16px' | '32px';
+    marginBottom?: '0px' | '8px' | '16px' | '32px';
+    marginTop?: '0px' | '8px' | '16px' | '32px';
   }
 >;
 

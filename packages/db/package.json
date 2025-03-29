@@ -32,6 +32,7 @@
     "commander": "^12.0.0",
     "dedent": "^0.7.0",
     "kysely-codegen": "^0.10.1",
+    "pathe": "^2.0.3",
     "prisma": "^5.16.2",
     "prompt-sync": "^4.2.0"
   }
