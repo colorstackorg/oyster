@@ -91,7 +91,7 @@ async function sendEmailWithPostmark(input: EmailTemplate) {
     }),
     From: from,
     HtmlBody: getHtml(input),
-    ReplyTo: 'membership@colorstack.org',
+    ReplyTo: 'noreply@colorstack.org',
     Subject: getSubject(input),
     To: input.to,
   });
