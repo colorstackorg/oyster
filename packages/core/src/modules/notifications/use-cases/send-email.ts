@@ -13,6 +13,7 @@ import {
   ResumeSubmittedEmail,
   StudentAnniversaryEmail,
   StudentAttendedOnboardingEmail,
+  StudentGraduationEmail,
   StudentRemovedEmail,
 } from '@oyster/email-templates';
 
@@ -74,6 +75,7 @@ async function sendEmailWithPostmark(input: EmailTemplate) {
     .with('referral-accepted', () => FROM_NOTIFICATIONS)
     .with('referral-sent', () => FROM_NOTIFICATIONS)
     .with('student-anniversary', () => FROM_NOTIFICATIONS)
+    .with('student-graduating', () => FROM_NOTIFICATIONS)
     .with('student-attended-onboarding', () => FROM_NOTIFICATIONS)
     .with('student-removed', () => FROM_NOTIFICATIONS)
     .exhaustive();
@@ -153,8 +155,8 @@ function getHtml(input: EmailTemplate): string {
       return StudentAnniversaryEmail(data);
     })
     .with({ name: 'student-graduating' }, ({ data }) => {
-      return StudentGraduatingEmail(data);
-    }
+      return StudentGraduationEmail(data);
+    })
     .with({ name: 'student-attended-onboarding' }, ({ data }) => {
       return StudentAttendedOnboardingEmail(data);
     })

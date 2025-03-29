@@ -631,7 +631,7 @@ export const StudentBullJob = z.discriminatedUnion('name', [
     data: z.object({}),
   }),
   z.object({
-    name: z.literal('member.email.change'),
+    name: z.literal('student.graduation.email'),
     data: z.object({}),
   }),
   z.object({
