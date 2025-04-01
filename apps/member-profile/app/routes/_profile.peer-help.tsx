@@ -119,6 +119,7 @@ async function listHelpRequests({
 }: listHelpRequestsProps) {
   const query = db
     .selectFrom('helpRequests')
+    .where('helpRequests.status', '!=', 'incomplete')
     .$if(view === 'me', (eb) => {
       return eb.where((eb) => {
         return eb.or([
@@ -259,10 +260,9 @@ function StatusFilter() {
   const status = searchParams.get('status');
 
   const options: FilterValue[] = [
-    { color: 'amber-100', label: 'Help Needed', value: 'open' },
-    { color: 'orange-100', label: 'Helper Assigned', value: 'pending' },
-    { color: 'lime-100', label: 'Help Received', value: 'complete' },
-    { color: 'red-100', label: 'Help Not Received', value: 'incomplete' },
+    { color: 'amber-100', label: '1. Help Needed', value: 'open' },
+    { color: 'orange-100', label: '2. Helper Assigned', value: 'pending' },
+    { color: 'lime-100', label: '3. Help Received', value: 'complete' },
   ];
 
   const selectedValues = options.filter((option) => {
