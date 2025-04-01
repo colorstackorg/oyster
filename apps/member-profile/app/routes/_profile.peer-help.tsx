@@ -12,7 +12,7 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren } from 'react';
-import { Edit, Info, Loader, User } from 'react-feather';
+import { ArrowRight, Check, Edit, Info, Loader, User } from 'react-feather';
 import { z } from 'zod';
 
 import { ListSearchParams } from '@oyster/core/member-profile/ui';
@@ -61,6 +61,8 @@ const PeerHelpSearchParams = ListSearchParams.pick({
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
   const memberId = user(session);
+
+  console.log(memberId);
 
   const url = new URL(request.url);
 
@@ -154,9 +156,20 @@ async function listHelpRequests({
         'helpRequests.summary',
         'helpRequests.type',
         (eb) => {
-          return eb('helpeeId', '=', memberId)
-            .and('status', '!=', 'pending')
-            .as('editable');
+          return eb('helpeeId', '=', memberId).as('isHelpee');
+        },
+        (eb) => {
+          return eb('helperId', '=', memberId).as('isHelper');
+        },
+        (eb) => {
+          return eb
+            .exists(() => {
+              return eb
+                .selectFrom('helpRequestResponses as checkIns')
+                .whereRef('checkIns.helpRequestId', '=', 'helpRequests.id')
+                .where('checkIns.respondentId', '=', memberId);
+            })
+            .as('checkedIn');
         },
       ])
       .orderBy((eb) => {
@@ -181,14 +194,13 @@ async function listHelpRequests({
       .executeTakeFirstOrThrow(),
   ]);
 
-  const helpRequests = records.map(({ createdAt, editable, ...record }) => {
+  const helpRequests = records.map(({ createdAt, ...record }) => {
     const createdAtObject = dayjs(createdAt);
 
     return {
       ...record,
       createdAt: createdAtObject.fromNow(),
       createdAtExpanded: createdAtObject.format('MMM DD, YYYY • h:mm A'),
-      editable: !!editable,
     };
   });
 
@@ -346,7 +358,7 @@ function RequestHelpButton() {
   const [searchParams] = useSearchParams();
 
   return (
-    <Button.Slot size="small">
+    <Button.Slot>
       <Link
         to={{
           pathname: Route['/peer-help/request'],
@@ -375,10 +387,10 @@ function HelpRequestsList({ children }: PropsWithChildren) {
 type HelpRequest = SerializeFrom<typeof loader>['helpRequests'][number];
 
 function HelpRequestItem({
+  checkedIn,
   createdAt,
   createdAtExpanded,
   description,
-  editable,
   helpeeFirstName,
   helpeeId,
   helpeeLastName,
@@ -387,6 +399,8 @@ function HelpRequestItem({
   helperId,
   helperLastName,
   id,
+  isHelpee,
+  isHelper,
   status,
   type,
 }: HelpRequest) {
@@ -458,7 +472,16 @@ function HelpRequestItem({
           </Tooltip>
         </div>
 
-        <HelpRequestActionGroup editable={editable} id={id} />
+        <div className="flex items-center gap-2">
+          <HelpRequestActionGroup id={id} isHelpee={isHelpee} status={status} />
+          <CheckInButton
+            checkedIn={checkedIn}
+            id={id}
+            isHelpee={isHelpee}
+            isHelper={isHelper}
+            status={status}
+          />
+        </div>
       </footer>
     </li>
   );
@@ -482,7 +505,7 @@ function Helpee({
       />
 
       <Link
-        className="text-sm text-gray-500 hover:underline"
+        className="line-clamp-1 text-sm text-gray-500 hover:underline"
         target="_blank"
         to={generatePath(Route['/directory/:id'], { id })}
       >
@@ -516,12 +539,13 @@ function Helper({
 }
 
 function HelpRequestActionGroup({
-  editable,
   id,
-}: Pick<HelpRequest, 'editable' | 'id'>) {
+  isHelpee,
+  status,
+}: Pick<HelpRequest, 'id' | 'isHelpee' | 'status'>) {
   const [searchParams] = useSearchParams();
 
-  if (!editable) {
+  if (!isHelpee || status !== 'open') {
     return null;
   }
 
@@ -551,5 +575,42 @@ function HelpRequestActionGroup({
         </Tooltip>
       </li>
     </ul>
+  );
+}
+
+function CheckInButton({
+  checkedIn,
+  id,
+  isHelpee,
+  isHelper,
+  status,
+}: Pick<HelpRequest, 'checkedIn' | 'id' | 'isHelpee' | 'isHelper' | 'status'>) {
+  const [searchParams] = useSearchParams();
+
+  if ((!isHelpee && !isHelper) || status === 'open') {
+    return null;
+  }
+
+  if (checkedIn) {
+    return (
+      <Text color="primary" variant="sm" weight="500">
+        Checked In <Check className="inline" size={16} />
+      </Text>
+    );
+  }
+
+  return (
+    <Button.Slot size="sm">
+      <Link
+        to={{
+          pathname: generatePath(Route['/peer-help/:id/check-in'], {
+            id,
+          }),
+          search: searchParams.toString(),
+        }}
+      >
+        Check In <ArrowRight size={16} />
+      </Link>
+    </Button.Slot>
   );
 }

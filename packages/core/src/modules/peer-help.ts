@@ -9,14 +9,27 @@ import { slack } from '@/modules/slack/instances';
 import { STUDENT_PROFILE_URL } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core';
 
+export const HelpRequestStatus = {
+  COMPLETE: 'complete',
+  INCOMPLETE: 'incomplete',
+  OPEN: 'open',
+  PENDING: 'pending',
+} as const;
+
+const HelpRequestType = {
+  CAREER_ADVICE: 'career_advice',
+  MOCK_INTERVIEW: 'mock_interview',
+  RESUME_REVIEW: 'resume_review',
+} as const;
+
 const HelpRequest = z.object({
   description: z.string().trim().min(1),
   helpeeId: z.string().trim().min(1),
   helperId: z.string().trim().min(1).nullable(),
   id: z.string().trim().min(1),
-  status: z.enum(['complete', 'incomplete', 'open', 'pending']),
+  status: z.nativeEnum(HelpRequestStatus),
   summary: z.string().trim().min(1),
-  type: z.enum(['career_advice', 'mock_interview', 'resume_review']),
+  type: z.nativeEnum(HelpRequestType),
 });
 
 type HelpRequest = z.infer<typeof HelpRequest>;
@@ -168,6 +181,94 @@ export async function editHelpRequest(
   });
 
   return success({ id: result.id });
+}
+
+// Check Into Help Request
+
+export const CheckIntoHelpRequestInput = z.object({
+  feedback: z.string().trim().optional(),
+  memberId: z.string().trim().min(1),
+  status: z.enum(['met', 'havent_met', 'planning_to_meet']),
+});
+
+export type CheckIntoHelpRequestInput = z.infer<
+  typeof CheckIntoHelpRequestInput
+>;
+
+export async function checkIntoHelpRequest(
+  helpRequestId: string,
+  { feedback, memberId, status }: CheckIntoHelpRequestInput
+): Promise<Result> {
+  const helpRequest = await db
+    .selectFrom('helpRequests')
+    .select(['helpeeId', 'helperId', 'status'])
+    .where('id', '=', helpRequestId)
+    .executeTakeFirstOrThrow();
+
+  if (memberId !== helpRequest.helpeeId && memberId !== helpRequest.helperId) {
+    return fail({
+      code: 403,
+      error: 'You are not authorized to report on this help request.',
+    });
+  }
+
+  if (helpRequest.status !== 'pending') {
+    return fail({
+      code: 400,
+      error: 'Can only report status for pending help requests.',
+    });
+  }
+
+  const respondentType =
+    memberId === helpRequest.helpeeId ? 'helpee' : 'helper';
+
+  await db
+    .insertInto('helpRequestResponses')
+    .values({
+      feedback,
+      helpRequestId,
+      respondentId: memberId,
+      respondentType,
+      response: status,
+    })
+    .onConflict((oc) => {
+      return oc.columns(['helpRequestId', 'respondentId']).doUpdateSet({
+        feedback,
+        response: status,
+      });
+    })
+    .execute();
+
+  // Check if both parties have responded
+  const responses = await db
+    .selectFrom('helpRequestResponses')
+    .select('response')
+    .where('helpRequestId', '=', helpRequestId)
+    .execute();
+
+  if (responses.length === 2) {
+    const allMet = responses.every((r) => r.response === 'met');
+    const allHaventMet = responses.every((r) => r.response === 'havent_met');
+    const allPlanning = responses.every(
+      (r) => r.response === 'planning_to_meet'
+    );
+
+    // Only update status if both parties agree
+    if (allMet || allHaventMet) {
+      const newStatus = allMet ? 'complete' : 'incomplete';
+
+      await db
+        .updateTable('helpRequests')
+        .set({
+          status: newStatus,
+          updatedAt: new Date(),
+        })
+        .where('id', '=', helpRequestId)
+        .execute();
+    }
+  }
+
+  return success({});
 }
 
 // Request Help

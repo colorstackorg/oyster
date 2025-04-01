@@ -149,7 +149,7 @@ export default function HelpRequestModal() {
           </div>
 
           {!isMe && status === 'open' && (
-            <Button.Slot size="small" variant="primary">
+            <Button.Slot variant="primary">
               <Link to={generatePath(Route['/peer-help/:id/offer'], { id })}>
                 Offer Help <ArrowRight />
               </Link>
