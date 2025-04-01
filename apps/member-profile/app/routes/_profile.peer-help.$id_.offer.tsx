@@ -148,7 +148,7 @@ export default function HelpRequestModal() {
           <ErrorMessage>{actionData?.error}</ErrorMessage>
 
           <Button.Group flexDirection="row-reverse">
-            <Button.Submit size="small">
+            <Button.Submit>
               I Agree & Confirm <Check />
             </Button.Submit>
           </Button.Group>
