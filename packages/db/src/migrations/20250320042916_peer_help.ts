@@ -3,6 +3,9 @@ import { type Kysely, sql } from 'kysely';
 export async function up(db: Kysely<any>) {
   await db.schema
     .createTable('help_requests')
+    .addColumn('check_in_notification_count', 'integer', (column) => {
+      return column.notNull().defaultTo(0);
+    })
     .addColumn('created_at', 'timestamptz', (column) => {
       return column.notNull().defaultTo(sql`now()`);
     })
@@ -18,6 +21,8 @@ export async function up(db: Kysely<any>) {
     .addColumn('id', 'text', (column) => {
       return column.primaryKey();
     })
+    .addColumn('matched_at', 'timestamptz')
+    .addColumn('slack_channel_id', 'text')
     .addColumn('status', 'text', (column) => {
       return column.notNull();
     })

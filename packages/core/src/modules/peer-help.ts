@@ -1,10 +1,16 @@
+import dayjs from 'dayjs';
 import dedent from 'dedent';
+import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { job } from '@/infrastructure/bull';
+import { job, registerWorker } from '@/infrastructure/bull';
+import {
+  type GetBullJobData,
+  PeerHelpBullJob,
+} from '@/infrastructure/bull.types';
 import { reportException } from '@/infrastructure/sentry';
 import { slack } from '@/modules/slack/instances';
 import { STUDENT_PROFILE_URL } from '@/shared/env';
@@ -62,16 +68,6 @@ export async function acceptHelpRequest(
 
   try {
     await db.transaction().execute(async (trx) => {
-      await trx
-        .updateTable('helpRequests')
-        .set({
-          helperId,
-          status: HelpRequestStatus.PENDING,
-          updatedAt: new Date(),
-        })
-        .where('id', '=', helpRequestId)
-        .executeTakeFirstOrThrow();
-
       // Send a notification via group DM.
       const notificationResult = await sendHelpRequestIntroduction({
         helpeeId: helpRequest.helpeeId,
@@ -82,6 +78,17 @@ export async function acceptHelpRequest(
       if (!notificationResult.ok) {
         throw new Error(notificationResult.error);
       }
+
+      await trx
+        .updateTable('helpRequests')
+        .set({
+          helperId,
+          slackChannelId: notificationResult.data.slackChannelId,
+          status: HelpRequestStatus.PENDING,
+          updatedAt: new Date(),
+        })
+        .where('id', '=', helpRequestId)
+        .executeTakeFirstOrThrow();
     });
 
     return success({});
@@ -99,7 +106,9 @@ async function sendHelpRequestIntroduction({
   helpeeId,
   helperId,
   id: helpRequestId,
-}: Pick<HelpRequest, 'helpeeId' | 'helperId' | 'id'>): Promise<Result> {
+}: Pick<HelpRequest, 'helpeeId' | 'helperId' | 'id'>): Promise<
+  Result<{ slackChannelId: string }>
+> {
   const [helpee, helper] = await Promise.all([
     db
       .selectFrom('students')
@@ -161,12 +170,12 @@ async function sendHelpRequestIntroduction({
   `;
 
   job('notification.slack.send', {
-    channel: channel.id as string,
+    channel: channel.id,
     message,
     workspace: 'regular',
   });
 
-  return success({});
+  return success({ slackChannelId: channel.id });
 }
 
 // Delete Help Request
@@ -341,3 +350,69 @@ export async function requestHelp({
 
   return success({ id: result.id });
 }
+
+async function sendCheckInNotifications(
+  _: GetBullJobData<'peer_help.check_in_notifications'>
+) {
+  const query = db
+    .selectFrom('helpRequests')
+    .select(['id', 'slackChannelId'])
+    .where('status', '=', HelpRequestStatus.PENDING)
+    .where('checkInNotificationCount', '<', 3)
+    .where('slackChannelId', 'is not', null);
+
+  const allHelpRequests = await Promise.all([
+    query
+      .where('matchedAt', '>=', dayjs().subtract(2, 'day').toDate())
+      .execute(),
+
+    query
+      .where('matchedAt', '>=', dayjs().subtract(7, 'days').toDate())
+      .execute(),
+  ]);
+
+  const helpRequests = allHelpRequests.flat();
+
+  for (const helpRequest of helpRequests) {
+    const message = dedent`
+    Please let us know if you've been able to connect with your peer! Once both you and your peer respond, you'll both be rewarded with ColorStack points.
+
+    <${STUDENT_PROFILE_URL}/peer-help/${helpRequest.id}/check-in>
+  `;
+
+    job('notification.slack.send', {
+      channel: helpRequest.slackChannelId as string,
+      message,
+      workspace: 'regular',
+    });
+  }
+
+  await db
+    .updateTable('helpRequests')
+    .set((eb) => {
+      return {
+        checkInNotificationCount: eb('checkInNotificationCount', '+', 1),
+        updatedAt: new Date(),
+      };
+    })
+    .where(
+      'id',
+      'in',
+      helpRequests.map((helpRequest) => helpRequest.id)
+    )
+    .execute();
+}
+
+// Worker
+
+export const peerHelpWorker = registerWorker(
+  'peer_help',
+  PeerHelpBullJob,
+  async (job) => {
+    return match(job)
+      .with({ name: 'peer_help.check_in_notifications' }, ({ data }) => {
+        return sendCheckInNotifications(data);
+      })
+      .exhaustive();
+  }
+);
