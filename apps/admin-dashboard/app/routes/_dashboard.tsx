@@ -60,7 +60,7 @@ export default function DashboardLayout() {
                 />
                 <Dashboard.NavigationLink
                   icon={<Video />}
-                  label="Onboarding Sessions"
+                  label="Onboarding"
                   pathname={Route['/onboarding-sessions']}
                 />
               </>
@@ -88,7 +88,7 @@ export default function DashboardLayout() {
                 />
                 <Dashboard.NavigationLink
                   icon={<Video />}
-                  label="Onboarding Sessions"
+                  label="Onboarding"
                   pathname={Route['/onboarding-sessions']}
                 />
                 <Dashboard.NavigationLink
