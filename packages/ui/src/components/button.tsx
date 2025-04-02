@@ -12,7 +12,7 @@ type ButtonProps = Pick<
 > & {
   color?: 'error' | 'primary' | 'success';
   fill?: boolean;
-  size?: 'regular' | 'small' | 'xs';
+  size?: 'md' | 'sm';
   submitting?: boolean;
   variant?: 'primary' | 'secondary';
 };
@@ -87,12 +87,12 @@ Button.Submit = function SubmitButton(
 function getButtonCn({
   color = 'primary',
   fill = false,
-  size = 'regular',
+  size = 'md',
   variant = 'primary',
 }: Pick<ButtonProps, 'color' | 'fill' | 'size' | 'variant'>) {
   return cx(
     'flex items-center justify-center gap-2 rounded-full border border-solid',
-    'hover:opacity-80',
+    'hover:opacity-80 active:opacity-70',
     'transition-opacity',
     'disabled:opacity-50',
 
@@ -108,9 +108,8 @@ function getButtonCn({
       .exhaustive(),
 
     match(size)
-      .with('regular', () => 'px-4 py-3')
-      .with('small', () => 'px-3 py-2')
-      .with('xs', () => 'px-2 py-1 text-sm')
+      .with('md', () => 'px-3 py-2')
+      .with('sm', () => 'px-2 py-1 text-sm')
       .exhaustive(),
 
     match(variant)

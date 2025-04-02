@@ -286,7 +286,6 @@ function RejectDropdown() {
             color="error"
             fill
             name="action"
-            size="small"
             submitting={submitting}
             type="submit"
             value="reject"

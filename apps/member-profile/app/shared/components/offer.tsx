@@ -24,7 +24,7 @@ export function AddOfferButton() {
     : Route['/offers/full-time/add'];
 
   return (
-    <Button.Slot size="small">
+    <Button.Slot>
       <Link
         to={{
           pathname,

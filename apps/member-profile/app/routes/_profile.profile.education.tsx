@@ -56,7 +56,7 @@ function EducationHistorySection() {
         <ProfileTitle>Education History</ProfileTitle>
 
         <Button.Group>
-          <Button color="primary" onClick={onAddExperience} size="small">
+          <Button color="primary" onClick={onAddExperience}>
             <Plus size={20} /> Add Education
           </Button>
         </Button.Group>
@@ -86,7 +86,7 @@ function EducationHistorySection() {
             the future.
           </ProfileDescription>
 
-          <Button color="primary" onClick={onAddExperience} size="small" fill>
+          <Button color="primary" onClick={onAddExperience} fill>
             <Plus /> Add Education
           </Button>
         </EmptyStateContainer>
