@@ -62,8 +62,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
   const memberId = user(session);
 
-  console.log(memberId);
-
   const url = new URL(request.url);
 
   const { limit, page, status, type, view } = PeerHelpSearchParams.parse(

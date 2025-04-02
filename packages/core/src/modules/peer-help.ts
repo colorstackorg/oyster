@@ -5,6 +5,7 @@ import { db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull';
+import { reportException } from '@/infrastructure/sentry';
 import { slack } from '@/modules/slack/instances';
 import { STUDENT_PROFILE_URL } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core';
@@ -47,29 +48,51 @@ export async function acceptHelpRequest(
   { helperId }: AcceptHelpRequestInput
 ): Promise<Result> {
   const helpRequest = await db
-    .updateTable('helpRequests')
-    .set({
-      helperId,
-      status: 'pending',
-      updatedAt: new Date(),
-    })
-    .returning(['helpeeId', 'helperId'])
+    .selectFrom('helpRequests')
+    .select(['helpeeId', 'helperId'])
     .where('id', '=', helpRequestId)
-    .executeTakeFirstOrThrow();
+    .executeTakeFirst();
 
-  // Send a notification via group DM.
-
-  const result = await sendHelpRequestIntroduction({
-    helpeeId: helpRequest.helpeeId,
-    helperId: helpRequest.helperId,
-    id: helpRequestId,
-  });
-
-  if (!result.ok) {
-    return result;
+  if (!helpRequest) {
+    return fail({
+      code: 404,
+      error: 'Help request not found.',
+    });
   }
 
-  return success({});
+  try {
+    await db.transaction().execute(async (trx) => {
+      await trx
+        .updateTable('helpRequests')
+        .set({
+          helperId,
+          status: HelpRequestStatus.PENDING,
+          updatedAt: new Date(),
+        })
+        .where('id', '=', helpRequestId)
+        .executeTakeFirstOrThrow();
+
+      // Send a notification via group DM.
+      const notificationResult = await sendHelpRequestIntroduction({
+        helpeeId: helpRequest.helpeeId,
+        helperId,
+        id: helpRequestId,
+      });
+
+      if (!notificationResult.ok) {
+        throw new Error(notificationResult.error);
+      }
+    });
+
+    return success({});
+  } catch (e) {
+    reportException(e);
+
+    return fail({
+      code: 500,
+      error: 'Failed to accept help request.',
+    });
+  }
 }
 
 async function sendHelpRequestIntroduction({
@@ -77,14 +100,23 @@ async function sendHelpRequestIntroduction({
   helperId,
   id: helpRequestId,
 }: Pick<HelpRequest, 'helpeeId' | 'helperId' | 'id'>): Promise<Result> {
-  const members = await db
-    .selectFrom('students')
-    .select('slackId')
-    .where('id', 'in', [helpeeId, helperId])
-    .where('slackId', 'is not', null)
-    .execute();
+  const [helpee, helper] = await Promise.all([
+    db
+      .selectFrom('students')
+      .select('slackId')
+      .where('id', '=', helpeeId)
+      .where('slackId', 'is not', null)
+      .executeTakeFirst(),
 
-  if (members.length !== 2) {
+    db
+      .selectFrom('students')
+      .select('slackId')
+      .where('id', '=', helperId)
+      .where('slackId', 'is not', null)
+      .executeTakeFirst(),
+  ]);
+
+  if (!helpee || !helper) {
     return fail({
       code: 400,
       context: { helpeeId, helperId },
@@ -92,7 +124,7 @@ async function sendHelpRequestIntroduction({
     });
   }
 
-  const slackIds = members.map((member) => member.slackId).join(',');
+  const slackIds = [helpee.slackId, helper.slackId].join(',');
 
   const { channel } = await slack.conversations.open({
     users: slackIds,
@@ -107,9 +139,9 @@ async function sendHelpRequestIntroduction({
   }
 
   const message = dedent`
-    Hi, <@${helpeeId}>!
+    Hi, <@${helpee.slackId}>!
 
-    Good news! <@${helperId}> has graciously accepted your <${STUDENT_PROFILE_URL}/peer-help/${helpRequestId}|request> for help.
+    Good news! <@${helper.slackId}> has graciously accepted your <${STUDENT_PROFILE_URL}/peer-help/${helpRequestId}|request> for help.
 
     In terms of next steps, first, decide if you want to do a synchronous meetup or asynchronous.
 
@@ -117,8 +149,8 @@ async function sendHelpRequestIntroduction({
     1. Decide on a time to meet (the sooner the better).
 
     If you decide on asynchronous...
-    1. <@${helpeeId}>, send over any clarifying/additional points for your request (or confirm that it's all in the request description).
-    2. <@${helperId}>, acknowledge the message and say you'll get back to them soon.
+    1. <@${helpee.slackId}>, send over any clarifying/additional points for your request (or confirm that it's all in the request description).
+    2. <@${helper.slackId}>, acknowledge the message and say you'll get back to them soon.
 
     After this request has been fulfilled, please take a moment to confirm this in the <${STUDENT_PROFILE_URL}/peer-help/${helpRequestId}|request> page.
 
