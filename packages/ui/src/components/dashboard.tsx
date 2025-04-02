@@ -79,8 +79,9 @@ Dashboard.Header = function Header({ children }: PropsWithChildren) {
 };
 
 const itemClassName = cx(
-  'box-border flex w-full items-center gap-2 rounded-xl p-3 transition-colors',
+  'box-border flex w-full items-center gap-2 rounded-lg p-2 transition-colors',
   'hover:bg-primary hover:bg-opacity-10',
+  'active:bg-primary active:bg-opacity-20',
   'aria-[current="page"]:bg-primary aria-[current="page"]:text-white aria-[current="page"]:hover:text-white'
 );
 
@@ -160,7 +161,7 @@ Dashboard.NavigationLink = function NavigationLink({
 Dashboard.NavigationList = function NavigationList({
   children,
 }: PropsWithChildren) {
-  return <ul className="flex flex-col gap-2">{children}</ul>;
+  return <ul className="flex flex-col gap-1">{children}</ul>;
 };
 
 Dashboard.Page = function Page({ children }: PropsWithChildren) {
@@ -169,7 +170,7 @@ Dashboard.Page = function Page({ children }: PropsWithChildren) {
       className={cx(
         'box-border flex min-h-screen flex-col gap-4 @container',
         'p-4 pb-24',
-        'md:ml-[270px] md:p-6'
+        'md:ml-[240px] md:p-6'
       )}
     >
       {children}
@@ -219,7 +220,7 @@ Dashboard.Sidebar = function Sidebar({ children }: PropsWithChildren) {
   return (
     <aside
       className={cx(
-        'fixed left-0 h-screen w-[270px] flex-col items-start gap-4 overflow-auto border-r border-r-gray-200 p-6',
+        'fixed left-0 h-screen w-[240px] flex-col items-start gap-4 overflow-auto border-r border-r-gray-200 p-6',
         'md:flex',
         open
           ? 'z-10 flex w-[calc(100%-4rem)] animate-[slide-from-left_300ms] bg-white md:hidden'
