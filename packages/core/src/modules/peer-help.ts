@@ -66,6 +66,21 @@ export async function acceptHelpRequest(
     });
   }
 
+  const helper = await db
+    .selectFrom('students')
+    .select('slackId')
+    .where('id', '=', helperId)
+    .executeTakeFirst();
+
+  if (!helper || !helper.slackId) {
+    return fail({
+      code: 400,
+      error:
+        'Could not accept help request because your Slack account is not linked to your profile. ' +
+        'Please reach out to an admin to get this resolved.',
+    });
+  }
+
   try {
     await db.transaction().execute(async (trx) => {
       // Send a notification via group DM.
@@ -97,7 +112,7 @@ export async function acceptHelpRequest(
 
     return fail({
       code: 500,
-      error: 'Failed to accept help request.',
+      error: `Failed to accept help request. ${(e as Error).message}`,
     });
   }
 }
@@ -148,9 +163,7 @@ async function sendHelpRequestIntroduction({
   }
 
   const message = dedent`
-    Hi, <@${helpee.slackId}>!
-
-    Good news! <@${helper.slackId}> has graciously accepted your <${STUDENT_PROFILE_URL}/peer-help/${helpRequestId}|request> for help.
+    Hi, <@${helpee.slackId}>! Good news! -- <@${helper.slackId}> has graciously accepted your <${STUDENT_PROFILE_URL}/peer-help/${helpRequestId}|request> for help. 🤝
 
     In terms of next steps, first, decide if you want to do a synchronous meetup or asynchronous.
 
@@ -162,11 +175,6 @@ async function sendHelpRequestIntroduction({
     2. <@${helper.slackId}>, acknowledge the message and say you'll get back to them soon.
 
     After this request has been fulfilled, please take a moment to confirm this in the <${STUDENT_PROFILE_URL}/peer-help/${helpRequestId}|request> page.
-
-    If you have any questions, feel free to reach out to me.
-
-    Best,
-    ColorStack
   `;
 
   job('notification.slack.send', {
