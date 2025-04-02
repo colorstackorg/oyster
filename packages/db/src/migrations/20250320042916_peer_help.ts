@@ -65,6 +65,13 @@ export async function up(db: Kysely<any>) {
       'respondent_id',
     ])
     .execute();
+
+  await db.schema
+    .alterTable('completed_activities')
+    .addColumn('help_request_id', 'text', (column) => {
+      return column.unique().references('help_requests.id');
+    })
+    .execute();
 }
 
 export async function down(db: Kysely<any>) {

@@ -169,6 +169,11 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         upvotedBy: z.string().trim().min(1),
       }),
       z.object({
+        helpRequestId: z.string().trim().min(1),
+        studentId: CompletedActivity.shape.studentId,
+        type: z.literal('help_peer'),
+      }),
+      z.object({
         studentId: CompletedActivity.shape.studentId,
         type: z.literal(ActivityType.JOIN_MEMBER_DIRECTORY),
       }),

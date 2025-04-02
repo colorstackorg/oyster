@@ -306,6 +306,12 @@ export async function checkIntoHelpRequest(
         })
         .where('id', '=', helpRequestId)
         .execute();
+
+      job('gamification.activity.completed', {
+        helpRequestId,
+        studentId: helpRequest.helperId as string,
+        type: 'help_peer',
+      });
     }
   }
 

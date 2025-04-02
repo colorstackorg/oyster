@@ -15,6 +15,7 @@ export const ActivityType = {
   GET_ACTIVATED: 'get_activated',
   GET_OPPORTUNITY_BOOKMARK: 'get_opportunity_bookmark',
   GET_RESOURCE_UPVOTE: 'get_resource_upvote',
+  HELP_PEER: 'help_peer',
   JOIN_MEMBER_DIRECTORY: 'join_member_directory',
   POST_RESOURCE: 'post_resource',
   REACT_TO_MESSAGE: 'react_to_message',
