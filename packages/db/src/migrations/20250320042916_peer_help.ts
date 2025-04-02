@@ -69,12 +69,17 @@ export async function up(db: Kysely<any>) {
   await db.schema
     .alterTable('completed_activities')
     .addColumn('help_request_id', 'text', (column) => {
-      return column.unique().references('help_requests.id');
+      return column.unique().references('help_requests.id').onDelete('cascade');
     })
     .execute();
 }
 
 export async function down(db: Kysely<any>) {
+  await db.schema
+    .alterTable('completed_activities')
+    .dropColumn('help_request_id')
+    .execute();
+
   await db.schema.dropTable('help_request_responses').execute();
-  await db.schema.dropTable('help_requests').execute();
+  await db.schema.dropTable('help_requests').cascade().execute();
 }
