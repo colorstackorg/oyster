@@ -372,6 +372,14 @@ function RequestHelpButton() {
 function HelpRequestsList({ children }: PropsWithChildren) {
   const { helpRequests } = useLoaderData<typeof loader>();
 
+  if (!helpRequests.length) {
+    return (
+      <Text className="mt-2" color="gray-500" variant="sm">
+        No help requests found.
+      </Text>
+    );
+  }
+
   return (
     <ul className="grid grid-cols-1 gap-2 @[800px]:grid-cols-2 @[1200px]:grid-cols-3 @[1600px]:grid-cols-4">
       {helpRequests.map((helpRequest) => {
