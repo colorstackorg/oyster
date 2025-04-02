@@ -219,7 +219,8 @@ export default function PeerHelpLayout() {
       </Dashboard.Header>
 
       <Text className="-mt-3" color="gray-500" variant="sm">
-        Peer Help is an easy way for members to get 1:1 help from each other.
+        Request mock interviews, resume reviews, and career advice from your
+        ColorStack peers.
       </Text>
 
       <div className="flex items-center gap-2">

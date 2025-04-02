@@ -389,10 +389,10 @@ async function sendCheckInNotifications(
 
   for (const helpRequest of helpRequests) {
     const message = dedent`
-    Please let us know if you've been able to connect with your peer! Once both you and your peer respond, you'll both be rewarded with ColorStack points.
+    HELPEE, Please let us know if you've been able to receive help! Once you respond, HELPER will be rewarded with ColorStack HOWEVER MANY points.
 
-    <${STUDENT_PROFILE_URL}/peer-help/${helpRequest.id}/check-in>
-  `;
+      <${STUDENT_PROFILE_URL}/peer-help/${helpRequest.id}/check-in>
+    `;
 
     job('notification.slack.send', {
       channel: helpRequest.slackChannelId as string,
