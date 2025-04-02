@@ -153,7 +153,7 @@ export function OfferTitle({ postedAt, role }: OfferTitleProps) {
 export function TotalCompensationTooltip() {
   return (
     <Tooltip>
-      <TooltipTrigger className="align-text-bottom">
+      <TooltipTrigger className="align-text-bottom" cursor="default">
         <Info size={16} />
       </TooltipTrigger>
 

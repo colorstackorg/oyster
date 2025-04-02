@@ -398,7 +398,6 @@ function OpportunitiesTable() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Link
-                className="cursor-pointer"
                 target="_blank"
                 to={generatePath(Route['/directory/:id'], {
                   id: opportunity.posterId,

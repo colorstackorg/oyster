@@ -273,7 +273,7 @@ function CompanyDescription({
 function EmployeeCount({ employees }: Pick<CompanyInView, 'employees'>) {
   return (
     <Tooltip>
-      <TooltipTrigger>
+      <TooltipTrigger cursor="default">
         <Text className="flex items-center gap-1" color="gray-500" variant="sm">
           <Users size="16" />
           <span>{employees}</span>
@@ -295,7 +295,7 @@ function OpportunitiesCount({
 }: Pick<CompanyInView, 'opportunities'>) {
   return (
     <Tooltip>
-      <TooltipTrigger>
+      <TooltipTrigger cursor="default">
         <Text className="flex items-center gap-1" color="gray-500" variant="sm">
           <Layers size="16" />
           <span>{opportunities}</span>
@@ -315,7 +315,7 @@ function OpportunitiesCount({
 function ReviewCount({ reviews }: Pick<CompanyInView, 'reviews'>) {
   return (
     <Tooltip>
-      <TooltipTrigger>
+      <TooltipTrigger cursor="default">
         <Text className="flex items-center gap-1" color="gray-500" variant="sm">
           <FileText size="16" />
           <span>{reviews}</span>
