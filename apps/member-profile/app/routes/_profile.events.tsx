@@ -150,7 +150,7 @@ function UpcomingEventCard({
 
         <Button.Group fill>
           {externalLink && (
-            <Button.Slot fill size="small" variant="secondary">
+            <Button.Slot fill variant="secondary">
               <Link to={externalLink} target="_blank">
                 <ExternalLink className="h-5 w-5 text-primary" /> See Details
               </Link>
@@ -158,7 +158,7 @@ function UpcomingEventCard({
           )}
 
           {!isRegistered && (
-            <Button.Slot fill size="small">
+            <Button.Slot fill>
               <Link to={generatePath(Route['/events/:id/register'], { id })}>
                 <Check size={20} /> Register
               </Link>
@@ -206,7 +206,6 @@ function PastEventItem({
         <Button.Slot
           className={!recordingLink && 'invisible'}
           fill
-          size="small"
           variant="secondary"
         >
           <a href={recordingLink || undefined} target="_blank">

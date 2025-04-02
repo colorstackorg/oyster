@@ -167,12 +167,12 @@ function EmailAddressSection() {
       </ul>
 
       <Button.Group>
-        <Button onClick={onAddEmail} size="small" variant="secondary">
+        <Button onClick={onAddEmail} variant="secondary">
           <Plus /> Add Email
         </Button>
 
         {emails.length > 1 && (
-          <Button color="primary" onClick={onChangePrimaryEmail} size="small">
+          <Button color="primary" onClick={onChangePrimaryEmail}>
             <Edit /> Change Primary
           </Button>
         )}

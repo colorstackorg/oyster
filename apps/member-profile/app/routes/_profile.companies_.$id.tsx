@@ -196,7 +196,7 @@ function OpportunitiesAlert() {
           : `${opportunities} open opportunities found.`}
       </Text>
 
-      <Button.Slot size="small">
+      <Button.Slot>
         <Link
           to={{
             pathname: Route['/opportunities'],

@@ -111,7 +111,7 @@ function AddReviewLink() {
   const [searchParams] = useSearchParams();
 
   return (
-    <Button.Slot size="small">
+    <Button.Slot>
       <Link
         to={{
           pathname: Route['/companies/reviews/add'],

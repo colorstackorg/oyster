@@ -470,7 +470,7 @@ function TagsColumn({ id, tags }: OpportunityInView) {
 
   if (!tags.length) {
     return (
-      <Button.Slot size="xs" variant="secondary">
+      <Button.Slot size="sm" variant="secondary">
         <Link
           to={{
             pathname: generatePath(Route['/opportunities/:id/refine'], { id }),
