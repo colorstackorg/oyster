@@ -57,7 +57,7 @@ export function WorkExperienceItem({
 
             {!!rest.showOptions && (
               <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger cursor="default">
                   <Check
                     className="text-gray-300 data-[reviewed=true]:text-success"
                     data-reviewed={!!rest.hasReviewed}

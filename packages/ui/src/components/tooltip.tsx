@@ -36,6 +36,21 @@ export function TooltipText(props: TextProps) {
   return <Text color="white" variant="xs" {...props} />;
 }
 
-export function TooltipTrigger({ className, ...props }: TooltipTriggerProps) {
-  return <Trigger className={cx('cursor-default', className)} {...props} />;
+export function TooltipTrigger({
+  className,
+  cursor = 'pointer',
+  ...props
+}: TooltipTriggerProps & {
+  cursor?: 'default' | 'pointer';
+}) {
+  return (
+    <Trigger
+      className={cx(
+        cursor === 'default' && 'cursor-default',
+        cursor === 'pointer' && 'cursor-pointer',
+        className
+      )}
+      {...props}
+    />
+  );
 }

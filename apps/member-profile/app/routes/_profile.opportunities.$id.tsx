@@ -227,7 +227,6 @@ function ReportButton() {
             <IconButton
               backgroundColor="gray-100"
               backgroundColorOnHover="gray-200"
-              className="cursor-pointer"
               disabled={disabled}
               icon={<Flag />}
             />

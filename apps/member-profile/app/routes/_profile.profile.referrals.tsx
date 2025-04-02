@@ -177,7 +177,7 @@ function RejectedPill({ reason }: RejectedPillProps) {
 
   return (
     <Tooltip>
-      <TooltipTrigger>
+      <TooltipTrigger cursor="default">
         <Pill className="flex items-center gap-1" color="red-100">
           Rejected
           {!!reason && <Info size={16} className="text-error" />}
