@@ -1,25 +1,26 @@
 import { Info, Loader } from 'react-feather';
 import { match } from 'ts-pattern';
 
+import { type HelpRequestStatus as HelpRequestStatusType } from '@oyster/core/peer-help';
 import { Pill } from '@oyster/ui';
 
 type HelpRequestStatusProps = {
-  status: string;
+  status: HelpRequestStatusType;
 };
 
 export function HelpRequestStatus({ status }: HelpRequestStatusProps) {
   const color = match(status)
-    .with('open', () => 'amber-100' as const)
-    .with('pending', () => 'orange-100' as const)
-    .with('complete', () => 'lime-100' as const)
-    .with('incomplete', () => 'red-100' as const)
+    .with('requested', () => 'amber-100' as const)
+    .with('offered', () => 'orange-100' as const)
+    .with('received', () => 'lime-100' as const)
+    .with('not_received', () => 'red-100' as const)
     .otherwise(() => 'gray-100' as const);
 
   const label = match(status)
-    .with('open', () => 'Help Needed')
-    .with('pending', () => 'Help Offered')
-    .with('complete', () => 'Help Received')
-    .with('incomplete', () => 'Help Not Received')
+    .with('requested', () => 'Requested')
+    .with('offered', () => 'Offered')
+    .with('received', () => 'Received')
+    .with('not_received', () => 'Not Received')
     .otherwise(() => 'Unknown');
 
   return (

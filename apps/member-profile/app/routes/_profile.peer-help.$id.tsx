@@ -15,10 +15,12 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren } from 'react';
-import { ArrowDown, ArrowUp, Check } from 'react-feather';
-import { match } from 'ts-pattern';
+import { ArrowDown, ArrowUp, Check, User } from 'react-feather';
 
-import { acceptHelpRequest } from '@oyster/core/peer-help';
+import {
+  type HelpRequestStatus as HelpRequestStatusType,
+  offerHelp,
+} from '@oyster/core/peer-help';
 import { db } from '@oyster/db';
 import {
   Button,
@@ -87,6 +89,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     createdAt: createdAtObject.fromNow(),
     createdAtExpanded: createdAtObject.format('MMM DD, YYYY • h:mm A'),
     isMe: helpRequest.helpeeId === user(session),
+    status: helpRequest.status as HelpRequestStatusType,
   });
 }
 
@@ -94,7 +97,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
   const helperId = user(session);
 
-  const result = await acceptHelpRequest(params.id as string, { helperId });
+  const result = await offerHelp(params.id as string, { helperId });
 
   if (!result.ok) {
     return json({ error: result.error }, { status: result.code });
@@ -212,7 +215,7 @@ export default function HelpRequestModal() {
             </Tooltip>
           </div>
 
-          {!isMe && status === 'open' && (
+          {!isMe && status === 'requested' && (
             <OfferHelpToggle
               expanded={expanded}
               toggleExpanded={toggleExpanded}
@@ -263,12 +266,9 @@ function Helper({
 }: Pick<HelpRequest, 'helperFirstName' | 'helperId' | 'helperLastName'>) {
   return (
     <div className="flex w-full items-center gap-1 rounded-lg bg-gray-50 p-2">
+      <User className="text-gray-500" size={16} />
       <Text color="gray-500" variant="sm">
-        {match(status)
-          .with('pending', () => 'Helping...')
-          .with('complete', () => 'Helped!')
-          .with('incomplete', () => 'Help Not Received')
-          .otherwise(() => 'Helped by')}
+        Helper:
       </Text>
 
       <Link

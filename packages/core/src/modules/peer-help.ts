@@ -4,6 +4,7 @@ import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
+import { type ExtractValue } from '@oyster/types';
 import { id } from '@oyster/utils';
 
 import { job, registerWorker } from '@/infrastructure/bull';
@@ -17,13 +18,15 @@ import { STUDENT_PROFILE_URL } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core';
 
 export const HelpRequestStatus = {
-  COMPLETE: 'complete',
-  INCOMPLETE: 'incomplete',
-  OPEN: 'open',
-  PENDING: 'pending',
+  NOT_RECEIVED: 'not_received',
+  OFFERED: 'offered',
+  RECEIVED: 'received',
+  REQUESTED: 'requested',
 } as const;
 
-const HelpRequestType = {
+export type HelpRequestStatus = ExtractValue<typeof HelpRequestStatus>;
+
+export const HelpRequestType = {
   CAREER_ADVICE: 'career_advice',
   MOCK_INTERVIEW: 'mock_interview',
   RESUME_REVIEW: 'resume_review',
@@ -42,17 +45,117 @@ const HelpRequest = z.object({
 
 type HelpRequest = z.infer<typeof HelpRequest>;
 
-// Accept Help Request
+// Delete Help Request
 
-const AcceptHelpRequestInput = HelpRequest.pick({
+export async function deleteHelpRequest(
+  helpRequestId: string
+): Promise<Result> {
+  await db
+    .deleteFrom('helpRequests')
+    .where('id', '=', helpRequestId)
+    .executeTakeFirstOrThrow();
+
+  return success({});
+}
+
+// Edit Help Request
+
+export const EditHelpRequestInput = HelpRequest.pick({
+  description: true,
+  type: true,
+});
+
+type EditHelpRequestInput = z.infer<typeof EditHelpRequestInput>;
+
+type EditHelpRequestResult = Result<Pick<HelpRequest, 'id'>>;
+
+export async function editHelpRequest(
+  helpRequestId: string,
+  { description, type }: EditHelpRequestInput
+): Promise<EditHelpRequestResult> {
+  const result = await db.transaction().execute(async (trx) => {
+    const helpRequest = await trx
+      .updateTable('helpRequests')
+      .set({
+        description,
+        type,
+        updatedAt: new Date(),
+      })
+      .where('id', '=', helpRequestId)
+      .returning(['id'])
+      .executeTakeFirstOrThrow();
+
+    return helpRequest;
+  });
+
+  return success({ id: result.id });
+}
+
+// Finish Help Request
+
+export const FinishHelpRequestInput = z.object({
+  feedback: HelpRequest.shape.helpeeFeedback,
+  memberId: z.string().trim().min(1),
+  status: z.enum([HelpRequestStatus.NOT_RECEIVED, HelpRequestStatus.RECEIVED]),
+});
+
+export type FinishHelpRequestInput = z.infer<typeof FinishHelpRequestInput>;
+
+export async function finishHelpRequest(
+  helpRequestId: string,
+  { feedback, memberId, status }: FinishHelpRequestInput
+): Promise<Result> {
+  const helpRequest = await db
+    .selectFrom('helpRequests')
+    .select(['helpeeId', 'helperId', 'status'])
+    .where('id', '=', helpRequestId)
+    .executeTakeFirstOrThrow();
+
+  if (memberId !== helpRequest.helpeeId) {
+    return fail({
+      code: 403,
+      error: 'You are not authorized to report on this help request.',
+    });
+  }
+
+  if (helpRequest.status !== HelpRequestStatus.OFFERED) {
+    return fail({
+      code: 400,
+      error: 'Can only report status for pending help requests.',
+    });
+  }
+
+  await db
+    .updateTable('helpRequests')
+    .set({
+      finishedAt: new Date(),
+      helpeeFeedback: feedback,
+      status,
+      updatedAt: new Date(),
+    })
+    .where('id', '=', helpRequestId)
+    .execute();
+
+  job('gamification.activity.completed', {
+    helpRequestId,
+    studentId: helpRequest.helperId as string,
+    type: 'help_peer',
+  });
+
+  return success({});
+}
+
+// Offer Help Request
+
+const OfferHelpRequestInput = HelpRequest.pick({
   helperId: true,
 });
 
-type AcceptHelpRequestInput = z.infer<typeof AcceptHelpRequestInput>;
+type OfferHelpRequestInput = z.infer<typeof OfferHelpRequestInput>;
 
-export async function acceptHelpRequest(
+export async function offerHelp(
   helpRequestId: string,
-  { helperId }: AcceptHelpRequestInput
+  { helperId }: OfferHelpRequestInput
 ): Promise<Result> {
   const helpRequest = await db
     .selectFrom('helpRequests')
@@ -100,7 +203,7 @@ export async function acceptHelpRequest(
         .set({
           helperId,
           slackChannelId: notificationResult.data.slackChannelId,
-          status: HelpRequestStatus.PENDING,
+          status: HelpRequestStatus.OFFERED,
           updatedAt: new Date(),
         })
         .where('id', '=', helpRequestId)
@@ -187,106 +290,6 @@ async function sendHelpRequestIntroduction({
   return success({ slackChannelId: channel.id });
 }
 
-// Delete Help Request
-
-export async function deleteHelpRequest(
-  helpRequestId: string
-): Promise<Result> {
-  await db
-    .deleteFrom('helpRequests')
-    .where('id', '=', helpRequestId)
-    .executeTakeFirstOrThrow();
-
-  return success({});
-}
-
-// Edit Help Request
-
-export const EditHelpRequestInput = HelpRequest.pick({
-  description: true,
-  type: true,
-});
-
-type EditHelpRequestInput = z.infer<typeof EditHelpRequestInput>;
-
-type EditHelpRequestResult = Result<Pick<HelpRequest, 'id'>>;
-
-export async function editHelpRequest(
-  helpRequestId: string,
-  { description, type }: EditHelpRequestInput
-): Promise<EditHelpRequestResult> {
-  const result = await db.transaction().execute(async (trx) => {
-    const helpRequest = await trx
-      .updateTable('helpRequests')
-      .set({
-        description,
-        type,
-        updatedAt: new Date(),
-      })
-      .where('id', '=', helpRequestId)
-      .returning(['id'])
-      .executeTakeFirstOrThrow();
-
-    return helpRequest;
-  });
-
-  return success({ id: result.id });
-}
-
-// Finish Help Request
-
-export const FinishHelpRequestInput = z.object({
-  feedback: HelpRequest.shape.helpeeFeedback,
-  memberId: z.string().trim().min(1),
-  status: z.enum([HelpRequestStatus.COMPLETE, HelpRequestStatus.INCOMPLETE]),
-});
-
-export type FinishHelpRequestInput = z.infer<typeof FinishHelpRequestInput>;
-
-export async function finishHelpRequest(
-  helpRequestId: string,
-  { feedback, memberId, status }: FinishHelpRequestInput
-): Promise<Result> {
-  const helpRequest = await db
-    .selectFrom('helpRequests')
-    .select(['helpeeId', 'helperId', 'status'])
-    .where('id', '=', helpRequestId)
-    .executeTakeFirstOrThrow();
-
-  if (memberId !== helpRequest.helpeeId) {
-    return fail({
-      code: 403,
-      error: 'You are not authorized to report on this help request.',
-    });
-  }
-
-  if (helpRequest.status !== 'pending') {
-    return fail({
-      code: 400,
-      error: 'Can only report status for pending help requests.',
-    });
-  }
-
-  await db
-    .updateTable('helpRequests')
-    .set({
-      finishedAt: new Date(),
-      helpeeFeedback: feedback,
-      status,
-      updatedAt: new Date(),
-    })
-    .where('id', '=', helpRequestId)
-    .execute();
-
-  job('gamification.activity.completed', {
-    helpRequestId,
-    studentId: helpRequest.helperId as string,
-    type: 'help_peer',
-  });
-
-  return success({});
-}
-
 // Request Help
 
 export const RequestHelpInput = HelpRequest.pick({
@@ -313,7 +316,7 @@ export async function requestHelp({
         description,
         helpeeId,
         id: helpRequestId,
-        status: 'open',
+        status: HelpRequestStatus.REQUESTED,
         type,
       })
       .returning(['id'])

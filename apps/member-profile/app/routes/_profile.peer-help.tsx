@@ -16,6 +16,11 @@ import { ArrowRight, Check, Edit, Info, Loader, User } from 'react-feather';
 import { z } from 'zod';
 
 import { ListSearchParams } from '@oyster/core/member-profile/ui';
+import {
+  HelpRequestStatus as HelpRequestStatusEnum,
+  type HelpRequestStatus as HelpRequestStatusType,
+  HelpRequestType as HelpRequestTypeEnum,
+} from '@oyster/core/peer-help';
 import { db } from '@oyster/db';
 import {
   Button,
@@ -47,14 +52,8 @@ const PeerHelpSearchParams = ListSearchParams.pick({
   limit: true,
   page: true,
 }).extend({
-  status: z
-    .enum(['open', 'pending', 'complete', 'incomplete'])
-    .nullable()
-    .catch(null),
-  type: z
-    .enum(['career_advice', 'mock_interview', 'resume_review'])
-    .nullable()
-    .catch(null),
+  status: z.nativeEnum(HelpRequestStatusEnum).nullable().catch(null),
+  type: z.nativeEnum(HelpRequestTypeEnum).nullable().catch(null),
   view: z.enum(['me']).nullable().catch(null),
 });
 
@@ -76,7 +75,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     db
       .selectFrom('helpRequests')
       .select((eb) => eb.fn.countAll<string>().as('count'))
-      .where('status', '=', 'open')
+      .where('status', '=', HelpRequestStatusEnum.REQUESTED)
       .executeTakeFirstOrThrow(),
 
     db
@@ -106,7 +105,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 type listHelpRequestsProps = {
   memberId: string;
-  status: 'open' | 'pending' | 'complete' | 'incomplete' | null;
+  status: HelpRequestStatusType | null;
   type: 'career_advice' | 'mock_interview' | 'resume_review' | null;
   view: 'me' | null;
 };
@@ -119,7 +118,7 @@ async function listHelpRequests({
 }: listHelpRequestsProps) {
   const query = db
     .selectFrom('helpRequests')
-    .where('helpRequests.status', '!=', 'incomplete')
+    .where('helpRequests.status', '!=', HelpRequestStatusEnum.NOT_RECEIVED)
     .$if(view === 'me', (eb) => {
       return eb.where((eb) => {
         return eb.or([
@@ -162,13 +161,13 @@ async function listHelpRequests({
       .orderBy((eb) => {
         return eb
           .case()
-          .when('helpRequests.status', '=', 'open')
+          .when('helpRequests.status', '=', HelpRequestStatusEnum.REQUESTED)
           .then(1)
-          .when('helpRequests.status', '=', 'pending')
+          .when('helpRequests.status', '=', HelpRequestStatusEnum.OFFERED)
           .then(2)
-          .when('helpRequests.status', '=', 'complete')
+          .when('helpRequests.status', '=', HelpRequestStatusEnum.RECEIVED)
           .then(3)
-          .when('helpRequests.status', '=', 'incomplete')
+          .when('helpRequests.status', '=', HelpRequestStatusEnum.NOT_RECEIVED)
           .then(4)
           .else(5)
           .end();
@@ -181,13 +180,14 @@ async function listHelpRequests({
       .executeTakeFirstOrThrow(),
   ]);
 
-  const helpRequests = records.map(({ createdAt, ...record }) => {
+  const helpRequests = records.map(({ createdAt, status, ...record }) => {
     const createdAtObject = dayjs(createdAt);
 
     return {
       ...record,
       createdAt: createdAtObject.fromNow(),
       createdAtExpanded: createdAtObject.format('MMM DD, YYYY • h:mm A'),
+      status: status as HelpRequestStatusType,
     };
   });
 
@@ -260,9 +260,9 @@ function StatusFilter() {
   const status = searchParams.get('status');
 
   const options: FilterValue[] = [
-    { color: 'amber-100', label: 'Help Needed', value: 'open' },
-    { color: 'orange-100', label: 'Help Offered', value: 'pending' },
-    { color: 'lime-100', label: 'Help Received', value: 'complete' },
+    { color: 'amber-100', label: 'Requested', value: 'requested' },
+    { color: 'orange-100', label: 'Offered', value: 'offered' },
+    { color: 'lime-100', label: 'Received', value: 'received' },
   ];
 
   const selectedValues = options.filter((option) => {
@@ -539,7 +539,7 @@ function HelpRequestActionGroup({
 }: Pick<HelpRequest, 'id' | 'isHelpee' | 'status'>) {
   const [searchParams] = useSearchParams();
 
-  if (!isHelpee || status !== 'open') {
+  if (!isHelpee || status !== 'requested') {
     return null;
   }
 
@@ -580,7 +580,7 @@ function FinishButton({
 }: Pick<HelpRequest, 'finished' | 'id' | 'isHelpee' | 'status'>) {
   const [searchParams] = useSearchParams();
 
-  if (!isHelpee || status === 'open') {
+  if (!isHelpee || status !== 'offered') {
     return null;
   }
 
