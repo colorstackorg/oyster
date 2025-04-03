@@ -39,6 +39,9 @@ export async function up(db: Kysely<any>) {
   await db.schema
     .alterTable('completed_activities')
     .addColumn('help_request_id', 'text', (column) => {
+      // The reason we can make this unique is because only the person who is
+      // helping can complete the activity, so it's guaranteed that each
+      // completed activity is associated with only one help request.
       return column.unique().references('help_requests.id').onDelete('cascade');
     })
     .execute();
