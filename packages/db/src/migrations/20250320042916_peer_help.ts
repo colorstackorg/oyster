@@ -45,8 +45,6 @@ export async function up(db: Kysely<any>) {
       return column.unique().references('help_requests.id').onDelete('cascade');
     })
     .execute();
-
-  // TODO: Think through indices!
 }
 
 export async function down(db: Kysely<any>) {
