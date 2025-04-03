@@ -231,7 +231,10 @@ export default function PeerHelp() {
       </section>
 
       <section className="mb-2 flex flex-col gap-2">
-        <HelpRequestSectionHeader count={offeredTotalCount} label="Completed" />
+        <HelpRequestSectionHeader
+          count={offeredTotalCount}
+          label="In Progress / Completed"
+        />
         <HelpRequestList
           emptyMessage="No completed help requests found."
           helpRequests={offeredHelpRequests}
@@ -351,8 +354,8 @@ function HelpRequestSectionHeader({
 
       <Text
         as="span"
-        className="flex items-center justify-center rounded-md bg-gray-100 px-2 py-[1px]"
-        color="gray-500"
+        className="flex items-center justify-center rounded-md bg-primary/10 px-2 py-[1px]"
+        color="primary"
         variant="sm"
       >
         {formatter.format(count)}

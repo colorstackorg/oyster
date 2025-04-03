@@ -48,6 +48,12 @@ export async function up(db: Kysely<any>) {
 }
 
 export async function down(db: Kysely<any>) {
+  await db
+    .deleteFrom('completed_activities')
+    .where('help_request_id', 'is not', null)
+    .where('type', '=', 'help_peer')
+    .execute();
+
   await db.schema.dropTable('help_requests').cascade().execute();
 
   await db.schema
