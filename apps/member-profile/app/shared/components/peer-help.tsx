@@ -3,8 +3,8 @@ import { Info, Loader } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import {
-  type HelpRequestStatus as HelpRequestStatusType,
-  type HelpRequestType as HelpRequestTypeType,
+  type HelpRequestStatus,
+  type HelpRequestType,
 } from '@oyster/core/peer-help';
 import {
   cx,
@@ -38,10 +38,10 @@ export function HelpRequestDescription({
 }
 
 type HelpRequestStatusProps = {
-  status: HelpRequestStatusType;
+  status: HelpRequestStatus;
 };
 
-export function HelpRequestStatus({ status }: HelpRequestStatusProps) {
+export function HelpRequestStatusPill({ status }: HelpRequestStatusProps) {
   const color = match(status)
     .with('requested', () => 'amber-100' as const)
     .with('offered', () => 'orange-100' as const)
@@ -64,10 +64,10 @@ export function HelpRequestStatus({ status }: HelpRequestStatusProps) {
 }
 
 type HelpRequestTypeProps = {
-  type: string;
+  type: HelpRequestType;
 };
 
-export function HelpRequestType({ type }: HelpRequestTypeProps) {
+export function HelpRequestTypePill({ type }: HelpRequestTypeProps) {
   const color = match(type)
     .with('career_advice', () => 'pink-100' as const)
     .with('resume_review', () => 'blue-100' as const)
@@ -156,6 +156,6 @@ export function HelpRequestTypeField({
   );
 }
 
-function type(value: HelpRequestTypeType) {
+function type(value: HelpRequestType) {
   return value;
 }

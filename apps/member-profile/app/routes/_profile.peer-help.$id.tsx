@@ -15,7 +15,10 @@ import {
 import dayjs from 'dayjs';
 import { ArrowDown, ArrowUp, Edit, User } from 'react-feather';
 
-import { type HelpRequestStatus as HelpRequestStatusType } from '@oyster/core/peer-help';
+import {
+  type HelpRequestStatus,
+  type HelpRequestType,
+} from '@oyster/core/peer-help';
 import { db } from '@oyster/db';
 import {
   Button,
@@ -34,8 +37,8 @@ import {
 
 import {
   HelpRequestDescription,
-  HelpRequestStatus,
-  HelpRequestType,
+  HelpRequestStatusPill,
+  HelpRequestTypePill,
 } from '@/shared/components/peer-help';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -82,7 +85,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     ...helpRequest,
     createdAt: createdAtObject.fromNow(),
     createdAtExpanded: createdAtObject.format('MMM DD, YYYY • h:mm A'),
-    status: helpRequest.status as HelpRequestStatusType,
+    status: helpRequest.status as HelpRequestStatus,
+    type: helpRequest.type as HelpRequestType,
   });
 }
 
@@ -130,8 +134,8 @@ function HelpRequestInformation() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-1">
-        <HelpRequestType type={type} />
-        <HelpRequestStatus status={status} />
+        <HelpRequestTypePill type={type} />
+        <HelpRequestStatusPill status={status} />
       </div>
 
       <HelpRequestDescription>{description}</HelpRequestDescription>

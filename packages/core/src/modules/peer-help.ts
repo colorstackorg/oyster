@@ -348,7 +348,7 @@ async function sendHelpRequestIntroduction({
   }
 
   const message = dedent`
-    Hi, <@${helpeeSlackId}>! Good news -- <@${helperSlackId}> has graciously accepted your <${STUDENT_PROFILE_URL}/peer-help/${helpRequestId}|request> for help. 🎉
+    Hi, <@${helpeeSlackId}>! <@${helperSlackId}> has graciously accepted your <${STUDENT_PROFILE_URL}/peer-help/${helpRequestId}|request> for help. 🎉
 
     Here are your next steps:
      1.  Confirm whether you want to meet up synchronously or if this can be done asynchronously _(ie: offline, via messaging in this chat)_. 💬

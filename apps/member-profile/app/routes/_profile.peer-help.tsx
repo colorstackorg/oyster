@@ -16,11 +16,7 @@ import { ArrowRight, Check, Edit, Info, Loader, User } from 'react-feather';
 import { z } from 'zod';
 
 import { ListSearchParams } from '@oyster/core/member-profile/ui';
-import {
-  HelpRequestStatus as HelpRequestStatusEnum,
-  type HelpRequestStatus as HelpRequestStatusType,
-  HelpRequestType as HelpRequestTypeEnum,
-} from '@oyster/core/peer-help';
+import { HelpRequestStatus, HelpRequestType } from '@oyster/core/peer-help';
 import { db } from '@oyster/db';
 import {
   Button,
@@ -43,18 +39,19 @@ import {
 
 import {
   HelpRequestDescription,
-  HelpRequestStatus,
-  HelpRequestType,
+  HelpRequestStatusPill,
+  HelpRequestTypePill,
 } from '@/shared/components/peer-help';
 import { Route } from '@/shared/constants';
+import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 const PeerHelpSearchParams = ListSearchParams.pick({
   limit: true,
   page: true,
 }).extend({
-  status: z.nativeEnum(HelpRequestStatusEnum).nullable().catch(null),
-  type: z.nativeEnum(HelpRequestTypeEnum).nullable().catch(null),
+  status: z.nativeEnum(HelpRequestStatus).nullable().catch(null),
+  type: z.nativeEnum(HelpRequestType).nullable().catch(null),
   view: z.enum(['me']).nullable().catch(null),
 });
 
@@ -62,69 +59,51 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
   const memberId = user(session);
 
-  const url = new URL(request.url);
-
+  const { searchParams } = new URL(request.url);
   const { limit, page, status, type, view } = PeerHelpSearchParams.parse(
-    Object.fromEntries(url.searchParams)
+    Object.fromEntries(searchParams)
   );
 
-  const [
-    { count: openCount },
-    { count: myCount },
-    { helpRequests, totalCount },
-  ] = await Promise.all([
-    db
-      .selectFrom('helpRequests')
-      .select((eb) => eb.fn.countAll<string>().as('count'))
-      .where('status', '=', HelpRequestStatusEnum.REQUESTED)
-      .executeTakeFirstOrThrow(),
-
-    db
-      .selectFrom('helpRequests')
-      .select((eb) => eb.fn.countAll<string>().as('count'))
-      .where((eb) => {
-        return eb.or([
-          eb('helpeeId', '=', memberId),
-          eb('helperId', '=', memberId),
-        ]);
-      })
-      .executeTakeFirstOrThrow(),
-
-    listHelpRequests({ memberId, status, type, view }),
-  ]);
+  const { helpRequests, totalCount } = await listHelpRequests({
+    memberId,
+    status,
+    timezone: getTimezone(request),
+    type,
+    view,
+  });
 
   return json({
     helpRequests,
     limit,
-    myCount,
-    openCount,
     page,
     totalCount,
     view,
   });
 }
 
-type listHelpRequestsProps = {
+type ListHelpRequestsProps = {
   memberId: string;
-  status: HelpRequestStatusType | null;
-  type: 'career_advice' | 'mock_interview' | 'resume_review' | null;
+  status: HelpRequestStatus | null;
+  timezone: string;
+  type: HelpRequestType | null;
   view: 'me' | null;
 };
 
 async function listHelpRequests({
   memberId,
   status,
+  timezone,
   type,
   view,
-}: listHelpRequestsProps) {
+}: ListHelpRequestsProps) {
   const query = db
     .selectFrom('helpRequests')
-    .where('helpRequests.status', '!=', HelpRequestStatusEnum.NOT_RECEIVED)
+    .where('helpRequests.status', '!=', HelpRequestStatus.NOT_RECEIVED)
     .$if(view === 'me', (eb) => {
       return eb.where((eb) => {
         return eb.or([
-          eb('helpeeId', '=', memberId),
-          eb('helperId', '=', memberId),
+          eb('helpRequests.helpeeId', '=', memberId),
+          eb('helpRequests.helperId', '=', memberId),
         ]);
       });
     })
@@ -162,15 +141,13 @@ async function listHelpRequests({
       .orderBy((eb) => {
         return eb
           .case()
-          .when('helpRequests.status', '=', HelpRequestStatusEnum.REQUESTED)
+          .when('helpRequests.status', '=', HelpRequestStatus.REQUESTED)
           .then(1)
-          .when('helpRequests.status', '=', HelpRequestStatusEnum.OFFERED)
+          .when('helpRequests.status', '=', HelpRequestStatus.OFFERED)
           .then(2)
-          .when('helpRequests.status', '=', HelpRequestStatusEnum.RECEIVED)
+          .when('helpRequests.status', '=', HelpRequestStatus.RECEIVED)
           .then(3)
-          .when('helpRequests.status', '=', HelpRequestStatusEnum.NOT_RECEIVED)
-          .then(4)
-          .else(5)
+          .else(4)
           .end();
       })
       .orderBy('helpRequests.createdAt', 'desc')
@@ -181,14 +158,15 @@ async function listHelpRequests({
       .executeTakeFirstOrThrow(),
   ]);
 
-  const helpRequests = records.map(({ createdAt, status, ...record }) => {
-    const createdAtObject = dayjs(createdAt);
+  const helpRequests = records.map(({ createdAt, status, type, ...record }) => {
+    const createdAtObject = dayjs(createdAt).tz(timezone);
 
     return {
       ...record,
       createdAt: createdAtObject.fromNow(),
       createdAtExpanded: createdAtObject.format('MMM DD, YYYY • h:mm A'),
-      status: status as HelpRequestStatusType,
+      status: status as HelpRequestStatus,
+      type: type as HelpRequestType,
     };
   });
 
@@ -200,7 +178,7 @@ async function listHelpRequests({
 
 // Page
 
-export default function PeerHelpLayout() {
+export default function PeerHelp() {
   return (
     <>
       <Dashboard.Header>
@@ -213,7 +191,7 @@ export default function PeerHelpLayout() {
         ColorStack peers.
       </Text>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <MeFilter />
         <TypeFilter />
         <StatusFilter />
@@ -233,7 +211,7 @@ function MeFilter() {
     setSearchParams((params) => {
       params.delete('page');
 
-      if (searchParams.get('view') === 'me') {
+      if (params.get('view') === 'me') {
         params.delete('view');
       } else {
         params.set('view', 'me');
@@ -295,7 +273,7 @@ function StatusFilter() {
 function TypeFilter() {
   const [searchParams] = useSearchParams();
 
-  const ranges = searchParams.getAll('type');
+  const type = searchParams.get('type');
 
   const options: FilterValue[] = [
     { color: 'pink-100', label: 'Career Advice', value: 'career_advice' },
@@ -304,7 +282,7 @@ function TypeFilter() {
   ];
 
   const selectedValues = options.filter((option) => {
-    return ranges.includes(option.value);
+    return type === option.value;
   });
 
   return (
@@ -404,10 +382,10 @@ function HelpRequestItem({
 
   return (
     <li className="flex flex-col gap-3 rounded-2xl border border-gray-200 p-4">
-      <div className="flex justify-between gap-2">
+      <header className="flex justify-between gap-2">
         <div className="flex items-center gap-1">
-          <HelpRequestType type={type} />
-          <HelpRequestStatus status={status} />
+          <HelpRequestTypePill type={type} />
+          <HelpRequestStatusPill status={status} />
         </div>
 
         <Link
@@ -419,7 +397,7 @@ function HelpRequestItem({
         >
           View
         </Link>
-      </div>
+      </header>
 
       <Tooltip>
         <TooltipTrigger cursor="default">
@@ -435,19 +413,19 @@ function HelpRequestItem({
 
       {helperId && (
         <Helper
-          helperFirstName={helperFirstName}
-          helperId={helperId}
-          helperLastName={helperLastName}
+          firstName={helperFirstName}
+          id={helperId}
+          lastName={helperLastName}
         />
       )}
 
       <footer className="mt-auto flex items-center justify-between gap-2">
         <div className="flex items-center gap-1">
           <Helpee
-            helpeeFirstName={helpeeFirstName}
-            helpeeId={helpeeId}
-            helpeeLastName={helpeeLastName}
-            helpeeProfilePicture={helpeeProfilePicture}
+            firstName={helpeeFirstName}
+            id={helpeeId}
+            lastName={helpeeLastName}
+            profilePicture={helpeeProfilePicture}
           />
 
           <Text color="gray-500" variant="sm">
@@ -464,29 +442,31 @@ function HelpRequestItem({
           </Tooltip>
         </div>
 
-        <div className="flex items-center gap-2">
-          <HelpRequestActionGroup id={id} isHelpee={isHelpee} status={status} />
+        {!!isHelpee && status === 'requested' && (
+          <EditButton id={id} isHelpee={isHelpee} status={status} />
+        )}
+
+        {!!isHelpee && status === 'offered' && (
           <FinishButton
             finished={finished}
             id={id}
             isHelpee={isHelpee}
             status={status}
           />
-        </div>
+        )}
       </footer>
     </li>
   );
 }
 
-function Helpee({
-  helpeeFirstName: firstName,
-  helpeeId: id,
-  helpeeLastName: lastName,
-  helpeeProfilePicture: profilePicture,
-}: Pick<
-  HelpRequest,
-  'helpeeFirstName' | 'helpeeId' | 'helpeeLastName' | 'helpeeProfilePicture'
->) {
+type HelpeeProps = {
+  firstName: HelpRequest['helpeeFirstName'];
+  id: HelpRequest['helpeeId'];
+  lastName: HelpRequest['helpeeLastName'];
+  profilePicture: HelpRequest['helpeeProfilePicture'];
+};
+
+function Helpee({ firstName, id, lastName, profilePicture }: HelpeeProps) {
   return (
     <div className="flex w-fit items-center gap-2">
       <ProfilePicture
@@ -506,11 +486,13 @@ function Helpee({
   );
 }
 
-function Helper({
-  helperFirstName: firstName,
-  helperId: id,
-  helperLastName: lastName,
-}: Pick<HelpRequest, 'helperFirstName' | 'helperId' | 'helperLastName'>) {
+type HelperProps = {
+  firstName: HelpRequest['helperFirstName'];
+  id: HelpRequest['helperId'];
+  lastName: HelpRequest['helperLastName'];
+};
+
+function Helper({ firstName, id, lastName }: HelperProps) {
   return (
     <div className="flex w-full items-center gap-1 rounded-lg bg-gray-50 p-2">
       <User className="text-gray-500" size={16} />
@@ -529,7 +511,7 @@ function Helper({
   );
 }
 
-function HelpRequestActionGroup({
+function EditButton({
   id,
   isHelpee,
   status,
@@ -541,31 +523,27 @@ function HelpRequestActionGroup({
   }
 
   return (
-    <ul className="flex items-center gap-1">
-      <li>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <IconButton.Slot
-              backgroundColor="gray-100"
-              backgroundColorOnHover="gray-200"
-            >
-              <Link
-                to={{
-                  pathname: generatePath(Route['/peer-help/:id/edit'], { id }),
-                  search: searchParams.toString(),
-                }}
-              >
-                <Edit />
-              </Link>
-            </IconButton.Slot>
-          </TooltipTrigger>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <IconButton.Slot
+          backgroundColor="gray-100"
+          backgroundColorOnHover="gray-200"
+        >
+          <Link
+            to={{
+              pathname: generatePath(Route['/peer-help/:id/edit'], { id }),
+              search: searchParams.toString(),
+            }}
+          >
+            <Edit />
+          </Link>
+        </IconButton.Slot>
+      </TooltipTrigger>
 
-          <TooltipContent>
-            <TooltipText>Edit Request</TooltipText>
-          </TooltipContent>
-        </Tooltip>
-      </li>
-    </ul>
+      <TooltipContent>
+        <TooltipText>Edit Request</TooltipText>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
