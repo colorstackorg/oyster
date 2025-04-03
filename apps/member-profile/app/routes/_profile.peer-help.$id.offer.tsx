@@ -97,8 +97,8 @@ function NextStepsSection() {
       <Text weight="500">Next Steps</Text>
 
       <Text color="gray-500" variant="sm">
-        If you confirm, the {link} will introduce you both via a Slack group DM.
-        From there, you two can coordinate how to best fulfill the help request.
+        Once confirmed, the {link} will introduce you both in a Slack DM, where
+        you can coordinate the help request.
       </Text>
     </section>
   );
