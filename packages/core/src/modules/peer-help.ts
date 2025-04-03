@@ -1,9 +1,8 @@
-import dayjs from 'dayjs';
 import dedent from 'dedent';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { db } from '@oyster/db';
+import { db, relativeTime } from '@oyster/db';
 import { type ExtractValue, nullableField } from '@oyster/types';
 import { id } from '@oyster/utils';
 
@@ -443,17 +442,17 @@ async function sendFinishReminder(
       .executeTakeFirst(),
 
     query
-      .where('offeredAt', '>=', dayjs().subtract(2, 'day').toDate())
+      .where('offeredAt', '<=', relativeTime("now() - interval '2 days'"))
       .where('finishNotificationCount', '=', 0)
       .execute(),
 
     query
-      .where('offeredAt', '>=', dayjs().subtract(7, 'days').toDate())
+      .where('offeredAt', '<=', relativeTime("now() - interval '7 days'"))
       .where('finishNotificationCount', '=', 1)
       .execute(),
 
     query
-      .where('offeredAt', '>=', dayjs().subtract(14, 'days').toDate())
+      .where('offeredAt', '<=', relativeTime("now() - interval '14 days'"))
       .where('finishNotificationCount', '=', 2)
       .execute(),
   ]);
@@ -462,13 +461,19 @@ async function sendFinishReminder(
   // we just want to send the reminder.
   const helpRequests = allHelpRequests.flat();
 
+  console.log(
+    `Sending ${helpRequests.length} help request "finish" reminders...`
+  );
+
+  if (!helpRequests.length) {
+    return success({});
+  }
+
   for (const helpRequest of helpRequests) {
     const pointsMessage = activity ? `${activity.points} points` : 'points';
 
     const message = dedent`
-      <@${helpRequest.helpeeSlackId}> Please let us know if you've been able to receive help! Once you respond, <@${helpRequest.helperSlackId}> will be rewarded with ${pointsMessage}. 👀
-
-      <${STUDENT_PROFILE_URL}/peer-help/${helpRequest.id}/finish>
+      <@${helpRequest.helpeeSlackId}> Please let us know if you've been able to receive help <${STUDENT_PROFILE_URL}/peer-help/${helpRequest.id}/finish|*HERE*>! Once you respond, <@${helpRequest.helperSlackId}> will be rewarded with ${pointsMessage}. 👀
     `;
 
     job('notification.slack.send', {

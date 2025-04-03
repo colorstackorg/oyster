@@ -16,6 +16,10 @@ export function point({ x, y }: Point): RawBuilder<Point> {
 type TimeOperator = '+' | '-';
 
 type TimeUnit =
+  | 'second'
+  | 'seconds'
+  | 'minute'
+  | 'minutes'
   | 'hour'
   | 'hours'
   | 'day'
