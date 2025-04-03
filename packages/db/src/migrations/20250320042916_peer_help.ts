@@ -23,7 +23,7 @@ export async function up(db: Kysely<any>) {
     .addColumn('id', 'text', (column) => {
       return column.primaryKey();
     })
-    .addColumn('offered_at', 'timestamptz')
+    .addColumn('in_progress_at', 'timestamptz')
     .addColumn('slack_channel_id', 'text')
     .addColumn('status', 'text', (column) => {
       return column.notNull();

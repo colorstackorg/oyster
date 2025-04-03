@@ -116,19 +116,19 @@ export default function FinishHelpRequestForm() {
         <Radio.Group>
           <Radio
             color="lime-100"
-            id={status('received')}
+            id={status('completed')}
             label="Yes, I received help."
             name="status"
             required
-            value={status('received')}
+            value={status('completed')}
           />
           <Radio
             color="red-100"
-            id={status('not_received')}
+            id={status('not_completed')}
             label="No, I didn't receive help."
             name="status"
             required
-            value={status('not_received')}
+            value={status('not_completed')}
           />
         </Radio.Group>
       </Field>

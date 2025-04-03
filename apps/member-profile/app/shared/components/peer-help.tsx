@@ -43,17 +43,17 @@ type HelpRequestStatusProps = {
 
 export function HelpRequestStatusPill({ status }: HelpRequestStatusProps) {
   const color = match(status)
-    .with('requested', () => 'amber-100' as const)
-    .with('offered', () => 'orange-100' as const)
-    .with('received', () => 'lime-100' as const)
-    .with('not_received', () => 'red-100' as const)
+    .with('open', () => 'amber-100' as const)
+    .with('in_progress', () => 'orange-100' as const)
+    .with('completed', () => 'lime-100' as const)
+    .with('not_completed', () => 'red-100' as const)
     .otherwise(() => 'gray-100' as const);
 
   const label = match(status)
-    .with('requested', () => 'Requested')
-    .with('offered', () => 'Offered')
-    .with('received', () => 'Received')
-    .with('not_received', () => 'Not Received')
+    .with('open', () => 'Open')
+    .with('in_progress', () => 'In Progress')
+    .with('completed', () => 'Completed')
+    .with('not_completed', () => 'Not Completed')
     .otherwise(() => 'Unknown');
 
   return (

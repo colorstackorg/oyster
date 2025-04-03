@@ -171,9 +171,8 @@ function HelpRequestInformation() {
           </Tooltip>
         </div>
 
-        {status === 'requested' && (
-          <>{isHelpee ? <EditButton id={id} /> : <OfferHelpToggle />}</>
-        )}
+        {status === 'open' && isHelpee && <EditButton id={id} />}
+        {status === 'open' && !isHelpee && <OfferHelpToggle />}
       </footer>
     </div>
   );

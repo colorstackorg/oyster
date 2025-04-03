@@ -15,7 +15,10 @@ import { ArrowRight, Check, Edit, Info, User } from 'react-feather';
 import { z } from 'zod';
 
 import { ListSearchParams } from '@oyster/core/member-profile/ui';
-import { HelpRequestStatus, HelpRequestType } from '@oyster/core/peer-help';
+import {
+  type HelpRequestStatus,
+  HelpRequestType,
+} from '@oyster/core/peer-help';
 import { db } from '@oyster/db';
 import {
   Button,
@@ -72,7 +75,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       limit: null,
       memberId,
       page: null,
-      status: ['requested'],
+      status: ['open'],
       timezone,
       type,
       view,
@@ -81,7 +84,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       limit,
       memberId,
       page,
-      status: ['offered', 'received'],
+      status: ['in_progress', 'completed'],
       timezone,
       type,
       view,
@@ -161,18 +164,6 @@ async function listHelpRequests({
           return eb('helpeeId', '=', memberId).as('isHelpee');
         },
       ])
-      .orderBy((eb) => {
-        return eb
-          .case()
-          .when('helpRequests.status', '=', HelpRequestStatus.REQUESTED)
-          .then(1)
-          .when('helpRequests.status', '=', HelpRequestStatus.OFFERED)
-          .then(2)
-          .when('helpRequests.status', '=', HelpRequestStatus.RECEIVED)
-          .then(3)
-          .else(4)
-          .end();
-      })
       .orderBy('helpRequests.createdAt', 'desc')
       .$if(!!limit && !!page, (qb) => {
         return qb.limit(limit).offset((page - 1) * limit);
@@ -480,11 +471,11 @@ function HelpRequestItem({
           </Tooltip>
         </div>
 
-        {!!isHelpee && status === 'requested' && (
+        {!!isHelpee && status === 'open' && (
           <EditButton id={id} isHelpee={isHelpee} status={status} />
         )}
 
-        {!!isHelpee && status === 'offered' && (
+        {!!isHelpee && status === 'in_progress' && (
           <FinishButton
             finished={finished}
             id={id}
@@ -556,7 +547,7 @@ function EditButton({
 }: Pick<HelpRequest, 'id' | 'isHelpee' | 'status'>) {
   const [searchParams] = useSearchParams();
 
-  if (!isHelpee || status !== 'requested') {
+  if (!isHelpee || status !== 'open') {
     return null;
   }
 
@@ -593,7 +584,7 @@ function FinishButton({
 }: Pick<HelpRequest, 'finished' | 'id' | 'isHelpee' | 'status'>) {
   const [searchParams] = useSearchParams();
 
-  if (!isHelpee || status !== 'offered') {
+  if (!isHelpee || status !== 'in_progress') {
     return null;
   }
 

@@ -18,10 +18,10 @@ import { STUDENT_PROFILE_URL } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core';
 
 export const HelpRequestStatus = {
-  NOT_RECEIVED: 'not_received',
-  OFFERED: 'offered',
-  RECEIVED: 'received',
-  REQUESTED: 'requested',
+  COMPLETED: 'completed',
+  IN_PROGRESS: 'in_progress',
+  NOT_COMPLETED: 'not_completed',
+  OPEN: 'open',
 } as const;
 
 export type HelpRequestStatus = ExtractValue<typeof HelpRequestStatus>;
@@ -73,10 +73,10 @@ export async function deleteHelpRequest(
     });
   }
 
-  if (helpRequest.status !== HelpRequestStatus.REQUESTED) {
+  if (helpRequest.status !== HelpRequestStatus.OPEN) {
     return fail({
       code: 400,
-      error: 'Requests cannot be deleted after help has already been offered.',
+      error: 'Requests cannot be deleted after help is in progress.',
     });
   }
 
@@ -118,10 +118,10 @@ export async function editHelpRequest(
     .where('id', '=', helpRequestId)
     .executeTakeFirstOrThrow();
 
-  if (helpRequest.status !== HelpRequestStatus.REQUESTED) {
+  if (helpRequest.status !== HelpRequestStatus.OPEN) {
     return fail({
       code: 400,
-      error: 'Requests cannot be edited after help has already been offered.',
+      error: 'Requests cannot be edited after help is in progress.',
     });
   }
 
@@ -153,7 +153,10 @@ export async function editHelpRequest(
 export const FinishHelpRequestInput = z.object({
   feedback: nullableField(HelpRequest.shape.helpeeFeedback),
   memberId: HelpRequest.shape.helpeeId,
-  status: z.enum([HelpRequestStatus.NOT_RECEIVED, HelpRequestStatus.RECEIVED]),
+  status: z.enum([
+    HelpRequestStatus.NOT_COMPLETED,
+    HelpRequestStatus.COMPLETED,
+  ]),
 });
 
 export type FinishHelpRequestInput = z.infer<typeof FinishHelpRequestInput>;
@@ -161,11 +164,11 @@ export type FinishHelpRequestInput = z.infer<typeof FinishHelpRequestInput>;
 /**
  * Finishes a help request.
  *
- * This will update the help request status to either `received` or
- * `not_received` and save the helpee's feedback.
+ * This will update the help request status to either `completed` or
+ * `not_completed` and save the helpee's feedback.
  *
  * If the member who is attempting to finish the request is not the helpee, or
- * the help request is not in the `offered` state, an error will be returned.
+ * the help request is not in the `in_progress` state, an error will be returned.
  *
  * @returns A result indicating the success or failure of the operation.
  */
@@ -179,11 +182,11 @@ export async function finishHelpRequest(
     .where('id', '=', helpRequestId)
     .executeTakeFirstOrThrow();
 
-  if (helpRequest.status !== HelpRequestStatus.OFFERED) {
+  if (helpRequest.status !== HelpRequestStatus.IN_PROGRESS) {
     return fail({
       code: 400,
       error:
-        'You cannot finish a help request which is not in the "offered" state.',
+        'You cannot finish a help request that is not currently in progress.',
     });
   }
 
@@ -228,7 +231,7 @@ type OfferHelpRequestInput = z.infer<typeof OfferHelpRequestInput>;
  * Offers help for a given help request.
  *
  * This will start a Slack group DM between the helpee and helper, send an
- * introduction message, and update the help request status to `offered`.
+ * introduction message, and update the help request status to `in_progress`.
  * Both the helpee and helper must have their Slack accounts linked to their
  * profiles in order for this to succeed.
  *
@@ -244,7 +247,7 @@ export async function offerHelp(
       .leftJoin('students as helpees', 'helpRequests.helpeeId', 'helpees.id')
       .select([
         'helpRequests.helperId',
-        'helpRequests.offeredAt',
+        'helpRequests.inProgressAt',
         'helpees.slackId as helpeeSlackId',
       ])
       .where('helpRequests.id', '=', helpRequestId)
@@ -257,10 +260,10 @@ export async function offerHelp(
       .executeTakeFirstOrThrow(),
   ]);
 
-  if (helpRequest.helperId || helpRequest.offeredAt) {
+  if (helpRequest.helperId || helpRequest.inProgressAt) {
     return fail({
       code: 400,
-      error: 'Help has already been offered for this request.',
+      error: 'Help is already in progress for this request.',
     });
   }
 
@@ -305,9 +308,9 @@ export async function offerHelp(
       .updateTable('helpRequests')
       .set({
         helperId: memberId,
-        offeredAt: new Date(),
+        inProgressAt: new Date(),
         slackChannelId: notificationResult.data.slackChannelId,
-        status: HelpRequestStatus.OFFERED,
+        status: HelpRequestStatus.IN_PROGRESS,
         updatedAt: new Date(),
       })
       .where('id', '=', helpRequestId)
@@ -399,7 +402,7 @@ export async function requestHelp({
         description,
         helpeeId: memberId,
         id: id(),
-        status: HelpRequestStatus.REQUESTED,
+        status: HelpRequestStatus.OPEN,
         type,
       })
       .returning(['id'])
@@ -412,14 +415,14 @@ export async function requestHelp({
 // Send Finish Reminder
 
 /**
- * Sends a reminder to the helpees of all help requests that have been offered
+ * Sends a reminder to the helpees of all help requests that are `in_progress`
  * but not finished. We'll send a reminder after 2 days, 7 days, and 14 days.
  * There will be a maximum of 3 reminders sent.
  */
 async function sendFinishReminder(
   _: GetBullJobData<'peer_help.finish_reminder'>
 ): Promise<Result> {
-  // Get all the help requests that are in the `offered` state and have not
+  // Get all the help requests that are in the `in_progress` state and have not
   // been finished yet...we want to remind them after a certain amount of time.
   const query = db
     .selectFrom('helpRequests')
@@ -431,7 +434,7 @@ async function sendFinishReminder(
       'helpRequests.id',
       'helpRequests.slackChannelId',
     ])
-    .where('helpRequests.status', '=', HelpRequestStatus.OFFERED)
+    .where('helpRequests.status', '=', HelpRequestStatus.IN_PROGRESS)
     .where('helpRequests.finishedAt', 'is', null);
 
   const [activity, ...allHelpRequests] = await Promise.all([
@@ -442,17 +445,17 @@ async function sendFinishReminder(
       .executeTakeFirst(),
 
     query
-      .where('offeredAt', '<=', relativeTime("now() - interval '2 days'"))
+      .where('inProgressAt', '<=', relativeTime("now() - interval '2 days'"))
       .where('finishNotificationCount', '=', 0)
       .execute(),
 
     query
-      .where('offeredAt', '<=', relativeTime("now() - interval '7 days'"))
+      .where('inProgressAt', '<=', relativeTime("now() - interval '7 days'"))
       .where('finishNotificationCount', '=', 1)
       .execute(),
 
     query
-      .where('offeredAt', '<=', relativeTime("now() - interval '14 days'"))
+      .where('inProgressAt', '<=', relativeTime("now() - interval '14 days'"))
       .where('finishNotificationCount', '=', 2)
       .execute(),
   ]);
