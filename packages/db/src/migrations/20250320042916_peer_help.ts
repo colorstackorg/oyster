@@ -48,10 +48,10 @@ export async function up(db: Kysely<any>) {
 }
 
 export async function down(db: Kysely<any>) {
+  await db.schema.dropTable('help_requests').cascade().execute();
+
   await db.schema
     .alterTable('completed_activities')
     .dropColumn('help_request_id')
     .execute();
-
-  await db.schema.dropTable('help_requests').cascade().execute();
 }

@@ -11,7 +11,6 @@ import {
   Home,
   Layers,
   MessageCircle,
-  Smile,
   User,
   Users,
 } from 'react-feather';
@@ -106,6 +105,15 @@ export default function ProfileLayout() {
               pathname={Route['/resources']}
               prefetch="intent"
             />
+            {isPeerHelpEnabled && (
+              <Dashboard.NavigationLink
+                icon={<Users />}
+                label="Peer Help"
+                isNew
+                pathname={Route['/peer-help']}
+                prefetch="intent"
+              />
+            )}
             <Dashboard.NavigationLink
               icon={<Award />}
               label="Points"
@@ -118,14 +126,6 @@ export default function ProfileLayout() {
               pathname={Route['/events']}
               prefetch="intent"
             />
-            {isPeerHelpEnabled && (
-              <Dashboard.NavigationLink
-                icon={<Smile />}
-                label="Peer Help"
-                pathname={Route['/peer-help']}
-                prefetch="intent"
-              />
-            )}
             <Dashboard.NavigationLink
               icon={<MessageCircle />}
               label="Ask AI"
