@@ -4,7 +4,7 @@ import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
-import { type ExtractValue } from '@oyster/types';
+import { type ExtractValue, nullableField } from '@oyster/types';
 import { id } from '@oyster/utils';
 
 import { job, registerWorker } from '@/infrastructure/bull';
@@ -37,11 +37,10 @@ export type HelpRequestType = ExtractValue<typeof HelpRequestType>;
 const HelpRequest = z.object({
   description: z.string().trim().min(1),
   helpeeId: z.string().trim().min(1),
-  helpeeFeedback: z.string().trim().min(1),
+  helpeeFeedback: z.string().trim().min(1).nullable(),
   helperId: z.string().trim().min(1).nullable(),
   id: z.string().trim().min(1),
   status: z.nativeEnum(HelpRequestStatus),
-  summary: z.string().trim().min(1),
   type: z.nativeEnum(HelpRequestType),
 });
 
@@ -152,13 +151,24 @@ export async function editHelpRequest(
 // Finish Help Request
 
 export const FinishHelpRequestInput = z.object({
-  feedback: HelpRequest.shape.helpeeFeedback,
+  feedback: nullableField(HelpRequest.shape.helpeeFeedback),
   memberId: HelpRequest.shape.helpeeId,
   status: z.enum([HelpRequestStatus.NOT_RECEIVED, HelpRequestStatus.RECEIVED]),
 });
 
 export type FinishHelpRequestInput = z.infer<typeof FinishHelpRequestInput>;
 
+/**
+ * Finishes a help request.
+ *
+ * This will update the help request status to either `received` or
+ * `not_received` and save the helpee's feedback.
+ *
+ * If the member who is attempting to finish the request is not the helpee, or
+ * the help request is not in the `offered` state, an error will be returned.
+ *
+ * @returns A result indicating the success or failure of the operation.
+ */
 export async function finishHelpRequest(
   helpRequestId: string,
   { feedback, memberId, status }: FinishHelpRequestInput
@@ -169,30 +179,33 @@ export async function finishHelpRequest(
     .where('id', '=', helpRequestId)
     .executeTakeFirstOrThrow();
 
-  if (memberId !== helpRequest.helpeeId) {
-    return fail({
-      code: 403,
-      error: 'You are not authorized to report on this help request.',
-    });
-  }
-
   if (helpRequest.status !== HelpRequestStatus.OFFERED) {
     return fail({
       code: 400,
-      error: 'Can only report status for pending help requests.',
+      error:
+        'You cannot finish a help request which is not in the "offered" state.',
     });
   }
 
-  await db
-    .updateTable('helpRequests')
-    .set({
-      finishedAt: new Date(),
-      helpeeFeedback: feedback,
-      status,
-      updatedAt: new Date(),
-    })
-    .where('id', '=', helpRequestId)
-    .execute();
+  if (memberId !== helpRequest.helpeeId) {
+    return fail({
+      code: 403,
+      error: 'You are not authorized to finish this help request.',
+    });
+  }
+
+  await db.transaction().execute(async (trx) => {
+    return trx
+      .updateTable('helpRequests')
+      .set({
+        finishedAt: new Date(),
+        helpeeFeedback: feedback,
+        status,
+        updatedAt: new Date(),
+      })
+      .where('id', '=', helpRequestId)
+      .executeTakeFirstOrThrow();
+  });
 
   job('gamification.activity.completed', {
     helpRequestId,

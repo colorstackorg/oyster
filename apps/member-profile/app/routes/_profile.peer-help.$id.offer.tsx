@@ -4,7 +4,13 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form, Link, useActionData, useLoaderData } from '@remix-run/react';
+import {
+  Form,
+  generatePath,
+  Link,
+  useActionData,
+  useLoaderData,
+} from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import { Check } from 'react-feather';
 
@@ -31,7 +37,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const result = await offerHelp(params.id as string, {
+  const id = params.id as string;
+
+  const result = await offerHelp(id, {
     memberId: user(session),
   });
 
@@ -45,7 +53,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const url = new URL(request.url);
 
-  url.pathname = Route['/peer-help'];
+  url.pathname = generatePath(Route['/peer-help/:id'], { id });
 
   return redirect(url.toString(), {
     headers: {

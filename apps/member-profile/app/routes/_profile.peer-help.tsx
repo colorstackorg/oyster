@@ -24,7 +24,6 @@ import {
 import { db } from '@oyster/db';
 import {
   Button,
-  cx,
   Dashboard,
   IconButton,
   Pagination,
@@ -404,12 +403,7 @@ function HelpRequestItem({
   const [searchParams] = useSearchParams();
 
   return (
-    <li
-      className={cx(
-        'flex flex-col gap-3 rounded-2xl border border-gray-200 p-4',
-        status !== 'requested' && 'bg-gray-50'
-      )}
-    >
+    <li className="flex flex-col gap-3 rounded-2xl border border-gray-200 p-4">
       <div className="flex justify-between gap-2">
         <div className="flex items-center gap-1">
           <HelpRequestType type={type} />
@@ -518,7 +512,7 @@ function Helper({
   helperLastName: lastName,
 }: Pick<HelpRequest, 'helperFirstName' | 'helperId' | 'helperLastName'>) {
   return (
-    <div className="flex w-full items-center gap-1 rounded-lg bg-gray-100 p-2">
+    <div className="flex w-full items-center gap-1 rounded-lg bg-gray-50 p-2">
       <User className="text-gray-500" size={16} />
       <Text color="gray-500" variant="sm">
         Helper:

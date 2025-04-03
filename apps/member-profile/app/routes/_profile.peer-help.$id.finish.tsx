@@ -4,11 +4,17 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form, useActionData } from '@remix-run/react';
+import {
+  Form,
+  generatePath,
+  useActionData,
+  useLoaderData,
+} from '@remix-run/react';
 
 import {
   finishHelpRequest,
   FinishHelpRequestInput,
+  type HelpRequestStatus,
 } from '@oyster/core/peer-help';
 import { db } from '@oyster/db';
 import {
@@ -32,17 +38,10 @@ import {
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const memberId = user(session);
-
   const helpRequest = await db
     .selectFrom('helpRequests')
-    .select([
-      'helpRequests.description',
-      'helpRequests.helpeeId',
-      'helpRequests.helperId',
-      'helpRequests.id',
-    ])
-    .where('helpRequests.id', '=', params.id as string)
+    .select(['description', 'helpeeId', 'helperId', 'id'])
+    .where('id', '=', params.id as string)
     .executeTakeFirst();
 
   if (!helpRequest) {
@@ -52,36 +51,35 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  if (helpRequest.helpeeId !== memberId && helpRequest.helperId !== memberId) {
-    throw new Response(null, {
-      status: 404,
-      statusText: 'You cannot finish this help request.',
-    });
+  const memberId = user(session);
+
+  if (helpRequest.helpeeId !== memberId) {
+    throw redirect(
+      generatePath(Route['/peer-help/:id'], { id: helpRequest.id })
+    );
   }
 
-  return json(helpRequest);
+  return json({
+    ...helpRequest,
+    memberId,
+  });
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
-  const memberId = user(session);
 
-  const { data, errors } = await validateForm(
+  const { data, errors, ok } = await validateForm(
     request,
-    FinishHelpRequestInput.omit({ memberId: true })
+    FinishHelpRequestInput
   );
 
-  if (!data) {
+  if (!ok) {
     return json({ errors }, { status: 400 });
   }
 
-  const { feedback, status } = data;
+  const id = params.id as string;
 
-  const result = await finishHelpRequest(params.id as string, {
-    feedback,
-    memberId,
-    status,
-  });
+  const result = await finishHelpRequest(id, data);
 
   if (!result.ok) {
     return json({ error: result.error }, { status: result.code });
@@ -93,7 +91,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const url = new URL(request.url);
 
-  url.pathname = Route['/peer-help'];
+  url.pathname = generatePath(Route['/peer-help/:id'], { id });
 
   return redirect(url.toString(), {
     headers: {
@@ -102,7 +100,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 }
 
-export default function FinishHelpRequestModal() {
+export default function FinishHelpRequestForm() {
+  const { memberId } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
@@ -117,25 +116,26 @@ export default function FinishHelpRequestModal() {
         <Radio.Group>
           <Radio
             color="lime-100"
-            id="met"
+            id={status('received')}
             label="Yes, I received help."
             name="status"
             required
-            value="met"
+            value={status('received')}
           />
           <Radio
             color="red-100"
-            id="havent-met"
+            id={status('not_received')}
             label="No, I didn't receive help."
             name="status"
             required
-            value="havent_met"
+            value={status('not_received')}
           />
         </Radio.Group>
       </Field>
 
       <Field
         description="Share any feedback you have about your experience receiving help."
+        error={errors.feedback}
         label="Feedback"
         labelFor="feedback"
       >
@@ -146,6 +146,8 @@ export default function FinishHelpRequestModal() {
         />
       </Field>
 
+      <input type="hidden" name="memberId" value={memberId} />
+
       <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
@@ -153,4 +155,8 @@ export default function FinishHelpRequestModal() {
       </Button.Group>
     </Form>
   );
+}
+
+function status(value: HelpRequestStatus) {
+  return value;
 }
