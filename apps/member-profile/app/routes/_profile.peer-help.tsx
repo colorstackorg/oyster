@@ -70,8 +70,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const timezone = getTimezone(request);
 
   const [
-    { helpRequests: requestedHelpRequests, totalCount: requestedTotalCount },
-    { helpRequests: offeredHelpRequests, totalCount: offeredTotalCount },
+    { helpRequests: openHelpRequests, totalCount: openTotalCount },
+    { helpRequests: completedHelpRequests, totalCount: completedTotalCount },
   ] = await Promise.all([
     listHelpRequests({
       limit: null,
@@ -113,12 +113,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   return json({
+    completedHelpRequests,
+    completedTotalCount,
     limit,
-    offeredHelpRequests,
-    offeredTotalCount,
+    openHelpRequests,
+    openTotalCount,
     page,
-    requestedHelpRequests,
-    requestedTotalCount,
   });
 }
 
@@ -218,12 +218,12 @@ async function listHelpRequests({
 
 export default function PeerHelp() {
   const {
+    completedHelpRequests,
+    completedTotalCount,
     limit,
-    offeredHelpRequests,
-    offeredTotalCount,
+    openHelpRequests,
+    openTotalCount,
     page,
-    requestedHelpRequests,
-    requestedTotalCount,
   } = useLoaderData<typeof loader>();
 
   return (
@@ -244,27 +244,27 @@ export default function PeerHelp() {
       </div>
 
       <section className="mb-2 flex flex-col gap-2">
-        <HelpRequestSectionHeader count={requestedTotalCount} label="Open" />
+        <HelpRequestSectionHeader count={openTotalCount} label="Open" />
         <HelpRequestList
           emptyMessage="No open help requests found."
-          helpRequests={requestedHelpRequests}
+          helpRequests={openHelpRequests}
         />
       </section>
 
       <section className="mb-2 flex flex-col gap-2">
         <HelpRequestSectionHeader
-          count={offeredTotalCount}
-          label="In Progress / Completed"
+          count={completedTotalCount}
+          label="Completed"
         />
         <HelpRequestList
           emptyMessage="No completed help requests found."
-          helpRequests={offeredHelpRequests}
+          helpRequests={completedHelpRequests}
         />
         <Pagination
-          dataLength={offeredHelpRequests.length}
+          dataLength={completedHelpRequests.length}
           page={page}
           pageSize={limit}
-          totalCount={offeredTotalCount}
+          totalCount={completedTotalCount}
         />
       </section>
 
@@ -387,9 +387,7 @@ function HelpRequestSectionHeader({
 
 // List
 
-type HelpRequest = SerializeFrom<
-  typeof loader
->['requestedHelpRequests'][number];
+type HelpRequest = SerializeFrom<typeof loader>['openHelpRequests'][number];
 
 type HelpRequestListProps = {
   emptyMessage?: string;
