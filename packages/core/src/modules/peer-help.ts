@@ -96,7 +96,7 @@ export const EditHelpRequestInput = HelpRequest.pick({
   description: true,
   type: true,
 }).extend({
-  memberId: z.string().trim().min(1),
+  memberId: HelpRequest.shape.helpeeId,
 });
 
 type EditHelpRequestInput = z.infer<typeof EditHelpRequestInput>;
@@ -117,14 +117,7 @@ export async function editHelpRequest(
     .selectFrom('helpRequests')
     .select(['helpeeId', 'status'])
     .where('id', '=', helpRequestId)
-    .executeTakeFirst();
-
-  if (!helpRequest) {
-    return fail({
-      code: 404,
-      error: 'The help request you are trying to edit does not exist.',
-    });
-  }
+    .executeTakeFirstOrThrow();
 
   if (helpRequest.status !== HelpRequestStatus.REQUESTED) {
     return fail({
@@ -160,7 +153,7 @@ export async function editHelpRequest(
 
 export const FinishHelpRequestInput = z.object({
   feedback: HelpRequest.shape.helpeeFeedback,
-  memberId: z.string().trim().min(1),
+  memberId: HelpRequest.shape.helpeeId,
   status: z.enum([HelpRequestStatus.NOT_RECEIVED, HelpRequestStatus.RECEIVED]),
 });
 
@@ -212,36 +205,54 @@ export async function finishHelpRequest(
 
 // Offer Help Request
 
-const OfferHelpRequestInput = HelpRequest.pick({
-  helperId: true,
+const OfferHelpRequestInput = z.object({
+  memberId: HelpRequest.shape.helperId,
 });
 
 type OfferHelpRequestInput = z.infer<typeof OfferHelpRequestInput>;
 
+/**
+ * Offers help for a given help request.
+ *
+ * This will start a Slack group DM between the helpee and helper, send an
+ * introduction message, and update the help request status to `offered`.
+ * Both the helpee and helper must have their Slack accounts linked to their
+ * profiles in order for this to succeed.
+ *
+ * @returns The ID of the help request that was offered.
+ */
 export async function offerHelp(
   helpRequestId: string,
-  { helperId }: OfferHelpRequestInput
+  { memberId }: OfferHelpRequestInput
 ): Promise<Result> {
-  const helpRequest = await db
-    .selectFrom('helpRequests')
-    .select(['helpeeId', 'helperId'])
-    .where('id', '=', helpRequestId)
-    .executeTakeFirst();
+  const [helpRequest, helper] = await Promise.all([
+    db
+      .selectFrom('helpRequests')
+      .leftJoin('students as helpees', 'helpRequests.helpeeId', 'helpees.id')
+      .select([
+        'helpRequests.helpeeId',
+        'helpRequests.helperId',
+        'helpRequests.offeredAt',
+        'helpees.slackId as helpeeSlackId',
+      ])
+      .where('helpRequests.id', '=', helpRequestId)
+      .executeTakeFirstOrThrow(),
 
-  if (!helpRequest) {
+    db
+      .selectFrom('students')
+      .select('slackId')
+      .where('id', '=', memberId)
+      .executeTakeFirstOrThrow(),
+  ]);
+
+  if (helpRequest.helperId || helpRequest.offeredAt) {
     return fail({
-      code: 404,
-      error: 'Help request not found.',
+      code: 400,
+      error: 'Help has already been offered for this request.',
     });
   }
 
-  const helper = await db
-    .selectFrom('students')
-    .select('slackId')
-    .where('id', '=', helperId)
-    .executeTakeFirst();
-
-  if (!helper || !helper.slackId) {
+  if (!helper.slackId) {
     return fail({
       code: 400,
       error:
@@ -250,74 +261,66 @@ export async function offerHelp(
     });
   }
 
-  try {
-    await db.transaction().execute(async (trx) => {
-      // Send a notification via group DM.
-      const notificationResult = await sendHelpRequestIntroduction({
-        helpeeId: helpRequest.helpeeId,
-        helperId,
-        id: helpRequestId,
-      });
-
-      if (!notificationResult.ok) {
-        throw new Error(notificationResult.error);
-      }
-
-      await trx
-        .updateTable('helpRequests')
-        .set({
-          helperId,
-          slackChannelId: notificationResult.data.slackChannelId,
-          status: HelpRequestStatus.OFFERED,
-          updatedAt: new Date(),
-        })
-        .where('id', '=', helpRequestId)
-        .executeTakeFirstOrThrow();
+  if (!helpRequest.helpeeSlackId) {
+    return fail({
+      code: 400,
+      error:
+        'Help cannot be offered because the "helpee" does not have a linked Slack account. ' +
+        'Please reach out to an admin to get this resolved.',
     });
+  }
 
-    return success({});
-  } catch (e) {
-    reportException(e);
+  // Next, we send a notification via group DM. As long as this succeeds, then
+  // we can proceed in updating the help request.
+
+  const notificationResult = await sendHelpRequestIntroduction({
+    helpeeSlackId: helpRequest.helpeeSlackId,
+    helperSlackId: helper.slackId,
+    helpRequestId,
+  });
+
+  if (!notificationResult.ok) {
+    reportException(notificationResult);
 
     return fail({
       code: 500,
-      error: `Failed to accept help request. ${(e as Error).message}`,
+      error: `Failed to send help request introduction. ${notificationResult.error}`,
     });
   }
+
+  await db.transaction().execute(async (trx) => {
+    await trx
+      .updateTable('helpRequests')
+      .set({
+        helperId: memberId,
+        offeredAt: new Date(),
+        slackChannelId: notificationResult.data.slackChannelId,
+        status: HelpRequestStatus.OFFERED,
+        updatedAt: new Date(),
+      })
+      .where('id', '=', helpRequestId)
+      .executeTakeFirstOrThrow();
+  });
+
+  return success({});
 }
 
+type SendHelpRequestIntroductionInput = {
+  helpeeSlackId: string;
+  helperSlackId: string;
+  helpRequestId: string;
+};
+
 async function sendHelpRequestIntroduction({
-  helpeeId,
-  helperId,
-  id: helpRequestId,
-}: Pick<HelpRequest, 'helpeeId' | 'helperId' | 'id'>): Promise<
+  helpeeSlackId,
+  helperSlackId,
+  helpRequestId,
+}: SendHelpRequestIntroductionInput): Promise<
   Result<{ slackChannelId: string }>
 > {
-  const [helpee, helper] = await Promise.all([
-    db
-      .selectFrom('students')
-      .select('slackId')
-      .where('id', '=', helpeeId)
-      .where('slackId', 'is not', null)
-      .executeTakeFirst(),
-
-    db
-      .selectFrom('students')
-      .select('slackId')
-      .where('id', '=', helperId)
-      .where('slackId', 'is not', null)
-      .executeTakeFirst(),
-  ]);
-
-  if (!helpee || !helper) {
-    return fail({
-      code: 400,
-      context: { helpeeId, helperId },
-      error: 'One of the members involved does not have a linked Slack ID.',
-    });
-  }
-
-  const slackIds = [helpee.slackId, helper.slackId].join(',');
+  // To get the channel of a group DM, we need to pass in all the users in the
+  // group DM separated by commas.
+  const slackIds = [helpeeSlackId, helperSlackId].join(',');
 
   const { channel } = await slack.conversations.open({
     users: slackIds,
@@ -326,24 +329,24 @@ async function sendHelpRequestIntroduction({
   if (!channel || !channel.id) {
     return fail({
       code: 500,
-      context: { helpeeId, helperId },
-      error: 'Failed to create a group DM.',
+      context: { helpeeSlackId, helperSlackId },
+      error: 'Failed to create (or get) group DM.',
     });
   }
 
   const message = dedent`
-    Hi, <@${helpee.slackId}>! Good news! -- <@${helper.slackId}> has graciously accepted your <${STUDENT_PROFILE_URL}/peer-help/${helpRequestId}|request> for help. 🤝
+    Hi, <@${helpeeSlackId}>! Good news -- <@${helperSlackId}> has graciously accepted your <${STUDENT_PROFILE_URL}/peer-help/${helpRequestId}|request> for help. 🎉
 
-    In terms of next steps, first, decide if you want to do a synchronous meetup or asynchronous.
+    Here are your next steps:
+     1.  Confirm whether you want to meet up synchronously or if this can be done asynchronously _(ie: offline, via messaging in this chat)_. 💬
+     2.  If synchronous, decide on a time to meet. The sooner the better! 🗓️
+     3.  <@${helpeeSlackId}> Send over any clarifying or additional points for your request. ✏️
+     4.  <@${helperSlackId}> Well...help <@${helpeeSlackId}> out! 🤝
+     5.  <@${helpeeSlackId}> *AFTER* you've been helped, finish off the request <${STUDENT_PROFILE_URL}/peer-help/${helpRequestId}/finish|here> (don't make us bother you with reminders 😂).
 
-    If you decide on a synchronous meetup...
-    1. Decide on a time to meet (the sooner the better).
+    Remember that this is meant to be a quick process. This should ideally be done in less than 48 hours and no more than 7 days!
 
-    If you decide on asynchronous...
-    1. <@${helpee.slackId}>, send over any clarifying/additional points for your request (or confirm that it's all in the request description).
-    2. <@${helper.slackId}>, acknowledge the message and say you'll get back to them soon.
-
-    After this request has been fulfilled, please take a moment to confirm this in the <${STUDENT_PROFILE_URL}/peer-help/${helpRequestId}|request> page.
+    Thank you both! 💚
   `;
 
   job('notification.slack.send', {

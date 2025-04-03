@@ -4,11 +4,12 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form, Link, useActionData } from '@remix-run/react';
+import { Form, Link, useActionData, useLoaderData } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import { Check } from 'react-feather';
 
 import { offerHelp } from '@oyster/core/peer-help';
+import { getColorStackBotDeepLink } from '@oyster/core/slack/utils';
 import { Button, ErrorMessage, Text } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
@@ -22,14 +23,17 @@ import {
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  const slackLink = await getColorStackBotDeepLink();
+
+  return json({ slackLink });
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
-  const helperId = user(session);
 
-  const result = await offerHelp(params.id as string, { helperId });
+  const result = await offerHelp(params.id as string, {
+    memberId: user(session),
+  });
 
   if (!result.ok) {
     return json({ error: result.error }, { status: result.code });
@@ -72,8 +76,10 @@ export default function OfferHelp() {
 }
 
 function NextStepsSection() {
+  const { slackLink } = useLoaderData<typeof loader>();
+
   const link = (
-    <Link className="link" target="_blank" to="https://colorstack.slack.com">
+    <Link className="link" target="_blank" to={slackLink}>
       ColorStack Slack Bot
     </Link>
   );
@@ -83,9 +89,8 @@ function NextStepsSection() {
       <Text weight="500">Next Steps</Text>
 
       <Text color="gray-500" variant="sm">
-        If you confirm, the {link} will introduce you to NAME HERE by sending a
-        group DM to you both. From there, you two can coordinate your help
-        session.
+        If you confirm, the {link} will introduce you both via a Slack group DM.
+        From there, you two can coordinate how to best fulfill the help request.
       </Text>
     </section>
   );
@@ -111,7 +116,7 @@ function HelpAgreementSection() {
         </HelpAgreementItem>
 
         <HelpAgreementItem>
-          I am committed to helping within 7 days, ideally ASAP.
+          I am committed to helping ASAP and no later than 7 days from now.
         </HelpAgreementItem>
 
         <HelpAgreementItem>

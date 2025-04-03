@@ -105,7 +105,7 @@ export function HelpRequestDescriptionField({
       <Textarea
         defaultValue={defaultValue}
         id={name}
-        minLength={250}
+        minLength={200}
         name={name}
         required
       />

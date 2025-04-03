@@ -53,7 +53,8 @@
     "./resume-reviews": "./src/modules/resume-reviews.ts",
     "./s3": "./src/infrastructure/s3.ts",
     "./slack": "./src/modules/slack/slack.ts",
-    "./slack/server": "./src/modules/slack/index.server.ts"
+    "./slack/server": "./src/modules/slack/index.server.ts",
+    "./slack/utils": "./src/modules/slack/slack.utils.ts"
   },
   "scripts": {
     "build": "tsup",
