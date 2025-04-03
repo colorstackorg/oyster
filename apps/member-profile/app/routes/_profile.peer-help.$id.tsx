@@ -378,12 +378,15 @@ function HelpAgreementSubsection() {
         </HelpAgreementItem>
 
         <HelpAgreementItem>
-          I will be responsive when coordinating with the requestor.
+          I am committed to helping within 7 days, ideally ASAP.
         </HelpAgreementItem>
 
         <HelpAgreementItem>
-          I will maintain professionalism and respect when communicating with
-          the requestor.
+          I will be prompt in my communication.
+        </HelpAgreementItem>
+
+        <HelpAgreementItem>
+          I will be professional and respectful in my communication.
         </HelpAgreementItem>
       </ul>
     </div>
