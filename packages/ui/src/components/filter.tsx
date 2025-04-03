@@ -191,7 +191,7 @@ export function FilterRoot({
 type FilterTriggerProps = PropsWithChildren<{
   active?: boolean;
   className?: string;
-  icon?: React.ReactElement;
+  icon: React.ReactElement;
   onClick?(): void;
   popover?: boolean;
 }>;
@@ -208,12 +208,10 @@ export function FilterTrigger({
   const { name, open, selectedValues, setOpen, triggerRef } =
     useContext(FilterContext);
 
-  if (icon) {
-    icon = React.cloneElement(icon, {
-      className: active ? '' : 'text-primary',
-      size: 16,
-    });
-  }
+  icon = React.cloneElement(icon, {
+    className: active ? '' : 'text-primary',
+    size: 16,
+  });
 
   const selectedList =
     selectedValues && selectedValues.length ? (
