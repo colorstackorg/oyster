@@ -32,23 +32,21 @@ import {
   commitSession,
   ensureUserAuthenticated,
   toast,
+  user,
 } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
   const helpRequest = await db
     .selectFrom('helpRequests')
     .select([
       'helpRequests.description',
-      'helpRequests.helpeeId',
-      'helpRequests.helperId',
       'helpRequests.id',
-      'helpRequests.status',
       'helpRequests.type',
     ])
     .where('id', '=', params.id as string)
-    .executeTakeFirstOrThrow();
+    .executeTakeFirst();
 
   if (!helpRequest) {
     throw new Response(null, {
@@ -57,7 +55,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  return json(helpRequest);
+  return json({
+    ...helpRequest,
+    memberId: user(session),
+  });
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -96,7 +97,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 export default function EditHelpRequestModal() {
-  const { description, id, type } = useLoaderData<typeof loader>();
+  const { description, id, memberId, type } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
   const [searchParams] = useSearchParams();
 
@@ -123,6 +124,8 @@ export default function EditHelpRequestModal() {
           error={errors.description}
           name="description"
         />
+
+        <input type="hidden" name="memberId" value={memberId} />
 
         <ErrorMessage>{error}</ErrorMessage>
 

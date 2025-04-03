@@ -33,7 +33,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   return json({
-    helpeeId: user(session),
+    memberId: user(session),
   });
 }
 
@@ -72,7 +72,7 @@ export async function action({ request }: ActionFunctionArgs) {
 // Page
 
 export default function RequestHelpModal() {
-  const { helpeeId } = useLoaderData<typeof loader>();
+  const { memberId } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
   const [searchParams] = useSearchParams();
 
@@ -95,7 +95,7 @@ export default function RequestHelpModal() {
           name="description"
         />
 
-        <input type="hidden" name="helpeeId" value={helpeeId} />
+        <input type="hidden" name="memberId" value={memberId} />
 
         <ErrorMessage>{error}</ErrorMessage>
 

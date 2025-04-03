@@ -13,11 +13,18 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { ArrowDown, ArrowUp, User } from 'react-feather';
+import { ArrowDown, ArrowUp, Edit, User } from 'react-feather';
 
 import { type HelpRequestStatus as HelpRequestStatusType } from '@oyster/core/peer-help';
 import { db } from '@oyster/db';
-import { Button, Divider, Modal, ProfilePicture, Text } from '@oyster/ui';
+import {
+  Button,
+  Divider,
+  IconButton,
+  Modal,
+  ProfilePicture,
+  Text,
+} from '@oyster/ui';
 import {
   Tooltip,
   TooltipContent,
@@ -34,6 +41,8 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
+
+  const memberId = user(session);
 
   const helpRequest = await db
     .selectFrom('helpRequests')
@@ -52,6 +61,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'helpRequests.id',
       'helpRequests.status',
       'helpRequests.type',
+      (eb) => {
+        return eb('helpeeId', '=', memberId).as('isHelpee');
+      },
     ])
     .where('helpRequests.id', '=', params.id as string)
     .executeTakeFirst();
@@ -69,7 +81,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     ...helpRequest,
     createdAt: createdAtObject.fromNow(),
     createdAtExpanded: createdAtObject.format('MMM DD, YYYY • h:mm A'),
-    isMe: helpRequest.helpeeId === user(session),
     status: helpRequest.status as HelpRequestStatusType,
   });
 }
@@ -109,7 +120,8 @@ function HelpRequestInformation() {
     helperFirstName,
     helperId,
     helperLastName,
-    isMe,
+    id,
+    isHelpee,
     status,
     type,
   } = useLoaderData<typeof loader>();
@@ -160,7 +172,9 @@ function HelpRequestInformation() {
           </Tooltip>
         </div>
 
-        {!isMe && status === 'requested' && <OfferHelpToggle />}
+        {status === 'requested' && (
+          <>{isHelpee ? <EditButton id={id} /> : <OfferHelpToggle />}</>
+        )}
       </footer>
     </div>
   );
@@ -216,6 +230,35 @@ function Helper({
         {firstName} {lastName}
       </Link>
     </div>
+  );
+}
+
+function EditButton({ id }: Pick<HelpRequestInView, 'id'>) {
+  const [searchParams] = useSearchParams();
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <IconButton.Slot
+          backgroundColor="gray-100"
+          backgroundColorOnHover="gray-200"
+        >
+          <Link
+            to={{
+              pathname: generatePath(Route['/peer-help/:id/edit'], { id }),
+              search: searchParams.toString(),
+            }}
+            unstable_viewTransition
+          >
+            <Edit />
+          </Link>
+        </IconButton.Slot>
+      </TooltipTrigger>
+
+      <TooltipContent>
+        <TooltipText>Edit Request</TooltipText>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 

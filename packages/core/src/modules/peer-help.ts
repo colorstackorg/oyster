@@ -65,18 +65,55 @@ export async function deleteHelpRequest(
 export const EditHelpRequestInput = HelpRequest.pick({
   description: true,
   type: true,
+}).extend({
+  memberId: z.string().trim().min(1),
 });
 
 type EditHelpRequestInput = z.infer<typeof EditHelpRequestInput>;
 
 type EditHelpRequestResult = Result<Pick<HelpRequest, 'id'>>;
 
+/**
+ * Edits a help request.
+ *
+ * If the member who is attempting to edit the request is not the helpee, or
+ * the help request is not in the `requested` state, an error will be returned.
+ *
+ * @returns The ID of the help request.
+ */
 export async function editHelpRequest(
   helpRequestId: string,
-  { description, type }: EditHelpRequestInput
+  { description, memberId, type }: EditHelpRequestInput
 ): Promise<EditHelpRequestResult> {
+  const helpRequest = await db
+    .selectFrom('helpRequests')
+    .select(['helpeeId', 'status'])
+    .where('id', '=', helpRequestId)
+    .executeTakeFirst();
+
+  if (!helpRequest) {
+    return fail({
+      code: 404,
+      error: 'The help request you are trying to edit does not exist.',
+    });
+  }
+
+  if (helpRequest.status !== HelpRequestStatus.REQUESTED) {
+    return fail({
+      code: 400,
+      error: 'Requests cannot be edited after help has already been offered.',
+    });
+  }
+
+  if (memberId !== helpRequest.helpeeId) {
+    return fail({
+      code: 403,
+      error: 'You are not authorized to edit this help request.',
+    });
+  }
+
   const result = await db.transaction().execute(async (trx) => {
-    const helpRequest = await trx
+    return trx
       .updateTable('helpRequests')
       .set({
         description,
@@ -86,8 +123,6 @@ export async function editHelpRequest(
       .where('id', '=', helpRequestId)
       .returning(['id'])
       .executeTakeFirstOrThrow();
-
-    return helpRequest;
   });
 
   return success({ id: result.id });
@@ -296,11 +331,12 @@ async function sendHelpRequestIntroduction({
 
 export const RequestHelpInput = HelpRequest.pick({
   description: true,
-  helpeeId: true,
   type: true,
+}).extend({
+  memberId: z.string().trim().min(1),
 });
 
-export type RequestHelpInput = z.infer<typeof RequestHelpInput>;
+type RequestHelpInput = z.infer<typeof RequestHelpInput>;
 
 type RequestHelpResult = Result<Pick<HelpRequest, 'id'>>;
 
@@ -312,7 +348,7 @@ type RequestHelpResult = Result<Pick<HelpRequest, 'id'>>;
  */
 export async function requestHelp({
   description,
-  helpeeId,
+  memberId,
   type,
 }: RequestHelpInput): Promise<RequestHelpResult> {
   const helpRequest = await db.transaction().execute(async (trx) => {
@@ -320,7 +356,7 @@ export async function requestHelp({
       .insertInto('helpRequests')
       .values({
         description,
-        helpeeId,
+        helpeeId: memberId,
         id: id(),
         status: HelpRequestStatus.REQUESTED,
         type,
