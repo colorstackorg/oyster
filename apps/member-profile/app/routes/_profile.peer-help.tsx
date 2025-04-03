@@ -11,7 +11,6 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { type PropsWithChildren } from 'react';
 import { ArrowRight, Check, Edit, Info, User } from 'react-feather';
 import { z } from 'zod';
 
@@ -66,7 +65,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const timezone = getTimezone(request);
 
   const [
-    { helpRequests: requestedHelpRequests, totalCount: _ },
+    { helpRequests: requestedHelpRequests, totalCount: requestedTotalCount },
     { helpRequests: offeredHelpRequests, totalCount: offeredTotalCount },
   ] = await Promise.all([
     listHelpRequests({
@@ -95,6 +94,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     offeredTotalCount,
     page,
     requestedHelpRequests,
+    requestedTotalCount,
   });
 }
 
@@ -211,6 +211,7 @@ export default function PeerHelp() {
     offeredTotalCount,
     page,
     requestedHelpRequests,
+    requestedTotalCount,
   } = useLoaderData<typeof loader>();
 
   return (
@@ -230,16 +231,18 @@ export default function PeerHelp() {
         <TypeFilter />
       </div>
 
-      <HelpRequestsSection title="Open">
-        <HelpRequestsList
+      <section className="mb-2 flex flex-col gap-2">
+        <HelpRequestSectionHeader count={requestedTotalCount} label="Open" />
+        <HelpRequestList
           emptyMessage="No open help requests found."
           helpRequests={requestedHelpRequests}
         />
-      </HelpRequestsSection>
+      </section>
 
-      <HelpRequestsSection title="Received">
-        <HelpRequestsList
-          emptyMessage="No received help requests found."
+      <section className="mb-2 flex flex-col gap-2">
+        <HelpRequestSectionHeader count={offeredTotalCount} label="Completed" />
+        <HelpRequestList
+          emptyMessage="No completed help requests found."
           helpRequests={offeredHelpRequests}
         />
         <Pagination
@@ -248,7 +251,7 @@ export default function PeerHelp() {
           pageSize={limit}
           totalCount={offeredTotalCount}
         />
-      </HelpRequestsSection>
+      </section>
 
       <Outlet />
     </>
@@ -338,19 +341,32 @@ function RequestHelpButton() {
   );
 }
 
-type HelpRequestsSectionProps = PropsWithChildren<{
-  title: string;
-}>;
+type HelpRequestSectionHeaderProps = {
+  count: number;
+  label: string;
+};
 
-function HelpRequestsSection({ children, title }: HelpRequestsSectionProps) {
+function HelpRequestSectionHeader({
+  count,
+  label,
+}: HelpRequestSectionHeaderProps) {
+  const formatter = new Intl.NumberFormat();
+
   return (
-    <section className="mb-2 flex flex-col gap-2">
+    <header className="flex items-center gap-2">
       <Text weight="500" variant="lg">
-        {title}
+        {label}
       </Text>
 
-      {children}
-    </section>
+      <Text
+        as="span"
+        className="flex items-center justify-center rounded-md bg-gray-100 px-2 py-[1px]"
+        color="gray-500"
+        variant="sm"
+      >
+        {formatter.format(count)}
+      </Text>
+    </header>
   );
 }
 
@@ -360,15 +376,12 @@ type HelpRequest = SerializeFrom<
   typeof loader
 >['requestedHelpRequests'][number];
 
-type HelpRequestsListProps = {
+type HelpRequestListProps = {
   emptyMessage?: string;
   helpRequests: HelpRequest[];
 };
 
-function HelpRequestsList({
-  emptyMessage,
-  helpRequests,
-}: HelpRequestsListProps) {
+function HelpRequestList({ emptyMessage, helpRequests }: HelpRequestListProps) {
   if (!helpRequests.length && emptyMessage) {
     return (
       <Text color="gray-500" variant="sm">
