@@ -493,17 +493,10 @@ function HelpRequestItem({
           </Tooltip>
         </div>
 
-        {!!isHelpee && status === 'open' && (
-          <EditButton id={id} isHelpee={isHelpee} status={status} />
-        )}
+        {!!isHelpee && status === 'open' && <EditButton id={id} />}
 
         {!!isHelpee && status === 'in_progress' && (
-          <FinishButton
-            finished={finished}
-            id={id}
-            isHelpee={isHelpee}
-            status={status}
-          />
+          <FinishButton finished={finished} id={id} />
         )}
       </footer>
     </li>
@@ -562,16 +555,8 @@ function Helper({ firstName, id, lastName }: HelperProps) {
   );
 }
 
-function EditButton({
-  id,
-  isHelpee,
-  status,
-}: Pick<HelpRequest, 'id' | 'isHelpee' | 'status'>) {
+function EditButton({ id }: Pick<HelpRequest, 'id'>) {
   const [searchParams] = useSearchParams();
-
-  if (!isHelpee || status !== 'open') {
-    return null;
-  }
 
   return (
     <Tooltip>
@@ -598,17 +583,8 @@ function EditButton({
   );
 }
 
-function FinishButton({
-  finished,
-  id,
-  isHelpee,
-  status,
-}: Pick<HelpRequest, 'finished' | 'id' | 'isHelpee' | 'status'>) {
+function FinishButton({ finished, id }: Pick<HelpRequest, 'finished' | 'id'>) {
   const [searchParams] = useSearchParams();
-
-  if (!isHelpee || status !== 'in_progress') {
-    return null;
-  }
 
   if (finished) {
     return (
