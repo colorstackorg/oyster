@@ -37,6 +37,32 @@ export type MixpanelEvent = {
 
   'Directory - Profile Clicked': undefined;
 
+  'Help Requested': {
+    Type: string;
+  };
+
+  'Help Request Finished': {
+    Status: string;
+    Type: string;
+  };
+
+  'Help Request List Viewed': {
+    Filter: string[];
+  };
+
+  'Help Request Offered': {
+    Type: string;
+  };
+
+  'Help Request Reminder Sent': {
+    Type: string;
+  };
+
+  'Help Request Viewed': {
+    Status: string;
+    Type: string;
+  };
+
   'Logged In': {
     Method: 'Google' | 'OTP' | 'Slack';
   };

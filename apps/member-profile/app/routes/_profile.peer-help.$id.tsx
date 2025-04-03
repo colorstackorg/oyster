@@ -15,6 +15,7 @@ import {
 import dayjs from 'dayjs';
 import { ArrowDown, ArrowUp, Edit, User } from 'react-feather';
 
+import { track } from '@oyster/core/mixpanel';
 import {
   type HelpRequestStatus,
   type HelpRequestType,
@@ -34,6 +35,7 @@ import {
   TooltipText,
   TooltipTrigger,
 } from '@oyster/ui/tooltip';
+import { toTitleCase } from '@oyster/utils';
 
 import {
   HelpRequestDescription,
@@ -46,6 +48,7 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
+  const id = params.id as string;
   const memberId = user(session);
 
   const helpRequest = await db
@@ -69,13 +72,27 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         return eb('helpeeId', '=', memberId).as('isHelpee');
       },
     ])
-    .where('helpRequests.id', '=', params.id as string)
+    .where('helpRequests.id', '=', id)
     .executeTakeFirst();
 
   if (!helpRequest) {
     throw new Response(null, {
       status: 404,
       statusText: 'The help request you are looking for does not exist.',
+    });
+  }
+
+  const { pathname } = new URL(request.url);
+
+  if (pathname === generatePath(Route['/peer-help/:id'], { id })) {
+    track({
+      event: 'Help Request Viewed',
+      properties: {
+        Status: toTitleCase(helpRequest.status),
+        Type: toTitleCase(helpRequest.type),
+      },
+      request,
+      user: memberId,
     });
   }
 

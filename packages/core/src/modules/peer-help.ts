@@ -4,13 +4,14 @@ import { z } from 'zod';
 
 import { db, relativeTime } from '@oyster/db';
 import { type ExtractValue, nullableField } from '@oyster/types';
-import { id } from '@oyster/utils';
+import { id, toTitleCase } from '@oyster/utils';
 
 import { job, registerWorker } from '@/infrastructure/bull';
 import {
   type GetBullJobData,
   PeerHelpBullJob,
 } from '@/infrastructure/bull.types';
+import { track } from '@/infrastructure/mixpanel';
 import { reportException } from '@/infrastructure/sentry';
 import { ActivityType } from '@/modules/gamification/gamification.types';
 import { slack } from '@/modules/slack/instances';
@@ -37,8 +38,8 @@ export type HelpRequestType = ExtractValue<typeof HelpRequestType>;
 const HelpRequest = z.object({
   description: z.string().trim().min(1),
   helpeeId: z.string().trim().min(1),
-  helpeeFeedback: z.string().trim().min(1).nullable(),
-  helperId: z.string().trim().min(1).nullable(),
+  helpeeFeedback: z.string().trim().min(1),
+  helperId: z.string().trim().min(1),
   id: z.string().trim().min(1),
   status: z.nativeEnum(HelpRequestStatus),
   type: z.nativeEnum(HelpRequestType),
@@ -151,7 +152,7 @@ export async function editHelpRequest(
 // Finish Help Request
 
 export const FinishHelpRequestInput = z.object({
-  feedback: nullableField(HelpRequest.shape.helpeeFeedback),
+  feedback: nullableField(HelpRequest.shape.helpeeFeedback.nullable()),
   memberId: HelpRequest.shape.helpeeId,
   status: z.enum([
     HelpRequestStatus.NOT_COMPLETED,
@@ -178,7 +179,7 @@ export async function finishHelpRequest(
 ): Promise<Result> {
   const helpRequest = await db
     .selectFrom('helpRequests')
-    .select(['helpeeId', 'helperId', 'status'])
+    .select(['helpeeId', 'helperId', 'status', 'type'])
     .where('id', '=', helpRequestId)
     .executeTakeFirstOrThrow();
 
@@ -216,6 +217,15 @@ export async function finishHelpRequest(
     type: 'help_peer',
   });
 
+  track({
+    event: 'Help Request Finished',
+    properties: {
+      Status: toTitleCase(status),
+      Type: toTitleCase(helpRequest.type),
+    },
+    user: memberId,
+  });
+
   return success({});
 }
 
@@ -248,6 +258,7 @@ export async function offerHelp(
       .select([
         'helpRequests.helperId',
         'helpRequests.inProgressAt',
+        'helpRequests.type',
         'helpees.slackId as helpeeSlackId',
       ])
       .where('helpRequests.id', '=', helpRequestId)
@@ -315,6 +326,12 @@ export async function offerHelp(
       })
       .where('id', '=', helpRequestId)
       .executeTakeFirstOrThrow();
+  });
+
+  track({
+    event: 'Help Request Offered',
+    properties: { Type: toTitleCase(helpRequest.type) },
+    user: memberId,
   });
 
   return success({});
@@ -409,6 +426,12 @@ export async function requestHelp({
       .executeTakeFirstOrThrow();
   });
 
+  track({
+    event: 'Help Requested',
+    properties: { Type: toTitleCase(type) },
+    user: memberId,
+  });
+
   return success({ id: helpRequest.id });
 }
 
@@ -433,6 +456,7 @@ async function sendFinishReminder(
       'helpers.slackId as helperSlackId',
       'helpRequests.id',
       'helpRequests.slackChannelId',
+      'helpRequests.type',
     ])
     .where('helpRequests.status', '=', HelpRequestStatus.IN_PROGRESS)
     .where('helpRequests.finishedAt', 'is', null);
@@ -483,6 +507,11 @@ async function sendFinishReminder(
       channel: helpRequest.slackChannelId as string,
       message,
       workspace: 'regular',
+    });
+
+    track({
+      event: 'Help Request Reminder Sent',
+      properties: { Type: toTitleCase(helpRequest.type) },
     });
   }
 

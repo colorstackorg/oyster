@@ -15,6 +15,7 @@ import { ArrowRight, Check, Edit, Info, User } from 'react-feather';
 import { z } from 'zod';
 
 import { ListSearchParams } from '@oyster/core/member-profile/ui';
+import { track } from '@oyster/core/mixpanel';
 import {
   type HelpRequestStatus,
   HelpRequestType,
@@ -38,6 +39,7 @@ import {
   TooltipText,
   TooltipTrigger,
 } from '@oyster/ui/tooltip';
+import { toTitleCase } from '@oyster/utils';
 
 import {
   HelpRequestDescription,
@@ -60,7 +62,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
   const memberId = user(session);
 
-  const { searchParams } = new URL(request.url);
+  const { pathname, searchParams } = new URL(request.url);
   const { limit, page, type, view } = PeerHelpSearchParams.parse(
     Object.fromEntries(searchParams)
   );
@@ -90,6 +92,25 @@ export async function loader({ request }: LoaderFunctionArgs) {
       view,
     }),
   ]);
+
+  if (pathname === Route['/peer-help']) {
+    const filters = [];
+
+    if (type) {
+      filters.push(toTitleCase(type));
+    }
+
+    if (view === 'me') {
+      filters.push('My Requests');
+    }
+
+    track({
+      event: 'Help Request List Viewed',
+      properties: { Filter: filters },
+      request,
+      user: memberId,
+    });
+  }
 
   return json({
     limit,
