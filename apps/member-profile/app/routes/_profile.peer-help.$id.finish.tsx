@@ -4,12 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useSearchParams,
-} from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 
 import {
   finishHelpRequest,
@@ -18,12 +13,11 @@ import {
 import { db } from '@oyster/db';
 import {
   Button,
+  Divider,
   ErrorMessage,
   Field,
   getErrors,
-  Modal,
   Radio,
-  Text,
   Textarea,
   validateForm,
 } from '@oyster/ui';
@@ -110,31 +104,13 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 export default function FinishHelpRequestModal() {
-  const { description } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
-  const [searchParams] = useSearchParams();
 
   return (
-    <Modal
-      onCloseTo={{
-        pathname: Route['/peer-help'],
-        search: searchParams.toString(),
-      }}
-    >
-      <Modal.Header>
-        <Modal.Title>Finish Help Request</Modal.Title>
-        <Modal.CloseButton />
-      </Modal.Header>
+    <>
+      <Divider />
 
-      <Text
-        className="border-l border-gray-300 pl-2"
-        color="gray-500"
-        variant="sm"
-      >
-        {description}
-      </Text>
-
-      <Form method="post" className="form">
+      <Form method="post" className="form rounded-xl bg-gray-50 p-4">
         <Field
           description="If you are still in the process of receiving help, please hold off on submitting this form until you are able to receive help."
           error={errors.status}
@@ -180,6 +156,6 @@ export default function FinishHelpRequestModal() {
           <Button.Submit>Submit</Button.Submit>
         </Button.Group>
       </Form>
-    </Modal>
+    </>
   );
 }
