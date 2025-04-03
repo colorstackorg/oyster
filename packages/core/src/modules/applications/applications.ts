@@ -175,6 +175,7 @@ export async function acceptApplication(
       'applications.firstName',
       'applications.gender',
       'applications.graduationYear',
+      'applications.graduationDate',
       'applications.id',
       'applications.lastName',
       'applications.linkedInUrl',
@@ -334,6 +335,9 @@ export async function apply(input: ApplyInput) {
       referralId = referral?.id;
     }
 
+    const date = new Date(input.graduationDate);
+
+    // TODO: add date field
     await trx
       .insertInto('applications')
       .values({
@@ -343,7 +347,8 @@ export async function apply(input: ApplyInput) {
         firstName: input.firstName,
         gender: input.gender,
         goals: input.goals,
-        graduationYear: input.graduationYear,
+        graduationDate: date,
+        graduationYear: date.getFullYear(),
         id: applicationId,
         lastName: input.lastName,
         linkedInUrl: input.linkedInUrl,
@@ -511,7 +516,7 @@ async function reviewApplication({
       'applications.educationLevel',
       'applications.email',
       'applications.firstName',
-      'applications.graduationYear',
+      'applications.graduationDate',
       'applications.id',
       'applications.linkedInUrl',
       'applications.major',
@@ -572,7 +577,7 @@ type ApplicationForDecision = Pick<
   | 'createdAt'
   | 'educationLevel'
   | 'email'
-  | 'graduationYear'
+  | 'graduationDate'
   | 'id'
   | 'linkedInUrl'
   | 'major'
@@ -588,10 +593,11 @@ async function shouldReject(
   }
 
   const currentYear = new Date().getFullYear();
+  const graduationDate = new Date(application.graduationDate);
 
   if (
-    application.graduationYear < currentYear ||
-    application.graduationYear > currentYear + 5
+    graduationDate.getFullYear() < currentYear ||
+    graduationDate.getFullYear() > currentYear + 5
   ) {
     return [true, 'not_undergraduate'];
   }

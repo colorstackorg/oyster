@@ -13,6 +13,7 @@ import {
 } from '@oyster/types';
 import {
   Checkbox,
+  DatePicker,
   Field,
   type FieldProps,
   Input,
@@ -255,36 +256,27 @@ const GRADUATION_YEARS = run(() => {
   return years;
 });
 
-Application.GraduationYearField = function GraduationYearField({
+Application.GraduationDateField = function GraduationDateField({
   defaultValue,
   error,
   name,
-}: FieldProps<number>) {
+}: FieldProps<string>) {
   const { readOnly } = useContext(ApplicationContext);
 
   return (
     <Field
       error={error}
-      label="Expected Graduation Year"
+      label="Expected Graduation Date"
       labelFor={name}
       required
     >
-      <Radio.Group>
-        {GRADUATION_YEARS.map((value: number) => {
-          return (
-            <Radio
-              key={value}
-              defaultChecked={defaultValue === value}
-              id={name + value}
-              label={value.toString()}
-              name={name}
-              readOnly={readOnly}
-              required
-              value={value.toString()}
-            />
-          );
-        })}
-      </Radio.Group>
+      <DatePicker
+        defaultValue={defaultValue}
+        id={name}
+        name={name}
+        required
+        type="month"
+      />
     </Field>
   );
 };

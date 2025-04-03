@@ -20,7 +20,7 @@ export const Application = Student.pick({
   firstName: true,
   fullName: true,
   gender: true,
-  graduationYear: true,
+  graduationDate: true,
   id: true,
   lastName: true,
   linkedInUrl: true,
