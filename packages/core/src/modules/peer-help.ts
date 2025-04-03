@@ -412,9 +412,14 @@ export async function requestHelp({
 
 // Send Finish Reminder
 
+/**
+ * Sends a reminder to the helpees of all help requests that have been offered
+ * but not finished. We'll send a reminder after 2 days, 7 days, and 14 days.
+ * There will be a maximum of 3 reminders sent.
+ */
 async function sendFinishReminder(
   _: GetBullJobData<'peer_help.finish_reminder'>
-) {
+): Promise<Result> {
   // Get all the help requests that are in the `offered` state and have not
   // been finished yet...we want to remind them after a certain amount of time.
   const query = db
@@ -490,6 +495,8 @@ async function sendFinishReminder(
     })
     .where('id', 'in', ids)
     .execute();
+
+  return success({});
 }
 
 // Worker
@@ -498,10 +505,16 @@ export const peerHelpWorker = registerWorker(
   'peer_help',
   PeerHelpBullJob,
   async (job) => {
-    return match(job)
+    const result = await match(job)
       .with({ name: 'peer_help.finish_reminder' }, ({ data }) => {
         return sendFinishReminder(data);
       })
       .exhaustive();
+
+    if (!result.ok) {
+      throw new Error(result.error);
+    }
+
+    return result.data;
   }
 );
