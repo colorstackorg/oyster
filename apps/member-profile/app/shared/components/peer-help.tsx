@@ -17,7 +17,7 @@ export function HelpRequestStatus({ status }: HelpRequestStatusProps) {
 
   const label = match(status)
     .with('open', () => 'Help Needed')
-    .with('pending', () => 'Helper Assigned')
+    .with('pending', () => 'Help Offered')
     .with('complete', () => 'Help Received')
     .with('incomplete', () => 'Help Not Received')
     .otherwise(() => 'Unknown');

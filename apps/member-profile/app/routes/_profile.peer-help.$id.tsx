@@ -1,33 +1,53 @@
 import {
+  type ActionFunctionArgs,
   json,
   type LoaderFunctionArgs,
+  redirect,
   type SerializeFrom,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
   Link,
+  useActionData,
   useLoaderData,
   useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { ArrowRight } from 'react-feather';
+import { type PropsWithChildren } from 'react';
+import { ArrowDown, ArrowUp, Check } from 'react-feather';
 import { match } from 'ts-pattern';
 
+import { acceptHelpRequest } from '@oyster/core/peer-help';
 import { db } from '@oyster/db';
-import { Button, Modal, ProfilePicture, Text } from '@oyster/ui';
+import {
+  Button,
+  cx,
+  Divider,
+  ErrorMessage,
+  Modal,
+  ProfilePicture,
+  Text,
+} from '@oyster/ui';
 import {
   Tooltip,
   TooltipContent,
   TooltipText,
   TooltipTrigger,
 } from '@oyster/ui/tooltip';
+import { run } from '@oyster/utils';
 
 import {
   HelpRequestStatus,
   HelpRequestType,
 } from '@/shared/components/peer-help';
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated, user } from '@/shared/session.server';
+import {
+  commitSession,
+  ensureUserAuthenticated,
+  toast,
+  user,
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -71,6 +91,31 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 }
 
+export async function action({ params, request }: ActionFunctionArgs) {
+  const session = await ensureUserAuthenticated(request);
+  const helperId = user(session);
+
+  const result = await acceptHelpRequest(params.id as string, { helperId });
+
+  if (!result.ok) {
+    return json({ error: result.error }, { status: result.code });
+  }
+
+  toast(session, {
+    message: 'You have accepted the help request!',
+  });
+
+  const url = new URL(request.url);
+
+  url.pathname = Route['/peer-help'];
+
+  return redirect(url.toString(), {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  });
+}
+
 export default function HelpRequestModal() {
   const {
     createdAt,
@@ -83,19 +128,39 @@ export default function HelpRequestModal() {
     helperFirstName,
     helperId,
     helperLastName,
-    id,
     isMe,
     status,
     type,
   } = useLoaderData<typeof loader>();
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  function toggleExpanded() {
+    const params = new URLSearchParams(searchParams);
+
+    if (params.get('expanded') === '1') {
+      params.delete('expanded');
+    } else {
+      params.set('expanded', '1');
+    }
+
+    setSearchParams(params);
+  }
+
+  const expanded = searchParams.get('expanded') === '1';
 
   return (
     <Modal
       onCloseTo={{
         pathname: Route['/peer-help'],
-        search: searchParams.toString(),
+        search: run(() => {
+          const newSearchParams = new URLSearchParams(searchParams);
+
+          // When we close the modal, we reset the expanded state.
+          newSearchParams.delete('expanded');
+
+          return newSearchParams.toString();
+        }),
       }}
     >
       <Modal.Header>
@@ -149,13 +214,14 @@ export default function HelpRequestModal() {
           </div>
 
           {!isMe && status === 'open' && (
-            <Button.Slot variant="primary">
-              <Link to={generatePath(Route['/peer-help/:id/offer'], { id })}>
-                Offer Help <ArrowRight />
-              </Link>
-            </Button.Slot>
+            <OfferHelpToggle
+              expanded={expanded}
+              toggleExpanded={toggleExpanded}
+            />
           )}
         </footer>
+
+        <OfferHelpSection expanded={expanded} />
       </div>
     </Modal>
   );
@@ -214,5 +280,123 @@ function Helper({
         {firstName} {lastName}
       </Link>
     </div>
+  );
+}
+
+// Offer Help
+
+type OfferHelpButtonProps = {
+  expanded: boolean;
+  toggleExpanded(): void;
+};
+
+function OfferHelpToggle({ expanded, toggleExpanded }: OfferHelpButtonProps) {
+  if (expanded) {
+    return (
+      <Button onClick={toggleExpanded} variant="secondary">
+        Collapse <ArrowUp size={20} />
+      </Button>
+    );
+  }
+
+  return (
+    <Button onClick={toggleExpanded} variant="primary">
+      Offer Help <ArrowDown size={20} />
+    </Button>
+  );
+}
+
+type OfferHelpSectionProps = {
+  expanded: boolean;
+};
+
+function OfferHelpSection({ expanded }: OfferHelpSectionProps) {
+  const actionData = useActionData<typeof action>();
+
+  return (
+    <section
+      className={cx(
+        'flex flex-col gap-[inherit]',
+        'transition-all duration-500 ease-in-out',
+        expanded ? 'max-h-[1000px] opacity-100' : '-mt-4 max-h-0 opacity-0'
+      )}
+    >
+      <Divider />
+
+      <NextStepsSubsection />
+      <HelpAgreementSubsection />
+
+      <Form className="form" method="post">
+        <ErrorMessage>{actionData?.error}</ErrorMessage>
+
+        <Button.Group flexDirection="row-reverse">
+          <Button.Submit>
+            I Agree & Confirm <Check size={20} />
+          </Button.Submit>
+        </Button.Group>
+      </Form>
+    </section>
+  );
+}
+
+function NextStepsSubsection() {
+  const link = (
+    <Link className="link" target="_blank" to="https://colorstack.slack.com">
+      ColorStack Slack Bot
+    </Link>
+  );
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Text weight="500">Next Steps</Text>
+
+      <Text color="gray-500" variant="sm">
+        If you confirm, the {link} will introduce you to NAME HERE by sending a
+        group DM to you both. From there, you two can coordinate your help
+        session.
+      </Text>
+    </div>
+  );
+}
+
+function HelpAgreementSubsection() {
+  return (
+    <div className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-gray-50 p-4">
+      <Text weight="500">Help Agreement</Text>
+
+      <Text color="gray-500" variant="sm">
+        By proceeding, I acknowledge and agree that:
+      </Text>
+
+      <ul className="-mt-1 ml-6 list-disc">
+        <HelpAgreementItem>
+          I have read the help request description in full.
+        </HelpAgreementItem>
+
+        <HelpAgreementItem>
+          I am willing and able to help with this request to the best of my
+          abilities.
+        </HelpAgreementItem>
+
+        <HelpAgreementItem>
+          I will be responsive when coordinating with the requestor.
+        </HelpAgreementItem>
+
+        <HelpAgreementItem>
+          I will maintain professionalism and respect when communicating with
+          the requestor.
+        </HelpAgreementItem>
+      </ul>
+    </div>
+  );
+}
+
+function HelpAgreementItem({ children }: PropsWithChildren) {
+  return (
+    <li>
+      <Text color="gray-500" variant="sm">
+        {children}
+      </Text>
+    </li>
   );
 }

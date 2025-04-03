@@ -10,12 +10,10 @@ import {
   useLoaderData,
   useSearchParams,
 } from '@remix-run/react';
-import { match } from 'ts-pattern';
 
 import { deleteHelpRequest } from '@oyster/core/peer-help';
 import { db } from '@oyster/db';
-import { Button, ErrorMessage, getErrors, Modal, Pill, Text } from '@oyster/ui';
-import { toTitleCase } from '@oyster/utils';
+import { Button, ErrorMessage, getErrors, Modal, Text } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -96,25 +94,13 @@ export default function DeleteHelpRequestModal() {
         Are you sure you want to delete this help request?
       </Modal.Description>
 
-      <div className="flex flex-col gap-2">
-        <Pill
-          color={match(type)
-            .with('career_advice', () => 'pink-100' as const)
-            .with('resume_review', () => 'blue-100' as const)
-            .with('mock_interview', () => 'purple-100' as const)
-            .otherwise(() => 'gray-100' as const)}
-        >
-          {toTitleCase(type)}
-        </Pill>
-
-        <Text
-          className="border-l border-gray-300 pl-2"
-          color="gray-500"
-          variant="sm"
-        >
-          {description}
-        </Text>
-      </div>
+      <Text
+        className="border-l border-gray-300 pl-2"
+        color="gray-500"
+        variant="sm"
+      >
+        {description}
+      </Text>
 
       <Form className="form" method="post">
         <ErrorMessage>{error}</ErrorMessage>

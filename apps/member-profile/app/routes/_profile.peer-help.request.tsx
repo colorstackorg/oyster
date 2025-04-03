@@ -126,15 +126,15 @@ export default function RequestHelpModal() {
         </Field>
 
         <Field
-          description="This will help those who are looking to help find the right person."
+          description="What do you need help with specifically? Do you want to meet up synchronously or asynchronously? If synchronously, when are you available? Do you have a preference on the helper's background/experience?"
           error={errors.description}
-          label="Please describe what you need help with in more detail."
+          label="Please add context to your request."
           labelFor="description"
           required
         >
           <Textarea
             id="description"
-            minLength={100}
+            minLength={250}
             name="description"
             required
           />

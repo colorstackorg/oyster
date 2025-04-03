@@ -158,7 +158,7 @@ export default function EditHelpRequestModal() {
           <Textarea
             defaultValue={description}
             id="description"
-            minLength={100}
+            minLength={250}
             name="description"
             required
           />

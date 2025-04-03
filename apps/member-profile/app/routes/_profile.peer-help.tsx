@@ -272,7 +272,7 @@ function StatusFilter() {
 
   const options: FilterValue[] = [
     { color: 'amber-100', label: 'Help Needed', value: 'open' },
-    { color: 'orange-100', label: 'Helper Assigned', value: 'pending' },
+    { color: 'orange-100', label: 'Help Offered', value: 'pending' },
     { color: 'lime-100', label: 'Help Received', value: 'complete' },
   ];
 
@@ -577,7 +577,7 @@ function HelpRequestActionGroup({
           </TooltipTrigger>
 
           <TooltipContent>
-            <TooltipText>Edit Resource</TooltipText>
+            <TooltipText>Edit Request</TooltipText>
           </TooltipContent>
         </Tooltip>
       </li>
