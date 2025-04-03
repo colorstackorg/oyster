@@ -37,10 +37,6 @@ export type MixpanelEvent = {
 
   'Directory - Profile Clicked': undefined;
 
-  'Help Requested': {
-    Type: string;
-  };
-
   'Help Request Finished': {
     Status: string;
     Type: string;
@@ -60,6 +56,10 @@ export type MixpanelEvent = {
 
   'Help Request Viewed': {
     Status: string;
+    Type: string;
+  };
+
+  'Help Requested': {
     Type: string;
   };
 
