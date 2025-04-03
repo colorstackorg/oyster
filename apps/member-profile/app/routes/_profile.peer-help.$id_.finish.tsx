@@ -136,9 +136,9 @@ export default function FinishHelpRequestModal() {
 
       <Form method="post" className="form">
         <Field
-          description="If you were able to give/receive help asynchronously, that counts too!"
+          description="If you are still in the process of receiving help, please hold off on submitting this form until you are able to receive help."
           error={errors.status}
-          label="Were you able to give/receive help?"
+          label="Did you receive the help that you were looking for?"
           labelFor="status"
           required
         >
@@ -146,7 +146,7 @@ export default function FinishHelpRequestModal() {
             <Radio
               color="lime-100"
               id="met"
-              label="Yes, we met up."
+              label="Yes, I received help."
               name="status"
               required
               value="met"
@@ -154,31 +154,23 @@ export default function FinishHelpRequestModal() {
             <Radio
               color="red-100"
               id="havent-met"
-              label="No, we're not going to meet up."
+              label="No, I didn't receive help."
               name="status"
               required
               value="havent_met"
-            />
-            <Radio
-              color="blue-100"
-              id="planning-to-meet"
-              label="Not yet, but we're still planning to meet up."
-              name="status"
-              required
-              value="planning_to_meet"
             />
           </Radio.Group>
         </Field>
 
         <Field
-          description="Share any feedback you have about your experience giving/receiving help."
+          description="Share any feedback you have about your experience receiving help."
           label="Feedback"
           labelFor="feedback"
         >
           <Textarea
             id="feedback"
             name="feedback"
-            placeholder="How did the help session go?"
+            placeholder="I was happy with this but I think this could have gone better..."
           />
         </Field>
 
