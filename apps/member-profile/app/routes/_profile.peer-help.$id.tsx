@@ -228,7 +228,10 @@ function OfferHelpToggle() {
   if (isOfferRoute) {
     return (
       <Button.Slot variant="secondary">
-        <Link to={generatePath(Route['/peer-help/:id'], { id })}>
+        <Link
+          to={generatePath(Route['/peer-help/:id'], { id })}
+          unstable_viewTransition
+        >
           Collapse <ArrowUp size={20} />
         </Link>
       </Button.Slot>
@@ -237,7 +240,10 @@ function OfferHelpToggle() {
 
   return (
     <Button.Slot variant="primary">
-      <Link to={generatePath(Route['/peer-help/:id/offer'], { id })}>
+      <Link
+        to={generatePath(Route['/peer-help/:id/offer'], { id })}
+        unstable_viewTransition
+      >
         Offer Help <ArrowDown size={20} />
       </Link>
     </Button.Slot>

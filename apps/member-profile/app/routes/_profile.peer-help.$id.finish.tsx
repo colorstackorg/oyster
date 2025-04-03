@@ -13,7 +13,6 @@ import {
 import { db } from '@oyster/db';
 import {
   Button,
-  Divider,
   ErrorMessage,
   Field,
   getErrors,
@@ -44,7 +43,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'helpRequests.id',
     ])
     .where('helpRequests.id', '=', params.id as string)
-    .executeTakeFirstOrThrow();
+    .executeTakeFirst();
 
   if (!helpRequest) {
     throw new Response(null, {
@@ -107,55 +106,51 @@ export default function FinishHelpRequestModal() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <>
-      <Divider />
-
-      <Form method="post" className="form rounded-xl bg-gray-50 p-4">
-        <Field
-          description="If you are still in the process of receiving help, please hold off on submitting this form until you are able to receive help."
-          error={errors.status}
-          label="Did you receive the help that you were looking for?"
-          labelFor="status"
-          required
-        >
-          <Radio.Group>
-            <Radio
-              color="lime-100"
-              id="met"
-              label="Yes, I received help."
-              name="status"
-              required
-              value="met"
-            />
-            <Radio
-              color="red-100"
-              id="havent-met"
-              label="No, I didn't receive help."
-              name="status"
-              required
-              value="havent_met"
-            />
-          </Radio.Group>
-        </Field>
-
-        <Field
-          description="Share any feedback you have about your experience receiving help."
-          label="Feedback"
-          labelFor="feedback"
-        >
-          <Textarea
-            id="feedback"
-            name="feedback"
-            placeholder="I was happy with this but I think this could have gone better..."
+    <Form method="post" className="form rounded-xl bg-gray-50 p-4">
+      <Field
+        description="If you are still in the process of receiving help, please hold off on submitting this form until you are able to receive help."
+        error={errors.status}
+        label="Did you receive the help that you were looking for?"
+        labelFor="status"
+        required
+      >
+        <Radio.Group>
+          <Radio
+            color="lime-100"
+            id="met"
+            label="Yes, I received help."
+            name="status"
+            required
+            value="met"
           />
-        </Field>
+          <Radio
+            color="red-100"
+            id="havent-met"
+            label="No, I didn't receive help."
+            name="status"
+            required
+            value="havent_met"
+          />
+        </Radio.Group>
+      </Field>
 
-        <ErrorMessage>{error}</ErrorMessage>
+      <Field
+        description="Share any feedback you have about your experience receiving help."
+        label="Feedback"
+        labelFor="feedback"
+      >
+        <Textarea
+          id="feedback"
+          name="feedback"
+          placeholder="I was happy with this but I think this could have gone better..."
+        />
+      </Field>
 
-        <Button.Group>
-          <Button.Submit>Submit</Button.Submit>
-        </Button.Group>
-      </Form>
-    </>
+      <ErrorMessage>{error}</ErrorMessage>
+
+      <Button.Group>
+        <Button.Submit>Submit</Button.Submit>
+      </Button.Group>
+    </Form>
   );
 }

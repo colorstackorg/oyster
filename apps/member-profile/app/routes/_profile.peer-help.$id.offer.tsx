@@ -9,7 +9,7 @@ import { type PropsWithChildren } from 'react';
 import { Check } from 'react-feather';
 
 import { offerHelp } from '@oyster/core/peer-help';
-import { Button, cx, ErrorMessage, Text } from '@oyster/ui';
+import { Button, ErrorMessage, Text } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -54,15 +54,9 @@ export default function OfferHelp() {
   const actionData = useActionData<typeof action>();
 
   return (
-    <section
-      className={cx(
-        'flex flex-col gap-[inherit] overflow-hidden',
-        'transition-all duration-500 ease-in-out'
-        // expanded ? 'max-h-[1000px] opacity-100' : '-mt-4 max-h-0 opacity-0'
-      )}
-    >
-      <NextStepsSubsection />
-      <HelpAgreementSubsection />
+    <section className="flex flex-col gap-[inherit]">
+      <NextStepsSection />
+      <HelpAgreementSection />
 
       <Form className="form" method="post">
         <ErrorMessage>{actionData?.error}</ErrorMessage>
@@ -77,7 +71,7 @@ export default function OfferHelp() {
   );
 }
 
-function NextStepsSubsection() {
+function NextStepsSection() {
   const link = (
     <Link className="link" target="_blank" to="https://colorstack.slack.com">
       ColorStack Slack Bot
@@ -85,7 +79,7 @@ function NextStepsSubsection() {
   );
 
   return (
-    <div className="flex flex-col gap-2">
+    <section className="flex flex-col gap-2">
       <Text weight="500">Next Steps</Text>
 
       <Text color="gray-500" variant="sm">
@@ -93,13 +87,13 @@ function NextStepsSubsection() {
         group DM to you both. From there, you two can coordinate your help
         session.
       </Text>
-    </div>
+    </section>
   );
 }
 
-function HelpAgreementSubsection() {
+function HelpAgreementSection() {
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-gray-50 p-4">
+    <section className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-gray-50 p-4">
       <Text weight="500">Help Agreement</Text>
 
       <Text color="gray-500" variant="sm">
@@ -128,7 +122,7 @@ function HelpAgreementSubsection() {
           I will be professional and respectful in my communication.
         </HelpAgreementItem>
       </ul>
-    </div>
+    </section>
   );
 }
 
