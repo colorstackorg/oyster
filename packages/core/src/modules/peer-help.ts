@@ -328,8 +328,8 @@ export async function requestHelp({
   return success({ id: result.id });
 }
 
-async function sendFinishNotifications(
-  _: GetBullJobData<'peer_help.finish_notifications'>
+async function sendFinishReminder(
+  _: GetBullJobData<'peer_help.finish_reminder'>
 ) {
   const query = db
     .selectFrom('helpRequests')
@@ -387,8 +387,8 @@ export const peerHelpWorker = registerWorker(
   PeerHelpBullJob,
   async (job) => {
     return match(job)
-      .with({ name: 'peer_help.finish_notifications' }, ({ data }) => {
-        return sendFinishNotifications(data);
+      .with({ name: 'peer_help.finish_reminder' }, ({ data }) => {
+        return sendFinishReminder(data);
       })
       .exhaustive();
   }

@@ -409,7 +409,7 @@ export const OpportunityBullJob = z.discriminatedUnion('name', [
 
 export const PeerHelpBullJob = z.discriminatedUnion('name', [
   z.object({
-    name: z.literal('peer_help.finish_notifications'),
+    name: z.literal('peer_help.finish_reminder'),
     data: z.object({}),
   }),
 ]);
