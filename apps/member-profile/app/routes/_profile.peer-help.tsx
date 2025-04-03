@@ -452,7 +452,7 @@ function HelpRequestItem({
 
       <Tooltip>
         <TooltipTrigger cursor="default">
-          <HelpRequestDescription className="line-clamp-2">
+          <HelpRequestDescription lineClamp="2">
             {description}
           </HelpRequestDescription>
         </TooltipTrigger>

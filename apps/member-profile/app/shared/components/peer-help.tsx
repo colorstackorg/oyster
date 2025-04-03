@@ -19,16 +19,20 @@ import {
 // Information
 
 type HelpRequestDescriptionProps = PropsWithChildren<{
-  className?: string;
+  lineClamp?: '2';
 }>;
 
 export function HelpRequestDescription({
   children,
-  className,
+  lineClamp,
 }: HelpRequestDescriptionProps) {
   return (
     <Text
-      className={cx('border-l border-gray-300 pl-2', className)}
+      className={cx(
+        'border-l border-gray-300 pl-2',
+        lineClamp === '2' && 'line-clamp-2',
+        !lineClamp && 'whitespace-pre-wrap'
+      )}
       color="gray-500"
       variant="sm"
     >
