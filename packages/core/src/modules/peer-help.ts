@@ -32,6 +32,8 @@ export const HelpRequestType = {
   RESUME_REVIEW: 'resume_review',
 } as const;
 
+export type HelpRequestType = ExtractValue<typeof HelpRequestType>;
+
 const HelpRequest = z.object({
   description: z.string().trim().min(1),
   helpeeId: z.string().trim().min(1),
@@ -302,31 +304,35 @@ export type RequestHelpInput = z.infer<typeof RequestHelpInput>;
 
 type RequestHelpResult = Result<Pick<HelpRequest, 'id'>>;
 
+/**
+ * Requests help from other ColorStack members. This simply adds the request
+ * to the database and initializes the status as `requested`.
+ *
+ * @returns The ID of the help request.
+ */
 export async function requestHelp({
   description,
   helpeeId,
   type,
 }: RequestHelpInput): Promise<RequestHelpResult> {
-  const result = await db.transaction().execute(async (trx) => {
-    const helpRequestId = id();
-
-    const helpRequest = await trx
+  const helpRequest = await db.transaction().execute(async (trx) => {
+    return trx
       .insertInto('helpRequests')
       .values({
         description,
         helpeeId,
-        id: helpRequestId,
+        id: id(),
         status: HelpRequestStatus.REQUESTED,
         type,
       })
       .returning(['id'])
       .executeTakeFirstOrThrow();
-
-    return helpRequest;
   });
 
-  return success({ id: result.id });
+  return success({ id: helpRequest.id });
 }
+
+// Send Finish Reminder
 
 async function sendFinishReminder(
   _: GetBullJobData<'peer_help.finish_reminder'>

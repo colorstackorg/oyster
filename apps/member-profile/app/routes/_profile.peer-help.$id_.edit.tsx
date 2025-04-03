@@ -18,14 +18,15 @@ import { db } from '@oyster/db';
 import {
   Button,
   ErrorMessage,
-  Field,
   getErrors,
   Modal,
-  Radio,
-  Textarea,
   validateForm,
 } from '@oyster/ui';
 
+import {
+  HelpRequestDescriptionField,
+  HelpRequestTypeField,
+} from '@/shared/components/peer-help';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -112,56 +113,16 @@ export default function EditHelpRequestModal() {
       </Modal.Header>
 
       <Form className="form" method="post">
-        <Field
-          description="We currently only support these areas of need."
+        <HelpRequestTypeField
+          defaultValue={type}
           error={errors.type}
-          label="What type of help do you need?"
-          labelFor="type"
-          required
-        >
-          <Radio.Group defaultValue={type}>
-            <Radio
-              color="pink-100"
-              id="career-advice"
-              label="Career Advice"
-              name="type"
-              required
-              value="career_advice"
-            />
-            <Radio
-              color="purple-100"
-              id="mock-interview"
-              label="Mock Interview"
-              name="type"
-              required
-              value="mock_interview"
-            />
-            <Radio
-              color="blue-100"
-              id="resume-review"
-              label="Resume Review"
-              name="type"
-              required
-              value="resume_review"
-            />
-          </Radio.Group>
-        </Field>
-
-        <Field
-          description="This will help those who are looking to help find the right person."
+          name="type"
+        />
+        <HelpRequestDescriptionField
+          defaultValue={description}
           error={errors.description}
-          label="Please describe what you need help with in more detail."
-          labelFor="description"
-          required
-        >
-          <Textarea
-            defaultValue={description}
-            id="description"
-            minLength={250}
-            name="description"
-            required
-          />
-        </Field>
+          name="description"
+        />
 
         <ErrorMessage>{error}</ErrorMessage>
 
