@@ -12,7 +12,7 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren } from 'react';
-import { ArrowRight, Check, Edit, Info, Loader, User } from 'react-feather';
+import { ArrowRight, Check, Edit, Info, User } from 'react-feather';
 import { z } from 'zod';
 
 import { ListSearchParams } from '@oyster/core/member-profile/ui';
@@ -50,7 +50,6 @@ const PeerHelpSearchParams = ListSearchParams.pick({
   limit: true,
   page: true,
 }).extend({
-  status: z.nativeEnum(HelpRequestStatus).nullable().catch(null),
   type: z.nativeEnum(HelpRequestType).nullable().catch(null),
   view: z.enum(['me']).nullable().catch(null),
 });
@@ -60,37 +59,59 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const memberId = user(session);
 
   const { searchParams } = new URL(request.url);
-  const { limit, page, status, type, view } = PeerHelpSearchParams.parse(
+  const { limit, page, type, view } = PeerHelpSearchParams.parse(
     Object.fromEntries(searchParams)
   );
 
-  const { helpRequests, totalCount } = await listHelpRequests({
-    memberId,
-    status,
-    timezone: getTimezone(request),
-    type,
-    view,
-  });
+  const timezone = getTimezone(request);
+
+  const [
+    { helpRequests: requestedHelpRequests, totalCount: _ },
+    { helpRequests: offeredHelpRequests, totalCount: offeredTotalCount },
+  ] = await Promise.all([
+    listHelpRequests({
+      limit: null,
+      memberId,
+      page: null,
+      status: ['requested'],
+      timezone,
+      type,
+      view,
+    }),
+    listHelpRequests({
+      limit,
+      memberId,
+      page,
+      status: ['offered', 'received'],
+      timezone,
+      type,
+      view,
+    }),
+  ]);
 
   return json({
-    helpRequests,
     limit,
+    offeredHelpRequests,
+    offeredTotalCount,
     page,
-    totalCount,
-    view,
+    requestedHelpRequests,
   });
 }
 
 type ListHelpRequestsProps = {
+  limit: number | null;
   memberId: string;
-  status: HelpRequestStatus | null;
+  page: number | null;
+  status: HelpRequestStatus[];
   timezone: string;
   type: HelpRequestType | null;
   view: 'me' | null;
 };
 
 async function listHelpRequests({
+  limit,
   memberId,
+  page,
   status,
   timezone,
   type,
@@ -98,7 +119,6 @@ async function listHelpRequests({
 }: ListHelpRequestsProps) {
   const query = db
     .selectFrom('helpRequests')
-    .where('helpRequests.status', '!=', HelpRequestStatus.NOT_RECEIVED)
     .$if(view === 'me', (eb) => {
       return eb.where((eb) => {
         return eb.or([
@@ -107,12 +127,15 @@ async function listHelpRequests({
         ]);
       });
     })
-    .$if(!!status, (eb) => {
-      return eb.where('helpRequests.status', '=', status);
+    .$if(!!status.length, (eb) => {
+      return eb.where('helpRequests.status', 'in', status);
     })
     .$if(!!type, (eb) => {
       return eb.where('helpRequests.type', '=', type);
     });
+
+  limit = limit as number;
+  page = page as number;
 
   const [records, { count }] = await Promise.all([
     query
@@ -151,6 +174,9 @@ async function listHelpRequests({
           .end();
       })
       .orderBy('helpRequests.createdAt', 'desc')
+      .$if(!!limit && !!page, (qb) => {
+        return qb.limit(limit).offset((page - 1) * limit);
+      })
       .execute(),
 
     query
@@ -179,6 +205,14 @@ async function listHelpRequests({
 // Page
 
 export default function PeerHelp() {
+  const {
+    limit,
+    offeredHelpRequests,
+    offeredTotalCount,
+    page,
+    requestedHelpRequests,
+  } = useLoaderData<typeof loader>();
+
   return (
     <>
       <Dashboard.Header>
@@ -194,11 +228,28 @@ export default function PeerHelp() {
       <div className="flex flex-wrap items-center gap-2">
         <MeFilter />
         <TypeFilter />
-        <StatusFilter />
       </div>
 
-      <HelpRequestsList />
-      <HelpRequestsPagination />
+      <HelpRequestsSection title="Open">
+        <HelpRequestsList
+          emptyMessage="No open help requests found."
+          helpRequests={requestedHelpRequests}
+        />
+      </HelpRequestsSection>
+
+      <HelpRequestsSection title="Received">
+        <HelpRequestsList
+          emptyMessage="No received help requests found."
+          helpRequests={offeredHelpRequests}
+        />
+        <Pagination
+          dataLength={offeredHelpRequests.length}
+          page={page}
+          pageSize={limit}
+          totalCount={offeredTotalCount}
+        />
+      </HelpRequestsSection>
+
       <Outlet />
     </>
   );
@@ -230,43 +281,6 @@ function MeFilter() {
     >
       My Requests
     </FilterTrigger>
-  );
-}
-
-function StatusFilter() {
-  const [searchParams] = useSearchParams();
-
-  const status = searchParams.get('status');
-
-  const options: FilterValue[] = [
-    { color: 'amber-100', label: 'Requested', value: 'requested' },
-    { color: 'orange-100', label: 'Offered', value: 'offered' },
-    { color: 'lime-100', label: 'Received', value: 'received' },
-  ];
-
-  const selectedValues = options.filter((option) => {
-    return status === option.value;
-  });
-
-  return (
-    <FilterRoot name="status" selectedValues={selectedValues}>
-      <FilterTrigger icon={<Loader />}>Status</FilterTrigger>
-
-      <FilterPopover>
-        <FilterList height="max">
-          {options.map((option) => {
-            return (
-              <FilterItem
-                color={option.color}
-                key={option.value}
-                label={option.label}
-                value={option.value}
-              />
-            );
-          })}
-        </FilterList>
-      </FilterPopover>
-    </FilterRoot>
   );
 }
 
@@ -307,20 +321,6 @@ function TypeFilter() {
   );
 }
 
-function HelpRequestsPagination() {
-  const { helpRequests, page, limit, totalCount } =
-    useLoaderData<typeof loader>();
-
-  return (
-    <Pagination
-      dataLength={helpRequests.length}
-      page={page}
-      pageSize={limit}
-      totalCount={totalCount}
-    />
-  );
-}
-
 function RequestHelpButton() {
   const [searchParams] = useSearchParams();
 
@@ -338,13 +338,41 @@ function RequestHelpButton() {
   );
 }
 
-function HelpRequestsList({ children }: PropsWithChildren) {
-  const { helpRequests } = useLoaderData<typeof loader>();
+type HelpRequestsSectionProps = PropsWithChildren<{
+  title: string;
+}>;
 
-  if (!helpRequests.length) {
+function HelpRequestsSection({ children, title }: HelpRequestsSectionProps) {
+  return (
+    <section className="mb-2 flex flex-col gap-2">
+      <Text weight="500" variant="lg">
+        {title}
+      </Text>
+
+      {children}
+    </section>
+  );
+}
+
+// List
+
+type HelpRequest = SerializeFrom<
+  typeof loader
+>['requestedHelpRequests'][number];
+
+type HelpRequestsListProps = {
+  emptyMessage?: string;
+  helpRequests: HelpRequest[];
+};
+
+function HelpRequestsList({
+  emptyMessage,
+  helpRequests,
+}: HelpRequestsListProps) {
+  if (!helpRequests.length && emptyMessage) {
     return (
-      <Text className="mt-2" color="gray-500" variant="sm">
-        No help requests found.
+      <Text color="gray-500" variant="sm">
+        {emptyMessage}
       </Text>
     );
   }
@@ -354,12 +382,9 @@ function HelpRequestsList({ children }: PropsWithChildren) {
       {helpRequests.map((helpRequest) => {
         return <HelpRequestItem key={helpRequest.id} {...helpRequest} />;
       })}
-      {children}
     </ul>
   );
 }
-
-type HelpRequest = SerializeFrom<typeof loader>['helpRequests'][number];
 
 function HelpRequestItem({
   createdAt,
