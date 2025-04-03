@@ -21,6 +21,7 @@ import { profileWorker } from './modules/members/profile.worker';
 import { notificationWorker } from './modules/notifications/notifications.worker';
 import { onboardingSessionWorker } from './modules/onboarding-sessions/onboarding-sessions.worker';
 import { opportunityWorker } from './modules/opportunities';
+import { peerHelpWorker } from './modules/peer-help';
 import { resumeReviewWorker } from './modules/resume-reviews';
 import { slackWorker } from './modules/slack/slack.worker';
 
@@ -50,6 +51,7 @@ export function startBullWorkers(): void {
   onboardingSessionWorker.run();
   oneTimeCodeWorker.run();
   opportunityWorker.run();
+  peerHelpWorker.run();
   profileWorker.run();
   resumeReviewWorker.run();
   slackWorker.run();
