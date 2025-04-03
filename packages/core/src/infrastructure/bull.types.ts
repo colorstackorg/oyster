@@ -37,6 +37,7 @@ export const BullQueue = {
   ONBOARDING_SESSION: 'onboarding_session',
   ONE_TIME_CODE: 'one_time_code',
   OPPORTUNITY: 'opportunity',
+  PEER_HELP: 'peer_help',
   PROFILE: 'profile',
   RESUME_REVIEW: 'resume_review',
   SLACK: 'slack',
@@ -166,6 +167,11 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         studentId: CompletedActivity.shape.studentId,
         type: z.literal(ActivityType.GET_RESOURCE_UPVOTE),
         upvotedBy: z.string().trim().min(1),
+      }),
+      z.object({
+        helpRequestId: z.string().trim().min(1),
+        studentId: CompletedActivity.shape.studentId,
+        type: z.literal(ActivityType.HELP_PEER),
       }),
       z.object({
         studentId: CompletedActivity.shape.studentId,
@@ -398,6 +404,13 @@ export const OpportunityBullJob = z.discriminatedUnion('name', [
       slackChannelId: z.string().trim().min(1),
       slackMessageId: z.string().trim().min(1),
     }),
+  }),
+]);
+
+export const PeerHelpBullJob = z.discriminatedUnion('name', [
+  z.object({
+    name: z.literal('peer_help.finish_reminder'),
+    data: z.object({}),
   }),
 ]);
 
@@ -705,6 +718,7 @@ export const BullJob = z.union([
   OnboardingSessionBullJob,
   OneTimeCodeBullJob,
   OpportunityBullJob,
+  PeerHelpBullJob,
   ProfileBullJob,
   ResumeReviewBullJob,
   SlackBullJob,

@@ -4,7 +4,7 @@ import { type z, type ZodType } from 'zod';
 
 import {
   BullJob,
-  type BullQueue,
+  BullQueue,
   type GetBullJobData,
 } from '@/infrastructure/bull.types';
 import { redis } from '@/infrastructure/redis';
@@ -53,6 +53,25 @@ export function getQueue(name: string) {
   }
 
   return _queues[name];
+}
+
+/**
+ * Returns whether or not the given queue name is valid queue. As long as it
+ * is present in the Redis instance, it is considered valid. Otherwise, it
+ * must be present in the `BullQueue` enum.
+ *
+ * @param name - The name of the queue to validate.
+ * @returns `true` if the queue name is valid, `false` otherwise.
+ */
+export async function isValidQueue(name: string) {
+  const actualQueueNames = await listQueueNames();
+  const expectedQueueNames = Object.values(BullQueue);
+
+  const valid =
+    actualQueueNames.includes(name) ||
+    expectedQueueNames.includes(name as BullQueue);
+
+  return valid;
 }
 
 export function job<JobName extends BullJob['name']>(

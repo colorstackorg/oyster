@@ -153,8 +153,8 @@ async function seed(trx: Transaction<DB>) {
   const memberId3 = id();
 
   const memberEmail1 = email;
-  const memberEmail2 = 'lebron@james.com';
-  const memberEmail3 = 'savannah@james.com';
+  const memberEmail2 = email.split('@')[0] + '+1@colorstack.org';
+  const memberEmail3 = email.split('@')[0] + '+2@colorstack.org';
 
   await trx
     .insertInto('studentEmails')
@@ -191,11 +191,11 @@ async function seed(trx: Transaction<DB>) {
         currentLocationCoordinates: sql`point(-73.935242, 40.73061)`,
         educationLevel: 'undergraduate',
         email: memberEmail2,
-        firstName: 'LeBron',
+        firstName: 'Jehron',
         gender: '',
         graduationYear: new Date().getFullYear().toString(),
         id: memberId2,
-        lastName: 'James',
+        lastName: 'Petty',
         joinedMemberDirectoryAt: new Date(),
         major: 'computer_science',
         otherDemographics: [],
@@ -208,11 +208,11 @@ async function seed(trx: Transaction<DB>) {
         currentLocationCoordinates: sql`point(-73.935242, 40.73061)`,
         educationLevel: 'undergraduate',
         email: memberEmail3,
-        firstName: 'Savannah',
+        firstName: 'Jennifer',
         gender: '',
         graduationYear: new Date().getFullYear().toString(),
         id: memberId3,
-        lastName: 'James',
+        lastName: 'Cutler',
         joinedMemberDirectoryAt: new Date(),
         major: 'computer_science',
         otherDemographics: [],

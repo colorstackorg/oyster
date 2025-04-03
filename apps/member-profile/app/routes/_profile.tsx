@@ -15,6 +15,7 @@ import {
   Users,
 } from 'react-feather';
 
+import { isFeatureFlagEnabled } from '@oyster/core/member-profile/server';
 import { getResumeBook } from '@oyster/core/resume-books';
 import { Dashboard, Divider } from '@oyster/ui';
 
@@ -24,7 +25,7 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const [resumeBook] = await Promise.all([
+  const [resumeBook, isPeerHelpEnabled] = await Promise.all([
     getResumeBook({
       select: ['resumeBooks.id'],
       where: {
@@ -32,15 +33,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
         status: 'active',
       },
     }),
+    isFeatureFlagEnabled('peer_help'),
   ]);
 
   return json({
+    isPeerHelpEnabled,
     resumeBook,
   });
 }
 
 export default function ProfileLayout() {
-  const { resumeBook } = useLoaderData<typeof loader>();
+  const { isPeerHelpEnabled, resumeBook } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -102,6 +105,15 @@ export default function ProfileLayout() {
               pathname={Route['/resources']}
               prefetch="intent"
             />
+            {isPeerHelpEnabled && (
+              <Dashboard.NavigationLink
+                icon={<Users />}
+                label="Peer Help"
+                isNew
+                pathname={Route['/peer-help']}
+                prefetch="intent"
+              />
+            )}
             <Dashboard.NavigationLink
               icon={<Award />}
               label="Points"
