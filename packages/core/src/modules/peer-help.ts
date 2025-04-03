@@ -13,6 +13,7 @@ import {
   PeerHelpBullJob,
 } from '@/infrastructure/bull.types';
 import { reportException } from '@/infrastructure/sentry';
+import { ActivityType } from '@/modules/gamification/gamification.types';
 import { slack } from '@/modules/slack/instances';
 import { STUDENT_PROFILE_URL } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core';
@@ -243,7 +244,6 @@ export async function offerHelp(
       .selectFrom('helpRequests')
       .leftJoin('students as helpees', 'helpRequests.helpeeId', 'helpees.id')
       .select([
-        'helpRequests.helpeeId',
         'helpRequests.helperId',
         'helpRequests.offeredAt',
         'helpees.slackId as helpeeSlackId',
@@ -415,28 +415,53 @@ export async function requestHelp({
 async function sendFinishReminder(
   _: GetBullJobData<'peer_help.finish_reminder'>
 ) {
+  // Get all the help requests that are in the `offered` state and have not
+  // been finished yet...we want to remind them after a certain amount of time.
   const query = db
     .selectFrom('helpRequests')
-    .select(['id', 'slackChannelId'])
-    .where('finishedAt', 'is', null)
-    .where('finishNotificationCount', '<', 3)
-    .where('slackChannelId', 'is not', null);
+    .innerJoin('students as helpees', 'helpRequests.helpeeId', 'helpees.id')
+    .innerJoin('students as helpers', 'helpRequests.helperId', 'helpers.id')
+    .select([
+      'helpees.slackId as helpeeSlackId',
+      'helpers.slackId as helperSlackId',
+      'helpRequests.id',
+      'helpRequests.slackChannelId',
+    ])
+    .where('helpRequests.status', '=', HelpRequestStatus.OFFERED)
+    .where('helpRequests.finishedAt', 'is', null);
 
-  const allHelpRequests = await Promise.all([
+  const [activity, ...allHelpRequests] = await Promise.all([
+    db
+      .selectFrom('activities')
+      .select(['id', 'points'])
+      .where('type', '=', ActivityType.HELP_PEER)
+      .executeTakeFirst(),
+
     query
       .where('offeredAt', '>=', dayjs().subtract(2, 'day').toDate())
+      .where('finishNotificationCount', '=', 0)
       .execute(),
 
     query
       .where('offeredAt', '>=', dayjs().subtract(7, 'days').toDate())
+      .where('finishNotificationCount', '=', 1)
+      .execute(),
+
+    query
+      .where('offeredAt', '>=', dayjs().subtract(14, 'days').toDate())
+      .where('finishNotificationCount', '=', 2)
       .execute(),
   ]);
 
+  // It doesn't matter which of the above queries the help request belongs to,
+  // we just want to send the reminder.
   const helpRequests = allHelpRequests.flat();
 
   for (const helpRequest of helpRequests) {
+    const pointsMessage = activity ? `${activity.points} points` : 'points';
+
     const message = dedent`
-    HELPEE, Please let us know if you've been able to receive help! Once you respond, HELPER will be rewarded with ColorStack HOWEVER MANY points.
+      <@${helpRequest.helpeeSlackId}> Please let us know if you've been able to receive help! Once you respond, <@${helpRequest.helperSlackId}> will be rewarded with ${pointsMessage}. 👀
 
       <${STUDENT_PROFILE_URL}/peer-help/${helpRequest.id}/finish>
     `;
@@ -448,19 +473,22 @@ async function sendFinishReminder(
     });
   }
 
+  const ids = helpRequests.map((helpRequest) => {
+    return helpRequest.id;
+  });
+
   await db
     .updateTable('helpRequests')
     .set((eb) => {
       return {
+        // Technically we really shouldn't increment this until we know for
+        // certain that the Slack notification was sent successfully, but
+        // there's not too much harm by being optimistic here.
         finishNotificationCount: eb('finishNotificationCount', '+', 1),
         updatedAt: new Date(),
       };
     })
-    .where(
-      'id',
-      'in',
-      helpRequests.map((helpRequest) => helpRequest.id)
-    )
+    .where('id', 'in', ids)
     .execute();
 }
 

@@ -498,7 +498,7 @@ function Helpee({
       <Link
         className="line-clamp-1 text-sm text-gray-500 hover:underline"
         target="_blank"
-        to={generatePath(Route['/directory/:id'], { id })}
+        to={generatePath(Route['/directory/:id'], { id: id || '' })}
       >
         {firstName} {lastName}
       </Link>

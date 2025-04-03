@@ -15,10 +15,10 @@ export async function up(db: Kysely<any>) {
     .addColumn('finished_at', 'timestamptz')
     .addColumn('helpee_feedback', 'text')
     .addColumn('helpee_id', 'text', (column) => {
-      return column.notNull().references('students.id');
+      return column.references('students.id').onDelete('set null');
     })
     .addColumn('helper_id', 'text', (column) => {
-      return column.references('students.id');
+      return column.references('students.id').onDelete('set null');
     })
     .addColumn('id', 'text', (column) => {
       return column.primaryKey();
