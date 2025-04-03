@@ -99,7 +99,7 @@ export default function Referrals() {
 
           {!!referrals.length && (
             <Button.Group>
-              <Button.Slot size="small">
+              <Button.Slot>
                 <Link to={Route['/profile/referrals/add']}>
                   <Send size={20} /> Refer a Friend
                 </Link>
@@ -154,7 +154,7 @@ export default function Referrals() {
               accepted. You'll also earn points for each successful referral!
             </ProfileDescription>
 
-            <Button.Slot fill size="small">
+            <Button.Slot fill>
               <Link to={Route['/profile/referrals/add']}>Refer a Friend</Link>
             </Button.Slot>
           </EmptyStateContainer>
@@ -177,7 +177,7 @@ function RejectedPill({ reason }: RejectedPillProps) {
 
   return (
     <Tooltip>
-      <TooltipTrigger>
+      <TooltipTrigger cursor="default">
         <Pill className="flex items-center gap-1" color="red-100">
           Rejected
           {!!reason && <Info size={16} className="text-error" />}

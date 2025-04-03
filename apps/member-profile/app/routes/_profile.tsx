@@ -8,11 +8,11 @@ import {
   Calendar,
   DollarSign,
   FileText,
-  Folder,
   Home,
   Layers,
   MessageCircle,
   User,
+  Users,
 } from 'react-feather';
 
 import { getResumeBook } from '@oyster/core/resume-books';
@@ -73,7 +73,7 @@ export default function ProfileLayout() {
               prefetch="intent"
             />
             <Dashboard.NavigationLink
-              icon={<Folder />}
+              icon={<Users />}
               label="Directory"
               pathname={Route['/directory']}
               prefetch="intent"

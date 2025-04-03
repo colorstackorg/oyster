@@ -63,7 +63,7 @@ function WorkHistorySection() {
         <ProfileTitle>Work History</ProfileTitle>
 
         <Button.Group>
-          <Button color="primary" onClick={onAddExperience} size="small">
+          <Button color="primary" onClick={onAddExperience}>
             <Plus size={20} /> Add Experience
           </Button>
         </Button.Group>
@@ -105,7 +105,7 @@ function WorkHistorySection() {
               job opportunities via community connections in the future.
             </ProfileDescription>
 
-            <Button color="primary" onClick={onAddExperience} size="small" fill>
+            <Button color="primary" onClick={onAddExperience} fill>
               <Plus /> Add Experience
             </Button>
           </EmptyStateContainer>
