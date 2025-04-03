@@ -42,6 +42,7 @@ import {
 } from '@oyster/ui/tooltip';
 
 import {
+  HelpRequestDescription,
   HelpRequestStatus,
   HelpRequestType,
 } from '@/shared/components/peer-help';
@@ -422,13 +423,9 @@ function HelpRequestItem({
 
       <Tooltip>
         <TooltipTrigger cursor="default">
-          <Text
-            className="line-clamp-2 border-l border-gray-300 pl-2"
-            color="gray-500"
-            variant="sm"
-          >
+          <HelpRequestDescription className="line-clamp-2">
             {description}
-          </Text>
+          </HelpRequestDescription>
         </TooltipTrigger>
 
         <TooltipContent side="bottom">

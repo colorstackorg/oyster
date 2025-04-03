@@ -33,6 +33,7 @@ import {
 } from '@oyster/ui/tooltip';
 
 import {
+  HelpRequestDescription,
   HelpRequestStatus,
   HelpRequestType,
 } from '@/shared/components/peer-help';
@@ -133,13 +134,7 @@ function HelpRequestInformation() {
         <HelpRequestStatus status={status} />
       </div>
 
-      <Text
-        className="border-l border-gray-300 pl-2"
-        color="gray-500"
-        variant="sm"
-      >
-        {description}
-      </Text>
+      <HelpRequestDescription>{description}</HelpRequestDescription>
 
       {helperId && (
         <Helper

@@ -40,11 +40,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const helpRequest = await db
     .selectFrom('helpRequests')
-    .select([
-      'helpRequests.description',
-      'helpRequests.id',
-      'helpRequests.type',
-    ])
+    .select(['description', 'id', 'type'])
     .where('id', '=', params.id as string)
     .executeTakeFirst();
 
@@ -133,7 +129,10 @@ export default function EditHelpRequestModal() {
           <Button.Submit>Edit</Button.Submit>
 
           <Button.Slot color="error" variant="secondary">
-            <Link to={generatePath(Route['/peer-help/:id/delete'], { id })}>
+            <Link
+              to={generatePath(Route['/peer-help/:id/delete'], { id })}
+              unstable_viewTransition
+            >
               Delete
             </Link>
           </Button.Slot>

@@ -49,15 +49,45 @@ type HelpRequest = z.infer<typeof HelpRequest>;
 
 // Delete Help Request
 
+/**
+ * Deletes a help request.
+ *
+ * If the member who is attempting to delete the request is not the helpee, or
+ * the help request is not in the `requested` state, an error will be returned.
+ *
+ * @returns The ID of the help request that was deleted.
+ */
 export async function deleteHelpRequest(
-  helpRequestId: string
-): Promise<Result> {
-  await db
-    .deleteFrom('helpRequests')
+  helpRequestId: string,
+  memberId: string
+): Promise<Result<Pick<HelpRequest, 'id'>>> {
+  const helpRequest = await db
+    .selectFrom('helpRequests')
+    .select(['helpeeId', 'status'])
     .where('id', '=', helpRequestId)
     .executeTakeFirstOrThrow();
 
-  return success({});
+  if (helpRequest.helpeeId !== memberId) {
+    return fail({
+      code: 403,
+      error: 'You are not authorized to delete this help request.',
+    });
+  }
+
+  if (helpRequest.status !== HelpRequestStatus.REQUESTED) {
+    return fail({
+      code: 400,
+      error: 'Requests cannot be deleted after help has already been offered.',
+    });
+  }
+
+  const result = await db
+    .deleteFrom('helpRequests')
+    .where('id', '=', helpRequestId)
+    .returning(['id'])
+    .executeTakeFirstOrThrow();
+
+  return success({ id: result.id });
 }
 
 // Edit Help Request
@@ -71,20 +101,18 @@ export const EditHelpRequestInput = HelpRequest.pick({
 
 type EditHelpRequestInput = z.infer<typeof EditHelpRequestInput>;
 
-type EditHelpRequestResult = Result<Pick<HelpRequest, 'id'>>;
-
 /**
  * Edits a help request.
  *
  * If the member who is attempting to edit the request is not the helpee, or
  * the help request is not in the `requested` state, an error will be returned.
  *
- * @returns The ID of the help request.
+ * @returns The ID of the help request that was edited.
  */
 export async function editHelpRequest(
   helpRequestId: string,
   { description, memberId, type }: EditHelpRequestInput
-): Promise<EditHelpRequestResult> {
+): Promise<Result<Pick<HelpRequest, 'id'>>> {
   const helpRequest = await db
     .selectFrom('helpRequests')
     .select(['helpeeId', 'status'])
@@ -105,7 +133,7 @@ export async function editHelpRequest(
     });
   }
 
-  if (memberId !== helpRequest.helpeeId) {
+  if (helpRequest.helpeeId !== memberId) {
     return fail({
       code: 403,
       error: 'You are not authorized to edit this help request.',
@@ -338,8 +366,6 @@ export const RequestHelpInput = HelpRequest.pick({
 
 type RequestHelpInput = z.infer<typeof RequestHelpInput>;
 
-type RequestHelpResult = Result<Pick<HelpRequest, 'id'>>;
-
 /**
  * Requests help from other ColorStack members. This simply adds the request
  * to the database and initializes the status as `requested`.
@@ -350,7 +376,7 @@ export async function requestHelp({
   description,
   memberId,
   type,
-}: RequestHelpInput): Promise<RequestHelpResult> {
+}: RequestHelpInput): Promise<Result<Pick<HelpRequest, 'id'>>> {
   const helpRequest = await db.transaction().execute(async (trx) => {
     return trx
       .insertInto('helpRequests')

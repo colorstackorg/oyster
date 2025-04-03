@@ -13,13 +13,15 @@ import {
 
 import { deleteHelpRequest } from '@oyster/core/peer-help';
 import { db } from '@oyster/db';
-import { Button, ErrorMessage, getErrors, Modal, Text } from '@oyster/ui';
+import { Button, ErrorMessage, getErrors, Modal } from '@oyster/ui';
 
+import { HelpRequestDescription } from '@/shared/components/peer-help';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
   ensureUserAuthenticated,
   toast,
+  user,
 } from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -27,9 +29,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const helpRequest = await db
     .selectFrom('helpRequests')
-    .select(['helpRequests.description'])
+    .select('description')
     .where('id', '=', params.id as string)
-    .executeTakeFirstOrThrow();
+    .executeTakeFirst();
 
   if (!helpRequest) {
     throw new Response(null, {
@@ -44,7 +46,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const result = await deleteHelpRequest(params.id as string);
+  const result = await deleteHelpRequest(params.id as string, user(session));
 
   if (!result.ok) {
     return json({ error: result.error }, { status: result.code });
@@ -83,16 +85,10 @@ export default function DeleteHelpRequestModal() {
       </Modal.Header>
 
       <Modal.Description>
-        Are you sure you want to delete this request for help?
+        Are you sure you want to delete this help request?
       </Modal.Description>
 
-      <Text
-        className="border-l border-gray-300 pl-2"
-        color="gray-500"
-        variant="sm"
-      >
-        {description}
-      </Text>
+      <HelpRequestDescription>{description}</HelpRequestDescription>
 
       <Form className="form" method="post">
         <ErrorMessage>{error}</ErrorMessage>

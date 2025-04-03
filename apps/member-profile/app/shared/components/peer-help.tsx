@@ -1,3 +1,4 @@
+import { type PropsWithChildren } from 'react';
 import { Info, Loader } from 'react-feather';
 import { match } from 'ts-pattern';
 
@@ -5,7 +6,36 @@ import {
   type HelpRequestStatus as HelpRequestStatusType,
   type HelpRequestType as HelpRequestTypeType,
 } from '@oyster/core/peer-help';
-import { Field, type FieldProps, Pill, Radio, Textarea } from '@oyster/ui';
+import {
+  cx,
+  Field,
+  type FieldProps,
+  Pill,
+  Radio,
+  Text,
+  Textarea,
+} from '@oyster/ui';
+
+// Information
+
+type HelpRequestDescriptionProps = PropsWithChildren<{
+  className?: string;
+}>;
+
+export function HelpRequestDescription({
+  children,
+  className,
+}: HelpRequestDescriptionProps) {
+  return (
+    <Text
+      className={cx('border-l border-gray-300 pl-2', className)}
+      color="gray-500"
+      variant="sm"
+    >
+      {children}
+    </Text>
+  );
+}
 
 type HelpRequestStatusProps = {
   status: HelpRequestStatusType;
