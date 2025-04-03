@@ -44,7 +44,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'helpRequests.helperId',
       'helpRequests.id',
       'helpRequests.status',
-      'helpRequests.summary',
       'helpRequests.type',
     ])
     .where('id', '=', params.id as string)

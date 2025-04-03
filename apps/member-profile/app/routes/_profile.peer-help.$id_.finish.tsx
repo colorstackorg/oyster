@@ -12,8 +12,8 @@ import {
 } from '@remix-run/react';
 
 import {
-  checkIntoHelpRequest,
-  CheckIntoHelpRequestInput,
+  finishHelpRequest,
+  FinishHelpRequestInput,
 } from '@oyster/core/peer-help';
 import { db } from '@oyster/db';
 import {
@@ -62,7 +62,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   if (helpRequest.helpeeId !== memberId && helpRequest.helperId !== memberId) {
     throw new Response(null, {
       status: 404,
-      statusText: 'You cannot check in to this help request.',
+      statusText: 'You cannot finish this help request.',
     });
   }
 
@@ -75,7 +75,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const { data, errors } = await validateForm(
     request,
-    CheckIntoHelpRequestInput.omit({ memberId: true })
+    FinishHelpRequestInput.omit({ memberId: true })
   );
 
   if (!data) {
@@ -84,7 +84,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const { feedback, status } = data;
 
-  const result = await checkIntoHelpRequest(params.id as string, {
+  const result = await finishHelpRequest(params.id as string, {
     feedback,
     memberId,
     status,
@@ -109,7 +109,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 }
 
-export default function HelpRequestCheckInModal() {
+export default function FinishHelpRequestModal() {
   const { description } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
   const [searchParams] = useSearchParams();
@@ -122,7 +122,7 @@ export default function HelpRequestCheckInModal() {
       }}
     >
       <Modal.Header>
-        <Modal.Title>Help Request: Check In</Modal.Title>
+        <Modal.Title>Finish Help Request</Modal.Title>
         <Modal.CloseButton />
       </Modal.Header>
 

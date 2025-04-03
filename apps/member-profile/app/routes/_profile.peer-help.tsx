@@ -151,23 +151,12 @@ async function listHelpRequests({
         'helpRequests.description',
         'helpRequests.id',
         'helpRequests.status',
-        'helpRequests.summary',
         'helpRequests.type',
         (eb) => {
+          return eb('finishedAt', 'is not', null).as('finished');
+        },
+        (eb) => {
           return eb('helpeeId', '=', memberId).as('isHelpee');
-        },
-        (eb) => {
-          return eb('helperId', '=', memberId).as('isHelper');
-        },
-        (eb) => {
-          return eb
-            .exists(() => {
-              return eb
-                .selectFrom('helpRequestResponses as checkIns')
-                .whereRef('checkIns.helpRequestId', '=', 'helpRequests.id')
-                .where('checkIns.respondentId', '=', memberId);
-            })
-            .as('checkedIn');
         },
       ])
       .orderBy((eb) => {
@@ -394,10 +383,10 @@ function HelpRequestsList({ children }: PropsWithChildren) {
 type HelpRequest = SerializeFrom<typeof loader>['helpRequests'][number];
 
 function HelpRequestItem({
-  checkedIn,
   createdAt,
   createdAtExpanded,
   description,
+  finished,
   helpeeFirstName,
   helpeeId,
   helpeeLastName,
@@ -407,7 +396,6 @@ function HelpRequestItem({
   helperLastName,
   id,
   isHelpee,
-  isHelper,
   status,
   type,
 }: HelpRequest) {
@@ -481,11 +469,10 @@ function HelpRequestItem({
 
         <div className="flex items-center gap-2">
           <HelpRequestActionGroup id={id} isHelpee={isHelpee} status={status} />
-          <CheckInButton
-            checkedIn={checkedIn}
+          <FinishButton
+            finished={finished}
             id={id}
             isHelpee={isHelpee}
-            isHelper={isHelper}
             status={status}
           />
         </div>
@@ -585,23 +572,22 @@ function HelpRequestActionGroup({
   );
 }
 
-function CheckInButton({
-  checkedIn,
+function FinishButton({
+  finished,
   id,
   isHelpee,
-  isHelper,
   status,
-}: Pick<HelpRequest, 'checkedIn' | 'id' | 'isHelpee' | 'isHelper' | 'status'>) {
+}: Pick<HelpRequest, 'finished' | 'id' | 'isHelpee' | 'status'>) {
   const [searchParams] = useSearchParams();
 
-  if ((!isHelpee && !isHelper) || status === 'open') {
+  if (!isHelpee || status === 'open') {
     return null;
   }
 
-  if (checkedIn) {
+  if (finished) {
     return (
       <Text color="primary" variant="sm" weight="500">
-        Checked In <Check className="inline" size={16} />
+        Finished <Check className="inline" size={16} />
       </Text>
     );
   }
@@ -610,13 +596,11 @@ function CheckInButton({
     <Button.Slot size="sm">
       <Link
         to={{
-          pathname: generatePath(Route['/peer-help/:id/check-in'], {
-            id,
-          }),
+          pathname: generatePath(Route['/peer-help/:id/finish'], { id }),
           search: searchParams.toString(),
         }}
       >
-        Check In <ArrowRight size={16} />
+        Finish <ArrowRight size={16} />
       </Link>
     </Button.Slot>
   );

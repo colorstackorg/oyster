@@ -27,15 +27,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const helpRequest = await db
     .selectFrom('helpRequests')
-    .select([
-      'helpRequests.description',
-      'helpRequests.helpeeId',
-      'helpRequests.helperId',
-      'helpRequests.id',
-      'helpRequests.status',
-      'helpRequests.summary',
-      'helpRequests.type',
-    ])
+    .select(['helpRequests.description'])
     .where('id', '=', params.id as string)
     .executeTakeFirstOrThrow();
 
@@ -74,7 +66,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 export default function DeleteHelpRequestModal() {
-  const { description, type } = useLoaderData<typeof loader>();
+  const { description } = useLoaderData<typeof loader>();
   const { error } = getErrors(useActionData<typeof action>());
   const [searchParams] = useSearchParams();
 
@@ -91,7 +83,7 @@ export default function DeleteHelpRequestModal() {
       </Modal.Header>
 
       <Modal.Description>
-        Are you sure you want to delete this help request?
+        Are you sure you want to delete this request for help?
       </Modal.Description>
 
       <Text

@@ -32,6 +32,7 @@ const HelpRequestType = {
 const HelpRequest = z.object({
   description: z.string().trim().min(1),
   helpeeId: z.string().trim().min(1),
+  helpeeFeedback: z.string().trim().min(1),
   helperId: z.string().trim().min(1).nullable(),
   id: z.string().trim().min(1),
   status: z.nativeEnum(HelpRequestStatus),
@@ -232,21 +233,19 @@ export async function editHelpRequest(
   return success({ id: result.id });
 }
 
-// Check Into Help Request
+// Finish Help Request
 
-export const CheckIntoHelpRequestInput = z.object({
-  feedback: z.string().trim().optional(),
+export const FinishHelpRequestInput = z.object({
+  feedback: HelpRequest.shape.helpeeFeedback,
   memberId: z.string().trim().min(1),
-  status: z.enum(['met', 'havent_met', 'planning_to_meet']),
+  status: z.enum([HelpRequestStatus.COMPLETE, HelpRequestStatus.INCOMPLETE]),
 });
 
-export type CheckIntoHelpRequestInput = z.infer<
-  typeof CheckIntoHelpRequestInput
->;
+export type FinishHelpRequestInput = z.infer<typeof FinishHelpRequestInput>;
 
-export async function checkIntoHelpRequest(
+export async function finishHelpRequest(
   helpRequestId: string,
-  { feedback, memberId, status }: CheckIntoHelpRequestInput
+  { feedback, memberId, status }: FinishHelpRequestInput
 ): Promise<Result> {
   const helpRequest = await db
     .selectFrom('helpRequests')
@@ -254,7 +253,7 @@ export async function checkIntoHelpRequest(
     .where('id', '=', helpRequestId)
     .executeTakeFirstOrThrow();
 
-  if (memberId !== helpRequest.helpeeId && memberId !== helpRequest.helperId) {
+  if (memberId !== helpRequest.helpeeId) {
     return fail({
       code: 403,
       error: 'You are not authorized to report on this help request.',
@@ -268,60 +267,22 @@ export async function checkIntoHelpRequest(
     });
   }
 
-  const respondentType =
-    memberId === helpRequest.helpeeId ? 'helpee' : 'helper';
-
   await db
-    .insertInto('helpRequestResponses')
-    .values({
-      feedback,
-      helpRequestId,
-      respondentId: memberId,
-      respondentType,
-      response: status,
+    .updateTable('helpRequests')
+    .set({
+      finishedAt: new Date(),
+      helpeeFeedback: feedback,
+      status,
+      updatedAt: new Date(),
     })
-    .onConflict((oc) => {
-      return oc.columns(['helpRequestId', 'respondentId']).doUpdateSet({
-        feedback,
-        response: status,
-      });
-    })
+    .where('id', '=', helpRequestId)
     .execute();
 
-  // Check if both parties have responded
-  const responses = await db
-    .selectFrom('helpRequestResponses')
-    .select('response')
-    .where('helpRequestId', '=', helpRequestId)
-    .execute();
-
-  if (responses.length === 2) {
-    const allMet = responses.every((r) => r.response === 'met');
-    const allHaventMet = responses.every((r) => r.response === 'havent_met');
-    const allPlanning = responses.every(
-      (r) => r.response === 'planning_to_meet'
-    );
-
-    // Only update status if both parties agree
-    if (allMet || allHaventMet) {
-      const newStatus = allMet ? 'complete' : 'incomplete';
-
-      await db
-        .updateTable('helpRequests')
-        .set({
-          status: newStatus,
-          updatedAt: new Date(),
-        })
-        .where('id', '=', helpRequestId)
-        .execute();
-
-      job('gamification.activity.completed', {
-        helpRequestId,
-        studentId: helpRequest.helperId as string,
-        type: 'help_peer',
-      });
-    }
-  }
+  job('gamification.activity.completed', {
+    helpRequestId,
+    studentId: helpRequest.helperId as string,
+    type: 'help_peer',
+  });
 
   return success({});
 }
@@ -353,7 +314,6 @@ export async function requestHelp({
         helpeeId,
         id: helpRequestId,
         status: 'open',
-        summary: '',
         type,
       })
       .returning(['id'])
@@ -365,23 +325,23 @@ export async function requestHelp({
   return success({ id: result.id });
 }
 
-async function sendCheckInNotifications(
-  _: GetBullJobData<'peer_help.check_in_notifications'>
+async function sendFinishNotifications(
+  _: GetBullJobData<'peer_help.finish_notifications'>
 ) {
   const query = db
     .selectFrom('helpRequests')
     .select(['id', 'slackChannelId'])
-    .where('status', '=', HelpRequestStatus.PENDING)
-    .where('checkInNotificationCount', '<', 3)
+    .where('finishedAt', 'is', null)
+    .where('finishNotificationCount', '<', 3)
     .where('slackChannelId', 'is not', null);
 
   const allHelpRequests = await Promise.all([
     query
-      .where('matchedAt', '>=', dayjs().subtract(2, 'day').toDate())
+      .where('offeredAt', '>=', dayjs().subtract(2, 'day').toDate())
       .execute(),
 
     query
-      .where('matchedAt', '>=', dayjs().subtract(7, 'days').toDate())
+      .where('offeredAt', '>=', dayjs().subtract(7, 'days').toDate())
       .execute(),
   ]);
 
@@ -391,7 +351,7 @@ async function sendCheckInNotifications(
     const message = dedent`
     HELPEE, Please let us know if you've been able to receive help! Once you respond, HELPER will be rewarded with ColorStack HOWEVER MANY points.
 
-      <${STUDENT_PROFILE_URL}/peer-help/${helpRequest.id}/check-in>
+      <${STUDENT_PROFILE_URL}/peer-help/${helpRequest.id}/finish>
     `;
 
     job('notification.slack.send', {
@@ -405,7 +365,7 @@ async function sendCheckInNotifications(
     .updateTable('helpRequests')
     .set((eb) => {
       return {
-        checkInNotificationCount: eb('checkInNotificationCount', '+', 1),
+        finishNotificationCount: eb('finishNotificationCount', '+', 1),
         updatedAt: new Date(),
       };
     })
@@ -424,8 +384,8 @@ export const peerHelpWorker = registerWorker(
   PeerHelpBullJob,
   async (job) => {
     return match(job)
-      .with({ name: 'peer_help.check_in_notifications' }, ({ data }) => {
-        return sendCheckInNotifications(data);
+      .with({ name: 'peer_help.finish_notifications' }, ({ data }) => {
+        return sendFinishNotifications(data);
       })
       .exhaustive();
   }
