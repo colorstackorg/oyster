@@ -72,6 +72,14 @@ export const EmailTemplate = z.discriminatedUnion('name', [
     }),
   }),
   BaseEmail.extend({
+    name: z.literal('student-graduating'),
+    data: z.object({
+      firstName: z.string().trim().min(1),
+      graduatingYear: z.number().int().min(new Date().getFullYear()), // Graduation year
+      years: z.number().int().positive(), // graduating year
+    }),
+  }),
+  BaseEmail.extend({
     name: z.literal('student-attended-onboarding'),
     data: z.object({
       firstName: Student.shape.firstName,
