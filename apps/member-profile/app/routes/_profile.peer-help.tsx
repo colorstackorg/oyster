@@ -71,7 +71,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const [
     { helpRequests: openHelpRequests, totalCount: openTotalCount },
-    { helpRequests: completedHelpRequests, totalCount: completedTotalCount },
+    { helpRequests: closedHelpRequests, totalCount: closedTotalCount },
   ] = await Promise.all([
     listHelpRequests({
       limit: null,
@@ -113,8 +113,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   return json({
-    completedHelpRequests,
-    completedTotalCount,
+    closedHelpRequests,
+    closedTotalCount,
     limit,
     openHelpRequests,
     openTotalCount,
@@ -218,8 +218,8 @@ async function listHelpRequests({
 
 export default function PeerHelp() {
   const {
-    completedHelpRequests,
-    completedTotalCount,
+    closedHelpRequests,
+    closedTotalCount,
     limit,
     openHelpRequests,
     openTotalCount,
@@ -252,19 +252,16 @@ export default function PeerHelp() {
       </section>
 
       <section className="mb-2 flex flex-col gap-2">
-        <HelpRequestSectionHeader
-          count={completedTotalCount}
-          label="Completed"
-        />
+        <HelpRequestSectionHeader count={closedTotalCount} label="Closed" />
         <HelpRequestList
-          emptyMessage="No completed help requests found."
-          helpRequests={completedHelpRequests}
+          emptyMessage="No closed help requests found."
+          helpRequests={closedHelpRequests}
         />
         <Pagination
-          dataLength={completedHelpRequests.length}
+          dataLength={closedHelpRequests.length}
           page={page}
           pageSize={limit}
-          totalCount={completedTotalCount}
+          totalCount={closedTotalCount}
         />
       </section>
 
