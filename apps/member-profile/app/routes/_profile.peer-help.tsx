@@ -438,6 +438,7 @@ function HelpRequestItem({
 
         <Link
           className="link"
+          preventScrollReset
           to={{
             pathname: generatePath(Route['/peer-help/:id'], { id }),
             search: searchParams.toString(),
@@ -563,6 +564,7 @@ function EditButton({ id }: Pick<HelpRequest, 'id'>) {
           backgroundColorOnHover="gray-200"
         >
           <Link
+            preventScrollReset
             to={{
               pathname: generatePath(Route['/peer-help/:id/edit'], { id }),
               search: searchParams.toString(),
@@ -594,6 +596,7 @@ function FinishButton({ finished, id }: Pick<HelpRequest, 'finished' | 'id'>) {
   return (
     <Button.Slot size="sm">
       <Link
+        preventScrollReset
         to={{
           pathname: generatePath(Route['/peer-help/:id/finish'], { id }),
           search: searchParams.toString(),
