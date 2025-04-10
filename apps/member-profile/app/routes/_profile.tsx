@@ -25,7 +25,7 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const [resumeBook, isPeerHelpEnabled] = await Promise.all([
+  const [resumeBook, isPointsPageEnabled] = await Promise.all([
     getResumeBook({
       select: ['resumeBooks.id'],
       where: {
@@ -33,17 +33,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
         status: 'active',
       },
     }),
-    isFeatureFlagEnabled('peer_help'),
+    isFeatureFlagEnabled('points_page'),
   ]);
 
   return json({
-    isPeerHelpEnabled,
+    isPointsPageEnabled,
     resumeBook,
   });
 }
 
 export default function ProfileLayout() {
-  const { isPeerHelpEnabled, resumeBook } = useLoaderData<typeof loader>();
+  const { isPointsPageEnabled, resumeBook } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -105,21 +105,21 @@ export default function ProfileLayout() {
               pathname={Route['/resources']}
               prefetch="intent"
             />
-            {isPeerHelpEnabled && (
+            <Dashboard.NavigationLink
+              icon={<Users />}
+              label="Peer Help"
+              isNew
+              pathname={Route['/peer-help']}
+              prefetch="intent"
+            />
+            {isPointsPageEnabled && (
               <Dashboard.NavigationLink
-                icon={<Users />}
-                label="Peer Help"
-                isNew
-                pathname={Route['/peer-help']}
+                icon={<Award />}
+                label="Points"
+                pathname={Route['/points']}
                 prefetch="intent"
               />
             )}
-            <Dashboard.NavigationLink
-              icon={<Award />}
-              label="Points"
-              pathname={Route['/points']}
-              prefetch="intent"
-            />
             <Dashboard.NavigationLink
               icon={<Calendar />}
               label="Events"

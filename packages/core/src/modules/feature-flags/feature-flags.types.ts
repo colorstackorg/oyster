@@ -7,6 +7,7 @@ export type FeatureFlagName =
   | 'compensation'
   | 'family_application'
   | 'peer_help'
+  | 'points_page'
   | 'send_slack_messages'
   | 'slack_emoji_updates';
 
