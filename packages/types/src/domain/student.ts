@@ -129,7 +129,7 @@ export const Student = Entity.merge(StudentSocialLinks)
     fullName: z.string().trim().min(2),
     gender: z.nativeEnum(Gender),
     genderPronouns: z.string().trim().min(1).nullable(),
-    graduationYear: z.coerce.number(),
+    graduationDate: z.coerce.date(),
     headline: z.string().trim().min(1).nullable(),
     joinedAfterActivation: z.boolean(),
     joinedMemberDirectoryAt: z.coerce.date().nullable(),

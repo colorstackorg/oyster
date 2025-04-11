@@ -35,7 +35,7 @@ export const ApplyInput = Application.pick({
   firstName: true,
   gender: true,
   goals: true,
-  graduationYear: true,
+  graduationDate: true,
   lastName: true,
   linkedInUrl: true,
   major: true,
