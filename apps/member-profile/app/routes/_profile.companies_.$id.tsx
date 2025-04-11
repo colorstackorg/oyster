@@ -126,7 +126,7 @@ function LogoLink({ href, imageAlt, imageSrc, tooltip }: LogoLinkProps) {
       <Tooltip>
         <TooltipTrigger asChild>
           <a
-            className="cursor-pointer hover:opacity-90"
+            className="hover:opacity-90"
             href={href}
             rel="noopener noreferrer"
             target="_blank"
@@ -196,7 +196,7 @@ function OpportunitiesAlert() {
           : `${opportunities} open opportunities found.`}
       </Text>
 
-      <Button.Slot size="small">
+      <Button.Slot>
         <Link
           to={{
             pathname: Route['/opportunities'],

@@ -91,7 +91,7 @@ function TextareaWithMaximum({
 
 function TextareaWithMinimum({
   defaultValue,
-  minLength,
+  minLength = 0,
   ...rest
 }: TextareaProps) {
   const [value, setValue] = useState<string>(defaultValue?.toString() || '');
@@ -106,9 +106,11 @@ function TextareaWithMinimum({
         {...rest}
       />
 
-      <Text className="text-right" color="gray-500" variant="sm">
-        Current: {value.length} &bull; Minimum: {minLength}
-      </Text>
+      {value.length < minLength && (
+        <Text className="text-right" color="gray-500" variant="sm">
+          {minLength - value.length} more characters required.
+        </Text>
+      )}
     </>
   );
 }

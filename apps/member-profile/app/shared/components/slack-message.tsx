@@ -52,7 +52,6 @@ export function SlackMessageCard({
         {channelId && messageId && (
           <Button.Slot
             className="border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200"
-            size="small"
             variant="secondary"
           >
             <Link
@@ -188,7 +187,6 @@ export function ViewInSlackButton({
   return (
     <Button.Slot
       className="border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200"
-      size="small"
       variant="secondary"
     >
       <Link

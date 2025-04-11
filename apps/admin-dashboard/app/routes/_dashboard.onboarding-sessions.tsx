@@ -125,7 +125,7 @@ export default function OnboardingSessionsPage() {
   return (
     <>
       <div className="flex items-center justify-between gap-2">
-        <Dashboard.Title>Onboarding Sessions</Dashboard.Title>
+        <Dashboard.Title>Onboarding</Dashboard.Title>
         <UploadOnboardingSessionButton />
       </div>
 

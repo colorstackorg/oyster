@@ -186,6 +186,7 @@ async function getActivityHistory(
         'activities.name',
         'completedActivities.censusYear',
         'completedActivities.description',
+        'completedActivities.helpRequestId',
         'completedActivities.id',
         'completedActivities.occurredAt',
         'completedActivities.opportunityId',
@@ -583,6 +584,22 @@ function ActivityHistoryItemDescription({
             resource
           </RemixLink>{' '}
           you posted.
+        </p>
+      );
+    })
+    .with('help_peer', () => {
+      return (
+        <p>
+          You{' '}
+          <RemixLink
+            className="link"
+            to={generatePath(Route['/peer-help/:id'], {
+              id: activity.helpRequestId,
+            })}
+          >
+            helped a peer
+          </RemixLink>
+          .
         </p>
       );
     })

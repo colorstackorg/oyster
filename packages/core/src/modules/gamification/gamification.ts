@@ -290,6 +290,16 @@ async function grantGamificationPoints(
         .onConflict((oc) => oc.doNothing())
         .execute();
     })
+    .with({ type: 'help_peer' }, async (input) => {
+      await db
+        .insertInto('completedActivities')
+        .values({
+          ...activityCompleted,
+          helpRequestId: input.helpRequestId,
+        })
+        .onConflict((oc) => oc.doNothing())
+        .execute();
+    })
     .with({ type: 'post_resource' }, async (input) => {
       await db
         .insertInto('completedActivities')

@@ -398,7 +398,6 @@ function OpportunitiesTable() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Link
-                className="cursor-pointer"
                 target="_blank"
                 to={generatePath(Route['/directory/:id'], {
                   id: opportunity.posterId,
@@ -470,7 +469,7 @@ function TagsColumn({ id, tags }: OpportunityInView) {
 
   if (!tags.length) {
     return (
-      <Button.Slot size="xs" variant="secondary">
+      <Button.Slot size="sm" variant="secondary">
         <Link
           to={{
             pathname: generatePath(Route['/opportunities/:id/refine'], { id }),

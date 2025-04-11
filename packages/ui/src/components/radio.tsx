@@ -75,12 +75,18 @@ export const Radio = ({
   );
 };
 
-Radio.Group = function RadioGroup({ children }: PropsWithChildren) {
+type RadioGroupProps = PropsWithChildren<{
+  defaultValue?: string;
+}>;
+
+Radio.Group = function RadioGroup({ children, defaultValue }: RadioGroupProps) {
   const childrenWithProps = React.Children.map(children, (child, i) => {
     if (React.isValidElement(child)) {
       const props: Partial<RadioProps> = {
         ...child.props,
         color: child.props.color || ACCENT_COLORS[i % ACCENT_COLORS.length],
+        defaultChecked:
+          child.props.value === defaultValue || child.props.defaultChecked,
       };
 
       return React.cloneElement(child, props);

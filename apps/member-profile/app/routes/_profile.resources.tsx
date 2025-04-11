@@ -240,7 +240,7 @@ function AddResourceLink() {
   const [searchParams] = useSearchParams();
 
   return (
-    <Button.Slot size="small">
+    <Button.Slot>
       <Link
         to={{
           pathname: Route['/resources/add'],

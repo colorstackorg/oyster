@@ -8,13 +8,14 @@ import {
   Calendar,
   DollarSign,
   FileText,
-  Folder,
   Home,
   Layers,
   MessageCircle,
   User,
+  Users,
 } from 'react-feather';
 
+import { isFeatureFlagEnabled } from '@oyster/core/member-profile/server';
 import { getResumeBook } from '@oyster/core/resume-books';
 import { Dashboard, Divider } from '@oyster/ui';
 
@@ -24,7 +25,7 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const [resumeBook] = await Promise.all([
+  const [resumeBook, isPointsPageEnabled] = await Promise.all([
     getResumeBook({
       select: ['resumeBooks.id'],
       where: {
@@ -32,15 +33,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
         status: 'active',
       },
     }),
+    isFeatureFlagEnabled('points_page'),
   ]);
 
   return json({
+    isPointsPageEnabled,
     resumeBook,
   });
 }
 
 export default function ProfileLayout() {
-  const { resumeBook } = useLoaderData<typeof loader>();
+  const { isPointsPageEnabled, resumeBook } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -73,7 +76,7 @@ export default function ProfileLayout() {
               prefetch="intent"
             />
             <Dashboard.NavigationLink
-              icon={<Folder />}
+              icon={<Users />}
               label="Directory"
               pathname={Route['/directory']}
               prefetch="intent"
@@ -103,11 +106,20 @@ export default function ProfileLayout() {
               prefetch="intent"
             />
             <Dashboard.NavigationLink
-              icon={<Award />}
-              label="Points"
-              pathname={Route['/points']}
+              icon={<Users />}
+              label="Peer Help"
+              isNew
+              pathname={Route['/peer-help']}
               prefetch="intent"
             />
+            {isPointsPageEnabled && (
+              <Dashboard.NavigationLink
+                icon={<Award />}
+                label="Points"
+                pathname={Route['/points']}
+                prefetch="intent"
+              />
+            )}
             <Dashboard.NavigationLink
               icon={<Calendar />}
               label="Events"

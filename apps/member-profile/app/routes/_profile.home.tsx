@@ -363,7 +363,7 @@ function OnboardingSessionCard() {
       </Card.Description>
 
       <Button.Group>
-        <Button.Slot size="small" variant="primary">
+        <Button.Slot variant="primary">
           <Link
             target="_blank"
             to="https://calendly.com/colorstack-onboarding-ambassador/onboarding"
@@ -391,7 +391,7 @@ function ActivationCard() {
       </Card.Description>
 
       <Button.Group>
-        <Button.Slot size="small" variant="primary">
+        <Button.Slot variant="primary">
           <Link to={Route['/home/activation']}>See Progress</Link>
         </Button.Slot>
       </Button.Group>
