@@ -88,6 +88,16 @@ export async function listApplications({
   const query = db
     .selectFrom('applications')
     .$if(!!search, (qb) => {
+      if (search.includes(',')) {
+        const emails = search.split(',').map((email) => email.trim());
+
+        if (!emails.length) {
+          return qb;
+        }
+
+        return qb.where('applications.email', 'in', emails);
+      }
+
       return qb.where((eb) =>
         eb.or([
           eb('applications.email', 'ilike', `%${search}%`),
