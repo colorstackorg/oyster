@@ -24,7 +24,7 @@ export async function onSlackEmojiAdded(data: EmojiAddEvent) {
   const message = `\`:${data.name}:\` is now available.<${data.value}|\u200b>`;
 
   return slack.chat.postMessage({
-    channel: process.env.SLACK_FEED_CHANNEL_ID!,
+    channel: process.env.SLACK_EMOJI_CHANNEL_ID!,
     text: message,
   });
 }
