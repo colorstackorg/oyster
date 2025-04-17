@@ -432,6 +432,12 @@ export async function requestHelp({
     user: memberId,
   });
 
+  job('notification.slack.send', {
+    channel: process.env.SLACK_FEED_CHANNEL_ID!,
+    message: `🚨 A new <${STUDENT_PROFILE_URL}/peer-help/${helpRequest.id}|help request> was posted!\n\n>${description}`,
+    workspace: 'regular',
+  });
+
   return success({ id: helpRequest.id });
 }
 
