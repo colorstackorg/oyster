@@ -528,7 +528,7 @@ async function syncAirmeetEvent({ eventId }: GetBullJobData<'event.sync'>) {
   if (!existingEvent && !attendees.length) {
     job('notification.slack.send', {
       channel: process.env.SLACK_FEED_CHANNEL_ID!,
-      message: `🚨 A new event, ${event.name}, was posted! <${STUDENT_PROFILE_URL}/events/${event.id}/register|Register now!>`,
+      message: `🚨 A new event, _${event.name}_, was posted! <${STUDENT_PROFILE_URL}/events/${event.id}/register|Register now!>`,
       workspace: 'regular',
     });
   }
