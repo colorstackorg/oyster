@@ -13,6 +13,7 @@ import { EventBullJob } from '@/infrastructure/bull.types';
 import { listAirmeetEvents } from '@/modules/events/airmeet';
 import { ActivityType } from '@/modules/gamification/gamification.types';
 import { getMemberByEmail } from '@/modules/members/queries/get-member-by-email';
+import { STUDENT_PROFILE_URL } from '@/shared/env';
 import { NotFoundError } from '@/shared/errors';
 import { getAirmeetEvent, listAirmeetAttendees } from './airmeet';
 import {
@@ -474,6 +475,11 @@ async function syncAirmeetEvent({ eventId }: GetBullJobData<'event.sync'>) {
     });
   }
 
+  const existingEvent = await db
+    .selectFrom('events')
+    .where('id', '=', event.id)
+    .executeTakeFirst();
+
   // If the event has already ended, we can fetch the attendees from Airmeet,
   // otherwise, we won't import any attendees.
   const attendees =
@@ -518,6 +524,14 @@ async function syncAirmeetEvent({ eventId }: GetBullJobData<'event.sync'>) {
       })
     );
   });
+
+  if (!existingEvent && !attendees.length) {
+    job('notification.slack.send', {
+      channel: process.env.SLACK_FEED_CHANNEL_ID!,
+      message: `🚨 A new event, _${event.name}_, was posted! <${STUDENT_PROFILE_URL}/events/${event.id}/register|Register now!>`,
+      workspace: 'regular',
+    });
+  }
 
   studentIds.forEach((studentId) => {
     job('event.attended', {
