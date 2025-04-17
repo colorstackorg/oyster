@@ -33,6 +33,7 @@ const BaseEnvironmentConfig = z.object({
   SLACK_ANNOUNCEMENTS_CHANNEL_ID: EnvironmentVariable,
   SLACK_BOT_TOKEN: EnvironmentVariable,
   SLACK_CLIENT_ID: EnvironmentVariable,
+  SLACK_FEED_CHANNEL_ID: EnvironmentVariable,
   SLACK_TEAM_ID: EnvironmentVariable,
   STUDENT_PROFILE_URL: EnvironmentVariable,
 });
@@ -61,6 +62,7 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     SLACK_ANNOUNCEMENTS_CHANNEL_ID: true,
     SLACK_BOT_TOKEN: true,
     SLACK_CLIENT_ID: true,
+    SLACK_FEED_CHANNEL_ID: true,
     SLACK_TEAM_ID: true,
   }).extend({
     ENVIRONMENT: z.literal(Environment.DEVELOPMENT),
