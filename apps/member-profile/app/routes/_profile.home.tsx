@@ -510,7 +510,7 @@ function ImportantResourcesCard() {
         </ResourceItem>
 
         <ResourceItem
-          description="A list of all the ColorStack chapters across the nation."
+          description="A list of ColorStack chapters across the nation."
           href="https://colorstack.notion.site/colorstack-chapters-list"
         >
           Chapters
