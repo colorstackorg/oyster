@@ -11,20 +11,9 @@ import {
   Race,
 } from './types';
 import { normalizeUri } from '../../../utils/src/index';
-import { type ExtractValue } from '../shared/types';
 import { EmptyStringToNull, NullishString } from '../shared/zod';
 
 // Enums
-
-export const ActivationRequirement = {
-  ATTEND_EVENT: 'attend_event',
-  ATTEND_ONBOARDING: 'attend_onboarding',
-  REPLY_TO_ANNOUNCEMENT_MESSAGE: 'reply_to_announcement_message',
-  REPLY_TO_OTHER_MESSAGES: 'reply_to_other_messages',
-  SEND_INTRODUCTION_MESSAGE: 'send_introduction_message',
-} as const;
-
-export const ACTIVATION_REQUIREMENTS = Object.values(ActivationRequirement);
 
 export const MemberType = {
   ALUMNI: 'alumni',
@@ -115,14 +104,9 @@ export const Student = Entity.merge(StudentSocialLinks)
   .merge(StudentLocation)
   .extend({
     acceptedAt: z.coerce.date(),
-    activatedAt: z.coerce.date().optional(),
-    activationRequirementsCompleted: z.array(
-      z.nativeEnum(ActivationRequirement)
-    ),
     address: Address.optional(),
     applicationId: z.string().optional(),
     appliedAt: z.coerce.date().optional(),
-    claimedSwagPackAt: z.coerce.date().optional(),
     educationLevel: z.nativeEnum(EducationLevel),
     email: Email,
     firstName: z.string().trim().min(1),
@@ -131,7 +115,6 @@ export const Student = Entity.merge(StudentSocialLinks)
     genderPronouns: z.string().trim().min(1).nullable(),
     graduationYear: z.coerce.number(),
     headline: z.string().trim().min(1).nullable(),
-    joinedAfterActivation: z.boolean(),
     joinedMemberDirectoryAt: z.coerce.date().nullable(),
     joinedSlackAt: z.coerce.date().optional(),
     lastName: z.string().trim().min(1),
@@ -239,7 +222,6 @@ export const MemberEthnicity = z.object({
 
 // Types
 
-export type ActivationRequirement = ExtractValue<typeof ActivationRequirement>;
 export type MemberEthnicity = z.infer<typeof MemberEthnicity>;
 export type Student = z.infer<typeof Student>;
 export type StudentActiveStatus = z.infer<typeof StudentActiveStatus>;

@@ -72,21 +72,6 @@ export const EmailTemplate = z.discriminatedUnion('name', [
     }),
   }),
   BaseEmail.extend({
-    name: z.literal('student-attended-onboarding'),
-    data: z.object({
-      firstName: Student.shape.firstName,
-      studentsInSession: z.array(
-        z.object({
-          fullName: Student.shape.fullName,
-          graduationYear: Student.shape.graduationYear,
-          id: Student.shape.id,
-          linkedInUrl: Student.shape.linkedInUrl,
-          school: z.string(),
-        })
-      ),
-    }),
-  }),
-  BaseEmail.extend({
     name: z.literal('student-removed'),
     data: z.object({
       firstName: z.string().trim().min(1),

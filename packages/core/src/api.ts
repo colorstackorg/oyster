@@ -19,7 +19,6 @@ import { memberEmailWorker } from './modules/members/member-emails.worker';
 import { memberWorker } from './modules/members/members.worker';
 import { profileWorker } from './modules/members/profile.worker';
 import { notificationWorker } from './modules/notifications/notifications.worker';
-import { onboardingSessionWorker } from './modules/onboarding-sessions/onboarding-sessions.worker';
 import { opportunityWorker } from './modules/opportunities';
 import { peerHelpWorker } from './modules/peer-help';
 import { resumeReviewWorker } from './modules/resume-reviews';
@@ -48,7 +47,6 @@ export function startBullWorkers(): void {
   memberEmailWorker.run();
   notificationWorker.run();
   offerWorker.run();
-  onboardingSessionWorker.run();
   oneTimeCodeWorker.run();
   opportunityWorker.run();
   peerHelpWorker.run();

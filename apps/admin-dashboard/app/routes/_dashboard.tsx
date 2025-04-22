@@ -9,7 +9,6 @@ import {
   Target,
   ToggleRight,
   User,
-  Video,
 } from 'react-feather';
 
 import { getAdmin } from '@oyster/core/admins';
@@ -58,11 +57,6 @@ export default function DashboardLayout() {
                   label={`Applications (${pendingApplications})`}
                   pathname={Route['/applications']}
                 />
-                <Dashboard.NavigationLink
-                  icon={<Video />}
-                  label="Onboarding"
-                  pathname={Route['/onboarding-sessions']}
-                />
               </>
             ) : (
               <>
@@ -85,11 +79,6 @@ export default function DashboardLayout() {
                   icon={<BookOpen />}
                   label="Resume Books"
                   pathname={Route['/resume-books']}
-                />
-                <Dashboard.NavigationLink
-                  icon={<Video />}
-                  label="Onboarding"
-                  pathname={Route['/onboarding-sessions']}
                 />
                 <Dashboard.NavigationLink
                   icon={<Gift />}

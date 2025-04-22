@@ -12,11 +12,9 @@ import {
   ReferralSentEmail,
   ResumeSubmittedEmail,
   StudentAnniversaryEmail,
-  StudentAttendedOnboardingEmail,
   StudentRemovedEmail,
 } from '@oyster/email-templates';
 
-import { getObject } from '@/infrastructure/s3';
 import { ENVIRONMENT } from '@/shared/env';
 import {
   getNodemailerTransporter,
@@ -74,7 +72,6 @@ async function sendEmailWithPostmark(input: EmailTemplate) {
     .with('referral-accepted', () => FROM_NOTIFICATIONS)
     .with('referral-sent', () => FROM_NOTIFICATIONS)
     .with('student-anniversary', () => FROM_NOTIFICATIONS)
-    .with('student-attended-onboarding', () => FROM_NOTIFICATIONS)
     .with('student-removed', () => FROM_NOTIFICATIONS)
     .exhaustive();
 
@@ -152,9 +149,6 @@ function getHtml(input: EmailTemplate): string {
     .with({ name: 'student-anniversary' }, ({ data }) => {
       return StudentAnniversaryEmail(data);
     })
-    .with({ name: 'student-attended-onboarding' }, ({ data }) => {
-      return StudentAttendedOnboardingEmail(data);
-    })
     .with({ name: 'student-removed' }, ({ data }) => {
       return StudentRemovedEmail(data);
     })
@@ -168,7 +162,7 @@ function getHtml(input: EmailTemplate): string {
 function getSubject(input: EmailTemplate): string {
   const subject = match(input)
     .with({ name: 'application-accepted' }, () => {
-      return 'ColorStack Onboarding + Slack Invitation';
+      return 'ColorStack Onboarding';
     })
     .with({ name: 'application-created' }, () => {
       return 'Thank You for Applying to ColorStack';
@@ -193,9 +187,6 @@ function getSubject(input: EmailTemplate): string {
     })
     .with({ name: 'student-anniversary' }, ({ data }) => {
       return `Happy ${data.years} Year Anniversary, ${data.firstName}! 🎉`;
-    })
-    .with({ name: 'student-attended-onboarding' }, () => {
-      return "Onboarding Session, ✅! What's Next?";
     })
     .with({ name: 'student-removed' }, () => {
       return 'An Update on Your ColorStack Membership';
@@ -235,17 +226,6 @@ async function getAttachments(
         return undefined;
       }
     )
-    .with({ name: 'student-attended-onboarding' }, async () => {
-      const file = await getObject({ key: 'onboarding-deck.pdf' });
-
-      return [
-        {
-          content: file.base64,
-          contentType: 'application/pdf',
-          name: 'ColorStack Onboarding Deck.pdf',
-        } as EmailAttachment,
-      ];
-    })
     .exhaustive();
 
   return attachments;

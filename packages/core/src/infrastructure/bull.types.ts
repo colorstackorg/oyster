@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 import { EmailTemplate } from '@oyster/email-templates';
 import {
-  ActivationRequirement,
   Application,
   Email,
   Event,
@@ -17,7 +16,6 @@ import {
   ActivityType,
   CompletedActivity,
 } from '@/modules/gamification/gamification.types';
-import { OnboardingSession } from '@/modules/onboarding-sessions/onboarding-sessions.types';
 import {
   SlackChannel,
   SlackMessage,
@@ -34,7 +32,6 @@ export const BullQueue = {
   MEMBER_EMAIL: 'member_email',
   NOTIFICATION: 'notification',
   OFFER: 'offer',
-  ONBOARDING_SESSION: 'onboarding_session',
   ONE_TIME_CODE: 'one_time_code',
   OPPORTUNITY: 'opportunity',
   PEER_HELP: 'peer_help',
@@ -364,16 +361,6 @@ export const OfferBullJob = z.discriminatedUnion('name', [
   }),
 ]);
 
-export const OnboardingSessionBullJob = z.discriminatedUnion('name', [
-  z.object({
-    name: z.literal('onboarding_session.attended'),
-    data: z.object({
-      onboardingSessionId: OnboardingSession.shape.id,
-      studentId: Student.shape.id,
-    }),
-  }),
-]);
-
 export const OneTimeCodeBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('one_time_code.expire'),
@@ -630,19 +617,6 @@ export const SlackBullJob = z.discriminatedUnion('name', [
 
 export const StudentBullJob = z.discriminatedUnion('name', [
   z.object({
-    name: z.literal('student.activated'),
-    data: z.object({
-      studentId: Student.shape.id,
-    }),
-  }),
-  z.object({
-    name: z.literal('student.activation_requirement_completed'),
-    data: z.object({
-      requirement: z.nativeEnum(ActivationRequirement).optional(),
-      studentId: Student.shape.id,
-    }),
-  }),
-  z.object({
     name: z.literal('student.anniversary.email'),
     data: z.object({}),
   }),
@@ -715,7 +689,6 @@ export const BullJob = z.union([
   MemberEmailBullJob,
   NotificationBullJob,
   OfferBullJob,
-  OnboardingSessionBullJob,
   OneTimeCodeBullJob,
   OpportunityBullJob,
   PeerHelpBullJob,

@@ -20,7 +20,6 @@ const ROUTES = [
   '/events/:id/register',
   '/events/:id/registrations',
   '/home',
-  '/home/activation',
   '/login',
   '/login/otp/send',
   '/login/otp/verify',
