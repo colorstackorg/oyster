@@ -13,11 +13,6 @@ export async function onOnboardingSessionAttended({
     .where('id', '=', studentId)
     .executeTakeFirstOrThrow();
 
-  job('student.activation_requirement_completed', {
-    requirement: 'attend_onboarding',
-    studentId,
-  });
-
   const otherAttendees = await db
     .selectFrom('onboardingSessionAttendees')
     .leftJoin('students', 'students.id', 'onboardingSessionAttendees.studentId')

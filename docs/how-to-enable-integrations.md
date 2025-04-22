@@ -13,7 +13,6 @@ We have integrations with the following platforms:
 - Pinecone (Vector Database)
 - Sentry (Error Monitoring)
 - Slack (Community Home, Authentication)
-- SwagUp (Swag Packs)
 
 ## Airmeet
 
@@ -154,7 +153,6 @@ To enable the **Slack** integration:
    SLACK_BOT_TOKEN
    SLACK_CLIENT_ID
    SLACK_CLIENT_SECRET
-   SLACK_INTRODUCTIONS_CHANNEL_ID
    SLACK_SIGNING_SECRET
    ```
 3. In `/member-profile/.env`, set the following variables:

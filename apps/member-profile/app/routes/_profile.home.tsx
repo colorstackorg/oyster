@@ -20,18 +20,12 @@ import {
 } from '@oyster/core/member-profile/server';
 import { getIpAddress, setMixpanelProfile, track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
-import {
-  ACTIVATION_REQUIREMENTS,
-  type ActivationRequirement,
-  StudentActiveStatus,
-  Timezone,
-} from '@oyster/types';
+import { StudentActiveStatus, Timezone } from '@oyster/types';
 import { Button, cx, Divider, Text } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import { Card, type CardProps } from '@/shared/components/card';
 import { Leaderboard } from '@/shared/components/leaderboard';
-import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -162,9 +156,6 @@ async function getStudent(id: string) {
     .selectFrom('students')
     .select([
       'acceptedAt',
-      'activatedAt',
-      'activationRequirementsCompleted',
-      'claimedSwagPackAt',
       'email',
       'firstName',
       'id',
@@ -178,13 +169,6 @@ async function getStudent(id: string) {
   const joinedAfterActivation =
     row.acceptedAt.valueOf() >=
     dayjs().year(2023).month(5).date(9).startOf('day').toDate().valueOf();
-
-  row.activationRequirementsCompleted =
-    row.activationRequirementsCompleted.filter((requirement) => {
-      return ACTIVATION_REQUIREMENTS.includes(
-        requirement as ActivationRequirement
-      );
-    });
 
   return Object.assign(row, { joinedAfterActivation });
 }
@@ -235,11 +219,6 @@ async function getTotalStudentsCount() {
 export default function HomeLayout() {
   const { student } = useLoaderData<typeof loader>();
 
-  const showActivationCard =
-    !!student.joinedAfterActivation &&
-    !student.activatedAt &&
-    !student.claimedSwagPackAt;
-
   const showOnboardingCard =
     !!student.joinedAfterActivation && !student.onboardedAt;
 
@@ -247,10 +226,9 @@ export default function HomeLayout() {
     <>
       <Text variant="2xl">Hey, {student.firstName}! 👋</Text>
 
-      {(showActivationCard || showOnboardingCard) && (
+      {showOnboardingCard && (
         <>
           <div className="grid grid-cols-1 items-start gap-4 @[1000px]:grid-cols-2 @[1500px]:grid-cols-3">
-            {showActivationCard && <ActivationCard />}
             {showOnboardingCard && <OnboardingSessionCard />}
           </div>
 
@@ -370,29 +348,6 @@ function OnboardingSessionCard() {
           >
             Book Onboarding Session <ExternalLink size={20} />
           </Link>
-        </Button.Slot>
-      </Button.Group>
-    </Card>
-  );
-}
-
-function ActivationCard() {
-  const { student } = useLoaderData<typeof loader>();
-
-  return (
-    <Card>
-      <Card.Title>Activation ✅</Card.Title>
-
-      <Card.Description>
-        You've completed {student.activationRequirementsCompleted.length}/
-        {ACTIVATION_REQUIREMENTS.length} activation requirements. Once you hit
-        all {ACTIVATION_REQUIREMENTS.length}, you will get a gift card to claim
-        your FREE merch! 👀
-      </Card.Description>
-
-      <Button.Group>
-        <Button.Slot variant="primary">
-          <Link to={Route['/home/activation']}>See Progress</Link>
         </Button.Slot>
       </Button.Group>
     </Card>
