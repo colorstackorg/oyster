@@ -376,14 +376,14 @@ function ApplicationFieldGroup({
         name={keys.otherDemographics}
       />
 
-      <Application.GoalsField
-        defaultValue={application.goals}
-        name={keys.goals}
-      />
-
       <Application.ContributionField
         defaultValue={application.contribution}
         name={keys.contribution}
+      />
+
+      <Application.GoalsField
+        defaultValue={application.goals}
+        name={keys.goals}
       />
     </Application>
   ) : (
