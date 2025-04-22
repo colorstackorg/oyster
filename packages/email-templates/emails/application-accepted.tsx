@@ -67,49 +67,17 @@ export function ApplicationAcceptedEmail({
 
           <li>
             <Email.Text>
-              <b>
-                <Email.Link href="https://calendly.com/colorstack-onboarding-ambassador/onboarding">
-                  Book your family onboarding session
-                </Email.Link>
-              </b>{' '}
-              to learn more about our programming & offerings, how to be an
-              engaged family member, & meet other new members! 📅
-            </Email.Text>
-          </li>
-
-          <li>
-            <Email.Text>
               <b>Look out for your invite to join our Slack </b> - the email
-              will come from Slack. 📨
+              will come from Slack. Our Slack is large, but don't be
+              intimidated! 📨
             </Email.Text>
-
-            <ul>
-              <li>
-                <Email.Text marginBottom="8px" marginTop="8px">
-                  Our Slack is large, but don't be intimidated!
-                </Email.Text>
-              </li>
-              <li>
-                <Email.Text marginBottom="8px" marginTop="8px">
-                  <b>
-                    Attend an{' '}
-                    <Email.Link href="https://calendly.com/colorstack-onboarding-ambassador/onboarding">
-                      onboarding session
-                    </Email.Link>{' '}
-                    ASAP
-                  </b>{' '}
-                  to learn how to navigate Slack and join in on the
-                  conversations.
-                </Email.Text>
-              </li>
-            </ul>
           </li>
         </ol>
 
         <Email.Text>
-          Bookmarking and utilizing your Member Profile, attending an onboarding
-          session, and joining our Slack will have you well on your way to
-          becoming a top ColorStack member in no time!
+          Bookmarking and utilizing your Member Profile and joining our Slack
+          will have you well on your way to becoming a top ColorStack member in
+          no time!
         </Email.Text>
 
         <Email.Text>

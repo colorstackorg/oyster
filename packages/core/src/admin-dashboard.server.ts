@@ -8,6 +8,4 @@ export { deleteFeatureFlag } from './modules/feature-flags/use-cases/delete-feat
 export { editFeatureFlag } from './modules/feature-flags/use-cases/edit-feature-flag';
 export { addIcebreakerPrompt } from './modules/icebreakers/use-cases/add-icebreaker-prompt';
 export { updateMemberEmail } from './modules/members/use-cases/update-member-email';
-export { addOnboardingSessionAttendees } from './modules/onboarding-sessions/use-cases/add-onboarding-session-attendees';
-export { uploadOnboardingSession } from './modules/onboarding-sessions/use-cases/upload-onboarding-session';
 export { parseCsv } from './shared/utils/csv';

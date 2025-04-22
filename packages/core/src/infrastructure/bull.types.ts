@@ -16,7 +16,6 @@ import {
   ActivityType,
   CompletedActivity,
 } from '@/modules/gamification/gamification.types';
-import { OnboardingSession } from '@/modules/onboarding-sessions/onboarding-sessions.types';
 import {
   SlackChannel,
   SlackMessage,
@@ -33,7 +32,6 @@ export const BullQueue = {
   MEMBER_EMAIL: 'member_email',
   NOTIFICATION: 'notification',
   OFFER: 'offer',
-  ONBOARDING_SESSION: 'onboarding_session',
   ONE_TIME_CODE: 'one_time_code',
   OPPORTUNITY: 'opportunity',
   PEER_HELP: 'peer_help',
@@ -359,16 +357,6 @@ export const OfferBullJob = z.discriminatedUnion('name', [
       sendNotification: z.boolean().optional(),
       slackChannelId: z.string().trim().min(1),
       slackMessageId: z.string().trim().min(1),
-    }),
-  }),
-]);
-
-export const OnboardingSessionBullJob = z.discriminatedUnion('name', [
-  z.object({
-    name: z.literal('onboarding_session.attended'),
-    data: z.object({
-      onboardingSessionId: OnboardingSession.shape.id,
-      studentId: Student.shape.id,
     }),
   }),
 ]);
@@ -701,7 +689,6 @@ export const BullJob = z.union([
   MemberEmailBullJob,
   NotificationBullJob,
   OfferBullJob,
-  OnboardingSessionBullJob,
   OneTimeCodeBullJob,
   OpportunityBullJob,
   PeerHelpBullJob,

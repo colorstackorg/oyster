@@ -12,5 +12,4 @@ export {
   EditFeatureFlagInput,
 } from './modules/feature-flags/feature-flags.types';
 export { AddIcebreakerPromptInput } from './modules/icebreakers/icebreakers.types';
-export { OnboardingSession } from './modules/onboarding-sessions/onboarding-sessions.types';
 export { Environment, ListSearchParams } from './shared/types';
