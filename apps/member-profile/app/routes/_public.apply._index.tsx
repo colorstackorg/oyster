@@ -108,12 +108,20 @@ export default function ApplicationPage() {
 
   return (
     <>
-      <Text className="mb-8" color="gray-500">
-        We exist to increase the number of Black and Latinx Computer Science
-        graduates that go on to launch rewarding technical careers. The stronger
-        our community, the better positioned we are to move the needle for
-        racial diversity in tech. Thank you for joining us.
-      </Text>
+      <div className="mb-8 flex flex-col gap-4">
+        <Text color="gray-500">
+          We exist to increase the number of Black and Latinx Computer Science
+          graduates who go on to launch rewarding technical careers.
+        </Text>
+
+        <Text color="gray-500">
+          Our goal is to remove barriers and create pathways for students
+          pursuing careers in technology. While our work centers on supporting
+          Black and Latinx students, we welcome any undergraduate CS student who
+          shares our vision of a more diverse and inclusive tech industry to
+          apply.
+        </Text>
+      </div>
 
       <Form className="form" data-gap="2rem" method="post">
         <Application readOnly={false}>
@@ -163,11 +171,11 @@ export default function ApplicationPage() {
             error={errors.otherDemographics}
             name={keys.otherDemographics}
           />
-          <Application.GoalsField error={errors.goals} name={keys.goals} />
           <Application.ContributionField
             error={errors.contribution}
             name={keys.contribution}
           />
+          <Application.GoalsField error={errors.goals} name={keys.goals} />
         </Application>
 
         <Field

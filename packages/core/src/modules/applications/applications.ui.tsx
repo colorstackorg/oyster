@@ -77,9 +77,9 @@ Application.ContributionField = function ContributionField({
 
   return (
     <Field
-      description="As a member, you'll be able to take advantage of the opportunities and services we offer, but we are exclusively interested in welcoming students that will make the community stronger."
+      description="As a member, you'll have access to our opportunities and resources, but we're committed to welcoming students who will actively contribute to and strengthen our community."
       error={error}
-      label="How do you plan to contribute to the community?"
+      label="Why are you interested in joining the ColorStack family? How do you plan to contribute to the community?"
       labelFor={name}
       required
     >
@@ -216,6 +216,8 @@ Application.GenderField = function GenderField({
   );
 };
 
+// NOTE: This field is no longer used for "goals" but the renaming of the
+// database field isn't implemented yet so we're keeping it here for now.
 Application.GoalsField = function GoalsField({
   defaultValue,
   error,
@@ -226,7 +228,7 @@ Application.GoalsField = function GoalsField({
   return (
     <Field
       error={error}
-      label="What are your short and long-term goals? Name 1 thing ColorStack can do to help you achieve them."
+      label="In what ways have you helped create space, opportunity, or support for Black and Latinx communities? Please provide specific examples of your personal experience."
       labelFor={name}
       required
     >
