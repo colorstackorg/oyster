@@ -568,6 +568,7 @@ function ResumeBookForm() {
         latitudeName={keys.hometownLatitude}
         longitudeName={keys.hometownLongitude}
         name={keys.hometown}
+        required
       />
 
       <Field

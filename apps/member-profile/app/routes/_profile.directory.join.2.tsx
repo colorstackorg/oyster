@@ -92,6 +92,7 @@ export default function UpdatePersonalInformationForm() {
         name={keys.hometown}
         latitudeName={keys.hometownLatitude}
         longitudeName={keys.hometownLongitude}
+        required
       />
 
       <Divider />
