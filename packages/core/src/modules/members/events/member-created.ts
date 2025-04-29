@@ -33,10 +33,6 @@ export async function onMemberCreated(input: StudentCreatedInput) {
     studentId: student.id,
   });
 
-  job('slack.invite', {
-    email: student.email,
-  });
-
   job('mailchimp.add', {
     email: student.email,
     firstName: student.firstName,

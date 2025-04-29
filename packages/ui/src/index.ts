@@ -57,6 +57,7 @@ export { useDelayedValue } from './hooks/use-delayed-value';
 export { useHydrated } from './hooks/use-hydrated';
 export { useOnClickOutside } from './hooks/use-on-click-outside';
 export { useRevalidateOnFocus } from './hooks/use-revalidate-on-focus';
+export { useRevalidateOnInterval } from './hooks/use-revalidate-on-interval';
 export { useSearchParams } from './hooks/use-search-params';
 export { ACCENT_COLORS } from './utils/constants';
 export type { AccentColor } from './utils/constants';

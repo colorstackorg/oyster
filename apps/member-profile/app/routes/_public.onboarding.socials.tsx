@@ -7,7 +7,9 @@ import {
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { z } from 'zod';
 
+import { job } from '@oyster/core/bull';
 import { updateMember } from '@oyster/core/member-profile/server';
+import { db } from '@oyster/db';
 import { ISO8601Date, nullableField } from '@oyster/types';
 import { Student } from '@oyster/types';
 import {
@@ -69,7 +71,7 @@ const UpdateSocialsInformation = z.object({
       .nullable()
   ),
   githubUrl: nullableField(Student.shape.githubUrl),
-  hometown: Student.shape.hometown,
+  hometown: nullableField(Student.shape.hometown),
   hometownLatitude: Student.shape.hometownLatitude,
   hometownLongitude: Student.shape.hometownLongitude,
   instagramHandle: nullableField(Student.shape.instagramHandle),
@@ -98,7 +100,19 @@ export async function action({ request }: ActionFunctionArgs) {
       where: { id: user(session) },
     });
 
-    return redirect(Route['/onboarding/work']);
+    const { email, slackId } = await db
+      .selectFrom('students')
+      .select(['email', 'slackId'])
+      .where('id', '=', user(session))
+      .executeTakeFirstOrThrow();
+
+    if (!slackId) {
+      job('slack.invite', {
+        email,
+      });
+    }
+
+    return redirect(Route['/onboarding/slack']);
   } catch (e) {
     return json({ error: (e as Error).message }, { status: 500 });
   }
@@ -118,40 +132,21 @@ export default function SocialForm() {
         find opportunities, collaborate on projects, and build your network.
       </Text>
 
-      <HometownField
-        defaultLatitude={member.hometownCoordinates?.y || undefined}
-        defaultLongitude={member.hometownCoordinates?.x || undefined}
-        defaultValue={member.hometown || undefined}
-        description="Rep your hometown!"
-        latitudeName="hometownLatitude"
-        longitudeName="hometownLongitude"
-        error={errors.hometown}
-        name="hometown"
-      />
-      <EthnicityField
-        defaultValue={ethnicities}
-        description="Rep your flag! See the ethnic breakdown of our members in the dropdown."
-        error={errors.ethnicities}
-        name="ethnicities"
-      />
-
-      <Divider my="2" />
+      <Field
+        error={errors.linkedInUrl}
+        label="LinkedIn URL"
+        labelFor="linkedInUrl"
+        required
+      >
+        <Input
+          defaultValue={member.linkedInUrl || undefined}
+          id="linkedInUrl"
+          name="linkedInUrl"
+          required
+        />
+      </Field>
 
       <div className="grid grid-cols-2 gap-4">
-        <Field
-          error={errors.linkedInUrl}
-          label="LinkedIn URL"
-          labelFor="linkedInUrl"
-          required
-        >
-          <Input
-            defaultValue={member.linkedInUrl || undefined}
-            id="linkedInUrl"
-            name="linkedInUrl"
-            required
-          />
-        </Field>
-
         <Field
           error={errors.instagramHandle}
           label="Instagram Handle"
@@ -211,11 +206,28 @@ export default function SocialForm() {
 
       <Divider my="2" />
 
+      <HometownField
+        defaultLatitude={member.hometownCoordinates?.y || undefined}
+        defaultLongitude={member.hometownCoordinates?.x || undefined}
+        defaultValue={member.hometown || undefined}
+        description="Rep your hometown!"
+        latitudeName="hometownLatitude"
+        longitudeName="hometownLongitude"
+        error={errors.hometown}
+        name="hometown"
+      />
+      <EthnicityField
+        defaultValue={ethnicities}
+        description="Rep your flag! See the ethnic breakdown of our members in the dropdown."
+        error={errors.ethnicities}
+        name="ethnicities"
+      />
       <BirthdateField
         defaultValue={member.birthdate || undefined}
         error={errors.birthdate}
         name="birthdate"
       />
+
       <ErrorMessage>{error}</ErrorMessage>
 
       <OnboardingButtonGroup>

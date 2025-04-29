@@ -3,20 +3,12 @@ import { Link, Outlet, useLocation } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import { ArrowLeft, ArrowRight } from 'react-feather';
 import { match } from 'ts-pattern';
-import { z } from 'zod';
 
 import { Button, Public, Text, type TextProps } from '@oyster/ui';
 import { Progress } from '@oyster/ui/progress';
 
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
-
-const Step = z
-  .enum(['emails', 'personal', 'education', 'social', 'work'])
-  .default('personal')
-  .catch('personal');
-
-type Step = z.infer<typeof Step>;
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -47,6 +39,7 @@ function OnboardingProgress() {
     .with(Route['/onboarding/education'], () => 60)
     .with(Route['/onboarding/socials'], () => 80)
     .with(Route['/onboarding/work'], () => 90)
+    .with(Route['/onboarding/slack'], () => 95)
     .otherwise(() => 0);
 
   return <Progress value={value} />;
@@ -77,12 +70,16 @@ export function BackButton({ to }: BackButtonProps) {
 
 type ContinueButtonProps = {
   disabled?: boolean;
+  label?: string;
 };
 
-export function ContinueButton({ disabled }: ContinueButtonProps) {
+export function ContinueButton({
+  disabled,
+  label = 'Continue',
+}: ContinueButtonProps) {
   return (
     <Button.Submit disabled={disabled}>
-      Continue <ArrowRight className="size-5" />
+      {label} <ArrowRight className="size-5" />
     </Button.Submit>
   );
 }
