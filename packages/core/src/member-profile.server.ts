@@ -27,6 +27,10 @@ export { listEmails } from './modules/members/queries/list-emails';
 export { listMembersInDirectory } from './modules/members/queries/list-members-in-directory';
 export { changePrimaryEmail } from './modules/members/use-cases/change-primary-email';
 export { joinMemberDirectory } from './modules/members/use-cases/join-member-directory';
+export {
+  sendEmailCode,
+  SendEmailCodeInput,
+} from './modules/members/use-cases/send-email-code';
 export { updateAllowEmailShare } from './modules/members/use-cases/update-allow-email-share';
 export { updateMember } from './modules/members/use-cases/update-member';
 export { countMessagesSent } from './modules/slack/queries/count-messages-sent';

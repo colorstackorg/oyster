@@ -46,7 +46,12 @@ export function PreferredNameField({
   const [value, setValue] = useState(defaultValue);
 
   return (
-    <Field error={error} label="Preferred Name" labelFor={name}>
+    <Field
+      description="If you go by a different name, let us know here."
+      error={error}
+      label="Preferred Name"
+      labelFor={name}
+    >
       <Input
         defaultValue={defaultValue}
         id={name}
