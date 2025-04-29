@@ -24,8 +24,6 @@ export const ActivityType = {
   REVIEW_COMPANY: 'review_company',
   SUBMIT_CENSUS_RESPONSE: 'submit_census_response',
   SUBMIT_RESUME: 'submit_resume',
-  UPDATE_EDUCATION_HISTORY: 'update_education_history',
-  UPDATE_WORK_HISTORY: 'update_work_history',
   UPLOAD_PROFILE_PICTURE: 'upload_profile_picture',
 } as const;
 

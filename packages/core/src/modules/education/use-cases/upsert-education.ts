@@ -35,9 +35,4 @@ export async function upsertEducation(input: UpsertEducationInput) {
     .execute();
 
   checkMostRecentEducation(input.studentId);
-
-  job('gamification.activity.completed', {
-    studentId: input.studentId,
-    type: 'update_education_history',
-  });
 }

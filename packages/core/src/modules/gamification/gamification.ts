@@ -399,39 +399,6 @@ async function grantGamificationPoints(
         .onConflict((oc) => oc.doNothing())
         .execute();
     })
-    .with(
-      { type: 'update_education_history' },
-      { type: 'update_work_history' },
-      async (input) => {
-        const startOfPeriod = match(activity.period as ActivityPeriod)
-          .with('quarterly', () => dayjs().startOf('quarter').toDate())
-          .exhaustive();
-
-        const endOfPeriod = match(activity.period as ActivityPeriod)
-          .with('quarterly', () => dayjs().endOf('quarter').toDate())
-          .exhaustive();
-
-        // If the student has already completed this activity this period,
-        // we shouldn't give them points.
-
-        const row = await db
-          .selectFrom('completedActivities')
-          .where('occurredAt', '>=', startOfPeriod)
-          .where('occurredAt', '<=', endOfPeriod)
-          .where('studentId', '=', input.studentId)
-          .where('type', '=', input.type)
-          .executeTakeFirst();
-
-        if (row) {
-          return;
-        }
-
-        await db
-          .insertInto('completedActivities')
-          .values(activityCompleted)
-          .execute();
-      }
-    )
     .exhaustive();
 
   queueSlackNotification({
@@ -542,24 +509,6 @@ async function revokeGamificationPoints(
 
       const { count } = await db
         .selectFrom('educations')
-        .select((eb) => eb.fn.countAll<string>().as('count'))
-        .where('createdAt', '>=', startOfPeriod!)
-        .where('createdAt', '<=', endOfPeriod!)
-        .where('studentId', '=', input.studentId)
-        .executeTakeFirstOrThrow();
-
-      if (parseInt(count) >= 1) {
-        return false;
-      }
-
-      await deleteQuery.execute();
-    })
-    .with({ type: 'update_work_history' }, async (input) => {
-      // If the student has more than one work experience entry in the
-      // period, we won't remove the points.
-
-      const { count } = await db
-        .selectFrom('workExperiences')
         .select((eb) => eb.fn.countAll<string>().as('count'))
         .where('createdAt', '>=', startOfPeriod!)
         .where('createdAt', '<=', endOfPeriod!)

@@ -14,9 +14,4 @@ export async function deleteEducation({ id, studentId }: DeleteEducationInput) {
     .execute();
 
   checkMostRecentEducation(studentId);
-
-  job('gamification.activity.completed.undo', {
-    studentId,
-    type: 'update_education_history',
-  });
 }

@@ -1,7 +1,6 @@
 import { db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { job } from '@/infrastructure/bull';
 import { saveCompanyIfNecessary } from './save-company-if-necessary';
 import { type AddWorkExperienceInput } from '../employment.types';
 
@@ -46,10 +45,5 @@ export async function addWorkExperience({
         title,
       })
       .execute();
-  });
-
-  job('gamification.activity.completed', {
-    studentId,
-    type: 'update_work_history',
   });
 }
