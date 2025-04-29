@@ -23,8 +23,9 @@ export async function addWorkExperience({
   startDate,
   studentId,
   title,
+  ...workExperience
 }: AddWorkExperienceInput) {
-  const workExperienceId = id();
+  const workExperienceId = workExperience.id || id();
 
   await db.transaction().execute(async (trx) => {
     const companyId = await saveCompanyIfNecessary(trx, companyCrunchbaseId);
@@ -43,6 +44,19 @@ export async function addWorkExperience({
         startDate,
         studentId,
         title,
+      })
+      .onConflict((oc) => {
+        return oc.column('id').doUpdateSet({
+          companyId,
+          companyName,
+          employmentType,
+          endDate,
+          locationCity,
+          locationState,
+          locationType,
+          startDate,
+          title,
+        });
       })
       .execute();
   });

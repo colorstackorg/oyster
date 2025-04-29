@@ -4,24 +4,16 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form,
-  useActionData,
-  useFetcher,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { updateMember } from '@oyster/core/member-profile/server';
 import { db } from '@oyster/db';
 import { Student } from '@oyster/types';
 import {
-  Button,
-  ErrorMessage,
   Field,
   getErrors,
   Input,
-  Modal,
   PhoneNumberInput,
   validateForm,
 } from '@oyster/ui';
@@ -57,6 +49,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     .selectFrom('students')
     .where('id', '=', user(session))
     .select([
+      'birthdate',
       'currentLocation',
       'currentLocationCoordinates',
       'firstName',

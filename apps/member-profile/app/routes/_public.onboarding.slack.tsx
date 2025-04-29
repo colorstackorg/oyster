@@ -9,7 +9,10 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 import { z } from 'zod';
 
-import { addWorkExperience } from '@oyster/core/member-profile/server';
+import {
+  addWorkExperience,
+  getWorkExperience,
+} from '@oyster/core/member-profile/server';
 import {
   AddWorkExperienceInput,
   type EmploymentType,
@@ -108,10 +111,9 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function WorkHistoryForm() {
-  const { workExperience } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const { error } = getErrors(actionData);
-  const [hasWorkExperience, setHasWorkExperience] = useState(!!workExperience);
+  const [hasWorkExperience, setHasWorkExperience] = useState(false);
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     setHasWorkExperience(e.target.value === 'yes');
@@ -127,7 +129,7 @@ export default function WorkHistoryForm() {
         labelFor="workExperience"
         required
       >
-        <Radio.Group defaultValue={hasWorkExperience ? 'yes' : 'no'}>
+        <Radio.Group defaultValue="">
           <Radio
             color="lime-100"
             label="Yes, I have relevant work experience."

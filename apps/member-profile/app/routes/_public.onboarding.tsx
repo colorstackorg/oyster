@@ -45,7 +45,7 @@ function OnboardingProgress() {
     .with(Route['/onboarding/emails'], () => 20)
     .with(Route['/onboarding/emails/verify'], () => 40)
     .with(Route['/onboarding/education'], () => 60)
-    .with(Route['/onboarding/social'], () => 80)
+    .with(Route['/onboarding/socials'], () => 80)
     .with(Route['/onboarding/work'], () => 90)
     .otherwise(() => 0);
 
@@ -61,7 +61,7 @@ type BackButtonProps = {
     | (typeof Route)['/onboarding/emails']
     | (typeof Route)['/onboarding/emails/verify']
     | (typeof Route)['/onboarding/general']
-    | (typeof Route)['/onboarding/social']
+    | (typeof Route)['/onboarding/socials']
     | (typeof Route)['/onboarding/work'];
 };
 
