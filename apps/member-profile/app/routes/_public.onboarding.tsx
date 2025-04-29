@@ -1,10 +1,19 @@
-import { json } from '@remix-run/node';
-import { Form, useActionData, useSearchParams } from '@remix-run/react';
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+  redirect,
+} from '@remix-run/node';
+import { Form, Link, useActionData, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
+import { ArrowLeft, ArrowRight } from 'react-feather';
+import { match } from 'ts-pattern';
+import { z } from 'zod';
 
 import {
   Address,
   Button,
+  Divider,
   ErrorMessage,
   Field,
   Input,
@@ -16,104 +25,177 @@ import {
 
 import { WorkForm } from '@/modules/employment/ui/work-form';
 import { EducationForm } from '@/shared/components/education-form';
-import { ExperienceList } from '@/shared/components/profile';
 import { CurrentLocationField } from '@/shared/components/profile.general';
 import {
   EthnicityField,
   HometownField,
 } from '@/shared/components/profile.personal';
 import { BirthdateField } from '@/shared/components/profile.personal';
+import { Route } from '@/shared/constants';
 
-export async function loader() {
-  return json({});
+export async function loader({ request }: LoaderFunctionArgs) {
+  const searchParams = new URL(request.url).searchParams;
+
+  const step = Step.parse(searchParams.get('step'));
+
+  return json({ step });
 }
 
-export async function action() {
+const Step = z
+  .enum(['personal', 'education', 'social', 'work'])
+  .default('personal')
+  .catch('personal');
+
+export async function action({ request }: ActionFunctionArgs) {
+  const searchParams = new URL(request.url).searchParams;
+
+  const step = Step.parse(searchParams.get('step'));
+
+  if (step === 'personal') {
+    return redirect(Route['/onboarding'] + '?step=social');
+  }
+
+  if (step === 'social') {
+    return redirect(Route['/onboarding'] + '?step=work');
+  }
+
+  if (step === 'work') {
+    return redirect(Route['/onboarding'] + '?step=education');
+  }
+
+  if (step === 'education') {
+    return redirect(Route['/onboarding'] + '?step=social');
+  }
+
   return json({ error: '' });
 }
 
 export default function OnboardingFlow() {
-  const actionData = useActionData<typeof action>();
+  const { step } = useLoaderData<typeof loader>();
 
   return (
     <Public.Content layout="lg">
       <Form className="form" method="post">
-        <Field error="" label="First Name" labelFor="firstName" required>
-          <Input defaultValue="" id="firstName" name="firstName" required />
-        </Field>
-
-        <Field error="" label="Last Name" labelFor="lastName" required>
-          <Input defaultValue="" id="lastName" name="lastName" required />
-        </Field>
-
-        <Field error="" label="Email" labelFor="email" required>
-          <Input
-            defaultValue=""
-            id="email"
-            name="email"
-            required
-            type="email"
-          />
-        </Field>
-
-        <CurrentLocationField
-          defaultValue=""
-          defaultLatitude={0}
-          defaultLongitude={0}
-          error=""
-          latitudeName="locationLatitude"
-          longitudeName="locationLongitude"
-          name="location"
-        />
-        <HometownField
-          latitudeName="hometownLatitude"
-          longitudeName="hometownLongitude"
-          defaultValue={undefined}
-          error={undefined}
-          name="hometown"
-        />
-        <EthnicityField
-          defaultValue={[]}
-          error={undefined}
-          name="ethnicities"
-        />
-
-        <BirthdateField
-          defaultValue={undefined}
-          error={undefined}
-          name="birthdate"
-        />
-
-        <Field
-          description="Enter your 10-digit phone number. We'll use this to send you important ColorStack updates."
-          error={undefined}
-          label="Phone Number"
-          labelFor="phoneNumber"
-        >
-          <PhoneNumberInput
-            defaultValue={undefined}
-            id="phoneNumber"
-            name="phoneNumber"
-          />
-        </Field>
-
-        <SocialFieldset />
-        <EducationHistoryField />
-        <WorkHistoryField />
-
-        <ErrorMessage>{actionData?.error}</ErrorMessage>
-
-        <Button.Group>
-          <Button.Submit>Continue</Button.Submit>
-        </Button.Group>
+        {match(step)
+          .with('personal', () => {
+            return (
+              <>
+                <PersonalForm />
+              </>
+            );
+          })
+          .with('social', () => {
+            return <SocialForm />;
+          })
+          .with('education', () => {
+            return <EducationHistoryField />;
+          })
+          .with('work', () => {
+            return <WorkHistoryField />;
+          })
+          .exhaustive()}
       </Form>
     </Public.Content>
   );
 }
 
-function SocialFieldset() {
+function PersonalForm() {
+  const actionData = useActionData<typeof action>();
+
   return (
-    <>
+    <Form className="form" method="post">
+      <Field error="" label="First Name" labelFor="firstName" required>
+        <Input defaultValue="" id="firstName" name="firstName" required />
+      </Field>
+
+      <Field error="" label="Last Name" labelFor="lastName" required>
+        <Input defaultValue="" id="lastName" name="lastName" required />
+      </Field>
+
+      <Field error="" label="Email" labelFor="email" required>
+        <Input defaultValue="" id="email" name="email" required type="email" />
+      </Field>
+
+      <Field
+        description="Enter your 10-digit phone number. We'll use this to send you important ColorStack updates."
+        error={undefined}
+        label="Phone Number"
+        labelFor="phoneNumber"
+      >
+        <PhoneNumberInput
+          defaultValue={undefined}
+          id="phoneNumber"
+          name="phoneNumber"
+        />
+      </Field>
+
+      <ErrorMessage>{actionData?.error}</ErrorMessage>
+
+      <Button.Group spacing="between">
+        <Button.Slot variant="secondary">
+          <Link
+            to={{
+              pathname: Route['/onboarding'],
+              search: new URLSearchParams({ step: 'social' }).toString(),
+            }}
+          >
+            <ArrowLeft className="size-5" /> Back
+          </Link>
+        </Button.Slot>
+
+        <Button.Submit>
+          Continue <ArrowRight className="size-5" />
+        </Button.Submit>
+      </Button.Group>
+    </Form>
+  );
+}
+
+function SocialForm() {
+  const actionData = useActionData<typeof action>();
+
+  return (
+    <Form className="form" method="post">
+      <Text variant="xl">Connect with ColorStack Members</Text>
+
+      <Text color="gray-500">
+        ColorStack's strength is the community! Connect with other members to
+        find opportunities, collaborate on projects, and build your network.
+      </Text>
+
+      <CurrentLocationField
+        defaultValue=""
+        defaultLatitude={0}
+        defaultLongitude={0}
+        error=""
+        latitudeName="locationLatitude"
+        longitudeName="locationLongitude"
+        name="location"
+      />
+
+      <HometownField
+        description="Rep your hometown!"
+        latitudeName="hometownLatitude"
+        longitudeName="hometownLongitude"
+        defaultValue={undefined}
+        error={undefined}
+        name="hometown"
+      />
+      <EthnicityField
+        defaultValue={[]}
+        description="Rep your flag! See the ethnic breakdown of our members in the dropdown."
+        error={undefined}
+        name="ethnicities"
+      />
+
+      <BirthdateField
+        defaultValue={undefined}
+        error={undefined}
+        name="birthdate"
+      />
+
+      <Divider my="2" />
+
       <Field
         error={undefined}
         label="LinkedIn URL"
@@ -154,11 +236,19 @@ function SocialFieldset() {
           name="personalWebsiteUrl"
         />
       </Field>
-    </>
+
+      <ErrorMessage>{actionData?.error}</ErrorMessage>
+
+      <Button.Group>
+        <Button.Submit>Continue</Button.Submit>
+      </Button.Group>
+    </Form>
   );
 }
 
 function WorkHistoryField() {
+  const actionData = useActionData<typeof action>();
+
   const [hasWorkExperience, setHasWorkExperience] = useState(false);
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -166,7 +256,7 @@ function WorkHistoryField() {
   }
 
   return (
-    <>
+    <Form className="form" method="post">
       <Field
         error={undefined}
         label="Have you had any work experience relevant to your career goals?"
@@ -215,20 +305,36 @@ function WorkHistoryField() {
           <WorkForm.EndDateField error="" name="endDate" />
         </WorkForm.Context>
       )}
-    </>
+
+      <ErrorMessage>{actionData?.error}</ErrorMessage>
+
+      <Button.Group>
+        <Button.Submit>Continue</Button.Submit>
+      </Button.Group>
+    </Form>
   );
 }
 
 function EducationHistoryField() {
+  const actionData = useActionData<typeof action>();
+
   return (
-    <EducationForm.Context>
-      <EducationForm.SchoolField error="" name="schoolId" />
-      <EducationForm.OtherSchoolField error="" name="otherSchool" />
-      <EducationForm.DegreeTypeField error="" name="degreeType" />
-      <EducationForm.FieldOfStudyField error="" name="major" />
-      <EducationForm.OtherFieldOfStudyField error="" name="otherMajor" />
-      <EducationForm.StartDateField error="" name="startDate" />
-      <EducationForm.EndDateField error="" name="endDate" />
-    </EducationForm.Context>
+    <Form className="form" method="post">
+      <EducationForm.Context>
+        <EducationForm.SchoolField error="" name="schoolId" />
+        <EducationForm.OtherSchoolField error="" name="otherSchool" />
+        <EducationForm.DegreeTypeField error="" name="degreeType" />
+        <EducationForm.FieldOfStudyField error="" name="major" />
+        <EducationForm.OtherFieldOfStudyField error="" name="otherMajor" />
+        <EducationForm.StartDateField error="" name="startDate" />
+        <EducationForm.EndDateField error="" name="endDate" />
+      </EducationForm.Context>
+
+      <ErrorMessage>{actionData?.error}</ErrorMessage>
+
+      <Button.Group>
+        <Button.Submit>Continue</Button.Submit>
+      </Button.Group>
+    </Form>
   );
 }

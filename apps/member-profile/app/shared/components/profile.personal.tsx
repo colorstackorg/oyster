@@ -53,11 +53,19 @@ export function BirthdateField({
 
 export function EthnicityField({
   defaultValue = [],
+  description,
   error,
   name,
-}: FieldProps<Pick<Country, 'code' | 'demonym' | 'flagEmoji'>[]>) {
+}: FieldProps<Pick<Country, 'code' | 'demonym' | 'flagEmoji'>[]> & {
+  description?: string;
+}) {
   return (
-    <Field error={error} labelFor={name} label="Ethnicity">
+    <Field
+      description={description}
+      error={error}
+      labelFor={name}
+      label="Ethnicity"
+    >
       <EthnicityMultiCombobox
         defaultValues={defaultValue.map((ethnicity) => {
           return {
