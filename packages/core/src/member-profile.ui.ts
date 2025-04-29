@@ -11,6 +11,7 @@ export {
   Education,
   FORMATTED_DEGREEE_TYPE,
   School,
+  UpsertEducationInput,
 } from './modules/education/education.types';
 export {
   AddWorkExperienceInput,

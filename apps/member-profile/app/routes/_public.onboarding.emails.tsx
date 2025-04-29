@@ -28,7 +28,11 @@ import {
 } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
-import { ContinueButton, SectionTitle } from '@/routes/_public.onboarding';
+import {
+  ContinueButton,
+  OnboardingButtonGroup,
+  SectionTitle,
+} from '@/routes/_public.onboarding';
 import { BackButton } from '@/routes/_public.onboarding';
 import { Route } from '@/shared/constants';
 import { addEmailCookie } from '@/shared/cookies.server';
@@ -72,6 +76,18 @@ type SendEmailCodeInput = z.infer<typeof SendEmailCodeInput>;
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
+
+  const secondaryEmail = await db
+    .selectFrom('studentEmails')
+    .where('studentId', '=', user(session))
+    .select('email')
+    .orderBy('createdAt', 'asc')
+    .offset(1)
+    .executeTakeFirst();
+
+  if (secondaryEmail) {
+    return redirect(Route['/onboarding/education']);
+  }
 
   const { data, errors, ok } = await validateForm(request, SendEmailCodeInput);
 
@@ -151,7 +167,6 @@ export default function OnboardingEmailForm() {
   const { primaryEmail, secondaryEmail } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const { error, errors } = getErrors(actionData);
-  const fetcher = useFetcher();
 
   return (
     <Form className="form" method="post">
@@ -182,6 +197,7 @@ export default function OnboardingEmailForm() {
       >
         <Input
           defaultValue={secondaryEmail?.email}
+          disabled={!!secondaryEmail}
           id="email"
           name="email"
           required
@@ -191,10 +207,10 @@ export default function OnboardingEmailForm() {
 
       <ErrorMessage>{error}</ErrorMessage>
 
-      <Button.Group spacing="between">
-        <BackButton step="personal" />
+      <OnboardingButtonGroup>
+        <BackButton to="/onboarding/general" />
         <ContinueButton />
-      </Button.Group>
+      </OnboardingButtonGroup>
     </Form>
   );
 }

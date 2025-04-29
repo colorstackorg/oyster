@@ -25,6 +25,7 @@ import {
 
 import {
   ContinueButton,
+  OnboardingButtonGroup,
   SectionDescription,
   SectionTitle,
 } from '@/routes/_public.onboarding';
@@ -160,10 +161,10 @@ export default function OnboardingEmailForm() {
 
       <ErrorMessage>{error}</ErrorMessage>
 
-      <Button.Group spacing="between">
-        <BackButton step="personal" />
+      <OnboardingButtonGroup>
+        <BackButton to="/onboarding/emails" />
         <ContinueButton />
-      </Button.Group>
+      </OnboardingButtonGroup>
     </Form>
   );
 }

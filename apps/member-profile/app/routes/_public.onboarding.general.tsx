@@ -29,6 +29,7 @@ import {
 import {
   BackButton,
   ContinueButton,
+  OnboardingButtonGroup,
   SectionTitle,
 } from '@/routes/_public.onboarding';
 import {
@@ -175,10 +176,10 @@ export default function OnboardingGeneralForm() {
         />
       </Field>
 
-      <Button.Group spacing="between">
-        <BackButton step="personal" />
+      <OnboardingButtonGroup>
+        <BackButton to="/onboarding" />
         <ContinueButton />
-      </Button.Group>
+      </OnboardingButtonGroup>
     </Form>
   );
 }

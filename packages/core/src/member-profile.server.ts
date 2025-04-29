@@ -12,6 +12,7 @@ export { verifyOneTimeCode } from './modules/authentication/use-cases/verify-one
 export { addEducation } from './modules/education/use-cases/add-education';
 export { deleteEducation } from './modules/education/use-cases/delete-education';
 export { editEducation } from './modules/education/use-cases/edit-education';
+export { upsertEducation } from './modules/education/use-cases/upsert-education';
 export { getCrunchbaseOrganization } from './modules/employment/queries/get-crunchbase-organization';
 export { getWorkExperience } from './modules/employment/queries/get-work-experience';
 export { listWorkExperiences } from './modules/employment/queries/list-work-experiences';

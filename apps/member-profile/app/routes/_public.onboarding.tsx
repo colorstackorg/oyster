@@ -1,15 +1,18 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Link, Outlet } from '@remix-run/react';
+import { Link, Outlet, useLocation } from '@remix-run/react';
+import { type PropsWithChildren } from 'react';
 import { ArrowLeft, ArrowRight } from 'react-feather';
+import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { Button, Public, Text, type TextProps } from '@oyster/ui';
+import { Progress } from '@oyster/ui/progress';
 
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
 const Step = z
-  .enum(['personal', 'education', 'social', 'work'])
+  .enum(['emails', 'personal', 'education', 'social', 'work'])
   .default('personal')
   .catch('personal');
 
@@ -24,26 +27,48 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export default function OnboardingLayout() {
   return (
     <Public.Content layout="lg">
+      <OnboardingProgress />
       <Outlet />
     </Public.Content>
   );
 }
 
+function OnboardingProgress() {
+  const { pathname } = useLocation();
+
+  if (pathname === Route['/onboarding']) {
+    return null;
+  }
+
+  const value = match(pathname)
+    .with(Route['/onboarding/general'], () => 10)
+    .with(Route['/onboarding/emails'], () => 20)
+    .with(Route['/onboarding/emails/verify'], () => 40)
+    .with(Route['/onboarding/education'], () => 60)
+    .with(Route['/onboarding/social'], () => 80)
+    .with(Route['/onboarding/work'], () => 90)
+    .otherwise(() => 0);
+
+  return <Progress value={value} />;
+}
+
 // Reusable
 
 type BackButtonProps = {
-  step: z.infer<typeof Step>;
+  to:
+    | (typeof Route)['/onboarding']
+    | (typeof Route)['/onboarding/education']
+    | (typeof Route)['/onboarding/emails']
+    | (typeof Route)['/onboarding/emails/verify']
+    | (typeof Route)['/onboarding/general']
+    | (typeof Route)['/onboarding/social']
+    | (typeof Route)['/onboarding/work'];
 };
 
-export function BackButton({ step }: BackButtonProps) {
+export function BackButton({ to }: BackButtonProps) {
   return (
     <Button.Slot variant="secondary">
-      <Link
-        to={{
-          pathname: Route['/onboarding'],
-          search: new URLSearchParams({ step }).toString(),
-        }}
-      >
+      <Link to={to}>
         <ArrowLeft className="size-5" /> Back
       </Link>
     </Button.Slot>
@@ -56,11 +81,17 @@ type ContinueButtonProps = {
 
 export function ContinueButton({ disabled }: ContinueButtonProps) {
   return (
-    <Button.Group>
-      <Button.Submit disabled={disabled}>
-        Continue <ArrowRight className="size-5" />
-      </Button.Submit>
-    </Button.Group>
+    <Button.Submit disabled={disabled}>
+      Continue <ArrowRight className="size-5" />
+    </Button.Submit>
+  );
+}
+
+export function OnboardingButtonGroup({ children }: PropsWithChildren) {
+  return (
+    <div className="mt-4">
+      <Button.Group spacing="between">{children}</Button.Group>
+    </div>
   );
 }
 
