@@ -1,7 +1,8 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
+import { Link, Outlet, useLoaderData, useSearchParams } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { type PropsWithChildren } from 'react';
+import { type PropsWithChildren, useEffect, useState } from 'react';
+import Confetti from 'react-confetti';
 import {
   ExternalLink,
   GitHub,
@@ -26,7 +27,7 @@ import {
   StudentActiveStatus,
   Timezone,
 } from '@oyster/types';
-import { Button, cx, Divider, Text } from '@oyster/ui';
+import { Button, cx, Divider, Text, useWindowSize } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import { Card, type CardProps } from '@/shared/components/card';
@@ -286,7 +287,45 @@ export default function HomeLayout() {
       </div>
 
       <Outlet />
+      <ConfettiEffect />
     </>
+  );
+}
+
+function ConfettiEffect() {
+  const [searchParams] = useSearchParams();
+  const [showConfetti, setShowConfetti] = useState(false);
+  const { height, width } = useWindowSize();
+
+  useEffect(() => {
+    if (!searchParams.has('new')) {
+      return;
+    }
+
+    setShowConfetti(true);
+
+    const timeout = setTimeout(() => {
+      setShowConfetti(false);
+    }, 10000);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [searchParams]);
+
+  if (!showConfetti) {
+    return null;
+  }
+
+  return (
+    <Confetti
+      gravity={0.25}
+      height={height}
+      numberOfPieces={1000}
+      recycle={false}
+      tweenDuration={3500}
+      width={width}
+    />
   );
 }
 

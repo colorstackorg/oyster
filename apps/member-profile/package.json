@@ -32,6 +32,7 @@
     "mixpanel": "^0.18.0",
     "node-emoji": "^2.1.3",
     "react": "^18.2.0",
+    "react-confetti": "^6.4.0",
     "react-dom": "^18.2.0",
     "react-feather": "^2.0.10",
     "react-textarea-autosize": "^8.5.3",

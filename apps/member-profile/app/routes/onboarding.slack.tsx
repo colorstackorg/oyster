@@ -53,7 +53,7 @@ export async function action({ request }: ActionFunctionArgs) {
   url.pathname = Route['/home'];
   url.searchParams.set('new', '1');
 
-  return redirect(Route['/home']);
+  return redirect(url.toString());
 }
 
 export default function SlackForm() {
