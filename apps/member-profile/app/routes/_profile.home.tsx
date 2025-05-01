@@ -1,7 +1,7 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Link, Outlet, useLoaderData, useSearchParams } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { type PropsWithChildren, useEffect, useState } from 'react';
+import { type PropsWithChildren } from 'react';
 import Confetti from 'react-confetti';
 import {
   ExternalLink,
@@ -293,27 +293,10 @@ export default function HomeLayout() {
 }
 
 function ConfettiEffect() {
-  const [searchParams] = useSearchParams();
-  const [showConfetti, setShowConfetti] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const { height, width } = useWindowSize();
 
-  useEffect(() => {
-    if (!searchParams.has('new')) {
-      return;
-    }
-
-    setShowConfetti(true);
-
-    const timeout = setTimeout(() => {
-      setShowConfetti(false);
-    }, 10000);
-
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [searchParams]);
-
-  if (!showConfetti) {
+  if (!searchParams.has('new')) {
     return null;
   }
 
@@ -322,6 +305,13 @@ function ConfettiEffect() {
       gravity={0.25}
       height={height}
       numberOfPieces={1000}
+      onConfettiComplete={() => {
+        setSearchParams((params) => {
+          params.delete('new');
+
+          return params;
+        });
+      }}
       recycle={false}
       tweenDuration={3500}
       width={width}
