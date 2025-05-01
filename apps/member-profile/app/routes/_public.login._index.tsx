@@ -5,11 +5,11 @@ import {
   getGoogleAuthUri,
   getSlackAuthUri,
 } from '@oyster/core/member-profile/server';
-import { ErrorMessage, Login } from '@oyster/ui';
+import { ErrorMessage, Login, Text } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
-import { commitSession, getSession } from '@/shared/session.server';
+import { commitSession, getSession, SESSION } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);
@@ -28,10 +28,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // message if they aren't properly authenticated or authorized.
   const error = session.get('error');
 
+  const message = session.get(SESSION.LOGIN_MESSAGE);
+
   return json(
     {
       error,
       googleAuthUri,
+      message,
       slackAuthUri,
     },
     {
@@ -43,19 +46,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function LoginPage() {
-  const { error, googleAuthUri, slackAuthUri } = useLoaderData<typeof loader>();
+  const { error, googleAuthUri, message, slackAuthUri } =
+    useLoaderData<typeof loader>();
 
   return (
-    <Login.ButtonGroup>
-      {!!googleAuthUri && <Login.GoogleButton href={googleAuthUri} />}
-      {!!slackAuthUri && <Login.SlackButton href={slackAuthUri} />}
-      <Login.OtpButton href={Route['/login/otp/send']} />
+    <>
+      {!!message && <Text color="gray-500">{message}</Text>}
 
-      {error && (
-        <div className="mt-4">
-          <ErrorMessage>{error}</ErrorMessage>
-        </div>
-      )}
-    </Login.ButtonGroup>
+      <Login.ButtonGroup>
+        {!!googleAuthUri && <Login.GoogleButton href={googleAuthUri} />}
+        {!!slackAuthUri && <Login.SlackButton href={slackAuthUri} />}
+        <Login.OtpButton href={Route['/login/otp/send']} />
+
+        {error && (
+          <div className="mt-4">
+            <ErrorMessage>{error}</ErrorMessage>
+          </div>
+        )}
+      </Login.ButtonGroup>
+    </>
   );
 }

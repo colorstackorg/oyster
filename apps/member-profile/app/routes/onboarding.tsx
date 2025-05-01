@@ -1,17 +1,31 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { Link, Outlet, useLocation } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import { ArrowLeft, ArrowRight } from 'react-feather';
 import { match } from 'ts-pattern';
 
+import { db } from '@oyster/db';
 import { Button, Public, Text, type TextProps } from '@oyster/ui';
 import { Progress } from '@oyster/ui/progress';
 
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request, {
+    message:
+      'Please log in using your school email to finish filling out your profile.',
+  });
+
+  const member = await db
+    .selectFrom('students')
+    .select('onboardedAt')
+    .where('id', '=', user(session))
+    .executeTakeFirst();
+
+  if (member?.onboardedAt) {
+    return redirect(Route['/home']);
+  }
 
   return json({});
 }

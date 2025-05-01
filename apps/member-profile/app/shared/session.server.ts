@@ -31,6 +31,7 @@ export async function getSession(request: Request): Promise<Session> {
 }
 
 export const SESSION = {
+  LOGIN_MESSAGE: 'login_message',
   REDIRECT_URL: 'redirect_url',
   TOAST: 'toast',
   USER_ID: 'user_id',
@@ -39,17 +40,22 @@ export const SESSION = {
 // Authentication
 
 type EnsureUserAuthenticatedOptions = {
+  message?: string;
   redirectTo?: string;
 };
 
 export async function ensureUserAuthenticated(
   request: Request,
-  { redirectTo = Route['/login'] }: EnsureUserAuthenticatedOptions = {}
+  { message, redirectTo = Route['/login'] }: EnsureUserAuthenticatedOptions = {}
 ): Promise<Session> {
   const session = await getSession(request);
 
   if (!session.has(SESSION.USER_ID)) {
     session.flash(SESSION.REDIRECT_URL, request.url);
+
+    if (message) {
+      session.flash(SESSION.LOGIN_MESSAGE, message);
+    }
 
     throw redirect(redirectTo, {
       headers: {

@@ -1,19 +1,28 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Link } from '@remix-run/react';
+import { Link, useLoaderData } from '@remix-run/react';
 import { ArrowRight } from 'react-feather';
 
+import { db } from '@oyster/db';
 import { Button, Text } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
-  return json({});
+  const member = await db
+    .selectFrom('students')
+    .select('firstName')
+    .where('id', '=', user(session))
+    .executeTakeFirstOrThrow();
+
+  return json({ member });
 }
 
 export default function OnboardingLandingPage() {
+  const { member } = useLoaderData<typeof loader>();
+
   return (
     <div className="flex flex-col items-center gap-8 text-center">
       <div className="flex h-48 w-48 items-center justify-center rounded-full bg-lime-50">
@@ -26,7 +35,7 @@ export default function OnboardingLandingPage() {
 
       <div className="space-y-4">
         <Text variant="2xl" weight="500">
-          Welcome to ColorStack! 🎉
+          Welcome to ColorStack, {member.firstName}! 🎉
         </Text>
 
         <Text color="gray-500">
