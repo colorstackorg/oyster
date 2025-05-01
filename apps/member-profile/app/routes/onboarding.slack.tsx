@@ -23,7 +23,7 @@ import {
   OnboardingButtonGroup,
   SectionDescription,
   SectionTitle,
-} from '@/routes/_public.onboarding';
+} from '@/routes/onboarding';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -48,7 +48,12 @@ export async function action({ request }: ActionFunctionArgs) {
     .where('id', '=', user(session))
     .execute();
 
-  return redirect(Route['/onboarding/finish']);
+  const url = new URL(request.url);
+
+  url.pathname = Route['/home'];
+  url.searchParams.set('new', '1');
+
+  return redirect(Route['/home']);
 }
 
 export default function SlackForm() {

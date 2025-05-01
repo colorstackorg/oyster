@@ -18,10 +18,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function OnboardingLayout() {
   return (
-    <Public.Content layout="lg">
-      <OnboardingProgress />
-      <Outlet />
-    </Public.Content>
+    <Public.Layout>
+      <Public.Content layout="lg">
+        <OnboardingProgress />
+        <Outlet />
+      </Public.Content>
+    </Public.Layout>
   );
 }
 

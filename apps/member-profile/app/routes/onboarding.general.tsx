@@ -23,7 +23,7 @@ import {
   ContinueButton,
   OnboardingButtonGroup,
   SectionTitle,
-} from '@/routes/_public.onboarding';
+} from '@/routes/onboarding';
 import {
   CurrentLocationField,
   PreferredNameField,

@@ -28,8 +28,8 @@ import {
   OnboardingButtonGroup,
   SectionDescription,
   SectionTitle,
-} from '@/routes/_public.onboarding';
-import { BackButton } from '@/routes/_public.onboarding';
+} from '@/routes/onboarding';
+import { BackButton } from '@/routes/onboarding';
 import { Route } from '@/shared/constants';
 import { addEmailCookie } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';

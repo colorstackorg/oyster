@@ -25,7 +25,7 @@ import {
   OnboardingButtonGroup,
   SectionDescription,
   SectionTitle,
-} from '@/routes/_public.onboarding';
+} from '@/routes/onboarding';
 import { EducationForm } from '@/shared/components/education-form';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';

@@ -1,4 +1,9 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  redirect,
+  type Session,
+} from '@remix-run/node';
 import { generatePath, Outlet, useLoaderData } from '@remix-run/react';
 import {
   Award,
@@ -17,13 +22,21 @@ import {
 
 import { isFeatureFlagEnabled } from '@oyster/core/member-profile/server';
 import { getResumeBook } from '@oyster/core/resume-books';
+import { db } from '@oyster/db';
 import { Dashboard, Divider } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
+
+  // We do this check in the "parent" loader despite that other child loaders
+  // will run in parallel. The reason this is fine is because technically the
+  // user is already authenticated so loading the data isn't a security issue,
+  // we just don't want to allow them to access the profile UI until they've
+  // completed the onboarding process.
+  await ensureUserOnboarded(session);
 
   const [resumeBook, isPointsPageEnabled] = await Promise.all([
     getResumeBook({
@@ -40,6 +53,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
     isPointsPageEnabled,
     resumeBook,
   });
+}
+
+async function ensureUserOnboarded(session: Session) {
+  const member = await db
+    .selectFrom('students')
+    .select(['acceptedAt', 'onboardedAt'])
+    .where('id', '=', user(session))
+    .executeTakeFirst();
+
+  if (!member) {
+    throw redirect(Route['/onboarding']);
+  }
+
+  if (member.acceptedAt >= new Date('2025-05-01') && !member.onboardedAt) {
+    throw redirect(Route['/onboarding']);
+  }
 }
 
 export default function ProfileLayout() {

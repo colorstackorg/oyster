@@ -33,7 +33,7 @@ import {
   OnboardingButtonGroup,
   SectionDescription,
   SectionTitle,
-} from '@/routes/_public.onboarding';
+} from '@/routes/onboarding';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 

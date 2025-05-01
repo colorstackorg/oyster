@@ -1,9 +1,8 @@
-import { json, type LoaderFunctionArgs, redirect } from '@remix-run/node';
-import { Link, Outlet } from '@remix-run/react';
-import { ArrowLeft, ArrowRight } from 'react-feather';
-import { z } from 'zod';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { Link } from '@remix-run/react';
+import { ArrowRight } from 'react-feather';
 
-import { Button, Public, Text, type TextProps } from '@oyster/ui';
+import { Button, Text } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
