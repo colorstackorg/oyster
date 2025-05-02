@@ -47,7 +47,7 @@ function OnboardingProgress() {
   }
 
   return (
-    <div className="mx-auto my-4 grid w-full max-w-md grid-cols-9 items-center">
+    <div className="mx-auto my-4 grid w-full grid-cols-11 items-center sm:px-4">
       <ProgressBarStep step="1" />
       <ProgressBarDivider step="2" />
       <ProgressBarStep step="2" />
@@ -57,28 +57,40 @@ function OnboardingProgress() {
       <ProgressBarStep step="4" />
       <ProgressBarDivider step="5" />
       <ProgressBarStep step="5" />
+      <ProgressBarDivider step="6" />
+      <ProgressBarStep step="6" />
     </div>
   );
 }
 
-type ProgressStep = '1' | '2' | '3' | '4' | '5';
+type ProgressStep = '1' | '2' | '3' | '4' | '5' | '6';
 
-const STEP_ROUTE_MAP: Record<string, ProgressStep> = {
+const ROUTE_TO_STEP_MAP: Record<string, ProgressStep> = {
   [Route['/onboarding/general']]: '1',
-  [Route['/onboarding/emails']]: '1',
-  [Route['/onboarding/emails/verify']]: '1',
-  [Route['/onboarding/education']]: '2',
-  [Route['/onboarding/work']]: '3',
-  [Route['/onboarding/socials']]: '4',
-  [Route['/onboarding/slack']]: '5',
+  [Route['/onboarding/emails']]: '2',
+  [Route['/onboarding/emails/verify']]: '2',
+  [Route['/onboarding/education']]: '3',
+  [Route['/onboarding/work']]: '4',
+  [Route['/onboarding/socials']]: '5',
+  [Route['/onboarding/slack']]: '6',
+};
+
+const STEP_TO_ROUTE_MAP: Record<ProgressStep, string> = {
+  '1': Route['/onboarding/general'],
+  '2': Route['/onboarding/emails'],
+  '3': Route['/onboarding/education'],
+  '4': Route['/onboarding/work'],
+  '5': Route['/onboarding/socials'],
+  '6': Route['/onboarding/slack'],
 };
 
 const STEP_LABEL_MAP: Record<ProgressStep, string> = {
   '1': 'General',
-  '2': 'Education',
-  '3': 'Work',
-  '4': 'Community',
-  '5': 'Slack',
+  '2': 'Email',
+  '3': 'Education',
+  '4': 'Work',
+  '5': 'Community',
+  '6': 'Slack',
 };
 
 type ProgressBarStepProps = {
@@ -87,6 +99,9 @@ type ProgressBarStepProps = {
 
 function ProgressBarStep({ step }: ProgressBarStepProps) {
   const status = useStepStatus(step);
+
+  const label = STEP_LABEL_MAP[step];
+  const route = STEP_TO_ROUTE_MAP[step];
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -101,7 +116,13 @@ function ProgressBarStep({ step }: ProgressBarStepProps) {
         {status === 'completed' ? <Check size={20} /> : parseInt(step)}
       </p>
 
-      <Text variant="sm">{STEP_LABEL_MAP[step]}</Text>
+      <Text
+        className="transition-colors duration-500"
+        color={status === 'completed' ? 'primary' : 'gray-500'}
+        variant="xs"
+      >
+        {status === 'completed' ? <Link to={route}>{label}</Link> : label}
+      </Text>
     </div>
   );
 }
@@ -131,7 +152,7 @@ type StepStatus = 'active' | 'completed' | 'inactive';
 function useStepStatus(step: ProgressStep): StepStatus {
   const { pathname } = useLocation();
 
-  const activeStep = STEP_ROUTE_MAP[pathname as keyof typeof STEP_ROUTE_MAP];
+  const activeStep = ROUTE_TO_STEP_MAP[pathname];
 
   if (step === activeStep) {
     return 'active';
