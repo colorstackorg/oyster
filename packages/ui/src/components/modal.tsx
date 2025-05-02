@@ -47,8 +47,8 @@ export const Modal = ({
         <aside
           className={cx(
             'lock-scroll relative z-10 flex max-h-[calc(100vh-5rem)] w-full flex-col gap-4 overflow-auto bg-white p-4',
-            'animate-[modal-animation-mobile_250ms] rounded-t-lg',
-            'sm:animate-[modal-animation_250ms] sm:rounded-lg',
+            'animate-[modal-animation-mobile_300ms] rounded-t-lg',
+            'sm:animate-[modal-animation_300ms] sm:rounded-lg',
             size === '400' && 'sm:max-w-[400px]',
             size === '600' && 'sm:max-w-[600px]'
           )}
@@ -61,7 +61,7 @@ export const Modal = ({
         <Link
           className={cx(
             'absolute inset-0 cursor-default bg-black',
-            'animate-[modal-shader-animation_250ms_forwards]'
+            'animate-[modal-shader-animation_300ms_forwards]'
           )}
           preventScrollReset
           to={onCloseTo}

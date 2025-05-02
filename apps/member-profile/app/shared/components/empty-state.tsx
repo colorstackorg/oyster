@@ -2,10 +2,13 @@ import React, { type PropsWithChildren } from 'react';
 
 import { Text } from '@oyster/ui';
 
-export const EmptyState = ({ icon }: { icon: React.ReactElement }) => {
-  icon = React.cloneElement(icon, {
-    size: 48,
-  });
+type EmptyStateProps = {
+  icon: React.ReactElement;
+  size?: number;
+};
+
+export const EmptyState = ({ icon, size = 48 }: EmptyStateProps) => {
+  icon = React.cloneElement(icon, { size });
 
   return (
     <div className="rounded-full bg-gray-50 p-2">

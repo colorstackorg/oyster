@@ -71,6 +71,9 @@ async function ensureUserOnboarded(session: Session) {
   }
 }
 
+// NOTE: IF YOU UPDATE SOMETHING HERE, YOU SHOULD PROBABLY UPDATE THE FIRST
+// TIME MODAL TOO.
+
 export default function ProfileLayout() {
   const { isPointsPageEnabled, resumeBook } = useLoaderData<typeof loader>();
 
