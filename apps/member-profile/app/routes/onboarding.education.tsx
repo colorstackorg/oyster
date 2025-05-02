@@ -8,6 +8,10 @@ import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type z } from 'zod';
 
+import {
+  EDUCATION_LEVEL_TO_DEGREE_TYPE,
+  type EducationLevel,
+} from '@oyster/core/education/types';
 import { upsertEducation } from '@oyster/core/member-profile/server';
 import {
   AddEducationInput,
@@ -33,24 +37,41 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const education = await db
-    .selectFrom('educations')
-    .leftJoin('schools', 'schools.id', 'educations.schoolId')
-    .select([
-      'educations.id',
-      'degreeType',
-      'endDate',
-      'major',
-      'otherMajor',
-      'otherSchool',
-      'schoolId',
-      'startDate',
-      'schools.name as schoolName',
-    ])
-    .where('studentId', '=', user(session))
-    .executeTakeFirst();
+  const [member, education] = await Promise.all([
+    db
+      .selectFrom('students')
+      .leftJoin('schools', 'schools.id', 'students.schoolId')
+      .select([
+        'educationLevel',
+        'graduationYear',
+        'major',
+        'otherMajor',
+        'schools.id as schoolId',
+        'schools.name as schoolName',
+        'otherSchool',
+      ])
+      .where('students.id', '=', user(session))
+      .executeTakeFirstOrThrow(),
 
-  return json({ education });
+    db
+      .selectFrom('educations')
+      .leftJoin('schools', 'schools.id', 'educations.schoolId')
+      .select([
+        'educations.id',
+        'degreeType',
+        'endDate',
+        'major',
+        'otherMajor',
+        'otherSchool',
+        'schoolId',
+        'startDate',
+        'schools.name as schoolName',
+      ])
+      .where('studentId', '=', user(session))
+      .executeTakeFirst(),
+  ]);
+
+  return json({ education, member });
 }
 
 const AddEducationFormData = UpsertEducationInput.omit({
@@ -74,6 +95,8 @@ export async function action({ request }: ActionFunctionArgs) {
     request,
     AddEducationFormData
   );
+
+  console.log(data, errors);
 
   if (!ok) {
     return json({ errors }, { status: 400 });
@@ -99,14 +122,27 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function EducationHistoryForm() {
-  const { education } = useLoaderData<typeof loader>();
+  const { education, member } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const { error, errors } = getErrors(actionData);
 
-  const school: Pick<School, 'id' | 'name'> =
-    education && education.schoolId && education.schoolName
-      ? { id: education.schoolId, name: education.schoolName }
-      : { id: 'other', name: 'Other' };
+  const school: Pick<School, 'id' | 'name'> = {
+    id: '',
+    name: '',
+  };
+
+  if (education && education.schoolId && education.schoolName) {
+    school.id = education.schoolId;
+    school.name = education.schoolName;
+  } else if (member.schoolId && member.schoolName) {
+    school.id = member.schoolId;
+    school.name = member.schoolName;
+  } else if (member.otherSchool) {
+    school.id = 'other';
+    school.name = member.otherSchool;
+  }
+
+  const degreeType = education?.degreeType as DegreeType;
 
   return (
     <Form className="form" method="post">
@@ -127,17 +163,22 @@ export default function EducationHistoryForm() {
           name="otherSchool"
         />
         <EducationForm.DegreeTypeField
-          defaultValue={education?.degreeType as DegreeType}
+          defaultValue={
+            degreeType ||
+            EDUCATION_LEVEL_TO_DEGREE_TYPE[
+              member.educationLevel as EducationLevel
+            ]
+          }
           error={errors.degreeType}
           name="degreeType"
         />
         <EducationForm.FieldOfStudyField
-          defaultValue={education?.major as Major}
+          defaultValue={(education?.major || member.major) as Major}
           error={errors.major}
           name="major"
         />
         <EducationForm.OtherFieldOfStudyField
-          defaultValue={education?.otherMajor || undefined}
+          defaultValue={education?.otherMajor || member.otherMajor || undefined}
           error={errors.otherMajor}
           name="otherMajor"
         />
@@ -147,7 +188,7 @@ export default function EducationHistoryForm() {
           name="startDate"
         />
         <EducationForm.EndDateField
-          defaultValue={education?.endDate.slice(0, 7) || undefined}
+          defaultValue={education?.endDate.slice(0, 7)}
           error={errors.endDate}
           name="endDate"
         />

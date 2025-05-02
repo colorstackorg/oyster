@@ -5,6 +5,7 @@ import {
   redirect,
 } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { sql } from 'kysely';
 import { z } from 'zod';
 
 import { job } from '@oyster/core/bull';
@@ -44,7 +45,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     getMemberEthnicities(user(session)),
     getMember(user(session))
       .select([
-        'birthdate',
+        sql<string>`to_char(birthdate, 'YYYY-MM-DD')`.as('birthdate'),
         'calendlyUrl',
         'githubUrl',
         'hometown',
@@ -223,7 +224,7 @@ export default function SocialForm() {
         name="ethnicities"
       />
       <BirthdateField
-        defaultValue={member.birthdate || undefined}
+        defaultValue={member.birthdate?.slice(0, 10) || undefined}
         error={errors.birthdate}
         name="birthdate"
       />

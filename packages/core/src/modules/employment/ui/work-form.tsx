@@ -341,14 +341,14 @@ WorkForm.TitleField = function TitleField({
   name,
 }: FieldProps<string>) {
   return (
-    <Field error={error} label="Title" labelFor={name} required>
-      <Input
-        defaultValue={defaultValue}
-        id={name}
-        name={name}
-        placeholder="Software Engineering Intern"
-        required
-      />
+    <Field
+      description="Example: Software Engineering Intern"
+      error={error}
+      label="Title"
+      labelFor={name}
+      required
+    >
+      <Input defaultValue={defaultValue} id={name} name={name} required />
     </Field>
   );
 };

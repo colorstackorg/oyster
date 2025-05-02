@@ -32,11 +32,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const member = await db
     .selectFrom('students')
-    .select(['joinedSlackAt'])
+    .select(['email', 'joinedSlackAt'])
     .where('id', '=', user(session))
     .executeTakeFirst();
 
-  return json({ joinedSlack: !!member?.joinedSlackAt });
+  return json({ email: member?.email, joinedSlack: !!member?.joinedSlackAt });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -57,7 +57,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function SlackForm() {
-  const { joinedSlack } = useLoaderData<typeof loader>();
+  const { email, joinedSlack } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const { error } = getErrors(actionData);
 
@@ -69,9 +69,10 @@ export default function SlackForm() {
       <SectionTitle>Slack</SectionTitle>
 
       <SectionDescription>
-        We just invited you to join our Slack workspace! Please check your email
-        for the invitation. When you accept the invitation, you will be done
-        with the onboarding process.
+        We just invited you to join our Slack workspace! Please check your
+        email, <span className="font-bold">{email}</span>, for the invitation.
+        When you accept the invitation, you will be done with the onboarding
+        process! 🎉
       </SectionDescription>
 
       <div className="mt-4 flex items-center gap-2">
@@ -103,7 +104,7 @@ export default function SlackForm() {
       <ErrorMessage>{error}</ErrorMessage>
 
       <OnboardingButtonGroup>
-        <BackButton to="/onboarding/education" />
+        <BackButton to="/onboarding/community" />
         <ContinueButton disabled={!joinedSlack} label="Finish" />
       </OnboardingButtonGroup>
     </Form>

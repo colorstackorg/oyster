@@ -6,6 +6,7 @@ import {
   type ExtractValue,
   ISO8601Date,
   Major,
+  nullableField,
   NullishString,
   Student,
 } from '@oyster/types';
@@ -44,6 +45,17 @@ export const FORMATTED_EDUCATION_LEVEL: Record<EducationLevel, string> = {
   other: 'Other',
   phd: 'PhD',
   undergraduate: 'Undergraduate',
+};
+
+export const EDUCATION_LEVEL_TO_DEGREE_TYPE: Record<
+  EducationLevel,
+  DegreeType | null
+> = {
+  bootcamp: DegreeType.CERTIFICATE,
+  masters: DegreeType.MASTERS,
+  other: null,
+  phd: DegreeType.DOCTORAL,
+  undergraduate: DegreeType.BACHELORS,
 };
 
 export const SchoolTag = {
@@ -113,7 +125,7 @@ export const UpsertEducationInput = Education.pick({
   startDate: true,
   studentId: true,
 }).extend({
-  id: z.string().trim().min(1).optional(),
+  id: nullableField(z.string().trim().min(1).nullable()),
 });
 
 // Types

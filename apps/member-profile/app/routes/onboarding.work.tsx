@@ -83,8 +83,15 @@ type AddWorkExperienceFormData = z.infer<typeof AddWorkExperienceFormData>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
+  const form = await request.formData();
+  const workExperience = form.get('workExperience');
+
+  if (workExperience === 'no') {
+    return redirect(Route['/onboarding/community']);
+  }
+
   const { data, errors, ok } = await validateForm(
-    request,
+    form,
     AddWorkExperienceFormData
   );
 
@@ -127,7 +134,11 @@ export default function WorkHistoryForm() {
         labelFor="workExperience"
         required
       >
-        <Radio.Group defaultValue={hasWorkExperience ? 'yes' : 'no'}>
+        <Radio.Group
+          defaultValue={
+            workExperience ? (hasWorkExperience ? 'yes' : 'no') : undefined
+          }
+        >
           <Radio
             color="lime-100"
             label="Yes, I have relevant work experience."
@@ -170,8 +181,7 @@ function WorkExperienceForm() {
     <>
       <Divider />
       <SectionDescription>
-        Tell us more about your most recent relevant work experience. Note that
-        other members will be able to see this.
+        Tell us more about your most recent relevant work experience.
       </SectionDescription>
 
       <WorkForm.Context>
@@ -227,20 +237,23 @@ function WorkExperienceForm() {
         </Address>
 
         <WorkForm.CurrentRoleField
-          defaultValue={!workExperience?.endDate}
+          defaultValue={workExperience ? !workExperience?.endDate : undefined}
           error={errors.isCurrentRole}
           name="isCurrentRole"
         />
-        <WorkForm.StartDateField
-          defaultValue={workExperience?.startDate?.slice(0, 7)}
-          error={errors.startDate}
-          name="startDate"
-        />
-        <WorkForm.EndDateField
-          defaultValue={workExperience?.endDate?.slice(0, 7)}
-          error={errors.endDate}
-          name="endDate"
-        />
+
+        <div className="grid grid-cols-1 gap-[inherit] @[520px]:grid-cols-2">
+          <WorkForm.StartDateField
+            defaultValue={workExperience?.startDate?.slice(0, 7)}
+            error={errors.startDate}
+            name="startDate"
+          />
+          <WorkForm.EndDateField
+            defaultValue={workExperience?.endDate?.slice(0, 7)}
+            error={errors.endDate}
+            name="endDate"
+          />
+        </div>
       </WorkForm.Context>
 
       <input type="hidden" name="id" value={workExperience?.id} />

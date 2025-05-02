@@ -5,6 +5,7 @@ import {
   Entity,
   type ExtractValue,
   ISO8601Date,
+  nullableField,
   NullishString,
   Student,
 } from '@oyster/types';
@@ -136,7 +137,7 @@ export const AddWorkExperienceInput = WorkExperience.pick({
   title: true,
 }).extend({
   companyCrunchbaseId: Company.shape.crunchbaseId,
-  id: z.string().trim().min(1).optional(),
+  id: nullableField(z.string().trim().min(1).nullable()),
 });
 
 export const DeleteWorkExperienceInput = WorkExperience.pick({
