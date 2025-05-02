@@ -71,7 +71,7 @@ const ROUTE_TO_STEP_MAP: Record<string, ProgressStep> = {
   [Route['/onboarding/emails/verify']]: '2',
   [Route['/onboarding/education']]: '3',
   [Route['/onboarding/work']]: '4',
-  [Route['/onboarding/socials']]: '5',
+  [Route['/onboarding/community']]: '5',
   [Route['/onboarding/slack']]: '6',
 };
 
@@ -80,7 +80,7 @@ const STEP_TO_ROUTE_MAP: Record<ProgressStep, string> = {
   '2': Route['/onboarding/emails'],
   '3': Route['/onboarding/education'],
   '4': Route['/onboarding/work'],
-  '5': Route['/onboarding/socials'],
+  '5': Route['/onboarding/community'],
   '6': Route['/onboarding/slack'],
 };
 
@@ -170,11 +170,11 @@ function useStepStatus(step: ProgressStep): StepStatus {
 type BackButtonProps = {
   to:
     | (typeof Route)['/onboarding']
+    | (typeof Route)['/onboarding/community']
     | (typeof Route)['/onboarding/education']
     | (typeof Route)['/onboarding/emails']
     | (typeof Route)['/onboarding/emails/verify']
     | (typeof Route)['/onboarding/general']
-    | (typeof Route)['/onboarding/socials']
     | (typeof Route)['/onboarding/work'];
 };
 

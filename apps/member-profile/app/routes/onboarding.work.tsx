@@ -104,7 +104,7 @@ export async function action({ request }: ActionFunctionArgs) {
     studentId: user(session),
   });
 
-  return redirect(Route['/onboarding/socials']);
+  return redirect(Route['/onboarding/community']);
 }
 
 export default function WorkHistoryForm() {
