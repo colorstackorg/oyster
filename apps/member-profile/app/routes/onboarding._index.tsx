@@ -25,7 +25,7 @@ export default function OnboardingLandingPage() {
 
   return (
     <div className="flex flex-col items-center gap-8 text-center">
-      <ul className="flex snap-x snap-mandatory gap-4 overflow-auto p-2">
+      <ul className="flex snap-x snap-mandatory gap-4 overflow-auto px-2 py-4">
         <OnboardingImage
           alt="Peer Help"
           src="/images/onboarding-peer-help.png"
@@ -75,7 +75,11 @@ type OnboardingImageProps = {
 function OnboardingImage({ src, alt }: OnboardingImageProps) {
   return (
     <li className="shrink-0 snap-center">
-      <img alt={alt} className="h-[400px] w-auto rounded-md shadow" src={src} />
+      <img
+        alt={alt}
+        className="h-[400px] w-auto rounded-md shadow-lg"
+        src={src}
+      />
     </li>
   );
 }
