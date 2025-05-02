@@ -85,7 +85,7 @@ export default function SlackForm() {
                 variant="sm"
               >
                 <CheckCircle className="h-5 w-5" />
-                Joined Slack Workspace
+                Joined Slack workspace!
               </Text>
             </>
           ) : (
