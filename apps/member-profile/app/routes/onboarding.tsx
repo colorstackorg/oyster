@@ -1,12 +1,11 @@
 import { json, type LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { Link, Outlet, useLocation } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
-import { ArrowLeft, ArrowRight } from 'react-feather';
+import { ArrowLeft, ArrowRight, Check } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
-import { Button, Public, Text, type TextProps } from '@oyster/ui';
-import { Progress } from '@oyster/ui/progress';
+import { Button, cx, Public, Text, type TextProps } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -48,17 +47,101 @@ function OnboardingProgress() {
     return null;
   }
 
-  const value = match(pathname)
-    .with(Route['/onboarding/general'], () => 10)
-    .with(Route['/onboarding/emails'], () => 20)
-    .with(Route['/onboarding/emails/verify'], () => 40)
-    .with(Route['/onboarding/education'], () => 60)
-    .with(Route['/onboarding/socials'], () => 80)
-    .with(Route['/onboarding/work'], () => 90)
-    .with(Route['/onboarding/slack'], () => 95)
-    .otherwise(() => 0);
+  return (
+    <div className="mx-auto my-4 grid w-full max-w-md grid-cols-9 items-center">
+      <ProgressBarStep step="1" />
+      <ProgressBarDivider step="2" />
+      <ProgressBarStep step="2" />
+      <ProgressBarDivider step="3" />
+      <ProgressBarStep step="3" />
+      <ProgressBarDivider step="4" />
+      <ProgressBarStep step="4" />
+      <ProgressBarDivider step="5" />
+      <ProgressBarStep step="5" />
+    </div>
+  );
+}
 
-  return <Progress value={value} />;
+type ProgressStep = '1' | '2' | '3' | '4' | '5';
+
+type ProgressBarStepProps = {
+  step: ProgressStep;
+};
+
+function ProgressBarStep({ step }: ProgressBarStepProps) {
+  const status = useStepStatus(step);
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <p
+        className={cx(
+          'flex h-8 w-8 items-center justify-center rounded-full border-2',
+          status === 'active' || status === 'completed'
+            ? 'border-primary bg-primary text-white'
+            : 'border-gray-200 text-gray-500'
+        )}
+      >
+        {status === 'completed' ? <Check size={20} /> : parseInt(step)}
+      </p>
+
+      <Text variant="sm">
+        {match(step)
+          .with('1', () => 'General')
+          .with('2', () => 'Email')
+          .with('3', () => 'Education/Work')
+          .with('4', () => 'Community')
+          .with('5', () => 'Slack')
+          .exhaustive()}
+      </Text>
+    </div>
+  );
+}
+
+type ProgressBarDividerProps = {
+  step: ProgressStep;
+};
+
+function ProgressBarDivider({ step }: ProgressBarDividerProps) {
+  const status = useStepStatus(step);
+
+  return (
+    <div
+      className={cx(
+        '-mt-7 h-[2px] w-full',
+        status === 'active' || status === 'completed'
+          ? 'bg-primary'
+          : 'bg-gray-200'
+      )}
+    />
+  );
+}
+
+type StepStatus = 'active' | 'completed' | 'inactive';
+
+const STEP_STATUS_MAP = {
+  [Route['/onboarding/general']]: '1',
+  [Route['/onboarding/emails']]: '2',
+  [Route['/onboarding/emails/verify']]: '2',
+  [Route['/onboarding/education']]: '3',
+  [Route['/onboarding/work']]: '3',
+  [Route['/onboarding/socials']]: '4',
+  [Route['/onboarding/slack']]: '5',
+};
+
+function useStepStatus(step: ProgressStep): StepStatus {
+  const { pathname } = useLocation();
+
+  const activeStep = STEP_STATUS_MAP[pathname as keyof typeof STEP_STATUS_MAP];
+
+  if (step === activeStep) {
+    return 'active';
+  }
+
+  if (step < activeStep) {
+    return 'completed';
+  }
+
+  return 'inactive';
 }
 
 // Reusable
