@@ -108,6 +108,7 @@ function ProgressBarDivider({ step }: ProgressBarDividerProps) {
     <div
       className={cx(
         '-mt-7 h-[2px] w-full',
+        'transition-colors duration-500',
         status === 'active' || status === 'completed'
           ? 'bg-primary'
           : 'bg-gray-200'
