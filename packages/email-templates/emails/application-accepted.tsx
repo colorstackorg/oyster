@@ -40,18 +40,13 @@ export function ApplicationAcceptedEmail({
                 </Email.Link>
                 .
               </b>{' '}
-              This should only take about 5 minutes.
-            </Email.Text>
-          </li>
-
-          <li>
-            <Email.Text>
-              Upon completion, you'll have full access to your{' '}
+              This should only take about 5 minutes. Upon completion, you'll
+              have full access to your{' '}
               <Email.Link href="https://app.colorstack.io">
                 <b>Member Profile</b>
               </Email.Link>
-              . This is the <b>powerhouse</b> of your ColorStack membership. 💪
-              Take a few minutes to:
+              . This is the powerhouse of your ColorStack membership. 💪 Take a
+              few minutes to:
             </Email.Text>
 
             <ul>
@@ -86,12 +81,19 @@ export function ApplicationAcceptedEmail({
               engaged family member, & meet other new members! 📅
             </Email.Text>
           </li>
+
+          <li>
+            <Email.Text>
+              Lastly, <b>after you complete the above steps</b>, you will
+              receive an invite from Slack to join our Slack workspace.
+            </Email.Text>
+          </li>
         </ol>
 
         <Email.Text>
           Bookmarking and utilizing your Member Profile, attending an onboarding
-          session, and joining our Slack will have you well on your way to
-          becoming a top ColorStack member in no time!
+          session, and effectively joining our Slack will have you well on your
+          way to becoming a top ColorStack member in no time!
         </Email.Text>
 
         <Email.Text>
