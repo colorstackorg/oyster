@@ -25,35 +25,57 @@ export default function OnboardingLandingPage() {
 
   return (
     <div className="flex flex-col items-center gap-8 text-center">
-      <div className="flex h-48 w-48 items-center justify-center rounded-full bg-lime-50">
-        <img
-          alt="Celebration graphic"
-          className="h-32 w-32"
-          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128' viewBox='0 0 128 128'%3E%3Cg fill='none' stroke='%2365a30d' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M64 20v88M20 64h88M35 35l58 58M35 93l58-58'/%3E%3Ccircle cx='64' cy='64' r='40'/%3E%3Ccircle cx='64' cy='64' r='20'/%3E%3C/g%3E%3C/svg%3E"
+      <ul className="flex snap-x snap-mandatory gap-4 overflow-auto p-2">
+        <OnboardingImage
+          alt="Peer Help"
+          src="/images/onboarding-peer-help.png"
         />
-      </div>
+        <OnboardingImage
+          alt="Offer Database"
+          src="/images/onboarding-offers.png"
+        />
+        <OnboardingImage
+          alt="Member Directory"
+          src="/images/onboarding-directory.png"
+        />
+        <OnboardingImage
+          alt="Companies"
+          src="/images/onboarding-companies.png"
+        />
+        <OnboardingImage alt="Ask AI" src="/images/onboarding-ask-ai.png" />
+        <OnboardingImage alt="Events" src="/images/onboarding-events.png" />
+      </ul>
 
-      <div className="space-y-4">
+      <div className="flex flex-col gap-4">
         <Text variant="2xl" weight="500">
           Welcome to ColorStack, {member.firstName}! 🎉
         </Text>
 
         <Text color="gray-500">
-          Congratulations on becoming a member! We just need a few more details
-          to complete your profile and get you access to our Slack community.
-          This should only take about 5 minutes.
+          We just need a few more details to get you access to the Member
+          Profile and our Slack workspace. This should only take about 5
+          minutes!
         </Text>
       </div>
 
-      <div className="w-full max-w-sm">
-        <Button.Group>
-          <Button.Slot variant="primary" className="w-full">
-            <Link to={Route['/onboarding/general']}>
-              Get Started <ArrowRight className="size-5" />
-            </Link>
-          </Button.Slot>
-        </Button.Group>
-      </div>
+      <Button.Slot variant="primary" className="w-full">
+        <Link to={Route['/onboarding/general']}>
+          Get Started <ArrowRight className="size-5" />
+        </Link>
+      </Button.Slot>
     </div>
+  );
+}
+
+type OnboardingImageProps = {
+  alt: string;
+  src: `/images/onboarding-${string}.png`;
+};
+
+function OnboardingImage({ src, alt }: OnboardingImageProps) {
+  return (
+    <li className="shrink-0 snap-center">
+      <img alt={alt} className="h-[400px] w-auto rounded-md shadow" src={src} />
+    </li>
   );
 }
