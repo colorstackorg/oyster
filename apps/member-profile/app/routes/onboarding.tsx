@@ -2,7 +2,6 @@ import { json, type LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { Link, Outlet, useLocation } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'react-feather';
-import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
 import { Button, cx, Public, Text, type TextProps } from '@oyster/ui';
@@ -64,6 +63,24 @@ function OnboardingProgress() {
 
 type ProgressStep = '1' | '2' | '3' | '4' | '5';
 
+const STEP_ROUTE_MAP: Record<string, ProgressStep> = {
+  [Route['/onboarding/general']]: '1',
+  [Route['/onboarding/emails']]: '1',
+  [Route['/onboarding/emails/verify']]: '1',
+  [Route['/onboarding/education']]: '2',
+  [Route['/onboarding/work']]: '3',
+  [Route['/onboarding/socials']]: '4',
+  [Route['/onboarding/slack']]: '5',
+};
+
+const STEP_LABEL_MAP: Record<ProgressStep, string> = {
+  '1': 'General',
+  '2': 'Education',
+  '3': 'Work',
+  '4': 'Community',
+  '5': 'Slack',
+};
+
 type ProgressBarStepProps = {
   step: ProgressStep;
 };
@@ -84,15 +101,7 @@ function ProgressBarStep({ step }: ProgressBarStepProps) {
         {status === 'completed' ? <Check size={20} /> : parseInt(step)}
       </p>
 
-      <Text variant="sm">
-        {match(step)
-          .with('1', () => 'General')
-          .with('2', () => 'Email')
-          .with('3', () => 'Education/Work')
-          .with('4', () => 'Community')
-          .with('5', () => 'Slack')
-          .exhaustive()}
-      </Text>
+      <Text variant="sm">{STEP_LABEL_MAP[step]}</Text>
     </div>
   );
 }
@@ -119,20 +128,10 @@ function ProgressBarDivider({ step }: ProgressBarDividerProps) {
 
 type StepStatus = 'active' | 'completed' | 'inactive';
 
-const STEP_STATUS_MAP = {
-  [Route['/onboarding/general']]: '1',
-  [Route['/onboarding/emails']]: '2',
-  [Route['/onboarding/emails/verify']]: '2',
-  [Route['/onboarding/education']]: '3',
-  [Route['/onboarding/work']]: '3',
-  [Route['/onboarding/socials']]: '4',
-  [Route['/onboarding/slack']]: '5',
-};
-
 function useStepStatus(step: ProgressStep): StepStatus {
   const { pathname } = useLocation();
 
-  const activeStep = STEP_STATUS_MAP[pathname as keyof typeof STEP_STATUS_MAP];
+  const activeStep = STEP_ROUTE_MAP[pathname as keyof typeof STEP_ROUTE_MAP];
 
   if (step === activeStep) {
     return 'active';
