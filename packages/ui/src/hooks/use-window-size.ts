@@ -12,11 +12,9 @@ import { useEffect, useState } from 'react';
  * @see https://usehooks.com/usewindowsize
  */
 export function useWindowSize() {
-  const isWindowAvailable = typeof window !== 'undefined';
-
   const [size, setSize] = useState({
-    width: isWindowAvailable ? window.innerWidth : 0,
-    height: isWindowAvailable ? window.innerHeight : 0,
+    height: 0,
+    width: 0,
   });
 
   useEffect(() => {
@@ -26,6 +24,9 @@ export function useWindowSize() {
         height: window.innerHeight,
       });
     };
+
+    // Set the initial size upon mounting.
+    handleResize();
 
     window.addEventListener('resize', handleResize);
 
