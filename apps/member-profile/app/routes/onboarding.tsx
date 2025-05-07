@@ -3,10 +3,10 @@ import { Link, Outlet, useLocation } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'react-feather';
 
+import { ONBOARDING_FLOW_LAUNCH_DATE } from '@oyster/core/onboarding';
 import { db } from '@oyster/db';
 import { Button, cx, Public, Text, type TextProps } from '@oyster/ui';
 
-import { ONBOARDING_FLOW_LAUNCH_DATE } from '@/modules/onboarding';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
