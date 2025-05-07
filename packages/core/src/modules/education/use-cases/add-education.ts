@@ -1,7 +1,6 @@
 import { db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { job } from '@/infrastructure/bull';
 import { checkMostRecentEducation } from './check-most-recent-education';
 import { type AddEducationInput } from '../education.types';
 
