@@ -12,12 +12,11 @@ import {
   EDUCATION_LEVEL_TO_DEGREE_TYPE,
   type EducationLevel,
 } from '@oyster/core/education/types';
-import { upsertEducation } from '@oyster/core/member-profile/server';
+import { addEducation } from '@oyster/core/member-profile/server';
 import {
   AddEducationInput,
   type DegreeType,
   type School,
-  UpsertEducationInput,
 } from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
 import { type Major } from '@oyster/types';
@@ -74,7 +73,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({ education, member });
 }
 
-const AddEducationFormData = UpsertEducationInput.omit({
+const AddEducationFormData = AddEducationInput.omit({
   studentId: true,
 }).extend({
   endDate: AddEducationInput.shape.endDate.refine((value) => {
@@ -96,8 +95,6 @@ export async function action({ request }: ActionFunctionArgs) {
     AddEducationFormData
   );
 
-  console.log(data, errors);
-
   if (!ok) {
     return json({ errors }, { status: 400 });
   }
@@ -110,7 +107,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    await upsertEducation({
+    await addEducation({
       ...data,
       studentId: user(session),
     });

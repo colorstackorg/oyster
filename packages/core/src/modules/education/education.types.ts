@@ -97,6 +97,8 @@ export const AddEducationInput = Education.pick({
   schoolId: true,
   startDate: true,
   studentId: true,
+}).extend({
+  id: nullableField(Education.shape.id.nullable()),
 });
 
 export const CreateSchoolInput = School.pick({
@@ -115,19 +117,6 @@ export const UpdateSchoolInput = School.pick({
   tags: true,
 });
 
-export const UpsertEducationInput = Education.pick({
-  degreeType: true,
-  endDate: true,
-  major: true,
-  otherMajor: true,
-  otherSchool: true,
-  schoolId: true,
-  startDate: true,
-  studentId: true,
-}).extend({
-  id: nullableField(z.string().trim().min(1).nullable()),
-});
-
 // Types
 
 export type AddEducationInput = z.infer<typeof AddEducationInput>;
@@ -137,4 +126,3 @@ export type Education = z.infer<typeof Education>;
 export type EducationLevel = ExtractValue<typeof EducationLevel>;
 export type School = z.infer<typeof School>;
 export type UpdateSchoolInput = z.infer<typeof UpdateSchoolInput>;
-export type UpsertEducationInput = z.infer<typeof UpsertEducationInput>;

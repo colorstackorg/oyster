@@ -5,7 +5,7 @@ import { checkMostRecentEducation } from './check-most-recent-education';
 import { type AddEducationInput } from '../education.types';
 
 export async function addEducation(input: AddEducationInput) {
-  const educationId = id();
+  const educationId = input.id || id();
 
   await db
     .insertInto('educations')
@@ -19,6 +19,17 @@ export async function addEducation(input: AddEducationInput) {
       schoolId: input.schoolId,
       startDate: input.startDate,
       studentId: input.studentId,
+    })
+    .onConflict((oc) => {
+      return oc.column('id').doUpdateSet({
+        degreeType: input.degreeType,
+        endDate: input.endDate,
+        major: input.major,
+        otherMajor: input.otherMajor,
+        otherSchool: input.otherSchool,
+        schoolId: input.schoolId,
+        startDate: input.startDate,
+      });
     })
     .execute();
 
