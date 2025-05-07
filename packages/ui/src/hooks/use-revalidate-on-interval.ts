@@ -6,16 +6,16 @@ import { useEffect } from 'react';
  * for keeping data fresh by periodically revalidating in the background,
  * similar to the SWR `refreshInterval` option.
  */
-export function useRevalidateOnInterval(interval: number) {
+export function useRevalidateOnInterval(ms: number) {
   const revalidator = useRevalidator();
 
   useEffect(() => {
-    const id = setInterval(() => {
+    const interval = setInterval(() => {
       revalidator.revalidate();
-    }, interval);
+    }, ms);
 
     return () => {
-      clearInterval(id);
+      clearInterval(interval);
     };
-  }, [interval, revalidator]);
+  }, [ms, revalidator]);
 }
