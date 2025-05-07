@@ -21,12 +21,11 @@ import {
 } from 'react-feather';
 
 import { isFeatureFlagEnabled } from '@oyster/core/member-profile/server';
-import { ONBOARDING_FLOW_LAUNCH_DATE } from '@oyster/core/onboarding';
 import { getResumeBook } from '@oyster/core/resume-books';
 import { db } from '@oyster/db';
 import { Dashboard, Divider } from '@oyster/ui';
 
-import { Route } from '@/shared/constants';
+import { ONBOARDING_FLOW_LAUNCH_DATE, Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
