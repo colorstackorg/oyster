@@ -50,7 +50,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({ member });
 }
 
-const OnboardingGeneralInformation = Student.pick({
+const OnboardingGeneralData = Student.pick({
   firstName: true,
   lastName: true,
   preferredName: true,
@@ -61,16 +61,14 @@ const OnboardingGeneralInformation = Student.pick({
   currentLocationLongitude: Student.shape.currentLocationLongitude.unwrap(),
 });
 
-type OnboardingGeneralInformation = z.infer<
-  typeof OnboardingGeneralInformation
->;
+type OnboardingGeneralData = z.infer<typeof OnboardingGeneralData>;
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const { data, errors, ok } = await validateForm(
     request,
-    OnboardingGeneralInformation
+    OnboardingGeneralData
   );
 
   if (!ok) {
