@@ -5,7 +5,7 @@ import {
   redirect,
 } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
-import { z } from 'zod';
+import { type z } from 'zod';
 
 import { updateMember } from '@oyster/core/member-profile/server';
 import { db } from '@oyster/db';
@@ -31,25 +31,12 @@ import {
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
-const Step = z
-  .enum(['personal', 'education', 'social', 'work'])
-  .default('personal')
-  .catch('personal');
-
-type Step = z.infer<typeof Step>;
-
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
-  const searchParams = new URL(request.url).searchParams;
-
-  const stepParam = searchParams.get('step');
-  const step = Step.parse(stepParam);
 
   const member = await db
     .selectFrom('students')
-    .where('id', '=', user(session))
     .select([
-      'birthdate',
       'currentLocation',
       'currentLocationCoordinates',
       'firstName',
@@ -57,13 +44,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       'phoneNumber',
       'preferredName',
     ])
-    .executeTakeFirst();
+    .where('id', '=', user(session))
+    .executeTakeFirstOrThrow();
 
-  if (!member) {
-    return redirect(Route['/login']);
-  }
-
-  return json({ member, step });
+  return json({ member });
 }
 
 const OnboardingGeneralInformation = Student.pick({
@@ -93,10 +77,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  await updateMember({
-    data,
-    where: { id: user(session) },
-  });
+  await updateMember(user(session), data);
 
   return redirect(Route['/onboarding/emails']);
 }

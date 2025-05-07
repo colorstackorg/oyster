@@ -35,16 +35,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const githubProfile = await getGithubProfile({ accessToken });
 
-    await updateMember({
-      data: {
-        githubAccessToken: accessToken,
-        githubConnectedAt: new Date(),
-        githubId: githubProfile.id,
-        githubUrl: githubProfile.url,
-      },
-      where: {
-        id: memberId,
-      },
+    await updateMember(memberId, {
+      githubAccessToken: accessToken,
+      githubConnectedAt: new Date(),
+      githubId: githubProfile.id,
+      githubUrl: githubProfile.url,
     });
   } catch (e) {
     const error = new ErrorWithContext((e as Error).message).withContext({

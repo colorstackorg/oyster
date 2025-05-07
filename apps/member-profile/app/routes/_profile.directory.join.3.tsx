@@ -61,10 +61,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  await updateMember({
-    data,
-    where: { id: user(session) },
-  });
+  await updateMember(user(session), data);
 
   return redirect(Route['/directory/join/4']);
 }

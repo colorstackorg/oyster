@@ -96,9 +96,9 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    await updateMember({
-      data: { ...data, ethnicities: data.ethnicities || [] },
-      where: { id: user(session) },
+    await updateMember(user(session), {
+      ...data,
+      ethnicities: data.ethnicities || [],
     });
 
     const { email, slackId } = await db
