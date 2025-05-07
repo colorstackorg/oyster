@@ -25,6 +25,7 @@ export { getIcebreakerResponses } from './modules/icebreakers/queries/get-icebre
 export { upsertIcebreakerResponses } from './modules/icebreakers/use-cases/upsert-icebreaker-responses';
 export { listEmails } from './modules/members/queries/list-emails';
 export { listMembersInDirectory } from './modules/members/queries/list-members-in-directory';
+export { addEmail, AddEmailInput } from './modules/members/use-cases/add-email';
 export { changePrimaryEmail } from './modules/members/use-cases/change-primary-email';
 export { joinMemberDirectory } from './modules/members/use-cases/join-member-directory';
 export {
