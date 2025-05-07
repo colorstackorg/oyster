@@ -19,7 +19,6 @@ import {
   Field,
   getErrors,
   Input,
-  Text,
   validateForm,
 } from '@oyster/ui';
 
@@ -27,6 +26,7 @@ import {
   OnboardingBackButton,
   OnboardingButtonGroup,
   OnboardingContinueButton,
+  OnboardingSectionDescription,
   OnboardingSectionTitle,
 } from '@/routes/onboarding';
 import {
@@ -41,19 +41,21 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
+  const memberId = user(session);
+
   const [ethnicities, member] = await Promise.all([
-    getMemberEthnicities(user(session)),
-    getMember(user(session))
+    getMemberEthnicities(memberId),
+    getMember(memberId)
       .select([
         sql<string>`to_char(birthdate, 'YYYY-MM-DD')`.as('birthdate'),
         'calendlyUrl',
         'githubUrl',
         'hometown',
         'hometownCoordinates',
-        'linkedInUrl',
         'instagramHandle',
-        'twitterHandle',
+        'linkedInUrl',
         'personalWebsiteUrl',
+        'twitterHandle',
       ])
       .executeTakeFirstOrThrow(),
   ]);
@@ -61,7 +63,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({ ethnicities, member });
 }
 
-const UpdateSocialsInformation = z.object({
+const CommunityData = z.object({
   birthdate: nullableField(ISO8601Date.nullable()),
   calendlyUrl: nullableField(Student.shape.calendlyUrl),
   ethnicities: nullableField(
@@ -81,22 +83,19 @@ const UpdateSocialsInformation = z.object({
   twitterHandle: nullableField(Student.shape.twitterHandle),
 });
 
-type UpdateSocialsInformation = z.infer<typeof UpdateSocialsInformation>;
-
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    UpdateSocialsInformation
-  );
+  const { data, errors, ok } = await validateForm(request, CommunityData);
 
   if (!ok) {
     return json({ errors }, { status: 400 });
   }
 
+  const memberId = user(session);
+
   try {
-    await updateMember(user(session), {
+    await updateMember(memberId, {
       ...data,
       ethnicities: data.ethnicities || [],
     });
@@ -104,13 +103,11 @@ export async function action({ request }: ActionFunctionArgs) {
     const { email, slackId } = await db
       .selectFrom('students')
       .select(['email', 'slackId'])
-      .where('id', '=', user(session))
+      .where('id', '=', memberId)
       .executeTakeFirstOrThrow();
 
     if (!slackId) {
-      job('slack.invite', {
-        email,
-      });
+      job('slack.invite', { email });
     }
 
     return redirect(Route['/onboarding/slack']);
@@ -119,7 +116,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-export default function SocialForm() {
+export default function OnboardingCommunityForm() {
   const { ethnicities, member } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const { error, errors } = getErrors(actionData);
@@ -130,10 +127,10 @@ export default function SocialForm() {
         Connect with ColorStack Members
       </OnboardingSectionTitle>
 
-      <Text color="gray-500">
+      <OnboardingSectionDescription>
         ColorStack's strength is the community! Connect with other members to
         find opportunities, collaborate on projects, and build your network.
-      </Text>
+      </OnboardingSectionDescription>
 
       <Field
         error={errors.linkedInUrl}
@@ -214,9 +211,9 @@ export default function SocialForm() {
         defaultLongitude={member.hometownCoordinates?.x || undefined}
         defaultValue={member.hometown || undefined}
         description="Rep your hometown!"
+        error={errors.hometown}
         latitudeName="hometownLatitude"
         longitudeName="hometownLongitude"
-        error={errors.hometown}
         name="hometown"
       />
       <EthnicityField
@@ -226,7 +223,7 @@ export default function SocialForm() {
         name="ethnicities"
       />
       <BirthdateField
-        defaultValue={member.birthdate?.slice(0, 10) || undefined}
+        defaultValue={member.birthdate || undefined}
         error={errors.birthdate}
         name="birthdate"
       />
