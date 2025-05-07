@@ -78,7 +78,7 @@ export function ApplicationAcceptedEmail({
                 </Email.Link>
               </b>{' '}
               to learn more about our programming & offerings, how to be an
-              engaged family member, & meet other new members! 📅
+              engaged family member, and meet other new members! 📅
             </Email.Text>
           </li>
 
