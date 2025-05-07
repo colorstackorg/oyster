@@ -5,13 +5,11 @@ import {
   redirect,
 } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
-import { type z } from 'zod';
 
-import { job } from '@oyster/core/bull';
 import {
-  OneTimeCode,
-  OneTimeCodePurpose,
-} from '@oyster/core/member-profile/ui';
+  sendEmailCode,
+  SendEmailCodeInput,
+} from '@oyster/core/member-profile/server';
 import { db } from '@oyster/db';
 import {
   ErrorMessage,
@@ -20,7 +18,6 @@ import {
   Input,
   validateForm,
 } from '@oyster/ui';
-import { id } from '@oyster/utils';
 
 import {
   OnboardingBackButton,
@@ -39,47 +36,30 @@ import {
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const [member, secondaryEmail] = await Promise.all([
-    db
-      .selectFrom('students')
-      .where('id', '=', user(session))
-      .select(['email'])
-      .executeTakeFirst(),
+  const [primaryEmailRow, secondaryEmailRow] = await db
+    .selectFrom('studentEmails')
+    .select('email')
+    .where('studentId', '=', user(session))
+    .orderBy('createdAt', 'asc')
+    .execute();
 
-    db
-      .selectFrom('studentEmails')
-      .where('studentId', '=', user(session))
-      .select('email')
-      .orderBy('createdAt', 'asc')
-      .offset(1)
-      .executeTakeFirst(),
-  ]);
-
-  if (!member) {
-    return redirect(Route['/login']);
-  }
-
-  return json({ primaryEmail: member.email, secondaryEmail });
+  return json({
+    primaryEmail: primaryEmailRow?.email,
+    secondaryEmail: secondaryEmailRow?.email,
+  });
 }
-
-const SendEmailCodeInput = OneTimeCode.pick({
-  email: true,
-});
-
-type SendEmailCodeInput = z.infer<typeof SendEmailCodeInput>;
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const secondaryEmail = await db
+  const emails = await db
     .selectFrom('studentEmails')
-    .where('studentId', '=', user(session))
     .select('email')
+    .where('studentId', '=', user(session))
     .orderBy('createdAt', 'asc')
-    .offset(1)
-    .executeTakeFirst();
+    .execute();
 
-  if (secondaryEmail) {
+  if (emails.length >= 2) {
     return redirect(Route['/onboarding/education']);
   }
 
@@ -103,60 +83,6 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-async function sendEmailCode(studentId: string, input: SendEmailCodeInput) {
-  const existingEmail = await db
-    .selectFrom('studentEmails')
-    .select(['studentId'])
-    .where('email', 'ilike', input.email)
-    .executeTakeFirst();
-
-  if (existingEmail) {
-    throw new Error(
-      existingEmail.studentId === studentId
-        ? 'This email already belongs to you.'
-        : 'The email you are trying to add belongs to another member.'
-    );
-  }
-
-  const [oneTimeCode, student] = await db.transaction().execute(async (trx) => {
-    const oneTimeCode = await trx
-      .insertInto('oneTimeCodes')
-      .returning(['email', 'id', 'value'])
-      .values({
-        email: input.email,
-        id: id(),
-        purpose: OneTimeCodePurpose.ADD_STUDENT_EMAIL,
-        value: Math.random().toString().slice(-6),
-        studentId,
-      })
-      .executeTakeFirstOrThrow();
-
-    await trx
-      .deleteFrom('oneTimeCodes')
-      .where('id', '!=', oneTimeCode.id)
-      .where('purpose', '=', OneTimeCodePurpose.ADD_STUDENT_EMAIL)
-      .where('studentId', '=', studentId)
-      .execute();
-
-    const student = await trx
-      .selectFrom('students')
-      .select(['firstName'])
-      .where('id', '=', studentId)
-      .executeTakeFirstOrThrow();
-
-    return [oneTimeCode, student];
-  });
-
-  job('notification.email.send', {
-    to: oneTimeCode.email,
-    name: 'one-time-code-sent',
-    data: {
-      code: oneTimeCode.value,
-      firstName: student.firstName,
-    },
-  });
-}
-
 export default function OnboardingEmailForm() {
   const { primaryEmail, secondaryEmail } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
@@ -167,9 +93,9 @@ export default function OnboardingEmailForm() {
       <OnboardingSectionTitle>Email Addresses</OnboardingSectionTitle>
 
       <Field
-        description="This is the email address that you applied with. You can change your primary email at any time."
+        description="This is the email address that you applied with. You can change your primary email in your Member Profile at any time after onboarding."
         label="Primary Email"
-        labelFor="email"
+        labelFor="primaryEmail"
         required
       >
         <Input
@@ -190,7 +116,7 @@ export default function OnboardingEmailForm() {
         required
       >
         <Input
-          defaultValue={secondaryEmail?.email}
+          defaultValue={secondaryEmail}
           disabled={!!secondaryEmail}
           id="email"
           name="email"
