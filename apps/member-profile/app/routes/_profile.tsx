@@ -21,6 +21,7 @@ import {
 } from 'react-feather';
 
 import { isFeatureFlagEnabled } from '@oyster/core/member-profile/server';
+import { ONBOARDING_FLOW_LAUNCH_DATE } from '@oyster/core/onboarding';
 import { getResumeBook } from '@oyster/core/resume-books';
 import { db } from '@oyster/db';
 import { Dashboard, Divider } from '@oyster/ui';
@@ -55,6 +56,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
+// TODO: We should probably cache this somehow...don't necessarily want to hit
+// the DB for every single request.
 async function ensureUserOnboarded(session: Session) {
   const member = await db
     .selectFrom('students')
@@ -62,17 +65,21 @@ async function ensureUserOnboarded(session: Session) {
     .where('id', '=', user(session))
     .executeTakeFirst();
 
+  // This should never happen, that means the user is logged in with a bad ID.
   if (!member) {
-    throw redirect(Route['/onboarding']);
+    throw new Response(null, {
+      status: 404,
+      statusText: 'Something went wrong. Please contact support.',
+    });
   }
 
-  if (member.acceptedAt >= new Date('2025-05-01') && !member.onboardedAt) {
+  if (member.acceptedAt >= ONBOARDING_FLOW_LAUNCH_DATE && !member.onboardedAt) {
     throw redirect(Route['/onboarding']);
   }
 }
 
-// NOTE: IF YOU UPDATE SOMETHING HERE, YOU SHOULD PROBABLY UPDATE THE FIRST
-// TIME MODAL TOO.
+// NOTE: IF YOU UPDATE SOMETHING HERE, YOU SHOULD PROBABLY UPDATE THE "FIRST
+// TIME MODAL" TOO.
 
 export default function ProfileLayout() {
   const { isPointsPageEnabled, resumeBook } = useLoaderData<typeof loader>();

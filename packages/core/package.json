@@ -40,6 +40,7 @@
     "./mixpanel": "./src/infrastructure/mixpanel.ts",
     "./offers": "./src/modules/compensation/offers.ts",
     "./offers/ui": "./src/modules/compensation/offers.ui.tsx",
+    "./onboarding": "./src/modules/onboarding.ts",
     "./opportunities": "./src/modules/opportunities.ts",
     "./peer-help": "./src/modules/peer-help.ts",
     "./referrals": "./src/modules/referrals/referrals.ts",
