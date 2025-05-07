@@ -5,19 +5,10 @@ import {
   redirect,
 } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
-import dayjs from 'dayjs';
-import { type z } from 'zod';
 
-import {
-  EDUCATION_LEVEL_TO_DEGREE_TYPE,
-  type EducationLevel,
-} from '@oyster/core/education/types';
+import { type EducationLevel } from '@oyster/core/education/types';
 import { addEducation } from '@oyster/core/member-profile/server';
-import {
-  AddEducationInput,
-  type DegreeType,
-  type School,
-} from '@oyster/core/member-profile/ui';
+import { AddEducationInput, DegreeType } from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
 import { type Major } from '@oyster/types';
 import { ErrorMessage, getErrors, validateForm } from '@oyster/ui';
@@ -36,22 +27,9 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const [member, education] = await Promise.all([
-    db
-      .selectFrom('students')
-      .leftJoin('schools', 'schools.id', 'students.schoolId')
-      .select([
-        'educationLevel',
-        'graduationYear',
-        'major',
-        'otherMajor',
-        'schools.id as schoolId',
-        'schools.name as schoolName',
-        'otherSchool',
-      ])
-      .where('students.id', '=', user(session))
-      .executeTakeFirstOrThrow(),
+  const memberId = user(session);
 
+  const [education, member] = await Promise.all([
     db
       .selectFrom('educations')
       .leftJoin('schools', 'schools.id', 'educations.schoolId')
@@ -66,33 +44,34 @@ export async function loader({ request }: LoaderFunctionArgs) {
         'startDate',
         'schools.name as schoolName',
       ])
-      .where('studentId', '=', user(session))
+      .where('studentId', '=', memberId)
       .executeTakeFirst(),
+
+    db
+      .selectFrom('students')
+      .leftJoin('schools', 'schools.id', 'students.schoolId')
+      .select([
+        'educationLevel',
+        'graduationYear',
+        'major',
+        'otherMajor',
+        'schools.id as schoolId',
+        'schools.name as schoolName',
+        'otherSchool',
+      ])
+      .where('students.id', '=', memberId)
+      .executeTakeFirstOrThrow(),
   ]);
 
   return json({ education, member });
 }
-
-const AddEducationFormData = AddEducationInput.omit({
-  studentId: true,
-}).extend({
-  endDate: AddEducationInput.shape.endDate.refine((value) => {
-    return dayjs(value).year() >= 1000;
-  }, 'Please fill out all 4 digits of the year.'),
-
-  startDate: AddEducationInput.shape.startDate.refine((value) => {
-    return dayjs(value).year() >= 1000;
-  }, 'Please fill out all 4 digits of the year.'),
-});
-
-type AddEducationFormData = z.infer<typeof AddEducationFormData>;
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const { data, errors, ok } = await validateForm(
     request,
-    AddEducationFormData
+    AddEducationInput.omit({ studentId: true })
   );
 
   if (!ok) {
@@ -118,28 +97,10 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-export default function EducationHistoryForm() {
-  const { education, member } = useLoaderData<typeof loader>();
+export default function OnboardingEducationForm() {
+  const { education } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const { error, errors } = getErrors(actionData);
-
-  const school: Pick<School, 'id' | 'name'> = {
-    id: '',
-    name: '',
-  };
-
-  if (education && education.schoolId && education.schoolName) {
-    school.id = education.schoolId;
-    school.name = education.schoolName;
-  } else if (member.schoolId && member.schoolName) {
-    school.id = member.schoolId;
-    school.name = member.schoolName;
-  } else if (member.otherSchool) {
-    school.id = 'other';
-    school.name = member.otherSchool;
-  }
-
-  const degreeType = education?.degreeType as DegreeType;
+  const { error } = getErrors(actionData);
 
   return (
     <Form className="form" method="post">
@@ -148,50 +109,7 @@ export default function EducationHistoryForm() {
         Tell us more about your current education.
       </OnboardingSectionDescription>
 
-      <EducationForm.Context>
-        <EducationForm.SchoolField
-          defaultValue={school}
-          error={errors.schoolId}
-          name="schoolId"
-        />
-        <EducationForm.OtherSchoolField
-          defaultValue={education?.otherSchool || undefined}
-          error={errors.otherSchool}
-          name="otherSchool"
-        />
-        <EducationForm.DegreeTypeField
-          defaultValue={
-            degreeType ||
-            EDUCATION_LEVEL_TO_DEGREE_TYPE[
-              member.educationLevel as EducationLevel
-            ]
-          }
-          error={errors.degreeType}
-          name="degreeType"
-        />
-        <EducationForm.FieldOfStudyField
-          defaultValue={(education?.major || member.major) as Major}
-          error={errors.major}
-          name="major"
-        />
-        <EducationForm.OtherFieldOfStudyField
-          defaultValue={education?.otherMajor || member.otherMajor || undefined}
-          error={errors.otherMajor}
-          name="otherMajor"
-        />
-        <EducationForm.StartDateField
-          defaultValue={education?.startDate.slice(0, 7) || undefined}
-          error={errors.startDate}
-          name="startDate"
-        />
-        <EducationForm.EndDateField
-          defaultValue={education?.endDate.slice(0, 7)}
-          error={errors.endDate}
-          name="endDate"
-        />
-
-        <input type="hidden" name="id" value={education?.id} />
-      </EducationForm.Context>
+      {education ? <FieldsetFromEducation /> : <FieldsetFromMember />}
 
       <ErrorMessage>{error}</ErrorMessage>
 
@@ -200,5 +118,122 @@ export default function EducationHistoryForm() {
         <OnboardingContinueButton />
       </OnboardingButtonGroup>
     </Form>
+  );
+}
+
+function FieldsetFromEducation() {
+  const { education } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
+  const { errors } = getErrors(actionData);
+
+  if (!education) {
+    return null;
+  }
+
+  return (
+    <EducationForm.Context>
+      <EducationForm.SchoolField
+        defaultValue={
+          education.schoolId && education.schoolName
+            ? { id: education.schoolId, name: education.schoolName }
+            : { id: 'other', name: 'Other' }
+        }
+        error={errors.schoolId}
+        name="schoolId"
+      />
+      <EducationForm.OtherSchoolField
+        defaultValue={education.otherSchool || undefined}
+        error={errors.otherSchool}
+        name="otherSchool"
+      />
+      <EducationForm.DegreeTypeField
+        defaultValue={education.degreeType as DegreeType}
+        error={errors.degreeType}
+        name="degreeType"
+      />
+      <EducationForm.FieldOfStudyField
+        defaultValue={education.major as Major}
+        error={errors.major}
+        name="major"
+      />
+      <EducationForm.OtherFieldOfStudyField
+        defaultValue={education.otherMajor || undefined}
+        error={errors.otherMajor}
+        name="otherMajor"
+      />
+      <EducationForm.StartDateField
+        defaultValue={education.startDate.slice(0, 7) || undefined}
+        error={errors.startDate}
+        name="startDate"
+      />
+      <EducationForm.EndDateField
+        defaultValue={education.endDate.slice(0, 7)}
+        error={errors.endDate}
+        name="endDate"
+      />
+
+      <input type="hidden" name="id" value={education.id} />
+    </EducationForm.Context>
+  );
+}
+
+const EDUCATION_LEVEL_TO_DEGREE_TYPE: Record<
+  EducationLevel,
+  DegreeType | null
+> = {
+  bootcamp: DegreeType.CERTIFICATE,
+  masters: DegreeType.MASTERS,
+  other: null,
+  phd: DegreeType.DOCTORAL,
+  undergraduate: DegreeType.BACHELORS,
+};
+
+function FieldsetFromMember() {
+  const { education, member } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
+  const { errors } = getErrors(actionData);
+
+  if (education) {
+    return null;
+  }
+
+  return (
+    <EducationForm.Context>
+      <EducationForm.SchoolField
+        defaultValue={
+          member.schoolId && member.schoolName
+            ? { id: member.schoolId, name: member.schoolName }
+            : { id: 'other', name: 'Other' }
+        }
+        error={errors.schoolId}
+        name="schoolId"
+      />
+      <EducationForm.OtherSchoolField
+        defaultValue={member.otherSchool || undefined}
+        error={errors.otherSchool}
+        name="otherSchool"
+      />
+      <EducationForm.DegreeTypeField
+        defaultValue={
+          EDUCATION_LEVEL_TO_DEGREE_TYPE[
+            member.educationLevel as EducationLevel
+          ] || undefined
+        }
+        error={errors.degreeType}
+        name="degreeType"
+      />
+      <EducationForm.FieldOfStudyField
+        defaultValue={member.major as Major}
+        error={errors.major}
+        name="major"
+      />
+      <EducationForm.OtherFieldOfStudyField
+        defaultValue={member.otherMajor || undefined}
+        error={errors.otherMajor}
+        name="otherMajor"
+      />
+      <EducationForm.StartDateField error={errors.startDate} name="startDate" />
+      <EducationForm.EndDateField error={errors.endDate} name="endDate" />
+    </EducationForm.Context>
   );
 }
