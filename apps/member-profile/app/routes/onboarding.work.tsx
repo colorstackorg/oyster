@@ -14,6 +14,7 @@ import {
   type EmploymentType,
   type LocationType,
 } from '@oyster/core/member-profile/ui';
+import { WorkForm } from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
 import {
   Address,
@@ -25,7 +26,6 @@ import {
   validateForm,
 } from '@oyster/ui';
 
-import { WorkForm } from '@/modules/employment/ui/work-form';
 import {
   OnboardingBackButton,
   OnboardingButtonGroup,
