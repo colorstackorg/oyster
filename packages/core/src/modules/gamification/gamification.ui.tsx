@@ -8,10 +8,8 @@ import {
   Select,
   Textarea,
 } from '@oyster/ui';
-import { toTitleCase } from '@oyster/utils';
 
 import {
-  ActivityPeriod,
   ActivityType,
   CreateActivityInput,
 } from '@/modules/gamification/gamification.types';
@@ -26,7 +24,6 @@ type ActivityFormProps = {
   errors: Partial<Record<keyof CreateActivityInput, string>>;
 };
 
-const ACTIVITY_PERIODS = Object.values(ActivityPeriod);
 const ACTIVITY_TYPES = Object.values(ActivityType);
 
 export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
@@ -75,25 +72,6 @@ export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
           {ACTIVITY_TYPES.map((type) => (
             <option key={type} value={type}>
               {type}
-            </option>
-          ))}
-        </Select>
-      </Field>
-
-      <Field
-        description="This is the period of time that a member has to wait before completing this activity again."
-        error={errors.period}
-        label="Period"
-        labelFor={keys.period}
-      >
-        <Select
-          defaultValue={activity?.period || undefined}
-          id={keys.period}
-          name={keys.period}
-        >
-          {ACTIVITY_PERIODS.map((period) => (
-            <option key={period} value={period}>
-              {toTitleCase(period)}
             </option>
           ))}
         </Select>

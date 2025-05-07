@@ -4,10 +4,6 @@ import { Entity, type ExtractValue, Student } from '@oyster/types';
 
 // Enums
 
-export const ActivityPeriod = {
-  QUARTERLY: 'quarterly',
-} as const;
-
 // NOTE: If any of these values are changed, the unique indicies in the
 // database also need to be updated.
 export const ActivityType = {
@@ -28,7 +24,6 @@ export const ActivityType = {
 } as const;
 
 export type ActivityType = ExtractValue<typeof ActivityType>;
-export type ActivityPeriod = ExtractValue<typeof ActivityPeriod>;
 
 // Schemas
 
@@ -38,7 +33,6 @@ export const Activity = z.object({
   description: z.string().trim().min(1).nullable().catch(null),
   id: Entity.shape.id,
   name: z.string().trim().min(1),
-  period: z.nativeEnum(ActivityPeriod).nullable().catch(null),
   points: z.coerce.number().int().positive(),
   type: z.nativeEnum(ActivityType),
 });
