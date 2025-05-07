@@ -17,15 +17,15 @@ export async function addWorkExperience({
   companyName,
   endDate,
   employmentType,
+  id: workExperienceId,
   locationCity,
   locationState,
   locationType,
   startDate,
   studentId,
   title,
-  ...workExperience
 }: AddWorkExperienceInput) {
-  const workExperienceId = workExperience.id || id();
+  workExperienceId ||= id();
 
   await db.transaction().execute(async (trx) => {
     const companyId = await saveCompanyIfNecessary(trx, companyCrunchbaseId);

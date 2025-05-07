@@ -137,7 +137,7 @@ export const AddWorkExperienceInput = WorkExperience.pick({
   title: true,
 }).extend({
   companyCrunchbaseId: Company.shape.crunchbaseId,
-  id: nullableField(z.string().trim().min(1).nullable()),
+  id: nullableField(WorkExperience.shape.id.nullable()),
 });
 
 export const DeleteWorkExperienceInput = WorkExperience.pick({
