@@ -4,12 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form,
-  useActionData,
-  useFetcher,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { type z } from 'zod';
 
 import { job } from '@oyster/core/bull';
@@ -19,7 +14,6 @@ import {
 } from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
 import {
-  Button,
   ErrorMessage,
   Field,
   getErrors,
@@ -29,11 +23,11 @@ import {
 import { id } from '@oyster/utils';
 
 import {
-  ContinueButton,
+  OnboardingBackButton,
   OnboardingButtonGroup,
-  SectionTitle,
+  OnboardingContinueButton,
+  OnboardingSectionTitle,
 } from '@/routes/onboarding';
-import { BackButton } from '@/routes/onboarding';
 import { Route } from '@/shared/constants';
 import { addEmailCookie } from '@/shared/cookies.server';
 import {
@@ -170,7 +164,7 @@ export default function OnboardingEmailForm() {
 
   return (
     <Form className="form" method="post">
-      <SectionTitle>Email Addresses</SectionTitle>
+      <OnboardingSectionTitle>Email Addresses</OnboardingSectionTitle>
 
       <Field
         description="This is the email address that you applied with. You can change your primary email at any time."
@@ -208,8 +202,8 @@ export default function OnboardingEmailForm() {
       <ErrorMessage>{error}</ErrorMessage>
 
       <OnboardingButtonGroup>
-        <BackButton to="/onboarding/general" />
-        <ContinueButton />
+        <OnboardingBackButton to="/onboarding/general" />
+        <OnboardingContinueButton />
       </OnboardingButtonGroup>
     </Form>
   );

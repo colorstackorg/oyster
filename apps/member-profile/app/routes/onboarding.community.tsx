@@ -24,10 +24,10 @@ import {
 } from '@oyster/ui';
 
 import {
-  BackButton,
-  ContinueButton,
+  OnboardingBackButton,
   OnboardingButtonGroup,
-  SectionTitle,
+  OnboardingContinueButton,
+  OnboardingSectionTitle,
 } from '@/routes/onboarding';
 import {
   BirthdateField,
@@ -126,7 +126,9 @@ export default function SocialForm() {
 
   return (
     <Form className="form" method="post">
-      <SectionTitle>Connect with ColorStack Members</SectionTitle>
+      <OnboardingSectionTitle>
+        Connect with ColorStack Members
+      </OnboardingSectionTitle>
 
       <Text color="gray-500">
         ColorStack's strength is the community! Connect with other members to
@@ -232,8 +234,8 @@ export default function SocialForm() {
       <ErrorMessage>{error}</ErrorMessage>
 
       <OnboardingButtonGroup>
-        <BackButton to="/onboarding/work" />
-        <ContinueButton />
+        <OnboardingBackButton to="/onboarding/work" />
+        <OnboardingContinueButton />
       </OnboardingButtonGroup>
     </Form>
   );

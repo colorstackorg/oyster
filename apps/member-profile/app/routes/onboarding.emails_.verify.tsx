@@ -15,7 +15,6 @@ import {
 import { db } from '@oyster/db';
 import { StudentEmail } from '@oyster/types';
 import {
-  Button,
   ErrorMessage,
   Field,
   getErrors,
@@ -24,12 +23,12 @@ import {
 } from '@oyster/ui';
 
 import {
-  ContinueButton,
+  OnboardingBackButton,
   OnboardingButtonGroup,
-  SectionDescription,
-  SectionTitle,
+  OnboardingContinueButton,
+  OnboardingSectionDescription,
+  OnboardingSectionTitle,
 } from '@/routes/onboarding';
-import { BackButton } from '@/routes/onboarding';
 import { Route } from '@/shared/constants';
 import { addEmailCookie } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -148,12 +147,12 @@ export default function OnboardingEmailForm() {
 
   return (
     <Form className="form" method="post">
-      <SectionTitle>Email Addresses</SectionTitle>
-      <SectionDescription>
+      <OnboardingSectionTitle>Email Addresses</OnboardingSectionTitle>
+      <OnboardingSectionDescription>
         Please input the 6-digit passcode that you received to complete the
         addition of <span style={{ fontWeight: 700 }}>{email}</span> to your
         profile.
-      </SectionDescription>
+      </OnboardingSectionDescription>
 
       <Field error={errors.code} labelFor="code" required>
         <Input autoFocus id="code" name="code" required />
@@ -162,8 +161,8 @@ export default function OnboardingEmailForm() {
       <ErrorMessage>{error}</ErrorMessage>
 
       <OnboardingButtonGroup>
-        <BackButton to="/onboarding/emails" />
-        <ContinueButton />
+        <OnboardingBackButton to="/onboarding/emails" />
+        <OnboardingContinueButton />
       </OnboardingButtonGroup>
     </Form>
   );

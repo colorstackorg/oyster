@@ -6,23 +6,42 @@ import { ArrowLeft, ArrowRight, Check } from 'react-feather';
 import { db } from '@oyster/db';
 import { Button, cx, Public, Text, type TextProps } from '@oyster/ui';
 
+import { ONBOARDING_FLOW_LAUNCH_DATE } from '@/modules/onboarding';
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated, user } from '@/shared/session.server';
+import {
+  commitSession,
+  ensureUserAuthenticated,
+  SESSION,
+  user,
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request, {
     message:
-      'Please log in using your school email to finish filling out your profile.',
+      'Welcome to ColorStack! Please log in using your school email to finish filling out your profile.',
   });
 
   const member = await db
     .selectFrom('students')
-    .select('onboardedAt')
+    .select(['acceptedAt', 'onboardedAt'])
     .where('id', '=', user(session))
     .executeTakeFirst();
 
-  if (member?.onboardedAt) {
-    return redirect(Route['/home']);
+  if (!member) {
+    throw new Response(null, {
+      status: 500,
+      statusText: 'Something went wrong. Please contact support.',
+    });
+  }
+
+  if (member.onboardedAt || member.acceptedAt < ONBOARDING_FLOW_LAUNCH_DATE) {
+    const to = session.get(SESSION.REDIRECT_URL) || Route['/home'];
+
+    throw redirect(to, {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
   }
 
   return json({});
@@ -32,14 +51,16 @@ export default function OnboardingLayout() {
   return (
     <Public.Layout>
       <Public.Content layout="lg">
-        <OnboardingProgress />
+        <ProgressBar />
         <Outlet />
       </Public.Content>
     </Public.Layout>
   );
 }
 
-function OnboardingProgress() {
+// Progress Bar
+
+function ProgressBar() {
   const { pathname } = useLocation();
 
   if (pathname === Route['/onboarding']) {
@@ -49,15 +70,15 @@ function OnboardingProgress() {
   return (
     <div className="mx-auto my-4 grid w-full grid-cols-11 items-center sm:px-4">
       <ProgressBarStep step="1" />
-      <ProgressBarDivider step="2" />
+      <ProgressBarLine step="2" />
       <ProgressBarStep step="2" />
-      <ProgressBarDivider step="3" />
+      <ProgressBarLine step="3" />
       <ProgressBarStep step="3" />
-      <ProgressBarDivider step="4" />
+      <ProgressBarLine step="4" />
       <ProgressBarStep step="4" />
-      <ProgressBarDivider step="5" />
+      <ProgressBarLine step="5" />
       <ProgressBarStep step="5" />
-      <ProgressBarDivider step="6" />
+      <ProgressBarLine step="6" />
       <ProgressBarStep step="6" />
     </div>
   );
@@ -65,15 +86,35 @@ function OnboardingProgress() {
 
 type ProgressStep = '1' | '2' | '3' | '4' | '5' | '6';
 
-const ROUTE_TO_STEP_MAP: Record<string, ProgressStep> = {
-  [Route['/onboarding/general']]: '1',
-  [Route['/onboarding/emails']]: '2',
-  [Route['/onboarding/emails/verify']]: '2',
-  [Route['/onboarding/education']]: '3',
-  [Route['/onboarding/work']]: '4',
-  [Route['/onboarding/community']]: '5',
-  [Route['/onboarding/slack']]: '6',
+type ProgressBarStepProps = {
+  step: ProgressStep;
 };
+
+function ProgressBarStep({ step }: ProgressBarStepProps) {
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <ProgressBarStepCircle step={step} />
+      <ProgressBarStepLabel step={step} />
+    </div>
+  );
+}
+
+function ProgressBarStepCircle({ step }: ProgressBarStepProps) {
+  const status = useStepStatus(step);
+
+  return (
+    <p
+      className={cx(
+        'flex h-8 w-8 items-center justify-center rounded-full border-2',
+        status === 'active' || status === 'completed'
+          ? 'border-primary bg-primary text-white'
+          : 'border-gray-200 text-gray-500'
+      )}
+    >
+      {status === 'completed' ? <Check size={20} /> : parseInt(step)}
+    </p>
+  );
+}
 
 const STEP_TO_ROUTE_MAP: Record<ProgressStep, string> = {
   '1': Route['/onboarding/general'],
@@ -93,45 +134,24 @@ const STEP_LABEL_MAP: Record<ProgressStep, string> = {
   '6': 'Slack',
 };
 
-type ProgressBarStepProps = {
-  step: ProgressStep;
-};
-
-function ProgressBarStep({ step }: ProgressBarStepProps) {
+function ProgressBarStepLabel({ step }: ProgressBarStepProps) {
   const status = useStepStatus(step);
 
   const label = STEP_LABEL_MAP[step];
   const route = STEP_TO_ROUTE_MAP[step];
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <p
-        className={cx(
-          'flex h-8 w-8 items-center justify-center rounded-full border-2',
-          status === 'active' || status === 'completed'
-            ? 'border-primary bg-primary text-white'
-            : 'border-gray-200 text-gray-500'
-        )}
-      >
-        {status === 'completed' ? <Check size={20} /> : parseInt(step)}
-      </p>
-
-      <Text
-        className="transition-colors duration-500"
-        color={status === 'completed' ? 'primary' : 'gray-500'}
-        variant="xs"
-      >
-        {status === 'completed' ? <Link to={route}>{label}</Link> : label}
-      </Text>
-    </div>
+    <Text variant="xs">
+      {status === 'completed' ? <Link to={route}>{label}</Link> : label}
+    </Text>
   );
 }
 
-type ProgressBarDividerProps = {
+type ProgressBarLineProps = {
   step: ProgressStep;
 };
 
-function ProgressBarDivider({ step }: ProgressBarDividerProps) {
+function ProgressBarLine({ step }: ProgressBarLineProps) {
   const status = useStepStatus(step);
 
   return (
@@ -147,8 +167,26 @@ function ProgressBarDivider({ step }: ProgressBarDividerProps) {
   );
 }
 
+// Use Step Status
+
+const ROUTE_TO_STEP_MAP: Record<string, ProgressStep> = {
+  [Route['/onboarding/general']]: '1',
+  [Route['/onboarding/emails']]: '2',
+  [Route['/onboarding/emails/verify']]: '2',
+  [Route['/onboarding/education']]: '3',
+  [Route['/onboarding/work']]: '4',
+  [Route['/onboarding/community']]: '5',
+  [Route['/onboarding/slack']]: '6',
+};
+
 type StepStatus = 'active' | 'completed' | 'inactive';
 
+/**
+ * Returns the status of the step based on the current pathname.
+ *
+ * @param step - The step to check the status of.
+ * @returns The status of the step.
+ */
 function useStepStatus(step: ProgressStep): StepStatus {
   const { pathname } = useLocation();
 
@@ -165,7 +203,7 @@ function useStepStatus(step: ProgressStep): StepStatus {
   return 'inactive';
 }
 
-// Reusable
+// Reusable Components
 
 type BackButtonProps = {
   to:
@@ -178,29 +216,13 @@ type BackButtonProps = {
     | (typeof Route)['/onboarding/work'];
 };
 
-export function BackButton({ to }: BackButtonProps) {
+export function OnboardingBackButton({ to }: BackButtonProps) {
   return (
     <Button.Slot variant="secondary">
       <Link to={to}>
         <ArrowLeft className="size-5" /> Back
       </Link>
     </Button.Slot>
-  );
-}
-
-type ContinueButtonProps = {
-  disabled?: boolean;
-  label?: string;
-};
-
-export function ContinueButton({
-  disabled,
-  label = 'Continue',
-}: ContinueButtonProps) {
-  return (
-    <Button.Submit disabled={disabled}>
-      {label} <ArrowRight className="size-5" />
-    </Button.Submit>
   );
 }
 
@@ -212,10 +234,26 @@ export function OnboardingButtonGroup({ children }: PropsWithChildren) {
   );
 }
 
-export function SectionDescription(props: TextProps) {
+type ContinueButtonProps = {
+  disabled?: boolean;
+  label?: string;
+};
+
+export function OnboardingContinueButton({
+  disabled,
+  label = 'Continue',
+}: ContinueButtonProps) {
+  return (
+    <Button.Submit disabled={disabled}>
+      {label} <ArrowRight className="size-5" />
+    </Button.Submit>
+  );
+}
+
+export function OnboardingSectionDescription(props: TextProps) {
   return <Text color="gray-500" {...props} />;
 }
 
-export function SectionTitle(props: TextProps) {
+export function OnboardingSectionTitle(props: TextProps) {
   return <Text variant="xl" {...props} />;
 }

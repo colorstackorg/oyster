@@ -28,11 +28,11 @@ import {
 
 import { WorkForm } from '@/modules/employment/ui/work-form';
 import {
-  BackButton,
-  ContinueButton,
+  OnboardingBackButton,
   OnboardingButtonGroup,
-  SectionDescription,
-  SectionTitle,
+  OnboardingContinueButton,
+  OnboardingSectionDescription,
+  OnboardingSectionTitle,
 } from '@/routes/onboarding';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -126,7 +126,7 @@ export default function WorkHistoryForm() {
 
   return (
     <Form className="form" method="post">
-      <SectionTitle>Work Experience</SectionTitle>
+      <OnboardingSectionTitle>Work Experience</OnboardingSectionTitle>
 
       <Field
         error={undefined}
@@ -165,8 +165,8 @@ export default function WorkHistoryForm() {
       <ErrorMessage>{error}</ErrorMessage>
 
       <OnboardingButtonGroup>
-        <BackButton to="/onboarding/education" />
-        <ContinueButton />
+        <OnboardingBackButton to="/onboarding/education" />
+        <OnboardingContinueButton />
       </OnboardingButtonGroup>
     </Form>
   );
@@ -180,9 +180,9 @@ function WorkExperienceForm() {
   return (
     <>
       <Divider />
-      <SectionDescription>
+      <OnboardingSectionDescription>
         Tell us more about your most recent relevant work experience.
-      </SectionDescription>
+      </OnboardingSectionDescription>
 
       <WorkForm.Context>
         <WorkForm.TitleField

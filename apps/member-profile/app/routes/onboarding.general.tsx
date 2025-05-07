@@ -19,10 +19,10 @@ import {
 } from '@oyster/ui';
 
 import {
-  BackButton,
-  ContinueButton,
+  OnboardingBackButton,
   OnboardingButtonGroup,
-  SectionTitle,
+  OnboardingContinueButton,
+  OnboardingSectionTitle,
 } from '@/routes/onboarding';
 import {
   CurrentLocationField,
@@ -108,7 +108,7 @@ export default function OnboardingGeneralForm() {
 
   return (
     <Form className="form" method="post">
-      <SectionTitle>General Information</SectionTitle>
+      <OnboardingSectionTitle>General Information</OnboardingSectionTitle>
 
       <Field
         error={errors.firstName}
@@ -170,8 +170,8 @@ export default function OnboardingGeneralForm() {
       </Field>
 
       <OnboardingButtonGroup>
-        <BackButton to="/onboarding" />
-        <ContinueButton />
+        <OnboardingBackButton to="/onboarding" />
+        <OnboardingContinueButton />
       </OnboardingButtonGroup>
     </Form>
   );

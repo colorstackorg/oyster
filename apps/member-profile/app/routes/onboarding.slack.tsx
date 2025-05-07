@@ -18,11 +18,11 @@ import {
 } from '@oyster/ui';
 
 import {
-  BackButton,
-  ContinueButton,
+  OnboardingBackButton,
   OnboardingButtonGroup,
-  SectionDescription,
-  SectionTitle,
+  OnboardingContinueButton,
+  OnboardingSectionDescription,
+  OnboardingSectionTitle,
 } from '@/routes/onboarding';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -66,14 +66,14 @@ export default function SlackForm() {
 
   return (
     <Form className="form" method="post">
-      <SectionTitle>Slack</SectionTitle>
+      <OnboardingSectionTitle>Slack</OnboardingSectionTitle>
 
-      <SectionDescription>
+      <OnboardingSectionDescription>
         We just invited you to join our Slack workspace! Please check your
         email, <span className="font-bold">{email}</span>, for the invitation.
         When you accept the invitation, you will be done with the onboarding
         process! 🎉
-      </SectionDescription>
+      </OnboardingSectionDescription>
 
       <div className="mt-4 flex items-center gap-2">
         <div className="w-full rounded-md bg-gray-50 p-4">
@@ -104,8 +104,8 @@ export default function SlackForm() {
       <ErrorMessage>{error}</ErrorMessage>
 
       <OnboardingButtonGroup>
-        <BackButton to="/onboarding/community" />
-        <ContinueButton disabled={!joinedSlack} label="Finish" />
+        <OnboardingBackButton to="/onboarding/community" />
+        <OnboardingContinueButton disabled={!joinedSlack} label="Finish" />
       </OnboardingButtonGroup>
     </Form>
   );

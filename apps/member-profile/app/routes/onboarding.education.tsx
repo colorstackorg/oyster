@@ -23,11 +23,11 @@ import { type Major } from '@oyster/types';
 import { ErrorMessage, getErrors, validateForm } from '@oyster/ui';
 
 import {
-  BackButton,
-  ContinueButton,
+  OnboardingBackButton,
   OnboardingButtonGroup,
-  SectionDescription,
-  SectionTitle,
+  OnboardingContinueButton,
+  OnboardingSectionDescription,
+  OnboardingSectionTitle,
 } from '@/routes/onboarding';
 import { EducationForm } from '@/shared/components/education-form';
 import { Route } from '@/shared/constants';
@@ -143,10 +143,10 @@ export default function EducationHistoryForm() {
 
   return (
     <Form className="form" method="post">
-      <SectionTitle>Education</SectionTitle>
-      <SectionDescription>
+      <OnboardingSectionTitle>Education</OnboardingSectionTitle>
+      <OnboardingSectionDescription>
         Tell us more about your current education.
-      </SectionDescription>
+      </OnboardingSectionDescription>
 
       <EducationForm.Context>
         <EducationForm.SchoolField
@@ -196,8 +196,8 @@ export default function EducationHistoryForm() {
       <ErrorMessage>{error}</ErrorMessage>
 
       <OnboardingButtonGroup>
-        <BackButton to="/onboarding/emails" />
-        <ContinueButton />
+        <OnboardingBackButton to="/onboarding/emails" />
+        <OnboardingContinueButton />
       </OnboardingButtonGroup>
     </Form>
   );
