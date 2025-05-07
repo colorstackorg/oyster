@@ -50,7 +50,7 @@ export async function addWorkExperience({
           companyId,
           companyName,
           employmentType,
-          endDate,
+          endDate: endDate || null,
           locationCity,
           locationState,
           locationType,

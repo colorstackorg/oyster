@@ -5,7 +5,6 @@ import {
   redirect,
 } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
-import dayjs from 'dayjs';
 import { useState } from 'react';
 import { z } from 'zod';
 
@@ -67,18 +66,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 const AddWorkExperienceFormData = AddWorkExperienceInput.omit({
   studentId: true,
 }).extend({
-  endDate: AddWorkExperienceInput.shape.endDate.refine((value) => {
-    return dayjs(value).year() >= 1000;
-  }, 'Please fill out all 4 digits of the year.'),
-
   isCurrentRole: z.string().optional(),
-
-  startDate: AddWorkExperienceInput.shape.startDate.refine((value) => {
-    return dayjs(value).year() >= 1000;
-  }, 'Please fill out all 4 digits of the year.'),
 });
-
-type AddWorkExperienceFormData = z.infer<typeof AddWorkExperienceFormData>;
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -114,7 +103,7 @@ export async function action({ request }: ActionFunctionArgs) {
   return redirect(Route['/onboarding/community']);
 }
 
-export default function WorkHistoryForm() {
+export default function OnboardingWorkForm() {
   const { workExperience } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const { error } = getErrors(actionData);
@@ -184,79 +173,132 @@ function WorkExperienceForm() {
         Tell us more about your most recent relevant work experience.
       </OnboardingSectionDescription>
 
-      <WorkForm.Context>
-        <WorkForm.TitleField
-          defaultValue={workExperience?.title}
-          error={errors.title}
-          name="title"
-        />
-        <WorkForm.EmploymentTypeField
-          defaultValue={workExperience?.employmentType as EmploymentType}
-          error={errors.employmentType}
-          name="employmentType"
-        />
-        <WorkForm.CompanyField
-          defaultValue={
-            workExperience?.companyId
-              ? {
-                  crunchbaseId: workExperience.companyCrunchbaseId!,
-                  name: workExperience.companyName!,
-                }
-              : {
-                  crunchbaseId: '',
-                  name: '',
-                }
-          }
-          error={errors.companyCrunchbaseId}
-          name="companyCrunchbaseId"
-        />
-        <WorkForm.OtherCompanyField
-          defaultValue={workExperience?.otherCompany || undefined}
-          error={errors.companyName}
-          name="companyName"
-        />
-        <WorkForm.LocationTypeField
-          defaultValue={workExperience?.locationType as LocationType}
-          error={errors.locationType}
-          name="locationType"
-        />
-
-        <Address>
-          <Address.HalfGrid>
-            <WorkForm.CityField
-              defaultValue={workExperience?.locationCity || undefined}
-              error={errors.locationCity}
-              name="locationCity"
-            />
-            <WorkForm.StateField
-              defaultValue={workExperience?.locationState || undefined}
-              error={errors.locationState}
-              name="locationState"
-            />
-          </Address.HalfGrid>
-        </Address>
-
-        <WorkForm.CurrentRoleField
-          defaultValue={workExperience ? !workExperience?.endDate : undefined}
-          error={errors.isCurrentRole}
-          name="isCurrentRole"
-        />
-
-        <div className="grid grid-cols-1 gap-[inherit] @[520px]:grid-cols-2">
-          <WorkForm.StartDateField
-            defaultValue={workExperience?.startDate?.slice(0, 7)}
-            error={errors.startDate}
-            name="startDate"
+      {workExperience ? (
+        <WorkForm.Context
+          defaultValue={{
+            isCurrentRole: !workExperience.endDate,
+            isOtherCompany: !workExperience.companyId,
+          }}
+        >
+          <WorkForm.TitleField
+            defaultValue={workExperience.title}
+            error={errors.title}
+            name="title"
           />
-          <WorkForm.EndDateField
-            defaultValue={workExperience?.endDate?.slice(0, 7)}
-            error={errors.endDate}
-            name="endDate"
+          <WorkForm.EmploymentTypeField
+            defaultValue={workExperience.employmentType as EmploymentType}
+            error={errors.employmentType}
+            name="employmentType"
           />
-        </div>
-      </WorkForm.Context>
+          <WorkForm.CompanyField
+            defaultValue={
+              workExperience.companyId
+                ? {
+                    crunchbaseId: workExperience.companyCrunchbaseId!,
+                    name: workExperience.companyName!,
+                  }
+                : {
+                    crunchbaseId: '',
+                    name: 'Other',
+                  }
+            }
+            error={errors.companyCrunchbaseId}
+            name="companyCrunchbaseId"
+          />
+          <WorkForm.OtherCompanyField
+            defaultValue={workExperience.otherCompany || undefined}
+            error={errors.companyName}
+            name="companyName"
+          />
+          <WorkForm.LocationTypeField
+            defaultValue={workExperience.locationType as LocationType}
+            error={errors.locationType}
+            name="locationType"
+          />
 
-      <input type="hidden" name="id" value={workExperience?.id} />
+          <Address>
+            <Address.HalfGrid>
+              <WorkForm.CityField
+                defaultValue={workExperience.locationCity || undefined}
+                error={errors.locationCity}
+                name="locationCity"
+              />
+              <WorkForm.StateField
+                defaultValue={workExperience.locationState || undefined}
+                error={errors.locationState}
+                name="locationState"
+              />
+            </Address.HalfGrid>
+          </Address>
+
+          <WorkForm.CurrentRoleField
+            defaultValue={!workExperience.endDate}
+            error={errors.isCurrentRole}
+            name="isCurrentRole"
+          />
+
+          <div className="grid grid-cols-1 gap-[inherit] @[520px]:grid-cols-2">
+            <WorkForm.StartDateField
+              defaultValue={workExperience.startDate?.slice(0, 7)}
+              error={errors.startDate}
+              name="startDate"
+            />
+            <WorkForm.EndDateField
+              defaultValue={workExperience.endDate?.slice(0, 7)}
+              error={errors.endDate}
+              name="endDate"
+            />
+          </div>
+
+          <input type="hidden" name="id" value={workExperience?.id} />
+        </WorkForm.Context>
+      ) : (
+        <WorkForm.Context>
+          <WorkForm.TitleField error={errors.title} name="title" />
+          <WorkForm.EmploymentTypeField
+            error={errors.employmentType}
+            name="employmentType"
+          />
+          <WorkForm.CompanyField
+            error={errors.companyCrunchbaseId}
+            name="companyCrunchbaseId"
+          />
+          <WorkForm.OtherCompanyField
+            error={errors.companyName}
+            name="companyName"
+          />
+          <WorkForm.LocationTypeField
+            error={errors.locationType}
+            name="locationType"
+          />
+
+          <Address>
+            <Address.HalfGrid>
+              <WorkForm.CityField
+                error={errors.locationCity}
+                name="locationCity"
+              />
+              <WorkForm.StateField
+                error={errors.locationState}
+                name="locationState"
+              />
+            </Address.HalfGrid>
+          </Address>
+
+          <WorkForm.CurrentRoleField
+            error={errors.isCurrentRole}
+            name="isCurrentRole"
+          />
+
+          <div className="grid grid-cols-1 gap-[inherit] @[520px]:grid-cols-2">
+            <WorkForm.StartDateField
+              error={errors.startDate}
+              name="startDate"
+            />
+            <WorkForm.EndDateField error={errors.endDate} name="endDate" />
+          </div>
+        </WorkForm.Context>
+      )}
     </>
   );
 }

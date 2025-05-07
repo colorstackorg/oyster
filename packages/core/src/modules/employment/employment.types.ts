@@ -128,16 +128,23 @@ export const AddCompanyReviewInput = CompanyReview;
 export const AddWorkExperienceInput = WorkExperience.pick({
   companyName: true,
   employmentType: true,
-  endDate: true,
   locationCity: true,
   locationState: true,
   locationType: true,
-  startDate: true,
   studentId: true,
   title: true,
 }).extend({
   companyCrunchbaseId: Company.shape.crunchbaseId,
+
+  endDate: WorkExperience.shape.endDate.refine((value) => {
+    return !value || new Date(value).getFullYear() >= 1000;
+  }, 'Please fill out all 4 digits of the year.'),
+
   id: nullableField(WorkExperience.shape.id.nullable()),
+
+  startDate: WorkExperience.shape.startDate.refine((value) => {
+    return new Date(value).getFullYear() >= 1000;
+  }, 'Please fill out all 4 digits of the year.'),
 });
 
 export const DeleteWorkExperienceInput = WorkExperience.pick({
