@@ -11,17 +11,17 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const member = await db
+  const { firstName } = await db
     .selectFrom('students')
     .select('firstName')
     .where('id', '=', user(session))
     .executeTakeFirstOrThrow();
 
-  return json({ member });
+  return json({ firstName });
 }
 
 export default function OnboardingLandingPage() {
-  const { member } = useLoaderData<typeof loader>();
+  const { firstName } = useLoaderData<typeof loader>();
 
   return (
     <div className="flex flex-col items-center gap-8 text-center">
@@ -48,7 +48,7 @@ export default function OnboardingLandingPage() {
 
       <div className="flex flex-col gap-4">
         <Text variant="2xl" weight="500">
-          Welcome to ColorStack, {member.firstName}! 🎉
+          Welcome to ColorStack, {firstName}! 🎉
         </Text>
 
         <Text color="gray-500">
@@ -72,7 +72,7 @@ type OnboardingImageProps = {
   src: `/images/onboarding-${string}.png`;
 };
 
-function OnboardingImage({ src, alt }: OnboardingImageProps) {
+function OnboardingImage({ alt, src }: OnboardingImageProps) {
   return (
     <li className="shrink-0 snap-center">
       <img
