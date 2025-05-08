@@ -93,25 +93,25 @@ function FirstTimeModal() {
           to={Route['/opportunities']}
         />
         <FirstTimeListItem
-          description="An offer database based on real internship/full-time offers from ColorStack members."
+          description="A job offer database based on real internship/full-time offers from ColorStack members."
           icon={<DollarSign />}
           label="Offers"
           to={Route['/offers']}
         />
         <FirstTimeListItem
-          description="Discover where ColorStack members are interning/working for and see first-hand reviews of their experiences."
+          description="Discover where ColorStack members are working and read first-hand reviews of their experiences."
           icon={<Briefcase />}
           label="Companies"
           to={Route['/companies']}
         />
         <FirstTimeListItem
-          description="A collection of resources that ColorStack members have compiled over the years."
+          description="A collection of resources that ColorStack members have found helpful."
           icon={<BookOpen />}
           label="Resources"
           to={Route['/resources']}
         />
         <FirstTimeListItem
-          description="A place to request help from your peers for mock interviews, resume reviews, and more."
+          description="Request mock interviews, resume reviews and career advice from your peers."
           icon={<Users />}
           label="Peer Help"
           to={Route['/peer-help']}
@@ -134,7 +134,6 @@ function FirstTimeModal() {
           label="AI Resume Review"
           to={Route['/resume/review']}
         />
-
         <FirstTimeListItem
           description="Keep all your information up to date."
           icon={<User />}
