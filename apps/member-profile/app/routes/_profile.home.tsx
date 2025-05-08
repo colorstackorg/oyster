@@ -161,6 +161,11 @@ function fillRecentStatuses(
 async function getStudent(id: string) {
   const row = await db
     .selectFrom('students')
+    .leftJoin(
+      'onboardingSessionAttendees',
+      'students.id',
+      'onboardingSessionAttendees.studentId'
+    )
     .select([
       'acceptedAt',
       'activatedAt',
@@ -171,7 +176,11 @@ async function getStudent(id: string) {
       'id',
       'lastName',
       'number',
-      'onboardedAt',
+      (eb) => {
+        return eb('onboardingSessionAttendees.id', 'is not', null).as(
+          'attendedOnboardingSession'
+        );
+      },
     ])
     .where('id', '=', id)
     .executeTakeFirstOrThrow();
@@ -242,7 +251,7 @@ export default function HomeLayout() {
     !student.claimedSwagPackAt;
 
   const showOnboardingCard =
-    !!student.joinedAfterActivation && !student.onboardedAt;
+    !!student.joinedAfterActivation && !student.attendedOnboardingSession;
 
   return (
     <>
