@@ -8,9 +8,7 @@ import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { sql } from 'kysely';
 import { z } from 'zod';
 
-import { job } from '@oyster/core/bull';
 import { updateMember } from '@oyster/core/member-profile/server';
-import { db } from '@oyster/db';
 import { ISO8601Date, nullableField } from '@oyster/types';
 import { Student } from '@oyster/types';
 import {
@@ -99,16 +97,6 @@ export async function action({ request }: ActionFunctionArgs) {
       ...data,
       ethnicities: data.ethnicities || [],
     });
-
-    const { email, slackId } = await db
-      .selectFrom('students')
-      .select(['email', 'slackId'])
-      .where('id', '=', memberId)
-      .executeTakeFirstOrThrow();
-
-    if (!slackId) {
-      job('slack.invite', { email });
-    }
 
     return redirect(Route['/onboarding/slack']);
   } catch (e) {

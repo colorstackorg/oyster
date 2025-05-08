@@ -6,6 +6,7 @@ import {
 } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
+import { job } from '@oyster/core/bull';
 import { db } from '@oyster/db';
 import { ErrorMessage, getErrors } from '@oyster/ui';
 
@@ -36,12 +37,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  await db
+  const member = await db
     .updateTable('students')
     .set({ onboardedAt: new Date() })
     .where('id', '=', user(session))
-    .where('onboardedAt', 'is', null)
-    .execute();
+    .returning(['email', 'slackId'])
+    .executeTakeFirst();
+
+  if (member && !member.slackId) {
+    job('slack.invite', { email: member.email });
+  }
 
   const url = new URL(request.url);
 
@@ -61,8 +66,8 @@ export default function OnboardingSlackForm() {
       <OnboardingSectionTitle>Slack</OnboardingSectionTitle>
 
       <OnboardingSectionDescription>
-        After you click "Finish", we'll send you a Slack invitiation to your
-        email, <span className="font-bold">{email}</span>, so be sure to accept
+        After you click "Finish", we'll send you a Slack invitation to your
+        email, <span className="font-bold">{email}</span>. Be sure to accept
         that invitation right after you check out your Member Profile! 🎉
       </OnboardingSectionDescription>
 
