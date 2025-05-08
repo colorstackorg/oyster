@@ -24,6 +24,14 @@ const ROUTES = [
   '/login',
   '/login/otp/send',
   '/login/otp/verify',
+  '/onboarding',
+  '/onboarding/community',
+  '/onboarding/education',
+  '/onboarding/emails',
+  '/onboarding/emails/verify',
+  '/onboarding/general',
+  '/onboarding/slack',
+  '/onboarding/work',
   '/offers',
   '/offers/full-time',
   '/offers/full-time/add',
@@ -94,3 +102,7 @@ export const Route = ROUTES.reduce((result, route) => {
 
   return result;
 }, {} as RouteMap);
+
+// Other Constants
+
+export const ONBOARDING_FLOW_LAUNCH_DATE = new Date('2025-05-08');

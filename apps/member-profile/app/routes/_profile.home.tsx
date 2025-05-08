@@ -31,6 +31,7 @@ import { toTitleCase } from '@oyster/utils';
 
 import { Card, type CardProps } from '@/shared/components/card';
 import { Leaderboard } from '@/shared/components/leaderboard';
+import { MemberProfileTour } from '@/shared/components/member-profile-tour';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -160,19 +161,28 @@ function fillRecentStatuses(
 async function getStudent(id: string) {
   const row = await db
     .selectFrom('students')
+    .leftJoin(
+      'onboardingSessionAttendees',
+      'students.id',
+      'onboardingSessionAttendees.studentId'
+    )
     .select([
-      'acceptedAt',
-      'activatedAt',
-      'activationRequirementsCompleted',
-      'claimedSwagPackAt',
-      'email',
-      'firstName',
-      'id',
-      'lastName',
-      'number',
-      'onboardedAt',
+      'students.acceptedAt',
+      'students.activatedAt',
+      'students.activationRequirementsCompleted',
+      'students.claimedSwagPackAt',
+      'students.email',
+      'students.firstName',
+      'students.id',
+      'students.lastName',
+      'students.number',
+      (eb) => {
+        return eb('onboardingSessionAttendees.id', 'is not', null).as(
+          'attendedOnboardingSession'
+        );
+      },
     ])
-    .where('id', '=', id)
+    .where('students.id', '=', id)
     .executeTakeFirstOrThrow();
 
   const joinedAfterActivation =
@@ -241,7 +251,7 @@ export default function HomeLayout() {
     !student.claimedSwagPackAt;
 
   const showOnboardingCard =
-    !!student.joinedAfterActivation && !student.onboardedAt;
+    !!student.joinedAfterActivation && !student.attendedOnboardingSession;
 
   return (
     <>
@@ -285,6 +295,7 @@ export default function HomeLayout() {
         </Home.Column>
       </div>
 
+      <MemberProfileTour />
       <Outlet />
     </>
   );

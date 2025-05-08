@@ -5,8 +5,6 @@ import {
   redirect,
 } from '@remix-run/node';
 import { Form, useActionData } from '@remix-run/react';
-import dayjs from 'dayjs';
-import { type z } from 'zod';
 
 import { addEducation } from '@oyster/core/member-profile/server';
 import { AddEducationInput } from '@oyster/core/member-profile/ui';
@@ -33,26 +31,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({});
 }
 
-const AddEducationFormData = AddEducationInput.omit({ studentId: true }).extend(
-  {
-    endDate: AddEducationInput.shape.endDate.refine((value) => {
-      return dayjs(value).year() >= 1000;
-    }, 'Please fill out all 4 digits of the year.'),
-
-    startDate: AddEducationInput.shape.startDate.refine((value) => {
-      return dayjs(value).year() >= 1000;
-    }, 'Please fill out all 4 digits of the year.'),
-  }
-);
-
-type AddEducationFormData = z.infer<typeof AddEducationFormData>;
-
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   const { data, errors, ok } = await validateForm(
     request,
-    AddEducationFormData
+    AddEducationInput.omit({ studentId: true })
   );
 
   if (!ok) {
@@ -86,8 +70,6 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-const keys = AddEducationFormData.keyof().enum;
-
 export default function AddEducationPage() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
@@ -100,34 +82,25 @@ export default function AddEducationPage() {
 
       <Form className="form" method="post">
         <EducationForm.Context>
-          <EducationForm.SchoolField
-            error={errors.schoolId}
-            name={keys.schoolId}
-          />
+          <EducationForm.SchoolField error={errors.schoolId} name="schoolId" />
           <EducationForm.OtherSchoolField
             error={errors.otherSchool}
-            name={keys.otherSchool}
+            name="otherSchool"
           />
           <EducationForm.DegreeTypeField
             error={errors.degreeType}
-            name={keys.degreeType}
+            name="degreeType"
           />
-          <EducationForm.FieldOfStudyField
-            error={errors.major}
-            name={keys.major}
-          />
+          <EducationForm.FieldOfStudyField error={errors.major} name="major" />
           <EducationForm.OtherFieldOfStudyField
             error={errors.otherMajor}
-            name={keys.otherMajor}
+            name="otherMajor"
           />
           <EducationForm.StartDateField
             error={errors.startDate}
-            name={keys.startDate}
+            name="startDate"
           />
-          <EducationForm.EndDateField
-            error={errors.endDate}
-            name={keys.endDate}
-          />
+          <EducationForm.EndDateField error={errors.endDate} name="endDate" />
         </EducationForm.Context>
 
         <ErrorMessage>{error}</ErrorMessage>

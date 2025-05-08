@@ -94,9 +94,9 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  await updateMember({
-    data: { ...data, ethnicities: data.ethnicities || [] },
-    where: { id: user(session) },
+  await updateMember(user(session), {
+    ...data,
+    ethnicities: data.ethnicities || [],
   });
 
   toast(session, {

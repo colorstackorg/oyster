@@ -33,20 +33,27 @@ export function CurrentLocationField({
   );
 }
 
+type PreferredNameFieldProps = FieldProps<string> & {
+  firstName: string;
+  lastName: string;
+};
+
 export function PreferredNameField({
   defaultValue,
   error,
   firstName,
   lastName,
   name,
-}: FieldProps<string> & {
-  firstName: string;
-  lastName: string;
-}) {
+}: PreferredNameFieldProps) {
   const [value, setValue] = useState(defaultValue);
 
   return (
-    <Field error={error} label="Preferred Name" labelFor={name}>
+    <Field
+      description="If you go by a different name, let us know here."
+      error={error}
+      label="Preferred Name"
+      labelFor={name}
+    >
       <Input
         defaultValue={defaultValue}
         id={name}
@@ -55,7 +62,7 @@ export function PreferredNameField({
       />
 
       {value && (
-        <Text className="mt-2" color="gray-500">
+        <Text className="mt-2" color="gray-500" variant="sm">
           Your full name will appear as "{firstName} ({value}) {lastName}".
         </Text>
       )}

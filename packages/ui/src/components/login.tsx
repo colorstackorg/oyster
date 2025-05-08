@@ -69,7 +69,7 @@ Login.SlackButton = function SlackButton({ href }: LoginButtonProps) {
 };
 
 Login.Title = function Title({ children }: PropsWithChildren) {
-  return <Text>{children}</Text>;
+  return <Text variant="lg">{children}</Text>;
 };
 
 // SVGs

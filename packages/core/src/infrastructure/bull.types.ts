@@ -222,14 +222,6 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
       }),
       z.object({
         studentId: CompletedActivity.shape.studentId,
-        type: z.literal('update_education_history'),
-      }),
-      z.object({
-        studentId: CompletedActivity.shape.studentId,
-        type: z.literal('update_work_history'),
-      }),
-      z.object({
-        studentId: CompletedActivity.shape.studentId,
         type: z.literal('upload_profile_picture'),
       }),
     ]),
@@ -254,14 +246,6 @@ export const GamificationBullJob = z.discriminatedUnion('name', [
         studentId: CompletedActivity.shape.studentId,
         threadRepliedTo: SlackMessage.shape.id,
         type: z.literal('reply_to_thread'),
-      }),
-      z.object({
-        studentId: CompletedActivity.shape.studentId,
-        type: z.literal('update_education_history'),
-      }),
-      z.object({
-        studentId: CompletedActivity.shape.studentId,
-        type: z.literal('update_work_history'),
       }),
     ]),
   }),

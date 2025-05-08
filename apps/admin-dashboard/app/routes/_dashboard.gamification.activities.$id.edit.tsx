@@ -8,7 +8,6 @@ import { useActionData, useLoaderData } from '@remix-run/react';
 
 import { editActivity } from '@oyster/core/gamification';
 import {
-  type ActivityPeriod,
   type ActivityType,
   EditActivityInput,
 } from '@oyster/core/gamification/types';
@@ -60,7 +59,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
     description: data.description,
     id: params.id as string,
     name: data.name,
-    period: data.period,
     points: data.points,
     type: data.type,
   });
@@ -90,7 +88,6 @@ export default function EditActivityPage() {
       <ActivityForm
         activity={{
           ...activity,
-          period: activity.period as ActivityPeriod,
           type: activity.type as ActivityType,
         }}
         error={error}

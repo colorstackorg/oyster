@@ -17,7 +17,8 @@ Public.Content = function Content({
       className={cx(
         'mx-auto flex max-w-full flex-col gap-4 rounded-lg bg-white',
         `sm:border sm:border-gray-200`,
-        layout === 'lg' ? 'sm:max-w-[600px] sm:p-6' : 'sm:max-w-[300px] sm:p-4'
+        '@container',
+        layout === 'lg' ? 'sm:max-w-[600px] sm:p-6' : 'sm:max-w-[400px] sm:p-4'
       )}
     >
       {children}

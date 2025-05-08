@@ -1,49 +1,39 @@
-import { type Transaction, type UpdateObject } from 'kysely';
+import { type UpdateObject } from 'kysely';
 
 import { type DB, db, point } from '@oyster/db';
 import { type Student } from '@oyster/types';
 
-type UpdateMemberOptions = {
-  data: Omit<
-    UpdateObject<DB, 'students'>,
-    'currentLocationCoordinates' | 'hometownCoordinates'
-  > &
-    Partial<
-      Pick<
-        Student,
-        | 'currentLocationLatitude'
-        | 'currentLocationLongitude'
-        | 'hometownLatitude'
-        | 'hometownLongitude'
-      >
-    > & {
-      ethnicities?: string[];
-    };
-  trx?: Transaction<DB>;
-  where: Pick<Student, 'id'>;
-};
+type UpdateMemberData = Omit<
+  UpdateObject<DB, 'students'>,
+  'currentLocationCoordinates' | 'hometownCoordinates'
+> &
+  Partial<
+    Pick<
+      Student,
+      | 'currentLocationLatitude'
+      | 'currentLocationLongitude'
+      | 'hometownLatitude'
+      | 'hometownLongitude'
+    >
+  > & {
+    ethnicities?: string[];
+  };
 
-export async function updateMember({
-  trx,
-  where,
-  ...options
-}: UpdateMemberOptions) {
-  await db.transaction().execute(async (_trx) => {
-    trx ||= _trx;
-
+export async function updateMember(memberId: string, data: UpdateMemberData) {
+  await db.transaction().execute(async (trx) => {
     const {
       currentLocationLatitude,
       currentLocationLongitude,
       ethnicities,
       hometownLatitude,
       hometownLongitude,
-      ...data
-    } = options.data;
+      ...rest
+    } = data;
 
     await trx
       .updateTable('students')
       .set({
-        ...data,
+        ...rest,
         ...(currentLocationLatitude &&
           currentLocationLongitude && {
             currentLocationCoordinates: point({
@@ -59,13 +49,13 @@ export async function updateMember({
             }),
           }),
       })
-      .where('id', '=', where.id)
+      .where('id', '=', memberId)
       .execute();
 
     if (ethnicities) {
       await trx
         .deleteFrom('memberEthnicities')
-        .where('studentId', '=', where.id)
+        .where('studentId', '=', memberId)
         .execute();
 
       if (ethnicities.length) {
@@ -75,7 +65,7 @@ export async function updateMember({
             ethnicities.map((ethnicity) => {
               return {
                 countryCode: ethnicity,
-                studentId: where.id,
+                studentId: memberId,
               };
             })
           )

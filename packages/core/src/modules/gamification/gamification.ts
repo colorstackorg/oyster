@@ -15,7 +15,6 @@ import {
 } from '@/infrastructure/bull.types';
 import {
   type Activity,
-  type ActivityPeriod,
   type CompletedActivity,
   type CreateActivityInput,
   type GrantPointsInput,
@@ -126,7 +125,6 @@ export async function addActivity(input: CreateActivityInput) {
     .values({
       description: input.description,
       name: input.name,
-      period: input.period,
       points: input.points,
       id: id(),
       type: input.type,
@@ -144,14 +142,13 @@ export async function archiveActivity(id: string) {
 
 type EditActivityInput = Pick<
   Activity,
-  'description' | 'id' | 'name' | 'period' | 'points' | 'type'
+  'description' | 'id' | 'name' | 'points' | 'type'
 >;
 
 export async function editActivity({
   description,
   id,
   name,
-  period,
   points,
   type,
 }: EditActivityInput) {
@@ -160,7 +157,6 @@ export async function editActivity({
     .set({
       description,
       name,
-      period,
       points,
       type,
     })
@@ -399,39 +395,6 @@ async function grantGamificationPoints(
         .onConflict((oc) => oc.doNothing())
         .execute();
     })
-    .with(
-      { type: 'update_education_history' },
-      { type: 'update_work_history' },
-      async (input) => {
-        const startOfPeriod = match(activity.period as ActivityPeriod)
-          .with('quarterly', () => dayjs().startOf('quarter').toDate())
-          .exhaustive();
-
-        const endOfPeriod = match(activity.period as ActivityPeriod)
-          .with('quarterly', () => dayjs().endOf('quarter').toDate())
-          .exhaustive();
-
-        // If the student has already completed this activity this period,
-        // we shouldn't give them points.
-
-        const row = await db
-          .selectFrom('completedActivities')
-          .where('occurredAt', '>=', startOfPeriod)
-          .where('occurredAt', '<=', endOfPeriod)
-          .where('studentId', '=', input.studentId)
-          .where('type', '=', input.type)
-          .executeTakeFirst();
-
-        if (row) {
-          return;
-        }
-
-        await db
-          .insertInto('completedActivities')
-          .values(activityCompleted)
-          .execute();
-      }
-    )
     .exhaustive();
 
   queueSlackNotification({
@@ -475,16 +438,6 @@ async function revokeGamificationPoints(
     .select(['id', 'period'])
     .where('type', '=', data.type)
     .executeTakeFirstOrThrow();
-
-  const startOfPeriod = match(activity.period as ActivityPeriod | null)
-    .with('quarterly', () => dayjs().startOf('quarter').toDate())
-    .with(null, () => null)
-    .exhaustive();
-
-  const endOfPeriod = match(activity.period as ActivityPeriod | null)
-    .with('quarterly', () => dayjs().endOf('quarter').toDate())
-    .with(null, () => null)
-    .exhaustive();
 
   const deleteQuery = db
     .deleteFrom('completedActivities')
@@ -535,42 +488,6 @@ async function revokeGamificationPoints(
         .where('channelId', '=', input.channelId)
         .where('threadRepliedTo', '=', input.threadRepliedTo)
         .execute();
-    })
-    .with({ type: 'update_education_history' }, async (input) => {
-      // If the student has more than one education history entry in the
-      // period, we won't remove the points.
-
-      const { count } = await db
-        .selectFrom('educations')
-        .select((eb) => eb.fn.countAll<string>().as('count'))
-        .where('createdAt', '>=', startOfPeriod!)
-        .where('createdAt', '<=', endOfPeriod!)
-        .where('studentId', '=', input.studentId)
-        .executeTakeFirstOrThrow();
-
-      if (parseInt(count) >= 1) {
-        return false;
-      }
-
-      await deleteQuery.execute();
-    })
-    .with({ type: 'update_work_history' }, async (input) => {
-      // If the student has more than one work experience entry in the
-      // period, we won't remove the points.
-
-      const { count } = await db
-        .selectFrom('workExperiences')
-        .select((eb) => eb.fn.countAll<string>().as('count'))
-        .where('createdAt', '>=', startOfPeriod!)
-        .where('createdAt', '<=', endOfPeriod!)
-        .where('studentId', '=', input.studentId)
-        .executeTakeFirstOrThrow();
-
-      if (parseInt(count) >= 1) {
-        return false;
-      }
-
-      await deleteQuery.execute();
     })
     .exhaustive();
 }

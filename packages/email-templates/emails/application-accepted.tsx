@@ -35,25 +35,30 @@ export function ApplicationAcceptedEmail({
           <li>
             <Email.Text>
               <b>
-                Sign in to & bookmark your{' '}
-                <Email.Link href="https://app.colorstack.io">
-                  Member Profile
+                <Email.Link href="https://app.colorstack.io/onboarding">
+                  Complete your ColorStack profile
                 </Email.Link>
                 .
               </b>{' '}
-              This profile is the <b>powerhouse</b> of your ColorStack
-              membership. 💪 Take a few minutes to:
+              This should only take about 5 minutes. Upon completion, you'll
+              have full access to your{' '}
+              <Email.Link href="https://app.colorstack.io">
+                <b>Member Profile</b>
+              </Email.Link>
+              . This is the powerhouse of your ColorStack membership. 💪 Take a
+              few minutes to:
             </Email.Text>
 
             <ul>
               <li>
                 <Email.Text marginBottom="8px" marginTop="8px">
-                  Update your education & work history.
-                </Email.Text>
-              </li>
-              <li>
-                <Email.Text marginBottom="8px" marginTop="8px">
-                  Add a secondary, non-school email address.
+                  <b>
+                    Bookmark your{' '}
+                    <Email.Link href="https://app.colorstack.io">
+                      Member Profile
+                    </Email.Link>
+                  </b>
+                  .
                 </Email.Text>
               </li>
               <li>
@@ -73,43 +78,22 @@ export function ApplicationAcceptedEmail({
                 </Email.Link>
               </b>{' '}
               to learn more about our programming & offerings, how to be an
-              engaged family member, & meet other new members! 📅
+              engaged family member, and meet other new members! 📅
             </Email.Text>
           </li>
 
           <li>
             <Email.Text>
-              <b>Look out for your invite to join our Slack </b> - the email
-              will come from Slack. 📨
+              Lastly, <b>after you complete the above steps</b>, you will
+              receive an invite from Slack to join our Slack workspace.
             </Email.Text>
-
-            <ul>
-              <li>
-                <Email.Text marginBottom="8px" marginTop="8px">
-                  Our Slack is large, but don't be intimidated!
-                </Email.Text>
-              </li>
-              <li>
-                <Email.Text marginBottom="8px" marginTop="8px">
-                  <b>
-                    Attend an{' '}
-                    <Email.Link href="https://calendly.com/colorstack-onboarding-ambassador/onboarding">
-                      onboarding session
-                    </Email.Link>{' '}
-                    ASAP
-                  </b>{' '}
-                  to learn how to navigate Slack and join in on the
-                  conversations.
-                </Email.Text>
-              </li>
-            </ul>
           </li>
         </ol>
 
         <Email.Text>
           Bookmarking and utilizing your Member Profile, attending an onboarding
-          session, and joining our Slack will have you well on your way to
-          becoming a top ColorStack member in no time!
+          session, and effectively joining our Slack will have you well on your
+          way to becoming a top ColorStack member in no time!
         </Email.Text>
 
         <Email.Text>

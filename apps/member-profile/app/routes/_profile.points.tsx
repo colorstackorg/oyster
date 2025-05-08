@@ -703,16 +703,12 @@ function ActivityHistoryItemDescription({
         </p>
       );
     })
-    .with('update_education_history', () => {
-      return <p>You added an education experience.</p>;
-    })
-    .with('update_work_history', () => {
-      return <p>You added a work experience.</p>;
-    })
     .with('upload_profile_picture', () => {
       return <p>You uploaded a profile picture.</p>;
     })
-    .exhaustive();
+    .otherwise(() => {
+      return <p>You completed an activity.</p>;
+    });
 }
 
 function PointsRubric() {

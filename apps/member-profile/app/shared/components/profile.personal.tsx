@@ -51,13 +51,25 @@ export function BirthdateField({
   );
 }
 
+type EthnicityFieldProps = FieldProps<
+  Pick<Country, 'code' | 'demonym' | 'flagEmoji'>[]
+> & {
+  description?: string;
+};
+
 export function EthnicityField({
   defaultValue = [],
+  description,
   error,
   name,
-}: FieldProps<Pick<Country, 'code' | 'demonym' | 'flagEmoji'>[]>) {
+}: EthnicityFieldProps) {
   return (
-    <Field error={error} labelFor={name} label="Ethnicity">
+    <Field
+      description={description}
+      error={error}
+      labelFor={name}
+      label="Ethnicity"
+    >
       <EthnicityMultiCombobox
         defaultValues={defaultValue.map((ethnicity) => {
           return {
@@ -96,6 +108,9 @@ export function GenderField({ defaultValue, error, name }: FieldProps<string>) {
   );
 }
 
+type HometownFieldProps = FieldProps<string> &
+  CityComboboxProps & { description?: string };
+
 export function HometownField({
   defaultValue,
   defaultLatitude,
@@ -105,15 +120,15 @@ export function HometownField({
   latitudeName,
   longitudeName,
   name,
-}: FieldProps<string> &
-  Omit<CityComboboxProps, 'required'> & { description?: string }) {
+  required,
+}: HometownFieldProps) {
   return (
     <Field
       description={description}
       error={error}
       labelFor={name}
       label="Hometown"
-      required
+      required={required}
     >
       <CityCombobox
         defaultLatitude={defaultLatitude}
@@ -122,7 +137,7 @@ export function HometownField({
         name={name}
         latitudeName={latitudeName}
         longitudeName={longitudeName}
-        required
+        required={required}
       />
     </Field>
   );

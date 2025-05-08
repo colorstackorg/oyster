@@ -5,7 +5,6 @@ import {
   redirect,
 } from '@remix-run/node';
 import { Form, useActionData } from '@remix-run/react';
-import dayjs from 'dayjs';
 import { z } from 'zod';
 
 import { addWorkExperience } from '@oyster/core/member-profile/server';
@@ -39,15 +38,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 const AddWorkExperienceFormData = AddWorkExperienceInput.omit({
   studentId: true,
 }).extend({
-  endDate: AddWorkExperienceInput.shape.endDate.refine((value) => {
-    return dayjs(value).year() >= 1000;
-  }, 'Please fill out all 4 digits of the year.'),
-
   isCurrentRole: z.string().optional(),
-
-  startDate: AddWorkExperienceInput.shape.startDate.refine((value) => {
-    return dayjs(value).year() >= 1000;
-  }, 'Please fill out all 4 digits of the year.'),
 });
 
 type AddWorkExperienceFormData = z.infer<typeof AddWorkExperienceFormData>;

@@ -25,8 +25,13 @@ export { getIcebreakerResponses } from './modules/icebreakers/queries/get-icebre
 export { upsertIcebreakerResponses } from './modules/icebreakers/use-cases/upsert-icebreaker-responses';
 export { listEmails } from './modules/members/queries/list-emails';
 export { listMembersInDirectory } from './modules/members/queries/list-members-in-directory';
+export { addEmail, AddEmailInput } from './modules/members/use-cases/add-email';
 export { changePrimaryEmail } from './modules/members/use-cases/change-primary-email';
 export { joinMemberDirectory } from './modules/members/use-cases/join-member-directory';
+export {
+  sendEmailCode,
+  SendEmailCodeInput,
+} from './modules/members/use-cases/send-email-code';
 export { updateAllowEmailShare } from './modules/members/use-cases/update-allow-email-share';
 export { updateMember } from './modules/members/use-cases/update-member';
 export { countMessagesSent } from './modules/slack/queries/count-messages-sent';

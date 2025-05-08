@@ -11,7 +11,6 @@ import {
   useNavigate,
   useNavigation,
 } from '@remix-run/react';
-import dayjs from 'dayjs';
 import { generatePath } from 'react-router';
 import { z } from 'zod';
 
@@ -79,15 +78,7 @@ const EditWorkExperienceFormData = EditWorkExperienceInput.omit({
   id: true,
   studentId: true,
 }).extend({
-  endDate: EditWorkExperienceInput.shape.endDate.refine((value) => {
-    return dayjs(value).year() >= 1000;
-  }, 'Please fill out all 4 digits of the year.'),
-
   isCurrentRole: z.string().optional(),
-
-  startDate: EditWorkExperienceInput.shape.startDate.refine((value) => {
-    return dayjs(value).year() >= 1000;
-  }, 'Please fill out all 4 digits of the year.'),
 });
 
 export async function action({ params, request }: ActionFunctionArgs) {
