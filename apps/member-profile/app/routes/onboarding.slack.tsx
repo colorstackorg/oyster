@@ -66,8 +66,8 @@ export default function OnboardingSlackForm() {
       <OnboardingSectionTitle>Slack</OnboardingSectionTitle>
 
       <OnboardingSectionDescription>
-        After you click "Finish", we'll send you a Slack invitiation to your
-        email, <span className="font-bold">{email}</span>, so be sure to accept
+        After you click "Finish", we'll send you a Slack invitation to your
+        email, <span className="font-bold">{email}</span>. Be sure to accept
         that invitation right after you check out your Member Profile! 🎉
       </OnboardingSectionDescription>
 
