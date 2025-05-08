@@ -167,22 +167,22 @@ async function getStudent(id: string) {
       'onboardingSessionAttendees.studentId'
     )
     .select([
-      'acceptedAt',
-      'activatedAt',
-      'activationRequirementsCompleted',
-      'claimedSwagPackAt',
-      'email',
-      'firstName',
-      'id',
-      'lastName',
-      'number',
+      'students.acceptedAt',
+      'students.activatedAt',
+      'students.activationRequirementsCompleted',
+      'students.claimedSwagPackAt',
+      'students.email',
+      'students.firstName',
+      'students.id',
+      'students.lastName',
+      'students.number',
       (eb) => {
         return eb('onboardingSessionAttendees.id', 'is not', null).as(
           'attendedOnboardingSession'
         );
       },
     ])
-    .where('id', '=', id)
+    .where('students.id', '=', id)
     .executeTakeFirstOrThrow();
 
   const joinedAfterActivation =
