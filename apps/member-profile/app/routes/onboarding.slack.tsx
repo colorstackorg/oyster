@@ -5,17 +5,9 @@ import {
   redirect,
 } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
-import { Clock } from 'react-feather';
-import { CheckCircle } from 'react-feather';
 
 import { db } from '@oyster/db';
-import {
-  ErrorMessage,
-  getErrors,
-  Text,
-  useRevalidateOnFocus,
-  useRevalidateOnInterval,
-} from '@oyster/ui';
+import { ErrorMessage, getErrors } from '@oyster/ui';
 
 import {
   OnboardingBackButton,
@@ -32,11 +24,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const member = await db
     .selectFrom('students')
-    .select(['email', 'joinedSlackAt'])
+    .select('email')
     .where('id', '=', user(session))
-    .executeTakeFirst();
+    .executeTakeFirstOrThrow();
 
-  return json({ email: member?.email, joinedSlack: !!member?.joinedSlackAt });
+  return json({
+    email: member.email,
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -46,6 +40,7 @@ export async function action({ request }: ActionFunctionArgs) {
     .updateTable('students')
     .set({ onboardedAt: new Date() })
     .where('id', '=', user(session))
+    .where('onboardedAt', 'is', null)
     .execute();
 
   const url = new URL(request.url);
@@ -56,56 +51,26 @@ export async function action({ request }: ActionFunctionArgs) {
   return redirect(url.toString());
 }
 
-export default function SlackForm() {
-  const { email, joinedSlack } = useLoaderData<typeof loader>();
+export default function OnboardingSlackForm() {
+  const { email } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const { error } = getErrors(actionData);
-
-  useRevalidateOnFocus();
-  useRevalidateOnInterval(2500);
 
   return (
     <Form className="form" method="post">
       <OnboardingSectionTitle>Slack</OnboardingSectionTitle>
 
       <OnboardingSectionDescription>
-        We just invited you to join our Slack workspace! Please check your
-        email, <span className="font-bold">{email}</span>, for the invitation.
-        When you accept the invitation, you will be done with the onboarding
-        process! 🎉
+        After you click "Finish", we'll send you a Slack invitiation to your
+        email, <span className="font-bold">{email}</span>, so be sure to accept
+        that invitation right after you check out your Member Profile! 🎉
       </OnboardingSectionDescription>
-
-      <div className="mt-4 flex items-center gap-2">
-        <div className="w-full rounded-md bg-gray-50 p-4">
-          {joinedSlack ? (
-            <>
-              <Text
-                className="flex items-center gap-1"
-                color="success"
-                variant="sm"
-              >
-                <CheckCircle className="h-5 w-5" />
-                Joined Slack workspace!
-              </Text>
-            </>
-          ) : (
-            <Text
-              className="flex items-center gap-1"
-              color="gray-500"
-              variant="sm"
-            >
-              <Clock className="h-5 w-5" />
-              Waiting for you to accept your Slack invitiation...
-            </Text>
-          )}
-        </div>
-      </div>
 
       <ErrorMessage>{error}</ErrorMessage>
 
       <OnboardingButtonGroup>
         <OnboardingBackButton to="/onboarding/community" />
-        <OnboardingContinueButton disabled={!joinedSlack} label="Finish" />
+        <OnboardingContinueButton label="Finish" />
       </OnboardingButtonGroup>
     </Form>
   );

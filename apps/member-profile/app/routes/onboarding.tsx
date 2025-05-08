@@ -24,14 +24,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     .selectFrom('students')
     .select(['acceptedAt', 'onboardedAt'])
     .where('id', '=', user(session))
-    .executeTakeFirst();
-
-  if (!member) {
-    throw new Response(null, {
-      status: 500,
-      statusText: 'Something went wrong. Please contact support.',
-    });
-  }
+    .executeTakeFirstOrThrow();
 
   if (member.onboardedAt || member.acceptedAt < ONBOARDING_FLOW_LAUNCH_DATE) {
     const to = session.get(SESSION.REDIRECT_URL) || Route['/home'];
