@@ -105,4 +105,4 @@ export const Route = ROUTES.reduce((result, route) => {
 
 // Other Constants
 
-export const ONBOARDING_FLOW_LAUNCH_DATE = new Date('2025-06-01');
+export const ONBOARDING_FLOW_LAUNCH_DATE = new Date('2025-05-08');
