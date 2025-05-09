@@ -631,10 +631,6 @@ export const StudentBullJob = z.discriminatedUnion('name', [
     data: z.object({}),
   }),
   z.object({
-    name: z.literal('student.graduation.email'),
-    data: z.object({}),
-  }),
-  z.object({
     name: z.literal('student.birthdate.daily'),
     data: z.object({}),
   }),
@@ -650,6 +646,10 @@ export const StudentBullJob = z.discriminatedUnion('name', [
       email: Student.shape.email,
       studentId: Student.shape.id,
     }),
+  }),
+  z.object({
+    name: z.literal('student.graduation.email'),
+    data: z.object({}),
   }),
   z.object({
     name: z.literal('student.points.recurring'),
