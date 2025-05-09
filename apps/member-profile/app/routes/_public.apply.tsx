@@ -27,7 +27,16 @@ export default function ApplicationLayout() {
       <Text className="mt-8" variant="2xl">
         The ColorStack Family Application
       </Text>
-      <Outlet />
+
+      {isApplicationOpen ? (
+        <Outlet />
+      ) : (
+        <Text>
+          Unfortunately, our application is temporarily closed as we review
+          exising applications. Please check back in the upcoming days/weeks for
+          the opportunity to apply to ColorStack!
+        </Text>
+      )}
     </Public.Content>
   );
 }
