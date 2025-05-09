@@ -22,7 +22,7 @@ export function StudentGraduationEmail({
           <span style={{ fontWeight: 'bold' }}>
             add a secondary email address
           </span>{' '}
-          to keep access to your ColorStack account and community! 🚨
+          to keep access to your ColorStack account! 🚨
         </Email.Text>
 
         <Email.Button href={memberProfileUrl + '/profile/emails'}>

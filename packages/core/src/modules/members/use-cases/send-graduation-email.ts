@@ -18,7 +18,7 @@ export async function sendGraduationEmail(
       '=',
       sql<string>`extract(year from current_date)::text`
     )
-    .groupBy(['students.id', 'students.email', 'students.firstName'])
+    .groupBy('students.id')
     .having(({ fn }) => fn.count('studentEmails.email'), '<', 2)
     .execute();
 
