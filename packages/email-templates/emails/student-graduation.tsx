@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { Email } from './components/email';
 import { type EmailTemplateData } from '../src/types';
 
@@ -9,7 +11,7 @@ export function StudentGraduationEmail({
   return (
     <Email.Template>
       <Email.Preview>
-        Add a secondary email to your ColorStack account ASAP! 🚨
+        Add a secondary email to your ColorStack account before you graduate! 🚨
       </Email.Preview>
 
       <Email.Main>

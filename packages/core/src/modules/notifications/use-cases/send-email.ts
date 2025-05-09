@@ -203,7 +203,7 @@ function getSubject(input: EmailTemplate): string {
       return "Onboarding Session, ✅! What's Next?";
     })
     .with({ name: 'student-graduation' }, () => {
-      return "You're graduating soon...add a secondary email! 🚨";
+      return "Don't lose access to ColorStack! 😰";
     })
     .with({ name: 'student-removed' }, () => {
       return 'An Update on Your ColorStack Membership';
