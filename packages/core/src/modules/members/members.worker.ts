@@ -15,6 +15,7 @@ import {
 } from '@/modules/airtable';
 import { sendCompanyReviewNotifications } from '@/modules/employment/use-cases/send-company-review-notifications';
 import { sendAnniversaryEmail } from '@/modules/members/use-cases/send-anniversary-email';
+import { sendGraduationEmail } from '@/modules/members/use-cases/send-graduation-email';
 import { success } from '@/shared/utils/core';
 import { onActivationStepCompleted } from './events/activation-step-completed';
 import { onMemberActivated } from './events/member-activated';
@@ -52,6 +53,9 @@ export const memberWorker = registerWorker(
       })
       .with({ name: 'student.engagement.backfill' }, ({ data }) => {
         return backfillEngagementRecords(data);
+      })
+      .with({ name: 'student.graduation.email' }, ({ data }) => {
+        return sendGraduationEmail(data);
       })
       .with({ name: 'student.points.recurring' }, ({ data: _ }) => {
         return updatePointTotals();

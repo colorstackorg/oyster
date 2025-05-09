@@ -648,6 +648,10 @@ export const StudentBullJob = z.discriminatedUnion('name', [
     }),
   }),
   z.object({
+    name: z.literal('student.graduation.email'),
+    data: z.object({}),
+  }),
+  z.object({
     name: z.literal('student.points.recurring'),
     data: z.object({}),
   }),

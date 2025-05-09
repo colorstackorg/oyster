@@ -13,6 +13,7 @@ import {
   ResumeSubmittedEmail,
   StudentAnniversaryEmail,
   StudentAttendedOnboardingEmail,
+  StudentGraduationEmail,
   StudentRemovedEmail,
 } from '@oyster/email-templates';
 
@@ -75,6 +76,7 @@ async function sendEmailWithPostmark(input: EmailTemplate) {
     .with('referral-sent', () => FROM_NOTIFICATIONS)
     .with('student-anniversary', () => FROM_NOTIFICATIONS)
     .with('student-attended-onboarding', () => FROM_NOTIFICATIONS)
+    .with('student-graduation', () => FROM_NOTIFICATIONS)
     .with('student-removed', () => FROM_NOTIFICATIONS)
     .exhaustive();
 
@@ -155,6 +157,9 @@ function getHtml(input: EmailTemplate): string {
     .with({ name: 'student-attended-onboarding' }, ({ data }) => {
       return StudentAttendedOnboardingEmail(data);
     })
+    .with({ name: 'student-graduation' }, ({ data }) => {
+      return StudentGraduationEmail(data);
+    })
     .with({ name: 'student-removed' }, ({ data }) => {
       return StudentRemovedEmail(data);
     })
@@ -197,6 +202,9 @@ function getSubject(input: EmailTemplate): string {
     .with({ name: 'student-attended-onboarding' }, () => {
       return "Onboarding Session, ✅! What's Next?";
     })
+    .with({ name: 'student-graduation' }, () => {
+      return "Don't lose access to ColorStack! 😰";
+    })
     .with({ name: 'student-removed' }, () => {
       return 'An Update on Your ColorStack Membership';
     })
@@ -230,6 +238,7 @@ async function getAttachments(
       { name: 'referral-sent' },
       { name: 'resume-submitted' },
       { name: 'student-anniversary' },
+      { name: 'student-graduation' },
       { name: 'student-removed' },
       () => {
         return undefined;
