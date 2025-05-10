@@ -244,6 +244,8 @@ Application.GoalsField = function GoalsField({
   );
 };
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 Application.GraduationDateField = function GraduationDateField({
   defaultValue,
   error,
@@ -253,6 +255,7 @@ Application.GraduationDateField = function GraduationDateField({
 
   return (
     <Field
+      description={`Example: May ${CURRENT_YEAR + 1}`}
       error={error}
       label="Expected Graduation Date"
       labelFor={name}
@@ -261,6 +264,8 @@ Application.GraduationDateField = function GraduationDateField({
       <DatePicker
         defaultValue={defaultValue}
         id={name}
+        max="2099-12"
+        min="2000-01"
         name={name}
         readOnly={readOnly}
         required
@@ -271,11 +276,9 @@ Application.GraduationDateField = function GraduationDateField({
 };
 
 const GRADUATION_YEARS = run(() => {
-  const currentYear = new Date().getFullYear();
-
   const years: number[] = [];
 
-  for (let year = currentYear - 1; year <= currentYear + 5; year++) {
+  for (let year = CURRENT_YEAR - 1; year <= CURRENT_YEAR + 5; year++) {
     years.push(year);
   }
 

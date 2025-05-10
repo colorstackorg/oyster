@@ -7,6 +7,8 @@ type DatePickerProps = Pick<
   React.HTMLProps<HTMLInputElement>,
   | 'defaultValue'
   | 'id'
+  | 'max'
+  | 'min'
   | 'name'
   | 'onBlur'
   | 'placeholder'
