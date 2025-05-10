@@ -5,7 +5,13 @@ import { cx } from '../utils/cx';
 
 type DatePickerProps = Pick<
   React.HTMLProps<HTMLInputElement>,
-  'defaultValue' | 'id' | 'name' | 'onBlur' | 'placeholder' | 'required'
+  | 'defaultValue'
+  | 'id'
+  | 'name'
+  | 'onBlur'
+  | 'placeholder'
+  | 'readOnly'
+  | 'required'
 > & {
   type: 'date' | 'datetime-local' | 'month';
 };

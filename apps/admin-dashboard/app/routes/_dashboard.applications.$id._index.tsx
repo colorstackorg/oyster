@@ -50,6 +50,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'applications.firstName',
       'applications.gender',
       'applications.goals',
+      'applications.graduationDate',
       'applications.graduationYear',
       'applications.lastName',
       'applications.linkedInUrl',
@@ -76,6 +77,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       ...(application.referrerId && {
         referrerUri: `${ENV.MEMBER_PROFILE_URL}/directory/${application.referrerId}`,
       }),
+      graduationDate: application.graduationDate
+        ? application.graduationDate.toISOString().slice(0, 7)
+        : undefined,
     },
   });
 }
@@ -136,6 +140,7 @@ const ApplyFormData = ApplicationType.pick({
   firstName: true,
   gender: true,
   goals: true,
+  graduationDate: true,
   graduationYear: true,
   lastName: true,
   linkedInUrl: true,
@@ -354,10 +359,17 @@ function ApplicationFieldGroup({
         name={keys.educationLevel}
       />
 
-      <Application.GraduationYearField
-        defaultValue={application.graduationYear}
-        name={keys.graduationYear}
-      />
+      {application.graduationDate ? (
+        <Application.GraduationDateField
+          defaultValue={application.graduationDate}
+          name={keys.graduationDate}
+        />
+      ) : (
+        <Application.GraduationYearField
+          defaultValue={application.graduationYear}
+          name={keys.graduationYear}
+        />
+      )}
 
       <Application.RaceField
         defaultValue={(application.race as Race[]) || undefined}
@@ -415,10 +427,17 @@ function ApplicationFieldGroup({
         name={keys.educationLevel}
       />
 
-      <Application.GraduationYearField
-        defaultValue={application.graduationYear}
-        name={keys.graduationYear}
-      />
+      {application.graduationDate ? (
+        <Application.GraduationDateField
+          defaultValue={application.graduationDate}
+          name={keys.graduationDate}
+        />
+      ) : (
+        <Application.GraduationYearField
+          defaultValue={application.graduationYear}
+          name={keys.graduationYear}
+        />
+      )}
 
       <Application.RaceField
         defaultValue={(application.race as Race[]) || undefined}

@@ -13,6 +13,7 @@ import {
 } from '@oyster/types';
 import {
   Checkbox,
+  DatePicker,
   Field,
   type FieldProps,
   Input,
@@ -238,6 +239,32 @@ Application.GoalsField = function GoalsField({
         name={name}
         readOnly={readOnly}
         required
+      />
+    </Field>
+  );
+};
+
+Application.GraduationDateField = function GraduationDateField({
+  defaultValue,
+  error,
+  name,
+}: FieldProps<string>) {
+  const { readOnly } = useContext(ApplicationContext);
+
+  return (
+    <Field
+      error={error}
+      label="Expected Graduation Date"
+      labelFor={name}
+      required
+    >
+      <DatePicker
+        defaultValue={defaultValue}
+        id={name}
+        name={name}
+        readOnly={readOnly}
+        required
+        type="month"
       />
     </Field>
   );
