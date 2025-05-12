@@ -1,7 +1,6 @@
 export {
   AddResourceInput,
   CreateTagInput,
-  DownvoteResourceInput,
   ListResourcesOrderBy,
   ListResourcesWhere,
   ResourceType,
