@@ -85,10 +85,6 @@ export const CreateTagInput = Tag.pick({
   name: true,
 });
 
-export const DownvoteResourceInput = z.object({
-  memberId: z.string().min(1),
-});
-
 export const UpdateResourceInput = AddResourceInput.omit({
   postedBy: true,
   type: true,
@@ -104,7 +100,6 @@ export const ViewResourceInput = z.object({
 
 export type AddResourceInput = z.infer<typeof AddResourceInput>;
 export type CreateTagInput = z.infer<typeof CreateTagInput>;
-export type DownvoteResourceInput = z.infer<typeof DownvoteResourceInput>;
 export type UpdateResourceInput = z.infer<typeof UpdateResourceInput>;
 export type UpvoteResourceInput = z.infer<typeof UpvoteResourceInput>;
 export type ViewResourceInput = z.infer<typeof ViewResourceInput>;

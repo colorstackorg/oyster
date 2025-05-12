@@ -5,6 +5,16 @@ import { type UpvoteResourceInput } from '@/modules/resources/resources.types';
 
 export async function upvoteResource(id: string, input: UpvoteResourceInput) {
   const result = await db.transaction().execute(async (trx) => {
+    const deleteResult = await trx
+      .deleteFrom('resourceUpvotes')
+      .where('resourceId', '=', id)
+      .where('studentId', '=', input.memberId)
+      .executeTakeFirst();
+
+    if (deleteResult.numDeletedRows) {
+      return 'deleted';
+    }
+
     await trx
       .insertInto('resourceUpvotes')
       .values({
@@ -13,6 +23,8 @@ export async function upvoteResource(id: string, input: UpvoteResourceInput) {
       })
       .onConflict((oc) => oc.doNothing())
       .execute();
+
+    return 'created';
   });
 
   const { postedBy } = await db
@@ -21,12 +33,21 @@ export async function upvoteResource(id: string, input: UpvoteResourceInput) {
     .where('id', '=', id)
     .executeTakeFirstOrThrow();
 
-  job('gamification.activity.completed', {
-    resourceId: id,
-    studentId: postedBy,
-    type: 'get_resource_upvote',
-    upvotedBy: input.memberId,
-  });
+  if (result === 'created') {
+    job('gamification.activity.completed', {
+      resourceId: id,
+      studentId: postedBy,
+      type: 'get_resource_upvote',
+      upvotedBy: input.memberId,
+    });
+  } else {
+    job('gamification.activity.completed.undo', {
+      resourceId: id,
+      studentId: postedBy,
+      type: 'get_resource_upvote',
+      upvotedBy: input.memberId,
+    });
+  }
 
   return result;
 }
