@@ -50,6 +50,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'applications.firstName',
       'applications.gender',
       'applications.goals',
+      'applications.graduationMonth',
       'applications.graduationYear',
       'applications.lastName',
       'applications.linkedInUrl',
@@ -136,6 +137,7 @@ const ApplyFormData = ApplicationType.pick({
   firstName: true,
   gender: true,
   goals: true,
+  graduationMonth: true,
   graduationYear: true,
   lastName: true,
   linkedInUrl: true,
@@ -354,9 +356,15 @@ function ApplicationFieldGroup({
         name={keys.educationLevel}
       />
 
-      <Application.GraduationYearField
-        defaultValue={application.graduationYear}
-        name={keys.graduationYear}
+      <Application.GraduationDateField
+        month={{
+          defaultValue: application.graduationMonth || undefined,
+          name: keys.graduationMonth,
+        }}
+        year={{
+          defaultValue: application.graduationYear,
+          name: keys.graduationYear,
+        }}
       />
 
       <Application.RaceField
@@ -415,9 +423,15 @@ function ApplicationFieldGroup({
         name={keys.educationLevel}
       />
 
-      <Application.GraduationYearField
-        defaultValue={application.graduationYear}
-        name={keys.graduationYear}
+      <Application.GraduationDateField
+        month={{
+          defaultValue: application.graduationMonth || undefined,
+          name: keys.graduationMonth,
+        }}
+        year={{
+          defaultValue: application.graduationYear,
+          name: keys.graduationYear,
+        }}
       />
 
       <Application.RaceField

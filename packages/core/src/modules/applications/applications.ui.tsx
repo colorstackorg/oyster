@@ -18,6 +18,7 @@ import {
   Input,
   Link,
   Radio,
+  Select,
   Text,
   Textarea,
   type TextProps,
@@ -243,49 +244,92 @@ Application.GoalsField = function GoalsField({
   );
 };
 
-const GRADUATION_YEARS = run(() => {
-  const currentYear = new Date().getFullYear();
+const MONTHS_IN_ORDER = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
 
+const YEARS_IN_ORDER = run(() => {
   const years: number[] = [];
 
-  for (let year = currentYear - 1; year <= currentYear + 5; year++) {
+  const CURRENT_YEAR = new Date().getFullYear();
+
+  for (let year = CURRENT_YEAR - 1; year <= CURRENT_YEAR + 5; year++) {
     years.push(year);
   }
 
   return years;
 });
 
-Application.GraduationYearField = function GraduationYearField({
-  defaultValue,
-  error,
-  name,
-}: FieldProps<number>) {
+type GraduationDateFieldProps = {
+  month: FieldProps<number>;
+  year: FieldProps<number>;
+};
+
+Application.GraduationDateField = function GraduationDateField({
+  month,
+  year,
+}: GraduationDateFieldProps) {
   const { readOnly } = useContext(ApplicationContext);
 
   return (
-    <Field
-      error={error}
-      label="Expected Graduation Year"
-      labelFor={name}
-      required
-    >
-      <Radio.Group>
-        {GRADUATION_YEARS.map((value: number) => {
-          return (
-            <Radio
-              key={value}
-              defaultChecked={defaultValue === value}
-              id={name + value}
-              label={value.toString()}
-              name={name}
-              readOnly={readOnly}
-              required
-              value={value.toString()}
-            />
-          );
-        })}
-      </Radio.Group>
-    </Field>
+    <div className="grid gap-[inherit] sm:grid-cols-2 sm:gap-2">
+      <Field
+        error={month.error}
+        label="Expected Graduation Month"
+        labelFor={month.name}
+        required
+      >
+        <Select
+          defaultValue={month.defaultValue}
+          id={month.name}
+          name={month.name}
+          readOnly={readOnly}
+          required
+        >
+          {MONTHS_IN_ORDER.map((value, index) => {
+            return (
+              <option key={value} value={index + 1}>
+                {value}
+              </option>
+            );
+          })}
+        </Select>
+      </Field>
+
+      <Field
+        error={year.error}
+        label="Expected Graduation Year"
+        labelFor={year.name}
+        required
+      >
+        <Select
+          defaultValue={year.defaultValue}
+          id={year.name}
+          name={year.name}
+          readOnly={readOnly}
+          required
+        >
+          {YEARS_IN_ORDER.map((value) => {
+            return (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            );
+          })}
+        </Select>
+      </Field>
+    </div>
   );
 };
 
