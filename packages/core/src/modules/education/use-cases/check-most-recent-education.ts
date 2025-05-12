@@ -37,14 +37,16 @@ export async function checkMostRecentEducation(studentId: string) {
     return;
   }
 
-  const graduationYear = education.endDate.getFullYear().toString();
+  const graduationMonth = education.endDate.getMonth() + 1;
+  const graduationYear = education.endDate.getFullYear();
 
   await db
     .updateTable('students')
     .set({
       educationLevel:
         EducationLevelFromDegreeType[education.degreeType as DegreeType],
-      graduationYear,
+      graduationMonth,
+      graduationYear: graduationYear.toString(),
       major: education.major,
       otherMajor: education.otherMajor,
       otherSchool: education.otherSchool,
@@ -72,7 +74,8 @@ export async function checkMostRecentEducation(studentId: string) {
     airtableRecordId: member.airtableId as string,
     airtableTableId: AIRTABLE_MEMBERS_TABLE_ID!,
     data: {
-      'Expected Graduation Year': graduationYear,
+      'Expected Graduation Month': graduationMonth.toString(),
+      'Expected Graduation Year': graduationYear.toString(),
       School: member.school as string,
     },
   });

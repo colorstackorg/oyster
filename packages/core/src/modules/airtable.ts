@@ -91,6 +91,7 @@ const AirtableMemberRecord = Student.pick({
   otherDemographics: true,
   race: true,
 }).extend({
+  graduationMonth: z.number().nullable(),
   school: z.string().optional(),
 });
 
@@ -114,9 +115,10 @@ async function createAirtableMemberRecord({
       'email',
       'firstName',
       'gender',
+      'graduationMonth',
+      'graduationYear',
       'lastName',
       'linkedInUrl',
-      'graduationYear',
       'otherDemographics',
       'race',
       'students.id',
@@ -148,6 +150,9 @@ async function createAirtableMemberRecord({
         return FORMATTED_DEMOGRAPHICS[demographic];
       }),
       School: record.school,
+      ...(record.graduationMonth && {
+        'Expected Graduation Month': record.graduationMonth.toString(),
+      }),
     },
   });
 
