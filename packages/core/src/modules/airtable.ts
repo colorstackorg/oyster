@@ -91,7 +91,7 @@ const AirtableMemberRecord = Student.pick({
   otherDemographics: true,
   race: true,
 }).extend({
-  graduationMonth: z.number().optional(),
+  graduationMonth: z.number().nullable(),
   school: z.string().optional(),
 });
 
