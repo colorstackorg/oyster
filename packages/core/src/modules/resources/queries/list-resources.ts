@@ -17,6 +17,7 @@ type ListResourcesOptions<Selection> = {
   orderBy: ListResourcesOrderBy;
   pagination: Pick<ListSearchParams, 'limit' | 'page'>;
   select: Selection[];
+  upvoted?: boolean; // Whether the current member has upvoted the resource.
   where: ListResourcesWhere;
 };
 
@@ -34,6 +35,7 @@ export async function listResources<
   orderBy,
   pagination,
   select,
+  upvoted,
   where,
 }: ListResourcesOptions<Selection>) {
   // The base query only includes the conditions necessary to fulfill the
@@ -74,6 +76,16 @@ export async function listResources<
               '@>',
               sql<string[]>`${where.tags}`
             );
+        });
+      });
+    })
+    .$if(!!upvoted, (qb) => {
+      return qb.where((eb) => {
+        return eb.exists(() => {
+          return eb
+            .selectFrom('resourceUpvotes')
+            .whereRef('resourceUpvotes.resourceId', '=', 'resources.id')
+            .where('resourceUpvotes.studentId', '=', memberId);
         });
       });
     });

@@ -8,7 +8,8 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { Plus } from 'react-feather';
+import { ArrowUp, Plus } from 'react-feather';
+import { z } from 'zod';
 
 import { isMemberAdmin } from '@oyster/core/admins';
 import { ListSearchParams } from '@oyster/core/member-profile/ui';
@@ -30,6 +31,7 @@ import {
   Select,
   Text,
 } from '@oyster/ui';
+import { FilterTrigger } from '@oyster/ui/filter';
 import { run } from '@oyster/utils';
 
 import { Resource } from '@/shared/components/resource';
@@ -48,6 +50,7 @@ const ResourcesSearchParams = ListSearchParams.pick({
   orderBy: ListResourcesOrderBy,
   search: ListResourcesWhere.shape.search,
   tags: ListResourcesWhere.shape.tags.catch([]),
+  upvoted: z.string().optional().catch(undefined),
 });
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -81,6 +84,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       'students.lastName as posterLastName',
       'students.profilePicture as posterProfilePicture',
     ],
+    upvoted: !!searchParams.upvoted,
     where: {
       id: searchParams.id,
       search: searchParams.search,
@@ -225,6 +229,7 @@ export default function ResourcesPage() {
         <Dashboard.SearchForm placeholder="Search by title...">
           <ExistingSearchParams exclude={['page']} />
         </Dashboard.SearchForm>
+        <MyUpvotesFilter />
         <SortResourcesForm />
       </section>
 
@@ -250,6 +255,37 @@ function AddResourceLink() {
         <Plus size={20} /> Add Resource
       </Link>
     </Button.Slot>
+  );
+}
+
+function MyUpvotesFilter() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const upvoted = searchParams.has('upvoted');
+
+  function toggle() {
+    setSearchParams((params) => {
+      params.delete('page');
+
+      if (params.has('upvoted')) {
+        params.delete('upvoted');
+      } else {
+        params.set('upvoted', '1');
+      }
+
+      return params;
+    });
+  }
+
+  return (
+    <FilterTrigger
+      active={upvoted}
+      icon={<ArrowUp />}
+      onClick={toggle}
+      popover={false}
+    >
+      My Upvotes
+    </FilterTrigger>
   );
 }
 
