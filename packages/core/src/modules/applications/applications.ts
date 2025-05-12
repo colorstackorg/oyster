@@ -346,7 +346,7 @@ export async function apply(input: ApplyInput) {
         gender: input.gender,
         goals: input.goals,
         graduationDate: input.graduationDate,
-        graduationYear: input.graduationDate.getFullYear(),
+        graduationYear: new Date(input.graduationDate).getUTCFullYear(),
         id: applicationId,
         lastName: input.lastName,
         linkedInUrl: input.linkedInUrl,

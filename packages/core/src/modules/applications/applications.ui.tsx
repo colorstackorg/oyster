@@ -264,8 +264,8 @@ Application.GraduationDateField = function GraduationDateField({
       <DatePicker
         defaultValue={defaultValue}
         id={name}
-        max="2099-12"
         min="2000-01"
+        max="2099-12"
         name={name}
         readOnly={readOnly}
         required
