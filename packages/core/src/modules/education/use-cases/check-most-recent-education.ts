@@ -37,6 +37,7 @@ export async function checkMostRecentEducation(studentId: string) {
     return;
   }
 
+  const graduationMonth = education.endDate.getMonth() + 1;
   const graduationYear = education.endDate.getFullYear().toString();
 
   await db
@@ -44,6 +45,7 @@ export async function checkMostRecentEducation(studentId: string) {
     .set({
       educationLevel:
         EducationLevelFromDegreeType[education.degreeType as DegreeType],
+      graduationMonth,
       graduationYear,
       major: education.major,
       otherMajor: education.otherMajor,
