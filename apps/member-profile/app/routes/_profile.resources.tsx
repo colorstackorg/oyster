@@ -8,7 +8,7 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { ArrowUp, Plus } from 'react-feather';
+import { ArrowUp, Plus, User } from 'react-feather';
 import { z } from 'zod';
 
 import { isMemberAdmin } from '@oyster/core/admins';
@@ -47,10 +47,11 @@ const ResourcesSearchParams = ListSearchParams.pick({
 }).extend({
   date: ISO8601Date.optional().catch(undefined),
   id: ListResourcesWhere.shape.id.catch(undefined),
+  isMyPosts: z.string().optional().catch(undefined),
+  isMyUpvotes: z.string().optional().catch(undefined),
   orderBy: ListResourcesOrderBy,
   search: ListResourcesWhere.shape.search,
   tags: ListResourcesWhere.shape.tags.catch([]),
-  upvoted: z.string().optional().catch(undefined),
 });
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -84,7 +85,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       'students.lastName as posterLastName',
       'students.profilePicture as posterProfilePicture',
     ],
-    upvoted: !!searchParams.upvoted,
+    isMyPosts: !!searchParams.isMyPosts,
+    isMyUpvotes: !!searchParams.isMyUpvotes,
     where: {
       id: searchParams.id,
       search: searchParams.search,
@@ -229,8 +231,12 @@ export default function ResourcesPage() {
         <Dashboard.SearchForm placeholder="Search by title...">
           <ExistingSearchParams exclude={['page']} />
         </Dashboard.SearchForm>
-        <MyUpvotesFilter />
-        <SortResourcesForm />
+
+        <div className="flex flex-wrap gap-2">
+          <MyUpvotesFilter />
+          <MyPostsFilter />
+          <SortResourcesForm />
+        </div>
       </section>
 
       <CurrentTagsList />
@@ -261,16 +267,16 @@ function AddResourceLink() {
 function MyUpvotesFilter() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const upvoted = searchParams.has('upvoted');
+  const isMyUpvotes = searchParams.has('isMyUpvotes');
 
   function toggle() {
     setSearchParams((params) => {
       params.delete('page');
 
-      if (params.has('upvoted')) {
-        params.delete('upvoted');
+      if (params.has('isMyUpvotes')) {
+        params.delete('isMyUpvotes');
       } else {
-        params.set('upvoted', '1');
+        params.set('isMyUpvotes', '1');
       }
 
       return params;
@@ -279,12 +285,43 @@ function MyUpvotesFilter() {
 
   return (
     <FilterTrigger
-      active={upvoted}
+      active={isMyUpvotes}
       icon={<ArrowUp />}
       onClick={toggle}
       popover={false}
     >
       My Upvotes
+    </FilterTrigger>
+  );
+}
+
+function MyPostsFilter() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const isMyPosts = searchParams.has('isMyPosts');
+
+  function toggle() {
+    setSearchParams((params) => {
+      params.delete('page');
+
+      if (params.has('isMyPosts')) {
+        params.delete('isMyPosts');
+      } else {
+        params.set('isMyPosts', '1');
+      }
+
+      return params;
+    });
+  }
+
+  return (
+    <FilterTrigger
+      active={isMyPosts}
+      icon={<User />}
+      onClick={toggle}
+      popover={false}
+    >
+      My Posts
     </FilterTrigger>
   );
 }

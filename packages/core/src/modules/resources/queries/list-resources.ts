@@ -13,11 +13,12 @@ import {
 import { type ListSearchParams } from '@/shared/types';
 
 type ListResourcesOptions<Selection> = {
+  isMyPosts?: boolean;
+  isMyUpvotes?: boolean;
   memberId: string;
   orderBy: ListResourcesOrderBy;
   pagination: Pick<ListSearchParams, 'limit' | 'page'>;
   select: Selection[];
-  upvoted?: boolean; // Whether the current member has upvoted the resource.
   where: ListResourcesWhere;
 };
 
@@ -31,11 +32,12 @@ type ListResourcesOptions<Selection> = {
 export async function listResources<
   Selection extends SelectExpression<DB, 'resources' | 'students'>,
 >({
+  isMyPosts,
+  isMyUpvotes,
   memberId,
   orderBy,
   pagination,
   select,
-  upvoted,
   where,
 }: ListResourcesOptions<Selection>) {
   // The base query only includes the conditions necessary to fulfill the
@@ -79,7 +81,10 @@ export async function listResources<
         });
       });
     })
-    .$if(!!upvoted, (qb) => {
+    .$if(!!isMyPosts, (qb) => {
+      return qb.where('resources.postedBy', '=', memberId);
+    })
+    .$if(!!isMyUpvotes, (qb) => {
       return qb.where((eb) => {
         return eb.exists(() => {
           return eb
