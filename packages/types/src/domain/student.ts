@@ -129,15 +129,11 @@ export const Student = Entity.merge(StudentSocialLinks)
     fullName: z.string().trim().min(2),
     gender: z.nativeEnum(Gender),
     genderPronouns: z.string().trim().min(1).nullable(),
-    graduationDate: z
-      .string()
-      .length(7, 'Must be exactly 7 characters.')
-      .refine((value) => {
-        return !!new Date(value).getTime();
-      })
-      .transform((value) => {
-        return `${value}-01`;
-      }),
+    graduationDate: z.string().transform((value) => {
+      const [year, month, date] = value.split('-').map(Number);
+
+      return new Date(Date.UTC(year, month - 1, date));
+    }),
 
     graduationYear: z.coerce.number(),
     headline: z.string().trim().min(1).nullable(),
