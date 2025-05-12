@@ -13,6 +13,8 @@ import {
 import { type ListSearchParams } from '@/shared/types';
 
 type ListResourcesOptions<Selection> = {
+  isMyPosts?: boolean;
+  isMyUpvotes?: boolean;
   memberId: string;
   orderBy: ListResourcesOrderBy;
   pagination: Pick<ListSearchParams, 'limit' | 'page'>;
@@ -30,6 +32,8 @@ type ListResourcesOptions<Selection> = {
 export async function listResources<
   Selection extends SelectExpression<DB, 'resources' | 'students'>,
 >({
+  isMyPosts,
+  isMyUpvotes,
   memberId,
   orderBy,
   pagination,
@@ -74,6 +78,19 @@ export async function listResources<
               '@>',
               sql<string[]>`${where.tags}`
             );
+        });
+      });
+    })
+    .$if(!!isMyPosts, (qb) => {
+      return qb.where('resources.postedBy', '=', memberId);
+    })
+    .$if(!!isMyUpvotes, (qb) => {
+      return qb.where((eb) => {
+        return eb.exists(() => {
+          return eb
+            .selectFrom('resourceUpvotes')
+            .whereRef('resourceUpvotes.resourceId', '=', 'resources.id')
+            .where('resourceUpvotes.studentId', '=', memberId);
         });
       });
     });
