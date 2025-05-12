@@ -244,17 +244,7 @@ Application.GoalsField = function GoalsField({
   );
 };
 
-const GRADUATION_YEARS = run(() => {
-  const currentYear = new Date().getFullYear();
-
-  const years: number[] = [];
-
-  for (let year = currentYear - 1; year <= currentYear + 5; year++) {
-    years.push(year);
-  }
-
-  return years;
-});
+const CURRENT_YEAR = new Date().getFullYear();
 
 Application.GraduationDateField = function GraduationDateField({
   defaultValue,
@@ -265,6 +255,7 @@ Application.GraduationDateField = function GraduationDateField({
 
   return (
     <Field
+      description={`Example: May ${CURRENT_YEAR + 1}`}
       error={error}
       label="Expected Graduation Date"
       labelFor={name}
@@ -273,10 +264,57 @@ Application.GraduationDateField = function GraduationDateField({
       <DatePicker
         defaultValue={defaultValue}
         id={name}
+        min="2000-01"
+        max="2099-12"
         name={name}
+        readOnly={readOnly}
         required
         type="month"
       />
+    </Field>
+  );
+};
+
+const GRADUATION_YEARS = run(() => {
+  const years: number[] = [];
+
+  for (let year = CURRENT_YEAR - 1; year <= CURRENT_YEAR + 5; year++) {
+    years.push(year);
+  }
+
+  return years;
+});
+
+Application.GraduationYearField = function GraduationYearField({
+  defaultValue,
+  error,
+  name,
+}: FieldProps<number>) {
+  const { readOnly } = useContext(ApplicationContext);
+
+  return (
+    <Field
+      error={error}
+      label="Expected Graduation Year"
+      labelFor={name}
+      required
+    >
+      <Radio.Group>
+        {GRADUATION_YEARS.map((value: number) => {
+          return (
+            <Radio
+              key={value}
+              defaultChecked={defaultValue === value}
+              id={name + value}
+              label={value.toString()}
+              name={name}
+              readOnly={readOnly}
+              required
+              value={value.toString()}
+            />
+          );
+        })}
+      </Radio.Group>
     </Field>
   );
 };

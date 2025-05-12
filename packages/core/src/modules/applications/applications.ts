@@ -174,8 +174,8 @@ export async function acceptApplication(
       'applications.email',
       'applications.firstName',
       'applications.gender',
-      'applications.graduationYear',
       'applications.graduationDate',
+      'applications.graduationYear',
       'applications.id',
       'applications.lastName',
       'applications.linkedInUrl',
@@ -248,6 +248,7 @@ export async function acceptApplication(
         email: application.email,
         firstName: application.firstName,
         gender: application.gender,
+        graduationDate: application.graduationDate,
         graduationYear: application.graduationYear.toString(),
         id: studentId,
         lastName: application.lastName,
@@ -335,9 +336,6 @@ export async function apply(input: ApplyInput) {
       referralId = referral?.id;
     }
 
-    const date = new Date(input.graduationDate);
-
-    // TODO: add date field
     await trx
       .insertInto('applications')
       .values({
@@ -347,8 +345,8 @@ export async function apply(input: ApplyInput) {
         firstName: input.firstName,
         gender: input.gender,
         goals: input.goals,
-        graduationDate: date,
-        graduationYear: date.getFullYear(),
+        graduationDate: input.graduationDate,
+        graduationYear: new Date(input.graduationDate).getUTCFullYear(),
         id: applicationId,
         lastName: input.lastName,
         linkedInUrl: input.linkedInUrl,
@@ -516,7 +514,7 @@ async function reviewApplication({
       'applications.educationLevel',
       'applications.email',
       'applications.firstName',
-      'applications.graduationDate',
+      'applications.graduationYear',
       'applications.id',
       'applications.linkedInUrl',
       'applications.major',
@@ -577,7 +575,7 @@ type ApplicationForDecision = Pick<
   | 'createdAt'
   | 'educationLevel'
   | 'email'
-  | 'graduationDate'
+  | 'graduationYear'
   | 'id'
   | 'linkedInUrl'
   | 'major'
@@ -593,11 +591,10 @@ async function shouldReject(
   }
 
   const currentYear = new Date().getFullYear();
-  const graduationDate = new Date(application.graduationDate);
 
   if (
-    graduationDate.getFullYear() < currentYear ||
-    graduationDate.getFullYear() > currentYear + 5
+    application.graduationYear < currentYear ||
+    application.graduationYear > currentYear + 5
   ) {
     return [true, 'not_undergraduate'];
   }
