@@ -514,6 +514,7 @@ async function reviewApplication({
       'applications.educationLevel',
       'applications.email',
       'applications.firstName',
+      'applications.graduationMonth',
       'applications.graduationYear',
       'applications.id',
       'applications.linkedInUrl',
@@ -575,6 +576,7 @@ type ApplicationForDecision = Pick<
   | 'createdAt'
   | 'educationLevel'
   | 'email'
+  | 'graduationMonth'
   | 'graduationYear'
   | 'id'
   | 'linkedInUrl'
@@ -590,11 +592,20 @@ async function shouldReject(
     return [true, 'not_undergraduate'];
   }
 
-  const currentYear = new Date().getFullYear();
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1; // Add 1 for 0-indexed month.
 
   if (
     application.graduationYear < currentYear ||
     application.graduationYear > currentYear + 5
+  ) {
+    return [true, 'not_undergraduate'];
+  }
+
+  if (
+    application.graduationYear === currentYear &&
+    application.graduationMonth < currentMonth
   ) {
     return [true, 'not_undergraduate'];
   }
