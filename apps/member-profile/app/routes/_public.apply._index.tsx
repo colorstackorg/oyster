@@ -162,8 +162,14 @@ export default function ApplicationPage() {
             name={keys.educationLevel}
           />
           <Application.GraduationDateField
-            error={errors.graduationDate}
-            name={keys.graduationDate}
+            month={{
+              error: errors.graduationMonth,
+              name: keys.graduationMonth,
+            }}
+            year={{
+              error: errors.graduationYear,
+              name: keys.graduationYear,
+            }}
           />
           <Application.RaceField error={errors.race} name={keys.race} />
           <Application.GenderField error={errors.gender} name={keys.gender} />

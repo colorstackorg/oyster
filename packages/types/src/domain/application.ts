@@ -51,7 +51,7 @@ export const Application = Student.pick({
         return value.toLowerCase();
       }),
     goals: z.string().trim().min(1),
-    graduationDate: z.string().transform((value) => value + '-01'),
+    graduationMonth: z.coerce.number().min(1).max(12),
     otherDemographics: z
       .union([z.nativeEnum(Demographic), z.nativeEnum(OtherDemographic)])
       .array()
