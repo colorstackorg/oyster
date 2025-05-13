@@ -432,9 +432,11 @@ export async function requestHelp({
     user: memberId,
   });
 
+  const quotedDescription = '>' + description.replaceAll('\n', '\n>').trim();
+
   job('notification.slack.send', {
     channel: process.env.SLACK_FEED_CHANNEL_ID!,
-    message: `🚨 A new <${STUDENT_PROFILE_URL}/peer-help/${helpRequest.id}|help request> was posted!\n\n>${description}`,
+    message: `🚨 A new <${STUDENT_PROFILE_URL}/peer-help/${helpRequest.id}|help request> was posted!\n\n${quotedDescription}`,
     workspace: 'regular',
   });
 
