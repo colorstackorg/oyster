@@ -135,10 +135,8 @@ export const EventBullJob = z.discriminatedUnion('name', [
     }),
   }),
   z.object({
-    name: z.literal('event.notification'),
-    data: z.object({
-      eventId: Event.shape.id,
-    }),
+    name: z.literal('event.upcoming.notification'),
+    data: z.object({}),
   }),
 ]);
 

@@ -433,6 +433,9 @@ export const eventWorker = registerWorker(
       .with({ name: 'event.sync' }, ({ data }) => {
         return syncAirmeetEvent(data);
       })
+      .with({ name: 'event.upcoming.notification' }, ({ data }) => {
+        return sendUpcomingEventNotification(data);
+      })
       .exhaustive();
   }
 );
@@ -450,6 +453,49 @@ async function onEventAttended({
     eventId,
     studentId,
     type: 'attend_event',
+  });
+}
+
+const NumberEmoji: Record<string, string> = {
+  '1': '1️⃣',
+  '2': '2️⃣',
+  '3': '3️⃣',
+  '4': '4️⃣',
+  '5': '5️⃣',
+  '6': '6️⃣',
+  '7': '7️⃣',
+};
+
+async function sendUpcomingEventNotification(
+  _: GetBullJobData<'event.upcoming.notification'>
+) {
+  const events = await db
+    .selectFrom('events')
+    .select([
+      'id',
+      'name',
+      ({ ref }) => {
+        const field = sql<string>`extract(day from ${ref('startTime')} - now())`;
+
+        return field.as('daysFromNow');
+      },
+    ])
+    .where('startTime', '>=', sql<Date>`now() + interval '1 day'`)
+    .where('startTime', '<', sql<Date>`now() + interval '8 day'`)
+    .where('hidden', '=', false)
+    .execute();
+
+  events.forEach(async (event) => {
+    const label =
+      event.daysFromNow === '1'
+        ? `${NumberEmoji[event.daysFromNow]} day`
+        : `${NumberEmoji[event.daysFromNow]} days`;
+
+    job('notification.slack.send', {
+      channel: process.env.SLACK_FEED_CHANNEL_ID!,
+      message: `🚨 <${STUDENT_PROFILE_URL}/events/${event.id}/register|*${event.name}*> is happening in ${label}! `,
+      workspace: 'regular',
+    });
   });
 }
 
