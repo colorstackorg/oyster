@@ -146,24 +146,20 @@ async function getAppliedTags(searchParams: URLSearchParams) {
 
 async function listAllCompanies() {
   const companies = await db
-    .selectFrom('companies')
+    .selectFrom('opportunities')
+    .innerJoin('companies', 'companies.id', 'opportunities.companyId')
     .select([
       'companies.id',
       'companies.name',
       'companies.imageUrl',
-      db.fn.count('opportunities.id').as('activeOpportunityCount'),
+      ({ fn }) => fn.countAll<string>().as('count'),
     ])
-    .leftJoin('opportunities', 'opportunities.companyId', 'companies.id')
     .where('opportunities.expiresAt', '>', new Date())
-    .groupBy('companies.id')
-    .having(db.fn.count('opportunities.id'), '>', 0)
-    .orderBy('activeOpportunityCount', 'desc')
+    .groupBy(['companies.id', 'companies.name', 'companies.imageUrl'])
+    .orderBy('count', 'desc')
     .execute();
 
-  return companies.map((company) => ({
-    ...company,
-    activeOpportunityCount: Number(company.activeOpportunityCount),
-  }));
+  return companies;
 }
 
 async function listAllTags() {

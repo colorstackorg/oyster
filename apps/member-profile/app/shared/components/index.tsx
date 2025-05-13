@@ -78,10 +78,10 @@ export function CompanyLink({
 // Company Filter
 
 type CompanyForFilter = {
+  count?: string | number;
   id: string;
   imageUrl: string | null;
   name: string;
-  activeOpportunityCount?: number;
 };
 
 type CompanyFilterProps = {
@@ -138,12 +138,10 @@ function CompanyFilterList({ allCompanies, emptyMessage }: CompanyFilterProps) {
 
   return (
     <FilterList>
-      {filteredCompanies.map((company) => {
-        const label = company.activeOpportunityCount
-          ? `${company.name} (${company.activeOpportunityCount})`
-          : company.name;
+      {filteredCompanies.map(({ count, id, name }) => {
+        const label = count ? `${name} (${count})` : name;
 
-        return <FilterItem key={company.id} label={label} value={company.id} />;
+        return <FilterItem key={id} label={label} value={id} />;
       })}
     </FilterList>
   );
