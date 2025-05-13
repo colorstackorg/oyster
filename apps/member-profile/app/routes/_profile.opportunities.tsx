@@ -164,9 +164,30 @@ async function listAllCompanies() {
 
 async function listAllTags() {
   const tags = await db
-    .selectFrom('opportunityTags')
-    .select(['color', 'id', 'name'])
-    .orderBy('name', 'asc')
+    .selectFrom('opportunities')
+    .innerJoin(
+      'opportunityTagAssociations',
+      'opportunityTagAssociations.opportunityId',
+      'opportunities.id'
+    )
+    .innerJoin(
+      'opportunityTags',
+      'opportunityTags.id',
+      'opportunityTagAssociations.tagId'
+    )
+    .select([
+      'opportunityTags.color',
+      'opportunityTags.id',
+      'opportunityTags.name',
+      ({ fn }) => fn.countAll<string>().as('count'),
+    ])
+    .where('opportunities.expiresAt', '>', new Date())
+    .groupBy([
+      'opportunityTags.color',
+      'opportunityTags.id',
+      'opportunityTags.name',
+    ])
+    .orderBy('count', 'desc')
     .execute();
 
   return tags;
@@ -596,11 +617,13 @@ function TagList() {
   return (
     <FilterList>
       {filteredTags.map((tag) => {
+        const label = tag.count ? `${tag.name} (${tag.count})` : tag.name;
+
         return (
           <FilterItem
             color={tag.color as AccentColor}
             key={tag.id}
-            label={tag.name}
+            label={label}
             value={tag.id}
           />
         );
