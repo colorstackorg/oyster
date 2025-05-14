@@ -24,6 +24,7 @@ import { getPresignedURL } from '@oyster/core/s3';
 import { db } from '@oyster/db';
 import { ISO8601Date } from '@oyster/types';
 import {
+  type AccentColor,
   Button,
   Dashboard,
   ExistingSearchParams,
@@ -196,14 +197,23 @@ export async function loader({ request }: LoaderFunctionArgs) {
 async function listAllTags() {
   const tags = await db
     .selectFrom('resources')
-    .innerJoin('resourceTags', 'resourceTags.resourceId', 'resources.id')
-    .innerJoin('tags', 'tags.id', 'resourceTags.tagId')
+    .innerJoin(
+      'resourceTagAssociations',
+      'resourceTagAssociations.resourceId',
+      'resources.id'
+    )
+    .innerJoin(
+      'resourceTags',
+      'resourceTags.id',
+      'resourceTagAssociations.tagId'
+    )
     .select([
-      'tags.id',
-      'tags.name',
+      'resourceTags.color',
+      'resourceTags.id',
+      'resourceTags.name',
       ({ fn }) => fn.countAll<string>().as('count'),
     ])
-    .groupBy(['tags.id', 'tags.name'])
+    .groupBy('resourceTags.id')
     .orderBy('count', 'desc')
     .execute();
 
@@ -218,12 +228,12 @@ async function listAppliedTags(searchParams: URLSearchParams) {
   }
 
   const tags = await db
-    .selectFrom('tags')
-    .select(['tags.id', 'tags.name'])
+    .selectFrom('resourceTags')
+    .select(['resourceTags.color', 'resourceTags.id', 'resourceTags.name'])
     .where((eb) => {
       return eb.or([
-        eb('tags.id', 'in', tagsFromSearch),
-        eb('tags.name', 'in', tagsFromSearch),
+        eb('resourceTags.id', 'in', tagsFromSearch),
+        eb('resourceTags.name', 'in', tagsFromSearch),
       ]);
     })
     .execute();
@@ -285,7 +295,7 @@ function TagFilter() {
       name="tag"
       selectedValues={appliedTags.map((tag) => {
         return {
-          color: 'pink-100',
+          color: tag.color as AccentColor,
           label: tag.name,
           value: tag.id,
         };
@@ -322,7 +332,7 @@ function TagList() {
 
         return (
           <FilterItem
-            color="pink-100"
+            color={tag.color as AccentColor}
             key={tag.id}
             label={label}
             value={tag.id}

@@ -534,18 +534,18 @@ async function seed(trx: Transaction<DB>) {
   const videoTagId = id();
 
   await trx
-    .insertInto('tags')
+    .insertInto('resourceTags')
     .values([
-      { id: academicTagId, name: 'Academic' },
-      { id: careerAdviceTagId, name: 'Career Advice' },
-      { id: interviewPrepTagId, name: 'Interview Prep' },
-      { id: learningTagId, name: 'Learning' },
-      { id: videoTagId, name: 'Video' },
+      { color: 'pink-100', id: academicTagId, name: 'Academic' },
+      { color: 'orange-100', id: careerAdviceTagId, name: 'Career Advice' },
+      { color: 'blue-100', id: interviewPrepTagId, name: 'Interview Prep' },
+      { color: 'lime-100', id: learningTagId, name: 'Learning' },
+      { color: 'purple-100', id: videoTagId, name: 'Video' },
     ])
     .execute();
 
   await trx
-    .insertInto('resourceTags')
+    .insertInto('resourceTagAssociations')
     .values([
       { resourceId: resourceId1, tagId: interviewPrepTagId },
       { resourceId: resourceId1, tagId: learningTagId },

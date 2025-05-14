@@ -20,6 +20,7 @@ import {
 import { type ResourceType, UpdateResourceInput } from '@oyster/core/resources';
 import { getResource, updateResource } from '@oyster/core/resources/server';
 import {
+  type AccentColor,
   Button,
   Divider,
   ErrorMessage,
@@ -156,6 +157,7 @@ export default function EditResourceModal() {
           <ResourceTagsField
             defaultValue={(resource.tags || []).map((tag) => {
               return {
+                color: tag.color as AccentColor,
                 label: tag.name,
                 value: tag.id,
               };

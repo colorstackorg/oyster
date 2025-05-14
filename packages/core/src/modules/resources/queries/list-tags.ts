@@ -10,16 +10,14 @@ type ListTagsOptions<Selection> = {
   where: { ids?: string[]; search?: string };
 };
 
-export async function listTags<Selection extends SelectExpression<DB, 'tags'>>({
-  pagination,
-  select,
-  where,
-}: ListTagsOptions<Selection>) {
+export async function listTags<
+  Selection extends SelectExpression<DB, 'resourceTags'>,
+>({ pagination, select, where }: ListTagsOptions<Selection>) {
   return db
-    .selectFrom('tags')
+    .selectFrom('resourceTags')
     .select(select)
     .$if(!!where.ids, (qb) => {
-      return qb.where('tags.id', 'in', where.ids!);
+      return qb.where('resourceTags.id', 'in', where.ids!);
     })
     .$if(!!where.search, (qb) => {
       return qb.where('name', 'ilike', `%${where.search}%`);

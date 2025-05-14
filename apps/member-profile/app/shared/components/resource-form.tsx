@@ -6,8 +6,10 @@ import React, {
   useState,
 } from 'react';
 
+import { getRandomAccentColor } from '@oyster/core/member-profile/ui';
 import { ResourceType } from '@oyster/core/resources';
 import {
+  type AccentColor,
   Checkbox,
   ComboboxPopover,
   Field,
@@ -186,11 +188,12 @@ export function ResourceTagsField({
   error,
   name,
 }: FieldProps<MultiComboboxProps['defaultValues']>) {
+  const [color, setColor] = useState<AccentColor>(getRandomAccentColor());
+  const [tagId, setTagId] = useState<string>(id());
+  const [search, setSearch] = useState<string>('');
+
   const createFetcher = useFetcher<unknown>();
   const listFetcher = useFetcher<SearchTagsResult>();
-
-  const [newTagId, setNewTagId] = useState<string>(id());
-  const [search, setSearch] = useState<string>('');
 
   useEffect(() => {
     listFetcher.load('/api/tags/search');
@@ -199,7 +202,8 @@ export function ResourceTagsField({
   const tags = listFetcher.data?.tags || [];
 
   function reset() {
-    setNewTagId(id());
+    setColor(getRandomAccentColor());
+    setTagId(id());
   }
 
   return (
@@ -244,22 +248,30 @@ export function ResourceTagsField({
                     {filteredTags.map((tag) => {
                       return (
                         <MultiComboboxItem
+                          color={tag.color as AccentColor}
                           key={tag.id}
                           label={tag.name}
                           onSelect={reset}
                           value={tag.id}
                         >
-                          <Pill color="pink-100">{tag.name}</Pill>
+                          <Pill color={tag.color as AccentColor}>
+                            {tag.name}
+                          </Pill>
                         </MultiComboboxItem>
                       );
                     })}
 
                     {!!search.length && (
                       <MultiComboboxItem
+                        color={color}
                         label={search}
                         onSelect={(e) => {
                           createFetcher.submit(
-                            { id: e.currentTarget.value, name: search },
+                            {
+                              color,
+                              id: e.currentTarget.value,
+                              name: search,
+                            },
                             {
                               action: '/api/tags/add',
                               method: 'post',
@@ -268,9 +280,9 @@ export function ResourceTagsField({
 
                           reset();
                         }}
-                        value={newTagId}
+                        value={tagId}
                       >
-                        Create <Pill color="pink-100">{search}</Pill>
+                        Create <Pill color={color}>{search}</Pill>
                       </MultiComboboxItem>
                     )}
                   </ul>

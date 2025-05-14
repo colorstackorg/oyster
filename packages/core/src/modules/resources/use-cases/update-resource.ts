@@ -43,12 +43,12 @@ export async function updateResource(
       .executeTakeFirstOrThrow();
 
     await trx
-      .deleteFrom('resourceTags')
+      .deleteFrom('resourceTagAssociations')
       .where('resourceId', '=', resourceId)
       .execute();
 
     await trx
-      .insertInto('resourceTags')
+      .insertInto('resourceTagAssociations')
       .values(
         input.tags.map((tag) => {
           return {

@@ -48,7 +48,7 @@ export async function addResource(
 
     for (const tag of input.tags) {
       await trx
-        .insertInto('resourceTags')
+        .insertInto('resourceTagAssociations')
         .values({
           resourceId: resource.id,
           tagId: tag,
