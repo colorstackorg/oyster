@@ -5,12 +5,11 @@
 <p align="center"><b>Oyster</b>: The open-source software that powers the ColorStack community experience. ✊🏿✊🏾✊🏽✊🏼</p>
 
 <h4 align="center">
-  <a href="https://github.com/colorstackorg/oyster/blob/main/CONTRIBUTING.md">How to Contribute</a> |
   <a href="https://colorstack.org">Website</a> |
   <a href="https://app.colorstack.io/apply">Family Application</a>
 </h4>
 
-<img src="./apps/member-profile/public/images/member-profile-home.png" width="100%" alt="Member Profile" style="border-radius: 8px;" />
+<img src="./apps/member-profile/public/images/member-profile.png" width="100%" alt="Member Profile" style="border-radius: 8px;" />
 
 ## Applications
 
