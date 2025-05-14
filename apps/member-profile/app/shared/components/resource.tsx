@@ -10,6 +10,7 @@ import { match } from 'ts-pattern';
 
 import { ResourceType } from '@oyster/core/resources';
 import {
+  type AccentColor,
   cx,
   getIconButtonCn,
   getTextCn,
@@ -41,7 +42,7 @@ type ResourceProps = {
   posterLastName: string;
   posterProfilePicture: string | null;
   shareableUri: string;
-  tags: { id: string; name: string }[];
+  tags: { color: AccentColor; id: string; name: string }[];
   title: string;
   type: ResourceType;
   upvoted: boolean;
@@ -244,7 +245,7 @@ function ResourceTagList({ tags }: Pick<ResourceProps, 'tags'>) {
 
         return (
           <Pill
-            color="pink-100"
+            color={tag.color}
             key={tag.id}
             to={{ search: searchParams.toString() }}
           >

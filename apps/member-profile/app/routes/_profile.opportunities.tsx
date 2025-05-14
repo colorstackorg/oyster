@@ -182,11 +182,7 @@ async function listAllTags() {
       ({ fn }) => fn.countAll<string>().as('count'),
     ])
     .where('opportunities.expiresAt', '>', new Date())
-    .groupBy([
-      'opportunityTags.color',
-      'opportunityTags.id',
-      'opportunityTags.name',
-    ])
+    .groupBy('opportunityTags.id')
     .orderBy('count', 'desc')
     .execute();
 

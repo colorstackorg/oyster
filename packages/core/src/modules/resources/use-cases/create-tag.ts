@@ -7,7 +7,7 @@ export async function createTag(input: CreateTagInput) {
     const tag = await trx
       .insertInto('resourceTags')
       .values({
-        color,
+        color: input.color,
         createdAt: new Date(),
         id: input.id,
         name: input.name,

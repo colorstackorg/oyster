@@ -24,6 +24,7 @@ import { getPresignedURL } from '@oyster/core/s3';
 import { db } from '@oyster/db';
 import { ISO8601Date } from '@oyster/types';
 import {
+  type AccentColor,
   Button,
   Dashboard,
   ExistingSearchParams,
@@ -207,11 +208,12 @@ async function listAllTags() {
       'resourceTagAssociations.tagId'
     )
     .select([
+      'resourceTags.color',
       'resourceTags.id',
       'resourceTags.name',
       ({ fn }) => fn.countAll<string>().as('count'),
     ])
-    .groupBy(['resourceTags.id', 'resourceTags.name'])
+    .groupBy('resourceTags.id')
     .orderBy('count', 'desc')
     .execute();
 
@@ -227,7 +229,7 @@ async function listAppliedTags(searchParams: URLSearchParams) {
 
   const tags = await db
     .selectFrom('resourceTags')
-    .select(['resourceTags.id', 'resourceTags.name'])
+    .select(['resourceTags.color', 'resourceTags.id', 'resourceTags.name'])
     .where((eb) => {
       return eb.or([
         eb('resourceTags.id', 'in', tagsFromSearch),
@@ -293,7 +295,7 @@ function TagFilter() {
       name="tag"
       selectedValues={appliedTags.map((tag) => {
         return {
-          color: 'pink-100',
+          color: tag.color as AccentColor,
           label: tag.name,
           value: tag.id,
         };
@@ -330,7 +332,7 @@ function TagList() {
 
         return (
           <FilterItem
-            color="pink-100"
+            color={tag.color as AccentColor}
             key={tag.id}
             label={label}
             value={tag.id}

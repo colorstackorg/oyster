@@ -16,10 +16,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({}, { status: 400 });
   }
 
-  await createTag({
-    id: data.id,
-    name: data.name,
-  });
+  await createTag(data);
 
   track({
     event: 'Resource Tag Added',

@@ -3,6 +3,8 @@ import { jsonBuildObject } from 'kysely/helpers/postgres';
 
 import { type DB } from '@oyster/db';
 
+import { type AccentColor } from '@/shared/utils/color';
+
 /**
  * When querying from the "resources" table, we often need to include the
  * attachments associated with those resources, which happens in the same SQL
@@ -45,6 +47,7 @@ export function buildTagsField(eb: ExpressionBuilder<DB, 'resources'>) {
     .whereRef('resourceTagAssociations.resourceId', '=', 'resources.id')
     .select(({ fn, ref }) => {
       const object = jsonBuildObject({
+        color: ref('resourceTags.color'),
         id: ref('resourceTags.id'),
         name: ref('resourceTags.name'),
       });
@@ -52,7 +55,7 @@ export function buildTagsField(eb: ExpressionBuilder<DB, 'resources'>) {
       return fn
         .jsonAgg(sql`${object} order by ${ref('resourceTags.name')} asc`)
         .filterWhere('resourceTags.id', 'is not', null)
-        .$castTo<{ id: string; name: string }[]>()
+        .$castTo<{ color: AccentColor; id: string; name: string }[]>()
         .as('tags');
     })
     .as('tags');

@@ -31,15 +31,13 @@ export async function up(db: Kysely<any>) {
 
   const tags = await db.selectFrom('resource_tags').select('id').execute();
 
-  await db.transaction().execute(async (trx) => {
-    for (const tag of tags) {
-      await trx
-        .updateTable('resource_tags')
-        .set({ color: getRandomAccentColor() })
-        .where('id', '=', tag.id)
-        .execute();
-    }
-  });
+  for (const tag of tags) {
+    await db
+      .updateTable('resource_tags')
+      .set({ color: getRandomAccentColor() })
+      .where('id', '=', tag.id)
+      .execute();
+  }
 
   await db.schema
     .alterTable('resource_tags')

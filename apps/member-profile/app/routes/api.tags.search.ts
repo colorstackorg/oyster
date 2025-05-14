@@ -11,7 +11,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const tags = await listTags({
     pagination: { limit: 25, page: 1 },
-    select: ['id', 'name'],
+    select: ['color', 'id', 'name'],
     where: { search },
   });
 
