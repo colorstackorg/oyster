@@ -1,4 +1,4 @@
-import { getQueue, listQueueNames } from '@oyster/core/admin-dashboard/server';
+import { getQueue, isValidQueue } from '@oyster/core/bull';
 
 /**
  * Validates a queue name and returns the corresponding queue instance.
@@ -11,9 +11,9 @@ import { getQueue, listQueueNames } from '@oyster/core/admin-dashboard/server';
  */
 export async function validateQueue(queueName: unknown) {
   const name = queueName as string;
-  const queueNames = await listQueueNames();
+  const valid = await isValidQueue(name);
 
-  if (!queueNames.includes(name)) {
+  if (!valid) {
     throw new Response(null, {
       status: 404,
       statusText: 'Queue not found.',

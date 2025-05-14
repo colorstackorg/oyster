@@ -5,8 +5,8 @@ import {
   type MetaFunction,
 } from '@remix-run/node';
 import {
+  Form,
   Outlet,
-  Form as RemixForm,
   useActionData,
   useLoaderData,
   useNavigate,
@@ -24,7 +24,7 @@ import {
   Button,
   Checkbox,
   cx,
-  Form,
+  Field,
   getErrors,
   Text,
   validateForm,
@@ -167,23 +167,23 @@ function EmailAddressSection() {
       </ul>
 
       <Button.Group>
-        <Button onClick={onAddEmail} size="small" variant="secondary">
+        <Button onClick={onAddEmail} variant="secondary">
           <Plus /> Add Email
         </Button>
 
         {emails.length > 1 && (
-          <Button color="primary" onClick={onChangePrimaryEmail} size="small">
+          <Button color="primary" onClick={onChangePrimaryEmail}>
             <Edit /> Change Primary
           </Button>
         )}
       </Button.Group>
 
-      <RemixForm
+      <Form
         className="form"
         method="post"
         onChange={(e) => submit(e.currentTarget)}
       >
-        <Form.Field
+        <Field
           description="If you go to school where there is a ColorStack chapter, this will allow that chapter's leaders to reach out to you about local events and opportunities."
           error={errors.allowEmailShare}
           label="Would you like to share your email with chapter leaders?"
@@ -195,8 +195,8 @@ function EmailAddressSection() {
             name={keys.allowEmailShare}
             value="1"
           />
-        </Form.Field>
-      </RemixForm>
+        </Field>
+      </Form>
     </ProfileSection>
   );
 }

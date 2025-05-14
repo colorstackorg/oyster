@@ -6,7 +6,7 @@ import { match } from 'ts-pattern';
 import { ApplicationRejectionReason } from '@oyster/core/applications/types';
 import { listReferrals } from '@oyster/core/referrals';
 import { type ReferralStatus } from '@oyster/core/referrals/ui';
-import { Button, getButtonCn, Pill, Text } from '@oyster/ui';
+import { Button, Pill, Text } from '@oyster/ui';
 import {
   Tooltip,
   TooltipContent,
@@ -99,12 +99,11 @@ export default function Referrals() {
 
           {!!referrals.length && (
             <Button.Group>
-              <Link
-                className={getButtonCn({ size: 'small' })}
-                to={Route['/profile/referrals/add']}
-              >
-                <Send size={20} /> Refer a Friend
-              </Link>
+              <Button.Slot>
+                <Link to={Route['/profile/referrals/add']}>
+                  <Send size={20} /> Refer a Friend
+                </Link>
+              </Button.Slot>
             </Button.Group>
           )}
         </ProfileHeader>
@@ -155,12 +154,9 @@ export default function Referrals() {
               accepted. You'll also earn points for each successful referral!
             </ProfileDescription>
 
-            <Link
-              className={getButtonCn({ fill: true, size: 'small' })}
-              to={Route['/profile/referrals/add']}
-            >
-              Refer a Friend
-            </Link>
+            <Button.Slot fill>
+              <Link to={Route['/profile/referrals/add']}>Refer a Friend</Link>
+            </Button.Slot>
           </EmptyStateContainer>
         )}
       </ProfileSection>
@@ -181,7 +177,7 @@ function RejectedPill({ reason }: RejectedPillProps) {
 
   return (
     <Tooltip>
-      <TooltipTrigger>
+      <TooltipTrigger cursor="default">
         <Pill className="flex items-center gap-1" color="red-100">
           Rejected
           {!!reason && <Info size={16} className="text-error" />}

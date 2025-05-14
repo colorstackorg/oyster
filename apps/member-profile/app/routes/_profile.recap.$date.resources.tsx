@@ -2,9 +2,9 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 
-import { getPresignedURL } from '@oyster/core/object-storage';
 import { type ResourceType } from '@oyster/core/resources';
 import { listResources } from '@oyster/core/resources/server';
+import { getPresignedURL } from '@oyster/core/s3';
 
 import { getDateRange, Recap } from '@/routes/_profile.recap.$date';
 import { Resource } from '@/shared/components/resource';

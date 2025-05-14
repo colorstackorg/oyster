@@ -1,25 +1,55 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
 import {
   generatePath,
   Link,
+  useFetcher,
   useLoaderData,
   useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { emojify } from 'node-emoji';
-import { Edit } from 'react-feather';
+import { Edit, Flag } from 'react-feather';
 
+import { job } from '@oyster/core/bull';
 import { track } from '@oyster/core/mixpanel';
-import { getOpportunityDetails } from '@oyster/core/opportunities';
-import { getIconButtonCn, Modal, Pill, Text } from '@oyster/ui';
+import {
+  getOpportunityDetails,
+  reportOpportunity,
+} from '@oyster/core/opportunities';
+import { db } from '@oyster/db';
+import {
+  Dropdown,
+  getIconButtonCn,
+  IconButton,
+  Modal,
+  Pill,
+  Text,
+} from '@oyster/ui';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipText,
+  TooltipTrigger,
+} from '@oyster/ui/tooltip';
+import { run } from '@oyster/utils';
 
 import {
   BookmarkButton,
   BookmarkForm,
 } from '@/routes/_profile.opportunities.$id_.bookmark';
+import { CompanyLink } from '@/shared/components';
 import { SlackMessageCard } from '@/shared/components/slack-message';
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated, user } from '@/shared/session.server';
+import {
+  commitSession,
+  ensureUserAuthenticated,
+  toast,
+  user,
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -27,10 +57,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const memberId = user(session);
   const opportunityId = params.id as string;
 
-  const opportunity = await getOpportunityDetails({
-    memberId,
-    opportunityId,
-  });
+  const [opportunity, report] = await Promise.all([
+    getOpportunityDetails({
+      memberId,
+      opportunityId,
+    }),
+
+    db
+      .selectFrom('opportunityReports')
+      .where('opportunityId', '=', opportunityId)
+      .where('reporterId', '=', memberId)
+      .executeTakeFirst(),
+  ]);
 
   if (!opportunity) {
     throw new Response(null, {
@@ -39,13 +77,20 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
+  job('opportunity.check_expired', {
+    opportunityId,
+  });
+
   Object.assign(opportunity, {
     createdAt: dayjs().to(opportunity.createdAt),
 
-    expiresAt:
-      opportunity.expiresAt > new Date()
-        ? dayjs(opportunity.expiresAt).to(new Date())
-        : dayjs().to(opportunity.expiresAt),
+    expiresAt: run(() => {
+      const expiresAt = dayjs(opportunity.expiresAt);
+
+      return expiresAt.isAfter(new Date())
+        ? `Expires in ${expiresAt.toNow()}`
+        : `Expired ${expiresAt.fromNow()} ago`;
+    }),
 
     slackMessageText: emojify(opportunity.slackMessageText || '', {
       fallback: '',
@@ -61,10 +106,47 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     user: memberId,
   });
 
-  return json(opportunity);
+  return json({ ...opportunity, reported: !!report });
+}
+
+export async function action({ params, request }: ActionFunctionArgs) {
+  const session = await ensureUserAuthenticated(request);
+
+  const formData = await request.formData();
+
+  const result = await reportOpportunity({
+    reporterId: user(session),
+    opportunityId: params.id as string,
+    reason: formData.get('reason') as string,
+  });
+
+  if (!result.ok) {
+    return json({ error: result.error }, { status: result.code });
+  }
+
+  toast(session, {
+    message: 'Opportunity reported!',
+  });
+
+  return json(
+    {},
+    {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    }
+  );
 }
 
 export default function Opportunity() {
+  const {
+    companyId,
+    companyLogo,
+    companyName,
+    slackMessageChannelId,
+    slackMessageId,
+  } = useLoaderData<typeof loader>();
+
   const [searchParams] = useSearchParams();
 
   return (
@@ -76,48 +158,32 @@ export default function Opportunity() {
     >
       <Modal.Header>
         <div className="flex flex-col gap-2">
-          <CompanyLink />
+          <CompanyLink
+            companyId={companyId}
+            companyLogo={companyLogo}
+            companyName={companyName}
+          />
           <OpportunityTitle />
         </div>
 
         <div className="flex items-center gap-[inherit]">
           <EditOpportunityButton />
+          <ReportButton />
+          <div className="h-6 w-[1px] bg-gray-100" />
           <Modal.CloseButton />
         </div>
       </Modal.Header>
 
       <OpportunityTags />
       <OpportunityDescription />
-      <div />
-      <OpportunitySlackMessage />
+
+      {slackMessageChannelId && slackMessageId && (
+        <>
+          <div />
+          <OpportunitySlackMessage />
+        </>
+      )}
     </Modal>
-  );
-}
-
-function CompanyLink() {
-  const { companyId, companyLogo, companyName } =
-    useLoaderData<typeof loader>();
-
-  if (!companyId || !companyName) {
-    return null;
-  }
-
-  return (
-    <Link
-      className="flex w-fit items-center gap-2 hover:underline"
-      target="_blank"
-      to={generatePath(Route['/companies/:id'], { id: companyId })}
-    >
-      <div className="h-8 w-8 rounded-lg border border-gray-200 p-1">
-        <img
-          alt={companyName}
-          className="aspect-square h-full w-full rounded-md"
-          src={companyLogo as string}
-        />
-      </div>
-
-      <Text variant="sm">{companyName}</Text>
-    </Link>
   );
 }
 
@@ -137,9 +203,75 @@ function OpportunityTitle() {
       </BookmarkForm>
 
       <Text color="gray-500" variant="sm">
-        Posted {createdAt} ago &bull; Expires in {expiresAt}
+        Posted {createdAt} ago &bull; {expiresAt}
       </Text>
     </div>
+  );
+}
+
+function ReportButton() {
+  const { reported } = useLoaderData<typeof loader>();
+  const fetcher = useFetcher();
+
+  let disabled = reported;
+
+  if (fetcher.formData) {
+    disabled = !!fetcher.formData?.get('reason');
+  }
+
+  return (
+    <Dropdown.Root>
+      <Tooltip>
+        <Dropdown.Trigger>
+          <TooltipTrigger asChild>
+            <IconButton
+              backgroundColor="gray-100"
+              backgroundColorOnHover="gray-200"
+              disabled={disabled}
+              icon={<Flag />}
+            />
+          </TooltipTrigger>
+        </Dropdown.Trigger>
+
+        <TooltipContent side="bottom">
+          <TooltipText>
+            {reported ? 'You reported this opportunity.' : 'Report'}
+          </TooltipText>
+        </TooltipContent>
+      </Tooltip>
+
+      <Dropdown>
+        <fetcher.Form method="post">
+          <Dropdown.List>
+            <ReportItem label="This is no longer open." value="closed" />
+            <ReportItem label="This link is broken." value="broken" />
+            <ReportItem label="This is a duplicate." value="duplicate" />
+          </Dropdown.List>
+        </fetcher.Form>
+
+        <div className="max-w-72 gap-2 border-t border-t-gray-200 p-2">
+          <Text color="gray-500" variant="xs">
+            When an opportunity is reported 2 times, it will be removed from the
+            board.
+          </Text>
+        </div>
+      </Dropdown>
+    </Dropdown.Root>
+  );
+}
+
+type ReportItemProps = {
+  label: string;
+  value: string;
+};
+
+function ReportItem({ label, value }: ReportItemProps) {
+  return (
+    <Dropdown.Item>
+      <button className="text-sm" name="reason" type="submit" value={value}>
+        {label}
+      </button>
+    </Dropdown.Item>
   );
 }
 
@@ -152,22 +284,18 @@ function EditOpportunityButton() {
   }
 
   return (
-    <>
-      <Link
-        className={getIconButtonCn({
-          backgroundColor: 'gray-100',
-          backgroundColorOnHover: 'gray-200',
-        })}
-        to={{
-          pathname: generatePath(Route['/opportunities/:id/edit'], { id }),
-          search: searchParams.toString(),
-        }}
-      >
-        <Edit />
-      </Link>
-
-      <div className="h-6 w-[1px] bg-gray-100" />
-    </>
+    <Link
+      className={getIconButtonCn({
+        backgroundColor: 'gray-100',
+        backgroundColorOnHover: 'gray-200',
+      })}
+      to={{
+        pathname: generatePath(Route['/opportunities/:id/edit'], { id }),
+        search: searchParams.toString(),
+      }}
+    >
+      <Edit />
+    </Link>
   );
 }
 
@@ -203,11 +331,11 @@ function OpportunityDescription() {
 
 function OpportunitySlackMessage() {
   const {
-    id,
     posterFirstName,
     posterLastName,
     posterProfilePicture,
     slackMessageChannelId,
+    slackMessageId,
     slackMessagePostedAt,
     slackMessageText,
   } = useLoaderData<typeof loader>();
@@ -215,7 +343,7 @@ function OpportunitySlackMessage() {
   return (
     <SlackMessageCard
       channelId={slackMessageChannelId || ''}
-      messageId={id}
+      messageId={slackMessageId || ''}
       postedAt={slackMessagePostedAt || ''}
       posterFirstName={posterFirstName || ''}
       posterLastName={posterLastName || ''}

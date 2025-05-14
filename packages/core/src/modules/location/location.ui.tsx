@@ -21,13 +21,6 @@ export type CityComboboxProps = {
   required?: boolean;
 };
 
-type AutocompleteResult = Nullable<
-  Array<{
-    description: string;
-    id: string;
-  }>
->;
-
 type CityDetailsResult = Nullable<{
   id: string;
   latitude: number;
@@ -46,22 +39,10 @@ export function CityCombobox({
 }: CityComboboxProps) {
   const [search, setSearch] = useState<string>('');
 
-  const delayedSearch = useDelayedValue(search, 250);
+  const cities = useAutocompletedCities(search);
 
-  const autocompleteFetcher = useFetcher<AutocompleteResult>();
   const detailsFetcher = useFetcher<CityDetailsResult>();
 
-  useEffect(() => {
-    autocompleteFetcher.submit(
-      { search: delayedSearch },
-      {
-        action: '/api/cities/autocomplete',
-        method: 'get',
-      }
-    );
-  }, [delayedSearch]);
-
-  const cities = autocompleteFetcher.data || [];
   const latitude = detailsFetcher.data?.latitude || defaultLatitude;
   const longitude = detailsFetcher.data?.longitude || defaultLongitude;
 
@@ -74,7 +55,7 @@ export function CityCombobox({
         required={required}
       />
 
-      {!!cities.length && (
+      {!!cities && !!cities.length && (
         <ComboboxPopover>
           <ul>
             {cities.map((city) => {
@@ -98,4 +79,34 @@ export function CityCombobox({
       <input name={longitudeName} type="hidden" value={longitude} />
     </Combobox>
   );
+}
+
+type AutocompleteResult = Nullable<
+  Array<{
+    description: string;
+    id: string;
+  }>
+>;
+
+export function useAutocompletedCities(search: string) {
+  const delayedSearch = useDelayedValue(search, 250);
+  const autocompleteFetcher = useFetcher<AutocompleteResult>();
+
+  useEffect(() => {
+    if (!delayedSearch) {
+      return;
+    }
+
+    autocompleteFetcher.submit(
+      { search: delayedSearch },
+      {
+        action: '/api/cities/autocomplete',
+        method: 'get',
+      }
+    );
+  }, [delayedSearch]);
+
+  const cities = autocompleteFetcher.data;
+
+  return cities;
 }

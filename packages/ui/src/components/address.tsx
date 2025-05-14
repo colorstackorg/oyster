@@ -64,7 +64,7 @@ Address.Country = function Country(props: SelectProps) {
 
 Address.HalfGrid = function HalfGrid({ children }: PropsWithChildren) {
   return (
-    <div className="grid grid-cols-1 gap-[inherit] @[560px]:grid-cols-2">
+    <div className="grid grid-cols-1 gap-[inherit] @[520px]:grid-cols-2">
       {children}
     </div>
   );

@@ -5,11 +5,7 @@ import {
   type MetaFunction,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import { apply } from '@oyster/core/applications';
 import { Application, ApplyInput } from '@oyster/core/applications/ui';
@@ -18,7 +14,8 @@ import { buildMeta } from '@oyster/core/remix';
 import {
   Button,
   Checkbox,
-  Form,
+  ErrorMessage,
+  Field,
   getErrors,
   Link,
   Text,
@@ -111,14 +108,22 @@ export default function ApplicationPage() {
 
   return (
     <>
-      <Text className="mb-8" color="gray-500">
-        We exist to increase the number of Black and Latinx Computer Science
-        graduates that go on to launch rewarding technical careers. The stronger
-        our community, the better positioned we are to move the needle for
-        racial diversity in tech. Thank you for joining us.
-      </Text>
+      <div className="mb-8 flex flex-col gap-4">
+        <Text color="gray-500">
+          We exist to increase the number of Black and Latinx Computer Science
+          graduates who go on to launch rewarding technical careers.
+        </Text>
 
-      <RemixForm className="form" data-gap="2rem" method="post">
+        <Text color="gray-500">
+          Our goal is to remove barriers and create pathways for students
+          pursuing careers in technology. While our work centers on supporting
+          Black and Latinx students, we welcome any undergraduate CS student who
+          shares our vision of a more diverse and inclusive tech industry to
+          apply.
+        </Text>
+      </div>
+
+      <Form className="form" data-gap="2rem" method="post">
         <Application readOnly={false}>
           <Application.FirstNameField
             defaultValue={firstName}
@@ -156,9 +161,15 @@ export default function ApplicationPage() {
             error={errors.educationLevel}
             name={keys.educationLevel}
           />
-          <Application.GraduationYearField
-            error={errors.graduationYear}
-            name={keys.graduationYear}
+          <Application.GraduationDateField
+            month={{
+              error: errors.graduationMonth,
+              name: keys.graduationMonth,
+            }}
+            year={{
+              error: errors.graduationYear,
+              name: keys.graduationYear,
+            }}
           />
           <Application.RaceField error={errors.race} name={keys.race} />
           <Application.GenderField error={errors.gender} name={keys.gender} />
@@ -166,14 +177,14 @@ export default function ApplicationPage() {
             error={errors.otherDemographics}
             name={keys.otherDemographics}
           />
-          <Application.GoalsField error={errors.goals} name={keys.goals} />
           <Application.ContributionField
             error={errors.contribution}
             name={keys.contribution}
           />
+          <Application.GoalsField error={errors.goals} name={keys.goals} />
         </Application>
 
-        <Form.Field
+        <Field
           description={<CodeOfConductDescription />}
           labelFor={keys.codeOfConduct}
           label="Code of Conduct"
@@ -186,12 +197,12 @@ export default function ApplicationPage() {
             required
             value="1"
           />
-        </Form.Field>
+        </Field>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Submit fill>Apply</Button.Submit>
-      </RemixForm>
+      </Form>
     </>
   );
 }

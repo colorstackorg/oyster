@@ -6,7 +6,10 @@ import { CheckCircle, ChevronDown, ChevronUp, XCircle } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
-import { type ActivationRequirement } from '@oyster/types';
+import {
+  ACTIVATION_REQUIREMENTS,
+  type ActivationRequirement,
+} from '@oyster/types';
 import { Modal, Pill, Text } from '@oyster/ui';
 import { run } from '@oyster/utils';
 
@@ -66,7 +69,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     acceptedAt,
     claimedSwagPackAt,
-    requirementsCompleted: member.activationRequirementsCompleted,
+    requirementsCompleted: member.activationRequirementsCompleted.filter(
+      (requirement) => {
+        return ACTIVATION_REQUIREMENTS.includes(
+          requirement as ActivationRequirement
+        );
+      }
+    ),
     status,
   });
 }
@@ -159,9 +168,10 @@ function NotActivatedState() {
   return (
     <>
       <Text color="gray-500">
-        You've completed {requirementsCompleted.length}/6 activation
-        requirements. Once you hit all 6, you will get a gift card to claim your
-        FREE merch! 👀
+        You've completed {requirementsCompleted.length}/
+        {ACTIVATION_REQUIREMENTS.length} activation requirements. Once you hit
+        all {ACTIVATION_REQUIREMENTS.length}, you will get a gift card to claim
+        your FREE merch! 👀
       </Text>
 
       <ActivationList />
@@ -187,7 +197,7 @@ function ActivationList() {
   );
 
   const upcomingEventsLink = (
-    <Link className="link" target="_blank" to={Route['/events/upcoming']}>
+    <Link className="link" target="_blank" to={Route['/events']}>
       upcoming events
     </Link>
   );
@@ -237,28 +247,6 @@ function ActivationList() {
           <ActivationItem.Question
             question="I attended an onboarding session, but my attendance hasn't been updated."
             answer="Please allow our team 72 hours to mark your attendance."
-          />
-        </ActivationItem.QuestionList>
-      </ActivationItem>
-
-      <ActivationItem
-        label="Open a Weekly Newsletter"
-        requirement="open_email_campaign"
-      >
-        <ActivationItem.Description>
-          You are automatically subscribed to our weekly newsletter -- new
-          issues are typically sent on Wednesdays. If you haven't received a
-          newsletter after 2 weeks of being in ColorStack, let us know.
-        </ActivationItem.Description>
-
-        <ActivationItem.QuestionList>
-          <ActivationItem.Question
-            question="Where can I find the newsletters?"
-            answer='You will receive the newsletter via email. The subject typically starts with "[ColorStack Newsletter]".'
-          />
-          <ActivationItem.Question
-            question="I opened the newsletter, but it has not been marked as opened. What should I do?"
-            answer='Please allow up to 48 hours for our system to register you opening a newsletter. Sometimes Mailchimp does not register opens properly, so you can guarantee it registers by clicking the button at the bottom of the email that says "Click Here for Activation Checkmark".'
           />
         </ActivationItem.QuestionList>
       </ActivationItem>

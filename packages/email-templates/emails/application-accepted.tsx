@@ -16,8 +16,7 @@ export function ApplicationAcceptedEmail({
       <Email.Main>
         <Email.Text>Hi {firstName},</Email.Text>
         <Email.Text>
-          Congratulations, you've been accepted to join the ColorStack family!
-          🎉
+          Congratulations, you've been accepted to the ColorStack family! 🎉
         </Email.Text>
 
         <Email.Image
@@ -27,52 +26,81 @@ export function ApplicationAcceptedEmail({
           width="375px"
         />
 
-        <Email.Text>Here are your next steps...</Email.Text>
+        <Email.Text>
+          Here are your next steps to help you navigate and make the most of
+          your membership in our community.
+        </Email.Text>
 
         <ol>
           <li>
             <Email.Text>
+              <b>
+                <Email.Link href="https://app.colorstack.io/onboarding">
+                  Complete your ColorStack profile
+                </Email.Link>
+                .
+              </b>{' '}
+              This should only take about 5 minutes. Upon completion, you'll
+              have full access to your{' '}
               <Email.Link href="https://app.colorstack.io">
-                Sign into your very own Member Profile
+                <b>Member Profile</b>
               </Email.Link>
-              , where you'll be able to see cool information about your
-              membership and the community. 🥳
+              . This is the powerhouse of your ColorStack membership. 💪 Take a
+              few minutes to:
+            </Email.Text>
+
+            <ul>
+              <li>
+                <Email.Text marginBottom="8px" marginTop="8px">
+                  <b>
+                    Bookmark your{' '}
+                    <Email.Link href="https://app.colorstack.io">
+                      Member Profile
+                    </Email.Link>
+                  </b>
+                  .
+                </Email.Text>
+              </li>
+              <li>
+                <Email.Text marginBottom="8px" marginTop="8px">
+                  Explore upcoming events, open opportunities, compensation,
+                  resources & more.
+                </Email.Text>
+              </li>
+            </ul>
+          </li>
+
+          <li>
+            <Email.Text>
+              <b>
+                <Email.Link href="https://calendly.com/colorstack-onboarding-ambassador/onboarding">
+                  Book your family onboarding session
+                </Email.Link>
+              </b>{' '}
+              to learn more about our programming & offerings, how to be an
+              engaged family member, and meet other new members! 📅
             </Email.Text>
           </li>
 
           <li>
             <Email.Text>
-              Earn your first ColorStack points (you'll learn what that means
-              soon) by{' '}
-              <Email.Link href="https://app.colorstack.io/profile">
-                updating your education + work history
-              </Email.Link>
-              . 🏆
-            </Email.Text>
-          </li>
-
-          <li>
-            <Email.Text>
-              <Email.Link href="https://calendly.com/colorstack-onboarding-ambassador/onboarding">
-                Book your group onboarding call
-              </Email.Link>{' '}
-              to learn more about our programming, how to best use the Slack,
-              and meet a few other new members. 📅
-            </Email.Text>
-          </li>
-
-          <li>
-            <Email.Text>
-              We&apos;ll send you an invitation to join our Slack - look out for
-              an email from them. 🔗
+              Lastly, <b>after you complete the above steps</b>, you will
+              receive an invite from Slack to join our Slack workspace.
             </Email.Text>
           </li>
         </ol>
 
         <Email.Text>
-          Thanks again for joining, and I look forward to connecting with you!
-          Let&apos;s grow, together.
+          Bookmarking and utilizing your Member Profile, attending an onboarding
+          session, and effectively joining our Slack will have you well on your
+          way to becoming a top ColorStack member in no time!
         </Email.Text>
+
+        <Email.Text>
+          Welcome to the family, and I look forward to connecting with you!
+          Let's grow, together.
+        </Email.Text>
+
         <Email.Signature type="jehron" />
       </Email.Main>
     </Email.Template>

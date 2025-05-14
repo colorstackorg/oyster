@@ -4,8 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
-import dayjs from 'dayjs';
+import { Form, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { addWorkExperience } from '@oyster/core/member-profile/server';
@@ -16,7 +15,7 @@ import {
 import {
   Address,
   Button,
-  Form,
+  ErrorMessage,
   getErrors,
   Modal,
   validateForm,
@@ -39,15 +38,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 const AddWorkExperienceFormData = AddWorkExperienceInput.omit({
   studentId: true,
 }).extend({
-  endDate: AddWorkExperienceInput.shape.endDate.refine((value) => {
-    return dayjs(value).year() >= 1000;
-  }, 'Please fill out all 4 digits of the year.'),
-
   isCurrentRole: z.string().optional(),
-
-  startDate: AddWorkExperienceInput.shape.startDate.refine((value) => {
-    return dayjs(value).year() >= 1000;
-  }, 'Please fill out all 4 digits of the year.'),
 });
 
 type AddWorkExperienceFormData = z.infer<typeof AddWorkExperienceFormData>;
@@ -99,7 +90,7 @@ export default function AddWorkExperiencePage() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <WorkForm.Context>
           <WorkForm.TitleField error={errors.title} name={keys.title} />
           <WorkForm.EmploymentTypeField
@@ -143,12 +134,12 @@ export default function AddWorkExperiencePage() {
           <WorkForm.EndDateField error={errors.endDate} name={keys.endDate} />
         </WorkForm.Context>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Save</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

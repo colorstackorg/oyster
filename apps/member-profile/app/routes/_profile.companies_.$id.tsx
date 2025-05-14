@@ -7,7 +7,7 @@ import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import { ExternalLink } from 'react-feather';
 
 import { getCompany } from '@oyster/core/employment/server';
-import { getButtonCn, Text } from '@oyster/ui';
+import { Button, Text } from '@oyster/ui';
 import {
   Tooltip,
   TooltipContent,
@@ -55,7 +55,7 @@ export default function CompanyPage() {
       <header className="flex items-center gap-4">
         <div className="h-14 w-14 rounded-lg border border-gray-200 p-1">
           <img
-            className="aspect-square h-full w-full rounded-md"
+            className="aspect-square h-full w-full rounded-md object-contain"
             src={company.imageUrl as string}
           />
         </div>
@@ -126,7 +126,7 @@ function LogoLink({ href, imageAlt, imageSrc, tooltip }: LogoLinkProps) {
       <Tooltip>
         <TooltipTrigger asChild>
           <a
-            className="cursor-pointer hover:opacity-90"
+            className="hover:opacity-90"
             href={href}
             rel="noopener noreferrer"
             target="_blank"
@@ -196,15 +196,16 @@ function OpportunitiesAlert() {
           : `${opportunities} open opportunities found.`}
       </Text>
 
-      <Link
-        className={getButtonCn({ size: 'small' })}
-        to={{
-          pathname: Route['/opportunities'],
-          search: `?company=${company.id}`,
-        }}
-      >
-        View
-      </Link>
+      <Button.Slot>
+        <Link
+          to={{
+            pathname: Route['/opportunities'],
+            search: `?company=${company.id}`,
+          }}
+        >
+          View
+        </Link>
+      </Button.Slot>
     </div>
   );
 }

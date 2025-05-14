@@ -4,10 +4,10 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
   Link,
   Outlet,
-  Form as RemixForm,
   useLoaderData,
   useSearchParams,
   useSubmit,
@@ -21,10 +21,10 @@ import {
 import { listCompanies } from '@oyster/core/employment/server';
 import { track } from '@oyster/core/mixpanel';
 import {
+  Button,
   cx,
   Dashboard,
   ExistingSearchParams,
-  getButtonCn,
   getTextCn,
   Pagination,
   Select,
@@ -111,15 +111,16 @@ function AddReviewLink() {
   const [searchParams] = useSearchParams();
 
   return (
-    <Link
-      className={getButtonCn({})}
-      to={{
-        pathname: Route['/companies/reviews/add'],
-        search: searchParams.toString(),
-      }}
-    >
-      <Plus size={16} /> Add Review
-    </Link>
+    <Button.Slot>
+      <Link
+        to={{
+          pathname: Route['/companies/reviews/add'],
+          search: searchParams.toString(),
+        }}
+      >
+        <Plus size={20} /> Add Review
+      </Link>
+    </Button.Slot>
   );
 }
 
@@ -130,7 +131,7 @@ function SortCompaniesForm() {
   const sortKeys = ListCompaniesOrderBy._def.innerType.enum;
 
   return (
-    <RemixForm
+    <Form
       className="flex min-w-[12rem] items-center gap-4"
       method="get"
       onChange={(e) => submit(e.currentTarget)}
@@ -154,7 +155,7 @@ function SortCompaniesForm() {
       </Select>
 
       <ExistingSearchParams exclude={['orderBy']} />
-    </RemixForm>
+    </Form>
   );
 }
 
@@ -230,7 +231,7 @@ function CompanyLogo({ imageUrl }: Pick<CompanyInView, 'imageUrl'>) {
   return (
     <div className="h-10 w-10 rounded-lg border border-gray-200 p-1">
       <img
-        className="aspect-square h-full w-full rounded-md"
+        className="aspect-square h-full w-full rounded-md object-contain"
         src={imageUrl as string}
       />
     </div>
@@ -272,7 +273,7 @@ function CompanyDescription({
 function EmployeeCount({ employees }: Pick<CompanyInView, 'employees'>) {
   return (
     <Tooltip>
-      <TooltipTrigger>
+      <TooltipTrigger cursor="default">
         <Text className="flex items-center gap-1" color="gray-500" variant="sm">
           <Users size="16" />
           <span>{employees}</span>
@@ -294,7 +295,7 @@ function OpportunitiesCount({
 }: Pick<CompanyInView, 'opportunities'>) {
   return (
     <Tooltip>
-      <TooltipTrigger>
+      <TooltipTrigger cursor="default">
         <Text className="flex items-center gap-1" color="gray-500" variant="sm">
           <Layers size="16" />
           <span>{opportunities}</span>
@@ -314,7 +315,7 @@ function OpportunitiesCount({
 function ReviewCount({ reviews }: Pick<CompanyInView, 'reviews'>) {
   return (
     <Tooltip>
-      <TooltipTrigger>
+      <TooltipTrigger cursor="default">
         <Text className="flex items-center gap-1" color="gray-500" variant="sm">
           <FileText size="16" />
           <span>{reviews}</span>

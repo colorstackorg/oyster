@@ -1,10 +1,15 @@
-import { Form as RemixForm } from '@remix-run/react';
-
-import { Button, Form, Input, Select, Textarea } from '@oyster/ui';
-import { toTitleCase } from '@oyster/utils';
+import { Form } from '@remix-run/react';
 
 import {
-  ActivityPeriod,
+  Button,
+  ErrorMessage,
+  Field,
+  Input,
+  Select,
+  Textarea,
+} from '@oyster/ui';
+
+import {
   ActivityType,
   CreateActivityInput,
 } from '@/modules/gamification/gamification.types';
@@ -19,13 +24,12 @@ type ActivityFormProps = {
   errors: Partial<Record<keyof CreateActivityInput, string>>;
 };
 
-const ACTIVITY_PERIODS = Object.values(ActivityPeriod);
 const ACTIVITY_TYPES = Object.values(ActivityType);
 
 export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
   return (
-    <RemixForm className="form" method="post">
-      <Form.Field
+    <Form className="form" method="post">
+      <Field
         description="This will be visible to members."
         error={errors.name}
         label="Name"
@@ -38,9 +42,9 @@ export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
           name={keys.name}
           required
         />
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         error={errors.description}
         label="Description"
         labelFor={keys.description}
@@ -50,9 +54,9 @@ export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
           id={keys.description}
           name={keys.description}
         />
-      </Form.Field>
+      </Field>
 
-      <Form.Field
+      <Field
         description="This tells our system to associate certain activities with certain events."
         error={errors.type}
         label="Type"
@@ -71,28 +75,9 @@ export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
             </option>
           ))}
         </Select>
-      </Form.Field>
+      </Field>
 
-      <Form.Field
-        description="This is the period of time that a member has to wait before completing this activity again."
-        error={errors.period}
-        label="Period"
-        labelFor={keys.period}
-      >
-        <Select
-          defaultValue={activity?.period || undefined}
-          id={keys.period}
-          name={keys.period}
-        >
-          {ACTIVITY_PERIODS.map((period) => (
-            <option key={period} value={period}>
-              {toTitleCase(period)}
-            </option>
-          ))}
-        </Select>
-      </Form.Field>
-
-      <Form.Field
+      <Field
         description="How many points will this activity be worth?"
         error={errors.points}
         label="Points"
@@ -106,13 +91,13 @@ export function ActivityForm({ activity, error, errors }: ActivityFormProps) {
           required
           type="number"
         />
-      </Form.Field>
+      </Field>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button.Submit>Add</Button.Submit>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

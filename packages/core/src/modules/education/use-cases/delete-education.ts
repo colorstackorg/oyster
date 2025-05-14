@@ -1,6 +1,5 @@
 import { db } from '@oyster/db';
 
-import { job } from '@/infrastructure/bull/use-cases/job';
 import { checkMostRecentEducation } from './check-most-recent-education';
 import { type Education } from '../education.types';
 
@@ -14,9 +13,4 @@ export async function deleteEducation({ id, studentId }: DeleteEducationInput) {
     .execute();
 
   checkMostRecentEducation(studentId);
-
-  job('gamification.activity.completed.undo', {
-    studentId,
-    type: 'update_education_history',
-  });
 }

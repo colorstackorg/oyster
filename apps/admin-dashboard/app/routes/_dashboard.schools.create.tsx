@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 
 import { createSchool } from '@oyster/core/education';
 import { CreateSchoolInput } from '@oyster/core/education/types';
@@ -49,7 +49,11 @@ export async function action({ request }: ActionFunctionArgs) {
     message: 'Created school.',
   });
 
-  return redirect(Route['/schools'], {
+  const url = new URL(request.url);
+
+  url.pathname = Route['/schools'];
+
+  return redirect(url.toString(), {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
@@ -66,7 +70,7 @@ export default function CreateSchoolPage() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <SchoolNameField error={errors.name} />
         <SchoolCityField error={errors.addressCity} />
         <SchoolStateField error={errors.addressState} />
@@ -75,7 +79,7 @@ export default function CreateSchoolPage() {
         <Button.Group>
           <Button.Submit>Create</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

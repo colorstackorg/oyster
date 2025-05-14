@@ -12,8 +12,8 @@ import React, { type PropsWithChildren } from 'react';
 
 type EmailBaseProps<T> = PropsWithChildren<
   T & {
-    marginBottom?: '0px' | '16px' | '32px';
-    marginTop?: '0px' | '16px' | '32px';
+    marginBottom?: '0px' | '8px' | '16px' | '32px';
+    marginTop?: '0px' | '8px' | '16px' | '32px';
   }
 >;
 
@@ -33,7 +33,7 @@ Email.Button = function EmailButton({ children, href }: EmailButtonProps) {
         color: 'white',
         cursor: 'pointer',
         fontSize: 16,
-        padding: '12px 16px',
+        padding: '8px 12px',
       }}
     >
       {children}
@@ -73,15 +73,21 @@ Email.Image = function EmailImage({
 };
 
 type EmailLinkProps = PropsWithChildren<{
+  fontWeight?: 'bold' | 'normal';
   href: string;
 }>;
 
-Email.Link = function EmailLink({ children, href }: EmailLinkProps) {
+Email.Link = function EmailLink({
+  children,
+  fontWeight = 'normal',
+  href,
+}: EmailLinkProps) {
   return (
     <Link
       href={href}
       style={{
         color: '#348e87',
+        fontWeight,
         textDecoration: 'underline',
       }}
     >

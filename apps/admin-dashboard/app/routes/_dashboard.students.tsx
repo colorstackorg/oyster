@@ -6,18 +6,13 @@ import {
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
-import { useState } from 'react';
 import {
   CornerUpLeft,
-  DollarSign,
   Edit,
   ExternalLink,
   Gift,
-  Hash,
   Star,
   Trash,
-  Upload,
-  Users,
   Zap,
 } from 'react-feather';
 import { generatePath } from 'react-router';
@@ -27,7 +22,6 @@ import { db } from '@oyster/db';
 import {
   Dashboard,
   Dropdown,
-  IconButton,
   Pagination,
   Table,
   type TableColumnProps,
@@ -132,64 +126,12 @@ export default function StudentsPage() {
 
       <Dashboard.Subheader>
         <Dashboard.SearchForm placeholder="Search by name..." />
-
-        <div className="ml-auto flex items-center gap-2">
-          <StudentsUploadDropdown />
-        </div>
       </Dashboard.Subheader>
 
       <StudentsTable />
       <StudentsPagination />
       <Outlet />
     </>
-  );
-}
-
-function StudentsUploadDropdown() {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onClick() {
-    setOpen(true);
-  }
-
-  return (
-    <Dropdown.Container onClose={onClose}>
-      <IconButton
-        backgroundColor="gray-100"
-        backgroundColorOnHover="gray-200"
-        icon={<Upload />}
-        onClick={onClick}
-        shape="square"
-      />
-
-      {open && (
-        <Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link to={Route['/students/import/resources']}>
-                <Hash /> Import Resource Users
-              </Link>
-            </Dropdown.Item>
-
-            <Dropdown.Item>
-              <Link to={Route['/students/import/programs']}>
-                <Users /> Import Program Participants
-              </Link>
-            </Dropdown.Item>
-
-            <Dropdown.Item>
-              <Link to={Route['/students/import/scholarships']}>
-                <DollarSign /> Import Scholarship Recipients
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Dropdown>
-      )}
-    </Dropdown.Container>
   );
 }
 
@@ -262,75 +204,79 @@ function StudentDropdown({
   applicationUri,
   id,
 }: StudentInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onOpen() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            {!activatedAt && (
-              <Dropdown.Item>
-                <Link
-                  to={generatePath(Route['/students/:id/activate'], { id })}
-                >
-                  <Zap /> Activate Member
-                </Link>
-              </Dropdown.Item>
-            )}
-
+    <Dropdown.Root>
+      <Table.Dropdown>
+        <Dropdown.List>
+          {!activatedAt && (
             <Dropdown.Item>
               <Link
-                to={generatePath(Route['/students/:id/points/grant'], { id })}
+                preventScrollReset
+                to={generatePath(Route['/students/:id/activate'], { id })}
               >
-                <Star /> Grant Points
+                <Zap /> Activate Member
               </Link>
             </Dropdown.Item>
+          )}
 
+          <Dropdown.Item>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/students/:id/points/grant'], { id })}
+            >
+              <Star /> Grant Points
+            </Link>
+          </Dropdown.Item>
+
+          <Dropdown.Item>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/students/:id/email'], { id })}
+            >
+              <Edit /> Update Email
+            </Link>
+          </Dropdown.Item>
+
+          {applicationUri && (
             <Dropdown.Item>
-              <Link to={generatePath(Route['/students/:id/email'], { id })}>
-                <Edit /> Update Email
+              <Link preventScrollReset target="_blank" to={applicationUri}>
+                <CornerUpLeft /> View Application
               </Link>
             </Dropdown.Item>
+          )}
 
-            {applicationUri && (
-              <Dropdown.Item>
-                <Link target="_blank" to={applicationUri}>
-                  <CornerUpLeft /> View Application
-                </Link>
-              </Dropdown.Item>
-            )}
+          <Dropdown.Item>
+            <Link
+              preventScrollReset
+              target="_blank"
+              to={airtableUri}
+              rel="noopener noreferrer"
+            >
+              <ExternalLink /> View Airtable Record
+            </Link>
+          </Dropdown.Item>
 
-            <Dropdown.Item>
-              <Link target="_blank" to={airtableUri} rel="noopener noreferrer">
-                <ExternalLink /> View Airtable Record
-              </Link>
-            </Dropdown.Item>
+          <Dropdown.Item>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/students/:id/gift'], { id })}
+            >
+              <Gift /> Send Goody Gift
+            </Link>
+          </Dropdown.Item>
 
-            <Dropdown.Item>
-              <Link to={generatePath(Route['/students/:id/gift'], { id })}>
-                <Gift /> Send Goody Gift
-              </Link>
-            </Dropdown.Item>
+          <Dropdown.Item>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/students/:id/remove'], { id })}
+            >
+              <Trash /> Remove Member
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Table.Dropdown>
 
-            <Dropdown.Item>
-              <Link to={generatePath(Route['/students/:id/remove'], { id })}>
-                <Trash /> Remove Member
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
-
-      <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
+      <Table.DropdownOpenButton />
+    </Dropdown.Root>
   );
 }

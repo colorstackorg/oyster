@@ -4,23 +4,13 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
-import { type z } from 'zod';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
-import { job } from '@oyster/core/member-profile/server';
-import {
-  OneTimeCode,
-  OneTimeCodePurpose,
-} from '@oyster/core/member-profile/ui';
-import { db } from '@oyster/db';
-import { StudentEmail } from '@oyster/types';
+import { addEmail, AddEmailInput } from '@oyster/core/member-profile/server';
 import {
   Button,
-  Form,
+  ErrorMessage,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -45,30 +35,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect(Route['/profile/emails/add/start']);
   }
 
-  return json({
-    email,
-  });
+  return json({ email });
 }
-
-const AddEmailInput = StudentEmail.pick({
-  email: true,
-  studentId: true,
-})
-  .extend({ code: OneTimeCode.shape.value })
-  .required();
-
-type AddEmailInput = z.infer<typeof AddEmailInput>;
-
-const AddEmailFormData = AddEmailInput.pick({
-  code: true,
-});
-
-type AddEmailFormData = z.infer<typeof AddEmailFormData>;
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(request, AddEmailFormData);
+  const { data, errors, ok } = await validateForm(
+    request,
+    AddEmailInput.pick({ code: true })
+  );
 
   if (!ok) {
     return json({ errors }, { status: 400 });
@@ -104,57 +80,6 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-async function addEmail(input: AddEmailInput) {
-  const existingEmail = await db
-    .selectFrom('studentEmails')
-    .select(['studentId'])
-    .where('email', 'ilike', input.email)
-    .executeTakeFirst();
-
-  if (existingEmail) {
-    throw new Error(
-      existingEmail.studentId === input.studentId
-        ? 'This email already belongs to you.'
-        : 'The email you are trying to add belongs to another member.'
-    );
-  }
-
-  const oneTimeCode = await db
-    .selectFrom('oneTimeCodes')
-    .select('id')
-    .where('email', 'ilike', input.email)
-    .where('purpose', '=', OneTimeCodePurpose.ADD_STUDENT_EMAIL)
-    .where('studentId', '=', input.studentId)
-    .where('value', '=', input.code as string)
-    .executeTakeFirst();
-
-  if (!oneTimeCode) {
-    throw new Error('The code was either wrong or expired. Please try again.');
-  }
-
-  await db.transaction().execute(async (trx) => {
-    await trx
-      .insertInto('studentEmails')
-      .values({
-        email: input.email,
-        studentId: input.studentId,
-      })
-      .execute();
-
-    await trx
-      .deleteFrom('oneTimeCodes')
-      .where('id', '=', oneTimeCode.id)
-      .execute();
-  });
-
-  job('member_email.added', {
-    email: input.email,
-    studentId: input.studentId,
-  });
-}
-
-const keys = AddEmailFormData.keyof().enum;
-
 export default function AddEmailPage() {
   const { error, errors } = getErrors(useActionData<typeof action>());
   const { email } = useLoaderData<typeof loader>();
@@ -172,22 +97,17 @@ export default function AddEmailPage() {
         profile.
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
-        <Form.Field
-          error={errors.code}
-          label="Code"
-          labelFor={keys.code}
-          required
-        >
-          <Input autoFocus id={keys.code} name={keys.code} required />
-        </Form.Field>
+      <Form className="form" method="post">
+        <Field error={errors.code} label="Code" labelFor="code" required>
+          <Input autoFocus id="code" name="code" required />
+        </Field>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Verify</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

@@ -1,8 +1,8 @@
 import { db } from '@oyster/db';
 
-import { type GetBullJobData } from '@/infrastructure/bull/bull.types';
-import { job } from '@/infrastructure/bull/use-cases/job';
-import { retryWithBackoff } from '@/shared/utils/core.utils';
+import { job } from '@/infrastructure/bull';
+import { type GetBullJobData } from '@/infrastructure/bull.types';
+import { retryWithBackoff } from '@/shared/utils/core';
 
 export async function deleteSlackMessage({
   channelId,

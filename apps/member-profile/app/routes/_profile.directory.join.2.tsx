@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { updateMember } from '@oyster/core/member-profile/server';
@@ -72,9 +68,9 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  await updateMember({
-    data: { ...data, ethnicities: data.ethnicities || [] },
-    where: { id: user(session) },
+  await updateMember(user(session), {
+    ...data,
+    ethnicities: data.ethnicities || [],
   });
 
   return redirect(Route['/directory/join/3']);
@@ -87,7 +83,7 @@ export default function UpdatePersonalInformationForm() {
   const { errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
+    <Form className="form" method="post">
       <HometownField
         defaultLatitude={student.hometownCoordinates?.y}
         defaultLongitude={student.hometownCoordinates?.x}
@@ -96,6 +92,7 @@ export default function UpdatePersonalInformationForm() {
         name={keys.hometown}
         latitudeName={keys.hometownLatitude}
         longitudeName={keys.hometownLongitude}
+        required
       />
 
       <Divider />
@@ -110,6 +107,6 @@ export default function UpdatePersonalInformationForm() {
         <JoinDirectoryBackButton to={Route['/directory/join/1']} />
         <JoinDirectoryNextButton />
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

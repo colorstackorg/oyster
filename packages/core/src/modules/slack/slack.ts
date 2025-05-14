@@ -1,21 +1,24 @@
 import dayjs from 'dayjs';
 import dedent from 'dedent';
-import { type ExpressionBuilder } from 'kysely';
+import { type ExpressionBuilder, sql } from 'kysely';
+import { emojify } from 'node-emoji';
+import { z } from 'zod';
 
 import { type DB, db } from '@oyster/db';
 
-import { job } from '@/infrastructure/bull/use-cases/job';
 import {
   createEmbedding,
   getChatCompletion,
   rerankDocuments,
-} from '@/modules/ai/ai';
-import { track } from '@/modules/mixpanel';
-import { sendSlackNotification } from '@/modules/notification/use-cases/send-slack-notification';
-import { getPineconeIndex } from '@/modules/pinecone';
+} from '@/infrastructure/ai';
+import { job } from '@/infrastructure/bull';
+import { track } from '@/infrastructure/mixpanel';
+import { getPineconeIndex } from '@/infrastructure/pinecone';
+import { cache, ONE_HOUR_IN_SECONDS } from '@/infrastructure/redis';
+import { sendSlackNotification } from '@/modules/notifications/use-cases/send-slack-notification';
 import { slack } from '@/modules/slack/instances';
 import { IS_PRODUCTION } from '@/shared/env';
-import { fail, type Result, success } from '@/shared/utils/core.utils';
+import { fail, type Result, success } from '@/shared/utils/core';
 
 // Constants
 
@@ -274,7 +277,8 @@ type AnswerPublicQuestionInput = {
 
 /**
  * Answers a question asked in a public Slack message by linking to relevant
- * threads in our Slack workspace.
+ * threads in our Slack workspace. After the answer has been sent, the bot then
+ * reacts to the original message with the ColorStack logo.
  *
  * @param input - The message (public question) to answer.
  * @returns The result of the answer.
@@ -413,6 +417,12 @@ export async function answerPublicQuestion({
     workspace: 'regular',
   });
 
+  job('slack.reaction.add', {
+    channelId,
+    messageId: threadId,
+    reaction: 'goldicon',
+  });
+
   await db.transaction().execute(async (trx) => {
     await trx
       .updateTable('slackMessages')
@@ -425,42 +435,419 @@ export async function answerPublicQuestion({
   return success({});
 }
 
+// "Answer Member Profile Question"
+
+type AnswerMemberProfileQuestionInput = {
+  /**
+   * The question passed in by the user to the AI chatbot.
+   *
+   * @example 'What is Fam Friday?'
+   * @example 'Has anyone applied to the Google internship?'
+   */
+  question: string;
+
+  /**
+   * The ID of the member asking the question.
+   */
+  memberId: string;
+};
+
+const MEMBER_PROFILE_SYSTEM_PROMPT = dedent`
+  <context>
+    ColorStack is a community of Computer Science college students who are
+    aspiring software engineers (and product managers/designers). We're a
+    community of 10,000+ members across 100+ universities. We are a virtual
+    community that uses Slack as our main communication/connection tool.
+
+    Today's date is ${dayjs().format('YYYY-MM-DD')}.
+  </context>
+
+  <output_format>
+    Your response must follow this exact format:
+    1. First, output a JSON object with this EXACT structure:
+      {
+        "threads": [
+          { "channelId": "...", "threadId": "...", "number": 1 },
+          { "channelId": "...", "threadId": "...", "number": 2 },
+          ...
+        ],
+        "ok": true
+      }
+
+    2. Then output a single line containing exactly "---".
+    3. Finally, output your answer, using [ref:N] to reference threads, where
+       N matches the "number" from the JSON above.
+  </output_format>
+
+  <instructions>
+    Do your best to answer the question based on the Slack threads given to
+    you. If the question has not yet been answered, you respond that you
+    couldn't find the answer in our Slack history, but if it is a generic
+    question that you feel confident in answering without the context of our
+    Slack history, feel free to answer it. If you can't answer the question,
+    do NOT mention any threads that you were given.
+
+    When referencing threads:
+    - Use [ref:N] format where N is the thread number.
+    - Place references AFTER the sentence that uses that information.
+    - Thread numbers must start at 1 and increment.
+    - The same thread should always use the same reference number.
+
+    You should factor in the score AND the date of the thread when
+    answering the question. If a thread is very old, you should be less
+    confident in it's contents, unless you don't think time is super
+    relevant to the answer. The higher the relevance score, the more confident
+    you should be in your answer (ie: > 0.9). If the relevance score is low
+    (ie: < 0.5), you should be less confident in your answer.
+
+    This is not meant to be a back-and-forth conversation. You should do
+    your best to answer the question based on the Slack threads given to
+    you.
+  </instructions>
+
+  <rules>
+    - Be kind and concise.
+    - Never gossip or amplify gossip.
+    - Use numbers or bullet points to organize thoughts where appropriate.
+    - Never use phrases like "Based on the provided Slack threads..."
+    - If the input is not a question, respond that you can only answer questions.
+    - NEVER respond to questions about individual people that are gossipy or
+      otherwise inappropriate.
+    - Respond like you are an ambassador for the ColorStack community.
+  </rules>
+
+  <example_response>
+    {
+      "threads": [
+        { "channelId": "C123", "threadId": "T456", "number": 1 },
+        { "channelId": "C789", "threadId": "T012", "number": 2 }
+      ],
+      "ok": true
+    }
+    ---
+    The internship application process typically starts in August for many tech companies [ref:1]. Some companies like Google and Microsoft begin even earlier, opening their applications in July [ref:2].
+  </example_response>
+`;
+
 /**
- * Determines if the given text is a question.
+ * Processes a question or input submitted by a member to the AI chatbot
+ * and returns the relevant response.
  *
- * @param question - The text to determine if it's a question.
- * @returns Whether the text is a question.
+ * @param input - The question from the user.
+ * @returns A `Result` type containing the chatbot's response.
  */
-async function isQuestion(question: string): Promise<Result<boolean>> {
-  const result = await getChatCompletion({
-    maxTokens: 5,
+export async function answerMemberProfileQuestion({
+  question,
+  memberId,
+}: AnswerMemberProfileQuestionInput): Promise<Result<ParsedChatbotAnswer>> {
+  const questionResult = await isQuestion(question);
+
+  if (!questionResult.ok) {
+    return questionResult;
+  }
+
+  const isValidQuestion = questionResult.data;
+
+  if (!isValidQuestion) {
+    return fail({
+      code: 400,
+      error:
+        'I apologize, but I can only answer questions. Is there something ' +
+        "specific you'd like to ask?",
+    });
+  }
+
+  const threadsResult = await getMostRelevantThreads(question, {
+    threshold: 0.5,
+    topK: 7,
+  });
+
+  if (!threadsResult.ok) {
+    return threadsResult;
+  }
+
+  const formattedThreads = threadsResult.data.map(formatThreadForLLM);
+
+  const userPrompt = dedent`
+    Please answer the following question based on the Slack context provided:
+
+    <question>${question}</question>
+    <threads>${formattedThreads.join('\n\n')}</threads>
+  `;
+
+  const completionResult = await getChatCompletion({
+    maxTokens: 1000,
     messages: [
       {
         role: 'user',
-        content: [{ type: 'text', text: `Input: ${question}` }],
+        content: [
+          {
+            type: 'text',
+            text: userPrompt,
+          },
+        ],
       },
     ],
     system: [
       {
         cache: true,
         type: 'text',
-        text: dedent`
-          Determine if the user's question is a question. It does not need to
-          have the appropriate tone/punctuation, but it should be a question.
-
-          If it is, respond with "true". If it is not, respond with "false".
-        `,
+        text: MEMBER_PROFILE_SYSTEM_PROMPT,
       },
     ],
     temperature: 0,
   });
 
-  if (!result.ok) {
-    return fail(result);
+  if (!completionResult.ok) {
+    return fail(completionResult);
   }
 
-  return success(result.data === 'true');
+  const parseResult = await parseAnswerForMemberProfile(completionResult.data);
+
+  if (!parseResult.ok) {
+    return parseResult;
+  }
+
+  const parsedAnswer = parseResult.data;
+
+  await cache.set(
+    'chatbotAnswer:' + memberId,
+    parsedAnswer,
+    ONE_HOUR_IN_SECONDS
+  );
+
+  track({
+    application: 'Member Profile',
+    event: 'Chatbot Question Asked',
+    properties: { Question: question },
+    user: memberId,
+  });
+
+  return success(parsedAnswer);
 }
+
+export type ThreadReference = {
+  authorFirstName: string;
+  authorLastName: string;
+  authorProfilePicture: string;
+  createdAt: string;
+
+  /**
+   * The number of the thread in context. For example, if the answer used
+   * 5 references, the first thread reference would be `1`, the second would
+   * be `2`, etc.
+   *
+   * @example 1
+   * @example 2
+   * @example 3
+   */
+  number: number;
+
+  /**
+   * The # of replies to the thread.
+   *
+   * @example 1
+   * @example 2
+   * @example 3
+   */
+  replyCount: number;
+
+  text: string;
+
+  /**
+   * The Slack permalink to the thread. Enables the user to click on the
+   * thread and see the actual context of the thread.
+   *
+   * @example https://colorstack-family.slack.com/archives/C123/p456
+   */
+  url: string;
+};
+
+export type ChatbotAnswerSegment =
+  | { type: 'reference'; number: number }
+  | { type: 'text'; content: string };
+
+export type ParsedChatbotAnswer = {
+  answerSegments: ChatbotAnswerSegment[];
+  threads: ThreadReference[];
+};
+
+const MetadataSection = z.object({
+  threads: z.array(
+    z.object({
+      channelId: z.string().min(1).trim(),
+      number: z.coerce.number(),
+      threadId: z.string().min(1).trim(),
+    })
+  ),
+});
+
+/**
+ * Parses the LLM output into a structured format containing thread references
+ * and the formatted answer, specifically meant for the Member Profile UI
+ * interface.
+ *
+ * @param output - Raw output from the LLM.
+ * @returns The parsed answer with thread references.
+ */
+async function parseAnswerForMemberProfile(
+  output: string
+): Promise<Result<ParsedChatbotAnswer>> {
+  // PART I: Split the output into the metadata section and the answer section,
+  // parse the metadata section into JSON and validate it with Zod.
+
+  const [metadataSection, ...answerParts] = output.split('---');
+
+  if (!metadataSection || answerParts.length === 0) {
+    return fail({
+      code: 400,
+      error: 'Missing metadata section or answer section from response.',
+    });
+  }
+
+  let metadataJSON: any = {};
+
+  try {
+    metadataJSON = JSON.parse(metadataSection.trim());
+  } catch (error) {
+    return fail({
+      code: 400,
+      error: 'Failed to parse thread metadata into JSON.',
+    });
+  }
+
+  const metadataResult = MetadataSection.safeParse(metadataJSON);
+
+  if (!metadataResult.success) {
+    return fail({
+      code: 400,
+      error: 'The metadata section is not formatted correctly.',
+    });
+  }
+
+  // PART II: Fetch the Slack permalink for each thread and return the threads
+  // with their respective URLs. This will allow us to actually have the user
+  // click on the thread and see the actual context of the thread.
+
+  const threads = await Promise.all(
+    metadataResult.data.threads.map(async (thread) => {
+      const [{ permalink }, slackMessage] = await Promise.all([
+        slack.chat.getPermalink({
+          channel: thread.channelId,
+          message_ts: thread.threadId,
+        }),
+
+        db
+          .selectFrom('slackMessages')
+          .leftJoin('students', 'slackMessages.studentId', 'students.id')
+          .select([
+            'slackMessages.text',
+            'students.firstName as authorFirstName',
+            'students.lastName as authorLastName',
+            'students.profilePicture as authorProfilePicture',
+
+            ({ ref }) => {
+              const field = sql<string>`
+                to_char(${ref('slackMessages.createdAt')}, 'FMMM/FMDD/YY')
+              `;
+
+              return field.as('createdAt');
+            },
+
+            (eb) => {
+              return eb
+                .selectFrom('slackMessages as replies')
+                .select(({ fn }) => fn.countAll<string>().as('count'))
+                .whereRef('replies.threadId', '=', 'slackMessages.id')
+                .as('replyCount');
+            },
+          ])
+          .where('slackMessages.channelId', '=', thread.channelId)
+          .where('slackMessages.id', '=', thread.threadId)
+          .executeTakeFirst(),
+      ]);
+
+      return {
+        authorFirstName: slackMessage?.authorFirstName || '',
+        authorLastName: slackMessage?.authorLastName || '',
+        authorProfilePicture: slackMessage?.authorProfilePicture || '',
+        createdAt: slackMessage?.createdAt || '',
+        number: thread.number,
+        replyCount: parseInt(slackMessage?.replyCount || '0'),
+        text: emojify(slackMessage?.text || ''),
+        url: permalink!,
+      };
+    })
+  );
+
+  // PART III: Validate that all the references in the answer are valid. Ensures
+  // that the LLM didn't hallucinate and that the references actually exist.
+
+  // Combine all parts after the "---" delimiter.
+  const answer = answerParts.join('---').trim();
+
+  // Next, we need to validate that all the references in the answer are valid.
+  // We do this by finding all the references in the answer and then checking
+  // that each reference corresponds to a thread in the metadata.
+
+  const actualReferences = Array.from(
+    answer.matchAll(/\[ref:(\d+)\]/g),
+    (match) => {
+      return parseInt(match[1]);
+    }
+  );
+
+  const validReferences = new Set(
+    threads.map((thread) => {
+      return thread.number;
+    })
+  );
+
+  const hasInvalidReferences = actualReferences.some((reference) => {
+    return !validReferences.has(reference);
+  });
+
+  if (hasInvalidReferences) {
+    return fail({
+      code: 400,
+      error: 'The answer contains invalid thread references.',
+    });
+  }
+
+  // PART IV: Now we need to break the answer into segments with references and
+  // text so that the UI can display the answer with the correct formatting.
+
+  const segments = answer
+    .split(/(\[ref:\d+\])/)
+    .reduce<ChatbotAnswerSegment[]>((result, part) => {
+      if (!part) {
+        return result;
+      }
+
+      const referenceMatch = part.match(/\[ref:(\d+)\]/);
+
+      if (referenceMatch) {
+        result.push({
+          type: 'reference',
+          number: parseInt(referenceMatch[1]),
+        });
+      } else {
+        result.push({
+          type: 'text',
+          content: part,
+        });
+      }
+
+      return result;
+    }, []);
+
+  return success({
+    answerSegments: segments,
+    threads,
+  });
+}
+
+// "Get Answer From Slack History"
 
 /**
  * Ask a question to the Slack workspace.
@@ -477,18 +864,7 @@ async function getAnswerFromSlackHistory(
   question: string,
   threads: RelevantThread[]
 ): Promise<Result<string>> {
-  const formattedThreads = threads.map((thread) => {
-    const parts = [
-      '[Relevance Score]: ' + thread.score,
-      '[Timestamp]: ' + thread.createdAt,
-      '[Channel ID]: ' + thread.channelId,
-      '[Thread ID]: ' + thread.id,
-      '[Message]: ' + thread.message,
-      '[Replies]: ' + thread.replies,
-    ];
-
-    return parts.join('\n');
-  });
+  const formattedThreads = threads.map(formatThreadForLLM);
 
   const userPrompt = [
     'Please answer the following question based on the Slack context provided:',
@@ -591,23 +967,6 @@ async function getAnswerFromSlackHistory(
   return success(answerWithReferences);
 }
 
-/**
- * Removes all <thread></thread> references and replace them with an actual
- * Slack message link and the display text (ie: `[1]`, `[2]`, etc).
- *
- *
- * @param text - The text to add thread references to.
- * @returns The text with thread references added.
- *
- * @todo Replace the Slack workspace URL with an environment variable.
- */
-function addThreadReferences(text: string): string {
-  return text.replace(
-    /<thread>(.*?):(.*?):(.*?)<\/thread>/g,
-    `<https://colorstack-family.slack.com/archives/$1/p$2|*[$3]*>`
-  );
-}
-
 type GetMostRelevantThreadsOptions = {
   /**
    * The IDs of the threads to exclude from the search.
@@ -678,7 +1037,7 @@ async function getMostRelevantThreads(
   });
 
   const filteredMatches = matches.filter((match) => {
-    return !options.exclude?.includes(match.id);
+    return !options.exclude?.includes(match.id) && !!match.metadata?.channelId;
   });
 
   let messages = await Promise.all(
@@ -687,12 +1046,14 @@ async function getMostRelevantThreads(
         db
           .selectFrom('slackMessages')
           .select(['channelId', 'createdAt', 'text'])
+          .where('channelId', '=', match.metadata!.channelId)
           .where('id', '=', match.id)
           .executeTakeFirst(),
 
         db
           .selectFrom('slackMessages')
           .select(['text'])
+          .where('channelId', '=', match.metadata!.channelId)
           .where('threadId', '=', match.id)
           .orderBy('createdAt', 'asc')
           .limit(50)
@@ -889,6 +1250,25 @@ export async function syncThreadToPinecone({
   return success({});
 }
 
+// Helpers
+
+/**
+ * Removes all <thread></thread> references and replace them with an actual
+ * Slack message link and the display text (ie: `[1]`, `[2]`, etc).
+ *
+ *
+ * @param text - The text to add thread references to.
+ * @returns The text with thread references added.
+ *
+ * @todo Replace the Slack workspace URL with an environment variable.
+ */
+function addThreadReferences(text: string): string {
+  return text.replace(
+    /<thread>(.*?):(.*?):(.*?)<\/thread>/g,
+    `<https://colorstack-family.slack.com/archives/$1/p$2|*[$3]*>`
+  );
+}
+
 /**
  * Add a `reactions` column to the query, which contains the number of reactions
  * for a message.
@@ -903,4 +1283,60 @@ function getReactionsCount(eb: ExpressionBuilder<DB, 'slackMessages'>) {
     .where('slackReactions.channelId', '=', 'slackMessages.channelId')
     .where('slackReactions.messageId', '=', 'slackMessages.id')
     .as('reactions');
+}
+
+/**
+ * Formats a thread for the LLM.
+ *
+ * @param thread - The thread to format.
+ * @returns The formatted thread.
+ */
+function formatThreadForLLM(thread: RelevantThread): string {
+  const parts = [
+    '[Relevance Score]: ' + thread.score,
+    '[Timestamp]: ' + thread.createdAt,
+    '[Channel ID]: ' + thread.channelId,
+    '[Thread ID]: ' + thread.id,
+    '[Message]: ' + thread.message,
+    '[Replies]: ' + thread.replies,
+  ];
+
+  return parts.join('\n');
+}
+
+/**
+ * Determines if the given text is a question.
+ *
+ * @param question - The text to determine if it's a question.
+ * @returns Whether the text is a question.
+ */
+async function isQuestion(question: string): Promise<Result<boolean>> {
+  const result = await getChatCompletion({
+    maxTokens: 5,
+    messages: [
+      {
+        role: 'user',
+        content: [{ type: 'text', text: `Input: ${question}` }],
+      },
+    ],
+    system: [
+      {
+        cache: true,
+        type: 'text',
+        text: dedent`
+          Determine if the user's question is a question. It does not need to
+          have the appropriate tone/punctuation, but it should be a question.
+
+          If it is, respond with "true". If it is not, respond with "false".
+        `,
+      },
+    ],
+    temperature: 0,
+  });
+
+  if (!result.ok) {
+    return fail(result);
+  }
+
+  return success(result.data === 'true');
 }

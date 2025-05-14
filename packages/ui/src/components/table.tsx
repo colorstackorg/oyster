@@ -1,11 +1,12 @@
 import { type LinkProps, useNavigate } from '@remix-run/react';
-import React, { type PropsWithChildren } from 'react';
+import React, { type PropsWithChildren, useContext } from 'react';
 import { MoreVertical } from 'react-feather';
 import { match } from 'ts-pattern';
 
-import { Dropdown } from './dropdown';
+import { Dropdown, DropdownContext } from './dropdown';
 import { IconButton } from './icon-button';
 import { Text } from './text';
+import { usePosition } from '../hooks/use-position';
 import { cx } from '../utils/cx';
 
 type TableData = Record<string, unknown>;
@@ -197,14 +198,14 @@ function TableBody({
                 // As long as the click target is actually the row, then we
                 // want to trigger the row click.
                 if (isInteractiveElement?.tagName === 'TR') {
-                  navigate(rowTo(row));
+                  navigate(rowTo(row), { preventScrollReset: true });
                 }
               },
 
               onKeyDown(e) {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  navigate(rowTo(row));
+                  navigate(rowTo(row), { preventScrollReset: true });
                 }
               },
             })}
@@ -219,8 +220,8 @@ function TableBody({
                   <td
                     className={cx(
                       dataCellCn,
-                      column.sticky && 'sticky right-0',
-                      'overflow-hidden text-ellipsis text-left'
+                      column.sticky ? 'sticky right-0' : 'overflow-hidden',
+                      'text-ellipsis text-left'
                     )}
                   >
                     {column.render(row)}
@@ -246,27 +247,30 @@ function getFilteredColumns(columns: TableProps['columns']) {
 // Dropdown
 
 Table.Dropdown = function TableDropdown({ children }: PropsWithChildren) {
-  return <Dropdown className="fixed right-20 mt-[unset]">{children}</Dropdown>;
-};
-
-type TableDropdownOpenButtonProps = {
-  onClick(): void;
-};
-
-Table.DropdownOpenButton = function TableDropdownOpenButton({
-  onClick,
-}: TableDropdownOpenButtonProps) {
-  const onClickWithEvent = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    onClick();
-  };
+  const { ref } = useContext(DropdownContext);
+  const { x, y } = usePosition(ref);
 
   return (
-    <IconButton
-      backgroundColorOnHover="gray-200"
-      className="ml-auto"
-      icon={<MoreVertical />}
-      onClick={onClickWithEvent}
-    />
+    <Dropdown
+      className="fixed -ml-2 mt-[unset] -translate-x-full"
+      style={{ left: x, top: y }}
+    >
+      {children}
+    </Dropdown>
+  );
+};
+
+Table.DropdownOpenButton = function TableDropdownOpenButton() {
+  return (
+    <Dropdown.Trigger>
+      <IconButton
+        backgroundColorOnHover="gray-200"
+        className="ml-auto"
+        icon={<MoreVertical />}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      />
+    </Dropdown.Trigger>
   );
 };

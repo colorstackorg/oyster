@@ -5,9 +5,9 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
+  Form,
   generatePath,
   Link,
-  Form as RemixForm,
   useActionData,
   useLoaderData,
   useParams,
@@ -16,13 +16,14 @@ import {
 import { Plus } from 'react-feather';
 
 import {
-  getLinkFromOpportunity,
   refineOpportunity,
   RefineOpportunityInput,
 } from '@oyster/core/opportunities';
+import { db } from '@oyster/db';
 import {
   Button,
-  Form,
+  ErrorMessage,
+  Field,
   getErrors,
   Modal,
   Textarea,
@@ -35,16 +36,20 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const link = await getLinkFromOpportunity(params.id as string);
+  const opportunity = await db
+    .selectFrom('opportunities')
+    .select('link')
+    .where('id', '=', params.id as string)
+    .executeTakeFirst();
 
-  if (!link) {
+  if (!opportunity || !opportunity.link) {
     throw new Response(null, {
       status: 404,
       statusText: 'Could not find a link in the opportunity shared.',
     });
   }
 
-  return json({ link });
+  return json({ link: opportunity.link });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -92,17 +97,17 @@ export default function RefineOpportunity() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" data-gap="2rem" method="post">
-        <Form.Field
+      <Form className="form" data-gap="2rem" method="post">
+        <Field
           label="Step 1. Open the link that was shared in a new tab."
           required
         >
           <Link className="link line-clamp-1" to={link} target="_blank">
             {link}
           </Link>
-        </Form.Field>
+        </Field>
 
-        <Form.Field
+        <Field
           description="You can simply do Ctrl+A and CTRL+C to copy the text content of the page. However, if it is a LinkedIn post, then please only get the actual post content. We'll only use the first 10,000 characters."
           error={errors.content}
           label="Step 2. Paste the website's text content."
@@ -116,18 +121,18 @@ export default function RefineOpportunity() {
             name="content"
             required
           />
-        </Form.Field>
+        </Field>
 
         <input type="hidden" name="opportunityId" value={id} />
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>
             Generate <Plus size={16} />
           </Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

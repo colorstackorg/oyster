@@ -1,6 +1,6 @@
 import { twMerge } from 'tailwind-merge';
 
-type ClassName = string | boolean | null | undefined;
+export type ClassName = string | boolean | null | undefined;
 
 /**
  * Returns the class names combined into one string.

@@ -70,6 +70,18 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
         id: event.channel,
       });
     })
+    .with({ type: 'emoji_changed' }, (event) => {
+      if (event.subtype !== 'add') {
+        return;
+      }
+
+      job('slack.emoji.changed', {
+        event_ts: event.event_ts,
+        name: event.name,
+        subtype: event.subtype,
+        value: event.value,
+      });
+    })
     .with({ type: 'message', subtype: 'message_changed' }, (event) => {
       job('slack.message.change', {
         channelId: event.channel,
@@ -107,7 +119,10 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
       job('slack.message.add', {
         channelId: event.channel!,
         createdAt: new Date(Number(event.ts) * 1000),
+        hasFile: !!event.files && !!event.files.length,
         id: event.ts!,
+        isBot: !!event.app_id || !!event.bot_id,
+        replyCount: event.message?.reply_count,
         text: event.text!,
         threadId:
           event.ts && event.thread_ts && event.ts !== event.thread_ts
@@ -121,7 +136,7 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
         return;
       }
 
-      job('slack.reaction.add', {
+      job('slack.reaction.added', {
         channelId: event.item.channel,
         messageId: event.item.ts,
         reaction: event.reaction,

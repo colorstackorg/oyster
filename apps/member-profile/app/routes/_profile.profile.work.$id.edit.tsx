@@ -5,13 +5,12 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
+  Form,
   useActionData,
   useLoaderData,
   useNavigate,
   useNavigation,
 } from '@remix-run/react';
-import dayjs from 'dayjs';
 import { generatePath } from 'react-router';
 import { z } from 'zod';
 
@@ -28,7 +27,7 @@ import {
 import {
   Address,
   Button,
-  Form,
+  ErrorMessage,
   getErrors,
   Modal,
   validateForm,
@@ -79,15 +78,7 @@ const EditWorkExperienceFormData = EditWorkExperienceInput.omit({
   id: true,
   studentId: true,
 }).extend({
-  endDate: EditWorkExperienceInput.shape.endDate.refine((value) => {
-    return dayjs(value).year() >= 1000;
-  }, 'Please fill out all 4 digits of the year.'),
-
   isCurrentRole: z.string().optional(),
-
-  startDate: EditWorkExperienceInput.shape.startDate.refine((value) => {
-    return dayjs(value).year() >= 1000;
-  }, 'Please fill out all 4 digits of the year.'),
 });
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -155,7 +146,7 @@ export default function EditWorkExperiencePage() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <WorkForm.Context
           defaultValue={{
             isCurrentRole: !workExperience.endDate,
@@ -231,7 +222,7 @@ export default function EditWorkExperiencePage() {
           />
         </WorkForm.Context>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group flexDirection="row-reverse" spacing="between">
           <Button.Submit>Update</Button.Submit>
@@ -246,7 +237,7 @@ export default function EditWorkExperiencePage() {
             Delete
           </Button>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

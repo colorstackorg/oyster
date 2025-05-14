@@ -4,20 +4,17 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import {
   addEventRecordingLink,
+  AddEventRecordingLinkInput,
   getEvent,
-} from '@oyster/core/admin-dashboard/server';
-import { AddEventRecordingLinkInput } from '@oyster/core/admin-dashboard/ui';
+} from '@oyster/core/events';
 import {
   Button,
-  Form,
+  ErrorMessage,
+  Field,
   getErrors,
   Input,
   Modal,
@@ -86,35 +83,33 @@ export default function AddEventRecordingModal() {
   );
 }
 
-const keys = AddEventRecordingLinkInput.keyof().enum;
-
 function AddEventRecordingForm() {
   const { event } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
-      <Form.Field
+    <Form className="form" method="post">
+      <Field
         description="Please add the full URL of the event recording."
         error={errors.recordingLink}
         label="Recording Link"
-        labelFor={keys.recordingLink}
+        labelFor="recordingLink"
         required
       >
         <Input
           defaultValue={event.recordingLink || undefined}
-          id={keys.recordingLink}
-          name={keys.recordingLink}
+          id="recordingLink"
+          name="recordingLink"
           placeholder="https://www.youtube.com/watch?v=..."
           required
         />
-      </Form.Field>
+      </Field>
 
-      <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <ErrorMessage>{error}</ErrorMessage>
 
       <Button.Group>
         <Button type="submit">Add</Button>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

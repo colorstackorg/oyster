@@ -3,12 +3,7 @@ import {
   json,
   type LoaderFunctionArgs,
 } from '@remix-run/node';
-import {
-  Link,
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, Link, useActionData, useLoaderData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { updateMember } from '@oyster/core/member-profile/server';
@@ -70,10 +65,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  await updateMember({
-    data,
-    where: { id: user(session) },
-  });
+  await updateMember(user(session), data);
 
   toast(session, {
     message: 'Updated!',
@@ -104,7 +96,7 @@ export default function UpdateSocialsInformationForm() {
         <ProfileTitle>Socials</ProfileTitle>
       </ProfileHeader>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <InputField
           defaultValue={student.linkedInUrl || undefined}
           error={errors.linkedInUrl}
@@ -157,7 +149,7 @@ export default function UpdateSocialsInformationForm() {
         <Button.Group>
           <Button.Submit>Save</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </ProfileSection>
   );
 }

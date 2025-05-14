@@ -65,6 +65,13 @@ export const EmailTemplate = z.discriminatedUnion('name', [
     }),
   }),
   BaseEmail.extend({
+    name: z.literal('student-anniversary'),
+    data: z.object({
+      firstName: z.string().trim().min(1),
+      years: z.number().int().positive(), // Years in ColorStack
+    }),
+  }),
+  BaseEmail.extend({
     name: z.literal('student-attended-onboarding'),
     data: z.object({
       firstName: Student.shape.firstName,
@@ -77,6 +84,14 @@ export const EmailTemplate = z.discriminatedUnion('name', [
           school: z.string(),
         })
       ),
+    }),
+  }),
+  BaseEmail.extend({
+    name: z.literal('student-graduation'),
+    data: z.object({
+      firstName: z.string().trim().min(1),
+      graduationYear: z.number().int(),
+      memberProfileUrl: z.string().url(),
     }),
   }),
   BaseEmail.extend({

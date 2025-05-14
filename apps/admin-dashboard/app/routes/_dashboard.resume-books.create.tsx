@@ -4,21 +4,21 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData, useFetcher } from '@remix-run/react';
+import { Form, useActionData, useFetcher } from '@remix-run/react';
 import { useEffect } from 'react';
 
-import { createResumeBook } from '@oyster/core/resumes';
-import { CreateResumeBookInput } from '@oyster/core/resumes/types';
+import { createResumeBook } from '@oyster/core/resume-books';
+import { CreateResumeBookInput } from '@oyster/core/resume-books/types';
 import {
   ResumeBookEndDateField,
   ResumeBookHiddenField,
   ResumeBookNameField,
   ResumeBookStartDateField,
-} from '@oyster/core/resumes/ui';
+} from '@oyster/core/resume-books/ui';
 import {
   Button,
   ComboboxPopover,
-  Form,
+  Field,
   getErrors,
   Modal,
   MultiCombobox,
@@ -87,7 +87,7 @@ export default function CreateResumeBookModal() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <ResumeBookNameField error={errors.name} />
         <ResumeBookStartDateField error={errors.startDate} />
         <ResumeBookEndDateField error={errors.endDate} />
@@ -96,7 +96,7 @@ export default function CreateResumeBookModal() {
         <Button.Group>
           <Button.Submit>Create</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }
@@ -112,7 +112,7 @@ function SponsorsField() {
   const companies = fetcher.data?.companies || [];
 
   return (
-    <Form.Field
+    <Field
       description="Please choose all of the companies that are sponsoring this resume book."
       error={errors.sponsors}
       label="Sponsors"
@@ -152,6 +152,6 @@ function SponsorsField() {
           </ul>
         </ComboboxPopover>
       </MultiCombobox>
-    </Form.Field>
+    </Field>
   );
 }

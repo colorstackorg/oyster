@@ -102,13 +102,7 @@ export const Resource = ({
           </Text>
 
           <Tooltip>
-            <TooltipTrigger
-              className={getTextCn({
-                className: 'cursor-auto',
-                color: 'gray-500',
-                variant: 'sm',
-              })}
-            >
+            <TooltipTrigger className="text-sm text-gray-500" cursor="default">
               {postedAt}
             </TooltipTrigger>
             <TooltipContent>
@@ -195,17 +189,29 @@ function ResourceTitle({
 
 function UpvoteResourceButton({
   id,
-  upvoted,
-  upvotes,
+  upvoted: _upvoted,
+  upvotes: _upvotes,
 }: Pick<ResourceProps, 'id' | 'upvoted' | 'upvotes'>) {
   const fetcher = useFetcher();
 
-  const action = upvoted
-    ? `/api/resources/${id}/downvote`
-    : `/api/resources/${id}/upvote`;
+  let upvotes = _upvotes;
+  let upvoted = _upvoted;
+
+  if (fetcher.formData) {
+    upvoted = fetcher.formData.get('upvoted') === '1';
+
+    if (!_upvoted && upvoted) {
+      upvotes += 1;
+    } else if (_upvoted && !upvoted) {
+      upvotes -= 1;
+    }
+  }
 
   return (
-    <fetcher.Form action={action} method="post">
+    <fetcher.Form
+      action={generatePath('/api/resources/:id/upvote', { id })}
+      method="post"
+    >
       <button
         className={cx(
           getTextCn({ color: 'gray-500', variant: 'sm' }),
@@ -214,7 +220,9 @@ function UpvoteResourceButton({
             ? 'border-primary bg-primary text-white'
             : 'hover:border-primary hover:text-primary'
         )}
+        name="upvoted"
         type="submit"
+        value={upvoted ? '0' : '1'}
       >
         <ArrowUp size="16" /> <span>{upvotes}</span>
       </button>

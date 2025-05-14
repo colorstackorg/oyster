@@ -1,6 +1,5 @@
 import { db } from '@oyster/db';
 
-import { job } from '@/infrastructure/bull/use-cases/job';
 import { type DeleteWorkExperienceInput } from '../employment.types';
 
 /**
@@ -18,9 +17,4 @@ export async function deleteWorkExperience({
     .where('id', '=', id)
     .where('studentId', '=', studentId)
     .execute();
-
-  job('gamification.activity.completed.undo', {
-    studentId,
-    type: 'update_work_history',
-  });
 }

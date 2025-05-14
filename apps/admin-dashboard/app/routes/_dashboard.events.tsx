@@ -5,12 +5,11 @@ import {
 } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { useState } from 'react';
 import { Camera, Menu, Plus, RefreshCw, Trash2, Upload } from 'react-feather';
 import { generatePath } from 'react-router';
 
-import { listEvents } from '@oyster/core/admin-dashboard/server';
 import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
+import { listEvents } from '@oyster/core/events';
 import { type Event, EventType } from '@oyster/types';
 import {
   Dashboard,
@@ -105,43 +104,32 @@ export default function EventsPage() {
 }
 
 function EventsMenuDropdown() {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onClick() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Container onClose={onClose}>
-      <IconButton
-        backgroundColor="gray-100"
-        backgroundColorOnHover="gray-200"
-        icon={<Menu />}
-        onClick={onClick}
-        shape="square"
-      />
+    <Dropdown.Root>
+      <Dropdown.Trigger>
+        <IconButton
+          backgroundColor="gray-100"
+          backgroundColorOnHover="gray-200"
+          icon={<Menu />}
+          shape="square"
+        />
+      </Dropdown.Trigger>
 
-      {open && (
-        <Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link to={Route['/events/create']}>
-                <Plus /> Create Event
-              </Link>
-            </Dropdown.Item>
-            <Dropdown.Item>
-              <Link to={Route['/events/sync-airmeet-event']}>
-                <RefreshCw /> Sync Airmeet Event
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Dropdown>
-      )}
-    </Dropdown.Container>
+      <Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Link to={Route['/events/create']}>
+              <Plus /> Create Event
+            </Link>
+          </Dropdown.Item>
+          <Dropdown.Item>
+            <Link to={Route['/events/sync-airmeet-event']}>
+              <RefreshCw /> Sync Airmeet Event
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Dropdown>
+    </Dropdown.Root>
   );
 }
 
@@ -217,50 +205,48 @@ function EventsPagination() {
 }
 
 function EventDropdown({ id, type }: EventInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onOpen() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            {type === EventType.IRL && (
-              <Dropdown.Item>
-                <Link to={generatePath(Route['/events/:id/check-in'], { id })}>
-                  <Camera /> Check-In QR Code
-                </Link>
-              </Dropdown.Item>
-            )}
-            <Dropdown.Item>
-              <Link to={generatePath(Route['/events/:id/import'], { id })}>
-                <Upload /> Import Attendees
-              </Link>
-            </Dropdown.Item>
+    <Dropdown.Root>
+      <Table.Dropdown>
+        <Dropdown.List>
+          {type === EventType.IRL && (
             <Dropdown.Item>
               <Link
-                to={generatePath(Route['/events/:id/add-recording'], { id })}
+                preventScrollReset
+                to={generatePath(Route['/events/:id/check-in'], { id })}
               >
-                <Upload /> Add Recording
+                <Camera /> Check-In QR Code
               </Link>
             </Dropdown.Item>
-            <Dropdown.Item>
-              <Link to={generatePath(Route['/events/:id/delete'], { id })}>
-                <Trash2 /> Delete Event
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
+          )}
+          <Dropdown.Item>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/events/:id/import'], { id })}
+            >
+              <Upload /> Import Attendees
+            </Link>
+          </Dropdown.Item>
+          <Dropdown.Item>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/events/:id/add-recording'], { id })}
+            >
+              <Upload /> Add Recording
+            </Link>
+          </Dropdown.Item>
+          <Dropdown.Item>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/events/:id/delete'], { id })}
+            >
+              <Trash2 /> Delete Event
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Table.Dropdown>
 
-      <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
+      <Table.DropdownOpenButton />
+    </Dropdown.Root>
   );
 }

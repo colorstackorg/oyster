@@ -2,11 +2,15 @@ import { Redis } from 'ioredis';
 
 import { type ExtractValue } from '@oyster/types';
 
-import { ENV } from '@/shared/env';
+// Environment Variables
+
+const REDIS_URL = process.env.REDIS_URL as string;
 
 // Instances
 
-export const redis = new Redis(ENV.REDIS_URL as string);
+export const redis = new Redis(REDIS_URL, {
+  family: 0,
+});
 
 // Types
 
@@ -15,7 +19,6 @@ export const RedisKey = {
   AIRTABLE_CONNECTIONS: 'airtable:connections',
   CRUNCHBASE_CONNECTIONS: 'crunchbase:connections',
   GOOGLE_GEOCODING_CONNECTIONS: 'google:connections:geocoding',
-  MAILCHIMP_CONNECTIONS: 'mailchimp:connections',
   SLACK_DEACTIVATE_CONNECTIONS: 'slack:connections:deactivate',
   SLACK_GET_BIRTHDATES_CONNECTIONS: 'slack:connections:get_birthdates',
   SLACK_GET_MESSAGE_CONNECTIONS: 'slack:connections:get_message',

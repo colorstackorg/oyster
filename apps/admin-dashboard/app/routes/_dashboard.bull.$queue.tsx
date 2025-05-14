@@ -6,15 +6,14 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import {
+  Form,
   Link,
   Outlet,
-  Form as RemixForm,
   useLoaderData,
   useLocation,
   useNavigate,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { useState } from 'react';
 import {
   ArrowUp,
   Copy,
@@ -28,7 +27,7 @@ import { generatePath } from 'react-router';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { listQueueNames } from '@oyster/core/admin-dashboard/server';
+import { listQueueNames } from '@oyster/core/bull';
 import {
   cx,
   Dashboard,
@@ -331,73 +330,63 @@ function QueueSelector() {
 
 function QueueDropdown() {
   const { queue } = useLoaderData<typeof loader>();
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onClick() {
-    setOpen(true);
-  }
 
   return (
-    <Dropdown.Container onClose={onClose}>
-      <IconButton
-        backgroundColor="gray-100"
-        backgroundColorOnHover="gray-200"
-        icon={<Menu />}
-        onClick={onClick}
-        shape="square"
-      />
+    <Dropdown.Root>
+      <Dropdown.Trigger>
+        <IconButton
+          backgroundColor="gray-100"
+          backgroundColorOnHover="gray-200"
+          icon={<Menu />}
+          shape="square"
+        />
+      </Dropdown.Trigger>
 
-      {open && (
-        <Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link
-                to={generatePath(Route['/bull/:queue/jobs/add'], {
-                  queue,
-                })}
+      <Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Link
+              to={generatePath(Route['/bull/:queue/jobs/add'], {
+                queue,
+              })}
+            >
+              <Plus /> Add Job
+            </Link>
+          </Dropdown.Item>
+          <Dropdown.Item>
+            <Link
+              to={generatePath(Route['/bull/:queue/repeatables/add'], {
+                queue,
+              })}
+            >
+              <Repeat /> Add Repeatable
+            </Link>
+          </Dropdown.Item>
+          <Dropdown.Item>
+            <Form method="post">
+              <button
+                name="action"
+                type="submit"
+                value={QueueAction['queue.clean']}
               >
-                <Plus /> Add Job
-              </Link>
-            </Dropdown.Item>
-            <Dropdown.Item>
-              <Link
-                to={generatePath(Route['/bull/:queue/repeatables/add'], {
-                  queue,
-                })}
+                <RefreshCw /> Clean Queue
+              </button>
+            </Form>
+          </Dropdown.Item>
+          <Dropdown.Item>
+            <Form method="post">
+              <button
+                name="action"
+                type="submit"
+                value={QueueAction['queue.obliterate']}
               >
-                <Repeat /> Add Repeatable
-              </Link>
-            </Dropdown.Item>
-            <Dropdown.Item>
-              <RemixForm method="post">
-                <button
-                  name="action"
-                  type="submit"
-                  value={QueueAction['queue.clean']}
-                >
-                  <RefreshCw /> Clean Queue
-                </button>
-              </RemixForm>
-            </Dropdown.Item>
-            <Dropdown.Item>
-              <RemixForm method="post">
-                <button
-                  name="action"
-                  type="submit"
-                  value={QueueAction['queue.obliterate']}
-                >
-                  <Trash2 /> Obliterate Queue
-                </button>
-              </RemixForm>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Dropdown>
-      )}
-    </Dropdown.Container>
+                <Trash2 /> Obliterate Queue
+              </button>
+            </Form>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Dropdown>
+    </Dropdown.Root>
   );
 }
 
@@ -448,40 +437,28 @@ function RepeatablesTable() {
 }
 
 function RepeatableDropdown({ id }: RepeatableInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onOpen() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <RemixForm method="post">
-                <button
-                  name="action"
-                  type="submit"
-                  value={QueueAction['repeatable.remove']}
-                >
-                  <Trash2 /> Remove Repeatable
-                </button>
+    <Dropdown.Root>
+      <Table.Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Form method="post">
+              <button
+                name="action"
+                type="submit"
+                value={QueueAction['repeatable.remove']}
+              >
+                <Trash2 /> Remove Repeatable
+              </button>
 
-                <input type="hidden" name="key" value={id} />
-              </RemixForm>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
+              <input type="hidden" name="key" value={id} />
+            </Form>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Table.Dropdown>
 
-      <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
+      <Table.DropdownOpenButton />
+    </Dropdown.Root>
   );
 }
 
@@ -603,86 +580,74 @@ function JobsTable() {
 }
 
 function JobDropdown({ id, status }: JobInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onOpen() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            {status === 'failed' && (
-              <Dropdown.Item>
-                <RemixForm method="post">
-                  <button
-                    name="action"
-                    type="submit"
-                    value={QueueAction['job.retry']}
-                  >
-                    <RefreshCw /> Retry Job
-                  </button>
-
-                  <input type="hidden" name="id" value={id} />
-                </RemixForm>
-              </Dropdown.Item>
-            )}
-
+    <Dropdown.Root>
+      <Table.Dropdown>
+        <Dropdown.List>
+          {status === 'failed' && (
             <Dropdown.Item>
-              <RemixForm method="post">
+              <Form method="post">
                 <button
                   name="action"
                   type="submit"
-                  value={QueueAction['job.duplicate']}
+                  value={QueueAction['job.retry']}
                 >
-                  <Copy /> Duplicate Job
+                  <RefreshCw /> Retry Job
                 </button>
 
                 <input type="hidden" name="id" value={id} />
-              </RemixForm>
+              </Form>
             </Dropdown.Item>
+          )}
 
-            {(status === 'delayed' || status === 'waiting') && (
-              <Dropdown.Item>
-                <RemixForm method="post">
-                  <button
-                    name="action"
-                    type="submit"
-                    value={QueueAction['job.promote']}
-                  >
-                    <ArrowUp /> Promote Job
-                  </button>
+          <Dropdown.Item>
+            <Form method="post">
+              <button
+                name="action"
+                type="submit"
+                value={QueueAction['job.duplicate']}
+              >
+                <Copy /> Duplicate Job
+              </button>
 
-                  <input type="hidden" name="id" value={id} />
-                </RemixForm>
-              </Dropdown.Item>
-            )}
+              <input type="hidden" name="id" value={id} />
+            </Form>
+          </Dropdown.Item>
 
+          {(status === 'delayed' || status === 'waiting') && (
             <Dropdown.Item>
-              <RemixForm method="post">
+              <Form method="post">
                 <button
                   name="action"
                   type="submit"
-                  value={QueueAction['job.remove']}
+                  value={QueueAction['job.promote']}
                 >
-                  <Trash2 /> Remove Job
+                  <ArrowUp /> Promote Job
                 </button>
 
                 <input type="hidden" name="id" value={id} />
-              </RemixForm>
+              </Form>
             </Dropdown.Item>
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
+          )}
 
-      <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
+          <Dropdown.Item>
+            <Form method="post">
+              <button
+                name="action"
+                type="submit"
+                value={QueueAction['job.remove']}
+              >
+                <Trash2 /> Remove Job
+              </button>
+
+              <input type="hidden" name="id" value={id} />
+            </Form>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Table.Dropdown>
+
+      <Table.DropdownOpenButton />
+    </Dropdown.Root>
   );
 }
 

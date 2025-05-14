@@ -1,23 +1,14 @@
 export { Application } from './domain/application';
 export {
-  EmailCampaign,
-  EmailCampaignClick,
-  EmailCampaignLink,
-  EmailCampaignOpen,
-  EmailList,
-  EmailMarketingPlatform,
-} from './domain/email-marketing';
-export {
   Event,
   EventAttendee,
   EventRegistration,
   EventType,
 } from './domain/event';
 export { ProfileView } from './domain/profile-view';
-export { Program, ProgramParticipant } from './domain/program';
-export { Resource, ResourceStatus, ResourceUser } from './domain/resource';
 export {
   ActivationRequirement,
+  ACTIVATION_REQUIREMENTS,
   MemberEthnicity,
   MemberType,
   Student,

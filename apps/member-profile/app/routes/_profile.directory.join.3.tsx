@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { updateMember } from '@oyster/core/member-profile/server';
@@ -65,10 +61,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  await updateMember({
-    data,
-    where: { id: user(session) },
-  });
+  await updateMember(user(session), data);
 
   return redirect(Route['/directory/join/4']);
 }
@@ -80,7 +73,7 @@ export default function UpdateSocialsInformationForm() {
   const { errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
+    <Form className="form" method="post">
       <InputField
         defaultValue={student.linkedInUrl || undefined}
         error={errors.linkedInUrl}
@@ -123,6 +116,6 @@ export default function UpdateSocialsInformationForm() {
         <JoinDirectoryBackButton to={Route['/directory/join/2']} />
         <JoinDirectoryNextButton>Next</JoinDirectoryNextButton>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }

@@ -9,6 +9,7 @@
     "./filter": "./src/components/filter.tsx",
     "./index.css": "./src/index.css",
     "./progress": "./src/components/progress.tsx",
+    "./select": "./src/components/select.v2.tsx",
     "./tooltip": "./src/components/tooltip.tsx"
   },
   "license": "MIT",
@@ -18,7 +19,10 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@radix-ui/react-portal": "^1.1.4",
     "@radix-ui/react-progress": "^1.1.0",
+    "@radix-ui/react-select": "^2.1.2",
+    "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.0.7"
   },
   "devDependencies": {

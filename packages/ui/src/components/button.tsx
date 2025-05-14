@@ -1,9 +1,10 @@
+import { Slot } from '@radix-ui/react-slot';
 import { useNavigation } from '@remix-run/react';
 import React, { type PropsWithChildren } from 'react';
 import { match } from 'ts-pattern';
 
 import { Spinner } from './spinner';
-import { cx } from '../utils/cx';
+import { type ClassName, cx } from '../utils/cx';
 
 type ButtonProps = Pick<
   React.HTMLProps<HTMLButtonElement>,
@@ -11,7 +12,7 @@ type ButtonProps = Pick<
 > & {
   color?: 'error' | 'primary' | 'success';
   fill?: boolean;
-  size?: 'regular' | 'small' | 'xs';
+  size?: 'md' | 'sm';
   submitting?: boolean;
   variant?: 'primary' | 'secondary';
 };
@@ -41,6 +42,30 @@ export const Button = ({
   );
 };
 
+type ButtonSlotProps = Pick<
+  ButtonProps,
+  'children' | 'color' | 'fill' | 'size' | 'variant'
+> & {
+  className?: ClassName;
+};
+
+Button.Slot = function ButtonSlot({
+  children,
+  className,
+  color,
+  fill,
+  size,
+  variant,
+}: ButtonSlotProps) {
+  return (
+    <Slot
+      className={cx(getButtonCn({ color, fill, size, variant }), className)}
+    >
+      {children}
+    </Slot>
+  );
+};
+
 Button.Submit = function SubmitButton(
   props: Omit<ButtonProps, 'loading' | 'type'>
 ) {
@@ -59,15 +84,15 @@ Button.Submit = function SubmitButton(
   );
 };
 
-export function getButtonCn({
+function getButtonCn({
   color = 'primary',
   fill = false,
-  size = 'regular',
+  size = 'md',
   variant = 'primary',
 }: Pick<ButtonProps, 'color' | 'fill' | 'size' | 'variant'>) {
   return cx(
     'flex items-center justify-center gap-2 rounded-full border border-solid',
-    'hover:opacity-80',
+    'hover:opacity-80 active:opacity-70',
     'transition-opacity',
     'disabled:opacity-50',
 
@@ -83,9 +108,8 @@ export function getButtonCn({
       .exhaustive(),
 
     match(size)
-      .with('regular', () => 'px-4 py-3')
-      .with('small', () => 'px-3 py-2')
-      .with('xs', () => 'px-2 py-1 text-sm')
+      .with('md', () => 'px-3 py-2')
+      .with('sm', () => 'px-2 py-1 text-sm')
       .exhaustive(),
 
     match(variant)

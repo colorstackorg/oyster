@@ -6,26 +6,24 @@ import { Text } from './text';
 import { cx } from '../utils/cx';
 import { zodErrorMap } from '../utils/zod';
 
-export const Form = () => {};
-
-Form.ErrorMessage = function FormErrorMessage({ children }: PropsWithChildren) {
+export function ErrorMessage({ children }: PropsWithChildren) {
   return children ? (
     <Text className="whitespace-pre-wrap" color="error">
       {children}
     </Text>
   ) : null;
-};
+}
 
 type FormFieldProps = {
   children: React.ReactNode;
   description?: string | React.ReactElement;
-  error?: string | null;
+  error?: string | React.ReactElement | null;
   label?: string;
   labelFor?: string;
   required?: boolean;
 };
 
-Form.Field = function FormField({
+export function Field({
   children,
   description,
   error,
@@ -65,7 +63,7 @@ Form.Field = function FormField({
       {error && <p className="mt-2 text-red-600">{error}</p>}
     </div>
   );
-};
+}
 
 // Common Fields
 
@@ -74,7 +72,7 @@ type InputFieldProps = FieldProps<string> &
   Pick<InputProps, 'disabled' | 'placeholder'>;
 
 /**
- * @deprecated Instead, just compose the `Form.Field` and `Input` together.
+ * @deprecated Instead, just compose the `Field` and `Input` together.
  */
 export function InputField({
   defaultValue,
@@ -87,7 +85,7 @@ export function InputField({
   required,
 }: InputFieldProps) {
   return (
-    <Form.Field
+    <Field
       description={description}
       error={error}
       label={label}
@@ -102,7 +100,7 @@ export function InputField({
         placeholder={placeholder}
         required={required}
       />
-    </Form.Field>
+    </Field>
   );
 }
 
@@ -187,12 +185,8 @@ export async function validateForm<T extends z.AnyZodObject>(
 
 // Type Utilities
 
-export type DescriptionProps = {
-  description?: string | React.ReactElement;
-};
-
 export type FieldProps<T> = {
   defaultValue?: T;
-  error?: string;
+  error?: string | React.ReactElement;
   name: string;
 };

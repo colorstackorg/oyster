@@ -4,8 +4,8 @@ import { FORMATTED_GENDER, type Gender } from '@oyster/types';
 import {
   Checkbox,
   DatePicker,
+  Field,
   type FieldProps,
-  Form,
   Select,
 } from '@oyster/ui';
 
@@ -17,7 +17,7 @@ export function BirthdateNotificationField({
   name,
 }: FieldProps<boolean>) {
   return (
-    <Form.Field error={error}>
+    <Field error={error}>
       <Checkbox
         color="gold-100"
         defaultChecked={defaultValue}
@@ -25,7 +25,7 @@ export function BirthdateNotificationField({
         name={name}
         value="1"
       />
-    </Form.Field>
+    </Field>
   );
 }
 
@@ -35,7 +35,7 @@ export function BirthdateField({
   name,
 }: FieldProps<string>) {
   return (
-    <Form.Field
+    <Field
       description="We'll wish you a happy birthday in the #birthdays Slack channel!"
       error={error}
       label="Birthdate"
@@ -47,17 +47,29 @@ export function BirthdateField({
         name={name}
         type="date"
       />
-    </Form.Field>
+    </Field>
   );
 }
 
+type EthnicityFieldProps = FieldProps<
+  Pick<Country, 'code' | 'demonym' | 'flagEmoji'>[]
+> & {
+  description?: string;
+};
+
 export function EthnicityField({
   defaultValue = [],
+  description,
   error,
   name,
-}: FieldProps<Pick<Country, 'code' | 'demonym' | 'flagEmoji'>[]>) {
+}: EthnicityFieldProps) {
   return (
-    <Form.Field error={error} labelFor={name} label="Ethnicity">
+    <Field
+      description={description}
+      error={error}
+      labelFor={name}
+      label="Ethnicity"
+    >
       <EthnicityMultiCombobox
         defaultValues={defaultValue.map((ethnicity) => {
           return {
@@ -67,7 +79,7 @@ export function EthnicityField({
         })}
         name={name}
       />
-    </Form.Field>
+    </Field>
   );
 }
 
@@ -82,7 +94,7 @@ const GENDERS_IN_ORDER: Gender[] = [
 
 export function GenderField({ defaultValue, error, name }: FieldProps<string>) {
   return (
-    <Form.Field error={error} label="Gender" labelFor={name} required>
+    <Field error={error} label="Gender" labelFor={name} required>
       <Select defaultValue={defaultValue} id={name} name={name} required>
         {GENDERS_IN_ORDER.map((value) => {
           return (
@@ -92,9 +104,12 @@ export function GenderField({ defaultValue, error, name }: FieldProps<string>) {
           );
         })}
       </Select>
-    </Form.Field>
+    </Field>
   );
 }
+
+type HometownFieldProps = FieldProps<string> &
+  CityComboboxProps & { description?: string };
 
 export function HometownField({
   defaultValue,
@@ -105,15 +120,15 @@ export function HometownField({
   latitudeName,
   longitudeName,
   name,
-}: FieldProps<string> &
-  Omit<CityComboboxProps, 'required'> & { description?: string }) {
+  required,
+}: HometownFieldProps) {
   return (
-    <Form.Field
+    <Field
       description={description}
       error={error}
       labelFor={name}
       label="Hometown"
-      required
+      required={required}
     >
       <CityCombobox
         defaultLatitude={defaultLatitude}
@@ -122,8 +137,8 @@ export function HometownField({
         name={name}
         latitudeName={latitudeName}
         longitudeName={longitudeName}
-        required
+        required={required}
       />
-    </Form.Field>
+    </Field>
   );
 }

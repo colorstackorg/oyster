@@ -4,12 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Link,
-  Form as RemixForm,
-  useLoaderData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form, Link, useLoaderData, useNavigation } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren, useState } from 'react';
 import { ChevronDown, Info } from 'react-feather';
@@ -29,7 +24,7 @@ import {
   type OtherDemographic,
   type Race,
 } from '@oyster/types';
-import { Button, Dropdown, Form, Select, Text } from '@oyster/ui';
+import { Button, Dropdown, Field, Select, Text } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';
@@ -55,6 +50,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'applications.firstName',
       'applications.gender',
       'applications.goals',
+      'applications.graduationMonth',
       'applications.graduationYear',
       'applications.lastName',
       'applications.linkedInUrl',
@@ -141,6 +137,7 @@ const ApplyFormData = ApplicationType.pick({
   firstName: true,
   gender: true,
   goals: true,
+  graduationMonth: true,
   graduationYear: true,
   lastName: true,
   linkedInUrl: true,
@@ -196,7 +193,7 @@ export default function ApplicationPage() {
         </div>
 
         {application.status === 'pending' && (
-          <RemixForm method="post">
+          <Form method="post">
             <Button.Group>
               <Button
                 color="success"
@@ -210,7 +207,7 @@ export default function ApplicationPage() {
 
               <RejectDropdown />
             </Button.Group>
-          </RemixForm>
+          </Form>
         )}
       </header>
 
@@ -250,64 +247,56 @@ export default function ApplicationPage() {
 }
 
 function RejectDropdown() {
-  const [open, setOpen] = useState<boolean>(false);
-
   const { formData, state } = useNavigation();
 
   const submitting =
     state === 'submitting' && formData?.get('action') === 'reject';
 
   return (
-    <Dropdown.Container onClose={() => setOpen(false)}>
-      <Button
-        color="error"
-        onClick={() => setOpen(true)}
-        type="button"
-        variant="secondary"
-      >
-        Reject <ChevronDown size={16} />
-      </Button>
+    <Dropdown.Root>
+      <Dropdown.Trigger>
+        <Button color="error" type="button" variant="secondary">
+          Reject <ChevronDown size={16} />
+        </Button>
+      </Dropdown.Trigger>
 
-      {open && (
-        <Dropdown className="p-2">
-          <RemixForm className="form" method="post">
-            <Form.Field
-              description="Select a reason for rejecting this application."
-              label="Rejection Reason"
-              required
-            >
-              <Select id="reason" name="reason" required>
-                <option value={ApplicationRejectionReason.BAD_LINKEDIN}>
-                  Incorrect or suspicious LinkedIn
-                </option>
-                <option value={ApplicationRejectionReason.IS_INTERNATIONAL}>
-                  Not enrolled in US or Canada
-                </option>
-                <option value={ApplicationRejectionReason.INELIGIBLE_MAJOR}>
-                  Not the right major
-                </option>
-                <option value={ApplicationRejectionReason.NOT_UNDERGRADUATE}>
-                  Not an undergrad student
-                </option>
-                <option value={ApplicationRejectionReason.OTHER}>Other</option>
-              </Select>
-            </Form.Field>
+      <Dropdown className="p-2">
+        <Form className="form" method="post">
+          <Field
+            description="Select a reason for rejecting this application."
+            label="Rejection Reason"
+            required
+          >
+            <Select id="reason" name="reason" required>
+              <option value={ApplicationRejectionReason.BAD_LINKEDIN}>
+                Incorrect or suspicious LinkedIn
+              </option>
+              <option value={ApplicationRejectionReason.IS_INTERNATIONAL}>
+                Not enrolled in US or Canada
+              </option>
+              <option value={ApplicationRejectionReason.INELIGIBLE_MAJOR}>
+                Not the right major
+              </option>
+              <option value={ApplicationRejectionReason.NOT_UNDERGRADUATE}>
+                Not an undergrad student
+              </option>
+              <option value={ApplicationRejectionReason.OTHER}>Other</option>
+            </Select>
+          </Field>
 
-            <Button
-              color="error"
-              fill
-              name="action"
-              size="small"
-              submitting={submitting}
-              type="submit"
-              value="reject"
-            >
-              Reject
-            </Button>
-          </RemixForm>
-        </Dropdown>
-      )}
-    </Dropdown.Container>
+          <Button
+            color="error"
+            fill
+            name="action"
+            submitting={submitting}
+            type="submit"
+            value="reject"
+          >
+            Reject
+          </Button>
+        </Form>
+      </Dropdown>
+    </Dropdown.Root>
   );
 }
 
@@ -367,9 +356,15 @@ function ApplicationFieldGroup({
         name={keys.educationLevel}
       />
 
-      <Application.GraduationYearField
-        defaultValue={application.graduationYear}
-        name={keys.graduationYear}
+      <Application.GraduationDateField
+        month={{
+          defaultValue: application.graduationMonth || undefined,
+          name: keys.graduationMonth,
+        }}
+        year={{
+          defaultValue: application.graduationYear,
+          name: keys.graduationYear,
+        }}
       />
 
       <Application.RaceField
@@ -389,14 +384,14 @@ function ApplicationFieldGroup({
         name={keys.otherDemographics}
       />
 
-      <Application.GoalsField
-        defaultValue={application.goals}
-        name={keys.goals}
-      />
-
       <Application.ContributionField
         defaultValue={application.contribution}
         name={keys.contribution}
+      />
+
+      <Application.GoalsField
+        defaultValue={application.goals}
+        name={keys.goals}
       />
     </Application>
   ) : (
@@ -428,9 +423,15 @@ function ApplicationFieldGroup({
         name={keys.educationLevel}
       />
 
-      <Application.GraduationYearField
-        defaultValue={application.graduationYear}
-        name={keys.graduationYear}
+      <Application.GraduationDateField
+        month={{
+          defaultValue: application.graduationMonth || undefined,
+          name: keys.graduationMonth,
+        }}
+        year={{
+          defaultValue: application.graduationYear,
+          name: keys.graduationYear,
+        }}
       />
 
       <Application.RaceField

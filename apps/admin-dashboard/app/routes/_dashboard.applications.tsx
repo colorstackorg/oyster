@@ -4,14 +4,13 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import {
+  Form,
   Link,
   Outlet,
-  Form as RemixForm,
   useLoaderData,
   useLocation,
   useSubmit,
 } from '@remix-run/react';
-import { useState } from 'react';
 import { Edit } from 'react-feather';
 import { generatePath } from 'react-router';
 import { match } from 'ts-pattern';
@@ -94,7 +93,7 @@ function FilterApplicationsForm() {
   const [searchParams] = useSearchParams(ApplicationsSearchParams);
 
   return (
-    <RemixForm
+    <Form
       className="flex w-full items-center"
       method="get"
       onChange={(e) => submit(e.currentTarget)}
@@ -125,7 +124,7 @@ function FilterApplicationsForm() {
           })}
         </Select>
       </div>
-    </RemixForm>
+    </Form>
   );
 }
 
@@ -249,58 +248,48 @@ function ApplicationsPagination() {
 }
 
 function ApplicationDropdown({ id }: ApplicationInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
   const { search } = useLocation();
 
   const [searchParams] = useSearchParams(ApplicationsSearchParams);
 
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onOpen() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            {searchParams.status === 'pending' && (
-              <Dropdown.Item>
-                <Link
-                  to={{
-                    pathname: generatePath(Route['/applications/:id/email'], {
-                      id,
-                    }),
-                    search,
-                  }}
-                >
-                  <Edit /> Update Email
-                </Link>
-              </Dropdown.Item>
-            )}
-            {searchParams.status === 'rejected' && (
-              <Dropdown.Item>
-                <Link
-                  to={{
-                    pathname: generatePath(Route['/applications/:id/accept'], {
-                      id,
-                    }),
-                    search,
-                  }}
-                >
-                  <Edit /> Accept Application
-                </Link>
-              </Dropdown.Item>
-            )}
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
+    <Dropdown.Root>
+      <Table.Dropdown>
+        <Dropdown.List>
+          {searchParams.status === 'pending' && (
+            <Dropdown.Item>
+              <Link
+                preventScrollReset
+                to={{
+                  pathname: generatePath(Route['/applications/:id/email'], {
+                    id,
+                  }),
+                  search,
+                }}
+              >
+                <Edit /> Update Email
+              </Link>
+            </Dropdown.Item>
+          )}
+          {searchParams.status === 'rejected' && (
+            <Dropdown.Item>
+              <Link
+                preventScrollReset
+                to={{
+                  pathname: generatePath(Route['/applications/:id/accept'], {
+                    id,
+                  }),
+                  search,
+                }}
+              >
+                <Edit /> Accept Application
+              </Link>
+            </Dropdown.Item>
+          )}
+        </Dropdown.List>
+      </Table.Dropdown>
 
-      <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
+      <Table.DropdownOpenButton />
+    </Dropdown.Root>
   );
 }

@@ -4,15 +4,14 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
-import { useState } from 'react';
 import { Edit, Plus, Trash } from 'react-feather';
 import { generatePath } from 'react-router';
 
 import { listFeatureFlags } from '@oyster/core/admin-dashboard/server';
 import {
+  Button,
   Dashboard,
   Dropdown,
-  getButtonCn,
   Pill,
   Table,
   type TableColumnProps,
@@ -39,9 +38,11 @@ export default function FeatureFlagsPage() {
       <div className="flex items-center justify-between gap-4">
         <Dashboard.Title>Feature Flags</Dashboard.Title>
 
-        <Link className={getButtonCn({})} to={Route['/feature-flags/create']}>
-          <Plus size={16} /> Create Flag
-        </Link>
+        <Button.Slot>
+          <Link to={Route['/feature-flags/create']}>
+            <Plus size={16} /> Create Flag
+          </Link>
+        </Button.Slot>
       </div>
 
       <FeatureFlagsTable />
@@ -106,38 +107,30 @@ function FeatureFlagsTable() {
 }
 
 function FeatureFlagsTableDropdown({ id }: FeatureFlagInView) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onOpen() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Container onClose={onClose}>
-      {open && (
-        <Table.Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link to={generatePath(Route['/feature-flags/:id/edit'], { id })}>
-                <Edit /> Edit Flag
-              </Link>
-            </Dropdown.Item>
-            <Dropdown.Item>
-              <Link
-                to={generatePath(Route['/feature-flags/:id/delete'], { id })}
-              >
-                <Trash /> Delete Flag
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Table.Dropdown>
-      )}
+    <Dropdown.Root>
+      <Table.Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/feature-flags/:id/edit'], { id })}
+            >
+              <Edit /> Edit Flag
+            </Link>
+          </Dropdown.Item>
+          <Dropdown.Item>
+            <Link
+              preventScrollReset
+              to={generatePath(Route['/feature-flags/:id/delete'], { id })}
+            >
+              <Trash /> Delete Flag
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Table.Dropdown>
 
-      <Table.DropdownOpenButton onClick={onOpen} />
-    </Dropdown.Container>
+      <Table.DropdownOpenButton />
+    </Dropdown.Root>
   );
 }

@@ -1,5 +1,4 @@
 import { Link } from '@remix-run/react';
-import { useState } from 'react';
 import { Check, Edit, MoreVertical, Plus } from 'react-feather';
 
 import { Dropdown, IconButton, Text } from '@oyster/ui';
@@ -58,7 +57,7 @@ export function WorkExperienceItem({
 
             {!!rest.showOptions && (
               <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger cursor="default">
                   <Check
                     className="text-gray-300 data-[reviewed=true]:text-success"
                     data-reviewed={!!rest.hasReviewed}
@@ -120,48 +119,34 @@ function WorkExperienceDropdown({
   hasReviewed,
   reviewTo,
 }: WorkExperienceMenuProps) {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onClick() {
-    setOpen(true);
-  }
-
   return (
-    <Dropdown.Container onClose={onClose}>
-      <IconButton
-        backgroundColorOnHover="gray-100"
-        icon={<MoreVertical />}
-        onClick={onClick}
-      />
+    <Dropdown.Root>
+      <Dropdown.Trigger>
+        <IconButton backgroundColorOnHover="gray-100" icon={<MoreVertical />} />
+      </Dropdown.Trigger>
 
-      {open && (
-        <Dropdown>
-          <Dropdown.List>
-            <Dropdown.Item>
-              <Link to={editTo}>
-                <Edit /> Edit Experience
-              </Link>
-            </Dropdown.Item>
-            <Dropdown.Item>
-              <Link to={reviewTo}>
-                {hasReviewed ? (
-                  <>
-                    <Edit /> Edit Review
-                  </>
-                ) : (
-                  <>
-                    <Plus /> Add Review
-                  </>
-                )}
-              </Link>
-            </Dropdown.Item>
-          </Dropdown.List>
-        </Dropdown>
-      )}
-    </Dropdown.Container>
+      <Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Link to={editTo}>
+              <Edit /> Edit Experience
+            </Link>
+          </Dropdown.Item>
+          <Dropdown.Item>
+            <Link to={reviewTo}>
+              {hasReviewed ? (
+                <>
+                  <Edit /> Edit Review
+                </>
+              ) : (
+                <>
+                  <Plus /> Add Review
+                </>
+              )}
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Dropdown>
+    </Dropdown.Root>
   );
 }

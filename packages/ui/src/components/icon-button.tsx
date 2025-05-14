@@ -1,7 +1,8 @@
+import { Root as Slot } from '@radix-ui/react-slot';
 import React from 'react';
 import { match } from 'ts-pattern';
 
-import { cx } from '../utils/cx';
+import { type ClassName, cx } from '../utils/cx';
 
 type IconButtonProps = Pick<
   React.HTMLProps<HTMLButtonElement>,
@@ -15,38 +16,89 @@ type IconButtonProps = Pick<
   type?: 'button' | 'submit';
 };
 
-export function IconButton({
-  backgroundColor,
-  backgroundColorOnHover,
-  className,
-  disabled,
-  icon,
-  label = 'Icon Button',
-  shape = 'circle',
-  size = 'md',
-  type = 'button',
-  ...rest
-}: IconButtonProps) {
-  return (
-    <button
-      aria-label={label}
-      className={cx(
-        getIconButtonCn({
-          backgroundColor,
-          backgroundColorOnHover,
-          shape,
-          size,
-        }),
-        className
-      )}
-      disabled={!!disabled}
-      type={type}
-      {...rest}
-    >
-      {icon}
-    </button>
-  );
-}
+type IconButtonComponent = React.ForwardRefExoticComponent<IconButtonProps> & {
+  Slot: React.FC<IconButtonSlotProps>;
+};
+
+export const IconButton = React.forwardRef(
+  (
+    {
+      backgroundColor,
+      backgroundColorOnHover,
+      className,
+      disabled,
+      icon,
+      label = 'Icon Button',
+      shape = 'circle',
+      size = 'md',
+      type = 'button',
+      ...rest
+    }: IconButtonProps,
+    ref: React.Ref<HTMLButtonElement>
+  ) => {
+    return (
+      <button
+        aria-label={label}
+        className={cx(
+          getIconButtonCn({
+            backgroundColor,
+            backgroundColorOnHover,
+            shape,
+            size,
+          }),
+          className
+        )}
+        disabled={!!disabled}
+        ref={ref}
+        type={type}
+        {...rest}
+      >
+        {icon}
+      </button>
+    );
+  }
+) as IconButtonComponent;
+
+type IconButtonSlotProps = Pick<
+  IconButtonProps,
+  'backgroundColor' | 'backgroundColorOnHover' | 'shape' | 'size'
+> & {
+  children: React.ReactNode;
+  className?: ClassName;
+};
+
+IconButton.Slot = React.forwardRef(
+  (
+    {
+      backgroundColor,
+      backgroundColorOnHover,
+      children,
+      className,
+      shape,
+      size,
+      ...rest
+    }: IconButtonSlotProps,
+    ref: React.Ref<HTMLButtonElement>
+  ) => {
+    return (
+      <Slot
+        className={cx(
+          getIconButtonCn({
+            backgroundColor,
+            backgroundColorOnHover,
+            shape,
+            size,
+          }),
+          className
+        )}
+        ref={ref}
+        {...rest}
+      >
+        {children}
+      </Slot>
+    );
+  }
+);
 
 export function getIconButtonCn({
   backgroundColor,
@@ -59,6 +111,7 @@ export function getIconButtonCn({
 >) {
   return cx(
     'flex h-fit w-fit cursor-pointer items-center justify-center',
+    'disabled:cursor-not-allowed disabled:opacity-50',
 
     match(backgroundColor)
       .with('gray-100', () => 'bg-gray-100')

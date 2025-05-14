@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
@@ -25,7 +21,7 @@ import {
 import { db } from '@oyster/db';
 import {
   Button,
-  Form,
+  Field,
   getErrors,
   Select,
   Textarea,
@@ -123,7 +119,7 @@ export default function UpsertIcebreakerResponsesForm() {
   const { icebreakerResponses } = useLoaderData<typeof loader>();
 
   return (
-    <RemixForm className="form" method="post">
+    <Form className="form" method="post">
       <IcebreakersProvider icebreakerResponses={icebreakerResponses}>
         <IcebreakerGroup number="1" />
         <IcebreakerGroup number="2" />
@@ -134,7 +130,7 @@ export default function UpsertIcebreakerResponsesForm() {
         <JoinDirectoryBackButton to={Route['/directory/join/3']} />
         <JoinDirectoryNextButton>Finish</JoinDirectoryNextButton>
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }
 
@@ -179,7 +175,7 @@ function IcebreakerGroup({ number }: IcebreakerGroupProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <Form.Field
+      <Field
         error={errors[promptName]}
         label={label}
         labelFor={promptName}
@@ -202,9 +198,9 @@ function IcebreakerGroup({ number }: IcebreakerGroupProps) {
             );
           })}
         </Select>
-      </Form.Field>
+      </Field>
 
-      <Form.Field error={errors[responseName]} labelFor={responseName} required>
+      <Field error={errors[responseName]} labelFor={responseName} required>
         <Textarea
           defaultValue={response?.text || undefined}
           id={responseName}
@@ -214,7 +210,7 @@ function IcebreakerGroup({ number }: IcebreakerGroupProps) {
           placeholder="Maximum of 280 characters..."
           required
         />
-      </Form.Field>
+      </Field>
     </div>
   );
 }

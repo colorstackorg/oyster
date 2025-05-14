@@ -2,7 +2,7 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import QRCode from 'qrcode';
 
-import { getEvent } from '@oyster/core/admin-dashboard/server';
+import { getEvent } from '@oyster/core/events';
 import { Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';

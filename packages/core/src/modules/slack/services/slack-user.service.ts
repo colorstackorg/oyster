@@ -1,5 +1,5 @@
 import { slack } from '@/modules/slack/instances';
-import { ENV } from '@/shared/env';
+import { SLACK_ADMIN_TOKEN } from '@/shared/env';
 
 /**
  * @see https://api.slack.com/methods/users.lookupByEmail
@@ -31,7 +31,7 @@ export async function getSlackUserByEmail(email: string) {
 export async function updateSlackEmail(id: string, email: string) {
   await slack.users.profile.set({
     profile: JSON.stringify({ email }),
-    token: ENV.SLACK_ADMIN_TOKEN,
+    token: SLACK_ADMIN_TOKEN,
     user: id,
   });
 }

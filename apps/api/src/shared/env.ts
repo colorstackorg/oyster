@@ -21,6 +21,7 @@ const BaseEnvironmentConfig = z.object({
   AIRTABLE_MEMBERS_TABLE_ID: EnvironmentVariable,
   ANTHROPIC_API_KEY: EnvironmentVariable,
   API_URL: EnvironmentVariable,
+  BROWSER_WS_ENDPOINT: EnvironmentVariable,
   COHERE_API_KEY: EnvironmentVariable,
   CRUNCHBASE_BASIC_API_KEY: EnvironmentVariable,
   DATABASE_URL: EnvironmentVariable,
@@ -57,6 +58,9 @@ const BaseEnvironmentConfig = z.object({
   SLACK_INTRODUCTIONS_CHANNEL_ID: EnvironmentVariable,
   SLACK_SIGNING_SECRET: EnvironmentVariable,
   STUDENT_PROFILE_URL: EnvironmentVariable,
+  TWILIO_ACCOUNT_SID: EnvironmentVariable,
+  TWILIO_AUTH_TOKEN: EnvironmentVariable,
+  TWILIO_PHONE_NUMBER: EnvironmentVariable,
 });
 
 const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
@@ -68,6 +72,7 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     AIRTABLE_FAMILY_BASE_ID: true,
     AIRTABLE_MEMBERS_TABLE_ID: true,
     ANTHROPIC_API_KEY: true,
+    BROWSER_WS_ENDPOINT: true,
     COHERE_API_KEY: true,
     CRUNCHBASE_BASIC_API_KEY: true,
     GOOGLE_CLIENT_ID: true,
@@ -98,6 +103,9 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     SLACK_FEED_CHANNEL_ID: true,
     SLACK_INTRODUCTIONS_CHANNEL_ID: true,
     SLACK_SIGNING_SECRET: true,
+    TWILIO_ACCOUNT_SID: true,
+    TWILIO_AUTH_TOKEN: true,
+    TWILIO_PHONE_NUMBER: true,
   }).extend({
     ENVIRONMENT: z.literal(Environment.DEVELOPMENT),
     SMTP_HOST: EnvironmentVariable.optional(),

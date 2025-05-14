@@ -6,6 +6,8 @@ export { PrimaryEmailChangedEmail } from '../emails/primary-email-changed';
 export { ReferralAcceptedEmail } from '../emails/referral-accepted';
 export { ReferralSentEmail } from '../emails/referral-sent';
 export { ResumeSubmittedEmail } from '../emails/resume-submitted';
+export { StudentAnniversaryEmail } from '../emails/student-anniversary';
+export { StudentGraduationEmail } from '../emails/student-graduation';
 export { StudentAttendedOnboardingEmail } from '../emails/student-attended-onboarding';
 export { StudentRemovedEmail } from '../emails/student-removed';
 export { EmailTemplate } from './types';

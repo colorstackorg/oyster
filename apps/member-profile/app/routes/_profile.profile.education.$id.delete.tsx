@@ -4,16 +4,12 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-} from '@remix-run/react';
+import { Form, useActionData, useNavigate } from '@remix-run/react';
 
 import { deleteEducation } from '@oyster/core/member-profile/server';
 import { type Education } from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
-import { Button, Form, Modal } from '@oyster/ui';
+import { Button, ErrorMessage, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -95,8 +91,8 @@ export default function DeleteEducationPage() {
         Are you sure you want to delete this education?
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <Form className="form" method="post">
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group flexDirection="row-reverse">
           <Button color="error" type="submit" variant="secondary">
@@ -107,7 +103,7 @@ export default function DeleteEducationPage() {
             Back
           </Button>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

@@ -9,7 +9,9 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
-  Form as RemixForm,
+  Form,
+  generatePath,
+  Link,
   useActionData,
   useLoaderData,
   useSearchParams,
@@ -20,7 +22,7 @@ import { getResource, updateResource } from '@oyster/core/resources/server';
 import {
   Button,
   Divider,
-  Form,
+  ErrorMessage,
   getErrors,
   Modal,
   validateForm,
@@ -47,6 +49,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const record = await getResource({
     select: [
       'resources.description',
+      'resources.id',
       'resources.link',
       'resources.title',
       'resources.type',
@@ -90,13 +93,20 @@ export async function action({ params, request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  await updateResource(params.id as string, {
+  const result = await updateResource(params.id as string, {
     attachments: data.attachments,
     description: data.description,
     link: data.link,
     tags: data.tags,
     title: data.title,
   });
+
+  if (!result.ok) {
+    return json(
+      { errors: { duplicateResourceId: result.context!.duplicateResourceId } },
+      { status: result.code }
+    );
+  }
 
   toast(session, {
     message: 'Edited resource!',
@@ -131,7 +141,7 @@ export default function EditResourceModal() {
         <Modal.CloseButton />
       </Modal.Header>
 
-      <RemixForm className="form" method="post" encType="multipart/form-data">
+      <Form className="form" method="post" encType="multipart/form-data">
         <ResourceProvider type={resource.type}>
           <ResourceTitleField
             defaultValue={resource.title || undefined}
@@ -158,6 +168,9 @@ export default function EditResourceModal() {
 
           <ResourceLinkField
             defaultValue={resource.link || undefined}
+            duplicateResourceId={
+              'duplicateResourceId' in errors && errors.duplicateResourceId
+            }
             error={errors.link}
             name={keys.link}
           />
@@ -168,12 +181,22 @@ export default function EditResourceModal() {
           />
         </ResourceProvider>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
-        <Button.Group>
+        <Button.Group flexDirection="row-reverse" spacing="between">
           <Button.Submit>Save</Button.Submit>
+
+          <Button.Slot color="error" variant="secondary">
+            <Link
+              to={generatePath(Route['/resources/:id/delete'], {
+                id: resource.id,
+              })}
+            >
+              Delete
+            </Link>
+          </Button.Slot>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

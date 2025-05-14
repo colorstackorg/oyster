@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { CityCombobox, type CityComboboxProps } from '@oyster/core/location/ui';
-import { type FieldProps, Form, Input, Text } from '@oyster/ui';
+import { Field, type FieldProps, Input, Text } from '@oyster/ui';
 
 export function CurrentLocationField({
   defaultValue,
@@ -13,7 +13,7 @@ export function CurrentLocationField({
   name,
 }: FieldProps<string> & Omit<CityComboboxProps, 'required'>) {
   return (
-    <Form.Field
+    <Field
       description="We'll use this to connect you to ColorStack members and events in your area."
       error={error}
       labelFor={name}
@@ -29,9 +29,14 @@ export function CurrentLocationField({
         longitudeName={longitudeName}
         required
       />
-    </Form.Field>
+    </Field>
   );
 }
+
+type PreferredNameFieldProps = FieldProps<string> & {
+  firstName: string;
+  lastName: string;
+};
 
 export function PreferredNameField({
   defaultValue,
@@ -39,14 +44,16 @@ export function PreferredNameField({
   firstName,
   lastName,
   name,
-}: FieldProps<string> & {
-  firstName: string;
-  lastName: string;
-}) {
+}: PreferredNameFieldProps) {
   const [value, setValue] = useState(defaultValue);
 
   return (
-    <Form.Field error={error} label="Preferred Name" labelFor={name}>
+    <Field
+      description="If you go by a different name, let us know here."
+      error={error}
+      label="Preferred Name"
+      labelFor={name}
+    >
       <Input
         defaultValue={defaultValue}
         id={name}
@@ -55,10 +62,10 @@ export function PreferredNameField({
       />
 
       {value && (
-        <Text className="mt-2" color="gray-500">
+        <Text className="mt-2" color="gray-500" variant="sm">
           Your full name will appear as "{firstName} ({value}) {lastName}".
         </Text>
       )}
-    </Form.Field>
+    </Field>
   );
 }

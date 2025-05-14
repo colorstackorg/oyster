@@ -4,24 +4,21 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form as RemixForm, useActionData } from '@remix-run/react';
-import { type z } from 'zod';
+import { Form, useActionData } from '@remix-run/react';
 
-import { job } from '@oyster/core/member-profile/server';
 import {
-  OneTimeCode,
-  OneTimeCodePurpose,
-} from '@oyster/core/member-profile/ui';
-import { db } from '@oyster/db';
+  sendEmailCode,
+  SendEmailCodeInput,
+} from '@oyster/core/member-profile/server';
 import {
   Button,
-  Form,
+  ErrorMessage,
+  Field,
   getErrors,
   Input,
   Modal,
   validateForm,
 } from '@oyster/ui';
-import { id } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
 import { addEmailCookie } from '@/shared/cookies.server';
@@ -36,12 +33,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return json({});
 }
-
-const SendEmailCodeInput = OneTimeCode.pick({
-  email: true,
-});
-
-type SendEmailCodeInput = z.infer<typeof SendEmailCodeInput>;
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -66,62 +57,6 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-async function sendEmailCode(studentId: string, input: SendEmailCodeInput) {
-  const existingEmail = await db
-    .selectFrom('studentEmails')
-    .select(['studentId'])
-    .where('email', 'ilike', input.email)
-    .executeTakeFirst();
-
-  if (existingEmail) {
-    throw new Error(
-      existingEmail.studentId === studentId
-        ? 'This email already belongs to you.'
-        : 'The email you are trying to add belongs to another member.'
-    );
-  }
-
-  const [oneTimeCode, student] = await db.transaction().execute(async (trx) => {
-    const oneTimeCode = await trx
-      .insertInto('oneTimeCodes')
-      .returning(['email', 'id', 'value'])
-      .values({
-        email: input.email,
-        id: id(),
-        purpose: OneTimeCodePurpose.ADD_STUDENT_EMAIL,
-        value: Math.random().toString().slice(-6),
-        studentId,
-      })
-      .executeTakeFirstOrThrow();
-
-    await trx
-      .deleteFrom('oneTimeCodes')
-      .where('id', '!=', oneTimeCode.id)
-      .where('purpose', '=', OneTimeCodePurpose.ADD_STUDENT_EMAIL)
-      .where('studentId', '=', studentId)
-      .execute();
-
-    const student = await trx
-      .selectFrom('students')
-      .select(['firstName'])
-      .where('id', '=', studentId)
-      .executeTakeFirstOrThrow();
-
-    return [oneTimeCode, student];
-  });
-
-  job('notification.email.send', {
-    to: oneTimeCode.email,
-    name: 'one-time-code-sent',
-    data: {
-      code: oneTimeCode.value,
-      firstName: student.firstName,
-    },
-  });
-}
-
-const keys = SendEmailCodeInput.keyof().enum;
-
 export default function AddEmailPage() {
   const { error, errors } = getErrors(useActionData<typeof action>());
 
@@ -137,28 +72,23 @@ export default function AddEmailPage() {
         address.
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
-        <Form.Field
-          error={errors.email}
-          label="Email"
-          labelFor={keys.email}
-          required
-        >
+      <Form className="form" method="post">
+        <Field error={errors.email} label="Email" labelFor="email" required>
           <Input
             autoFocus
-            id={keys.email}
-            name={keys.email}
+            id="email"
+            name="email"
             placeholder="me@gmail.com"
             required
           />
-        </Form.Field>
+        </Field>
 
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group>
           <Button.Submit>Send Code</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

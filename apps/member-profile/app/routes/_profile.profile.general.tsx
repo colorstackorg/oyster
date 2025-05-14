@@ -3,11 +3,7 @@ import {
   json,
   type LoaderFunctionArgs,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { type z } from 'zod';
 
 import { updateMember } from '@oyster/core/member-profile/server';
@@ -16,7 +12,7 @@ import { Student } from '@oyster/types';
 import {
   Button,
   Divider,
-  Form,
+  Field,
   getErrors,
   InputField,
   PhoneNumberInput,
@@ -97,10 +93,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  await updateMember({
-    data,
-    where: { id: user(session) },
-  });
+  await updateMember(user(session), data);
 
   toast(session, {
     message: 'Updated!',
@@ -131,7 +124,7 @@ export default function UpdateGeneralInformationSection() {
         <ProfileTitle>General</ProfileTitle>
       </ProfileHeader>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <InputField
           defaultValue={student.firstName}
           error={errors.firstName}
@@ -178,7 +171,7 @@ export default function UpdateGeneralInformationSection() {
           longitudeName={keys.currentLocationLongitude}
         />
 
-        <Form.Field
+        <Field
           description="Enter your 10-digit phone number. We'll use this to send you important ColorStack updates."
           error={errors.phoneNumber}
           label="Phone Number"
@@ -189,12 +182,12 @@ export default function UpdateGeneralInformationSection() {
             id={keys.phoneNumber}
             name={keys.phoneNumber}
           />
-        </Form.Field>
+        </Field>
 
         <Button.Group>
           <Button.Submit>Save</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </ProfileSection>
   );
 }

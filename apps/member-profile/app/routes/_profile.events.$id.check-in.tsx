@@ -3,15 +3,11 @@ import {
   json,
   type LoaderFunctionArgs,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { Check } from 'react-feather';
 
-import { checkIntoEvent } from '@oyster/core/events';
-import { getEvent } from '@oyster/core/member-profile/server';
+import { getEvent } from '@oyster/core/events';
+import { checkIntoEvent } from '@oyster/core/events/attendees';
 import { Button, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
@@ -76,7 +72,7 @@ export default function EventCheckIn() {
   const isCheckedIn = event.isCheckedIn || actionData?.checkedIn;
 
   return (
-    <Modal onCloseTo={Route['/events/upcoming']} size="400">
+    <Modal onCloseTo={Route['/events']} size="400">
       <Modal.Header>
         <Modal.Title>{event.name}: Check In! 👋</Modal.Title>
         <Modal.CloseButton />
@@ -101,11 +97,11 @@ export default function EventCheckIn() {
             it!
           </Modal.Description>
 
-          <RemixForm className="form mt-4" method="post">
+          <Form className="form mt-4" method="post">
             <Button.Submit fill>
               <Check className="h-5 w-5" /> Check In!
             </Button.Submit>
-          </RemixForm>
+          </Form>
         </>
       )}
     </Modal>

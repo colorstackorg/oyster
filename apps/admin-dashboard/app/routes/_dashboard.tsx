@@ -4,7 +4,6 @@ import {
   BookOpen,
   Calendar,
   Gift,
-  HelpCircle,
   Layers,
   MapPin,
   Target,
@@ -61,7 +60,7 @@ export default function DashboardLayout() {
                 />
                 <Dashboard.NavigationLink
                   icon={<Video />}
-                  label="Onboarding Sessions"
+                  label="Onboarding"
                   pathname={Route['/onboarding-sessions']}
                 />
               </>
@@ -89,7 +88,7 @@ export default function DashboardLayout() {
                 />
                 <Dashboard.NavigationLink
                   icon={<Video />}
-                  label="Onboarding Sessions"
+                  label="Onboarding"
                   pathname={Route['/onboarding-sessions']}
                 />
                 <Dashboard.NavigationLink
@@ -106,11 +105,6 @@ export default function DashboardLayout() {
                   icon={<MapPin />}
                   label="Schools"
                   pathname={Route['/schools']}
-                />
-                <Dashboard.NavigationLink
-                  icon={<HelpCircle />}
-                  label="Surveys"
-                  pathname={Route['/surveys']}
                 />
 
                 {role === AdminRole.OWNER && (

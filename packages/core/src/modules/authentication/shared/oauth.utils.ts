@@ -1,3 +1,4 @@
+import { API_URL, GOOGLE_CLIENT_ID, SLACK_CLIENT_ID } from '@/shared/env';
 import { type OAuthCodeState } from '../authentication.types';
 
 type GetAuthUriInput = Pick<OAuthCodeState, 'clientRedirectUrl' | 'context'>;
@@ -6,9 +7,6 @@ export function getGoogleAuthUri({
   clientRedirectUrl,
   context,
 }: GetAuthUriInput) {
-  const API_URL = process.env.API_URL as string;
-  const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID as string;
-
   if (!API_URL || !GOOGLE_CLIENT_ID) {
     console.warn(
       '"GOOGLE_CLIENT_ID" is not set, so login with Google is disabled.'
@@ -41,9 +39,6 @@ export function getSlackAuthUri({
   clientRedirectUrl,
   context,
 }: GetAuthUriInput) {
-  const API_URL = process.env.API_URL as string;
-  const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID as string;
-
   if (!API_URL || !SLACK_CLIENT_ID) {
     console.warn(
       '"SLACK_CLIENT_ID" is not set, so login with Slack is disabled.'

@@ -4,11 +4,7 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { z } from 'zod';
 
 import { updateMember } from '@oyster/core/member-profile/server';
@@ -17,7 +13,7 @@ import {
   Button,
   Checkbox,
   Divider,
-  Form,
+  Field,
   getErrors,
   InputField,
   Link,
@@ -65,10 +61,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ errors }, { status: 400 });
   }
 
-  await updateMember({
-    data,
-    where: { id: user(session) },
-  });
+  await updateMember(user(session), data);
 
   return redirect(Route['/directory/join/2']);
 }
@@ -80,7 +73,7 @@ export default function UpdateGeneralInformationForm() {
   const { errors } = getErrors(useActionData<typeof action>());
 
   return (
-    <RemixForm className="form" method="post">
+    <Form className="form" method="post">
       <InputField
         defaultValue={student.headline || undefined}
         description="A LinkedIn-style headline."
@@ -105,7 +98,7 @@ export default function UpdateGeneralInformationForm() {
 
       <Divider />
 
-      <Form.Field
+      <Field
         description={<HistoryFieldDescription />}
         labelFor="history"
         label="Work + Education History"
@@ -119,12 +112,12 @@ export default function UpdateGeneralInformationForm() {
           required
           value="1"
         />
-      </Form.Field>
+      </Field>
 
       <Button.Group>
         <JoinDirectoryNextButton />
       </Button.Group>
-    </RemixForm>
+    </Form>
   );
 }
 

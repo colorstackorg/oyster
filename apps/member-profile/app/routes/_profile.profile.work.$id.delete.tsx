@@ -4,17 +4,13 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form as RemixForm,
-  useActionData,
-  useNavigate,
-} from '@remix-run/react';
+import { Form, useActionData, useNavigate } from '@remix-run/react';
 
 import {
   deleteWorkExperience,
   getWorkExperience,
 } from '@oyster/core/member-profile/server';
-import { Button, Form, Modal } from '@oyster/ui';
+import { Button, ErrorMessage, Modal } from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import {
@@ -85,8 +81,8 @@ export default function DeleteWorkExperiencePage() {
         Are you sure you want to delete this work experience?
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
-        <Form.ErrorMessage>{error}</Form.ErrorMessage>
+      <Form className="form" method="post">
+        <ErrorMessage>{error}</ErrorMessage>
 
         <Button.Group flexDirection="row-reverse">
           <Button color="error" type="submit" variant="secondary">
@@ -97,7 +93,7 @@ export default function DeleteWorkExperiencePage() {
             Back
           </Button>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

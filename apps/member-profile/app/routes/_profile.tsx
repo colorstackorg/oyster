@@ -1,4 +1,9 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import {
+  json,
+  type LoaderFunctionArgs,
+  redirect,
+  type Session,
+} from '@remix-run/node';
 import { generatePath, Outlet, useLoaderData } from '@remix-run/react';
 import {
   Award,
@@ -8,24 +13,32 @@ import {
   Calendar,
   DollarSign,
   FileText,
-  Folder,
   Home,
+  Layers,
+  MessageCircle,
   User,
+  Users,
 } from 'react-feather';
 
 import { isFeatureFlagEnabled } from '@oyster/core/member-profile/server';
-import { getResumeBook } from '@oyster/core/resumes';
+import { getResumeBook } from '@oyster/core/resume-books';
+import { db } from '@oyster/db';
 import { Dashboard, Divider } from '@oyster/ui';
 
-import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import { ONBOARDING_FLOW_LAUNCH_DATE, Route } from '@/shared/constants';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await ensureUserAuthenticated(request);
+  const session = await ensureUserAuthenticated(request);
 
-  const [isOpportunitiesEnabled, resumeBook] = await Promise.all([
-    isFeatureFlagEnabled('opportunities'),
+  // We do this check in the "parent" loader despite that other child loaders
+  // will run in parallel. The reason this is fine is because technically the
+  // user is already authenticated so loading the data isn't a security issue,
+  // we just don't want to allow them to access the profile UI until they've
+  // completed the onboarding process.
+  await ensureUserOnboarded(session);
 
+  const [resumeBook, isPointsPageEnabled] = await Promise.all([
     getResumeBook({
       select: ['resumeBooks.id'],
       where: {
@@ -33,16 +46,42 @@ export async function loader({ request }: LoaderFunctionArgs) {
         status: 'active',
       },
     }),
+    isFeatureFlagEnabled('points_page'),
   ]);
 
   return json({
-    isOpportunitiesEnabled,
+    isPointsPageEnabled,
     resumeBook,
   });
 }
 
+// TODO: We should probably cache this somehow...don't necessarily want to hit
+// the DB for every single request.
+async function ensureUserOnboarded(session: Session) {
+  const member = await db
+    .selectFrom('students')
+    .select(['acceptedAt', 'onboardedAt'])
+    .where('id', '=', user(session))
+    .executeTakeFirst();
+
+  // This should never happen, that means the user is logged in with a bad ID.
+  if (!member) {
+    throw new Response(null, {
+      status: 404,
+      statusText: 'Something went wrong. Please contact support.',
+    });
+  }
+
+  if (member.acceptedAt >= ONBOARDING_FLOW_LAUNCH_DATE && !member.onboardedAt) {
+    throw redirect(Route['/onboarding']);
+  }
+}
+
+// NOTE: IF YOU UPDATE SOMETHING HERE, YOU SHOULD PROBABLY UPDATE THE "FIRST
+// TIME MODAL" TOO.
+
 export default function ProfileLayout() {
-  const { isOpportunitiesEnabled, resumeBook } = useLoaderData<typeof loader>();
+  const { isPointsPageEnabled, resumeBook } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -75,20 +114,23 @@ export default function ProfileLayout() {
               prefetch="intent"
             />
             <Dashboard.NavigationLink
-              icon={<Folder />}
+              icon={<Users />}
               label="Directory"
               pathname={Route['/directory']}
               prefetch="intent"
             />
-            {isOpportunitiesEnabled && (
-              <Dashboard.NavigationLink
-                icon={<DollarSign />}
-                isNew
-                label="Opportunities"
-                pathname={Route['/opportunities']}
-                prefetch="intent"
-              />
-            )}
+            <Dashboard.NavigationLink
+              icon={<Layers />}
+              label="Opportunities"
+              pathname={Route['/opportunities']}
+              prefetch="intent"
+            />
+            <Dashboard.NavigationLink
+              icon={<DollarSign />}
+              label="Offers"
+              pathname={Route['/offers']}
+              prefetch="intent"
+            />
             <Dashboard.NavigationLink
               icon={<Briefcase />}
               label="Companies"
@@ -102,15 +144,30 @@ export default function ProfileLayout() {
               prefetch="intent"
             />
             <Dashboard.NavigationLink
-              icon={<Award />}
-              label="Points"
-              pathname={Route['/points']}
+              icon={<Users />}
+              label="Peer Help"
+              isNew
+              pathname={Route['/peer-help']}
               prefetch="intent"
             />
+            {isPointsPageEnabled && (
+              <Dashboard.NavigationLink
+                icon={<Award />}
+                label="Points"
+                pathname={Route['/points']}
+                prefetch="intent"
+              />
+            )}
             <Dashboard.NavigationLink
               icon={<Calendar />}
               label="Events"
               pathname={Route['/events']}
+              prefetch="intent"
+            />
+            <Dashboard.NavigationLink
+              icon={<MessageCircle />}
+              label="Ask AI"
+              pathname={Route['/ask-ai']}
               prefetch="intent"
             />
             <Dashboard.NavigationLink
