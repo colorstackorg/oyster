@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { type ExtractValue } from '@oyster/types';
 
 import { ListSearchParams } from '@/shared/types';
+import { ACCENT_COLORS } from '@/shared/utils/color';
 import { FileLike } from '@/shared/utils/zod';
 
 // Types
@@ -41,6 +42,8 @@ const Resource = z.object({
 });
 
 const Tag = z.object({
+  // @ts-expect-error - not sure why b/c AccentColor extends `string`!
+  color: z.enum(ACCENT_COLORS),
   createdAt: z.coerce.date(),
   id: z.string().min(1),
   name: z.string().trim().min(1),
@@ -81,6 +84,7 @@ export const AddResourceInput = Resource.pick({
 });
 
 export const CreateTagInput = Tag.pick({
+  color: true,
   id: true,
   name: true,
 });
