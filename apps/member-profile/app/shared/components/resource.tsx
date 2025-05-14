@@ -230,8 +230,8 @@ function ResourceTagList({ tags }: Pick<ResourceProps, 'tags'>) {
       {tags.map((tag) => {
         const searchParams = new URLSearchParams(_searchParams);
 
-        if (!searchParams.getAll('tags').includes(tag.id)) {
-          searchParams.append('tags', tag.id);
+        if (!searchParams.getAll('tag').includes(tag.id)) {
+          searchParams.append('tag', tag.id);
         }
 
         return (

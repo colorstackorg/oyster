@@ -1,47 +1,52 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import {
+  Form,
   Link,
   Outlet,
-  Form as RemixForm,
   useLoaderData,
   useSearchParams,
   useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { useState } from 'react';
-import { Filter, Plus } from 'react-feather';
-import { match } from 'ts-pattern';
+import { ArrowUp, Plus, Tag, User } from 'react-feather';
+import { z } from 'zod';
 
 import { isMemberAdmin } from '@oyster/core/admins';
 import { ListSearchParams } from '@oyster/core/member-profile/ui';
 import { track } from '@oyster/core/mixpanel';
-import { getPresignedURL } from '@oyster/core/object-storage';
 import {
   ListResourcesOrderBy,
   ListResourcesWhere,
   type ResourceType,
 } from '@oyster/core/resources';
-import { listResources, listTags } from '@oyster/core/resources/server';
-import { type ExtractValue, ISO8601Date } from '@oyster/types';
+import { listResources } from '@oyster/core/resources/server';
+import { getPresignedURL } from '@oyster/core/s3';
+import { db } from '@oyster/db';
+import { ISO8601Date } from '@oyster/types';
 import {
+  Button,
   Dashboard,
-  Dropdown,
   ExistingSearchParams,
-  getButtonCn,
-  IconButton,
   Pagination,
-  Pill,
   Select,
   Text,
 } from '@oyster/ui';
-import { run } from '@oyster/utils';
+import {
+  FilterEmptyMessage,
+  FilterItem,
+  FilterList,
+  FilterPopover,
+  FilterRoot,
+  FilterSearch,
+  FilterTrigger,
+  useFilterContext,
+} from '@oyster/ui/filter';
+import { run, toEscapedString } from '@oyster/utils';
 
 import { Resource } from '@/shared/components/resource';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
-
-const whereKeys = ListResourcesWhere.keyof().enum;
 
 const ResourcesSearchParams = ListSearchParams.pick({
   limit: true,
@@ -49,6 +54,8 @@ const ResourcesSearchParams = ListSearchParams.pick({
 }).extend({
   date: ISO8601Date.optional().catch(undefined),
   id: ListResourcesWhere.shape.id.catch(undefined),
+  isMyPosts: z.string().optional().catch(undefined),
+  isMyUpvotes: z.string().optional().catch(undefined),
   orderBy: ListResourcesOrderBy,
   search: ListResourcesWhere.shape.search,
   tags: ListResourcesWhere.shape.tags.catch([]),
@@ -63,44 +70,54 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const searchParams = ResourcesSearchParams.parse({
     ...Object.fromEntries(url.searchParams),
-    tags: url.searchParams.getAll('tags'),
+    tags: url.searchParams.getAll('tag'),
   });
 
-  const { resources: records, totalCount } = await listResources({
-    memberId: user(session),
-    pagination: {
-      limit: searchParams.limit,
-      page: searchParams.page,
-    },
-    orderBy: searchParams.orderBy,
-    select: [
-      'resources.description',
-      'resources.id',
-      'resources.link',
-      'resources.postedAt',
-      'resources.title',
-      'resources.type',
-      'students.firstName as posterFirstName',
-      'students.id as posterId',
-      'students.lastName as posterLastName',
-      'students.profilePicture as posterProfilePicture',
-    ],
-    where: {
-      id: searchParams.id,
-      search: searchParams.search,
-      tags: searchParams.tags,
+  const [allTags, appliedTags, { resources: records, totalCount }] =
+    await Promise.all([
+      listAllTags(),
+      listAppliedTags(url.searchParams),
+      listResources({
+        memberId: user(session),
+        pagination: {
+          limit: searchParams.limit,
+          page: searchParams.page,
+        },
+        orderBy: searchParams.orderBy,
+        select: [
+          'resources.description',
+          'resources.id',
+          'resources.link',
+          'resources.postedAt',
+          'resources.title',
+          'resources.type',
+          'students.firstName as posterFirstName',
+          'students.id as posterId',
+          'students.lastName as posterLastName',
+          'students.profilePicture as posterProfilePicture',
+        ],
+        isMyPosts: !!searchParams.isMyPosts,
+        isMyUpvotes: !!searchParams.isMyUpvotes,
+        where: {
+          id: searchParams.id,
+          search: searchParams.search,
+          tags: searchParams.tags,
 
-      ...(searchParams.date &&
-        run(() => {
-          const date = dayjs(searchParams.date).tz('America/Los_Angeles', true);
+          ...(searchParams.date &&
+            run(() => {
+              const date = dayjs(searchParams.date).tz(
+                'America/Los_Angeles',
+                true
+              );
 
-          return {
-            postedAfter: date.startOf('day').toDate(),
-            postedBefore: date.endOf('day').toDate(),
-          };
-        })),
-    },
-  });
+              return {
+                postedAfter: date.startOf('day').toDate(),
+                postedBefore: date.endOf('day').toDate(),
+              };
+            })),
+        },
+      }),
+    ]);
 
   const tz = getTimezone(request);
 
@@ -158,54 +175,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     )
   );
 
-  const tags = await run(async () => {
-    const result: { name: string; param: string; value?: string }[] = [];
-
-    if (searchParams.date) {
-      const date = dayjs(searchParams.date).tz(tz, true).format('M/D/YY');
-
-      result.push({
-        name: `Date: ${date}`,
-        param: 'date',
-      });
-    }
-
-    // If there is an ID in the search params, we want to show a tag for it
-    // to make it clear that the search is for a specific resource.
-    if (searchParams.id && resources[0]) {
-      result.push({
-        name: resources[0].title as string,
-        param: whereKeys.id,
-        value: searchParams.id,
-      });
-    }
-
-    // To show tags for the search, we need to fetch the tag names.
-    if (searchParams.tags.length) {
-      const tags = await listTags({
-        pagination: { limit: 10, page: 1 },
-        select: ['tags.id', 'tags.name'],
-        where: { ids: searchParams.tags },
-      });
-
-      tags.forEach((tag) => {
-        result.push({
-          name: tag.name,
-          param: whereKeys.tags,
-          value: tag.id,
-        });
-      });
-    }
-
-    return result;
-  });
-
-  const allTags = await listTags({
-    pagination: { limit: 100, page: 1 }, // hardcoded limit as of now
-    select: ['tags.id', 'tags.name'],
-    where: {},
-  });
-
   track({
     event: 'Page Viewed',
     properties: { Page: 'Resources' },
@@ -214,14 +183,52 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 
   return json({
+    allTags,
+    appliedTags,
     limit: searchParams.limit,
     orderBy: searchParams.orderBy,
     page: searchParams.page,
     resources,
-    tags,
     totalCount,
-    allTags,
   });
+}
+
+async function listAllTags() {
+  const tags = await db
+    .selectFrom('resources')
+    .innerJoin('resourceTags', 'resourceTags.resourceId', 'resources.id')
+    .innerJoin('tags', 'tags.id', 'resourceTags.tagId')
+    .select([
+      'tags.id',
+      'tags.name',
+      ({ fn }) => fn.countAll<string>().as('count'),
+    ])
+    .groupBy(['tags.id', 'tags.name'])
+    .orderBy('count', 'desc')
+    .execute();
+
+  return tags;
+}
+
+async function listAppliedTags(searchParams: URLSearchParams) {
+  const tagsFromSearch = searchParams.getAll('tag');
+
+  if (!tagsFromSearch.length) {
+    return [];
+  }
+
+  const tags = await db
+    .selectFrom('tags')
+    .select(['tags.id', 'tags.name'])
+    .where((eb) => {
+      return eb.or([
+        eb('tags.id', 'in', tagsFromSearch),
+        eb('tags.name', 'in', tagsFromSearch),
+      ]);
+    })
+    .execute();
+
+  return tags;
 }
 
 export default function ResourcesPage() {
@@ -232,18 +239,19 @@ export default function ResourcesPage() {
         <AddResourceLink />
       </header>
 
-      <section className="flex flex-wrap justify-between">
-        <div className="flex flex-wrap gap-4">
-          <Dashboard.SearchForm placeholder="Search by title...">
-            <ExistingSearchParams exclude={['page']} />
-          </Dashboard.SearchForm>
+      <section className="flex flex-wrap gap-4">
+        <Dashboard.SearchForm placeholder="Search by title...">
+          <ExistingSearchParams exclude={['page']} />
+        </Dashboard.SearchForm>
+
+        <div className="flex flex-wrap gap-2">
+          <MyUpvotesFilter />
+          <MyPostsFilter />
+          <TagFilter />
           <SortResourcesForm />
         </div>
-
-        <FilterResourcesDropdown />
       </section>
 
-      <CurrentTagsList />
       <ResourcesList />
       <ResourcesPagination />
       <Outlet />
@@ -251,63 +259,151 @@ export default function ResourcesPage() {
   );
 }
 
-function FilterResourcesDropdown() {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onClick() {
-    setOpen(true);
-  }
-
-  return (
-    <Dropdown.Container onClose={onClose}>
-      <IconButton
-        backgroundColor="gray-100"
-        backgroundColorOnHover="gray-200"
-        icon={<Filter />}
-        onClick={onClick}
-        shape="square"
-      />
-
-      {open && (
-        <Dropdown>
-          <div className="flex max-h-max min-w-[18rem] max-w-[18rem] flex-col gap-2 p-2">
-            <Text>Add Filter</Text>
-            <FilterFormResources close={() => setOpen(false)} />
-          </div>
-        </Dropdown>
-      )}
-    </Dropdown.Container>
-  );
-}
-
 function AddResourceLink() {
   const [searchParams] = useSearchParams();
 
   return (
-    <Link
-      className={getButtonCn({})}
-      to={{
-        pathname: Route['/resources/add'],
-        search: searchParams.toString(),
-      }}
+    <Button.Slot>
+      <Link
+        to={{
+          pathname: Route['/resources/add'],
+          search: searchParams.toString(),
+        }}
+      >
+        <Plus size={20} /> Add Resource
+      </Link>
+    </Button.Slot>
+  );
+}
+
+function TagFilter() {
+  const { appliedTags } = useLoaderData<typeof loader>();
+
+  return (
+    <FilterRoot
+      multiple
+      name="tag"
+      selectedValues={appliedTags.map((tag) => {
+        return {
+          color: 'pink-100',
+          label: tag.name,
+          value: tag.id,
+        };
+      })}
     >
-      <Plus size={16} /> Add Resource
-    </Link>
+      <FilterTrigger icon={<Tag />}>Tags</FilterTrigger>
+
+      <FilterPopover>
+        <FilterSearch />
+        <TagList />
+      </FilterPopover>
+    </FilterRoot>
+  );
+}
+
+function TagList() {
+  const { allTags } = useLoaderData<typeof loader>();
+  const { search } = useFilterContext();
+
+  const regex = new RegExp(toEscapedString(search), 'i');
+
+  const filteredTags = allTags.filter((tag) => {
+    return regex.test(tag.name);
+  });
+
+  if (!filteredTags.length) {
+    return <FilterEmptyMessage>No tags found.</FilterEmptyMessage>;
+  }
+
+  return (
+    <FilterList>
+      {filteredTags.map((tag) => {
+        const label = tag.count ? `${tag.name} (${tag.count})` : tag.name;
+
+        return (
+          <FilterItem
+            color="pink-100"
+            key={tag.id}
+            label={label}
+            value={tag.id}
+          />
+        );
+      })}
+    </FilterList>
+  );
+}
+
+function MyUpvotesFilter() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const isMyUpvotes = searchParams.has('isMyUpvotes');
+
+  function toggle() {
+    setSearchParams((params) => {
+      params.delete('page');
+
+      if (params.has('isMyUpvotes')) {
+        params.delete('isMyUpvotes');
+      } else {
+        params.set('isMyUpvotes', '1');
+      }
+
+      return params;
+    });
+  }
+
+  return (
+    <FilterTrigger
+      active={isMyUpvotes}
+      icon={<ArrowUp />}
+      onClick={toggle}
+      popover={false}
+    >
+      My Upvotes
+    </FilterTrigger>
+  );
+}
+
+function MyPostsFilter() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const isMyPosts = searchParams.has('isMyPosts');
+
+  function toggle() {
+    setSearchParams((params) => {
+      params.delete('page');
+
+      if (params.has('isMyPosts')) {
+        params.delete('isMyPosts');
+      } else {
+        params.set('isMyPosts', '1');
+      }
+
+      return params;
+    });
+  }
+
+  return (
+    <FilterTrigger
+      active={isMyPosts}
+      icon={<User />}
+      onClick={toggle}
+      popover={false}
+    >
+      My Posts
+    </FilterTrigger>
   );
 }
 
 function SortResourcesForm() {
   const { orderBy } = useLoaderData<typeof loader>();
   const submit = useSubmit();
+
   const sortKeys = ListResourcesOrderBy._def.innerType.enum;
 
   return (
-    <RemixForm
-      className="flex items-center"
+    <Form
+      className="flex min-w-[12rem] items-center gap-4"
       method="get"
       onChange={(e) => submit(e.currentTarget)}
     >
@@ -324,120 +420,7 @@ function SortResourcesForm() {
       </Select>
 
       <ExistingSearchParams exclude={['orderBy']} />
-    </RemixForm>
-  );
-}
-
-const ResourceFilterKey = ListResourcesWhere.omit({
-  id: true,
-  search: true,
-  postedAfter: true,
-  postedBefore: true,
-}).keyof().enum;
-
-type ResourceFilterKey = ExtractValue<typeof ResourceFilterKey>;
-
-function FilterFormResources({ close }: { close: VoidFunction }) {
-  const [filterKey, setFilterKey] = useState<ResourceFilterKey | null>(null);
-
-  return (
-    <RemixForm className="form" method="get" onSubmit={close}>
-      <Select
-        placeholder="Select a field..."
-        onChange={(e) => {
-          setFilterKey((e.currentTarget.value || null) as ResourceFilterKey);
-        }}
-      >
-        <option value="tags" key="tags">
-          Tags
-        </option>
-      </Select>
-      {!!filterKey && (
-        <Text color="gray-500" variant="sm">
-          {match(filterKey)
-            .with('tags', () => 'select: ')
-            .exhaustive()}
-        </Text>
-      )}
-
-      {match(filterKey)
-        .with('tags', () => {
-          return (
-            <div className="flex flex-col flex-wrap gap-4">
-              <SortTagsResourcesForm />
-              <CurrentTagsList></CurrentTagsList>
-            </div>
-          );
-        })
-
-        .with(null, () => {
-          return null;
-        })
-        .exhaustive()}
-    </RemixForm>
-  );
-}
-
-function SortTagsResourcesForm() {
-  const { allTags } = useLoaderData<typeof loader>();
-  const [_searchParams] = useSearchParams();
-  const submit = useSubmit();
-
-  return (
-    <RemixForm
-      className="flex "
-      method="get"
-      onChange={(e) => submit(e.currentTarget)}
-    >
-      <Select
-        defaultValue=""
-        name="tags"
-        id="tags"
-        placeholder="Find by tag"
-        required
-      >
-        {allTags.map((tag) => {
-          return (
-            <option value={tag.id} key={tag.id}>
-              {tag.name}
-            </option>
-          );
-        })}
-      </Select>
-      <ExistingSearchParams />
-    </RemixForm>
-  );
-}
-
-function CurrentTagsList() {
-  const { tags } = useLoaderData<typeof loader>();
-  const [_searchParams] = useSearchParams();
-
-  if (!tags.length) {
-    return null;
-  }
-
-  return (
-    <ul className="flex flex-wrap items-center gap-2">
-      {tags.map((tag) => {
-        const searchParams = new URLSearchParams(_searchParams);
-
-        // Since there could be multiple tags, we need to specify the value
-        // along with the key.
-        searchParams.delete(tag.param, tag.value);
-
-        return (
-          <li key={tag.value || tag.param}>
-            <Pill
-              color="pink-100"
-              onCloseHref={{ search: searchParams.toString() }}
-            >
-              {tag.name}
-            </Pill>
-          </li>
-        );
-      })}
-    </ul>
+    </Form>
   );
 }
 

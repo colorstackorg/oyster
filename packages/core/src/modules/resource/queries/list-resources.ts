@@ -70,7 +70,7 @@ export async function listResources<
             .whereRef('resourceTags.resourceId', '=', 'resources.id')
             .groupBy('resources.id')
             .having(
-              sql`array_agg(resource_tags.tag_id)`,
+              ({ ref }) => sql`array_agg(${ref('tagId')})`,
               '@>',
               sql<string[]>`${where.tags}`
             );
