@@ -5,7 +5,6 @@ export { OneTimeCodeSentEmail } from '../emails/one-time-code-sent';
 export { PrimaryEmailChangedEmail } from '../emails/primary-email-changed';
 export { ReferralAcceptedEmail } from '../emails/referral-accepted';
 export { ReferralSentEmail } from '../emails/referral-sent';
-export { ResumeSubmittedEmail } from '../emails/resume-submitted';
 export { StudentAnniversaryEmail } from '../emails/student-anniversary';
 export { StudentGraduationEmail } from '../emails/student-graduation';
 export { StudentAttendedOnboardingEmail } from '../emails/student-attended-onboarding';

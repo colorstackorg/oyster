@@ -28,7 +28,6 @@ import { slackWorker } from './modules/slack/slack.worker';
 export { job } from './infrastructure/bull';
 export { OAuthCodeState } from './modules/authentication/authentication.types';
 export { loginWithOAuth } from './modules/authentication/use-cases/login-with-oauth';
-export { saveGoogleDriveCredentials } from './modules/google-drive';
 export { Environment } from './shared/types';
 
 /**

@@ -1,7 +1,6 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
 import {
-  BookOpen,
   Calendar,
   Gift,
   Layers,
@@ -80,11 +79,6 @@ export default function DashboardLayout() {
                   icon={<Calendar />}
                   label="Events"
                   pathname={Route['/events']}
-                />
-                <Dashboard.NavigationLink
-                  icon={<BookOpen />}
-                  label="Resume Books"
-                  pathname={Route['/resume-books']}
                 />
                 <Dashboard.NavigationLink
                   icon={<Video />}

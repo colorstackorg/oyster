@@ -19,7 +19,6 @@ export const ActivityType = {
   REPLY_TO_THREAD: 'reply_to_thread',
   REVIEW_COMPANY: 'review_company',
   SUBMIT_CENSUS_RESPONSE: 'submit_census_response',
-  SUBMIT_RESUME: 'submit_resume',
   UPLOAD_PROFILE_PICTURE: 'upload_profile_picture',
 } as const;
 

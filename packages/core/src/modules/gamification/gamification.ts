@@ -385,16 +385,6 @@ async function grantGamificationPoints(
         .onConflict((oc) => oc.doNothing())
         .execute();
     })
-    .with({ type: 'submit_resume' }, async (input) => {
-      await db
-        .insertInto('completedActivities')
-        .values({
-          ...activityCompleted,
-          resumeBookId: input.resumeBookId,
-        })
-        .onConflict((oc) => oc.doNothing())
-        .execute();
-    })
     .exhaustive();
 
   queueSlackNotification({

@@ -177,11 +177,6 @@ async function getActivityHistory(
         'resourceUpvoters.id',
         'completedActivities.resourceUpvotedBy'
       )
-      .leftJoin(
-        'resumeBooks',
-        'resumeBooks.id',
-        'completedActivities.resumeBookId'
-      )
       .select([
         'activities.name',
         'completedActivities.censusYear',
@@ -203,7 +198,6 @@ async function getActivityHistory(
         'resourceUpvoters.firstName as resourceUpvoterFirstName',
         'resourceUpvoters.id as resourceUpvoterId',
         'resourceUpvoters.lastName as resourceUpvoterLastName',
-        'resumeBooks.name as resumeBookName',
         'threads.channelId as threadRepliedToChannelId',
         'threads.id as threadRepliedToId',
         'threads.text as threadRepliedToText',
@@ -693,14 +687,6 @@ function ActivityHistoryItemDescription({
     .with('submit_census_response', () => {
       return (
         <p>You submitted a response to the Census ({activity.censusYear}).</p>
-      );
-    })
-    .with('submit_resume', () => {
-      return (
-        <p>
-          You submitted your resume to the "{activity.resumeBookName}" Resume
-          Book.
-        </p>
       );
     })
     .with('upload_profile_picture', () => {

@@ -88,7 +88,6 @@ const ROUTES = [
   '/resources/:id/delete',
   '/resources/:id/edit',
   '/resume/review',
-  '/resume-books/:id',
 ] as const;
 
 export type Route = (typeof ROUTES)[number];

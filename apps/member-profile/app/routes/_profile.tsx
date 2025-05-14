@@ -4,10 +4,9 @@ import {
   redirect,
   type Session,
 } from '@remix-run/node';
-import { generatePath, Outlet, useLoaderData } from '@remix-run/react';
+import { Outlet, useLoaderData } from '@remix-run/react';
 import {
   Award,
-  Book,
   BookOpen,
   Briefcase,
   Calendar,
@@ -21,9 +20,8 @@ import {
 } from 'react-feather';
 
 import { isFeatureFlagEnabled } from '@oyster/core/member-profile/server';
-import { getResumeBook } from '@oyster/core/resume-books';
 import { db } from '@oyster/db';
-import { Dashboard, Divider } from '@oyster/ui';
+import { Dashboard } from '@oyster/ui';
 
 import { ONBOARDING_FLOW_LAUNCH_DATE, Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
@@ -38,20 +36,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // completed the onboarding process.
   await ensureUserOnboarded(session);
 
-  const [resumeBook, isPointsPageEnabled] = await Promise.all([
-    getResumeBook({
-      select: ['resumeBooks.id'],
-      where: {
-        hidden: false,
-        status: 'active',
-      },
-    }),
+  const [isPointsPageEnabled] = await Promise.all([
     isFeatureFlagEnabled('points_page'),
   ]);
 
   return json({
     isPointsPageEnabled,
-    resumeBook,
   });
 }
 
@@ -81,7 +71,7 @@ async function ensureUserOnboarded(session: Session) {
 // TIME MODAL" TOO.
 
 export default function ProfileLayout() {
-  const { isPointsPageEnabled, resumeBook } = useLoaderData<typeof loader>();
+  const { isPointsPageEnabled } = useLoaderData<typeof loader>();
 
   return (
     <Dashboard>
@@ -93,20 +83,6 @@ export default function ProfileLayout() {
 
         <Dashboard.Navigation>
           <Dashboard.NavigationList>
-            {!!resumeBook && (
-              <>
-                <Dashboard.NavigationLink
-                  icon={<Book />}
-                  label="Resume Book"
-                  pathname={generatePath(Route['/resume-books/:id'], {
-                    id: resumeBook.id,
-                  })}
-                  prefetch="intent"
-                />
-
-                <Divider my="2" />
-              </>
-            )}
             <Dashboard.NavigationLink
               icon={<Home />}
               label="Home"

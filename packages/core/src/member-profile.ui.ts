@@ -37,6 +37,5 @@ export {
   ChangePrimaryEmailInput,
   ListMembersInDirectoryWhere,
 } from './modules/members/members.types';
-export { CreateResumeBookInput } from './modules/resume-books/resume-books.types';
 export { getRandomAccentColor } from './shared/utils/color';
 export { Environment, ListSearchParams } from './shared/types';
