@@ -196,14 +196,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
 async function listAllTags() {
   const tags = await db
     .selectFrom('resources')
-    .innerJoin('resourceTags', 'resourceTags.resourceId', 'resources.id')
-    .innerJoin('tags', 'tags.id', 'resourceTags.tagId')
+    .innerJoin(
+      'resourceTagAssociations',
+      'resourceTagAssociations.resourceId',
+      'resources.id'
+    )
+    .innerJoin(
+      'resourceTags',
+      'resourceTags.id',
+      'resourceTagAssociations.tagId'
+    )
     .select([
-      'tags.id',
-      'tags.name',
+      'resourceTags.id',
+      'resourceTags.name',
       ({ fn }) => fn.countAll<string>().as('count'),
     ])
-    .groupBy(['tags.id', 'tags.name'])
+    .groupBy(['resourceTags.id', 'resourceTags.name'])
     .orderBy('count', 'desc')
     .execute();
 
@@ -218,12 +226,12 @@ async function listAppliedTags(searchParams: URLSearchParams) {
   }
 
   const tags = await db
-    .selectFrom('tags')
-    .select(['tags.id', 'tags.name'])
+    .selectFrom('resourceTags')
+    .select(['resourceTags.id', 'resourceTags.name'])
     .where((eb) => {
       return eb.or([
-        eb('tags.id', 'in', tagsFromSearch),
-        eb('tags.name', 'in', tagsFromSearch),
+        eb('resourceTags.id', 'in', tagsFromSearch),
+        eb('resourceTags.name', 'in', tagsFromSearch),
       ]);
     })
     .execute();

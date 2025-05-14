@@ -70,8 +70,8 @@ export async function listResources<
       return qb.where((eb) => {
         return eb.exists((eb) => {
           return eb
-            .selectFrom('resourceTags')
-            .whereRef('resourceTags.resourceId', '=', 'resources.id')
+            .selectFrom('resourceTagAssociations')
+            .whereRef('resourceTagAssociations.resourceId', '=', 'resources.id')
             .groupBy('resources.id')
             .having(
               ({ ref }) => sql`array_agg(${ref('tagId')})`,

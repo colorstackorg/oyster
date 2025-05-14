@@ -36,18 +36,22 @@ export function buildAttachmentsField(eb: ExpressionBuilder<DB, 'resources'>) {
  */
 export function buildTagsField(eb: ExpressionBuilder<DB, 'resources'>) {
   return eb
-    .selectFrom('resourceTags')
-    .leftJoin('tags', 'tags.id', 'resourceTags.tagId')
-    .whereRef('resourceTags.resourceId', '=', 'resources.id')
+    .selectFrom('resourceTagAssociations')
+    .leftJoin(
+      'resourceTags',
+      'resourceTags.id',
+      'resourceTagAssociations.tagId'
+    )
+    .whereRef('resourceTagAssociations.resourceId', '=', 'resources.id')
     .select(({ fn, ref }) => {
       const object = jsonBuildObject({
-        id: ref('tags.id'),
-        name: ref('tags.name'),
+        id: ref('resourceTags.id'),
+        name: ref('resourceTags.name'),
       });
 
       return fn
-        .jsonAgg(sql`${object} order by ${ref('tags.name')} asc`)
-        .filterWhere('tags.id', 'is not', null)
+        .jsonAgg(sql`${object} order by ${ref('resourceTags.name')} asc`)
+        .filterWhere('resourceTags.id', 'is not', null)
         .$castTo<{ id: string; name: string }[]>()
         .as('tags');
     })
