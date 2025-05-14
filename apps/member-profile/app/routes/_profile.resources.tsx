@@ -8,7 +8,7 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
-import { ArrowUp, Plus, User } from 'react-feather';
+import { ArrowUp, Plus, Tag, User } from 'react-feather';
 import { z } from 'zod';
 
 import { isMemberAdmin } from '@oyster/core/admins';
@@ -19,27 +19,34 @@ import {
   ListResourcesWhere,
   type ResourceType,
 } from '@oyster/core/resources';
-import { listResources, listTags } from '@oyster/core/resources/server';
+import { listResources } from '@oyster/core/resources/server';
 import { getPresignedURL } from '@oyster/core/s3';
+import { db } from '@oyster/db';
 import { ISO8601Date } from '@oyster/types';
 import {
   Button,
   Dashboard,
   ExistingSearchParams,
   Pagination,
-  Pill,
   Select,
   Text,
 } from '@oyster/ui';
-import { FilterTrigger } from '@oyster/ui/filter';
-import { run } from '@oyster/utils';
+import {
+  FilterEmptyMessage,
+  FilterItem,
+  FilterList,
+  FilterPopover,
+  FilterRoot,
+  FilterSearch,
+  FilterTrigger,
+  useFilterContext,
+} from '@oyster/ui/filter';
+import { run, toEscapedString } from '@oyster/utils';
 
 import { Resource } from '@/shared/components/resource';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
-
-const whereKeys = ListResourcesWhere.keyof().enum;
 
 const ResourcesSearchParams = ListSearchParams.pick({
   limit: true,
@@ -63,46 +70,54 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const searchParams = ResourcesSearchParams.parse({
     ...Object.fromEntries(url.searchParams),
-    tags: url.searchParams.getAll('tags'),
+    tags: url.searchParams.getAll('tag'),
   });
 
-  const { resources: records, totalCount } = await listResources({
-    memberId: user(session),
-    pagination: {
-      limit: searchParams.limit,
-      page: searchParams.page,
-    },
-    orderBy: searchParams.orderBy,
-    select: [
-      'resources.description',
-      'resources.id',
-      'resources.link',
-      'resources.postedAt',
-      'resources.title',
-      'resources.type',
-      'students.firstName as posterFirstName',
-      'students.id as posterId',
-      'students.lastName as posterLastName',
-      'students.profilePicture as posterProfilePicture',
-    ],
-    isMyPosts: !!searchParams.isMyPosts,
-    isMyUpvotes: !!searchParams.isMyUpvotes,
-    where: {
-      id: searchParams.id,
-      search: searchParams.search,
-      tags: searchParams.tags,
+  const [allTags, appliedTags, { resources: records, totalCount }] =
+    await Promise.all([
+      listAllTags(),
+      listAppliedTags(url.searchParams),
+      listResources({
+        memberId: user(session),
+        pagination: {
+          limit: searchParams.limit,
+          page: searchParams.page,
+        },
+        orderBy: searchParams.orderBy,
+        select: [
+          'resources.description',
+          'resources.id',
+          'resources.link',
+          'resources.postedAt',
+          'resources.title',
+          'resources.type',
+          'students.firstName as posterFirstName',
+          'students.id as posterId',
+          'students.lastName as posterLastName',
+          'students.profilePicture as posterProfilePicture',
+        ],
+        isMyPosts: !!searchParams.isMyPosts,
+        isMyUpvotes: !!searchParams.isMyUpvotes,
+        where: {
+          id: searchParams.id,
+          search: searchParams.search,
+          tags: searchParams.tags,
 
-      ...(searchParams.date &&
-        run(() => {
-          const date = dayjs(searchParams.date).tz('America/Los_Angeles', true);
+          ...(searchParams.date &&
+            run(() => {
+              const date = dayjs(searchParams.date).tz(
+                'America/Los_Angeles',
+                true
+              );
 
-          return {
-            postedAfter: date.startOf('day').toDate(),
-            postedBefore: date.endOf('day').toDate(),
-          };
-        })),
-    },
-  });
+              return {
+                postedAfter: date.startOf('day').toDate(),
+                postedBefore: date.endOf('day').toDate(),
+              };
+            })),
+        },
+      }),
+    ]);
 
   const tz = getTimezone(request);
 
@@ -160,48 +175,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     )
   );
 
-  const tags = await run(async () => {
-    const result: { name: string; param: string; value?: string }[] = [];
-
-    if (searchParams.date) {
-      const date = dayjs(searchParams.date).tz(tz, true).format('M/D/YY');
-
-      result.push({
-        name: `Date: ${date}`,
-        param: 'date',
-      });
-    }
-
-    // If there is an ID in the search params, we want to show a tag for it
-    // to make it clear that the search is for a specific resource.
-    if (searchParams.id && resources[0]) {
-      result.push({
-        name: resources[0].title as string,
-        param: whereKeys.id,
-        value: searchParams.id,
-      });
-    }
-
-    // To show tags for the search, we need to fetch the tag names.
-    if (searchParams.tags.length) {
-      const tags = await listTags({
-        pagination: { limit: 10, page: 1 },
-        select: ['tags.id', 'tags.name'],
-        where: { ids: searchParams.tags },
-      });
-
-      tags.forEach((tag) => {
-        result.push({
-          name: tag.name,
-          param: whereKeys.tags,
-          value: tag.id,
-        });
-      });
-    }
-
-    return result;
-  });
-
   track({
     event: 'Page Viewed',
     properties: { Page: 'Resources' },
@@ -210,13 +183,52 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 
   return json({
+    allTags,
+    appliedTags,
     limit: searchParams.limit,
     orderBy: searchParams.orderBy,
     page: searchParams.page,
     resources,
-    tags,
     totalCount,
   });
+}
+
+async function listAllTags() {
+  const tags = await db
+    .selectFrom('resources')
+    .innerJoin('resourceTags', 'resourceTags.resourceId', 'resources.id')
+    .innerJoin('tags', 'tags.id', 'resourceTags.tagId')
+    .select([
+      'tags.id',
+      'tags.name',
+      ({ fn }) => fn.countAll<string>().as('count'),
+    ])
+    .groupBy(['tags.id', 'tags.name'])
+    .orderBy('count', 'desc')
+    .execute();
+
+  return tags;
+}
+
+async function listAppliedTags(searchParams: URLSearchParams) {
+  const tagsFromSearch = searchParams.getAll('tag');
+
+  if (!tagsFromSearch.length) {
+    return [];
+  }
+
+  const tags = await db
+    .selectFrom('tags')
+    .select(['tags.id', 'tags.name'])
+    .where((eb) => {
+      return eb.or([
+        eb('tags.id', 'in', tagsFromSearch),
+        eb('tags.name', 'in', tagsFromSearch),
+      ]);
+    })
+    .execute();
+
+  return tags;
 }
 
 export default function ResourcesPage() {
@@ -235,11 +247,11 @@ export default function ResourcesPage() {
         <div className="flex flex-wrap gap-2">
           <MyUpvotesFilter />
           <MyPostsFilter />
+          <TagFilter />
           <SortResourcesForm />
         </div>
       </section>
 
-      <CurrentTagsList />
       <ResourcesList />
       <ResourcesPagination />
       <Outlet />
@@ -261,6 +273,63 @@ function AddResourceLink() {
         <Plus size={20} /> Add Resource
       </Link>
     </Button.Slot>
+  );
+}
+
+function TagFilter() {
+  const { appliedTags } = useLoaderData<typeof loader>();
+
+  return (
+    <FilterRoot
+      multiple
+      name="tag"
+      selectedValues={appliedTags.map((tag) => {
+        return {
+          color: 'pink-100',
+          label: tag.name,
+          value: tag.id,
+        };
+      })}
+    >
+      <FilterTrigger icon={<Tag />}>Tags</FilterTrigger>
+
+      <FilterPopover>
+        <FilterSearch />
+        <TagList />
+      </FilterPopover>
+    </FilterRoot>
+  );
+}
+
+function TagList() {
+  const { allTags } = useLoaderData<typeof loader>();
+  const { search } = useFilterContext();
+
+  const regex = new RegExp(toEscapedString(search), 'i');
+
+  const filteredTags = allTags.filter((tag) => {
+    return regex.test(tag.name);
+  });
+
+  if (!filteredTags.length) {
+    return <FilterEmptyMessage>No tags found.</FilterEmptyMessage>;
+  }
+
+  return (
+    <FilterList>
+      {filteredTags.map((tag) => {
+        const label = tag.count ? `${tag.name} (${tag.count})` : tag.name;
+
+        return (
+          <FilterItem
+            color="pink-100"
+            key={tag.id}
+            label={label}
+            value={tag.id}
+          />
+        );
+      })}
+    </FilterList>
   );
 }
 
@@ -352,38 +421,6 @@ function SortResourcesForm() {
 
       <ExistingSearchParams exclude={['orderBy']} />
     </Form>
-  );
-}
-
-function CurrentTagsList() {
-  const { tags } = useLoaderData<typeof loader>();
-  const [_searchParams] = useSearchParams();
-
-  if (!tags.length) {
-    return null;
-  }
-
-  return (
-    <ul className="flex flex-wrap items-center gap-2">
-      {tags.map((tag) => {
-        const searchParams = new URLSearchParams(_searchParams);
-
-        // Since there could be multiple tags, we need to specify the value
-        // along with the key.
-        searchParams.delete(tag.param, tag.value);
-
-        return (
-          <li key={tag.value || tag.param}>
-            <Pill
-              color="pink-100"
-              onCloseHref={{ search: searchParams.toString() }}
-            >
-              {tag.name}
-            </Pill>
-          </li>
-        );
-      })}
-    </ul>
   );
 }
 
