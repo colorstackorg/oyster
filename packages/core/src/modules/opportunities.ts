@@ -265,7 +265,7 @@ async function checkForExpiredOpportunities({
   return success({});
 }
 
-type CreateOpportunityInput = {
+type CreateOpportunityFromSlackInput = {
   sendNotification?: boolean;
   slackChannelId: string;
   slackMessageId: string;
@@ -285,11 +285,11 @@ type CreateOpportunityInput = {
  * @param input - Input data for creating an opportunity.
  * @returns Result indicating the success or failure of the operation.
  */
-async function createOpportunity({
+async function createOpportunityFromSlack({
   sendNotification = true,
   slackChannelId,
   slackMessageId,
-}: CreateOpportunityInput): Promise<Result> {
+}: CreateOpportunityFromSlackInput): Promise<Result> {
   const slackMessage = await db
     .selectFrom('slackMessages')
     .select(['studentId', 'text', 'userId as slackUserId'])
@@ -548,90 +548,6 @@ export async function editOpportunity(
 
 // "Refine Opportunity"
 
-const REFINE_OPPORTUNITY_SYSTEM_PROMPT = dedent`
-  You are a helpful assistant that extracts structured data from a website's
-  (likely a job posting) text content.
-`;
-
-// Need to help AI out by telling it the current year...Claude 3.5 doesn't
-// seem to know the current date.
-const CURRENT_YEAR = new Date().getFullYear();
-
-const REFINE_OPPORTUNITY_PROMPT = dedent`
-  Your job is to analyze the given webpage and extract the following information
-  and format it as JSON:
-
-  1. "company": The name of the company offering the opportunity.
-  2. "title": The title of the opportunity, max 75 characters. Do not include
-     the company name in the title.
-  3. "description": A brief description of the opportunity, max 400 characters.
-     Extract the most relevant information including what the opportunity is,
-     who it's for, when, potential compensation and any other relevant details
-     to someone open to the opportunity.
-  4. "expiresAt": The date that the opportunity is no longer relevant, in
-     'YYYY-MM-DD' format. This should almost always be a date in the FUTURE
-     (the current year is ${CURRENT_YEAR}). If the opportunity seemingly never
-     "closes", set this to null.
-  5. "tags": A list of tags that fit this opportunity, maximum 5 tags and
-     minimum 1 tag. This is the MOST IMPORTANT FIELD. We have a list of existing
-     tags in our database that are available to associate with this opportunity.
-     If there are no relevant tags, DO NOT create new tags and instead return
-     null for this field. Some rules for tags:
-      - There shouldn't be more than one of the following tags: AI/ML,
-        Cybersecurity, Data Science, DevOps, PM, QA, Quant, SWE or UI/UX Design.
-      - There shouldn't be more than one of the following tags: Co-op,
-        Early Career, Fellowship, or Internship.
-      - "Early Career" should only be used for full-time roles targeted at
-        recent graduates.
-      - Only use "Fall", "Spring" or "Winter" tags if it is an internship/co-op
-        opportunity that is in those seasons.
-      - Use the "Event" tag if the opportunity is related to an event,
-        conference, or short-term (< 1 week) program.
-
-  Here's the webpage you need to analyze:
-
-  <website_content>
-    $WEBSITE_CONTENT
-  </website_content>
-
-  Here are the existing tags in our database that you can choose from:
-
-  <tags>
-    $TAGS
-  </tags>
-
-  Follow these guidelines:
-  - If you cannot confidently infer a field, set it to null.
-  - If the page is not found, expired, or otherwise not a valid opportunity,
-    set all fields to null.
-  - Double check that your output is based on the website content. Don't make
-    up information that you cannot confidently infer from the website content.
-
-  Your output should be a single JSON object containing these fields. Do not
-  provide any explanation or text outside of the JSON object. Ensure your JSON
-  is properly formatted and valid.
-
-  <output>
-    {
-      "company": "string | null",
-      "description": "string | null",
-      "expiresAt": "string | null",
-      "tags": "string[] | null",
-      "title": "string | null"
-    }
-  </output>
-`;
-
-const RefineOpportunityResponse = z.object({
-  company: z.string().trim().min(1).nullable(),
-  description: z.string().trim().min(1).max(500).nullable(),
-  expiresAt: z.string().nullable(),
-  tags: z.array(z.string().trim().min(1)).min(1).nullable(),
-  title: z.string().trim().min(1).max(100).nullable(),
-});
-
-type RefineOpportunityResponse = z.infer<typeof RefineOpportunityResponse>;
-
 export const RefineOpportunityInput = z.object({
   content: z.string().trim().min(1).max(10_000),
   opportunityId: z.string().trim().min(1),
@@ -657,56 +573,13 @@ type RefineOpportunityInput = z.infer<typeof RefineOpportunityInput> &
 export async function refineOpportunity(
   input: RefineOpportunityInput
 ): Promise<Result> {
-  const tags = await db
-    .selectFrom('opportunityTags')
-    .select(['id', 'name'])
-    .orderBy('name', 'asc')
-    .execute();
+  const parseResult = await parseOpportunityContent(input.content);
 
-  const prompt = REFINE_OPPORTUNITY_PROMPT
-    //
-    .replace('$WEBSITE_CONTENT', input.content)
-    .replace('$TAGS', tags.map((tag) => tag.name).join('\n'));
-
-  const completionResult = await getChatCompletion({
-    maxTokens: 500,
-    messages: [{ role: 'user', content: prompt }],
-    system: [{ type: 'text', text: REFINE_OPPORTUNITY_SYSTEM_PROMPT }],
-    temperature: 0,
-  });
-
-  if (!completionResult.ok) {
-    return completionResult;
+  if (!parseResult.ok) {
+    return parseResult;
   }
 
-  let json: JSON;
-
-  try {
-    json = JSON.parse(completionResult.data);
-  } catch (e) {
-    console.debug(
-      'Failed to parse JSON from AI response.',
-      completionResult.data
-    );
-
-    return fail({
-      code: 400,
-      error: 'Failed to parse JSON from AI response.',
-    });
-  }
-
-  let data: RefineOpportunityResponse;
-
-  try {
-    data = RefineOpportunityResponse.parse(json);
-  } catch (error) {
-    console.error(error);
-
-    return fail({
-      code: 400,
-      error: 'Failed to validate JSON from AI response.',
-    });
-  }
+  const data = parseResult.data;
 
   // If the AI didn't return a title, then we don't want to finish the process
   // because there was no opportunity to refine. We exit gracefully.
@@ -794,6 +667,158 @@ export async function refineOpportunity(
   }
 
   return success(opportunity);
+}
+
+// "Parse Opportunity Content"
+
+const PARSE_OPPORTUNITY_SYSTEM_PROMPT = dedent`
+  You are a helpful assistant that extracts structured data from a website's
+  (likely a job posting) text content.
+`;
+
+// Need to help AI out by telling it the current year...Claude 3.5 doesn't
+// seem to know the current date.
+const CURRENT_YEAR = new Date().getFullYear();
+
+const PARSE_OPPORTUNITY_PROMPT = dedent`
+  Your job is to analyze the given webpage and extract the following information
+  and format it as JSON:
+
+  1. "company": The name of the company offering the opportunity.
+  2. "title": The title of the opportunity, max 75 characters. Do not include
+     the company name in the title.
+  3. "description": A brief description of the opportunity, max 400 characters.
+     Extract the most relevant information including what the opportunity is,
+     who it's for, when, potential compensation and any other relevant details
+     to someone open to the opportunity.
+  4. "expiresAt": The date that the opportunity is no longer relevant, in
+     'YYYY-MM-DD' format. This should almost always be a date in the FUTURE
+     (the current year is ${CURRENT_YEAR}). If the opportunity seemingly never
+     "closes", set this to null.
+  5. "tags": A list of tags that fit this opportunity, maximum 5 tags and
+     minimum 1 tag. This is the MOST IMPORTANT FIELD. We have a list of existing
+     tags in our database that are available to associate with this opportunity.
+     If there are no relevant tags, DO NOT create new tags and instead return
+     null for this field. Some rules for tags:
+      - There shouldn't be more than one of the following tags: AI/ML,
+        Cybersecurity, Data Science, DevOps, PM, QA, Quant, SWE or UI/UX Design.
+      - There shouldn't be more than one of the following tags: Co-op,
+        Early Career, Fellowship, or Internship.
+      - "Early Career" should only be used for full-time roles targeted at
+        recent graduates.
+      - Only use "Fall", "Spring" or "Winter" tags if it is an internship/co-op
+        opportunity that is in those seasons.
+      - Use the "Event" tag if the opportunity is related to an event,
+        conference, or short-term (< 1 week) program.
+
+  Here's the webpage you need to analyze:
+
+  <website_content>
+    $WEBSITE_CONTENT
+  </website_content>
+
+  Here are the existing tags in our database that you can choose from:
+
+  <tags>
+    $TAGS
+  </tags>
+
+  Follow these guidelines:
+  - If you cannot confidently infer a field, set it to null.
+  - If the page is not found, expired, or otherwise not a valid opportunity,
+    set all fields to null.
+  - Double check that your output is based on the website content. Don't make
+    up information that you cannot confidently infer from the website content.
+
+  Your output should be a single JSON object containing these fields. Do not
+  provide any explanation or text outside of the JSON object. Ensure your JSON
+  is properly formatted and valid.
+
+  <output>
+    {
+      "company": "string | null",
+      "description": "string | null",
+      "expiresAt": "string | null",
+      "tags": "string[] | null",
+      "title": "string | null"
+    }
+  </output>
+`;
+
+const ParseOpportunityContentResponse = z.object({
+  company: z.string().trim().min(1).nullable(),
+  description: z.string().trim().min(1).max(500).nullable(),
+  expiresAt: z.string().nullable(),
+  tags: z.array(z.string().trim().min(1)).min(1).nullable(),
+  title: z.string().trim().min(1).max(100).nullable(),
+});
+
+type ParseOpportunityContentResponse = z.infer<
+  typeof ParseOpportunityContentResponse
+>;
+
+/**
+ * Uses AI to parse the website content and return the title, description,
+ * tags, company, etc of the opportunity.
+ *
+ * @param content - Website's content to parse.
+ * @returns The extracted/formatted data that was parsed w/ AI.
+ */
+async function parseOpportunityContent(
+  content: string
+): Promise<Result<ParseOpportunityContentResponse>> {
+  const tags = await db
+    .selectFrom('opportunityTags')
+    .select(['id', 'name'])
+    .orderBy('name', 'asc')
+    .execute();
+
+  const prompt = PARSE_OPPORTUNITY_PROMPT
+    //
+    .replace('$WEBSITE_CONTENT', content)
+    .replace('$TAGS', tags.map((tag) => tag.name).join('\n'));
+
+  const completionResult = await getChatCompletion({
+    maxTokens: 500,
+    messages: [{ role: 'user', content: prompt }],
+    system: [{ type: 'text', text: PARSE_OPPORTUNITY_SYSTEM_PROMPT }],
+    temperature: 0,
+  });
+
+  if (!completionResult.ok) {
+    return completionResult;
+  }
+
+  let json: JSON;
+
+  try {
+    json = JSON.parse(completionResult.data);
+  } catch (e) {
+    console.debug(
+      'Failed to parse JSON from AI response.',
+      completionResult.data
+    );
+
+    return fail({
+      code: 400,
+      error: 'Failed to parse JSON from AI response.',
+    });
+  }
+
+  let data: ParseOpportunityContentResponse;
+
+  try {
+    data = ParseOpportunityContentResponse.parse(json);
+  } catch (error) {
+    console.error(error);
+
+    return fail({
+      code: 400,
+      error: 'Failed to validate JSON from AI response.',
+    });
+  }
+
+  return success(data);
 }
 
 type ReportOpportunityInput = {
@@ -1082,7 +1107,7 @@ export const opportunityWorker = registerWorker(
         return checkForExpiredOpportunities(data);
       })
       .with({ name: 'opportunity.create' }, async ({ data }) => {
-        return createOpportunity(data);
+        return createOpportunityFromSlack(data);
       })
       .exhaustive();
 
