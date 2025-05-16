@@ -66,7 +66,7 @@ type AddOpportunityInput = z.infer<typeof AddOpportunityInput>;
 type AddOpportunityResult = Result<{ id: string }>;
 
 /**
- * Adds a new opportunity using the provided URL.
+ * Adds a new opportunity from the Member Profile, given a link.
  *
  * This function handles checking for duplicates, creating the initial record,
  * and attempting to enrich it by parsing the webpage content. While the initial
