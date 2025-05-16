@@ -13,7 +13,7 @@ import {
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
-import { Bookmark, Calendar, Tag, Zap } from 'react-feather';
+import { Bookmark, Calendar, Plus, Tag, Zap } from 'react-feather';
 
 import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
@@ -350,6 +350,7 @@ export default function OpportunitiesPage() {
     <>
       <Dashboard.Header>
         <Dashboard.Title>Opportunities 💰</Dashboard.Title>
+        <AddOpportunityButton />
       </Dashboard.Header>
 
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -370,6 +371,23 @@ export default function OpportunitiesPage() {
       <OpportunitiesPagination />
       <Outlet />
     </>
+  );
+}
+
+function AddOpportunityButton() {
+  const [searchParams] = useSearchParams();
+
+  return (
+    <Button.Slot>
+      <Link
+        to={{
+          pathname: Route['/opportunities/add'],
+          search: searchParams.toString(),
+        }}
+      >
+        <Plus size={20} /> Add Opportunity
+      </Link>
+    </Button.Slot>
   );
 }
 

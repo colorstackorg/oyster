@@ -44,6 +44,7 @@ const ROUTES = [
   '/offers/internships/:id/edit',
   '/offers/internships/:id/delete',
   '/opportunities',
+  '/opportunities/add',
   '/opportunities/:id',
   '/opportunities/:id/delete',
   '/opportunities/:id/edit',

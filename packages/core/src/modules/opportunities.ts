@@ -27,6 +27,128 @@ import { fail, type Result, success } from '@/shared/utils/core';
 
 // Use Case(s)
 
+const EXPIRED_PHRASES = [
+  '404',
+  'closed',
+  'does not exist',
+  "doesn't exist",
+  'expired',
+  'filled',
+  'no longer accepting',
+  'no longer available',
+  'no longer exists',
+  'no longer open',
+  'not accepting',
+  'not available',
+  'not be found',
+  'not currently accepting',
+  'not found',
+  'not open',
+  'oops',
+  'removed',
+  'sorry',
+];
+
+// "Add Opportunity"
+
+export const AddOpportunityInput = z.object({
+  link: z
+    .string()
+    .trim()
+    .startsWith('http', 'URL must start with "http".')
+    .url(),
+
+  postedBy: z.string().trim().min(1),
+});
+
+type AddOpportunityInput = z.infer<typeof AddOpportunityInput>;
+
+type AddOpportunityResult = Result<{ id: string }>;
+
+/**
+ * Adds a new opportunity from the Member Profile, given a link.
+ *
+ * This function handles checking for duplicates, creating the initial record,
+ * and attempting to enrich it by parsing the webpage content. While the initial
+ * creation succeeds with default values, parsing the content is best-effort -
+ * if it fails, the basic opportunity record is still retained. The reason we
+ * don't fail is that we allow the user to edit the opportunity themselves
+ * immediately after it's created.
+ *
+ * @param input - Object containing the opportunity URL and poster.
+ * @returns Success result with the opportunity ID.
+ */
+export async function addOpportunity({
+  link,
+  postedBy,
+}: AddOpportunityInput): Promise<AddOpportunityResult> {
+  const existingOpportunity = await db
+    .selectFrom('opportunities')
+    .where('link', 'ilike', link)
+    .executeTakeFirst();
+
+  if (existingOpportunity) {
+    return fail({
+      code: 409,
+      error: 'Someone already posted this link.',
+    });
+  }
+
+  // We create a blank opportunity because we want to allow the user to edit
+  // the opportunity themselves regardless if the AI succeeds or not.
+  const opportunity = await db
+    .insertInto('opportunities')
+    .values({
+      createdAt: new Date(),
+      description: 'N/A',
+      expiresAt: dayjs().add(1, 'month').toDate(),
+      id: id(),
+      link,
+      postedBy,
+      title: 'Opportunity',
+    })
+    .returning('id')
+    .executeTakeFirstOrThrow();
+
+  let websiteContent = '';
+
+  try {
+    websiteContent = await getPageContent(link);
+  } catch (e) {
+    reportException(e);
+  }
+
+  // If we can't get the content, we'll just exit gracefully/early.
+  if (!websiteContent) {
+    return success(opportunity);
+  }
+
+  const hasExpired = EXPIRED_PHRASES.some((phrase) => {
+    return websiteContent.toLowerCase().includes(phrase);
+  });
+
+  // If the opportunity is actually expired, we'll delete the blank record
+  // and return a failure message.
+  if (hasExpired) {
+    await db
+      .deleteFrom('opportunities')
+      .where('id', '=', opportunity.id)
+      .executeTakeFirstOrThrow();
+
+    return fail({
+      code: 404,
+      error: 'It looks like the opportunity you are trying to add has closed.',
+    });
+  }
+
+  await refineOpportunity({
+    content: websiteContent,
+    opportunityId: opportunity.id,
+  });
+
+  return success(opportunity);
+}
+
 // "Bookmark Opportunity"
 
 type BookmarkOpportunityInput = {
@@ -139,28 +261,6 @@ export async function checkForDeletedOpportunity({
   }
 }
 
-const EXPIRED_PHRASES = [
-  '404',
-  'closed',
-  'does not exist',
-  "doesn't exist",
-  'expired',
-  'filled',
-  'no longer accepting',
-  'no longer available',
-  'no longer exists',
-  'no longer open',
-  'not accepting',
-  'not available',
-  'not be found',
-  'not currently accepting',
-  'not found',
-  'not open',
-  'oops',
-  'removed',
-  'sorry',
-];
-
 /**
  * This function uses puppeteer to scrape the opportunity's website and
  * determine whether or not the opportunity has closed or not. If it has,
@@ -265,7 +365,7 @@ async function checkForExpiredOpportunities({
   return success({});
 }
 
-type CreateOpportunityInput = {
+type CreateOpportunityFromSlackInput = {
   sendNotification?: boolean;
   slackChannelId: string;
   slackMessageId: string;
@@ -285,11 +385,11 @@ type CreateOpportunityInput = {
  * @param input - Input data for creating an opportunity.
  * @returns Result indicating the success or failure of the operation.
  */
-async function createOpportunity({
+async function createOpportunityFromSlack({
   sendNotification = true,
   slackChannelId,
   slackMessageId,
-}: CreateOpportunityInput): Promise<Result> {
+}: CreateOpportunityFromSlackInput): Promise<Result> {
   const slackMessage = await db
     .selectFrom('slackMessages')
     .select(['studentId', 'text', 'userId as slackUserId'])
@@ -942,6 +1042,7 @@ export async function getOpportunityDetails({
       'opportunities.description',
       'opportunities.expiresAt',
       'opportunities.id',
+      'opportunities.link',
       'opportunities.title',
       'slackMessages.channelId as slackMessageChannelId',
       'slackMessages.createdAt as slackMessagePostedAt',
@@ -1082,7 +1183,7 @@ export const opportunityWorker = registerWorker(
         return checkForExpiredOpportunities(data);
       })
       .with({ name: 'opportunity.create' }, async ({ data }) => {
-        return createOpportunity(data);
+        return createOpportunityFromSlack(data);
       })
       .exhaustive();
 

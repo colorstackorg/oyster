@@ -13,6 +13,7 @@ import {
   useSearchParams,
 } from '@remix-run/react';
 import dayjs from 'dayjs';
+import { AlertCircle } from 'react-feather';
 
 import {
   editOpportunity,
@@ -30,12 +31,17 @@ import {
   Textarea,
   validateForm,
 } from '@oyster/ui';
+import { Callout } from '@oyster/ui/callout';
 
 import { OpportunityTagsField } from '@/routes/_profile.opportunities.tags';
 import { CompanyCombobox } from '@/shared/components/company-combobox';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
-import { ensureUserAuthenticated, user } from '@/shared/session.server';
+import {
+  commitSession,
+  ensureUserAuthenticated,
+  user,
+} from '@/shared/session.server';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -61,6 +67,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
+  const isNewOpportunity = session.get('isNewOpportunity');
+
   const {
     companyCrunchbaseId,
     companyName,
@@ -71,15 +79,23 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     title,
   } = opportunity;
 
-  return json({
-    companyCrunchbaseId,
-    companyName,
-    description,
-    expiresAt: dayjs(expiresAt).tz(tz).format('YYYY-MM-DD'),
-    id,
-    tags,
-    title,
-  });
+  return json(
+    {
+      companyCrunchbaseId,
+      companyName,
+      description,
+      expiresAt: dayjs(expiresAt).tz(tz).format('YYYY-MM-DD'),
+      id,
+      isNewOpportunity,
+      tags,
+      title,
+    },
+    {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    }
+  );
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -112,6 +128,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 export default function EditOpportunity() {
+  const { isNewOpportunity } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
 
   return (
@@ -122,12 +139,36 @@ export default function EditOpportunity() {
       }}
     >
       <Modal.Header>
-        <Modal.Title>Edit Opportunity</Modal.Title>
+        <Modal.Title>
+          {isNewOpportunity ? 'Add Opportunity' : 'Edit Opportunity'}
+        </Modal.Title>
         <Modal.CloseButton />
       </Modal.Header>
 
+      {isNewOpportunity && <NewCallout />}
       <EditOpportunityForm />
     </Modal>
+  );
+}
+
+function NewCallout() {
+  const { tags } = useLoaderData<typeof loader>();
+
+  if (tags?.length) {
+    return (
+      <Callout color="blue" icon={<AlertCircle />}>
+        We extracted the following information from the link using AI. Sometimes
+        the information is not 100% accurate, so please review and update as
+        needed.
+      </Callout>
+    );
+  }
+
+  return (
+    <Callout color="blue" icon={<AlertCircle />}>
+      We need a little more information before we can show this opportunity on
+      the opportunities board.
+    </Callout>
   );
 }
 

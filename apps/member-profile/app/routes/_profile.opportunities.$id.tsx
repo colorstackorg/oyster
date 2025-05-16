@@ -188,14 +188,22 @@ export default function Opportunity() {
 }
 
 function OpportunityTitle() {
-  const { bookmarked, createdAt, expiresAt, id, title } =
+  const { bookmarked, createdAt, expiresAt, id, link, title } =
     useLoaderData<typeof loader>();
+
+  const titleElement = link ? (
+    <a className="link mr-2" href={link} target="_blank">
+      {title}
+    </a>
+  ) : (
+    <span className="mr-2">{title}</span>
+  );
 
   return (
     <div className="flex flex-col gap-1">
       <BookmarkForm opportunityId={id}>
         <Text className="inline" variant="lg">
-          <span className="mr-2">{title}</span>
+          {titleElement}
           <span className="inline-flex align-top">
             <BookmarkButton bookmarked={!!bookmarked} />
           </span>
