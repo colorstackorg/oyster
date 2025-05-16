@@ -27,6 +27,28 @@ import { fail, type Result, success } from '@/shared/utils/core';
 
 // Use Case(s)
 
+const EXPIRED_PHRASES = [
+  '404',
+  'closed',
+  'does not exist',
+  "doesn't exist",
+  'expired',
+  'filled',
+  'no longer accepting',
+  'no longer available',
+  'no longer exists',
+  'no longer open',
+  'not accepting',
+  'not available',
+  'not be found',
+  'not currently accepting',
+  'not found',
+  'not open',
+  'oops',
+  'removed',
+  'sorry',
+];
+
 // "Add Opportunity"
 
 export const AddOpportunityInput = z.object({
@@ -99,6 +121,24 @@ export async function addOpportunity({
   // If we can't get the content, we'll just exit gracefully/early.
   if (!websiteContent) {
     return success(opportunity);
+  }
+
+  const hasExpired = EXPIRED_PHRASES.some((phrase) => {
+    return websiteContent.toLowerCase().includes(phrase);
+  });
+
+  // If the opportunity is actually expired, we'll delete the blank record
+  // and return a failure message.
+  if (hasExpired) {
+    await db
+      .deleteFrom('opportunities')
+      .where('id', '=', opportunity.id)
+      .executeTakeFirstOrThrow();
+
+    return fail({
+      code: 404,
+      error: 'It looks like the opportunity you are trying to add has expired.',
+    });
   }
 
   const parseResult = await parseOpportunityContent(websiteContent);
@@ -269,28 +309,6 @@ export async function checkForDeletedOpportunity({
     await deleteOpportunity({ opportunityId: opportunity.id });
   }
 }
-
-const EXPIRED_PHRASES = [
-  '404',
-  'closed',
-  'does not exist',
-  "doesn't exist",
-  'expired',
-  'filled',
-  'no longer accepting',
-  'no longer available',
-  'no longer exists',
-  'no longer open',
-  'not accepting',
-  'not available',
-  'not be found',
-  'not currently accepting',
-  'not found',
-  'not open',
-  'oops',
-  'removed',
-  'sorry',
-];
 
 /**
  * This function uses puppeteer to scrape the opportunity's website and
