@@ -1116,6 +1116,7 @@ export async function getOpportunityDetails({
       'opportunities.description',
       'opportunities.expiresAt',
       'opportunities.id',
+      'opportunities.link',
       'opportunities.title',
       'slackMessages.channelId as slackMessageChannelId',
       'slackMessages.createdAt as slackMessagePostedAt',
