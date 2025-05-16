@@ -27,6 +27,137 @@ import { fail, type Result, success } from '@/shared/utils/core';
 
 // Use Case(s)
 
+// "Add Opportunity"
+
+export const AddOpportunityInput = z.object({
+  link: z
+    .string()
+    .trim()
+    .startsWith('http', 'URL must start with "http".')
+    .url(),
+
+  postedBy: z.string().trim().min(1),
+});
+
+type AddOpportunityInput = z.infer<typeof AddOpportunityInput>;
+
+type AddOpportunityResult = Result<{ id: string }>;
+
+/**
+ * Adds a new opportunity using the provided URL.
+ *
+ * This function handles checking for duplicates, creating the initial record,
+ * and attempting to enrich it by parsing the webpage content. While the initial
+ * creation succeeds with default values, parsing the content is best-effort -
+ * if it fails, the basic opportunity record is still retained. The reason we
+ * don't fail is that we allow the user to edit the opportunity themselves
+ * immediately after it's created.
+ *
+ * @param input - Object containing the opportunity URL and poster.
+ * @returns Success result with the opportunity ID.
+ */
+export async function addOpportunity({
+  link,
+  postedBy,
+}: AddOpportunityInput): Promise<AddOpportunityResult> {
+  const existingOpportunity = await db
+    .selectFrom('opportunities')
+    .where('link', 'ilike', link)
+    .executeTakeFirst();
+
+  if (existingOpportunity) {
+    return fail({
+      code: 409,
+      error: 'Someone already posted this link.',
+    });
+  }
+
+  // We create a blank opportunity because we want to allow the user to edit
+  // the opportunity themselves regardless if the AI succeeds or not.
+  const opportunity = await db
+    .insertInto('opportunities')
+    .values({
+      createdAt: new Date(),
+      description: 'N/A',
+      expiresAt: dayjs().add(1, 'month').toDate(),
+      id: id(),
+      link,
+      postedBy,
+      title: 'Opportunity',
+    })
+    .returning('id')
+    .executeTakeFirstOrThrow();
+
+  let websiteContent = '';
+
+  try {
+    websiteContent = await getPageContent(link);
+  } catch (e) {
+    reportException(e);
+  }
+
+  // If we can't get the content, we'll just exit gracefully/early.
+  if (!websiteContent) {
+    return success(opportunity);
+  }
+
+  const parseResult = await parseOpportunityContent(websiteContent);
+
+  // If we can't parse the content, we'll just exit gracefully/early.
+  if (!parseResult.ok) {
+    return success(opportunity);
+  }
+
+  const { company, description, expiresAt, tags, title } = parseResult.data;
+
+  await db.transaction().execute(async (trx) => {
+    const companyId = company
+      ? await getMostRelevantCompany(trx, company)
+      : null;
+
+    await trx
+      .updateTable('opportunities')
+      .set({
+        ...(description && { description }),
+        ...(expiresAt && { expiresAt: new Date(expiresAt) }),
+        ...(title && { title }),
+        companyId,
+        refinedAt: new Date(),
+      })
+      .where('id', '=', opportunity.id)
+      .returning(['id'])
+      .executeTakeFirstOrThrow();
+
+    if (!tags) {
+      return;
+    }
+
+    const matchedTags = await trx
+      .selectFrom('opportunityTags')
+      .select('id')
+      .where('name', 'in', tags)
+      .execute();
+
+    if (!matchedTags.length) {
+      return;
+    }
+
+    await trx
+      .insertInto('opportunityTagAssociations')
+      .values(
+        matchedTags.map((tag) => {
+          return {
+            opportunityId: opportunity.id,
+            tagId: tag.id,
+          };
+        })
+      )
+      .execute();
+  });
+
+  return success(opportunity);
+}
+
 // "Bookmark Opportunity"
 
 type BookmarkOpportunityInput = {
