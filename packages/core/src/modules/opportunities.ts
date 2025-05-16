@@ -648,128 +648,7 @@ export async function editOpportunity(
 
 // "Refine Opportunity"
 
-export const RefineOpportunityInput = z.object({
-  content: z.string().trim().min(1).max(10_000),
-  opportunityId: z.string().trim().min(1),
-});
-
-type RefineOpportunityInput = z.infer<typeof RefineOpportunityInput> &
-  Partial<{
-    slackChannelId: string;
-    slackUserId: string;
-  }>;
-
-/**
- * Refines an opportunity by extracting structured data from the given
- * webpage content.
- *
- * The most important piece is extracting the tags w/ AI. We try our best to
- * use existing tags in our database, but if there are no relevant tags, we'll
- * create a new one.
- *
- * @param input - The content of the webpage to extract data from.
- * @returns Result indicating the success or failure of the operation.
- */
-export async function refineOpportunity(
-  input: RefineOpportunityInput
-): Promise<Result> {
-  const parseResult = await parseOpportunityContent(input.content);
-
-  if (!parseResult.ok) {
-    return parseResult;
-  }
-
-  const data = parseResult.data;
-
-  // If the AI didn't return a title, then we don't want to finish the process
-  // because there was no opportunity to refine. We exit gracefully.
-  if (!data.title || !data.description) {
-    if (input.slackChannelId && input.slackUserId) {
-      sendOpportunityRefinementNotification({
-        opportunityId: input.opportunityId,
-        slackChannelId: input.slackChannelId,
-        slackUserId: input.slackUserId,
-      });
-    }
-
-    return success({});
-  }
-
-  const opportunity = await db.transaction().execute(async (trx) => {
-    const companyId = data.company
-      ? await getMostRelevantCompany(trx, data.company)
-      : null;
-
-    const opportunity = await trx
-      .updateTable('opportunities')
-      .set({
-        ...(data.description && { description: data.description }),
-        ...(data.expiresAt && { expiresAt: new Date(data.expiresAt) }),
-        ...(data.title && { title: data.title }),
-        companyId,
-      })
-      .where('id', '=', input.opportunityId)
-      .returning(['id', 'refinedAt', 'slackChannelId', 'slackMessageId'])
-      .executeTakeFirstOrThrow();
-
-    // We only want to set this once so that we can evaluate the time it takes
-    // from creation to refinement of an opportunity.
-    await trx
-      .updateTable('opportunities')
-      .set({ refinedAt: new Date() })
-      .where('id', '=', input.opportunityId)
-      .where('refinedAt', 'is', null)
-      .executeTakeFirst();
-
-    if (!data.tags) {
-      return opportunity;
-    }
-
-    const matchedTags = await trx
-      .selectFrom('opportunityTags')
-      .select('id')
-      .where('name', 'in', data.tags)
-      .execute();
-
-    await trx
-      .insertInto('opportunityTagAssociations')
-      .values(
-        matchedTags.map((tag) => {
-          return {
-            opportunityId: opportunity.id,
-            tagId: tag.id,
-          };
-        })
-      )
-      .onConflict((oc) => oc.doNothing())
-      .execute();
-
-    return opportunity;
-  });
-
-  // If this is the first time the opportunity has been refined, we want to send
-  // a notification to the channel.
-  if (
-    opportunity.slackChannelId &&
-    opportunity.slackMessageId &&
-    !opportunity.refinedAt
-  ) {
-    const message = `I added this to our <${STUDENT_PROFILE_URL}/opportunities/${opportunity.id}|opportunities board>! 📌`;
-
-    job('notification.slack.send', {
-      channel: opportunity.slackChannelId,
-      message,
-      threadId: opportunity.slackMessageId,
-      workspace: 'regular',
-    });
-  }
-
-  return success(opportunity);
-}
-
-// "Parse Opportunity Content"
-
-const PARSE_OPPORTUNITY_SYSTEM_PROMPT = dedent`
+const REFINE_OPPORTUNITY_SYSTEM_PROMPT = dedent`
   You are a helpful assistant that extracts structured data from a website's
   (likely a job posting) text content.
 `;
@@ -778,7 +657,7 @@ const PARSE_OPPORTUNITY_SYSTEM_PROMPT = dedent`
 // seem to know the current date.
 const CURRENT_YEAR = new Date().getFullYear();
 
-const PARSE_OPPORTUNITY_PROMPT = dedent`
+const REFINE_OPPORTUNITY_PROMPT = dedent`
   Your job is to analyze the given webpage and extract the following information
   and format it as JSON:
 
@@ -843,7 +722,7 @@ const PARSE_OPPORTUNITY_PROMPT = dedent`
   </output>
 `;
 
-const ParseOpportunityContentResponse = z.object({
+const RefineOpportunityResponse = z.object({
   company: z.string().trim().min(1).nullable(),
   description: z.string().trim().min(1).max(500).nullable(),
   expiresAt: z.string().nullable(),
@@ -851,35 +730,48 @@ const ParseOpportunityContentResponse = z.object({
   title: z.string().trim().min(1).max(100).nullable(),
 });
 
-type ParseOpportunityContentResponse = z.infer<
-  typeof ParseOpportunityContentResponse
->;
+type RefineOpportunityResponse = z.infer<typeof RefineOpportunityResponse>;
+
+export const RefineOpportunityInput = z.object({
+  content: z.string().trim().min(1).max(10_000),
+  opportunityId: z.string().trim().min(1),
+});
+
+type RefineOpportunityInput = z.infer<typeof RefineOpportunityInput> &
+  Partial<{
+    slackChannelId: string;
+    slackUserId: string;
+  }>;
 
 /**
- * Uses AI to parse the website content and return the title, description,
- * tags, company, etc of the opportunity.
+ * Refines an opportunity by extracting structured data from the given
+ * webpage content.
  *
- * @param content - Website's content to parse.
- * @returns The extracted/formatted data that was parsed w/ AI.
+ * The most important piece is extracting the tags w/ AI. We try our best to
+ * use existing tags in our database, but if there are no relevant tags, we'll
+ * create a new one.
+ *
+ * @param input - The content of the webpage to extract data from.
+ * @returns Result indicating the success or failure of the operation.
  */
-async function parseOpportunityContent(
-  content: string
-): Promise<Result<ParseOpportunityContentResponse>> {
+export async function refineOpportunity(
+  input: RefineOpportunityInput
+): Promise<Result> {
   const tags = await db
     .selectFrom('opportunityTags')
     .select(['id', 'name'])
     .orderBy('name', 'asc')
     .execute();
 
-  const prompt = PARSE_OPPORTUNITY_PROMPT
+  const prompt = REFINE_OPPORTUNITY_PROMPT
     //
-    .replace('$WEBSITE_CONTENT', content)
+    .replace('$WEBSITE_CONTENT', input.content)
     .replace('$TAGS', tags.map((tag) => tag.name).join('\n'));
 
   const completionResult = await getChatCompletion({
     maxTokens: 500,
     messages: [{ role: 'user', content: prompt }],
-    system: [{ type: 'text', text: PARSE_OPPORTUNITY_SYSTEM_PROMPT }],
+    system: [{ type: 'text', text: REFINE_OPPORTUNITY_SYSTEM_PROMPT }],
     temperature: 0,
   });
 
@@ -903,10 +795,10 @@ async function parseOpportunityContent(
     });
   }
 
-  let data: ParseOpportunityContentResponse;
+  let data: RefineOpportunityResponse;
 
   try {
-    data = ParseOpportunityContentResponse.parse(json);
+    data = RefineOpportunityResponse.parse(json);
   } catch (error) {
     console.error(error);
 
@@ -916,7 +808,92 @@ async function parseOpportunityContent(
     });
   }
 
-  return success(data);
+  // If the AI didn't return a title, then we don't want to finish the process
+  // because there was no opportunity to refine. We exit gracefully.
+  if (!data.title || !data.description) {
+    if (input.slackChannelId && input.slackUserId) {
+      sendOpportunityRefinementNotification({
+        opportunityId: input.opportunityId,
+        slackChannelId: input.slackChannelId,
+        slackUserId: input.slackUserId,
+      });
+    }
+
+    return success({});
+  }
+
+  const opportunity = await db.transaction().execute(async (trx) => {
+    const companyId = data.company
+      ? await getMostRelevantCompany(trx, data.company)
+      : null;
+
+    const expiresAt = data.expiresAt ? new Date(data.expiresAt) : undefined;
+
+    const opportunity = await trx
+      .updateTable('opportunities')
+      .set({
+        ...(data.description && { description: data.description }),
+        ...(data.title && { title: data.title }),
+        companyId,
+        expiresAt,
+      })
+      .where('id', '=', input.opportunityId)
+      .returning(['id', 'refinedAt', 'slackChannelId', 'slackMessageId'])
+      .executeTakeFirstOrThrow();
+
+    // We only want to set this once so that we can evaluate the time it takes
+    // from creation to refinement of an opportunity.
+    await trx
+      .updateTable('opportunities')
+      .set({ refinedAt: new Date() })
+      .where('id', '=', input.opportunityId)
+      .where('refinedAt', 'is', null)
+      .executeTakeFirst();
+
+    if (!data.tags) {
+      return opportunity;
+    }
+
+    const matchedTags = await trx
+      .selectFrom('opportunityTags')
+      .select('id')
+      .where('name', 'in', data.tags)
+      .execute();
+
+    await trx
+      .insertInto('opportunityTagAssociations')
+      .values(
+        matchedTags.map((tag) => {
+          return {
+            opportunityId: opportunity.id,
+            tagId: tag.id,
+          };
+        })
+      )
+      .onConflict((oc) => oc.doNothing())
+      .execute();
+
+    return opportunity;
+  });
+
+  // If this is the first time the opportunity has been refined, we want to send
+  // a notification to the channel.
+  if (
+    opportunity.slackChannelId &&
+    opportunity.slackMessageId &&
+    !opportunity.refinedAt
+  ) {
+    const message = `I added this to our <${STUDENT_PROFILE_URL}/opportunities/${opportunity.id}|opportunities board>! 📌`;
+
+    job('notification.slack.send', {
+      channel: opportunity.slackChannelId,
+      message,
+      threadId: opportunity.slackMessageId,
+      workspace: 'regular',
+    });
+  }
+
+  return success(opportunity);
 }
 
 type ReportOpportunityInput = {
