@@ -32,7 +32,7 @@ export function Callout({ children, color, icon }: CalloutProps) {
     <div
       className={cx('flex items-start gap-2 rounded-lg p-4', backgroundColor)}
     >
-      {icon && <div className="mt-1"></div>}
+      {icon && <div className="mt-1">{icon}</div>}
 
       <Text className={textColor} variant="sm">
         {children}

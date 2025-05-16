@@ -141,58 +141,9 @@ export async function addOpportunity({
     });
   }
 
-  const parseResult = await parseOpportunityContent(websiteContent);
-
-  // If we can't parse the content, we'll just exit gracefully/early.
-  if (!parseResult.ok) {
-    return success(opportunity);
-  }
-
-  const { company, description, expiresAt, tags, title } = parseResult.data;
-
-  await db.transaction().execute(async (trx) => {
-    const companyId = company
-      ? await getMostRelevantCompany(trx, company)
-      : null;
-
-    await trx
-      .updateTable('opportunities')
-      .set({
-        ...(description && { description }),
-        ...(expiresAt && { expiresAt: new Date(expiresAt) }),
-        ...(title && { title }),
-        companyId,
-        refinedAt: new Date(),
-      })
-      .where('id', '=', opportunity.id)
-      .returning(['id'])
-      .executeTakeFirstOrThrow();
-
-    if (!tags) {
-      return;
-    }
-
-    const matchedTags = await trx
-      .selectFrom('opportunityTags')
-      .select('id')
-      .where('name', 'in', tags)
-      .execute();
-
-    if (!matchedTags.length) {
-      return;
-    }
-
-    await trx
-      .insertInto('opportunityTagAssociations')
-      .values(
-        matchedTags.map((tag) => {
-          return {
-            opportunityId: opportunity.id,
-            tagId: tag.id,
-          };
-        })
-      )
-      .execute();
+  await refineOpportunity({
+    content: websiteContent,
+    opportunityId: opportunity.id,
   });
 
   return success(opportunity);
@@ -749,15 +700,13 @@ export async function refineOpportunity(
       ? await getMostRelevantCompany(trx, data.company)
       : null;
 
-    const expiresAt = data.expiresAt ? new Date(data.expiresAt) : undefined;
-
     const opportunity = await trx
       .updateTable('opportunities')
       .set({
         ...(data.description && { description: data.description }),
+        ...(data.expiresAt && { expiresAt: new Date(data.expiresAt) }),
         ...(data.title && { title: data.title }),
         companyId,
-        expiresAt,
       })
       .where('id', '=', input.opportunityId)
       .returning(['id', 'refinedAt', 'slackChannelId', 'slackMessageId'])
