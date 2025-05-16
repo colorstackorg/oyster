@@ -137,7 +137,7 @@ export async function addOpportunity({
 
     return fail({
       code: 404,
-      error: 'It looks like the opportunity you are trying to add has expired.',
+      error: 'It looks like the opportunity you are trying to add has closed.',
     });
   }
 
