@@ -146,7 +146,6 @@ export default function ProfileLayout() {
             <Dashboard.NavigationLink
               icon={<Users />}
               label="Peer Help"
-              isNew
               pathname={Route['/peer-help']}
               prefetch="intent"
             />
