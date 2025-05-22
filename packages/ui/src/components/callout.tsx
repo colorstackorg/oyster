@@ -5,7 +5,7 @@ import { Text } from './text';
 import { cx } from '../utils/cx';
 
 type CalloutProps = PropsWithChildren<{
-  color: 'blue' | 'green' | 'red';
+  color: 'blue' | 'green' | 'red' | 'yellow';
   icon?: React.ReactElement;
 }>;
 
@@ -14,12 +14,14 @@ export function Callout({ children, color, icon }: CalloutProps) {
     .with('blue', () => 'bg-blue-500/10')
     .with('green', () => 'bg-green-500/10')
     .with('red', () => 'bg-red-500/10')
+    .with('yellow', () => 'bg-yellow-500/10')
     .exhaustive();
 
   const textColor = match(color)
     .with('blue', () => 'text-blue-500')
     .with('green', () => 'text-green-500')
     .with('red', () => 'text-red-500')
+    .with('yellow', () => 'text-yellow-700')
     .exhaustive();
 
   if (icon) {
