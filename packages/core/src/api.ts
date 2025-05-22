@@ -29,6 +29,7 @@ export { job } from './infrastructure/bull';
 export { OAuthCodeState } from './modules/authentication/authentication.types';
 export { loginWithOAuth } from './modules/authentication/use-cases/login-with-oauth';
 export { saveGoogleDriveCredentials } from './modules/google-drive';
+export { getLinkedInProfileDifferential } from './modules/linkedin';
 export { Environment } from './shared/types';
 
 /**
