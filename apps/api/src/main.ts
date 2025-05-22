@@ -5,7 +5,11 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 
-import { startBullWorkers } from '@oyster/core/api';
+import {
+  getLinkedInProfileDifferential,
+  startBullWorkers,
+} from '@oyster/core/api';
+import { run } from '@oyster/utils';
 
 import { healthRouter } from './routers/health.router';
 import { oauthRouter } from './routers/oauth.router';
@@ -13,7 +17,13 @@ import { slackEventRouter, slackShortcutsRouter } from './routers/slack.router';
 import { ENV } from './shared/env';
 import { type RawBodyRequest } from './shared/types';
 
-bootstrap();
+// run(async () => {
+//   const differential = await getLinkedInProfileDifferential('8');
+
+//   console.log(differential);
+// });
+
+// bootstrap();
 
 async function bootstrap() {
   const app = express();
