@@ -59,7 +59,7 @@ const LinkedInExperience = z.object({
   ]),
   location: z.string().nullable(),
   locationType: z.enum(['hybrid', 'in_person', 'remote']).nullable(),
-  startDate: z.string().nullable(),
+  startDate: z.string(),
   title: z.string(),
 });
 
@@ -71,10 +71,10 @@ const LinkedInProfile = z.object({
   educations: z.array(LinkedInEducation),
 
   /**
-   * Only consider work experiences that are related to the technology industry.
-   * For example, a job as a barista is not a technology experience, but an
-   * experience as a software engineer, data scientists or something adjacent
-   * is.
+   * Only consider professional work experiences. Filter out non-professional
+   * experiences like service industry jobs (waitress, server, etc.). Keep
+   * relevant professional experiences like being a founder, even if not
+   * directly technical.
    */
   experiences: z.array(LinkedInExperience),
   headline: z.string().nullable(),
@@ -105,6 +105,8 @@ type ChangeCommand = z.infer<typeof ChangeCommand>;
 export async function syncLinkedInProfile(memberId: string) {
   const commands = await getLinkedInProfileDifferential(memberId);
 
+  console.log('commands', commands);
+
   await db.transaction().execute(async (trx) => {
     await Promise.all(
       commands.map(async (command) => {
@@ -112,47 +114,6 @@ export async function syncLinkedInProfile(memberId: string) {
       })
     );
   });
-}
-
-async function getMostRelevantSchool(trx: Transaction<DB>, schoolName: string) {
-  return trx
-    .selectFrom('schools')
-    .select('id')
-    .where((eb) => {
-      return eb.or([
-        eb('name', 'ilike', `%${schoolName}%`),
-        sql<boolean>`similarity(name, ${schoolName}) > 0.5`,
-        sql<boolean>`word_similarity(name, ${schoolName}) > 0.5`,
-      ]);
-    })
-    .orderBy(sql`similarity(name, ${schoolName})`, 'desc')
-    .orderBy(sql`word_similarity(name, ${schoolName})`, 'desc')
-    .limit(1)
-    .executeTakeFirst();
-}
-
-async function getMostRelevantLocation(location: string | null) {
-  let locationCity = null;
-  let locationState = null;
-
-  if (location) {
-    const cities = await getAutocompletedCities(location);
-    const city = cities?.[0];
-
-    if (city) {
-      const cityDetails = await getCityDetails(city.id);
-
-      if (cityDetails && cityDetails.city && cityDetails.state) {
-        locationCity = cityDetails.city;
-        locationState = cityDetails.state;
-      }
-    }
-  }
-
-  return {
-    city: locationCity,
-    state: locationState,
-  };
 }
 
 async function executeChangeCommand(
@@ -170,11 +131,11 @@ async function executeChangeCommand(
         .values({
           ...(school ? { schoolId: school.id } : { otherSchool: data.school }),
           degreeType: data.degreeType,
-          endDate: data.endDate || new Date(), // TODO: Allow null start/end date in database.
+          endDate: data.endDate,
           id: educationId,
           major: data.major,
           otherMajor: data.otherMajor,
-          startDate: data.startDate || new Date(), // TODO: Allow null start/end date in database.
+          startDate: data.startDate,
           studentId: memberId,
         })
         .onConflict((oc) => {
@@ -218,12 +179,12 @@ async function executeChangeCommand(
           ...(companyId && { companyId }),
           ...(!companyId && { companyName: data.company }),
           employmentType: data.employmentType,
-          endDate: data.endDate || new Date() || null, // TODO: Allow null start/end date in database.
+          endDate: data.endDate,
           id: workExperienceId,
           locationCity: city,
           locationState: state,
           locationType,
-          startDate: data.startDate || new Date(), // TODO: Allow null start/end date in database.
+          startDate: data.startDate,
           studentId: memberId,
           title: data.title,
         })
@@ -246,6 +207,47 @@ async function executeChangeCommand(
         .execute();
     })
     .exhaustive();
+}
+
+async function getMostRelevantSchool(trx: Transaction<DB>, schoolName: string) {
+  return trx
+    .selectFrom('schools')
+    .select('id')
+    .where((eb) => {
+      return eb.or([
+        eb('name', 'ilike', `%${schoolName}%`),
+        sql<boolean>`similarity(name, ${schoolName}) > 0.5`,
+        sql<boolean>`word_similarity(name, ${schoolName}) > 0.5`,
+      ]);
+    })
+    .orderBy(sql`similarity(name, ${schoolName})`, 'desc')
+    .orderBy(sql`word_similarity(name, ${schoolName})`, 'desc')
+    .limit(1)
+    .executeTakeFirst();
+}
+
+async function getMostRelevantLocation(location: string | null) {
+  let locationCity = null;
+  let locationState = null;
+
+  if (location) {
+    const cities = await getAutocompletedCities(location);
+    const city = cities?.[0];
+
+    if (city) {
+      const cityDetails = await getCityDetails(city.id);
+
+      if (cityDetails && cityDetails.city && cityDetails.state) {
+        locationCity = cityDetails.city;
+        locationState = cityDetails.state;
+      }
+    }
+  }
+
+  return {
+    city: locationCity,
+    state: locationState,
+  };
 }
 
 // "Get LinkedIn Profile Differential"
@@ -332,38 +334,30 @@ export async function getLinkedInProfileDifferential(
     return [];
   }
 
-  console.log('work experiences', workExperiences);
-  console.log('educations', educations);
-
   const linkedInProfile = await getLinkedInProfile(member.linkedInUrl);
 
-  console.log('linkedInProfile', linkedInProfile);
+  console.log('profile', linkedInProfile);
 
   const SYNC_LINKEDIN_PROMPT = dedent`
     Compare the following database records with LinkedIn profile data and generate commands to synchronize them.
     Output must be valid JSON matching these types:
 
     type EducationCommand = {
-      type: 'add' | 'edit';
-      recordType: 'education';
-      // For EDIT commands, include the ID of existing record.
-      id?: string;
-      fields: {
+      type: 'education';
+      data: {
         degreeType: 'associate' | 'bachelors' | 'certificate' | 'doctoral' | 'masters' | 'professional';
         endDate: string | null;
         major: 'artificial_intelligence' | 'computer_science' | 'data_science' | 'electrical_or_computer_engineering' | 'information_science' | 'other';
         otherMajor: string | null;
         school: string;
         startDate: string | null;
+        id?: string; // For "edit" commands, include the ID of existing record.
       }
     }
 
     type ExperienceCommand = {
-      type: 'add' | 'edit';
-      recordType: 'experience';
-      // For EDIT commands, include the ID of existing record.
-      id?: string;
-      fields: {
+      type: 'experience';
+      data: {
         company: string;
         endDate: string | null;
         employmentType: 'apprenticeship' | 'contract' | 'freelance' | 'full_time' | 'internship' | 'part_time';
@@ -371,6 +365,7 @@ export async function getLinkedInProfileDifferential(
         locationType: 'hybrid' | 'in_person' | 'remote' | null;
         startDate: string | null;
         title: string;
+        id?: string; // For "edit" commands, include the ID of existing record.
       }
     }
 
@@ -387,10 +382,20 @@ export async function getLinkedInProfileDifferential(
     </linkedin_profile>
 
     Generate an array of Command objects that will synchronize the database with LinkedIn.
-    Only include commands where there are actual differences to sync.
-    For EDIT commands, only include fields that have changed from the database record.
+    Only include commands where there are actual differences to sync. If there are
+    no differences in the database record and the LinkedIn profile, do not include
+    a command for it.
     Your output should be a single JSON array containing Command objects.
     Do not provide any explanation or text outside of the JSON array.
+
+    For all start/end dates, use the format YYYY-MM-DD. Default to the first
+    date of the month if no day is provided (ie: 2025-01 becomes 2025-01-01).
+
+    If no month is provided for an education's start date, default to August.
+    If no month is provided for an education's end date, default to May.
+
+    If no month is provided for an experience's start date, default to January.
+    If no month is provided for an experience's end date, default to December.
   `;
 
   const prompt = SYNC_LINKEDIN_PROMPT
@@ -418,27 +423,25 @@ export async function getLinkedInProfileDifferential(
     throw new Error('Failed to generate LinkedIn sync commands');
   }
 
-  let commands: any;
+  let commandsJson: any;
 
   try {
-    const commandsJson = JSON.parse(completionResult.data);
-    const commandsResult = ChangeCommand.array().safeParse(commandsJson);
-
-    if (!commandsResult.success) {
-      throw new ColorStackError()
-        .withMessage('Failed to parse LinkedIn sync commands from AI.')
-        .withContext({ error: commandsResult.error, response: commandsJson })
-        .report();
-    }
-
-    commands = commandsResult.data;
+    commandsJson = JSON.parse(completionResult.data);
   } catch (error) {
     console.error('Failed to parse AI response:', completionResult.data);
     throw new Error('Failed to parse LinkedIn sync commands');
   }
 
-  // TODO: Execute the commands to sync the database
-  console.log('LinkedIn Sync Commands:', commands);
+  const commandsResult = ChangeCommand.array().safeParse(commandsJson);
+
+  if (!commandsResult.success) {
+    throw new ColorStackError()
+      .withMessage('Failed to parse LinkedIn sync commands from AI.')
+      .withContext({ error: commandsResult.error, response: commandsJson })
+      .report();
+  }
+
+  const commands = commandsResult.data;
 
   return commands;
 }
@@ -453,6 +456,8 @@ export async function getLinkedInProfile(
   async function fn() {
     const { data: run } = await runLinkedInProfileActor(url);
     const dataset = await getLinkedInProfileDataset(run.defaultDatasetId);
+
+    console.log('dataset', dataset);
     const profile = await cleanLinkedInProfile(dataset);
 
     return profile;
@@ -572,7 +577,7 @@ const LINKEDIN_PROFILE_PROMPT = dedent`
     ]),
     location: z.string().nullable(),
     locationType: z.enum(['hybrid', 'in_person', 'remote']).nullable(),
-    startDate: z.string().nullable(),
+    startDate: z.string(),
     title: z.string(),
   });
 
@@ -584,10 +589,10 @@ const LINKEDIN_PROFILE_PROMPT = dedent`
     educations: z.array(LinkedInEducation),
 
     /**
-     * Only consider work experiences that are related to the technology industry.
-     * For example, a job as a barista is not a technology experience, but an
-     * experience as a software engineer, data scientists or something adjacent
-     * is.
+     * Only consider professional work experiences. Filter out non-professional
+     * experiences like service industry jobs (waitress, server, etc.). Keep
+     * relevant professional experiences like being a founder, even if not
+     * directly technical.
      */
     experiences: z.array(LinkedInExperience),
 
