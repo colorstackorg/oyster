@@ -8,7 +8,7 @@ import { Route } from '@/shared/constants';
 
 type EducationExperienceItemProps = {
   education: {
-    date: string;
+    date?: string;
     degreeType: string;
     id: string;
     location: string | null;
@@ -66,7 +66,7 @@ export function EducationExperienceItem({
             {education.degreeType}, {education.major}
           </Text>
 
-          <Text color="gray-500">{education.date}</Text>
+          {!!education.date && <Text color="gray-500">{education.date}</Text>}
         </div>
       </div>
     </Experience>

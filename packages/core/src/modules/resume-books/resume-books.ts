@@ -581,7 +581,7 @@ export async function submitResume({
 
   // In order to keep the resume file names consistent for the partners,
   // we'll use the same naming convention based on the submitter.
-  const graduationYear = education.endDate.getFullYear();
+  const graduationYear = education.endDate?.getFullYear();
   const fileName = `${lastName}_${firstName}_${graduationYear}.pdf`;
 
   // We need to do a little massaging/formatting of the data before we sent it
@@ -606,13 +606,19 @@ export async function submitResume({
     'First Name': firstName,
 
     'Graduation Season': run(() => {
-      return education.endDate.getMonth() <= 6 ? 'Spring' : 'Fall';
+      let result = 'Spring';
+
+      if (education.endDate && education.endDate.getMonth() > 6) {
+        result = 'Fall';
+      }
+
+      return result;
     }),
 
     // We need to convert to a string because Airtable expects strings for
     // their "Single Select" fields, which we're using instead of a "Number"
     // field.
-    'Graduation Year': graduationYear.toString(),
+    'Graduation Year': graduationYear?.toString(),
 
     Hometown: run(() => {
       // The hometown is a formatted string that includes a minimum of city

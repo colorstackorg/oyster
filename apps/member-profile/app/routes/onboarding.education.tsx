@@ -162,12 +162,12 @@ function FieldsetFromEducation() {
         name="otherMajor"
       />
       <EducationForm.StartDateField
-        defaultValue={education.startDate.slice(0, 7) || undefined}
+        defaultValue={education.startDate?.slice(0, 7)}
         error={errors.startDate}
         name="startDate"
       />
       <EducationForm.EndDateField
-        defaultValue={education.endDate.slice(0, 7)}
+        defaultValue={education.endDate?.slice(0, 7)}
         error={errors.endDate}
         name="endDate"
       />

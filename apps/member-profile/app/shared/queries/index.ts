@@ -6,7 +6,7 @@ import {
   FORMATTED_DEGREEE_TYPE,
 } from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
-import { toTitleCase } from '@oyster/utils';
+import { run, toTitleCase } from '@oyster/utils';
 
 // "educations"
 
@@ -49,11 +49,19 @@ export async function getEducationExperiences(id: string) {
       location = `${experience.addressCity}, ${experience.addressState}`;
     }
 
-    const startMonth = dayjs.utc(experience.startDate).format('MMMM YYYY');
-    const endMonth = dayjs.utc(experience.endDate).format('MMMM YYYY');
+    const date = run(() => {
+      if (!experience.startDate && !experience.endDate) {
+        return undefined;
+      }
+
+      const startMonth = dayjs.utc(experience.startDate).format('MMMM YYYY');
+      const endMonth = dayjs.utc(experience.endDate).format('MMMM YYYY');
+
+      return `${startMonth} - ${endMonth}`;
+    });
 
     return {
-      date: `${startMonth} - ${endMonth}`,
+      date,
       degreeType: FORMATTED_DEGREEE_TYPE[experience.degreeType as DegreeType],
       id: experience.id,
       location,
