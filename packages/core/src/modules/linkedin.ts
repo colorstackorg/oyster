@@ -10,7 +10,6 @@ import { getChatCompletion } from '@/infrastructure/ai';
 import { withCache } from '@/infrastructure/redis';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { LocationType } from '@/modules/employment/employment.types';
-import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import {
   getAutocompletedCities,
   getCityDetails,
@@ -84,35 +83,19 @@ const LinkedInProfile = z.object({
 
 type LinkedInProfile = z.infer<typeof LinkedInProfile>;
 
-const AddEducationCommand = z.object({
-  data: LinkedInEducation,
-  type: z.literal('education.add'),
+const EducationCommand = z.object({
+  data: LinkedInEducation.extend({ id: z.string().optional() }),
+  type: z.literal('education'),
 });
 
-const EditEducationCommand = z.object({
-  type: z.literal('education.edit'),
-  data: LinkedInEducation.partial().extend({
-    id: z.string(),
-  }),
-});
-
-const AddExperienceCommand = z.object({
-  type: z.literal('experience.add'),
-  data: LinkedInExperience,
-});
-
-const EditExperienceCommand = z.object({
-  type: z.literal('experience.edit'),
-  data: LinkedInExperience.partial().extend({
-    id: z.string(),
-  }),
+const ExperienceCommand = z.object({
+  data: LinkedInExperience.extend({ id: z.string().optional() }),
+  type: z.literal('experience'),
 });
 
 const ChangeCommand = z.discriminatedUnion('type', [
-  AddEducationCommand,
-  AddExperienceCommand,
-  EditEducationCommand,
-  EditExperienceCommand,
+  EducationCommand,
+  ExperienceCommand,
 ]);
 
 type ChangeCommand = z.infer<typeof ChangeCommand>;
@@ -131,74 +114,99 @@ export async function syncLinkedInProfile(memberId: string) {
   });
 }
 
+async function getMostRelevantSchool(trx: Transaction<DB>, schoolName: string) {
+  return trx
+    .selectFrom('schools')
+    .select('id')
+    .where((eb) => {
+      return eb.or([
+        eb('name', 'ilike', `%${schoolName}%`),
+        sql<boolean>`similarity(name, ${schoolName}) > 0.5`,
+        sql<boolean>`word_similarity(name, ${schoolName}) > 0.5`,
+      ]);
+    })
+    .orderBy(sql`similarity(name, ${schoolName})`, 'desc')
+    .orderBy(sql`word_similarity(name, ${schoolName})`, 'desc')
+    .limit(1)
+    .executeTakeFirst();
+}
+
+async function getMostRelevantLocation(location: string | null) {
+  let locationCity = null;
+  let locationState = null;
+
+  if (location) {
+    const cities = await getAutocompletedCities(location);
+    const city = cities?.[0];
+
+    if (city) {
+      const cityDetails = await getCityDetails(city.id);
+
+      if (cityDetails && cityDetails.city && cityDetails.state) {
+        locationCity = cityDetails.city;
+        locationState = cityDetails.state;
+      }
+    }
+  }
+
+  return {
+    city: locationCity,
+    state: locationState,
+  };
+}
+
 async function executeChangeCommand(
   trx: Transaction<DB>,
   command: ChangeCommand,
   memberId: string
 ) {
   return match(command)
-    .with({ type: 'education.add' }, async ({ data }) => {
-      // TODO: Find most relevant school.
+    .with({ type: 'education' }, async ({ data }) => {
+      const educationId = data.id || id();
+      const school = await getMostRelevantSchool(trx, data.school);
 
       return trx
         .insertInto('educations')
         .values({
+          ...(school ? { schoolId: school.id } : { otherSchool: data.school }),
           degreeType: data.degreeType,
           endDate: data.endDate || new Date(), // TODO: Allow null start/end date in database.
-          id: id(),
+          id: educationId,
           major: data.major,
           otherMajor: data.otherMajor,
-          schoolId: '',
-          otherSchool: '',
           startDate: data.startDate || new Date(), // TODO: Allow null start/end date in database.
           studentId: memberId,
         })
-        .execute();
-    })
-    .with({ type: 'education.edit' }, async ({ data }) => {
-      // TODO: Find most relevant school.
-
-      return trx
-        .updateTable('educations')
-        .set({
-          degreeType: data.degreeType,
-          endDate: data.endDate || new Date(), // TODO: Allow null start/end date in database.
-          major: data.major,
-          otherMajor: data.otherMajor,
-          otherSchool: '',
-          startDate: data.startDate || new Date(), // TODO: Allow null start/end date in database.
-          schoolId: '',
+        .onConflict((oc) => {
+          return oc.column('id').doUpdateSet((eb) => {
+            return {
+              degreeType: eb.ref('excluded.degreeType'),
+              endDate: eb.ref('excluded.endDate'),
+              major: eb.ref('excluded.major'),
+              otherMajor: eb.ref('excluded.otherMajor'),
+              otherSchool: eb.ref('excluded.otherSchool'),
+              startDate: eb.ref('excluded.startDate'),
+              schoolId: eb.ref('excluded.schoolId'),
+              studentId: eb.ref('excluded.studentId'),
+            };
+          });
         })
-        .where('id', '=', data.id)
         .execute();
     })
-    .with({ type: 'experience.add' }, async ({ data }) => {
+    .with({ type: 'experience' }, async ({ data }) => {
+      const workExperienceId = data.id || id();
+
       const companyId = data.company
         ? await getMostRelevantCompany(trx, data.company)
         : null;
 
-      let locationCity = null;
-      let locationState = null;
-
-      if (data.location) {
-        const cities = await getAutocompletedCities(data.location);
-        const city = cities?.[0];
-
-        if (city) {
-          const cityDetails = await getCityDetails(city.id);
-
-          if (cityDetails && cityDetails.city && cityDetails.state) {
-            locationCity = cityDetails.city;
-            locationState = cityDetails.state;
-          }
-        }
-      }
+      const { city, state } = await getMostRelevantLocation(data.location);
 
       let locationType: LocationType;
 
       if (data.locationType) {
         locationType = data.locationType;
-      } else if (locationCity && locationState) {
+      } else if (city && state) {
         locationType = LocationType.IN_PERSON;
       } else {
         locationType = LocationType.REMOTE;
@@ -211,61 +219,30 @@ async function executeChangeCommand(
           ...(!companyId && { companyName: data.company }),
           employmentType: data.employmentType,
           endDate: data.endDate || new Date() || null, // TODO: Allow null start/end date in database.
-          id: id(),
-          locationCity,
-          locationState,
+          id: workExperienceId,
+          locationCity: city,
+          locationState: state,
           locationType,
           startDate: data.startDate || new Date(), // TODO: Allow null start/end date in database.
           studentId: memberId,
           title: data.title,
         })
         .onConflict((oc) => {
-          return oc.doUpdateSet({
-            ...(companyId && { companyId }),
-            ...(!companyId && { companyName: data.company }),
-            employmentType: data.employmentType,
-            endDate: data.endDate || new Date() || null, // TODO: Allow null start/end date in database.
-            locationCity,
+          return oc.column('id').doUpdateSet((eb) => {
+            return {
+              companyId: eb.ref('excluded.companyId'),
+              companyName: eb.ref('excluded.companyName'),
+              employmentType: eb.ref('excluded.employmentType'),
+              endDate: eb.ref('excluded.endDate'),
+              locationCity: eb.ref('excluded.locationCity'),
+              locationState: eb.ref('excluded.locationState'),
+              locationType: eb.ref('excluded.locationType'),
+              startDate: eb.ref('excluded.startDate'),
+              studentId: eb.ref('excluded.studentId'),
+              title: eb.ref('excluded.title'),
+            };
           });
         })
-        .execute();
-    })
-    .with({ type: 'experience.edit' }, async ({ data }) => {
-      const companyId = data.company
-        ? await getMostRelevantCompany(trx, data.company)
-        : null;
-
-      let locationCity = undefined;
-      let locationState = undefined;
-
-      if (data.location) {
-        const cities = await getAutocompletedCities(data.location);
-        const city = cities?.[0];
-
-        if (city) {
-          const cityDetails = await getCityDetails(city.id);
-
-          if (cityDetails && cityDetails.city && cityDetails.state) {
-            locationCity = cityDetails.city;
-            locationState = cityDetails.state;
-          }
-        }
-      }
-
-      return trx
-        .updateTable('workExperiences')
-        .set({
-          ...(companyId && { companyId }),
-          ...(!companyId && { companyName: data.company }),
-          employmentType: data.employmentType,
-          endDate: data.endDate || new Date() || null, // TODO: Allow null start/end date in database.
-          locationCity,
-          locationState,
-          locationType: data.locationType || LocationType.IN_PERSON,
-          startDate: data.startDate || new Date(), // TODO: Allow null start/end date in database.
-          title: data.title,
-        })
-        .where('id', '=', data.id)
         .execute();
     })
     .exhaustive();
@@ -369,26 +346,24 @@ export async function getLinkedInProfileDifferential(
     type EducationCommand = {
       type: 'add' | 'edit';
       recordType: 'education';
-      // For EDIT commands, include the ID of existing record and only changed fields
+      // For EDIT commands, include the ID of existing record.
       id?: string;
-      // Only include fields that are different from the database record
-      fields: Partial<{
+      fields: {
         degreeType: 'associate' | 'bachelors' | 'certificate' | 'doctoral' | 'masters' | 'professional';
         endDate: string | null;
         major: 'artificial_intelligence' | 'computer_science' | 'data_science' | 'electrical_or_computer_engineering' | 'information_science' | 'other';
         otherMajor: string | null;
         school: string;
         startDate: string | null;
-      }>
+      }
     }
 
     type ExperienceCommand = {
       type: 'add' | 'edit';
       recordType: 'experience';
-      // For EDIT commands, include the ID of existing record and only changed fields
+      // For EDIT commands, include the ID of existing record.
       id?: string;
-      // Only include fields that are different from the database record
-      fields: Partial<{
+      fields: {
         company: string;
         endDate: string | null;
         employmentType: 'apprenticeship' | 'contract' | 'freelance' | 'full_time' | 'internship' | 'part_time';
@@ -396,7 +371,7 @@ export async function getLinkedInProfileDifferential(
         locationType: 'hybrid' | 'in_person' | 'remote' | null;
         startDate: string | null;
         title: string;
-      }>
+      }
     }
 
     type Command = EducationCommand | ExperienceCommand;
