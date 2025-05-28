@@ -47,8 +47,8 @@ export async function listWorkExperiences(
         });
     })
     .where('workExperiences.studentId', '=', memberId)
-    .orderBy('workExperiences.startDate', 'desc')
     .orderBy('workExperiences.endDate', 'desc')
+    .orderBy('workExperiences.startDate', 'desc')
     .execute();
 
   const experiences = rows.map(({ endDate, startDate, ...row }) => {
