@@ -1,11 +1,20 @@
 import dedent from 'dedent';
-import { sql } from 'kysely';
+import { sql, type Transaction } from 'kysely';
+import { match } from 'ts-pattern';
 import { z } from 'zod';
 
-import { db } from '@oyster/db';
+import { type DB, db } from '@oyster/db';
+import { id } from '@oyster/utils';
 
 import { getChatCompletion } from '@/infrastructure/ai';
 import { withCache } from '@/infrastructure/redis';
+import { getMostRelevantCompany } from '@/modules/employment/companies';
+import { LocationType } from '@/modules/employment/employment.types';
+import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
+import {
+  getAutocompletedCities,
+  getCityDetails,
+} from '@/modules/location/location';
 import { ColorStackError } from '@/shared/errors';
 
 // Constants
@@ -13,9 +22,260 @@ import { ColorStackError } from '@/shared/errors';
 const APIFY_ACTOR_ID = 'apimaestro~linkedin-profile-detail';
 const APIFY_API_TOKEN = process.env.APIFY_API_TOKEN as string;
 
+// Schemas
+
+const LinkedInEducation = z.object({
+  degreeType: z.enum([
+    'associate',
+    'bachelors',
+    'certificate',
+    'doctoral',
+    'masters',
+    'professional',
+  ]),
+  endDate: z.string().nullable(),
+  major: z.enum([
+    'artificial_intelligence',
+    'computer_science',
+    'data_science',
+    'electrical_or_computer_engineering',
+    'information_science',
+    'other',
+  ]),
+  otherMajor: z.string().nullable(),
+  school: z.string(),
+  startDate: z.string().nullable(),
+});
+
+const LinkedInExperience = z.object({
+  company: z.string(),
+  endDate: z.string().nullable(),
+  employmentType: z.enum([
+    'apprenticeship',
+    'contract',
+    'freelance',
+    'full_time',
+    'internship',
+    'part_time',
+  ]),
+  location: z.string().nullable(),
+  locationType: z.enum(['hybrid', 'in_person', 'remote']).nullable(),
+  startDate: z.string().nullable(),
+  title: z.string(),
+});
+
+const LinkedInProfile = z.object({
+  /**
+   * Only take into account college-level education and above. Do not include
+   * high school or below.
+   */
+  educations: z.array(LinkedInEducation),
+
+  /**
+   * Only consider work experiences that are related to the technology industry.
+   * For example, a job as a barista is not a technology experience, but an
+   * experience as a software engineer, data scientists or something adjacent
+   * is.
+   */
+  experiences: z.array(LinkedInExperience),
+  headline: z.string().nullable(),
+  location: z.string().nullable(),
+});
+
+type LinkedInProfile = z.infer<typeof LinkedInProfile>;
+
+const AddEducationCommand = z.object({
+  data: LinkedInEducation,
+  type: z.literal('education.add'),
+});
+
+const EditEducationCommand = z.object({
+  type: z.literal('education.edit'),
+  data: LinkedInEducation.partial().extend({
+    id: z.string(),
+  }),
+});
+
+const AddExperienceCommand = z.object({
+  type: z.literal('experience.add'),
+  data: LinkedInExperience,
+});
+
+const EditExperienceCommand = z.object({
+  type: z.literal('experience.edit'),
+  data: LinkedInExperience.partial().extend({
+    id: z.string(),
+  }),
+});
+
+const ChangeCommand = z.discriminatedUnion('type', [
+  AddEducationCommand,
+  AddExperienceCommand,
+  EditEducationCommand,
+  EditExperienceCommand,
+]);
+
+type ChangeCommand = z.infer<typeof ChangeCommand>;
+
+// "Sync LinkedIn Profile"
+
+export async function syncLinkedInProfile(memberId: string) {
+  const commands = await getLinkedInProfileDifferential(memberId);
+
+  await db.transaction().execute(async (trx) => {
+    await Promise.all(
+      commands.map(async (command) => {
+        return executeChangeCommand(trx, command, memberId);
+      })
+    );
+  });
+}
+
+async function executeChangeCommand(
+  trx: Transaction<DB>,
+  command: ChangeCommand,
+  memberId: string
+) {
+  return match(command)
+    .with({ type: 'education.add' }, async ({ data }) => {
+      // TODO: Find most relevant school.
+
+      return trx
+        .insertInto('educations')
+        .values({
+          degreeType: data.degreeType,
+          endDate: data.endDate || new Date(), // TODO: Allow null start/end date in database.
+          id: id(),
+          major: data.major,
+          otherMajor: data.otherMajor,
+          schoolId: '',
+          otherSchool: '',
+          startDate: data.startDate || new Date(), // TODO: Allow null start/end date in database.
+          studentId: memberId,
+        })
+        .execute();
+    })
+    .with({ type: 'education.edit' }, async ({ data }) => {
+      // TODO: Find most relevant school.
+
+      return trx
+        .updateTable('educations')
+        .set({
+          degreeType: data.degreeType,
+          endDate: data.endDate || new Date(), // TODO: Allow null start/end date in database.
+          major: data.major,
+          otherMajor: data.otherMajor,
+          otherSchool: '',
+          startDate: data.startDate || new Date(), // TODO: Allow null start/end date in database.
+          schoolId: '',
+        })
+        .where('id', '=', data.id)
+        .execute();
+    })
+    .with({ type: 'experience.add' }, async ({ data }) => {
+      const companyId = data.company
+        ? await getMostRelevantCompany(trx, data.company)
+        : null;
+
+      let locationCity = null;
+      let locationState = null;
+
+      if (data.location) {
+        const cities = await getAutocompletedCities(data.location);
+        const city = cities?.[0];
+
+        if (city) {
+          const cityDetails = await getCityDetails(city.id);
+
+          if (cityDetails && cityDetails.city && cityDetails.state) {
+            locationCity = cityDetails.city;
+            locationState = cityDetails.state;
+          }
+        }
+      }
+
+      let locationType: LocationType;
+
+      if (data.locationType) {
+        locationType = data.locationType;
+      } else if (locationCity && locationState) {
+        locationType = LocationType.IN_PERSON;
+      } else {
+        locationType = LocationType.REMOTE;
+      }
+
+      return trx
+        .insertInto('workExperiences')
+        .values({
+          ...(companyId && { companyId }),
+          ...(!companyId && { companyName: data.company }),
+          employmentType: data.employmentType,
+          endDate: data.endDate || new Date() || null, // TODO: Allow null start/end date in database.
+          id: id(),
+          locationCity,
+          locationState,
+          locationType,
+          startDate: data.startDate || new Date(), // TODO: Allow null start/end date in database.
+          studentId: memberId,
+          title: data.title,
+        })
+        .onConflict((oc) => {
+          return oc.doUpdateSet({
+            ...(companyId && { companyId }),
+            ...(!companyId && { companyName: data.company }),
+            employmentType: data.employmentType,
+            endDate: data.endDate || new Date() || null, // TODO: Allow null start/end date in database.
+            locationCity,
+          });
+        })
+        .execute();
+    })
+    .with({ type: 'experience.edit' }, async ({ data }) => {
+      const companyId = data.company
+        ? await getMostRelevantCompany(trx, data.company)
+        : null;
+
+      let locationCity = undefined;
+      let locationState = undefined;
+
+      if (data.location) {
+        const cities = await getAutocompletedCities(data.location);
+        const city = cities?.[0];
+
+        if (city) {
+          const cityDetails = await getCityDetails(city.id);
+
+          if (cityDetails && cityDetails.city && cityDetails.state) {
+            locationCity = cityDetails.city;
+            locationState = cityDetails.state;
+          }
+        }
+      }
+
+      return trx
+        .updateTable('workExperiences')
+        .set({
+          ...(companyId && { companyId }),
+          ...(!companyId && { companyName: data.company }),
+          employmentType: data.employmentType,
+          endDate: data.endDate || new Date() || null, // TODO: Allow null start/end date in database.
+          locationCity,
+          locationState,
+          locationType: data.locationType || LocationType.IN_PERSON,
+          startDate: data.startDate || new Date(), // TODO: Allow null start/end date in database.
+          title: data.title,
+        })
+        .where('id', '=', data.id)
+        .execute();
+    })
+    .exhaustive();
+}
+
 // "Get LinkedIn Profile Differential"
 
-export async function getLinkedInProfileDifferential(memberId: string) {
+export async function getLinkedInProfileDifferential(
+  memberId: string
+): Promise<ChangeCommand[]> {
   const [member, workExperiences, educations] = await Promise.all([
     db
       .selectFrom('students')
@@ -92,7 +352,7 @@ export async function getLinkedInProfileDifferential(memberId: string) {
   ]);
 
   if (!member || !member.linkedInUrl) {
-    return null;
+    return [];
   }
 
   console.log('work experiences', workExperiences);
@@ -107,7 +367,7 @@ export async function getLinkedInProfileDifferential(memberId: string) {
     Output must be valid JSON matching these types:
 
     type EducationCommand = {
-      type: 'ADD' | 'EDIT';
+      type: 'add' | 'edit';
       recordType: 'education';
       // For EDIT commands, include the ID of existing record and only changed fields
       id?: string;
@@ -123,7 +383,7 @@ export async function getLinkedInProfileDifferential(memberId: string) {
     }
 
     type ExperienceCommand = {
-      type: 'ADD' | 'EDIT';
+      type: 'add' | 'edit';
       recordType: 'experience';
       // For EDIT commands, include the ID of existing record and only changed fields
       id?: string;
@@ -186,7 +446,17 @@ export async function getLinkedInProfileDifferential(memberId: string) {
   let commands: any;
 
   try {
-    commands = JSON.parse(completionResult.data);
+    const commandsJson = JSON.parse(completionResult.data);
+    const commandsResult = ChangeCommand.array().safeParse(commandsJson);
+
+    if (!commandsResult.success) {
+      throw new ColorStackError()
+        .withMessage('Failed to parse LinkedIn sync commands from AI.')
+        .withContext({ error: commandsResult.error, response: commandsJson })
+        .report();
+    }
+
+    commands = commandsResult.data;
   } catch (error) {
     console.error('Failed to parse AI response:', completionResult.data);
     throw new Error('Failed to parse LinkedIn sync commands');
@@ -195,73 +465,10 @@ export async function getLinkedInProfileDifferential(memberId: string) {
   // TODO: Execute the commands to sync the database
   console.log('LinkedIn Sync Commands:', commands);
 
-  return {
-    educations: linkedInProfile.educations,
-    experiences: linkedInProfile.experiences,
-  };
+  return commands;
 }
 
 // "Get LinkedIn Profile Data"
-
-const LinkedInEducation = z.object({
-  degreeType: z.enum([
-    'associate',
-    'bachelors',
-    'certificate',
-    'doctoral',
-    'masters',
-    'professional',
-  ]),
-  endDate: z.string().nullable(),
-  major: z.enum([
-    'artificial_intelligence',
-    'computer_science',
-    'data_science',
-    'electrical_or_computer_engineering',
-    'information_science',
-    'other',
-  ]),
-  otherMajor: z.string().nullable(),
-  school: z.string(),
-  startDate: z.string().nullable(),
-});
-
-const LinkedInExperience = z.object({
-  company: z.string(),
-  endDate: z.string().nullable(),
-  employmentType: z.enum([
-    'apprenticeship',
-    'contract',
-    'freelance',
-    'full_time',
-    'internship',
-    'part_time',
-  ]),
-  location: z.string().nullable(),
-  locationType: z.enum(['hybrid', 'in_person', 'remote']).nullable(),
-  startDate: z.string().nullable(),
-  title: z.string(),
-});
-
-const LinkedInProfile = z.object({
-  /**
-   * Only take into account college-level education and above. Do not include
-   * high school or below.
-   */
-  educations: z.array(LinkedInEducation),
-
-  /**
-   * Only consider work experiences that are related to the technology industry.
-   * For example, a job as a barista is not a technology experience, but an
-   * experience as a software engineer, data scientists or something adjacent
-   * is.
-   */
-  experiences: z.array(LinkedInExperience),
-  headline: z.string().nullable(),
-  location: z.string().nullable(),
-});
-
-type LinkedInProfile = z.infer<typeof LinkedInProfile>;
 
 // "Get LinkedIn Profile"
 
