@@ -618,7 +618,7 @@ export async function submitResume({
     // We need to convert to a string because Airtable expects strings for
     // their "Single Select" fields, which we're using instead of a "Number"
     // field.
-    'Graduation Year': graduationYear?.toString(),
+    'Graduation Year': graduationYear.toString(),
 
     Hometown: run(() => {
       // The hometown is a formatted string that includes a minimum of city
