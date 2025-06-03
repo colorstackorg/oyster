@@ -6,7 +6,7 @@ import {
   FORMATTED_DEGREEE_TYPE,
 } from '@oyster/core/member-profile/ui';
 import { db } from '@oyster/db';
-import { run, toTitleCase } from '@oyster/utils';
+import { toTitleCase } from '@oyster/utils';
 
 // "educations"
 
