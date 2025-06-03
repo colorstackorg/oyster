@@ -515,7 +515,7 @@ export async function submitResume({
 
     db
       .selectFrom('students as members')
-      .select(['email'])
+      .select(['email', 'graduationYear'])
       .where('id', '=', memberId)
       .executeTakeFirstOrThrow(),
 
@@ -579,9 +579,13 @@ export async function submitResume({
       })
     : null;
 
+  // If the education end date is not present, we'll use the graduation
+  // year from the member record.
+  const graduationYear =
+    education.endDate?.getFullYear() || member.graduationYear;
+
   // In order to keep the resume file names consistent for the partners,
   // we'll use the same naming convention based on the submitter.
-  const graduationYear = education.endDate.getFullYear();
   const fileName = `${lastName}_${firstName}_${graduationYear}.pdf`;
 
   // We need to do a little massaging/formatting of the data before we sent it
@@ -606,7 +610,9 @@ export async function submitResume({
     'First Name': firstName,
 
     'Graduation Season': run(() => {
-      return education.endDate.getMonth() <= 6 ? 'Spring' : 'Fall';
+      return education.endDate && education.endDate.getMonth() >= 6
+        ? 'Fall'
+        : 'Spring';
     }),
 
     // We need to convert to a string because Airtable expects strings for
