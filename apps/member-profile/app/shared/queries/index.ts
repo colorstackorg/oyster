@@ -49,11 +49,17 @@ export async function getEducationExperiences(id: string) {
       location = `${experience.addressCity}, ${experience.addressState}`;
     }
 
-    const startMonth = dayjs.utc(experience.startDate).format('MMMM YYYY');
-    const endMonth = dayjs.utc(experience.endDate).format('MMMM YYYY');
+    let date = undefined;
+
+    if (experience.startDate && experience.endDate) {
+      const startMonth = dayjs.utc(experience.startDate).format('MMMM YYYY');
+      const endMonth = dayjs.utc(experience.endDate).format('MMMM YYYY');
+
+      date = `${startMonth} - ${endMonth}`;
+    }
 
     return {
-      date: `${startMonth} - ${endMonth}`,
+      date,
       degreeType: FORMATTED_DEGREEE_TYPE[experience.degreeType as DegreeType],
       id: experience.id,
       location,

@@ -202,12 +202,12 @@ export default function EditEducationPage() {
             name={keys.otherMajor}
           />
           <EducationForm.StartDateField
-            defaultValue={education.startDate.slice(0, 7)}
+            defaultValue={education.startDate?.slice(0, 7)}
             error={errors.startDate}
             name={keys.startDate}
           />
           <EducationForm.EndDateField
-            defaultValue={education.endDate.slice(0, 7)}
+            defaultValue={education.endDate?.slice(0, 7)}
             error={errors.endDate}
             name={keys.endDate}
           />
