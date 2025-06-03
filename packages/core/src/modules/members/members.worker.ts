@@ -14,6 +14,7 @@ import {
   AIRTABLE_MEMBERS_TABLE_ID,
 } from '@/modules/airtable';
 import { sendCompanyReviewNotifications } from '@/modules/employment/use-cases/send-company-review-notifications';
+import { syncLinkedInProfile } from '@/modules/linkedin';
 import { sendAnniversaryEmail } from '@/modules/members/use-cases/send-anniversary-email';
 import { sendGraduationEmail } from '@/modules/members/use-cases/send-graduation-email';
 import { success } from '@/shared/utils/core';
@@ -56,6 +57,9 @@ export const memberWorker = registerWorker(
       })
       .with({ name: 'student.graduation.email' }, ({ data }) => {
         return sendGraduationEmail(data);
+      })
+      .with({ name: 'student.linkedin.sync' }, ({ data }) => {
+        return syncLinkedInProfile(data.studentId);
       })
       .with({ name: 'student.points.recurring' }, ({ data: _ }) => {
         return updatePointTotals();

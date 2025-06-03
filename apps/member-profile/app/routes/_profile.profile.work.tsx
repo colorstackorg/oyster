@@ -12,7 +12,7 @@ import {
 } from '@remix-run/react';
 import { Briefcase, MoreVertical, Plus, RefreshCw } from 'react-feather';
 
-import { syncLinkedInProfile } from '@oyster/core/linkedin';
+import { job } from '@oyster/core/bull';
 import { listWorkExperiences } from '@oyster/core/member-profile/server';
 import { WorkExperienceItem } from '@oyster/core/member-profile/ui';
 import { Button, Dropdown, IconButton } from '@oyster/ui';
@@ -29,7 +29,12 @@ import {
   ProfileTitle,
 } from '@/shared/components/profile';
 import { Route } from '@/shared/constants';
-import { ensureUserAuthenticated, user } from '@/shared/session.server';
+import {
+  commitSession,
+  ensureUserAuthenticated,
+  toast,
+  user,
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
@@ -48,11 +53,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const id = user(session);
+  job('student.linkedin.sync', {
+    studentId: user(session),
+  });
 
-  await syncLinkedInProfile(id);
+  toast(session, {
+    message: 'Check back in 1-2 minutes for any updates.',
+  });
 
-  return json({});
+  return json(
+    {},
+    {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    }
+  );
 }
 
 export default function WorkHistoryPage() {
@@ -89,6 +105,7 @@ function WorkHistorySection() {
                   </button>
                 </Form>
               </Dropdown.Item>
+
               <Dropdown.Item>
                 <Link to={Route['/profile/work/add']}>
                   <Plus /> Add Experience
