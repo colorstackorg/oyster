@@ -34,6 +34,7 @@
     "./gamification/ui": "./src/modules/gamification/gamification.ui.tsx",
     "./github": "./src/modules/github.ts",
     "./goody": "./src/modules/goody.ts",
+    "./linkedin": "./src/modules/linkedin.ts",
     "./location": "./src/modules/location/location.ts",
     "./location/types": "./src/modules/location/location.types.ts",
     "./location/ui": "./src/modules/location/location.ui.tsx",

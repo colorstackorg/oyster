@@ -1,15 +1,21 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
+import {
+  Form,
   generatePath,
+  Link,
   Outlet,
   useLoaderData,
-  useNavigate,
 } from '@remix-run/react';
-import { Briefcase, Plus } from 'react-feather';
+import { Briefcase, MoreVertical, Plus, RefreshCw } from 'react-feather';
 
+import { syncLinkedInProfile } from '@oyster/core/linkedin';
 import { listWorkExperiences } from '@oyster/core/member-profile/server';
 import { WorkExperienceItem } from '@oyster/core/member-profile/ui';
-import { Button } from '@oyster/ui';
+import { Button, Dropdown, IconButton } from '@oyster/ui';
 
 import {
   EmptyState,
@@ -39,6 +45,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
+export async function action({ request }: ActionFunctionArgs) {
+  const session = await ensureUserAuthenticated(request);
+
+  const id = user(session);
+
+  await syncLinkedInProfile(id);
+
+  return json({});
+}
+
 export default function WorkHistoryPage() {
   return (
     <>
@@ -51,22 +67,36 @@ export default function WorkHistoryPage() {
 function WorkHistorySection() {
   const { workExperiences } = useLoaderData<typeof loader>();
 
-  const navigate = useNavigate();
-
-  function onAddExperience() {
-    navigate(Route['/profile/work/add']);
-  }
-
   return (
     <ProfileSection>
       <ProfileHeader>
         <ProfileTitle>Work History</ProfileTitle>
 
-        <Button.Group>
-          <Button color="primary" onClick={onAddExperience}>
-            <Plus size={20} /> Add Experience
-          </Button>
-        </Button.Group>
+        <Dropdown.Root>
+          <Dropdown.Trigger>
+            <IconButton
+              backgroundColorOnHover="gray-100"
+              icon={<MoreVertical />}
+            />
+          </Dropdown.Trigger>
+
+          <Dropdown>
+            <Dropdown.List>
+              <Dropdown.Item>
+                <Form method="post">
+                  <button type="submit">
+                    <RefreshCw /> Sync All from LinkedIn
+                  </button>
+                </Form>
+              </Dropdown.Item>
+              <Dropdown.Item>
+                <Link to={Route['/profile/work/add']}>
+                  <Plus /> Add Experience
+                </Link>
+              </Dropdown.Item>
+            </Dropdown.List>
+          </Dropdown>
+        </Dropdown.Root>
       </ProfileHeader>
 
       {workExperiences.length ? (
@@ -105,9 +135,11 @@ function WorkHistorySection() {
               job opportunities via community connections in the future.
             </ProfileDescription>
 
-            <Button color="primary" onClick={onAddExperience} fill>
-              <Plus /> Add Experience
-            </Button>
+            <Button.Slot color="primary" fill>
+              <Link to={Route['/profile/work/add']}>
+                <Plus /> Add Experience
+              </Link>
+            </Button.Slot>
           </EmptyStateContainer>
         </>
       )}

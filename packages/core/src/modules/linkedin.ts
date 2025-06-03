@@ -226,6 +226,15 @@ async function getMostRelevantSchool(trx: Transaction<DB>, schoolName: string) {
     .executeTakeFirst();
 }
 
+/**
+ * Finds the most relevant school in the database matching a school name.
+ * Uses fuzzy text matching via PostgreSQL similarity functions to find closest matches.
+ *
+ * @param trx - Database transaction to use for the query
+ * @param schoolName - Name of school to search for
+ * @returns Promise resolving to the ID of the most relevant matching school, if found
+ */
+
 async function getMostRelevantLocation(location: string | null) {
   let locationCity = null;
   let locationState = null;
