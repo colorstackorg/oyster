@@ -102,10 +102,30 @@ type ChangeCommand = z.infer<typeof ChangeCommand>;
 
 // "Sync LinkedIn Profile"
 
+/**
+ * Syncs a member's LinkedIn profile history (work, education, etc.)
+ * with their database record. This is a complex process which executes the
+ * following steps:
+ *
+ * 1. Fetches the member's existing work/education history from the database.
+ * 2. Fetches the member's LinkedIn profile data from Apify. This step also
+ *    cleans the LinkedIn profile data to match our expected schema. This also
+ *    removes any irrelevant data like high school education, service industry
+ *    jobs, etc.
+ * 3. Using AI, generates a list of differences between the member's LinkedIn
+ *    profile data and their database record. This spits out a list of
+ *    "commands" to either add or edit records in the database.
+ * 4. Executes the commands to synchronize the database with the LinkedIn
+ *    profile data.
+ * 5. Returns the list of commands that were executed. This is used to track
+ *    the progress of the sync.
+ *
+ * There are multiple potential failure points in this process, whether that
+ * be with the LinkedIn profile scraping, the AI cleaning, the AI differential
+ * generation or the database execution.
+ */
 export async function syncLinkedInProfile(memberId: string) {
   const commands = await getLinkedInProfileDifferential(memberId);
-
-  console.log('commands', commands);
 
   await db.transaction().execute(async (trx) => {
     await Promise.all(
@@ -161,13 +181,13 @@ async function executeChangeCommand(
         ? await getMostRelevantCompany(trx, data.company)
         : null;
 
-      const { city, state } = await getMostRelevantLocation(data.location);
+      const location = await getMostRelevantLocation(data.location);
 
       let locationType: LocationType;
 
       if (data.locationType) {
         locationType = data.locationType;
-      } else if (city && state) {
+      } else if (location) {
         locationType = LocationType.IN_PERSON;
       } else {
         locationType = LocationType.REMOTE;
@@ -178,11 +198,13 @@ async function executeChangeCommand(
         .values({
           ...(companyId && { companyId }),
           ...(!companyId && { companyName: data.company }),
+          ...(location && {
+            locationCity: location.city,
+            locationState: location.state,
+          }),
           employmentType: data.employmentType,
           endDate: data.endDate,
           id: workExperienceId,
-          locationCity: city,
-          locationState: state,
           locationType,
           startDate: data.startDate,
           studentId: memberId,
@@ -209,54 +231,76 @@ async function executeChangeCommand(
     .exhaustive();
 }
 
+/**
+ * Finds the most relevant school in the database matching a school name.
+ * Uses fuzzy text matching via PostgreSQL similarity functions to find
+ * closest matches.
+ *
+ * This is useful because LinkedIn will just have a raw school name for each
+ * education, and we need to attempt to match it to our database of schools.
+ *
+ * @param trx - Database transaction to use for the query.
+ * @param schoolName - Name of school to search for.
+ * @returns Promise resolving to the ID of the most relevant matching school,
+ * if found.
+ */
 async function getMostRelevantSchool(trx: Transaction<DB>, schoolName: string) {
+  const similarity = sql`similarity(name, ${schoolName})`;
+  const wordSimilarity = sql`word_similarity(name, ${schoolName})`;
+
   return trx
     .selectFrom('schools')
     .select('id')
     .where((eb) => {
       return eb.or([
         eb('name', 'ilike', `%${schoolName}%`),
-        sql<boolean>`similarity(name, ${schoolName}) > 0.5`,
-        sql<boolean>`word_similarity(name, ${schoolName}) > 0.5`,
+        eb(similarity, '>', 0.5),
+        eb(wordSimilarity, '>', 0.5),
       ]);
     })
-    .orderBy(sql`similarity(name, ${schoolName})`, 'desc')
-    .orderBy(sql`word_similarity(name, ${schoolName})`, 'desc')
+    .orderBy(similarity, 'desc')
+    .orderBy(wordSimilarity, 'desc')
     .limit(1)
     .executeTakeFirst();
 }
 
+type LocationResult = {
+  city: string;
+  latitude: number;
+  longitude: number;
+  state: string;
+};
+
 /**
- * Finds the most relevant school in the database matching a school name.
- * Uses fuzzy text matching via PostgreSQL similarity functions to find closest matches.
+ * Finds the most relevant location using the Google Places API. This function
+ * uses the autocomplete endpoint to find a list of matched cities. We choose
+ * the top match and then use the details endpoint to get the city, state and
+ * coordinates.
  *
- * @param trx - Database transaction to use for the query
- * @param schoolName - Name of school to search for
- * @returns Promise resolving to the ID of the most relevant matching school, if found
+ * @param location - Location name to search for.
+ * @returns Promise resolving to the most relevant matching location, if found.
  */
-
-async function getMostRelevantLocation(location: string | null) {
-  let locationCity = null;
-  let locationState = null;
-
+async function getMostRelevantLocation(
+  location: string | null
+): Promise<LocationResult | null> {
   if (location) {
     const cities = await getAutocompletedCities(location);
-    const city = cities?.[0];
 
-    if (city) {
-      const cityDetails = await getCityDetails(city.id);
+    if (cities?.length) {
+      const details = await getCityDetails(cities[0].id);
 
-      if (cityDetails && cityDetails.city && cityDetails.state) {
-        locationCity = cityDetails.city;
-        locationState = cityDetails.state;
+      if (details && details.city && details.state) {
+        return {
+          city: details.city,
+          latitude: details.latitude,
+          longitude: details.longitude,
+          state: details.state,
+        };
       }
     }
   }
 
-  return {
-    city: locationCity,
-    state: locationState,
-  };
+  return null;
 }
 
 // "Get LinkedIn Profile Differential"
@@ -344,8 +388,6 @@ export async function getLinkedInProfileDifferential(
   }
 
   const linkedInProfile = await getLinkedInProfile(member.linkedInUrl);
-
-  console.log('profile', linkedInProfile);
 
   const SYNC_LINKEDIN_PROMPT = dedent`
     Compare the following database records with LinkedIn profile data and generate commands to synchronize them.
@@ -466,7 +508,6 @@ export async function getLinkedInProfile(
     const { data: run } = await runLinkedInProfileActor(url);
     const dataset = await getLinkedInProfileDataset(run.defaultDatasetId);
 
-    console.log('dataset', dataset);
     const profile = await cleanLinkedInProfile(dataset);
 
     return profile;
@@ -474,8 +515,6 @@ export async function getLinkedInProfile(
 
   return withCache(`linkedin:${url}`, 60 * 60 * 24 * 30, fn);
 }
-
-// Helpers
 
 // "Run LinkedIn Profile Actor"
 
