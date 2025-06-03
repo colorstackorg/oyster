@@ -10,6 +10,7 @@ import {
   useComboboxPopover,
 } from './combobox-popover';
 import { Input, type InputProps } from './input';
+import { Text } from './text';
 import { cx } from '../utils/cx';
 
 const ComboboxContext = React.createContext({
@@ -70,8 +71,15 @@ export function ComboboxInput({
       <Input
         autoComplete="off"
         id={name}
-        onBlur={() => {
+        onBlur={(e) => {
           setDisplayValue(context.displayValue);
+
+          // This is a hack to change the value of the input to an empty string
+          // but this doesn't actually update the UI.
+          onChange?.({
+            ...e,
+            currentTarget: { ...e.currentTarget, value: '' },
+          });
         }}
         onChange={(e) => {
           setDisplayValue(e.currentTarget.value);
@@ -137,5 +145,15 @@ export function ComboboxItem({
         {children || displayValue}
       </button>
     </li>
+  );
+}
+
+export function ComboboxMessage({ children }: PropsWithChildren) {
+  return (
+    <div className="px-2 py-3">
+      <Text color="gray-500" variant="sm">
+        {children}
+      </Text>
+    </div>
   );
 }

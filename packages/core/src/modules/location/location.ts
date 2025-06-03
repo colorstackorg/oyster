@@ -91,7 +91,7 @@ export async function getAutocompletedCities(search: string) {
   }
 
   return withCache(
-    `google:places:autocomplete:${search}`,
+    `google:places:autocomplete_v2:${search}`,
     60 * 60 * 24 * 30,
     fn
   );
@@ -169,7 +169,7 @@ export async function getCityDetails(id: string) {
       return null;
     }
 
-    const { geometry, name, address_components } = result.data.result;
+    const { address_components, geometry, name } = result.data.result;
 
     const cityComponent = address_components.find((component) => {
       return (

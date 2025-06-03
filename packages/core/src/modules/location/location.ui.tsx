@@ -5,6 +5,7 @@ import {
   Combobox,
   ComboboxInput,
   ComboboxItem,
+  ComboboxMessage,
   ComboboxPopover,
   useDelayedValue,
 } from '@oyster/ui';
@@ -55,23 +56,27 @@ export function CityCombobox({
         required={required}
       />
 
-      {!!cities && !!cities.length && (
+      {!!search && !!cities && (
         <ComboboxPopover>
-          <ul>
-            {cities.map((city) => {
-              return (
-                <ComboboxItem
-                  key={city.id}
-                  onSelect={(_) => {
-                    detailsFetcher.load(`/api/cities/${city.id}`);
-                  }}
-                  value={city.description}
-                >
-                  {city.description}
-                </ComboboxItem>
-              );
-            })}
-          </ul>
+          {cities.length ? (
+            <ul>
+              {cities.map((city) => {
+                return (
+                  <ComboboxItem
+                    key={city.id}
+                    onSelect={(_) => {
+                      detailsFetcher.load(`/api/cities/${city.id}`);
+                    }}
+                    value={city.description}
+                  >
+                    {city.description}
+                  </ComboboxItem>
+                );
+              })}
+            </ul>
+          ) : (
+            <ComboboxMessage>No results found.</ComboboxMessage>
+          )}
         </ComboboxPopover>
       )}
 

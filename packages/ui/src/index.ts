@@ -1,7 +1,12 @@
 export { Address } from './components/address';
 export { Button } from './components/button';
 export { Checkbox } from './components/checkbox';
-export { Combobox, ComboboxInput, ComboboxItem } from './components/combobox';
+export {
+  Combobox,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxMessage,
+} from './components/combobox';
 export type { ComboboxProps } from './components/combobox';
 export { ComboboxPopover } from './components/combobox-popover';
 export { Dashboard } from './components/dashboard';
