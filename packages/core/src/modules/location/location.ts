@@ -91,7 +91,7 @@ export async function getAutocompletedCities(search: string) {
   }
 
   return withCache(
-    `google:places:autocomplete_v2:${search}`,
+    `google:places:autocomplete:v2:${search}`,
     60 * 60 * 24 * 30,
     fn
   );
@@ -192,7 +192,7 @@ export async function getCityDetails(id: string) {
     };
   }
 
-  return withCache(`google:places:details:${id}`, 60 * 60 * 24 * 30, fn);
+  return withCache(`google:places:details:v2:${id}`, 60 * 60 * 24 * 30, fn);
 }
 
 // DB Queries
