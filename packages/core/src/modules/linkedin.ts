@@ -23,24 +23,39 @@ const APIFY_API_TOKEN = process.env.APIFY_API_TOKEN as string;
 
 // Schemas
 
+const LinkedInDegreeType = z.enum([
+  'associate',
+  'bachelors',
+  'certificate',
+  'doctoral',
+  'masters',
+  'professional',
+]);
+
+const LinkedInEmploymentType = z.enum([
+  'apprenticeship',
+  'contract',
+  'freelance',
+  'full_time',
+  'internship',
+  'part_time',
+]);
+
+const LinkedInLocationType = z.enum(['hybrid', 'in_person', 'remote']);
+
+const LinkedInMajor = z.enum([
+  'artificial_intelligence',
+  'computer_science',
+  'data_science',
+  'electrical_or_computer_engineering',
+  'information_science',
+  'other',
+]);
+
 const LinkedInEducation = z.object({
-  degreeType: z.enum([
-    'associate',
-    'bachelors',
-    'certificate',
-    'doctoral',
-    'masters',
-    'professional',
-  ]),
+  degreeType: LinkedInDegreeType,
   endDate: z.string().nullable(),
-  major: z.enum([
-    'artificial_intelligence',
-    'computer_science',
-    'data_science',
-    'electrical_or_computer_engineering',
-    'information_science',
-    'other',
-  ]),
+  major: LinkedInMajor,
   otherMajor: z.string().nullable(),
   school: z.string(),
   startDate: z.string().nullable(),
@@ -49,62 +64,43 @@ const LinkedInEducation = z.object({
 const LinkedInExperience = z.object({
   company: z.string(),
   endDate: z.string().nullable(),
-  employmentType: z.enum([
-    'apprenticeship',
-    'contract',
-    'freelance',
-    'full_time',
-    'internship',
-    'part_time',
-  ]),
+  employmentType: LinkedInEmploymentType,
   location: z.string().nullable(),
-  locationType: z.enum(['hybrid', 'in_person', 'remote']).nullable(),
+  locationType: LinkedInLocationType.nullable(),
   startDate: z.string(),
   title: z.string(),
 });
 
 const LinkedInProfile = z.object({
-  /**
-   * Only take into account college-level education and above. Do not include
-   * high school or below.
-   */
   educations: z.array(LinkedInEducation),
-
-  /**
-   * Only consider professional work experiences. Filter out non-professional
-   * experiences like service industry jobs (waitress, server, etc.). Keep
-   * relevant professional experiences like being a founder, even if not
-   * directly technical.
-   */
   experiences: z.array(LinkedInExperience),
-
   location: z.string().nullable(),
 });
 
 type LinkedInProfile = z.infer<typeof LinkedInProfile>;
 
-const EducationCommand = z.object({
+const EducationChange = z.object({
   data: LinkedInEducation.extend({ id: z.string().optional() }),
   type: z.literal('education'),
 });
 
-const ExperienceCommand = z.object({
+const ExperienceChange = z.object({
   data: LinkedInExperience.extend({ id: z.string().optional() }),
   type: z.literal('experience'),
 });
 
-const LocationCommand = z.object({
+const LocationChange = z.object({
   data: z.object({ location: z.string() }),
   type: z.literal('location'),
 });
 
-const ChangeCommand = z.discriminatedUnion('type', [
-  EducationCommand,
-  ExperienceCommand,
-  LocationCommand,
+const Change = z.discriminatedUnion('type', [
+  EducationChange,
+  ExperienceChange,
+  LocationChange,
 ]);
 
-type ChangeCommand = z.infer<typeof ChangeCommand>;
+type Change = z.infer<typeof Change>;
 
 // "Sync LinkedIn Profile"
 
@@ -120,10 +116,10 @@ type ChangeCommand = z.infer<typeof ChangeCommand>;
  *    jobs, etc.
  * 3. Using AI, generates a list of differences between the member's LinkedIn
  *    profile data and their database record. This spits out a list of
- *    "commands" to either add or edit records in the database.
- * 4. Executes the commands to synchronize the database with the LinkedIn
+ *    "changes" to either add or edit records in the database.
+ * 4. Executes the changes to synchronize the database with the LinkedIn
  *    profile data.
- * 5. Returns the list of commands that were executed. This is used to track
+ * 5. Returns the list of changes that were executed. This is used to track
  *    the progress of the sync.
  *
  * There are multiple potential failure points in this process, whether that
@@ -147,7 +143,7 @@ export async function syncLinkedInProfile(memberId: string): Promise<void> {
 
   const linkedInProfile = await getLinkedInProfile(member.linkedInUrl);
 
-  const commands = await getLinkedInProfileDifferential(
+  const changes = await getLinkedInProfileDifferential(
     {
       educations,
       location: member.currentLocation,
@@ -161,8 +157,8 @@ export async function syncLinkedInProfile(memberId: string): Promise<void> {
   );
 
   await db.transaction().execute(async (trx) => {
-    const promises = commands.map((command) => {
-      return match(command)
+    const promises = changes.map((change) => {
+      return match(change)
         .with({ type: 'education' }, async ({ data }) => {
           return upsertEducationFromLinkedIn(trx, memberId, data);
         })
@@ -187,7 +183,7 @@ const SYNC_LINKEDIN_PROMPT = dedent`
   </context>
 
   <goal>
-    Your task is to generate a list of change commands that will update the user's database profile to match
+    Your task is to generate a list of changes that will update the user's database profile to match
     their LinkedIn profile.
 
     This is a **one-way sync from LinkedIn → our database**. You should:
@@ -413,7 +409,7 @@ const SYNC_LINKEDIN_PROMPT = dedent`
         months. We normalize the dates to months first and then compare them.
 
         Education "b": The end date has changed on LinkedIn, which is why a
-        command was generated to update the end date.
+        change was generated to update the end date.
 
         Education "c": No change generated because this data is not in the
         LinkedIn profile.
@@ -440,7 +436,7 @@ type ProfileData = {
 
 /**
  * Gets the differential between the LinkedIn profile and the database profile.
- * The result of this function is a list of commands that when executed, will
+ * The result of this function is a list of changes that when executed, will
  * synchronize the database with the LinkedIn profile data.
  *
  * This function relies on AI to evaluate the differences between what's
@@ -448,13 +444,13 @@ type ProfileData = {
  * then this function SHOULD return an empty array.
  *
  * @param memberId - ID of the member to get the differential for.
- * @returns Promise resolving to the list of commands to synchronize the database
+ * @returns Promise resolving to the list of changes to synchronize the database
  * with the LinkedIn profile data.
  */
 export async function getLinkedInProfileDifferential(
   currentProfile: ProfileData,
   linkedInProfile: ProfileData
-): Promise<ChangeCommand[]> {
+): Promise<Change[]> {
   const completionResult = await getChatCompletion({
     model: 'claude-sonnet-4-20250514',
     maxTokens: 1000,
@@ -475,7 +471,7 @@ export async function getLinkedInProfileDifferential(
     system: [
       {
         type: 'text',
-        text: 'You are an expert at comparing JSON records. You understand the nuances of the data and can determine when changes are needed. Output only valid JSON commands for synchronizing records from LinkedIn to our database.',
+        text: 'You are an expert at comparing JSON records. You understand the nuances of the data and can determine when changes are needed. Output only valid JSON changes for synchronizing records from LinkedIn to our database.',
         cache: true,
       },
       {
@@ -489,7 +485,7 @@ export async function getLinkedInProfileDifferential(
 
   if (!completionResult.ok) {
     throw new ColorStackError()
-      .withMessage('Failed to generate LinkedIn sync commands.')
+      .withMessage('Failed to generate LinkedIn sync changes.')
       .withContext({ response: completionResult.error })
       .report();
   }
@@ -500,21 +496,21 @@ export async function getLinkedInProfileDifferential(
     json = JSON.parse(completionResult.data);
   } catch (error) {
     throw new ColorStackError()
-      .withMessage('Failed to parse LinkedIn sync commands from AI.')
+      .withMessage('Failed to parse LinkedIn sync changes from AI.')
       .withContext({ error, response: completionResult.data })
       .report();
   }
 
-  const commandsResult = ChangeCommand.array().safeParse(json);
+  const changesResult = Change.array().safeParse(json);
 
-  if (!commandsResult.success) {
+  if (!changesResult.success) {
     throw new ColorStackError()
-      .withMessage('Failed to parse LinkedIn sync commands from AI.')
-      .withContext({ error: commandsResult.error, response: json })
+      .withMessage('Failed to parse LinkedIn sync changes from AI.')
+      .withContext({ error: changesResult.error, response: json })
       .report();
   }
 
-  return commandsResult.data;
+  return changesResult.data;
 }
 
 async function getEducationHistoryForDifferential(
@@ -928,7 +924,7 @@ async function transformProfileData(
 async function upsertEducationFromLinkedIn(
   trx: Transaction<DB>,
   memberId: string,
-  data: Extract<ChangeCommand, { type: 'education' }>['data']
+  data: Extract<Change, { type: 'education' }>['data']
 ) {
   const educationId = data.id || id();
   const school = await getMostRelevantSchool(trx, data.school);
@@ -1007,7 +1003,7 @@ async function getMostRelevantSchool(trx: Transaction<DB>, schoolName: string) {
 async function upsertExperienceFromLinkedIn(
   trx: Transaction<DB>,
   memberId: string,
-  data: Extract<ChangeCommand, { type: 'experience' }>['data']
+  data: Extract<Change, { type: 'experience' }>['data']
 ) {
   const workExperienceId = data.id || id();
 
@@ -1081,7 +1077,7 @@ async function upsertExperienceFromLinkedIn(
 async function updateLocationFromLinkedIn(
   trx: Transaction<DB>,
   memberId: string,
-  data: Extract<ChangeCommand, { type: 'location' }>['data']
+  data: Extract<Change, { type: 'location' }>['data']
 ) {
   const location = await getMostRelevantLocation(data.location);
 
