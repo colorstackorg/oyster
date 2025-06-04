@@ -184,12 +184,12 @@ export async function getCityDetails(id: string) {
     });
 
     return {
-      city: cityComponent?.long_name || null,
+      city: cityComponent!.long_name,
       formattedAddress: formatted_address,
       id,
       latitude: geometry.location.lat,
       longitude: geometry.location.lng,
-      state: stateComponent?.short_name || null,
+      state: stateComponent!.short_name,
     };
   }
 
