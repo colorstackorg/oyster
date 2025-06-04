@@ -77,6 +77,7 @@ const LinkedInProfile = z.object({
    * directly technical.
    */
   experiences: z.array(LinkedInExperience),
+
   location: z.string().nullable(),
 });
 
@@ -464,16 +465,18 @@ export async function getLinkedInProfileDifferential(
           <database_profile>
             ${JSON.stringify(currentProfile, null, 2)}
           </database_profile>
+
           <linkedin_profile>
             ${JSON.stringify(linkedInProfile, null, 2)}
           </linkedin_profile>
-      `,
+        `,
       },
     ],
     system: [
       {
         type: 'text',
         text: 'You are an expert at comparing JSON records. You understand the nuances of the data and can determine when changes are needed. Output only valid JSON commands for synchronizing records from LinkedIn to our database.',
+        cache: true,
       },
       {
         type: 'text',
@@ -716,8 +719,11 @@ async function getLinkedInProfileDataset(datasetId: string) {
 // "Clean LinkedIn Profile"
 
 const LINKEDIN_PROFILE_PROMPT = dedent`
-  Format the following LinkedIn profile data into a specific JSON structure.
-  The output must be valid JSON and match this Zod schema exactly.
+  You are given raw LinkedIn profile data. Your task is to extract and transform it into a JSON object that strictly adheres to the schema defined below. Your output **must be valid JSON**, match the schema **exactly**, and include **no extra text**—only the JSON.
+
+  ---
+
+  Schema:
 
   const LinkedInEducation = z.object({
     degreeType: z.enum([
@@ -760,36 +766,87 @@ const LINKEDIN_PROFILE_PROMPT = dedent`
   });
 
   const OutputSchema = z.object({
-    /**
-     * Only take into account college-level education and above. IGNORE AND
-     * REMOVE any education that is high school or below.
-     */
     educations: z.array(LinkedInEducation),
-
-    /**
-     * Only consider professional work experiences. Filter out non-professional
-     * experiences like service industry jobs (waitress, server, etc.). Keep
-     * relevant professional experiences like being a founder, even if not
-     * directly technical.
-     */
     experiences: z.array(LinkedInExperience),
-
     location: z.string().nullable(),
   });
 
-  /**
-   * Additional instruction:
-   * - If both the LinkedIn experience's "location" and "locationType" fields are
-   *   null, default the "locationType" field to "remote".
-   */
+  ---
 
-  Here is the LinkedIn profile data to format:
+  Instructions:
 
-  <linkedin_profile>
-    $LINKEDIN_PROFILE
-  </linkedin_profile>
+  1. Output must be a single valid JSON object matching "OutputSchema".
+  2. Do not include high school or lower education. Only include college-level and above.
+  3. Exclude non-professional work (e.g., server, cashier). Include relevant professional experience (e.g., founder).
+  4. If both "location" and "locationType" are null for an experience, default "locationType" to "remote".
+  5. Normalize all dates as follows:
+    - Format: "YYYY-MM-DD"
+    - If only year and month → use "YYYY-MM-01"
+    - If only year:
+      - Education start → "YYYY-08-01"
+      - Education end → "YYYY-05-01"
+      - Experience start → "YYYY-01-01"
+      - Experience end → "YYYY-12-01"
+  6. Normalize metro-area LinkedIn locations to city/state as follows:
+    - "San Francisco Bay Area" → "San Francisco, CA"
+    - "New York City Metropolitan Area" → "New York, NY"
+    - "Greater Los Angeles Area" → "Los Angeles, CA"
+    - "Greater Seattle Area" → "Seattle, WA"
+    - "Houston, Texas Area" → "Houston, TX"
+    - "Greater Boston Area" → "Boston, MA"
+    - "Chicago Metropolitan Area" → "Chicago, IL"
+  7. For education majors not listed in the enum, set "major" to "other" and populate "otherMajor" with the raw major.
 
-  Your output should be a single JSON object containing these fields. Do not provide any explanation or text outside of the JSON object. Ensure your JSON is properly formatted and valid.
+  ---
+
+  Example:
+
+  Input:
+  """
+  Education:
+  - Degree: Bachelors
+    Major: Computer Science
+    School: MIT
+    Start: 2015
+    End: 2019
+
+  Experience:
+  - Title: Software Engineer
+    Company: Google
+    Start: 2020-03
+    End: Present
+    Employment Type: Full-time
+    Location: San Francisco Bay Area
+    Location Type: Hybrid
+
+  Location: Greater Boston Area
+  """
+
+  Output:
+  {
+    "educations": [
+      {
+        "degreeType": "bachelors",
+        "endDate": "2019-05-01",
+        "major": "computer_science",
+        "otherMajor": null,
+        "school": "MIT",
+        "startDate": "2015-08-01"
+      }
+    ],
+    "experiences": [
+      {
+        "company": "Google",
+        "endDate": null,
+        "employmentType": "full_time",
+        "location": "San Francisco, CA",
+        "locationType": "hybrid",
+        "startDate": "2020-03-01",
+        "title": "Software Engineer"
+      }
+    ],
+    "location": "Boston, MA"
+  }
 `;
 
 /**
@@ -803,18 +860,28 @@ const LINKEDIN_PROFILE_PROMPT = dedent`
 async function transformProfileData(
   profile: ApifyProfileData
 ): Promise<LinkedInProfile> {
-  const prompt = LINKEDIN_PROFILE_PROMPT
-    //
-    .replace('$LINKEDIN_PROFILE', JSON.stringify(profile, null, 2));
-
   const completionResult = await getChatCompletion({
     model: 'claude-sonnet-4-20250514',
     maxTokens: 1000,
-    messages: [{ role: 'user', content: prompt }],
+    messages: [
+      {
+        role: 'user',
+        content: dedent`
+          <linkedin_profile>
+            ${JSON.stringify(profile, null, 2)}
+          </linkedin_profile>
+        `,
+      },
+    ],
     system: [
       {
         type: 'text',
         text: 'You are a data transformation assistant. Output only valid JSON matching the specified schema exactly.',
+      },
+      {
+        type: 'text',
+        text: LINKEDIN_PROFILE_PROMPT,
+        cache: true,
       },
     ],
     temperature: 0,
