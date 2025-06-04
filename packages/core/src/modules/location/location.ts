@@ -108,13 +108,13 @@ const GooglePlaceDetailsResponse = z.object({
         types: z.array(z.string().trim().min(1)),
       })
     ),
+    formatted_address: z.string().trim().min(1),
     geometry: z.object({
       location: z.object({
         lat: z.number(),
         lng: z.number(),
       }),
     }),
-    name: z.string().trim().min(1),
   }),
 });
 
@@ -140,7 +140,7 @@ export async function getCityDetails(id: string) {
 
     const searchParams = new URLSearchParams({
       key: GOOGLE_MAPS_API_KEY,
-      fields: ['address_components', 'geometry', 'name'].join(','),
+      fields: ['address_components', 'formatted_address', 'geometry'].join(','),
       place_id: id,
     });
 
@@ -169,7 +169,8 @@ export async function getCityDetails(id: string) {
       return null;
     }
 
-    const { address_components, geometry, name } = result.data.result;
+    const { address_components, formatted_address, geometry } =
+      result.data.result;
 
     const cityComponent = address_components.find((component) => {
       return (
@@ -184,15 +185,15 @@ export async function getCityDetails(id: string) {
 
     return {
       city: cityComponent?.long_name || null,
-      state: stateComponent?.short_name || null,
+      formattedAddress: formatted_address,
       id,
       latitude: geometry.location.lat,
       longitude: geometry.location.lng,
-      name,
+      state: stateComponent?.short_name || null,
     };
   }
 
-  return withCache(`google:places:details:v2:${id}`, 60 * 60 * 24 * 30, fn);
+  return withCache(`google:places:details:v3:${id}`, 60 * 60 * 24 * 90, fn);
 }
 
 // DB Queries

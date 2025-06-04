@@ -77,7 +77,6 @@ const LinkedInProfile = z.object({
    * directly technical.
    */
   experiences: z.array(LinkedInExperience),
-  headline: z.string().nullable(),
   location: z.string().nullable(),
 });
 
@@ -131,7 +130,34 @@ type ChangeCommand = z.infer<typeof ChangeCommand>;
  * generation or the database execution.
  */
 export async function syncLinkedInProfile(memberId: string): Promise<void> {
-  const commands = await getLinkedInProfileDifferential(memberId);
+  const [member, workExperiences, educations] = await db
+    .transaction()
+    .execute(async (trx) => {
+      return Promise.all([
+        getMemberForDifferential(trx, memberId),
+        getWorkHistoryForDifferential(trx, memberId),
+        getEducationHistoryForDifferential(trx, memberId),
+      ]);
+    });
+
+  if (!member?.linkedInUrl) {
+    return;
+  }
+
+  const linkedInProfile = await getLinkedInProfile(member.linkedInUrl);
+
+  const commands = await getLinkedInProfileDifferential(
+    {
+      educations,
+      location: member.currentLocation,
+      workExperiences,
+    },
+    {
+      educations: linkedInProfile.educations,
+      location: linkedInProfile.location,
+      workExperiences: linkedInProfile.experiences,
+    }
+  );
 
   await db.transaction().execute(async (trx) => {
     const promises = commands.map((command) => {
@@ -153,69 +179,263 @@ export async function syncLinkedInProfile(memberId: string): Promise<void> {
 }
 
 const SYNC_LINKEDIN_PROMPT = dedent`
-  Compare the following database records with LinkedIn profile data and generate
-  commands to synchronize them. Output must be valid JSON matching these types:
+  <context>
+    In our application, users can manually input their work history, education history, and current location.
+    However, much of this information already exists on their LinkedIn profiles. This tool allows users to
+    sync their LinkedIn profile to their in-app database profile.
+  </context>
 
-  type EducationCommand = {
-    type: 'education';
-    data: {
-      degreeType: 'associate' | 'bachelors' | 'certificate' | 'doctoral' | 'masters' | 'professional';
-      endDate: string | null;
-      major: 'artificial_intelligence' | 'computer_science' | 'data_science' | 'electrical_or_computer_engineering' | 'information_science' | 'other';
-      otherMajor: string | null;
-      school: string;
-      startDate: string | null;
-      id?: string; // For "edit" commands, include the ID of existing record.
+  <goal>
+    Your task is to generate a list of change commands that will update the user's database profile to match
+    their LinkedIn profile.
+
+    This is a **one-way sync from LinkedIn → our database**. You should:
+    - Add new records that exist in LinkedIn but not in the database.
+    - Update existing database records if LinkedIn has newer or different information.
+
+    ⚠️ IMPORTANT:
+    - **If a record exists in the database but not in LinkedIn, DO NOT generate a change for it.**
+    - The absence of a record on LinkedIn does **not** imply deletion or modification.
+
+    Only data **present on LinkedIn** should be considered when generating changes.
+  </goal>
+
+  <types>
+    type EducationChange = {
+      type: 'education';
+      reason: string; // Why is this change needed? If editing, specify what field(s) changed.
+      data: {
+        degreeType: 'associate' | 'bachelors' | 'certificate' | 'doctoral' | 'masters' | 'professional';
+        endDate: string | null;
+        major: 'artificial_intelligence' | 'computer_science' | 'data_science' | 'electrical_or_computer_engineering' | 'information_science' | 'other';
+        otherMajor: string | null;
+        school: string;
+        startDate: string | null;
+        id?: string; // Present only for edits to existing records.
+      };
     }
-  }
 
-  type ExperienceCommand = {
-    type: 'experience';
-    data: {
-      company: string;
-      endDate: string | null;
-      employmentType: 'apprenticeship' | 'contract' | 'freelance' | 'full_time' | 'internship' | 'part_time';
-      location: string | null;
-      locationType: 'hybrid' | 'in_person' | 'remote' | null;
-      startDate: string | null;
-      title: string;
-      id?: string; // For "edit" commands, include the ID of existing record.
+    type ExperienceChange = {
+      type: 'experience';
+      reason: string; // Why is this change needed? If editing, specify what field(s) changed.
+      data: {
+        company: string;
+        endDate: string | null;
+        employmentType: 'apprenticeship' | 'contract' | 'freelance' | 'full_time' | 'internship' | 'part_time';
+        location: string | null;
+        locationType: 'hybrid' | 'in_person' | 'remote' | null;
+        startDate: string | null;
+        title: string;
+        id?: string; // Present only for edits to existing records.
+      };
     }
-  }
 
-  type LocationCommand = {
-    type: 'location';
-    data: {
-      location: string;
+    type LocationChange = {
+      type: 'location';
+      reason: string; // Show both the normalized LinkedIn and database location for comparison.
+      data: {
+        location: string;
+      }
     }
-  }
 
-  type Command = EducationCommand | ExperienceCommand | LocationCommand;
+    type Change = EducationChange | ExperienceChange | LocationChange;
 
-  <database_profile>
-    $DATABASE_PROFILE
-  </database_profile>
+    Change[] // This is the output type.
+  </types>
 
-  <linkedin_profile>
-    $LINKEDIN_PROFILE
-  </linkedin_profile>
+  <rules>
+    - Only consider changes **from LinkedIn to the database**.
+    - Ignore any data that exists in the database but not on LinkedIn.
+    - For each change, include a concise and informative "reason" string.
 
-  Generate an array of Command objects that will synchronize the database with LinkedIn.
-  Only include commands where there are actual differences to sync. If there are
-  no differences in the database record and the LinkedIn profile, do not include
-  a command for it.
-  Your output should be a single JSON array containing Command objects.
-  Do not provide any explanation or text outside of the JSON array.
+    **Date normalization:**
+    - Use the format "YYYY-MM-DD".
+    - If only year and month are provided, default to the first of the month (e.g., "2025-01" → "2025-01-01").
+    - If only a year is provided:
+      - Education start → default to "YYYY-08-01"
+      - Education end → default to "YYYY-05-01"
+      - Experience start → default to "YYYY-01-01"
+      - Experience end → default to "YYYY-12-01"
+    - If a database date is more precise than LinkedIn (e.g., LinkedIn: "2020", database: "2020-05-01"),
+      do **not** treat this as a change.
 
-  For all start/end dates, use the format YYYY-MM-DD. Default to the first
-  date of the month if no day is provided (ie: 2025-01 becomes 2025-01-01).
+    **Location normalization rules:**
+    - Normalize LinkedIn's regional or metro-area location strings to their corresponding city/state:
+        - "San Francisco Bay Area" → "San Francisco, CA"
+        - "New York City Metropolitan Area" → "New York, NY"
+        - "Greater Los Angeles Area" → "Los Angeles, CA"
+        - "Greater Seattle Area" → "Seattle, WA"
+        - "Houston, Texas Area" → "Houston, TX"
+        - "Greater Boston Area" → "Boston, MA"
+        - "Chicago Metropolitan Area" → "Chicago, IL"
+    - Normalize both the LinkedIn and database locations before comparing.
+    - If the LinkedIn location, once normalized, results in the same city and state as the database location, do not generate a change — even if the original strings are different.
 
-  If no month is provided for an education's start date, default to August.
-  If no month is provided for an education's end date, default to May.
+    **Output formatting:**
+    - Output a **single valid JSON array** of change objects.
+    - If there are no changes, return an empty array: []
+      - Don't wrap it in quotes, just return the array.
+    - Do **not** include any explanation, comments, or text outside of the JSON array.
+  </rules>
 
-  If no month is provided for an experience's start date, default to January.
-  If no month is provided for an experience's end date, default to December.
+  <example>
+      <input>
+        <database_profile>
+          {
+            "location": "San Francisco, CA, USA",
+            "educations": [
+              {
+                "degreeType": "bachelors",
+                "endDate": "2020-05-01",
+                "id": "a",
+                "major": "computer_science",
+                "otherMajor": null,
+                "school": "Cornell University",
+                "startDate": "2016-08-01",
+              },
+              {
+                "degreeType": "masters",
+                "endDate": null,
+                "id": "b",
+                "major": "computer_science",
+                "otherMajor": null,
+                "school": "Carnegie Mellon University",
+                "startDate": "2020-08-01",
+              },
+              {
+                "degreeType": "doctoral",
+                "endDate": null,
+                "id": "c",
+                "major": "computer_science",
+                "otherMajor": null,
+                "school": "Columbia University",
+                "startDate": "2022-08-01",
+              }
+            ],
+            "workExperiences": [
+              {
+                "company": "Two Sigma",
+                "endDate": "2017-08-01",
+                "employmentType": "internship",
+                "id": "1",
+                "locationCity": "Houston",
+                "locationState": "TX",
+                "locationType": "in_person",
+                "startDate": "2017-05-01",
+                "title": "Software Engineering Intern",
+              },
+              {
+                "company": "Google",
+                "endDate": null,
+                "employmentType": "full_time",
+                "id": "2",
+                "locationCity": "San Francisco",
+                "locationState": "CA",
+                "locationType": "remote",
+                "startDate": "2020-08-01",
+                "title": "Software Engineer"
+              }
+            ]
+          }
+        </database_profile>
+        <linkedin_profile>
+          {
+            "location": "San Francisco Bay Area",
+            "educations": [
+              {
+                "degreeType": "bachelors",
+                "endDate": "2020",
+                "major": "computer_science",
+                "otherMajor": null,
+                "school": "Cornell University",
+                "startDate": "2016",
+              },
+              {
+                "degreeType": "masters",
+                "endDate": "2022-05-01",
+                "major": "computer_science",
+                "otherMajor": null,
+                "school": "Carnegie Mellon University",
+                "startDate": "2020-08-01"
+              }
+            ],
+            "workExperiences": [
+              {
+                "company": "Two Sigma",
+                "endDate": "2017-08-01",
+                "employmentType": "internship",
+                "location": "Houston, Texas Area",
+                "locationType": null,
+                "startDate": "2017-05-01",
+                "title": "Software Engineering Intern"
+              },
+              {
+                "company": "Google",
+                "endDate": null,
+                "employmentType": "full_time",
+                "location": "San Francisco Bay Area",
+                "locationType": "remote",
+                "startDate": "2020-08-01",
+                "title": "Software Engineer"
+              }
+            ]
+          }
+        </linkedin_profile>
+      </input>
+
+      <output>
+        [
+          {
+            "type": "education",
+            "reason": "The end date has changed on LinkedIn.",
+            "data": {
+              "degreeType": "masters",
+              "endDate": "2022-05-01",
+              "id": "b",
+              "major": "computer_science",
+              "otherMajor": null,
+              "school": "Carnegie Mellon University",
+              "startDate": "2020-08-01"
+            }
+          }
+        ]
+      </output>
+
+      <explanation>
+        Location: The database location is a city/state (ie: "San Francisco, CA,
+        USA"), but the LinkedIn location is a region/metropolitan area (ie: "San
+        Francisco Bay Area"). Since this represents the same place, we don't need
+        to update the location.
+
+        Education "a": There was no need to change this record, despite that the
+        LinkedIn start/end dates were years and the database start/end dates were
+        months. We normalize the dates to months first and then compare them.
+
+        Education "b": The end date has changed on LinkedIn, which is why a
+        command was generated to update the end date.
+
+        Education "c": No change generated because this data is not in the
+        LinkedIn profile.
+
+        Experience "1": The location type was null, but since we normalize a null
+        location type to "in_person" when a location (city) is present, there was
+        no need to update the location type. Also, since the database location
+        represented the city/state that the LinkedIn location was referring to,
+        there was no need to update the location. Thus, no change was needed.
+
+        Experience "2": The database location is a city/state (ie: "San Francisco,
+        CA"), but the LinkedIn location is a region/metropolitan area (ie: "San
+        Francisco Bay Area"). Since this represents the same place, we don't need
+        to update the location.
+      </explanation>
+    </example>
 `;
+
+type ProfileData = {
+  educations: Array<object>;
+  location: string | null;
+  workExperiences: Array<object>;
+};
 
 /**
  * Gets the differential between the LinkedIn profile and the database profile.
@@ -231,50 +451,34 @@ const SYNC_LINKEDIN_PROMPT = dedent`
  * with the LinkedIn profile data.
  */
 export async function getLinkedInProfileDifferential(
-  memberId: string
+  currentProfile: ProfileData,
+  linkedInProfile: ProfileData
 ): Promise<ChangeCommand[]> {
-  const [member, workExperiences, educations] = await db
-    .transaction()
-    .execute(async (trx) => {
-      return Promise.all([
-        getMemberForDifferential(trx, memberId),
-        getWorkHistoryForDifferential(trx, memberId),
-        getEducationHistoryForDifferential(trx, memberId),
-      ]);
-    });
-
-  if (!member?.linkedInUrl) {
-    return [];
-  }
-
-  const linkedInProfile = await getLinkedInProfile(member.linkedInUrl);
-
-  // Format for LLM.
-  const stringifiedDatabaseProfile = JSON.stringify(
-    {
-      educations,
-      location: member.currentLocation,
-      workExperiences,
-    },
-    null,
-    2
-  );
-
-  // Format for LLM.
-  const stringifiedLinkedInProfile = JSON.stringify(linkedInProfile, null, 2);
-
-  const prompt = SYNC_LINKEDIN_PROMPT
-    //
-    .replace('$DATABASE_PROFILE', stringifiedDatabaseProfile)
-    .replace('$LINKEDIN_PROFILE', stringifiedLinkedInProfile);
-
   const completionResult = await getChatCompletion({
+    model: 'claude-sonnet-4-20250514',
     maxTokens: 1000,
-    messages: [{ role: 'user', content: prompt }],
+    messages: [
+      {
+        role: 'user',
+        content: dedent`
+          <database_profile>
+            ${JSON.stringify(currentProfile, null, 2)}
+          </database_profile>
+          <linkedin_profile>
+            ${JSON.stringify(linkedInProfile, null, 2)}
+          </linkedin_profile>
+      `,
+      },
+    ],
     system: [
       {
         type: 'text',
-        text: 'You are a data comparison assistant. Output only valid JSON commands for synchronizing records.',
+        text: 'You are an expert at comparing JSON records. You understand the nuances of the data and can determine when changes are needed. Output only valid JSON commands for synchronizing records from LinkedIn to our database.',
+      },
+      {
+        type: 'text',
+        text: SYNC_LINKEDIN_PROMPT,
+        cache: true,
       },
     ],
     temperature: 0,
@@ -555,8 +759,7 @@ const LINKEDIN_PROFILE_PROMPT = dedent`
     title: z.string(),
   });
 
-  // The final output must match this Zod schema exactly.
-  z.object({
+  const OutputSchema = z.object({
     /**
      * Only take into account college-level education and above. IGNORE AND
      * REMOVE any education that is high school or below.
@@ -574,15 +777,19 @@ const LINKEDIN_PROFILE_PROMPT = dedent`
     location: z.string().nullable(),
   });
 
+  /**
+   * Additional instruction:
+   * - If both the LinkedIn experience's "location" and "locationType" fields are
+   *   null, default the "locationType" field to "remote".
+   */
+
   Here is the LinkedIn profile data to format:
 
   <linkedin_profile>
     $LINKEDIN_PROFILE
   </linkedin_profile>
 
-  Your output should be a single JSON object containing these fields. Do not
-  provide any explanation or text outside of the JSON object. Ensure your JSON
-  is properly formatted and valid.
+  Your output should be a single JSON object containing these fields. Do not provide any explanation or text outside of the JSON object. Ensure your JSON is properly formatted and valid.
 `;
 
 /**
@@ -601,6 +808,7 @@ async function transformProfileData(
     .replace('$LINKEDIN_PROFILE', JSON.stringify(profile, null, 2));
 
   const completionResult = await getChatCompletion({
+    model: 'claude-sonnet-4-20250514',
     maxTokens: 1000,
     messages: [{ role: 'user', content: prompt }],
     system: [
@@ -817,7 +1025,7 @@ async function updateLocationFromLinkedIn(
   return trx
     .updateTable('students')
     .set({
-      currentLocation: location.name,
+      currentLocation: location.formattedAddress,
       currentLocationCoordinates: point({
         x: location.longitude,
         y: location.latitude,

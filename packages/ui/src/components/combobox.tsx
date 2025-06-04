@@ -71,15 +71,8 @@ export function ComboboxInput({
       <Input
         autoComplete="off"
         id={name}
-        onBlur={(e) => {
+        onBlur={() => {
           setDisplayValue(context.displayValue);
-
-          // This is a hack to change the value of the input to an empty string
-          // but this doesn't actually update the UI.
-          onChange?.({
-            ...e,
-            currentTarget: { ...e.currentTarget, value: '' },
-          });
         }}
         onChange={(e) => {
           setDisplayValue(e.currentTarget.value);

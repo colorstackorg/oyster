@@ -149,6 +149,13 @@ type GetChatCompletionInput = {
   messages: ChatMessage[];
 
   /**
+   * The model to use for the completion.
+   *
+   * @default 'claude-3-5-sonnet-20240620'
+   */
+  model?: 'claude-3-5-sonnet-20240620' | 'claude-sonnet-4-20250514';
+
+  /**
    * The system prompt to use for the completion. This can be used to provide
    * additional context to the AI model, such as the role of the assistant.
    */
@@ -183,6 +190,7 @@ const AnthropicResponse = z.object({
 export async function getChatCompletion({
   maxTokens,
   messages,
+  model = 'claude-3-5-sonnet-20240620',
   system: _system,
   temperature = 0.5,
 }: GetChatCompletionInput): Promise<Result<string>> {
@@ -203,7 +211,7 @@ export async function getChatCompletion({
   const response = await fetch(ANTHROPIC_API_URL + '/messages', {
     body: JSON.stringify({
       messages,
-      model: 'claude-3-5-sonnet-20240620',
+      model,
       max_tokens: maxTokens,
       system,
       temperature,
