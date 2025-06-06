@@ -193,7 +193,7 @@ export async function getCityDetails(id: string) {
     };
   }
 
-  return withCache(`google:places:details:v3:${id}`, 60 * 60 * 24 * 90, fn);
+  return withCache(`google:places:details:v2:${id}`, 60 * 60 * 24 * 90, fn);
 }
 
 // DB Queries
