@@ -143,6 +143,12 @@ export async function syncLinkedInProfile(memberId: string): Promise<void> {
   // Scrapes the LinkedIn profile from the member's URL.
   const linkedInProfile = await getLinkedInProfile(member.linkedInUrl);
 
+  if (!linkedInProfile) {
+    console.log(`No LinkedIn profile found for ${member.linkedInUrl}.`);
+
+    return;
+  }
+
   // Generates a list of changes to synchronize the database with the LinkedIn
   // profile data.
   const changes = await getProfileDifferential(
@@ -278,13 +284,23 @@ async function getWorkHistoryForDifferential(
  * @param url - LinkedIn profile URL to scrape.
  * @returns Promise resolving to the LinkedIn profile data.
  */
-async function getLinkedInProfile(url: string): Promise<LinkedInProfile> {
+async function getLinkedInProfile(
+  url: string
+): Promise<LinkedInProfile | null> {
   return withCache(`linkedin:${url}`, 60 * 60 * 24 * 30, async function fn() {
-    const datasetId = await startLinkedInProfileScraper(url);
-    const dataset = await getLinkedInProfileDataset(datasetId);
-    const profile = await transformProfileData(dataset);
+    try {
+      const datasetId = await startLinkedInProfileScraper(url);
+      const dataset = await getLinkedInProfileDataset(datasetId);
+      const profile = await transformProfileData(dataset);
 
-    return profile;
+      return profile;
+    } catch (e) {
+      // There's a lot that can go wrong with the LinkedIn profile scraper, for
+      // example the user's profile is private or they inputted a bad URL. We
+      // don't necessarily want to fail the entire sync process for that, so
+      // we'll just exit gracefully.
+      return null;
+    }
   });
 }
 
