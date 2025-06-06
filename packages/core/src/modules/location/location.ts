@@ -52,9 +52,7 @@ export async function getAutocompletedCities(search: string) {
     const searchParams = new URLSearchParams({
       key: GOOGLE_MAPS_API_KEY,
       input: search,
-      types: ['locality', 'administrative_area_level_3', 'neighborhood'].join(
-        '|'
-      ),
+      types: ['locality', 'administrative_area_level_3'].join('|'),
     });
 
     uri.search = searchParams.toString();
@@ -93,7 +91,7 @@ export async function getAutocompletedCities(search: string) {
   }
 
   return withCache(
-    `google:places:autocomplete:${search}`,
+    `google:places:autocomplete:v2:${search}`,
     60 * 60 * 24 * 30,
     fn
   );
@@ -103,13 +101,20 @@ export async function getAutocompletedCities(search: string) {
 
 const GooglePlaceDetailsResponse = z.object({
   result: z.object({
+    address_components: z.array(
+      z.object({
+        long_name: z.string().trim().min(1),
+        short_name: z.string().trim().min(1),
+        types: z.array(z.string().trim().min(1)),
+      })
+    ),
+    formatted_address: z.string().trim().min(1),
     geometry: z.object({
       location: z.object({
         lat: z.number(),
         lng: z.number(),
       }),
     }),
-    name: z.string().trim().min(1),
   }),
 });
 
@@ -135,7 +140,7 @@ export async function getCityDetails(id: string) {
 
     const searchParams = new URLSearchParams({
       key: GOOGLE_MAPS_API_KEY,
-      fields: ['geometry', 'name'].join(','),
+      fields: ['address_components', 'formatted_address', 'geometry'].join(','),
       place_id: id,
     });
 
@@ -164,17 +169,31 @@ export async function getCityDetails(id: string) {
       return null;
     }
 
-    const { geometry, name } = result.data.result;
+    const { address_components, formatted_address, geometry } =
+      result.data.result;
+
+    const cityComponent = address_components.find((component) => {
+      return (
+        component.types.includes('locality') ||
+        component.types.includes('administrative_area_level_3')
+      );
+    });
+
+    const stateComponent = address_components.find((component) => {
+      return component.types.includes('administrative_area_level_1');
+    });
 
     return {
+      city: cityComponent!.long_name,
+      formattedAddress: formatted_address,
       id,
       latitude: geometry.location.lat,
       longitude: geometry.location.lng,
-      name,
+      state: stateComponent!.short_name,
     };
   }
 
-  return withCache(`google:places:details:${id}`, 60 * 60 * 24 * 30, fn);
+  return withCache(`google:places:details:v2:${id}`, 60 * 60 * 24 * 90, fn);
 }
 
 // DB Queries
