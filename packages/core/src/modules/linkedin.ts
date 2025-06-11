@@ -330,36 +330,21 @@ async function getWorkHistoryForDifferential(
 async function getLinkedInProfile(
   url: string
 ): Promise<LinkedInProfile | null> {
-  const apifyProfile = await withCache(
-    `linkedin:${url}:apify`,
+  return withCache(
+    `linkedin:v2:${url}`,
     60 * 60 * 24 * 30,
     async function fn() {
       try {
         const datasetId = await startLinkedInProfileScraper(url);
         const dataset = await getLinkedInProfileDataset(datasetId);
+        const profile = await transformProfileData(dataset);
 
-        return dataset;
+        return profile;
       } catch (e) {
         // There's a lot that can go wrong with the LinkedIn profile scraper, for
         // example the user's profile is private or they inputted a bad URL. We
         // don't necessarily want to fail the entire sync process for that, so
         // we'll just exit gracefully.
-        return null;
-      }
-    }
-  );
-
-  if (!apifyProfile) {
-    return null;
-  }
-
-  return withCache(
-    `linkedin:${url}:clean`,
-    60 * 60 * 24 * 30,
-    async function fn() {
-      try {
-        return transformProfileData(apifyProfile);
-      } catch (e) {
         return null;
       }
     }
