@@ -63,6 +63,12 @@ export type MixpanelEvent = {
     Type: string;
   };
 
+  'LinkedIn Synced': {
+    '# of Education Changes': number;
+    '# of Work Experience Changes': number;
+    'Location Changed': boolean;
+  };
+
   'Logged In': {
     Method: 'Google' | 'OTP' | 'Slack';
   };
@@ -109,7 +115,7 @@ export type MixpanelEvent = {
 };
 
 export type TrackInput<Event extends keyof MixpanelEvent> = {
-  application?: 'Member Profile' | 'Slack';
+  application?: 'API' | 'Member Profile' | 'Slack';
   event: Event;
   properties: MixpanelEvent[Event];
   request?: Request;

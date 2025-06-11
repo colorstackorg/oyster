@@ -7,6 +7,7 @@ import { type DB, db, point } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { getChatCompletion } from '@/infrastructure/ai';
+import { track } from '@/infrastructure/mixpanel';
 import { withCache } from '@/infrastructure/redis';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { LocationType } from '@/modules/employment/employment.types';
@@ -185,7 +186,29 @@ export async function syncLinkedInProfile(memberId: string): Promise<void> {
         .exhaustive();
     });
 
+    promises.push(
+      trx
+        .updateTable('students')
+        .set({ linkedinSyncedAt: new Date() })
+        .where('id', '=', memberId)
+        .execute()
+    );
+
     await Promise.all(promises);
+  });
+
+  const educationChanges = changes.filter(({ type }) => type === 'education');
+  const experienceChanges = changes.filter(({ type }) => type === 'experience');
+  const locationChanges = changes.filter(({ type }) => type === 'location');
+
+  track({
+    event: 'LinkedIn Synced',
+    properties: {
+      '# of Education Changes': educationChanges.length,
+      '# of Work Experience Changes': experienceChanges.length,
+      'Location Changed': locationChanges.length > 0,
+    },
+    user: memberId,
   });
 }
 
