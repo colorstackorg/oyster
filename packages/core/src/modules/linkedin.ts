@@ -185,6 +185,14 @@ export async function syncLinkedInProfile(memberId: string): Promise<void> {
         .exhaustive();
     });
 
+    promises.push(
+      trx
+        .updateTable('students')
+        .set({ linkedinSyncedAt: new Date() })
+        .where('id', '=', memberId)
+        .execute()
+    );
+
     await Promise.all(promises);
   });
 }
