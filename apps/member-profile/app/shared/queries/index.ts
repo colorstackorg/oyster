@@ -37,10 +37,10 @@ export async function getEducationExperiences(id: string) {
   const educationExperiences = rows.map((experience) => {
     let major = '';
 
-    if (experience.major) {
+    if (experience.major !== 'other') {
       major = toTitleCase(experience.major);
-    } else {
-      major = experience.otherMajor || '';
+    } else if (experience.otherMajor) {
+      major = experience.otherMajor;
     }
 
     let location = null;

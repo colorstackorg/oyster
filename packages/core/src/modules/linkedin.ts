@@ -7,6 +7,7 @@ import { type DB, db, point } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { getChatCompletion } from '@/infrastructure/ai';
+import { job } from '@/infrastructure/bull';
 import { track } from '@/infrastructure/mixpanel';
 import { withCache } from '@/infrastructure/redis';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
@@ -15,6 +16,7 @@ import {
   getAutocompletedCities,
   getCityDetails,
 } from '@/modules/location/location';
+import { STUDENT_PROFILE_URL } from '@/shared/env';
 import { ColorStackError } from '@/shared/errors';
 import { extractZodErrorMessage } from '@/shared/utils/zod';
 
@@ -57,21 +59,27 @@ const LinkedInMajor = z.enum([
 const LinkedInEducation = z.object({
   degreeType: LinkedInDegreeType,
   endDate: z.string().nullable(),
+  isSchoolOnLinkedIn: z.boolean(),
   major: LinkedInMajor,
   otherMajor: z.string().nullable(),
   school: z.string(),
   startDate: z.string().nullable(),
 });
 
+type LinkedInEducation = z.infer<typeof LinkedInEducation>;
+
 const LinkedInExperience = z.object({
   company: z.string(),
   endDate: z.string().nullable(),
   employmentType: LinkedInEmploymentType,
+  isCompanyOnLinkedIn: z.boolean(),
   location: z.string().nullable(),
   locationType: LinkedInLocationType.nullable(),
   startDate: z.string(),
   title: z.string(),
 });
+
+type LinkedInExperience = z.infer<typeof LinkedInExperience>;
 
 const LinkedInProfile = z.object({
   educations: z.array(LinkedInEducation),
@@ -170,6 +178,10 @@ export async function syncLinkedInProfile(memberId: string): Promise<void> {
     changes
   );
 
+  if (!changes.length) {
+    return;
+  }
+
   // Executes the changes to synchronize the database with the LinkedIn.
   await db.transaction().execute(async (trx) => {
     const promises = changes.map((change) => {
@@ -210,6 +222,14 @@ export async function syncLinkedInProfile(memberId: string): Promise<void> {
     },
     user: memberId,
   });
+
+  if (member.slackId) {
+    job('notification.slack.send', {
+      channel: member.slackId,
+      message: `I synced your <${STUDENT_PROFILE_URL}/profile/work|work history>, <${STUDENT_PROFILE_URL}/profile/education|education history> and <${STUDENT_PROFILE_URL}/profile/general|current location> with your <${member.linkedInUrl}|LinkedIn>. Please make any changes if we got something wrong!`,
+      workspace: 'regular',
+    });
+  }
 }
 
 async function getEducationHistoryForDifferential(
@@ -251,7 +271,7 @@ async function getMemberForDifferential(
 ) {
   return trx
     .selectFrom('students')
-    .select(['currentLocation', 'currentLocationCoordinates', 'linkedInUrl'])
+    .select(['currentLocation', 'linkedInUrl', 'slackId'])
     .where('id', '=', memberId)
     .executeTakeFirst();
 }
@@ -310,21 +330,25 @@ async function getWorkHistoryForDifferential(
 async function getLinkedInProfile(
   url: string
 ): Promise<LinkedInProfile | null> {
-  return withCache(`linkedin:${url}`, 60 * 60 * 24 * 30, async function fn() {
-    try {
-      const datasetId = await startLinkedInProfileScraper(url);
-      const dataset = await getLinkedInProfileDataset(datasetId);
-      const profile = await transformProfileData(dataset);
+  return withCache(
+    `linkedin:v2:${url}`,
+    60 * 60 * 24 * 30,
+    async function fn() {
+      try {
+        const datasetId = await startLinkedInProfileScraper(url);
+        const dataset = await getLinkedInProfileDataset(datasetId);
+        const profile = await transformProfileData(dataset);
 
-      return profile;
-    } catch (e) {
-      // There's a lot that can go wrong with the LinkedIn profile scraper, for
-      // example the user's profile is private or they inputted a bad URL. We
-      // don't necessarily want to fail the entire sync process for that, so
-      // we'll just exit gracefully.
-      return null;
+        return profile;
+      } catch (e) {
+        // There's a lot that can go wrong with the LinkedIn profile scraper, for
+        // example the user's profile is private or they inputted a bad URL. We
+        // don't necessarily want to fail the entire sync process for that, so
+        // we'll just exit gracefully.
+        return null;
+      }
     }
-  });
+  );
 }
 
 const StartScraperResponse = z.object({
@@ -446,6 +470,7 @@ const TRANSFORM_LINKEDIN_PROFILE_PROMPT = dedent`
       'professional',
     ]),
     endDate: z.string().nullable(),
+    isSchoolOnLinkedIn: z.boolean(),
     major: z.enum([
       'artificial_intelligence',
       'computer_science',
@@ -470,8 +495,9 @@ const TRANSFORM_LINKEDIN_PROFILE_PROMPT = dedent`
       'internship',
       'part_time',
     ]),
+    isCompanyOnLinkedIn: z.boolean(),
     location: z.string().nullable(),
-    locationType: z.enum(['hybrid', 'in_person', 'remote']).nullable(),
+    locationType: z.enum(['hybrid', 'in_person', 'remote']),
     startDate: z.string(),
     title: z.string(),
   });
@@ -489,9 +515,10 @@ const TRANSFORM_LINKEDIN_PROFILE_PROMPT = dedent`
   1. Output must be a single valid JSON object matching "OutputSchema".
   2. Do not include high school or lower education. Only include college-level
      and above.
-  3. Exclude non-professional work (e.g., server, cashier). Include relevant
-     professional experience (e.g., founder).
-  4. If both "location" and "locationType" are null for an experience, default
+  3. Exclude non-professional and service work (e.g., server, cashier). Include
+     relevant professional experience (e.g., founder, software engineer).
+  4. If "location" is not null and "locationType" is null, set "locationType" to
+     "in_person". If both "location" and "locationType" are null, default
      "locationType" to "remote".
   5. Normalize all dates as follows:
     - Format: "YYYY-MM-DD"
@@ -543,6 +570,7 @@ const TRANSFORM_LINKEDIN_PROFILE_PROMPT = dedent`
       {
         "degreeType": "bachelors",
         "endDate": "2019-05-01",
+        "isSchoolOnLinkedIn": true,
         "major": "computer_science",
         "otherMajor": null,
         "school": "MIT",
@@ -554,6 +582,7 @@ const TRANSFORM_LINKEDIN_PROFILE_PROMPT = dedent`
         "company": "Google",
         "endDate": null,
         "employmentType": "full_time",
+        "isCompanyOnLinkedIn": true,
         "location": "San Francisco, CA",
         "locationType": "hybrid",
         "startDate": "2020-03-01",
@@ -575,6 +604,20 @@ const TRANSFORM_LINKEDIN_PROFILE_PROMPT = dedent`
 async function transformProfileData(
   profile: ApifyProfileData
 ): Promise<LinkedInProfile> {
+  profile.experience.forEach((experience: any) => {
+    experience.is_company_on_linkedin =
+      !!experience.company_id &&
+      !!experience.company_linkedin_url &&
+      !!experience.company_logo_url;
+  });
+
+  profile.education.forEach((education: any) => {
+    education.is_school_on_linkedin =
+      !!education.school_id &&
+      !!education.school_linkedin_url &&
+      !!education.school_logo_url;
+  });
+
   const completionResult = await getChatCompletion({
     model: 'claude-sonnet-4-20250514',
     maxTokens: 1000,
@@ -660,6 +703,7 @@ const LINKEDIN_DIFFERENTIAL_PROMPT = dedent`
         degreeType: 'associate' | 'bachelors' | 'certificate' | 'doctoral' |
           'masters' | 'professional';
         endDate: string | null;
+        isSchoolOnLinkedIn: boolean;
         major: 'artificial_intelligence' | 'computer_science' | 'data_science' |
           'electrical_or_computer_engineering' | 'information_science' | 'other';
         otherMajor: string | null;
@@ -677,6 +721,7 @@ const LINKEDIN_DIFFERENTIAL_PROMPT = dedent`
         endDate: string | null;
         employmentType: 'apprenticeship' | 'contract' | 'freelance' |
           'full_time' | 'internship' | 'part_time';
+        isCompanyOnLinkedIn: boolean;
         location: string | null;
         locationType: 'hybrid' | 'in_person' | 'remote' | null;
         startDate: string | null;
@@ -823,7 +868,10 @@ async function upsertEducationFromLinkedIn(
   data: Extract<Change, { type: 'education' }>['data']
 ) {
   const educationId = data.id || id();
-  const school = await getMostRelevantSchool(trx, data.school);
+
+  const school = data.isSchoolOnLinkedIn
+    ? await getMostRelevantSchool(trx, data.school)
+    : null;
 
   return trx
     .insertInto('educations')
@@ -905,7 +953,7 @@ async function upsertExperienceFromLinkedIn(
 
   // `data.company` is the raw company name from LinkedIn. We need to find the
   // most relevant company in our database or using the Crunchbase API.
-  const companyId = data.company
+  const companyId = data.isCompanyOnLinkedIn
     ? await getMostRelevantCompany(trx, data.company)
     : null;
 
