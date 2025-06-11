@@ -506,7 +506,8 @@ const TRANSFORM_LINKEDIN_PROFILE_PROMPT = dedent`
   3. Exclude non-professional work (e.g., server, cashier). Include relevant
      professional experience (e.g., founder).
   4. If both "location" and "locationType" are null for an experience, default
-     "locationType" to "remote".
+     "locationType" to "remote". If "location" is not null and "locationType"
+     is null, set "locationType" to "in_person".
   5. Normalize all dates as follows:
     - Format: "YYYY-MM-DD"
     - If only year and month → use "YYYY-MM-01"
