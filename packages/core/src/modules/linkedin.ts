@@ -685,7 +685,7 @@ const LINKEDIN_DIFFERENTIAL_PROMPT = dedent`
 
   <goal>
     Generate a list of changes to update the user's database profile based on
-    their inkedIn profile.
+    their LinkedIn profile.
 
     🔁 One-way sync: **LinkedIn → Database**
     - Add records present in LinkedIn but missing in the database.
@@ -723,7 +723,7 @@ const LINKEDIN_DIFFERENTIAL_PROMPT = dedent`
           'full_time' | 'internship' | 'part_time';
         isCompanyOnLinkedIn: boolean;
         location: string | null;
-        locationType: 'hybrid' | 'in_person' | 'remote' | null;
+        locationType: 'hybrid' | 'in_person' | 'remote';
         startDate: string | null;
         title: string;
         id?: string;
@@ -747,6 +747,8 @@ const LINKEDIN_DIFFERENTIAL_PROMPT = dedent`
     - Sync is LinkedIn → Database only.
     - Ignore database-only data.
     - Each change must include a clear, concise "reason".
+    - Do not generate changes based on the "isCompanyOnLinkedIn" and
+      "isSchoolOnLinkedIn" fields. They are mainly there for metadata purposes.
 
     **Date normalization:**
     - Format: "YYYY-MM-DD"
@@ -876,7 +878,10 @@ async function upsertEducationFromLinkedIn(
   return trx
     .insertInto('educations')
     .values({
-      ...(school ? { schoolId: school.id } : { otherSchool: data.school }),
+      ...(school
+        ? { otherSchool: null, schoolId: school.id }
+        : { otherSchool: data.school, schoolId: null }),
+
       degreeType: data.degreeType,
       endDate: data.endDate,
       id: educationId,
@@ -974,12 +979,14 @@ async function upsertExperienceFromLinkedIn(
   return trx
     .insertInto('workExperiences')
     .values({
-      ...(companyId && { companyId }),
-      ...(!companyId && { companyName: data.company }),
-      ...(location && {
-        locationCity: location.city,
-        locationState: location.state,
-      }),
+      ...(companyId
+        ? { companyId, companyName: null }
+        : { companyId: null, companyName: data.company }),
+
+      ...(location
+        ? { locationCity: location.city, locationState: location.state }
+        : { locationCity: null, locationState: null }),
+
       employmentType: data.employmentType,
       endDate: data.endDate,
       id: workExperienceId,
