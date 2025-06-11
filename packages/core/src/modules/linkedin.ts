@@ -220,7 +220,7 @@ export async function syncLinkedInProfile(memberId: string): Promise<void> {
   if (member.slackId) {
     job('notification.slack.send', {
       channel: member.slackId,
-      message: `I synced your <${STUDENT_PROFILE_URL}/profile/work|work history>, <${STUDENT_PROFILE_URL}/profile/education|education history> and current location with your <${member.linkedInUrl}|LinkedIn>. Please make any changes if we got something wrong!`,
+      message: `I synced your <${STUDENT_PROFILE_URL}/profile/work|work history>, <${STUDENT_PROFILE_URL}/profile/education|education history> and <${STUDENT_PROFILE_URL}/profile/general|current location> with your <${member.linkedInUrl}|LinkedIn>. Please make any changes if we got something wrong!`,
       workspace: 'regular',
     });
   }

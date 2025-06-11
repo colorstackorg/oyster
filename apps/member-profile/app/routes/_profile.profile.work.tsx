@@ -58,7 +58,8 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   toast(session, {
-    message: 'Check back in 1-2 minutes for any updates.',
+    message:
+      "We'll notify you on Slack when we've synced your LinkedIn profile.",
   });
 
   return json(
