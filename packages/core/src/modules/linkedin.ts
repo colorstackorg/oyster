@@ -7,6 +7,7 @@ import { type DB, db, point } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { getChatCompletion } from '@/infrastructure/ai';
+import { job } from '@/infrastructure/bull';
 import { track } from '@/infrastructure/mixpanel';
 import { withCache } from '@/infrastructure/redis';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
@@ -15,6 +16,7 @@ import {
   getAutocompletedCities,
   getCityDetails,
 } from '@/modules/location/location';
+import { STUDENT_PROFILE_URL } from '@/shared/env';
 import { ColorStackError } from '@/shared/errors';
 import { extractZodErrorMessage } from '@/shared/utils/zod';
 
@@ -170,6 +172,10 @@ export async function syncLinkedInProfile(memberId: string): Promise<void> {
     changes
   );
 
+  if (!changes.length) {
+    return;
+  }
+
   // Executes the changes to synchronize the database with the LinkedIn.
   await db.transaction().execute(async (trx) => {
     const promises = changes.map((change) => {
@@ -210,6 +216,14 @@ export async function syncLinkedInProfile(memberId: string): Promise<void> {
     },
     user: memberId,
   });
+
+  if (member.slackId) {
+    job('notification.slack.send', {
+      channel: member.slackId,
+      message: `I synced your <${STUDENT_PROFILE_URL}/profile/work|work history>, <${STUDENT_PROFILE_URL}/profile/education|education history> and current location with your <${member.linkedInUrl}|LinkedIn>. Please make any changes if we got something wrong!`,
+      workspace: 'regular',
+    });
+  }
 }
 
 async function getEducationHistoryForDifferential(
@@ -251,7 +265,7 @@ async function getMemberForDifferential(
 ) {
   return trx
     .selectFrom('students')
-    .select(['currentLocation', 'currentLocationCoordinates', 'linkedInUrl'])
+    .select(['currentLocation', 'linkedInUrl', 'slackId'])
     .where('id', '=', memberId)
     .executeTakeFirst();
 }
