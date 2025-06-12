@@ -10,6 +10,7 @@ import { getChatCompletion } from '@/infrastructure/ai';
 import { job } from '@/infrastructure/bull';
 import { track } from '@/infrastructure/mixpanel';
 import { withCache } from '@/infrastructure/redis';
+import { getDataset, startRun } from '@/modules/apify';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { LocationType } from '@/modules/employment/employment.types';
 import {
@@ -18,12 +19,6 @@ import {
 } from '@/modules/location/location';
 import { STUDENT_PROFILE_URL } from '@/shared/env';
 import { ColorStackError } from '@/shared/errors';
-import { extractZodErrorMessage } from '@/shared/utils/zod';
-
-// Constants
-
-const APIFY_ACTOR_ID = 'apimaestro~linkedin-profile-detail';
-const APIFY_API_TOKEN = process.env.APIFY_API_TOKEN as string;
 
 // Schemas
 
@@ -311,6 +306,16 @@ async function getWorkHistoryForDifferential(
     .execute();
 }
 
+const ApifyProfileData = z.object({
+  basic_info: z.object({
+    location: z.object({ full: z.string() }),
+  }),
+  experience: z.unknown().array(),
+  education: z.unknown().array(),
+});
+
+type ApifyProfileData = z.infer<typeof ApifyProfileData>;
+
 /**
  * Gets the LinkedIn profile data for a given LinkedIn profile URL. This
  * function composes other functions to get the LinkedIn profile data:
@@ -335,8 +340,12 @@ async function getLinkedInProfile(
     60 * 60 * 24 * 30,
     async function fn() {
       try {
-        const datasetId = await startLinkedInProfileScraper(url);
-        const dataset = await getLinkedInProfileDataset(datasetId);
+        const datasetId = await startRun({
+          actorId: 'apimaestro~linkedin-profile-detail',
+          body: { username: url },
+        });
+
+        const dataset = await getDataset(datasetId, ApifyProfileData);
         const profile = await transformProfileData(dataset);
 
         return profile;
@@ -349,103 +358,6 @@ async function getLinkedInProfile(
       }
     }
   );
-}
-
-const StartScraperResponse = z.object({
-  data: z.object({
-    defaultDatasetId: z.string(),
-  }),
-});
-
-/**
- * Starts a LinkedIn Profile scraper run in Apify. This function does not return
- * the LinkedIn data. We wait for the run to finish and then get the dataset ID,
- * which we'll use in another function to get the actual LinkedIn data.
- *
- * @param input - LinkedIn profile URL to scrape.
- * @returns Promise resolving to the start result.
- */
-async function startLinkedInProfileScraper(username: string): Promise<string> {
-  const url = new URL(`https://api.apify.com/v2/acts/${APIFY_ACTOR_ID}/runs`);
-
-  url.searchParams.set('token', APIFY_API_TOKEN);
-  url.searchParams.set('waitForFinish', '60');
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username }),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new ColorStackError()
-      .withMessage('Failed to start LinkedIn Profile run in Apify.')
-      .withContext({ data, status: response.status })
-      .report();
-  }
-
-  const startResult = StartScraperResponse.safeParse(data);
-
-  if (!startResult.success) {
-    throw new ColorStackError()
-      .withMessage('Failed to parse LinkedIn Profile run from Apify.')
-      .withContext({
-        data,
-        error: extractZodErrorMessage(startResult.error),
-      })
-      .report();
-  }
-
-  const { defaultDatasetId } = startResult.data.data;
-
-  return defaultDatasetId;
-}
-
-const ApifyProfileData = z.object({
-  basic_info: z.object({
-    location: z.object({ full: z.string() }),
-  }),
-  experience: z.unknown().array(),
-  education: z.unknown().array(),
-});
-
-type ApifyProfileData = z.infer<typeof ApifyProfileData>;
-
-/**
- * Gets the LinkedIn profile dataset from Apify. This function uses the dataset
- * ID from the start run to get the actual LinkedIn data.
- *
- * @param datasetId - Dataset ID to get the LinkedIn profile data for.
- * @returns Promise resolving to the LinkedIn profile data.
- */
-async function getLinkedInProfileDataset(datasetId: string) {
-  const url = new URL(`https://api.apify.com/v2/datasets/${datasetId}/items`);
-
-  url.searchParams.set('token', APIFY_API_TOKEN);
-
-  const response = await fetch(url);
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new ColorStackError()
-      .withMessage('Failed to get LinkedIn Profile dataset from Apify.')
-      .withContext({ response: data, status: response.status })
-      .report();
-  }
-
-  const apifyResult = ApifyProfileData.safeParse(data[0]);
-
-  if (!apifyResult.success) {
-    throw new ColorStackError()
-      .withMessage('Failed to parse LinkedIn Profile from Apify.')
-      .withContext({ data, error: extractZodErrorMessage(apifyResult.error) })
-      .report();
-  }
-
-  return apifyResult.data;
 }
 
 // "Clean LinkedIn Profile"
