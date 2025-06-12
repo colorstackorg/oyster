@@ -107,7 +107,7 @@ export async function getDataset<Schema extends ZodType>(
       .report();
   }
 
-  const apifyResult = schema.safeParse(data[0]);
+  const apifyResult = schema.safeParse(data);
 
   if (!apifyResult.success) {
     throw new ColorStackError()
