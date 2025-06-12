@@ -17,6 +17,25 @@ const rateLimiter = new RateLimiter('apify:connections', {
 
 // Core
 
+type RunActorInput<Schema> = {
+  actorId: string;
+  body: Record<string, unknown>;
+  schema: Schema;
+};
+
+export async function runActor<Schema extends ZodType>({
+  actorId,
+  body,
+  schema,
+}: RunActorInput<Schema>): Promise<z.infer<Schema>> {
+  return rateLimiter.doWhenAvailable(async () => {
+    const datasetId = await startRun({ actorId, body });
+    const dataset = await getDataset(datasetId, schema);
+
+    return dataset;
+  });
+}
+
 const StartRunResponse = z.object({
   data: z.object({
     defaultDatasetId: z.string(),
@@ -36,49 +55,42 @@ type StartRunInput = {
  * @param input - LinkedIn profile URL to scrape.
  * @returns Promise resolving to the start result.
  */
-export async function startRun({
-  actorId,
-  body,
-}: StartRunInput): Promise<string> {
-  return rateLimiter.doWhenAvailable(fn);
+async function startRun({ actorId, body }: StartRunInput): Promise<string> {
+  const url = new URL(`https://api.apify.com/v2/acts/${actorId}/runs`);
 
-  async function fn() {
-    const url = new URL(`https://api.apify.com/v2/acts/${actorId}/runs`);
+  url.searchParams.set('token', APIFY_API_TOKEN);
+  url.searchParams.set('waitForFinish', '60');
 
-    url.searchParams.set('token', APIFY_API_TOKEN);
-    url.searchParams.set('waitForFinish', '60');
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
+  const data = await response.json();
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new ColorStackError()
-        .withMessage('Failed to start run in Apify.')
-        .withContext({ data, status: response.status })
-        .report();
-    }
-
-    const startResult = StartRunResponse.safeParse(data);
-
-    if (!startResult.success) {
-      throw new ColorStackError()
-        .withMessage('Failed to parse run from Apify.')
-        .withContext({
-          data,
-          error: extractZodErrorMessage(startResult.error),
-        })
-        .report();
-    }
-
-    const { defaultDatasetId } = startResult.data.data;
-
-    return defaultDatasetId;
+  if (!response.ok) {
+    throw new ColorStackError()
+      .withMessage('Failed to start run in Apify.')
+      .withContext({ data, status: response.status })
+      .report();
   }
+
+  const startResult = StartRunResponse.safeParse(data);
+
+  if (!startResult.success) {
+    throw new ColorStackError()
+      .withMessage('Failed to parse run from Apify.')
+      .withContext({
+        data,
+        error: extractZodErrorMessage(startResult.error),
+      })
+      .report();
+  }
+
+  const { defaultDatasetId } = startResult.data.data;
+
+  return defaultDatasetId;
 }
 
 /**
@@ -88,7 +100,7 @@ export async function startRun({
  * @param datasetId - Dataset ID to get the LinkedIn profile data for.
  * @returns Promise resolving to the LinkedIn profile data.
  */
-export async function getDataset<Schema extends ZodType>(
+async function getDataset<Schema extends ZodType>(
   datasetId: string,
   schema: Schema
 ): Promise<z.infer<Schema>> {

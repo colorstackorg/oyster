@@ -10,7 +10,7 @@ import { getChatCompletion } from '@/infrastructure/ai';
 import { job } from '@/infrastructure/bull';
 import { track } from '@/infrastructure/mixpanel';
 import { withCache } from '@/infrastructure/redis';
-import { getDataset, startRun } from '@/modules/apify';
+import { runActor } from '@/modules/apify';
 import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { LocationType } from '@/modules/employment/employment.types';
 import {
@@ -340,13 +340,13 @@ async function getLinkedInProfile(
     60 * 60 * 24 * 30,
     async function fn() {
       try {
-        const datasetId = await startRun({
+        const dataset = await runActor({
           actorId: 'apimaestro~linkedin-profile-detail',
           body: { username: url },
+          schema: z.array(ApifyProfileData),
         });
 
-        const dataset = await getDataset(datasetId, ApifyProfileData);
-        const profile = await transformProfileData(dataset);
+        const profile = await transformProfileData(dataset[0]);
 
         return profile;
       } catch (e) {

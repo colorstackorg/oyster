@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { type DB, db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { getDataset, startRun } from '@/modules/apify';
+import { runActor } from '@/modules/apify';
 import { getCrunchbaseOrganization } from '../queries/get-crunchbase-organization';
 
 const ApifyCompanyData = z.object({
@@ -51,12 +51,11 @@ export async function saveCompanyIfNecessary(
   let linkedinSlug: string | undefined = undefined;
 
   if (newCompany.linkedInUrl) {
-    const datasetId = await startRun({
+    const dataset = await runActor({
       actorId: 'apimaestro~linkedin-company-detail',
       body: { identifier: [newCompany.linkedInUrl] },
+      schema: z.array(ApifyCompanyData),
     });
-
-    const dataset = await getDataset(datasetId, ApifyCompanyData.array());
 
     const company = dataset?.[0];
 
