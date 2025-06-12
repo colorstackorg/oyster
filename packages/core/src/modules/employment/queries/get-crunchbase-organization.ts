@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import { BaseCompany } from '../employment.types';
 import {
   crunchbaseRateLimiter,
@@ -13,6 +15,7 @@ type GetCrunchbaseOrganizationData = {
         uuid: string;
         value: string;
       };
+      linkedin?: { value?: string };
       listed_stock_symbol: string;
       short_description: string;
       website_url: string;
@@ -74,10 +77,13 @@ export async function getCrunchbaseOrganization(id: string) {
     domain = getDomainFromHostname(hostname);
   }
 
-  const result = BaseCompany.safeParse({
+  const result = BaseCompany.extend({
+    linkedInUrl: z.string().url().optional(),
+  }).safeParse({
     crunchbaseId: fields.identifier.uuid,
     description: fields.short_description,
     domain,
+    linkedInUrl: fields.linkedin?.value,
     name: fields.identifier.value,
     imageUrl: fields.image_url,
     stockSymbol: fields.listed_stock_symbol,
