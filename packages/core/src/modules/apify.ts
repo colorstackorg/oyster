@@ -1,11 +1,19 @@
 import { z, type ZodType } from 'zod';
 
 import { ColorStackError } from '@/shared/errors';
+import { RateLimiter } from '@/shared/utils/rate-limiter';
 import { extractZodErrorMessage } from '@/shared/utils/zod';
 
 // Constants
 
 const APIFY_API_TOKEN = process.env.APIFY_API_TOKEN as string;
+
+// Rate Limiter
+
+const rateLimiter = new RateLimiter('apify:connections', {
+  rateLimit: 25,
+  rateLimitWindow: null,
+});
 
 // Core
 
@@ -32,41 +40,45 @@ export async function startRun({
   actorId,
   body,
 }: StartRunInput): Promise<string> {
-  const url = new URL(`https://api.apify.com/v2/acts/${actorId}/runs`);
+  return rateLimiter.doWhenAvailable(fn);
 
-  url.searchParams.set('token', APIFY_API_TOKEN);
-  url.searchParams.set('waitForFinish', '60');
+  async function fn() {
+    const url = new URL(`https://api.apify.com/v2/acts/${actorId}/runs`);
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+    url.searchParams.set('token', APIFY_API_TOKEN);
+    url.searchParams.set('waitForFinish', '60');
 
-  const data = await response.json();
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
 
-  if (!response.ok) {
-    throw new ColorStackError()
-      .withMessage('Failed to start run in Apify.')
-      .withContext({ data, status: response.status })
-      .report();
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new ColorStackError()
+        .withMessage('Failed to start run in Apify.')
+        .withContext({ data, status: response.status })
+        .report();
+    }
+
+    const startResult = StartRunResponse.safeParse(data);
+
+    if (!startResult.success) {
+      throw new ColorStackError()
+        .withMessage('Failed to parse run from Apify.')
+        .withContext({
+          data,
+          error: extractZodErrorMessage(startResult.error),
+        })
+        .report();
+    }
+
+    const { defaultDatasetId } = startResult.data.data;
+
+    return defaultDatasetId;
   }
-
-  const startResult = StartRunResponse.safeParse(data);
-
-  if (!startResult.success) {
-    throw new ColorStackError()
-      .withMessage('Failed to parse run from Apify.')
-      .withContext({
-        data,
-        error: extractZodErrorMessage(startResult.error),
-      })
-      .report();
-  }
-
-  const { defaultDatasetId } = startResult.data.data;
-
-  return defaultDatasetId;
 }
 
 /**
