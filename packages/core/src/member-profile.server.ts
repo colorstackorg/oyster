@@ -12,10 +12,9 @@ export { verifyOneTimeCode } from './modules/authentication/use-cases/verify-one
 export { addEducation } from './modules/education/use-cases/add-education';
 export { deleteEducation } from './modules/education/use-cases/delete-education';
 export { editEducation } from './modules/education/use-cases/edit-education';
-export { getCrunchbaseOrganization } from './modules/employment/queries/get-crunchbase-organization';
 export { getWorkExperience } from './modules/employment/queries/get-work-experience';
 export { listWorkExperiences } from './modules/employment/queries/list-work-experiences';
-export { searchCrunchbaseOrganizations } from './modules/employment/queries/search-crunchbase-organizations';
+export { searchCompanies } from './modules/employment/queries/search-companies';
 export { addWorkExperience } from './modules/employment/use-cases/add-work-experience';
 export { deleteWorkExperience } from './modules/employment/use-cases/delete-work-experience';
 export { editWorkExperience } from './modules/employment/use-cases/edit-work-experience';

@@ -7,7 +7,6 @@ We have integrations with the following platforms:
 - Airmeet (Virtual Events)
 - Airtable (CRM)
 - Cloudflare R2 (Object Storage)
-- Crunchbase (Company Database)
 - Google (Authentication)
 - Mailchimp (Email Marketing)
 - Pinecone (Vector Database)

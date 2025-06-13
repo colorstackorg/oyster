@@ -6,7 +6,7 @@ import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import { db } from '@oyster/db';
-import { ISO8601Date } from '@oyster/types';
+import { ISO8601Date, nullableField } from '@oyster/types';
 import { id } from '@oyster/utils';
 
 import { getChatCompletion } from '@/infrastructure/ai';
@@ -19,7 +19,6 @@ import { track } from '@/infrastructure/mixpanel';
 import { getPageContent } from '@/infrastructure/puppeteer';
 import { redis } from '@/infrastructure/redis';
 import { reportException } from '@/infrastructure/sentry';
-import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { STUDENT_PROFILE_URL } from '@/shared/env';
 import { ACCENT_COLORS, type AccentColor } from '@/shared/utils/color';
@@ -580,7 +579,8 @@ export async function deleteOpportunity({
 // "Edit Opportunity"
 
 export const EditOpportunityInput = z.object({
-  companyCrunchbaseId: z.string().trim().min(1),
+  companyId: nullableField(z.string().trim().min(1)),
+  companyName: nullableField(z.string().trim().min(1)),
   description: z.string().trim().min(1).max(500),
   expiresAt: ISO8601Date,
   tags: z
@@ -605,10 +605,9 @@ export async function editOpportunity(
   input: EditOpportunityInput
 ): Promise<Result> {
   const result = await db.transaction().execute(async (trx) => {
-    const companyId = await saveCompanyIfNecessary(
-      trx,
-      input.companyCrunchbaseId
-    );
+    const companyId = input.companyId
+      ? input.companyId
+      : await saveCompanyIfNecessary(trx, input.companyName);
 
     const result = await trx
       .updateTable('opportunities')
@@ -824,7 +823,7 @@ export async function refineOpportunity(
 
   const opportunity = await db.transaction().execute(async (trx) => {
     const companyId = data.company
-      ? await getMostRelevantCompany(trx, data.company)
+      ? await saveCompanyIfNecessary(trx, data.company)
       : null;
 
     const expiresAt = data.expiresAt ? new Date(data.expiresAt) : undefined;
@@ -1034,7 +1033,6 @@ export async function getOpportunityDetails({
         .onRef('slackMessages.id', '=', 'opportunities.slackMessageId');
     })
     .select([
-      'companies.crunchbaseId as companyCrunchbaseId',
       'companies.id as companyId',
       'companies.imageUrl as companyLogo',
       'companies.name as companyName',

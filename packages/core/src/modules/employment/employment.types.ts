@@ -51,7 +51,6 @@ export const FORMATTED_LOCATION_TYPE: Record<LocationType, string> = {
 // Domain
 
 export const BaseCompany = z.object({
-  crunchbaseId: z.string(),
   description: z.string().optional(),
   domain: z.string().optional(),
   imageUrl: z.string().url().optional(),
@@ -75,8 +74,8 @@ const CompanyReview = z.object({
 });
 
 export const WorkExperience = Entity.extend({
-  companyId: Company.shape.id.nullish(),
-  companyName: z.string().trim().min(1).nullish(),
+  companyId: NullishString,
+  companyName: NullishString,
   employmentType: z.nativeEnum(EmploymentType),
   endDate: ISO8601Date.nullish(),
   locationCity: NullishString,
@@ -126,6 +125,7 @@ export type ListCompanyReviewsWhere = z.infer<typeof ListCompanyReviewsWhere>;
 export const AddCompanyReviewInput = CompanyReview;
 
 export const AddWorkExperienceInput = WorkExperience.pick({
+  companyId: true,
   companyName: true,
   employmentType: true,
   locationCity: true,
@@ -134,8 +134,6 @@ export const AddWorkExperienceInput = WorkExperience.pick({
   studentId: true,
   title: true,
 }).extend({
-  companyCrunchbaseId: Company.shape.crunchbaseId,
-
   endDate: WorkExperience.shape.endDate.refine((value) => {
     return !value || new Date(value).getFullYear() >= 1000;
   }, 'Please fill out all 4 digits of the year.'),

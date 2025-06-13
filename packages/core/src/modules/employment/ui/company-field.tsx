@@ -16,7 +16,7 @@ import {
   useDelayedValue,
 } from '@oyster/ui';
 
-import { type BaseCompany, type Company } from '../employment.types';
+import { type Company } from '../employment.types';
 
 // TODO: Ensure that anywhere there is a company field is used, that it comes
 // from here (currently, there is multiple versions of this component and
@@ -59,14 +59,14 @@ export function CompanyFieldProvider({
 
 type CompanyComboboxProps = {
   defaultCompanyName?: Company['name'];
-  defaultCrunchbaseId?: Company['crunchbaseId'];
+  defaultCompanyId?: Company['id'];
   name: string;
   showDescription?: boolean;
 };
 
 export function CompanyCombobox({
   defaultCompanyName,
-  defaultCrunchbaseId,
+  defaultCompanyId,
   name,
   showDescription = true,
 }: CompanyComboboxProps) {
@@ -76,7 +76,9 @@ export function CompanyCombobox({
 
   const delayedSearch = useDelayedValue(search, 250);
 
-  const fetcher = useFetcher<{ companies: BaseCompany[] }>();
+  const fetcher = useFetcher<{
+    companies: Pick<Company, 'description' | 'id' | 'imageUrl' | 'name'>[];
+  }>();
 
   useEffect(() => {
     fetcher.submit(
@@ -93,7 +95,7 @@ export function CompanyCombobox({
   return (
     <Combobox
       defaultDisplayValue={defaultCompanyName}
-      defaultValue={defaultCrunchbaseId}
+      defaultValue={defaultCompanyId}
     >
       <ComboboxInput
         id={name}
@@ -109,8 +111,8 @@ export function CompanyCombobox({
               <ComboboxItem
                 className="whitespace-nowrap [&>button]:flex [&>button]:items-center"
                 displayValue={company.name}
-                key={company.crunchbaseId}
-                value={company.crunchbaseId}
+                key={company.id}
+                value={company.id}
                 {...(allowFreeText && {
                   onSelect: () => setIsFreeText(false),
                 })}

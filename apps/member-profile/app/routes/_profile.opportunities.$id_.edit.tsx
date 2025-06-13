@@ -69,19 +69,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const isNewOpportunity = session.get('isNewOpportunity');
 
-  const {
-    companyCrunchbaseId,
-    companyName,
-    description,
-    expiresAt,
-    id,
-    tags,
-    title,
-  } = opportunity;
+  const { companyId, companyName, description, expiresAt, id, tags, title } =
+    opportunity;
 
   return json(
     {
-      companyCrunchbaseId,
+      companyId,
       companyName,
       description,
       expiresAt: dayjs(expiresAt).tz(tz).format('YYYY-MM-DD'),
@@ -173,31 +166,21 @@ function NewCallout() {
 }
 
 function EditOpportunityForm() {
-  const {
-    companyCrunchbaseId,
-    companyName,
-    description,
-    expiresAt,
-    id,
-    tags,
-    title,
-  } = useLoaderData<typeof loader>();
+  const { companyId, companyName, description, expiresAt, id, tags, title } =
+    useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Form className="form" method="post">
       <Field
-        error={errors.companyCrunchbaseId}
+        error={errors.companyId}
         label="Company"
-        labelFor="companyCrunchbaseId"
+        labelFor="companyId"
         required
       >
         <CompanyCombobox
-          defaultValue={{
-            crunchbaseId: companyCrunchbaseId || '',
-            name: companyName || '',
-          }}
-          name="companyCrunchbaseId"
+          defaultValue={{ id: companyId || '', name: companyName || '' }}
+          name="companyId"
         />
       </Field>
 

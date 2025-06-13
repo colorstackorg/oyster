@@ -11,7 +11,6 @@ import { getChatCompletion } from '@/infrastructure/ai';
 import { job, registerWorker } from '@/infrastructure/bull';
 import { OfferBullJob } from '@/infrastructure/bull.types';
 import { redis } from '@/infrastructure/redis';
-import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { STUDENT_PROFILE_URL } from '@/shared/env';
 import { fail, type Result, success } from '@/shared/utils/core';
@@ -62,7 +61,8 @@ export const AddFullTimeOfferInput = FullTimeOffer.omit({
 }).extend({
   additionalNotes: nullableField(BaseOffer.shape.additionalNotes),
   benefits: nullableField(BaseOffer.shape.benefits),
-  companyCrunchbaseId: z.string().trim().min(1),
+  companyId: nullableField(z.string().trim().min(1)),
+  companyName: nullableField(z.string().trim().min(1)),
   negotiated: nullableField(BaseOffer.shape.negotiated),
   pastExperience: nullableField(BaseOffer.shape.pastExperience),
   performanceBonus: nullableField(FullTimeOffer.shape.performanceBonus),
@@ -90,10 +90,9 @@ export async function addFullTimeOffer(
   }
 
   const offer = await db.transaction().execute(async (trx) => {
-    const companyId = await saveCompanyIfNecessary(
-      trx,
-      input.companyCrunchbaseId
-    );
+    const companyId = input.companyId
+      ? input.companyId
+      : await saveCompanyIfNecessary(trx, input.companyName);
 
     return trx
       .insertInto('fullTimeOffers')
@@ -162,7 +161,8 @@ export const AddInternshipOfferInput = InternshipOffer.omit({
 }).extend({
   additionalNotes: nullableField(BaseOffer.shape.additionalNotes),
   benefits: nullableField(BaseOffer.shape.benefits),
-  companyCrunchbaseId: z.string().trim().min(1),
+  companyId: nullableField(z.string().trim().min(1)),
+  companyName: nullableField(z.string().trim().min(1)),
   negotiated: nullableField(BaseOffer.shape.negotiated),
   pastExperience: nullableField(BaseOffer.shape.pastExperience),
   postedBy: z.string().trim().min(1),
@@ -181,10 +181,9 @@ export async function addInternshipOffer(
   }
 
   const offer = await db.transaction().execute(async (trx) => {
-    const companyId = await saveCompanyIfNecessary(
-      trx,
-      input.companyCrunchbaseId
-    );
+    const companyId = input.companyId
+      ? input.companyId
+      : await saveCompanyIfNecessary(trx, input.companyName);
 
     return trx
       .insertInto('internshipOffers')
@@ -365,10 +364,9 @@ export async function editFullTimeOffer(
   }
 
   const offer = await db.transaction().execute(async (trx) => {
-    const companyId = await saveCompanyIfNecessary(
-      trx,
-      input.companyCrunchbaseId
-    );
+    const companyId = input.companyId
+      ? input.companyId
+      : await saveCompanyIfNecessary(trx, input.companyName);
 
     return trx
       .updateTable('fullTimeOffers')
@@ -434,10 +432,9 @@ export async function editInternshipOffer(
   }
 
   const offer = await db.transaction().execute(async (trx) => {
-    const companyId = await saveCompanyIfNecessary(
-      trx,
-      input.companyCrunchbaseId
-    );
+    const companyId = input.companyId
+      ? input.companyId
+      : await saveCompanyIfNecessary(trx, input.companyName);
 
     return trx
       .updateTable('internshipOffers')
@@ -701,7 +698,7 @@ async function shareOffer({
   await db.transaction().execute(async (trx) => {
     for (const offer of offers) {
       const companyId = offer.company
-        ? await getMostRelevantCompany(trx, offer.company)
+        ? await saveCompanyIfNecessary(trx, offer.company)
         : null;
 
       const baseOffer = {

@@ -8,12 +8,11 @@ import { type AddWorkExperienceInput } from '../employment.types';
  * Adds a work experience to the member's history, and emits a job to grant
  * gamification points for updating their work history.
  *
- * If the company selected from Crunchbase did not previously exist in our
- * database, we will simultaneously save it in the same transaction as the work
- * experience.
+ * If the company selected did not previously exist in our database, we will
+ * simultaneously save it in the same transaction as the work experience.
  */
 export async function addWorkExperience({
-  companyCrunchbaseId,
+  companyId,
   companyName,
   endDate,
   employmentType,
@@ -28,13 +27,14 @@ export async function addWorkExperience({
   workExperienceId ||= id();
 
   await db.transaction().execute(async (trx) => {
-    const companyId = await saveCompanyIfNecessary(trx, companyCrunchbaseId);
+    companyId ||= await saveCompanyIfNecessary(trx, companyName);
 
     await trx
       .insertInto('workExperiences')
       .values({
-        companyId,
-        companyName,
+        ...(companyId
+          ? { companyId, companyName: null }
+          : { companyId: null, companyName }),
         employmentType,
         endDate,
         id: workExperienceId,

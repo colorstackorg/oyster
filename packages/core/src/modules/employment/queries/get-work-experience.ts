@@ -24,7 +24,6 @@ export async function getWorkExperience<
       return qb
         .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
         .select([
-          'companies.crunchbaseId as companyCrunchbaseId',
           'companies.id as companyId',
           'companies.name as companyName',
           'companies.imageUrl as companyImageUrl',

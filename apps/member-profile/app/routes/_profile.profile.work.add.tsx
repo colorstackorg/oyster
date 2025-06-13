@@ -98,8 +98,8 @@ export default function AddWorkExperiencePage() {
             name={keys.employmentType}
           />
           <WorkForm.CompanyField
-            error={errors.companyCrunchbaseId}
-            name={keys.companyCrunchbaseId}
+            error={errors.companyId}
+            name={keys.companyId}
           />
           <WorkForm.OtherCompanyField
             error={errors.companyName}

@@ -47,12 +47,7 @@ export async function listMembersInDirectory(options: GetMembersOptions) {
             .selectFrom('workExperiences')
             .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
             .whereRef('workExperiences.studentId', '=', 'students.id')
-            .where((eb) => {
-              return eb.or([
-                eb('companies.crunchbaseId', '=', company),
-                eb('companies.id', '=', company),
-              ]);
-            })
+            .where('companies.id', '=', company)
         );
       });
     })

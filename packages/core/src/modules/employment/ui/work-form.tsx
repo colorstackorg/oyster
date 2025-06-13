@@ -18,12 +18,12 @@ import {
   type FieldProps,
   Input,
   Select,
+  Text,
   useDelayedValue,
 } from '@oyster/ui';
 import { order } from '@oyster/utils';
 
 import {
-  type BaseCompany,
   type Company,
   type EmploymentType,
   FORMATTED_EMPLOYMENT_TYPE,
@@ -87,10 +87,10 @@ WorkForm.CityField = function CityField({
   );
 };
 
-type CompanyFieldProps = FieldProps<Pick<Company, 'crunchbaseId' | 'name'>>;
+type CompanyFieldProps = FieldProps<Pick<Company, 'id' | 'name'>>;
 
 WorkForm.CompanyField = function CompanyField({
-  defaultValue = { crunchbaseId: '', name: '' },
+  defaultValue = { id: '', name: '' },
   error,
   name,
 }: CompanyFieldProps) {
@@ -100,7 +100,9 @@ WorkForm.CompanyField = function CompanyField({
 
   const delayedSearch = useDelayedValue(search, 250);
 
-  const fetcher = useFetcher<{ companies: BaseCompany[] }>();
+  const fetcher = useFetcher<{
+    companies: Pick<Company, 'description' | 'id' | 'imageUrl' | 'name'>[];
+  }>();
 
   useEffect(() => {
     fetcher.submit(
@@ -118,7 +120,7 @@ WorkForm.CompanyField = function CompanyField({
     <Field error={error} label="Organization" labelFor={name} required>
       <Combobox
         defaultDisplayValue={defaultValue.name}
-        defaultValue={defaultValue.crunchbaseId}
+        defaultValue={defaultValue.id}
       >
         <ComboboxInput
           id={name}
@@ -132,20 +134,31 @@ WorkForm.CompanyField = function CompanyField({
             {companies.map((company) => {
               return (
                 <ComboboxItem
-                  className="whitespace-nowrap [&>button]:flex [&>button]:items-center"
+                  className="[&>button]:flex"
                   displayValue={company.name}
-                  key={company.crunchbaseId}
+                  key={company.id}
                   onSelect={() => setIsOtherCompany(false)}
-                  value={company.crunchbaseId}
+                  value={company.id}
                 >
                   <img
                     alt={company.name}
-                    className="mr-2 h-6 w-6 rounded"
+                    className="mr-2 mt-1 h-6 w-6 rounded"
                     src={company.imageUrl}
                   />
-                  {company.name}{' '}
-                  <span className="ml-1 box-border max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-gray-400">
-                    - {company.description}
+
+                  <span className="flex flex-col">
+                    <Text as="span" className="line-clamp-1" variant="sm">
+                      {company.name}
+                    </Text>
+
+                    <Text
+                      as="span"
+                      color="gray-500"
+                      className="line-clamp-1"
+                      variant="xs"
+                    >
+                      {company.description}
+                    </Text>
                   </span>
                 </ComboboxItem>
               );
