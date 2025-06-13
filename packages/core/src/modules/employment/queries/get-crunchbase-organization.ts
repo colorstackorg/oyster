@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { sleep } from '@oyster/utils';
+
 import { BaseCompany } from '../employment.types';
 import {
   crunchbaseRateLimiter,
@@ -50,7 +52,18 @@ export async function getCrunchbaseOrganization(id: string) {
   const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error('Failed to fetch organization from the Crunchbase API.');
+    const retryAfter = response.headers.get('retry-after');
+
+    if (retryAfter) {
+      console.log(`Retrying in ${retryAfter} seconds...`);
+      await sleep(parseInt(retryAfter) * 1000);
+
+      return getCrunchbaseOrganization(id);
+    }
+
+    throw new Error(
+      `Failed to fetch organization ${id} from the Crunchbase API. ${response.statusText}`
+    );
   }
 
   // TODO: Should actually validate this data in the future...
