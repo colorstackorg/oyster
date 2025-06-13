@@ -10,19 +10,31 @@ const APIFY_API_TOKEN = process.env.APIFY_API_TOKEN as string;
 
 // Rate Limiter
 
+/**
+ * @see https://docs.apify.com/platform/limits#platform-limits
+ */
 const rateLimiter = new RateLimiter('apify:connections', {
-  rateLimit: 25,
+  rateLimit: 32,
   rateLimitWindow: null,
 });
 
 // Core
 
-type RunActorInput<Schema> = {
+type RunActorInput<Schema extends ZodType> = {
   actorId: string;
   body: Record<string, unknown>;
   schema: Schema;
 };
 
+/**
+ * Runs an Apify actor with the given configuration and returns the parsed
+ * dataset. This function handles rate limiting and data validation.
+ *
+ * @param actorId - ID of the Apify actor to run.
+ * @param body - Input parameters for the actor run.
+ * @param schema - Zod schema to validate and parse the returned dataset.
+ * @returns Promise resolving to the validated dataset matching the schema type.
+ */
 export async function runActor<Schema extends ZodType>({
   actorId,
   body,
@@ -48,12 +60,14 @@ type StartRunInput = {
 };
 
 /**
- * Starts a LinkedIn Profile scraper run in Apify. This function does not return
- * the LinkedIn data. We wait for the run to finish and then get the dataset ID,
- * which we'll use in another function to get the actual LinkedIn data.
+ * Starts an Apify actor run with the given configuration. This function does
+ * not return the actual data. Instead, it waits for the run to finish and
+ * returns the dataset ID, which can be used to fetch the results using
+ * `getDataset()`.
  *
- * @param input - LinkedIn profile URL to scrape.
- * @returns Promise resolving to the start result.
+ * @param actorId - ID of the Apify actor to run.
+ * @param body - Input parameters for the actor run.
+ * @returns Promise resolving to the dataset ID.
  */
 async function startRun({ actorId, body }: StartRunInput): Promise<string> {
   const url = new URL(`https://api.apify.com/v2/acts/${actorId}/runs`);
@@ -94,11 +108,12 @@ async function startRun({ actorId, body }: StartRunInput): Promise<string> {
 }
 
 /**
- * Gets the LinkedIn profile dataset from Apify. This function uses the dataset
- * ID from the start run to get the actual LinkedIn data.
+ * Gets the Apify dataset from Apify. This function uses the dataset ID from
+ * the start run to get the actual data.
  *
- * @param datasetId - Dataset ID to get the LinkedIn profile data for.
- * @returns Promise resolving to the LinkedIn profile data.
+ * @param datasetId - Dataset ID to get the data for.
+ * @param schema - Zod schema to validate and parse the returned dataset.
+ * @returns Promise resolving to the validated dataset matching the schema type.
  */
 async function getDataset<Schema extends ZodType>(
   datasetId: string,

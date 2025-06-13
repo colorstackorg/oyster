@@ -635,7 +635,7 @@ const LINKEDIN_DIFFERENTIAL_PROMPT = dedent`
           'full_time' | 'internship' | 'part_time';
         isCompanyOnLinkedIn: boolean;
         location: string | null;
-        locationType: 'hybrid' | 'in_person' | 'remote';
+        locationType: 'hybrid' | 'in_person' | 'remote' | null;
         startDate: string | null;
         title: string;
         id?: string;
@@ -659,8 +659,6 @@ const LINKEDIN_DIFFERENTIAL_PROMPT = dedent`
     - Sync is LinkedIn → Database only.
     - Ignore database-only data.
     - Each change must include a clear, concise "reason".
-    - Do not generate changes based on the "isCompanyOnLinkedIn" and
-      "isSchoolOnLinkedIn" fields. They are mainly there for metadata purposes.
 
     **Date normalization:**
     - Format: "YYYY-MM-DD"

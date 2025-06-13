@@ -1,18 +1,9 @@
 import { type Transaction } from 'kysely';
-import { z } from 'zod';
 
 import { type DB, db } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { runActor } from '@/modules/apify';
 import { getCrunchbaseOrganization } from '../queries/get-crunchbase-organization';
-
-const ApifyCompanyData = z.object({
-  basic_info: z.object({ name: z.string(), universal_name: z.string() }),
-  company_urn: z.string(),
-  input_identifier: z.string(),
-  media: z.object({ logo_url: z.string() }),
-});
 
 /**
  * Saves a company in the database, if it does not already exist.
@@ -47,24 +38,6 @@ export async function saveCompanyIfNecessary(
 
   const newCompany = await getCrunchbaseOrganization(crunchbaseId);
 
-  let linkedinId: string | undefined = undefined;
-  let linkedinSlug: string | undefined = undefined;
-
-  if (newCompany.linkedInUrl) {
-    const dataset = await runActor({
-      actorId: 'apimaestro~linkedin-company-detail',
-      body: { identifier: [newCompany.linkedInUrl] },
-      schema: z.array(ApifyCompanyData),
-    });
-
-    const company = dataset?.[0];
-
-    if (company?.company_urn) {
-      linkedinId = company.company_urn;
-      linkedinSlug = company.basic_info.universal_name;
-    }
-  }
-
   const companyId = id();
 
   await trx
@@ -75,8 +48,6 @@ export async function saveCompanyIfNecessary(
       domain: newCompany.domain,
       id: companyId,
       imageUrl: newCompany.imageUrl,
-      linkedinId,
-      linkedinSlug,
       name: newCompany.name,
       stockSymbol: newCompany.stockSymbol,
     })
