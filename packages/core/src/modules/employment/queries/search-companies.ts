@@ -2,8 +2,28 @@ import { sql } from 'kysely';
 
 import { db } from '@oyster/db';
 
+/**
+ * Searches for companies in the database based on a search string.
+ *
+ * The search matches against company names using PostgreSQL's ILIKE operator
+ * for case-insensitive partial matching, as well as trigram (pg_trgm)
+ * similarity matching. For example, searching "goog" would match "Google", and
+ * searching "gogle" would also match "Google" due to trigram similarity.
+ *
+ * Results are additionally ranked by a "popularity" score calculated from:
+ * - # of work experiences at the company
+ * - # of internship offers from the company
+ * - # of full-time offers from the company
+ * - # of opportunities posted by the company
+ *
+ * This provides a weighted relevance ordering with more frequently appearing
+ * companies ranked higher in the results.
+ *
+ * @param search - The search string to match against company names
+ * @returns Array of matching companies.
+ */
 export async function searchCompanies(search: string) {
-  return db
+  const companies = await db
     .with('experienceCounts', (qb) => {
       return qb
         .selectFrom('workExperiences')
@@ -111,9 +131,9 @@ export async function searchCompanies(search: string) {
         ])
         .where((eb) => {
           return eb.or([
+            eb('name', 'ilike', `%${search}%`),
             eb(sql`similarity(${eb.ref('name')}, ${search})`, '>=', 0.25),
             eb(sql`word_similarity(${eb.ref('name')}, ${search})`, '>=', 0.5),
-            eb('name', 'ilike', `%${search}%`),
           ]);
         });
     })
@@ -145,4 +165,6 @@ export async function searchCompanies(search: string) {
     .orderBy('name', 'asc')
     .limit(10)
     .execute();
+
+  return companies;
 }
