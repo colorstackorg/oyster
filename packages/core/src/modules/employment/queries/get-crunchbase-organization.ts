@@ -1,3 +1,7 @@
+import { z } from 'zod';
+
+import { sleep } from '@oyster/utils';
+
 import { BaseCompany } from '../employment.types';
 import {
   crunchbaseRateLimiter,
@@ -13,6 +17,7 @@ type GetCrunchbaseOrganizationData = {
         uuid: string;
         value: string;
       };
+      linkedin?: { value?: string };
       listed_stock_symbol: string;
       short_description: string;
       website_url: string;
@@ -47,7 +52,18 @@ export async function getCrunchbaseOrganization(id: string) {
   const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error('Failed to fetch organization from the Crunchbase API.');
+    const retryAfter = response.headers.get('retry-after');
+
+    if (retryAfter) {
+      console.log(`Retrying in ${retryAfter} seconds...`);
+      await sleep(parseInt(retryAfter) * 1000);
+
+      return getCrunchbaseOrganization(id);
+    }
+
+    throw new Error(
+      `Failed to fetch organization ${id} from the Crunchbase API. ${response.statusText}`
+    );
   }
 
   // TODO: Should actually validate this data in the future...
@@ -74,10 +90,13 @@ export async function getCrunchbaseOrganization(id: string) {
     domain = getDomainFromHostname(hostname);
   }
 
-  const result = BaseCompany.safeParse({
+  const result = BaseCompany.extend({
+    linkedInUrl: z.string().url().optional(),
+  }).safeParse({
     crunchbaseId: fields.identifier.uuid,
     description: fields.short_description,
     domain,
+    linkedInUrl: fields.linkedin?.value,
     name: fields.identifier.value,
     imageUrl: fields.image_url,
     stockSymbol: fields.listed_stock_symbol,
