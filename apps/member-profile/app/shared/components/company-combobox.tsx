@@ -13,7 +13,7 @@ import {
 
 import type { SearchCompaniesResult } from '@/routes/api.companies';
 
-type CompanyComboboxProps = FieldProps<Pick<Company, 'crunchbaseId' | 'name'>>;
+type CompanyComboboxProps = FieldProps<Pick<Company, 'id' | 'name'>>;
 
 export function CompanyCombobox({ defaultValue, name }: CompanyComboboxProps) {
   const [search, setSearch] = useState<string>(defaultValue?.name || '');
@@ -37,7 +37,7 @@ export function CompanyCombobox({ defaultValue, name }: CompanyComboboxProps) {
   return (
     <Combobox
       defaultDisplayValue={defaultValue?.name}
-      defaultValue={defaultValue?.crunchbaseId}
+      defaultValue={defaultValue?.id}
     >
       <ComboboxInput
         id={name}
@@ -53,14 +53,16 @@ export function CompanyCombobox({ defaultValue, name }: CompanyComboboxProps) {
               <ComboboxItem
                 className="whitespace-nowrap [&>button]:flex [&>button]:items-center"
                 displayValue={company.name}
-                key={company.crunchbaseId}
-                value={company.crunchbaseId}
+                key={company.id}
+                value={company.id}
               >
-                <img
-                  alt={company.name}
-                  className="mr-2 h-6 w-6 rounded"
-                  src={company.imageUrl}
-                />
+                {company.imageUrl && (
+                  <img
+                    alt={company.name}
+                    className="mr-2 h-6 w-6 rounded"
+                    src={company.imageUrl}
+                  />
+                )}
                 {company.name}
               </ComboboxItem>
             );

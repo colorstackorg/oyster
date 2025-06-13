@@ -104,7 +104,7 @@ export default function AddFullTimeOffer() {
       </Modal.Header>
 
       <Form className="form" method="post">
-        <OfferCompanyField error={errors.companyCrunchbaseId} />
+        <OfferCompanyField error={errors.companyId} />
         <OfferRoleField error={errors.role} />
         <OfferLocationField error={errors.location} />
 

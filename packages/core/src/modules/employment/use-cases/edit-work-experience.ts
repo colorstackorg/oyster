@@ -6,12 +6,11 @@ import { type EditWorkExperienceInput } from '../employment.types';
 /**
  * Edits an existing work experience from the member's history.
  *
- * If the company selected from Crunchbase did not previously exist in our
- * database, we will simultaneously save it in the same transaction as the work
- * experience.
+ * If the company selected did not previously exist in our database, we will
+ * simultaneously save it in the same transaction as the work experience.
  */
 export async function editWorkExperience({
-  companyCrunchbaseId,
+  companyId,
   companyName,
   employmentType,
   endDate,
@@ -24,13 +23,14 @@ export async function editWorkExperience({
   title,
 }: EditWorkExperienceInput) {
   await db.transaction().execute(async (trx) => {
-    const companyId = await saveCompanyIfNecessary(trx, companyCrunchbaseId);
+    companyId ||= await saveCompanyIfNecessary(trx, companyName);
 
     await trx
       .updateTable('workExperiences')
       .set({
-        companyId,
-        companyName,
+        ...(companyId
+          ? { companyId, companyName: null }
+          : { companyId: null, companyName }),
         employmentType,
         endDate: endDate || null,
         locationCity,

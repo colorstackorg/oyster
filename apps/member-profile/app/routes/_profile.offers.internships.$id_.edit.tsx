@@ -55,11 +55,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     .selectFrom('internshipOffers')
     .leftJoin('companies', 'companies.id', 'internshipOffers.companyId')
     .select([
-      'companies.crunchbaseId as companyCrunchbaseId',
       'companies.imageUrl as companyLogo',
       'companies.name as companyName',
       'internshipOffers.additionalNotes',
       'internshipOffers.benefits',
+      'internshipOffers.companyId',
       'internshipOffers.hourlyRate',
       'internshipOffers.id',
       'internshipOffers.location',
@@ -143,7 +143,7 @@ export default function EditInternshipOffer() {
   const {
     additionalNotes,
     benefits,
-    companyCrunchbaseId,
+    companyId,
     companyName,
     hourlyRate,
     id,
@@ -170,11 +170,8 @@ export default function EditInternshipOffer() {
 
       <Form className="form" method="post">
         <OfferCompanyField
-          defaultValue={{
-            crunchbaseId: companyCrunchbaseId || '',
-            name: companyName || '',
-          }}
-          error={errors.companyCrunchbaseId}
+          defaultValue={{ id: companyId || '', name: companyName || '' }}
+          error={errors.companyId}
         />
         <OfferRoleField defaultValue={role} error={errors.role} />
         <OfferLocationField defaultValue={location} error={errors.location} />

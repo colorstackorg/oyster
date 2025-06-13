@@ -167,16 +167,16 @@ export default function EditWorkExperiencePage() {
             defaultValue={
               workExperience.companyId
                 ? {
-                    crunchbaseId: workExperience.companyCrunchbaseId!,
+                    id: workExperience.companyId!,
                     name: workExperience.companyName!,
                   }
                 : {
-                    crunchbaseId: '',
+                    id: '',
                     name: 'Other',
                   }
             }
-            error={errors.companyCrunchbaseId}
-            name={keys.companyCrunchbaseId}
+            error={errors.companyId}
+            name={keys.companyId}
           />
           <WorkForm.OtherCompanyField
             defaultValue={workExperience.otherCompany || undefined}

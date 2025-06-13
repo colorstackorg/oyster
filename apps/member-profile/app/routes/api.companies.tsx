@@ -7,7 +7,7 @@ import { z } from 'zod';
 
 import {
   reportException,
-  searchCrunchbaseOrganizations,
+  searchCompanies,
 } from '@oyster/core/member-profile/server';
 
 import { ensureUserAuthenticated } from '@/shared/session.server';
@@ -28,7 +28,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
 
   try {
-    const companies = await searchCrunchbaseOrganizations(search);
+    const companies = await searchCompanies(search);
 
     return json({
       companies,

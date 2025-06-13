@@ -43,7 +43,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     .selectFrom('workExperiences')
     .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
     .select([
-      'companies.crunchbaseId as companyCrunchbaseId',
       'companies.id as companyId',
       'companies.name as companyName',
       'companies.imageUrl as companyImageUrl',
@@ -194,16 +193,16 @@ function WorkExperienceForm() {
             defaultValue={
               workExperience.companyId
                 ? {
-                    crunchbaseId: workExperience.companyCrunchbaseId!,
+                    id: workExperience.companyId!,
                     name: workExperience.companyName!,
                   }
                 : {
-                    crunchbaseId: '',
+                    id: '',
                     name: 'Other',
                   }
             }
-            error={errors.companyCrunchbaseId}
-            name="companyCrunchbaseId"
+            error={errors.companyId}
+            name="companyId"
           />
           <WorkForm.OtherCompanyField
             defaultValue={workExperience.otherCompany || undefined}
@@ -259,10 +258,7 @@ function WorkExperienceForm() {
             error={errors.employmentType}
             name="employmentType"
           />
-          <WorkForm.CompanyField
-            error={errors.companyCrunchbaseId}
-            name="companyCrunchbaseId"
-          />
+          <WorkForm.CompanyField error={errors.companyId} name="companyId" />
           <WorkForm.OtherCompanyField
             error={errors.companyName}
             name="companyName"

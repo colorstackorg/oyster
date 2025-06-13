@@ -11,8 +11,8 @@ import { job } from '@/infrastructure/bull';
 import { track } from '@/infrastructure/mixpanel';
 import { withCache } from '@/infrastructure/redis';
 import { runActor } from '@/modules/apify';
-import { getMostRelevantCompany } from '@/modules/employment/companies';
 import { LocationType } from '@/modules/employment/employment.types';
+import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import {
   getAutocompletedCities,
   getCityDetails,
@@ -871,7 +871,7 @@ async function upsertExperienceFromLinkedIn(
   // `data.company` is the raw company name from LinkedIn. We need to find the
   // most relevant company in our database or using the Crunchbase API.
   const companyId = data.isCompanyOnLinkedIn
-    ? await getMostRelevantCompany(trx, data.company)
+    ? await saveCompanyIfNecessary(trx, data.company)
     : null;
 
   const location = await getMostRelevantLocation(data.location);

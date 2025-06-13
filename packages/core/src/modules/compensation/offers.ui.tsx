@@ -71,18 +71,13 @@ export function OfferBenefitsField({
 export function OfferCompanyField({
   defaultValue,
   error,
-}: Omit<FieldProps<{ crunchbaseId: string; name: string }>, 'name'>) {
+}: Omit<FieldProps<{ id: string; name: string }>, 'name'>) {
   return (
-    <Field
-      error={error}
-      label="Company"
-      labelFor="companyCrunchbaseId"
-      required
-    >
+    <Field error={error} label="Company" labelFor="companyId" required>
       <CompanyCombobox
         defaultCompanyName={defaultValue?.name}
-        defaultCrunchbaseId={defaultValue?.crunchbaseId}
-        name="companyCrunchbaseId"
+        defaultCompanyId={defaultValue?.id}
+        name="companyId"
         showDescription={false}
       />
     </Field>

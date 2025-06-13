@@ -7,28 +7,28 @@ import { type DB } from '../shared/types';
 // Constants
 
 export const company1: Insertable<DB['companies']> = {
-  crunchbaseId: '11',
   id: '1',
+  linkedinId: '11',
   name: 'Adobe',
 };
 
 export const company2: Insertable<DB['companies']> = {
-  crunchbaseId: '22',
   id: '2',
+  linkedinId: '22',
   name: 'Google',
 };
 
 export const company3: Insertable<DB['companies']> = {
-  crunchbaseId: '33',
   id: '3',
+  linkedinId: '33',
   name: 'Microsoft',
 };
 
 export const company4: Insertable<DB['companies']> = {
-  crunchbaseId: '44',
   description: '...',
   domain: 'stripe.com',
-  id: '44',
+  id: '4',
+  linkedinId: '44',
   imageUrl: '...',
   name: 'Stripe',
   stockSymbol: '...',

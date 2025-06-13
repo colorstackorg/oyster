@@ -55,12 +55,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     .selectFrom('fullTimeOffers')
     .leftJoin('companies', 'companies.id', 'fullTimeOffers.companyId')
     .select([
-      'companies.crunchbaseId as companyCrunchbaseId',
       'companies.imageUrl as companyLogo',
       'companies.name as companyName',
       'fullTimeOffers.additionalNotes',
       'fullTimeOffers.baseSalary',
       'fullTimeOffers.benefits',
+      'fullTimeOffers.companyId',
       'fullTimeOffers.id',
       'fullTimeOffers.location',
       'fullTimeOffers.negotiated',
@@ -147,7 +147,7 @@ export default function EditFullTimeOffer() {
     additionalNotes,
     baseSalary,
     benefits,
-    companyCrunchbaseId,
+    companyId,
     companyName,
     id,
     location,
@@ -176,11 +176,8 @@ export default function EditFullTimeOffer() {
 
       <Form className="form" method="post">
         <OfferCompanyField
-          defaultValue={{
-            crunchbaseId: companyCrunchbaseId || '',
-            name: companyName || '',
-          }}
-          error={errors.companyCrunchbaseId}
+          defaultValue={{ id: companyId || '', name: companyName || '' }}
+          error={errors.companyId}
         />
         <OfferRoleField defaultValue={role} error={errors.role} />
         <OfferLocationField defaultValue={location} error={errors.location} />

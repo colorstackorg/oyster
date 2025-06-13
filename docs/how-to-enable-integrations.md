@@ -7,7 +7,6 @@ We have integrations with the following platforms:
 - Airmeet (Virtual Events)
 - Airtable (CRM)
 - Cloudflare R2 (Object Storage)
-- Crunchbase (Company Database)
 - Google (Authentication)
 - Mailchimp (Email Marketing)
 - Pinecone (Vector Database)
@@ -57,17 +56,6 @@ To enable the **Cloudflare R2** integration:
    R2_ACCOUNT_ID
    R2_BUCKET_NAME
    R2_SECRET_ACCESS_KEY
-   ```
-
-## Crunchbase
-
-To enable the **Crunchbase** integration:
-
-1. See [this](https://data.crunchbase.com/docs/crunchbase-basic-getting-started)
-   Crunchbase documentation to generate an API key.
-2. In `/member-profile/.env`, set the following variable:
-   ```
-   CRUNCHBASE_BASIC_API_KEY
    ```
 
 ## Google

@@ -293,7 +293,6 @@ async function seed(trx: Transaction<DB>) {
     .values([
       {
         createdAt: new Date(),
-        crunchbaseId: '172a34b4-9edd-b0ae-c768-cbfa8e1ab52c',
         description:
           'Adobe is a software company that provides its users with digital marketing and media solutions.',
         domain: 'adobe.com',
@@ -302,12 +301,13 @@ async function seed(trx: Transaction<DB>) {
           'https://images.crunchbase.com/image/upload/t_cb-default-original/qnbpcajqvlw8bkul1tru',
         leetcodeSlug: 'adobe',
         levelsFyiSlug: 'adobe',
+        linkedinId: '11',
+        linkedinSlug: 'adobe',
         name: 'Adobe',
         stockSymbol: 'NASDAQ:ADBE',
       },
       {
         createdAt: new Date(),
-        crunchbaseId: '05554f65-6aa9-4dd1-6271-8ce2d60f10c4',
         description:
           'Amazon is an e-commerce website for consumers, sellers, and content creators.',
         domain: 'amazon.com',
@@ -316,12 +316,13 @@ async function seed(trx: Transaction<DB>) {
           'https://images.crunchbase.com/image/upload/t_cb-default-original/mwsza2s38epb8olssp3j',
         leetcodeSlug: 'amazon',
         levelsFyiSlug: 'amazon',
+        linkedinId: '12',
+        linkedinSlug: 'amazon',
         name: 'Amazon',
         stockSymbol: 'NASDAQ:AMZN',
       },
       {
         createdAt: new Date(),
-        crunchbaseId: '6acfa7da-1dbd-936e-d985-cf07a1b27711',
         description:
           'Google is a multinational corporation that specializes in Internet-related services and products.',
         domain: 'google.com',
@@ -330,12 +331,13 @@ async function seed(trx: Transaction<DB>) {
           'https://images.crunchbase.com/image/upload/t_cb-default-original/fa8nmvofinznny6rkwvf',
         leetcodeSlug: 'google',
         levelsFyiSlug: 'google',
+        linkedinId: '13',
+        linkedinSlug: 'google',
         name: 'Google',
         stockSymbol: 'NASDAQ:GOOG',
       },
       {
         createdAt: new Date(),
-        crunchbaseId: 'df662812-7f97-0b43-9d3e-12f64f504fbb',
         description:
           'Meta is a social technology company that enables people to connect, find communities, and grow businesses.',
         domain: 'meta.com',
@@ -344,12 +346,13 @@ async function seed(trx: Transaction<DB>) {
           'https://images.crunchbase.com/image/upload/t_cb-default-original/whm4ed1rrc8skbdi3biv',
         leetcodeSlug: 'facebook',
         levelsFyiSlug: 'facebook',
+        linkedinId: '14',
+        linkedinSlug: 'facebook',
         name: 'Meta',
         stockSymbol: 'NASDAQ:META',
       },
       {
         createdAt: new Date(),
-        crunchbaseId: 'fd80725f-53fc-7009-9878-aeecf1e9ffbb',
         description:
           'Microsoft is a software corporation that develops, manufactures, licenses, supports, and sells a range of software products and services.',
         domain: 'microsoft.com',
@@ -358,6 +361,8 @@ async function seed(trx: Transaction<DB>) {
           'https://images.crunchbase.com/image/upload/t_cb-default-original/v1501613147',
         leetcodeSlug: 'microsoft',
         levelsFyiSlug: 'microsoft',
+        linkedinId: '15',
+        linkedinSlug: 'microsoft',
         name: 'Microsoft',
         stockSymbol: 'NASDAQ:MSFT',
       },

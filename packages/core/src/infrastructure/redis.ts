@@ -17,7 +17,6 @@ export const redis = new Redis(REDIS_URL, {
 export const RedisKey = {
   AIRMEET_ACCESS_TOKEN: 'airmeet:access_token',
   AIRTABLE_CONNECTIONS: 'airtable:connections',
-  CRUNCHBASE_CONNECTIONS: 'crunchbase:connections',
   GOOGLE_GEOCODING_CONNECTIONS: 'google:connections:geocoding',
   SLACK_DEACTIVATE_CONNECTIONS: 'slack:connections:deactivate',
   SLACK_GET_BIRTHDATES_CONNECTIONS: 'slack:connections:get_birthdates',
