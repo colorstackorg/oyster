@@ -15,6 +15,7 @@ import {
 import dayjs from 'dayjs';
 import { AlertCircle } from 'react-feather';
 
+import { CompanyCombobox } from '@oyster/core/member-profile/ui';
 import {
   editOpportunity,
   EditOpportunityInput,
@@ -34,7 +35,6 @@ import {
 import { Callout } from '@oyster/ui/callout';
 
 import { OpportunityTagsField } from '@/routes/_profile.opportunities.tags';
-import { CompanyCombobox } from '@/shared/components/company-combobox';
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import {
@@ -179,7 +179,9 @@ function EditOpportunityForm() {
         required
       >
         <CompanyCombobox
-          defaultValue={{ id: companyId || '', name: companyName || '' }}
+          defaultCompanyId={companyId || undefined}
+          defaultCompanyName={companyName || undefined}
+          displayName="companyName"
           name="companyId"
         />
       </Field>
