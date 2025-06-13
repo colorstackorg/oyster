@@ -1,30 +1,18 @@
-import { useFetcher } from '@remix-run/react';
-import React, {
-  type PropsWithChildren,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import React, { type PropsWithChildren, useContext, useState } from 'react';
 
+import { CompanyCombobox } from '@oyster/core/member-profile/ui';
 import {
   Address,
   Checkbox,
-  Combobox,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxPopover,
   DatePicker,
   Field,
   type FieldProps,
   Input,
   Select,
-  Text,
-  useDelayedValue,
 } from '@oyster/ui';
 import { order } from '@oyster/utils';
 
 import {
-  type Company,
   type EmploymentType,
   FORMATTED_EMPLOYMENT_TYPE,
   FORMATTED_LOCATION_TYPE,
@@ -33,16 +21,12 @@ import {
 
 type WorkFormState = {
   isCurrentRole: boolean;
-  isOtherCompany: boolean;
   setIsCurrentRole(value: boolean): void;
-  setIsOtherCompany(value: boolean): void;
 };
 
 const WorkFormContext = React.createContext<WorkFormState>({
   isCurrentRole: false,
-  isOtherCompany: false,
   setIsCurrentRole: (_: boolean) => {},
-  setIsOtherCompany: (_: boolean) => {},
 });
 
 export const WorkForm = () => {};
@@ -51,25 +35,14 @@ WorkForm.Context = ({
   children,
   defaultValue,
 }: PropsWithChildren<{
-  defaultValue?: Pick<WorkFormState, 'isCurrentRole' | 'isOtherCompany'>;
+  defaultValue?: Pick<WorkFormState, 'isCurrentRole'>;
 }>) => {
   const [isCurrentRole, setIsCurrentRole] = useState<boolean>(
     defaultValue?.isCurrentRole || false
   );
 
-  const [isOtherCompany, setIsOtherCompany] = useState<boolean>(
-    defaultValue?.isOtherCompany || false
-  );
-
   return (
-    <WorkFormContext.Provider
-      value={{
-        isCurrentRole,
-        isOtherCompany,
-        setIsCurrentRole,
-        setIsOtherCompany,
-      }}
-    >
+    <WorkFormContext.Provider value={{ isCurrentRole, setIsCurrentRole }}>
       {children}
     </WorkFormContext.Provider>
   );
@@ -87,89 +60,28 @@ WorkForm.CityField = function CityField({
   );
 };
 
-type CompanyFieldProps = FieldProps<Pick<Company, 'id' | 'name'>>;
+type CompanyFieldProps = Pick<FieldProps<string>, 'error' | 'name'> & {
+  defaultCompanyId?: string;
+  defaultCompanyName?: string;
+  displayName: string;
+};
 
 WorkForm.CompanyField = function CompanyField({
-  defaultValue = { id: '', name: '' },
+  defaultCompanyId,
+  defaultCompanyName,
+  displayName,
   error,
   name,
 }: CompanyFieldProps) {
-  const { setIsOtherCompany } = useContext(WorkFormContext);
-
-  const [search, setSearch] = useState<string>(defaultValue.name);
-
-  const delayedSearch = useDelayedValue(search, 250);
-
-  const fetcher = useFetcher<{
-    companies: Pick<Company, 'description' | 'id' | 'imageUrl' | 'name'>[];
-  }>();
-
-  useEffect(() => {
-    fetcher.submit(
-      { search: delayedSearch },
-      {
-        action: '/api/companies',
-        method: 'get',
-      }
-    );
-  }, [delayedSearch]);
-
-  const companies = fetcher.data?.companies || [];
-
   return (
     <Field error={error} label="Organization" labelFor={name} required>
-      <Combobox
-        defaultDisplayValue={defaultValue.name}
-        defaultValue={defaultValue.id}
-      >
-        <ComboboxInput
-          id={name}
-          name={name}
-          onChange={(e) => setSearch(e.currentTarget.value)}
-          required
-        />
-
-        <ComboboxPopover>
-          <ul>
-            {companies.map((company) => {
-              return (
-                <ComboboxItem
-                  className="[&>button]:flex"
-                  displayValue={company.name}
-                  key={company.id}
-                  onSelect={() => setIsOtherCompany(false)}
-                  value={company.id}
-                >
-                  <img
-                    alt={company.name}
-                    className="mr-2 mt-1 h-6 w-6 rounded"
-                    src={company.imageUrl}
-                  />
-
-                  <span className="flex flex-col">
-                    <Text as="span" className="line-clamp-1" variant="sm">
-                      {company.name}
-                    </Text>
-
-                    <Text
-                      as="span"
-                      color="gray-500"
-                      className="line-clamp-1"
-                      variant="xs"
-                    >
-                      {company.description}
-                    </Text>
-                  </span>
-                </ComboboxItem>
-              );
-            })}
-
-            <ComboboxItem onSelect={() => setIsOtherCompany(true)} value="">
-              Other
-            </ComboboxItem>
-          </ul>
-        </ComboboxPopover>
-      </Combobox>
+      <CompanyCombobox
+        defaultCompanyId={defaultCompanyId}
+        defaultCompanyName={defaultCompanyName}
+        displayName={displayName}
+        name={name}
+        showDescription
+      />
     </Field>
   );
 };
@@ -284,30 +196,6 @@ WorkForm.LocationTypeField = function LocationTypeField({
           );
         })}
       </Select>
-    </Field>
-  );
-};
-
-WorkForm.OtherCompanyField = function OtherCompanyField({
-  defaultValue,
-  error,
-  name,
-}: FieldProps<string>) {
-  const { isOtherCompany } = useContext(WorkFormContext);
-
-  if (!isOtherCompany) {
-    return null;
-  }
-
-  return (
-    <Field error={error} label="Organization" labelFor={name} required>
-      <Input
-        defaultValue={defaultValue}
-        id={name}
-        name={name}
-        placeholder="Google"
-        required
-      />
     </Field>
   );
 };
