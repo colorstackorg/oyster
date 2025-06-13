@@ -6,6 +6,7 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxPopover,
+  cx,
   Text,
   useDelayedValue,
 } from '@oyster/ui';
@@ -65,7 +66,10 @@ export function CompanyCombobox({
           {companies.map((company) => {
             return (
               <ComboboxItem
-                className="whitespace-nowrap [&>button]:flex"
+                className={cx(
+                  'whitespace-nowrap [&>button]:flex',
+                  !showDescription && '[&>button]:items-center'
+                )}
                 displayValue={company.name}
                 key={company.id}
                 value={company.id}
