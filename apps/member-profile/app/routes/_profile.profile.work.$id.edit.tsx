@@ -148,10 +148,7 @@ export default function EditWorkExperiencePage() {
 
       <Form className="form" method="post">
         <WorkForm.Context
-          defaultValue={{
-            isCurrentRole: !workExperience.endDate,
-            isOtherCompany: !workExperience.companyId,
-          }}
+          defaultValue={{ isCurrentRole: !workExperience.endDate }}
         >
           <WorkForm.TitleField
             defaultValue={workExperience.title}
@@ -164,24 +161,15 @@ export default function EditWorkExperiencePage() {
             name={keys.employmentType}
           />
           <WorkForm.CompanyField
-            defaultValue={
-              workExperience.companyId
-                ? {
-                    id: workExperience.companyId!,
-                    name: workExperience.companyName!,
-                  }
-                : {
-                    id: '',
-                    name: 'Other',
-                  }
+            defaultCompanyId={workExperience.companyId || undefined}
+            defaultCompanyName={
+              workExperience.companyName ||
+              workExperience.otherCompany ||
+              undefined
             }
+            displayName="companyName"
             error={errors.companyId}
             name={keys.companyId}
-          />
-          <WorkForm.OtherCompanyField
-            defaultValue={workExperience.otherCompany || undefined}
-            error={errors.companyName}
-            name={keys.companyName}
           />
           <WorkForm.LocationTypeField
             defaultValue={workExperience.locationType as LocationType}
