@@ -61,8 +61,8 @@ export const AddFullTimeOfferInput = FullTimeOffer.omit({
 }).extend({
   additionalNotes: nullableField(BaseOffer.shape.additionalNotes),
   benefits: nullableField(BaseOffer.shape.benefits),
-  companyId: nullableField(z.string().trim().min(1)),
-  companyName: nullableField(z.string().trim().min(1)),
+  companyId: nullableField(z.string().trim().min(1).nullable()),
+  companyName: nullableField(z.string().trim().min(1).nullable()),
   negotiated: nullableField(BaseOffer.shape.negotiated),
   pastExperience: nullableField(BaseOffer.shape.pastExperience),
   performanceBonus: nullableField(FullTimeOffer.shape.performanceBonus),
@@ -161,8 +161,8 @@ export const AddInternshipOfferInput = InternshipOffer.omit({
 }).extend({
   additionalNotes: nullableField(BaseOffer.shape.additionalNotes),
   benefits: nullableField(BaseOffer.shape.benefits),
-  companyId: nullableField(z.string().trim().min(1)),
-  companyName: nullableField(z.string().trim().min(1)),
+  companyId: nullableField(z.string().trim().min(1).nullable()),
+  companyName: nullableField(z.string().trim().min(1).nullable()),
   negotiated: nullableField(BaseOffer.shape.negotiated),
   pastExperience: nullableField(BaseOffer.shape.pastExperience),
   postedBy: z.string().trim().min(1),

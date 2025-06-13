@@ -579,8 +579,8 @@ export async function deleteOpportunity({
 // "Edit Opportunity"
 
 export const EditOpportunityInput = z.object({
-  companyId: nullableField(z.string().trim().min(1)),
-  companyName: nullableField(z.string().trim().min(1)),
+  companyId: nullableField(z.string().trim().min(1).nullable()),
+  companyName: nullableField(z.string().trim().min(1).nullable()),
   description: z.string().trim().min(1).max(500),
   expiresAt: ISO8601Date,
   tags: z
