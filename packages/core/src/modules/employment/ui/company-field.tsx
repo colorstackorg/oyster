@@ -1,65 +1,22 @@
 import { useFetcher } from '@remix-run/react';
-import React, {
-  type PropsWithChildren,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
   Combobox,
   ComboboxInput,
   ComboboxItem,
   ComboboxPopover,
-  Input,
-  type InputProps,
+  cx,
+  Text,
   useDelayedValue,
 } from '@oyster/ui';
 
 import { type Company } from '../employment.types';
 
-// TODO: Ensure that anywhere there is a company field is used, that it comes
-// from here (currently, there is multiple versions of this component and
-// ideally it's shared from one source).
-
-type CompanyFieldState = {
-  allowFreeText: boolean;
-  isFreeText: boolean;
-  setIsFreeText(value: boolean): void;
-};
-
-const CompanyFieldContext = React.createContext<CompanyFieldState>({
-  allowFreeText: true,
-  isFreeText: false,
-  setIsFreeText: (_: boolean) => {},
-});
-
-type CompanyFieldProviderProps = PropsWithChildren<
-  Partial<Pick<CompanyFieldState, 'allowFreeText'>>
->;
-
-export function CompanyFieldProvider({
-  allowFreeText = true,
-  children,
-}: CompanyFieldProviderProps) {
-  const [isFreeText, setIsFreeText] = useState<boolean>(false);
-
-  return (
-    <CompanyFieldContext.Provider
-      value={{
-        allowFreeText,
-        isFreeText,
-        setIsFreeText,
-      }}
-    >
-      {children}
-    </CompanyFieldContext.Provider>
-  );
-}
-
 type CompanyComboboxProps = {
-  defaultCompanyName?: Company['name'];
-  defaultCompanyId?: Company['id'];
+  defaultCompanyName?: string;
+  defaultCompanyId?: string;
+  displayName: string;
   name: string;
   showDescription?: boolean;
 };
@@ -67,11 +24,10 @@ type CompanyComboboxProps = {
 export function CompanyCombobox({
   defaultCompanyName,
   defaultCompanyId,
+  displayName,
   name,
-  showDescription = true,
+  showDescription,
 }: CompanyComboboxProps) {
-  const { allowFreeText, setIsFreeText } = useContext(CompanyFieldContext);
-
   const [search, setSearch] = useState<string>(defaultCompanyName || '');
 
   const delayedSearch = useDelayedValue(search, 250);
@@ -98,6 +54,7 @@ export function CompanyCombobox({
       defaultValue={defaultCompanyId}
     >
       <ComboboxInput
+        displayName={displayName}
         id={name}
         name={name}
         onChange={(e) => setSearch(e.currentTarget.value)}
@@ -109,57 +66,47 @@ export function CompanyCombobox({
           {companies.map((company) => {
             return (
               <ComboboxItem
-                className="whitespace-nowrap [&>button]:flex [&>button]:items-center"
+                className={cx(
+                  'whitespace-nowrap [&>button]:flex',
+                  !showDescription && '[&>button]:items-center'
+                )}
                 displayValue={company.name}
                 key={company.id}
                 value={company.id}
-                {...(allowFreeText && {
-                  onSelect: () => setIsFreeText(false),
-                })}
               >
-                <img
-                  alt={company.name}
-                  className="mr-2 h-6 w-6 rounded"
-                  src={company.imageUrl}
-                />
-                <span>{company.name}</span>
-                {showDescription && (
-                  <span className="ml-2 mt-0.5 box-border max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs text-gray-400">
-                    {company.description}
-                  </span>
+                {company.imageUrl && (
+                  <img
+                    alt={company.name}
+                    className="mr-2 mt-1 h-6 w-6 rounded"
+                    src={company.imageUrl}
+                  />
                 )}
+
+                <span className="flex flex-col overflow-hidden">
+                  <Text as="span" variant="sm">
+                    {company.name}
+                  </Text>
+
+                  {showDescription && (
+                    <Text
+                      as="span"
+                      color="gray-500"
+                      className="line-clamp-1 text-ellipsis"
+                      variant="xs"
+                    >
+                      {company.description}
+                    </Text>
+                  )}
+                </span>
               </ComboboxItem>
             );
           })}
 
-          {allowFreeText && (
-            <ComboboxItem onSelect={() => setIsFreeText(true)} value="">
-              Other
-            </ComboboxItem>
+          {!companies.length && !!search && (
+            <ComboboxItem value="">{search}</ComboboxItem>
           )}
         </ul>
       </ComboboxPopover>
     </Combobox>
-  );
-}
-
-export function FreeTextCompanyInput({
-  defaultValue,
-  name,
-}: Pick<InputProps, 'defaultValue' | 'name'>) {
-  const { allowFreeText, isFreeText } = useContext(CompanyFieldContext);
-
-  if (!allowFreeText || !isFreeText) {
-    return null;
-  }
-
-  return (
-    <Input
-      defaultValue={defaultValue}
-      id={name}
-      name={name}
-      placeholder="Google"
-      required
-    />
   );
 }

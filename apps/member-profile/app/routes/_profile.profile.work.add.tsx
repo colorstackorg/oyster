@@ -98,12 +98,9 @@ export default function AddWorkExperiencePage() {
             name={keys.employmentType}
           />
           <WorkForm.CompanyField
+            displayName={keys.companyName}
             error={errors.companyId}
             name={keys.companyId}
-          />
-          <WorkForm.OtherCompanyField
-            error={errors.companyName}
-            name={keys.companyName}
           />
           <WorkForm.LocationTypeField
             error={errors.locationType}

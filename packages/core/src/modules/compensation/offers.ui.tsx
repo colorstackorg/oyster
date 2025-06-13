@@ -77,6 +77,7 @@ export function OfferCompanyField({
       <CompanyCombobox
         defaultCompanyName={defaultValue?.name}
         defaultCompanyId={defaultValue?.id}
+        displayName="companyName"
         name="companyId"
         showDescription={false}
       />

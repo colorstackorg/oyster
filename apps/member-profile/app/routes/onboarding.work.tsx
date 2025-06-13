@@ -174,10 +174,7 @@ function WorkExperienceForm() {
 
       {workExperience ? (
         <WorkForm.Context
-          defaultValue={{
-            isCurrentRole: !workExperience.endDate,
-            isOtherCompany: !workExperience.companyId,
-          }}
+          defaultValue={{ isCurrentRole: !workExperience.endDate }}
         >
           <WorkForm.TitleField
             defaultValue={workExperience.title}
@@ -190,24 +187,15 @@ function WorkExperienceForm() {
             name="employmentType"
           />
           <WorkForm.CompanyField
-            defaultValue={
-              workExperience.companyId
-                ? {
-                    id: workExperience.companyId!,
-                    name: workExperience.companyName!,
-                  }
-                : {
-                    id: '',
-                    name: 'Other',
-                  }
+            defaultCompanyId={workExperience.companyId || undefined}
+            defaultCompanyName={
+              workExperience.companyName ||
+              workExperience.otherCompany ||
+              undefined
             }
+            displayName="companyName"
             error={errors.companyId}
             name="companyId"
-          />
-          <WorkForm.OtherCompanyField
-            defaultValue={workExperience.otherCompany || undefined}
-            error={errors.companyName}
-            name="companyName"
           />
           <WorkForm.LocationTypeField
             defaultValue={workExperience.locationType as LocationType}
@@ -258,10 +246,10 @@ function WorkExperienceForm() {
             error={errors.employmentType}
             name="employmentType"
           />
-          <WorkForm.CompanyField error={errors.companyId} name="companyId" />
-          <WorkForm.OtherCompanyField
-            error={errors.companyName}
-            name="companyName"
+          <WorkForm.CompanyField
+            displayName="companyName"
+            error={errors.companyId}
+            name="companyId"
           />
           <WorkForm.LocationTypeField
             error={errors.locationType}

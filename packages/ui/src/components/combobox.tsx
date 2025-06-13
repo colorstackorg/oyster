@@ -47,11 +47,20 @@ export function Combobox({
   );
 }
 
+type ComboboxInputProps = Omit<
+  InputProps,
+  'defaultValue' | 'onBlur' | 'onFocus' | 'value'
+> & {
+  displayName?: string;
+  name: string;
+};
+
 export function ComboboxInput({
+  displayName,
   name,
   onChange,
   ...rest
-}: Omit<InputProps, 'defaultValue' | 'onBlur' | 'onFocus' | 'value'>) {
+}: ComboboxInputProps) {
   const context = useContext(ComboboxContext);
   const { setPopoverOpen } = useComboboxPopover();
 
@@ -70,7 +79,7 @@ export function ComboboxInput({
     <>
       <Input
         autoComplete="off"
-        id={name}
+        name={displayName}
         onBlur={() => {
           setDisplayValue(context.displayValue);
         }}
