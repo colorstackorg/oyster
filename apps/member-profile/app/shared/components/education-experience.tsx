@@ -1,4 +1,4 @@
-import { generatePath, useNavigate } from '@remix-run/react';
+import { generatePath, Link } from '@remix-run/react';
 import { Edit } from 'react-feather';
 
 import { IconButton, Text } from '@oyster/ui';
@@ -22,16 +22,6 @@ export function EducationExperienceItem({
   editable,
   education,
 }: EducationExperienceItemProps) {
-  const navigate = useNavigate();
-
-  function onClickEdit() {
-    navigate(
-      generatePath(Route['/profile/education/:id/edit'], {
-        id: education.id,
-      })
-    );
-  }
-
   return (
     <Experience>
       <div className="flex gap-4">
@@ -50,16 +40,6 @@ export function EducationExperienceItem({
                 <Text className="inline">, {education.location}</Text>
               )}
             </div>
-
-            {!!editable && (
-              <div className="ml-auto">
-                <IconButton
-                  backgroundColorOnHover="gray-100"
-                  onClick={onClickEdit}
-                  icon={<Edit />}
-                />
-              </div>
-            )}
           </div>
 
           <Text color="gray-500">
@@ -68,6 +48,20 @@ export function EducationExperienceItem({
 
           {!!education.date && <Text color="gray-500">{education.date}</Text>}
         </div>
+
+        {!!editable && (
+          <div className="ml-auto">
+            <IconButton.Slot backgroundColorOnHover="gray-100">
+              <Link
+                to={generatePath(Route['/profile/education/:id/edit'], {
+                  id: education.id,
+                })}
+              >
+                <Edit />
+              </Link>
+            </IconButton.Slot>
+          </div>
+        )}
       </div>
     </Experience>
   );
