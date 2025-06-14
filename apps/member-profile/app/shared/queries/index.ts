@@ -23,6 +23,7 @@ export async function getEducationExperiences(id: string) {
       'startDate',
       'schools.addressCity',
       'schools.addressState',
+      'schools.logoUrl',
       (eb) => {
         return eb.fn
           .coalesce('schools.name', 'educations.otherSchool')
@@ -63,6 +64,7 @@ export async function getEducationExperiences(id: string) {
       degreeType: FORMATTED_DEGREEE_TYPE[experience.degreeType as DegreeType],
       id: experience.id,
       location,
+      logoUrl: experience.logoUrl,
       major,
       school: experience.school,
     };

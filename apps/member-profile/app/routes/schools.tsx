@@ -1,7 +1,7 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { z } from 'zod';
 
-import { listSchools } from '@oyster/core/education';
+import { searchSchools } from '@oyster/core/education';
 
 const SchoolsSearchParams = z.object({
   search: z.string().trim().min(1).catch(''),
@@ -17,10 +17,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
 
   try {
-    const schools = await listSchools({
-      select: ['id', 'name'],
-      where: { search },
-    });
+    const schools = await searchSchools(search);
 
     return json({
       schools,

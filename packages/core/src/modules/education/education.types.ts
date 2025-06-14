@@ -71,6 +71,7 @@ export const School = Entity.extend({
   addressCity: Address.shape.city,
   addressState: Address.shape.state,
   addressZip: Address.shape.zip,
+  logoUrl: z.string().url().optional(),
   name: z.string().min(1),
   tags: z.array(z.nativeEnum(SchoolTag)).optional(),
 });

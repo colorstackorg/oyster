@@ -13,6 +13,7 @@ import {
   Input,
   type InputProps,
   Select,
+  Text,
   useDelayedValue,
 } from '@oyster/ui';
 import { toEscapedString, toTitleCase } from '@oyster/utils';
@@ -237,7 +238,7 @@ export function SchoolCombobox({
   const delayedSearch = useDelayedValue(search, 250);
 
   const fetcher = useFetcher<{
-    schools: Pick<School, 'id' | 'name'>[];
+    schools: Pick<School, 'id' | 'logoUrl' | 'name'>[];
   }>();
 
   useEffect(() => {
@@ -270,11 +271,25 @@ export function SchoolCombobox({
           {schools.map((school) => {
             return (
               <ComboboxItem
+                displayValue={school.name}
                 key={school.id}
                 onSelect={onSelect}
                 value={school.id}
               >
-                {school.name}
+                <span className="flex items-center gap-2">
+                  {school.logoUrl ? (
+                    <img
+                      alt={school.name}
+                      className="h-6 w-6 rounded"
+                      src={school.logoUrl}
+                    />
+                  ) : (
+                    <div className="h-6 w-6 rounded bg-gray-100" />
+                  )}{' '}
+                  <Text as="span" variant="sm">
+                    {school.name}
+                  </Text>
+                </span>
               </ComboboxItem>
             );
           })}
