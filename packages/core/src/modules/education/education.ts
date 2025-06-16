@@ -62,6 +62,115 @@ export async function listSchools<
   return rows;
 }
 
+export async function searchSchools(search: string) {
+  const schools = await db
+    .with('educationCounts', (qb) => {
+      return qb
+        .selectFrom('educations')
+        .select(['schoolId', ({ fn }) => fn.countAll().as('count')])
+        .groupBy('schoolId');
+    })
+    .with('studentCounts', (qb) => {
+      return qb
+        .selectFrom('students')
+        .select(['schoolId', ({ fn }) => fn.countAll().as('count')])
+        .groupBy('schoolId');
+    })
+    .with('applicationCounts', (qb) => {
+      return qb
+        .selectFrom('applications')
+        .select(['schoolId', ({ fn }) => fn.countAll().as('count')])
+        .groupBy('schoolId');
+    })
+    .with('relevance', (qb) => {
+      return qb
+        .selectFrom('schools')
+        .leftJoin('educationCounts', 'educationCounts.schoolId', 'schools.id')
+        .leftJoin('studentCounts', 'studentCounts.schoolId', 'schools.id')
+        .leftJoin(
+          'applicationCounts',
+          'applicationCounts.schoolId',
+          'schools.id'
+        )
+        .select([
+          'schools.id',
+          'schools.name',
+          'schools.logoUrl',
+          ({ fn }) => {
+            const educationCount = fn.coalesce(
+              'educationCounts.count',
+              sql.lit(0)
+            );
+
+            const studentCount = fn.coalesce('studentCounts.count', sql.lit(0));
+
+            const applicationCount = fn.coalesce(
+              'applicationCounts.count',
+              sql.lit(0)
+            );
+
+            const popularity = sql<number>`log(
+              1 +
+              ${educationCount} * 1.0 +
+              ${studentCount} * 1.0 +
+              ${applicationCount} * 0.25
+            )
+            `.as('popularity');
+
+            return popularity;
+          },
+
+          ({ eb }) => {
+            return eb
+              .case()
+              .when('name', 'ilike', search)
+              .then(sql.lit(1.0))
+              .when('name', 'ilike', `${search}%`)
+              .then(sql.lit(0.95))
+              .when('name', 'ilike', `%${search}%`)
+              .then(sql.lit(0.9))
+              .else(
+                sql<number>`greatest(
+                  similarity(${eb.ref('name')}, ${search}),
+                  word_similarity(${eb.ref('name')}, ${search})
+                )`
+              )
+              .end()
+              .as('score');
+          },
+        ])
+        .where((eb) => {
+          return eb.or([
+            eb('name', 'ilike', `%${search}%`),
+            eb(sql`similarity(${eb.ref('name')}, ${search})`, '>=', 0.25),
+            eb(sql`word_similarity(${eb.ref('name')}, ${search})`, '>=', 0.5),
+          ]);
+        });
+    })
+    .with('adjusted', (qb) => {
+      return qb.selectFrom('relevance').select([
+        'id',
+        'logoUrl',
+        'name',
+        'popularity',
+        'score',
+        ({ ref }) => {
+          const field = sql<number>`${ref('score')} + 0.05 * ${ref('popularity')}`;
+
+          return field.as('totalScore');
+        },
+      ]);
+    })
+    .selectFrom('adjusted')
+    .select(['id', 'logoUrl', 'name', 'popularity', 'totalScore'])
+    .orderBy('totalScore', 'desc')
+    .orderBy('name', 'asc')
+    .limit(25)
+    .execute();
+
+  return schools;
+}
+
 // Mutations
 
 export async function createSchool({
