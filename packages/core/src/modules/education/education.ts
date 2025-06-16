@@ -82,7 +82,7 @@ export async function searchSchools(search: string) {
         .select(['schoolId', ({ fn }) => fn.countAll().as('count')])
         .groupBy('schoolId');
     })
-    .with('popularity', (qb) => {
+    .with('relevance', (qb) => {
       return qb
         .selectFrom('schools')
         .leftJoin('educationCounts', 'educationCounts.schoolId', 'schools.id')
@@ -96,7 +96,6 @@ export async function searchSchools(search: string) {
           'schools.id',
           'schools.name',
           'schools.logoUrl',
-
           ({ fn }) => {
             const educationCount = fn.coalesce(
               'educationCounts.count',
@@ -149,7 +148,7 @@ export async function searchSchools(search: string) {
         });
     })
     .with('adjusted', (qb) => {
-      return qb.selectFrom('popularity').select([
+      return qb.selectFrom('relevance').select([
         'id',
         'logoUrl',
         'name',
