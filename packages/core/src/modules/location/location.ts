@@ -118,6 +118,15 @@ const GooglePlaceDetailsResponse = z.object({
   }),
 });
 
+export type CityDetails = {
+  city: string;
+  formattedAddress: string;
+  id: string;
+  latitude: number;
+  longitude: number;
+  state: string;
+};
+
 /**
  * Returns important information about a city.
  *
@@ -128,7 +137,7 @@ const GooglePlaceDetailsResponse = z.object({
  *
  * @see https://developers.google.com/maps/documentation/places/web-service/details
  */
-export async function getCityDetails(id: string) {
+export async function getCityDetails(id: string): Promise<CityDetails | null> {
   async function fn() {
     if (!GOOGLE_MAPS_API_KEY) {
       return null;
