@@ -21,16 +21,21 @@ import { runActor } from '@/modules/apify';
  */
 export async function saveCompanyIfNecessary(
   trx: Transaction<DB>,
-  companyName: string | null | undefined
+  companyNameOrLinkedInId: string | null | undefined
 ): Promise<string | null> {
-  if (!companyName) {
+  if (!companyNameOrLinkedInId) {
     return null;
   }
 
   const existingCompany = await db
     .selectFrom('companies')
     .select('id')
-    .where('name', 'ilike', companyName)
+    .where((eb) => {
+      return eb.or([
+        eb('name', 'ilike', companyNameOrLinkedInId),
+        eb('linkedinId', '=', companyNameOrLinkedInId),
+      ]);
+    })
     .executeTakeFirst();
 
   if (existingCompany) {
@@ -39,7 +44,7 @@ export async function saveCompanyIfNecessary(
 
   const [companyFromLinkedIn] = await runActor({
     actorId: 'harvestapi~linkedin-company',
-    body: { companies: [companyName] },
+    body: { companies: [companyNameOrLinkedInId] },
     schema: z.array(
       z.object({
         description: z.string(),
