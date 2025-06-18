@@ -115,11 +115,7 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
   const experienceMap: Record<string, Experience[]> = {};
 
   members.forEach((member) => {
-    // The reason we key is the LinkedIn URL is because when we scrape the
-    // LinkedIn profile, this is the only thing we can use to reference the
-    // member in the cache.
-    // TODO: MIGHT HAVE TO CHANGE THIS BECAUSE THE LINKEDIN URL IS NOT UNIQUE.
-    memberMap[member.linkedInUrl!] = member;
+    memberMap[member.id] = member;
   });
 
   educations.forEach((education) => {
@@ -157,10 +153,17 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
           `harvestapi~linkedin-profile-scraper:${member.linkedInUrl}`
         );
 
-        if (!profile) {
-          profilesToScrape.push(member.linkedInUrl!);
-        } else {
+        if (profile) {
           scrapedProfiles.push(profile);
+        } else {
+          const url = new URL(member.linkedInUrl!);
+
+          // We need a way to reference the member in the cache after we
+          // scrape the profile so we set this query parameter then we can
+          // use it to get the member from the cache.
+          url.searchParams.set('id', member.id);
+
+          profilesToScrape.push(url.toString());
         }
       })
     );
@@ -198,21 +201,39 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
       log(`Failed to scrape ${url}.`);
     });
 
-    await db
-      .updateTable('students')
-      .set({ linkedinSyncedAt: new Date(), updatedAt: new Date() })
-      .where('linkedInUrl', 'in', failedProfiles)
-      .execute();
+    const failedMemberIds = failedProfiles.map((failedProfile) => {
+      const url = new URL(failedProfile);
+
+      return url.searchParams.get('id') as string;
+    });
+
+    if (failedMemberIds.length) {
+      await db
+        .updateTable('students')
+        .set({ linkedinSyncedAt: new Date(), updatedAt: new Date() })
+        .where('id', 'in', failedMemberIds)
+        .execute();
+
+      log(
+        `Updated ${failedMemberIds.length} members to indicate that they have not been synced.`
+      );
+    }
 
     await Promise.all(
       scrapedProfiles.map(async (profile) => {
+        const url = new URL(profile.originalQuery.query);
+
+        const memberId = url.searchParams.get('id') as string;
+
+        url.search = '';
+
         await cache.set(
-          `harvestapi~linkedin-profile-scraper:${profile.originalQuery.query}`,
+          `harvestapi~linkedin-profile-scraper:${url.toString()}`,
           profile,
-          60 * 60 * 24 * 7
+          60 * 60 * 24 * 30
         );
 
-        const member = memberMap[profile.originalQuery.query];
+        const member = memberMap[memberId];
         const educations = educationMap[member.id];
         const experiences = experienceMap[member.id];
 
