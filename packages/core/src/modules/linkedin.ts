@@ -76,9 +76,13 @@ const LinkedInProfile = z.object({
           // These are some weird bugs in the Apify scraper that we can
           // work around by manually setting the location and workplace type.
 
-          if (experience.location === 'Remote') {
+          if (
+            experience.location === 'Remote' ||
+            experience.location === 'Hybrid' ||
+            experience.location === 'On-site'
+          ) {
+            experience.workplaceType = experience.location;
             experience.location = null;
-            experience.workplaceType = 'Remote';
           }
 
           if (
@@ -558,15 +562,24 @@ async function checkEducation({
   trx,
 }: CheckEducationInput) {
   // If there is no `degree` field, it likely means that the education was
-  // pre-college. If there is no `fieldOfStudy` field, it likely means that
-  // the education was part of a general education program. We also will require
-  // that the date fields are present.
+  // pre-college. We also will require that the date fields are present.
   if (
     !educationFromLinkedIn.degree ||
-    !educationFromLinkedIn.fieldOfStudy ||
     !educationFromLinkedIn.startDate ||
     !educationFromLinkedIn.endDate
   ) {
+    return;
+  }
+
+  // Sometimes the scraper will return both the degree and the field of study
+  // in one field, so we'll check both.
+  const fieldOfStudy =
+    getFieldOfStudy(educationFromLinkedIn.fieldOfStudy || '') ||
+    getFieldOfStudy(educationFromLinkedIn.degree || '');
+
+  // If there is no field of study, it likely means that the education was
+  // part of a general education program.
+  if (!educationFromLinkedIn.fieldOfStudy && !fieldOfStudy) {
     return;
   }
 
@@ -677,8 +690,6 @@ async function checkEducation({
 
   const schoolId = await saveSchoolIfNecessary(trx, linkedinId);
 
-  const major = getFieldOfStudy(educationFromLinkedIn.fieldOfStudy);
-
   return trx
     .insertInto('educations')
     .values({
@@ -695,8 +706,8 @@ async function checkEducation({
         ? { schoolId }
         : { otherSchool: educationFromLinkedIn.schoolName }),
 
-      ...(major
-        ? { major }
+      ...(fieldOfStudy
+        ? { major: fieldOfStudy }
         : { major: 'other', otherMajor: educationFromLinkedIn.fieldOfStudy }),
     })
     .executeTakeFirst();

@@ -190,12 +190,18 @@ export async function getPlaceDetails(
     const { address_components, formatted_address, geometry } =
       result.data.result;
 
-    const cityComponent = address_components.find((component) => {
+    let cityComponent = address_components.find((component) => {
       return (
         component.types.includes('locality') ||
         component.types.includes('administrative_area_level_3')
       );
     });
+
+    if (!cityComponent) {
+      cityComponent = address_components.find((component) => {
+        return component.types.includes('postal_town');
+      });
+    }
 
     const postalCodeComponent = address_components.find((component) => {
       return component.types.includes('postal_code');

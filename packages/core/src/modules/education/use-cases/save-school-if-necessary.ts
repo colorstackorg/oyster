@@ -55,16 +55,6 @@ export async function saveSchoolIfNecessary(
         schema: z.array(
           z.object({
             id: z.string(),
-            locations: z
-              .array(
-                z.object({
-                  city: z.string().optional(),
-                  geographicArea: z.string().optional(),
-                  line1: z.string().optional(),
-                  postalCode: z.string().optional(),
-                })
-              )
-              .min(1),
             logo: z.string().url(),
             name: z.string(),
           })
@@ -77,21 +67,7 @@ export async function saveSchoolIfNecessary(
     return null;
   }
 
-  const linkedInLocation = schoolFromLinkedIn.locations[0];
-
-  const location =
-    !!linkedInLocation.line1 && !!linkedInLocation.city
-      ? // If all the address components are here, we'll pass in the formatted
-        // address without passing in the "type" parameter.
-        await getMostRelevantLocation(
-          `${linkedInLocation.line1}, ${linkedInLocation.city}, ${linkedInLocation.geographicArea}, ${linkedInLocation.postalCode}`
-        )
-      : // Otherwise, we'll pass in the postal code and geographic area and
-        // limit the search to only postal codes.
-        await getMostRelevantLocation(
-          `${linkedInLocation.postalCode}, ${linkedInLocation.geographicArea}`,
-          'postal_code'
-        );
+  const location = await getMostRelevantLocation(schoolFromLinkedIn.name);
 
   if (
     !location ||
