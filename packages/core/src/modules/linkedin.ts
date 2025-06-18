@@ -712,6 +712,16 @@ async function checkWorkExperience({
     return;
   }
 
+  // This is a special case for the "ColorStack" company...a lot of members
+  // put "Fellow" on their work experience with ColorStack, but we don't want
+  // that to sync to our database since this is already in ColorStack.
+  if (
+    experienceFromLinkedIn.companyId === '53416834' &&
+    experienceFromLinkedIn.employmentType !== 'Full-time'
+  ) {
+    return;
+  }
+
   const existingExperience = experiences.find((experience) => {
     return doesExperienceMatch(experienceFromLinkedIn, experience);
   });
