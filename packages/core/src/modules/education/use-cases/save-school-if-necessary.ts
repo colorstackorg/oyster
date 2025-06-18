@@ -70,16 +70,18 @@ export async function saveSchoolIfNecessary(
     return null;
   }
 
-  const companyId = id();
-
   const linkedInLocation = schoolFromLinkedIn.locations[0];
 
   const location =
     !!linkedInLocation.line1 && !!linkedInLocation.city
-      ? await getMostRelevantLocation(
+      ? // If all the address components are here, we'll pass in the formatted
+        // address without passing in the "type" parameter.
+        await getMostRelevantLocation(
           `${linkedInLocation.line1}, ${linkedInLocation.city}, ${linkedInLocation.geographicArea}, ${linkedInLocation.postalCode}`
         )
-      : await getMostRelevantLocation(
+      : // Otherwise, we'll pass in the postal code and geographic area and
+        // limit the search to only postal codes.
+        await getMostRelevantLocation(
           `${linkedInLocation.postalCode}, ${linkedInLocation.geographicArea}`,
           'postal_code'
         );
@@ -100,6 +102,8 @@ export async function saveSchoolIfNecessary(
     return null;
   }
 
+  const schoolId = id();
+
   await trx
     .insertInto('schools')
     .values({
@@ -109,11 +113,11 @@ export async function saveSchoolIfNecessary(
       addressZip: location.postalCode,
       coordinates: point({ x: location.longitude, y: location.latitude }),
       logoUrl: schoolFromLinkedIn.logo,
-      id: id(),
+      id: schoolId,
       linkedinId: schoolFromLinkedIn.id,
       name: schoolFromLinkedIn.name,
     })
     .execute();
 
-  return companyId;
+  return schoolId;
 }
