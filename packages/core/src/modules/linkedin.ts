@@ -10,6 +10,7 @@ import { id, run, splitArray } from '@oyster/utils';
 import { track } from '@/infrastructure/mixpanel';
 import { cache } from '@/infrastructure/redis';
 import { runActor } from '@/modules/apify';
+import { checkMostRecentEducation } from '@/modules/education/use-cases/check-most-recent-education';
 import { saveSchoolIfNecessary } from '@/modules/education/use-cases/save-school-if-necessary';
 import {
   EmploymentType,
@@ -259,6 +260,10 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
             }),
           ]);
         });
+
+        if (!!educationCreates || !!educationUpdates) {
+          checkMostRecentEducation(member.id);
+        }
 
         track({
           event: 'LinkedIn Synced',
