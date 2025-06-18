@@ -1,4 +1,6 @@
+import fs from 'fs';
 import { sql, type Transaction, type Updateable } from 'kysely';
+import path from 'path';
 import { z } from 'zod';
 
 import { type DB, db, point } from '@oyster/db';
@@ -6,7 +8,7 @@ import { type Major } from '@oyster/types';
 import { id, run, splitArray } from '@oyster/utils';
 
 import { track } from '@/infrastructure/mixpanel';
-import { cache, ONE_WEEK_IN_SECONDS, withCache } from '@/infrastructure/redis';
+import { cache } from '@/infrastructure/redis';
 import { runActor } from '@/modules/apify';
 import { saveSchoolIfNecessary } from '@/modules/education/use-cases/save-school-if-necessary';
 import {
@@ -14,14 +16,11 @@ import {
   LocationType,
 } from '@/modules/employment/employment.types';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
-import {
-  getAutocompletedCities,
-  getCityDetails,
-} from '@/modules/location/location';
+import { getMostRelevantLocation } from '@/modules/location/location';
+import { IS_DEVELOPMENT } from '@/shared/env';
 
 const LinkedInDate = z.object({
-  month: z.string().nullish(),
-  text: z.string(),
+  month: z.string().nullish(), // Formatted as a 3-letter abbreviation.
   year: z.number(),
 });
 
@@ -37,7 +36,7 @@ const LinkedInProfile = z.object({
     })
   ),
   element: z.object({
-    headline: z.string().trim(),
+    headline: z.string(),
     location: z.object({
       parsed: z.object({
         text: z.string(),
@@ -80,6 +79,16 @@ type LinkedInProfile = z.infer<typeof LinkedInProfile>;
 type LinkedInEducation = z.infer<typeof LinkedInProfile>['education'][number];
 type LinkedInExperience = z.infer<typeof LinkedInProfile>['experience'][number];
 
+/**
+ * Syncs a members' LinkedIn profiles (work, education, etc.) with their
+ * respective database records. This is a complex process which executes the
+ * following steps:
+ * 1. Fetches all members, educations and experiences from the database.
+ * 2. We store the results in memory (maps) for faster access.
+ *
+ * @param memberIds - Optional array of member IDs to sync. If not provided,
+ *   all members with a LinkedIn URL will be synced.
+ */
 export async function syncLinkedInProfiles(memberIds?: string[]) {
   const [members, educations, experiences] = await db
     .transaction()
@@ -91,11 +100,24 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
       ]);
     });
 
+  log(`Fetched ${members.length} members.`);
+  log(`Fetched ${educations.length} educations.`);
+  log(`Fetched ${experiences.length} experiences.`);
+
+  // In order to fetch all the database records the most efficiently, we
+  // need to group them by member ID in memory after the database query. The
+  // alternative is to fetch each of the associated records for each member
+  // in a loop which would be much slower.
+
   const memberMap: Record<string, Member> = {};
   const educationMap: Record<string, Education[]> = {};
   const experienceMap: Record<string, Experience[]> = {};
 
   members.forEach((member) => {
+    // The reason we key is the LinkedIn URL is because when we scrape the
+    // LinkedIn profile, this is the only thing we can use to reference the
+    // member in the cache.
+    // TODO: MIGHT HAVE TO CHANGE THIS BECAUSE THE LINKEDIN URL IS NOT UNIQUE.
     memberMap[member.linkedInUrl!] = member;
   });
 
@@ -117,44 +139,76 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
 
   const batches = splitArray(members, 100);
 
-  for (const batch of batches) {
-    const results: LinkedInProfile[] = [];
+  log(`Splitting ${members.length} members into ${batches.length} batches.`);
 
-    // Need to filter through the batch and only get the ones that aren't
-    // already in the cache.
+  for (let i = 0; i < batches.length; i++) {
+    log(`Processing batch ${i + 1} of ${batches.length}.`);
+
+    const profilesToScrape: string[] = [];
+    const scrapedProfiles: LinkedInProfile[] = [];
+
+    // We need to filter through the batch and see if there are any that we
+    // already have in the cache. If so, we'll add them to the results array
+    // and remove them from the batch so we don't have to scrape them again.
     await Promise.all(
-      batch.map(async (member) => {
+      batches[i].map(async (member) => {
         const profile = await cache.get<LinkedInProfile>(
-          `apify:harvestapi~linkedin-profile-scraper:${member.linkedInUrl}`
+          `harvestapi~linkedin-profile-scraper:${member.linkedInUrl}`
         );
 
-        if (profile) {
-          results.push(profile);
-
-          const index = batch.findIndex(({ id }) => member.id === id);
-
-          if (index !== -1) {
-            batch.splice(index, 1);
-          }
-
-          return;
+        if (!profile) {
+          profilesToScrape.push(member.linkedInUrl!);
+        } else {
+          scrapedProfiles.push(profile);
         }
       })
     );
 
+    log(`Found ${scrapedProfiles.length} cached profiles.`);
+    log(`Scraping ${profilesToScrape.length} profiles.`);
+
+    // This is the most expensive part of the process and what actually is
+    // doing the scraping.
     const newProfiles = await runActor({
       actorId: 'harvestapi~linkedin-profile-scraper',
-      body: { urls: batch.map((member) => member.linkedInUrl!) },
+      body: { urls: profilesToScrape },
       schema: z.array(LinkedInProfile),
     });
 
-    results.concat(newProfiles);
+    log(`Scraped ${newProfiles.length}/${profilesToScrape.length} profiles.`);
+
+    // We need to combine the cached profiles with the new profiles so that
+    // we can use profiles to update the database.
+    scrapedProfiles.concat(newProfiles);
+
+    // We want to still keep track of the profiles that failed the scraping
+    // process so that we can probe manually after.
+    const failedProfiles = profilesToScrape.filter((url) => {
+      return !newProfiles.some((newProfile) => {
+        return newProfile.originalQuery.query === url;
+      });
+    });
+
+    log(
+      `Failed to scrape ${failedProfiles.length}/${profilesToScrape.length} profiles.`
+    );
+
+    failedProfiles.forEach((url) => {
+      log(`Failed to scrape ${url}.`);
+    });
+
+    await db
+      .updateTable('students')
+      .set({ linkedinSyncedAt: new Date(), updatedAt: new Date() })
+      .where('linkedInUrl', 'in', failedProfiles)
+      .execute();
 
     await Promise.all(
-      results.map(async (profile) => {
+      scrapedProfiles.map(async (profile) => {
         await cache.set(
-          `apify:harvestapi~linkedin-profile-scraper:${profile.originalQuery.query}`,
-          profile
+          `harvestapi~linkedin-profile-scraper:${profile.originalQuery.query}`,
+          profile,
+          60 * 60 * 24 * 7
         );
 
         const member = memberMap[profile.originalQuery.query];
@@ -216,6 +270,10 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
           },
           user: member.id,
         });
+
+        log(
+          `Synced ${member.id} with ${educationCreates + educationUpdates + experienceCreates + experienceUpdates} updates.`
+        );
       })
     );
   }
@@ -238,11 +296,7 @@ async function getAllMembers(trx: Transaction<DB>, memberIds?: string[]) {
     .$if(!!memberIds?.length, (qb) => {
       return qb.where('students.id', 'in', memberIds!);
     })
-    .$if(!memberIds?.length, (qb) => {
-      return qb
-        .where('students.linkedInUrl', 'is not', null)
-        .where('students.linkedinSyncedAt', 'is', null);
-    })
+    .where('students.linkedInUrl', 'is not', null)
     .groupBy('students.id')
     .orderBy('workExperienceCount', 'asc')
     .orderBy('students.linkedinSyncedAt', sql`asc nulls first`)
@@ -284,8 +338,8 @@ async function getAllEducations(trx: Transaction<DB>, memberIds?: string[]) {
       return qb.where('educations.studentId', 'in', memberIds!);
     })
     .where('educations.deletedAt', 'is', null)
-    .orderBy('educations.startDate', 'desc')
     .orderBy('educations.endDate', 'desc')
+    .orderBy('educations.startDate', 'desc')
     .execute();
 }
 
@@ -359,7 +413,7 @@ async function checkMember({ member, profile, trx }: CheckMemberInput) {
       locationFromLinkedIn &&
       locationFromLinkedIn !== member.currentLocation
     ) {
-      return getMostRelevantLocation(locationFromLinkedIn);
+      return getMostRelevantLocation(locationFromLinkedIn, '(regions)');
     }
   });
 
@@ -372,7 +426,7 @@ async function checkMember({ member, profile, trx }: CheckMemberInput) {
       ...(!member.profilePicture && {
         profilePicture: profile.element.photo,
       }),
-      ...(updatedLocation && {
+      ...(!!updatedLocation?.postalCode && {
         currentLocation: updatedLocation.formattedAddress,
         currentLocationCoordinates: point({
           x: updatedLocation.longitude,
@@ -421,8 +475,8 @@ async function checkEducation({
   if (
     !educationFromLinkedIn.degree ||
     !educationFromLinkedIn.fieldOfStudy ||
-    !educationFromLinkedIn.endDate ||
-    !educationFromLinkedIn.startDate
+    !educationFromLinkedIn.startDate ||
+    !educationFromLinkedIn.endDate
   ) {
     return;
   }
@@ -498,6 +552,7 @@ async function checkEducation({
 
   if (existingEducation) {
     const set: Updateable<DB['educations']> = {
+      linkedinSyncedAt: new Date(),
       updatedAt: new Date(),
     };
 
@@ -543,6 +598,7 @@ async function checkEducation({
       degreeType,
       endDate,
       id: id(),
+      linkedinSyncedAt: new Date(),
       startDate,
       studentId: memberId,
       updatedAt: new Date(),
@@ -631,8 +687,6 @@ function getFieldOfStudy(fieldOfStudy: string): Major | null {
 
   return null;
 }
-
-// CHECKPOINT
 
 type CheckWorkExperienceInput = {
   experienceFromLinkedIn: LinkedInExperience;
@@ -800,7 +854,7 @@ async function createWorkExperience({
 
   const [companyId, location] = await Promise.all([
     saveCompanyIfNecessary(trx, experienceFromLinkedIn.companyId),
-    getMostRelevantLocation(experienceFromLinkedIn.location),
+    getMostRelevantLocation(experienceFromLinkedIn.location, '(regions)'),
   ]);
 
   return trx
@@ -818,10 +872,13 @@ async function createWorkExperience({
         ? { companyId }
         : { companyName: experienceFromLinkedIn.companyName }),
 
-      ...(location && {
-        locationCity: location.city,
-        locationState: location.state,
-      }),
+      ...(location &&
+        location.city &&
+        location.state && {
+          locationCity: location.city,
+          locationState: location.state,
+          // TODO: Add country?
+        }),
 
       ...(experienceFromLinkedIn.employmentType && {
         employmentType:
@@ -883,7 +940,8 @@ async function updateWorkExperience({
 
   if (experienceFromLinkedIn.location) {
     const location = await getMostRelevantLocation(
-      experienceFromLinkedIn.location
+      experienceFromLinkedIn.location,
+      '(regions)'
     );
 
     if (location) {
@@ -957,37 +1015,14 @@ async function updateWorkExperience({
     .execute();
 }
 
-/**
- * Finds the most relevant location using the Google Places API. This function
- * uses the autocomplete endpoint to find a list of matched cities. We choose
- * the top match and then use the details endpoint to get the city, state and
- * coordinates.
- *
- * @param location - Location name to search for.
- * @returns Promise resolving to the most relevant matching location, if found.
- */
-async function getMostRelevantLocation(location: string | null | undefined) {
-  if (!location) {
-    return null;
+function log(message: string) {
+  if (IS_DEVELOPMENT) {
+    const logFilePath = path.join(__dirname, 'linkedin.log');
+
+    const timestamp = new Date().toISOString();
+
+    fs.appendFileSync(logFilePath, `${timestamp} - ${message}\n`);
   }
 
-  return withCache(
-    `${getMostRelevantLocation.name}:${location}`,
-    ONE_WEEK_IN_SECONDS * 4,
-    async function fn() {
-      const cities = await getAutocompletedCities(location);
-
-      if (!cities || !cities.length) {
-        return null;
-      }
-
-      const details = await getCityDetails(cities[0].id);
-
-      if (details && details.city && details.state) {
-        return details;
-      }
-
-      return null;
-    }
-  );
+  console.log(message);
 }

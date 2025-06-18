@@ -1,65 +1,12 @@
 import { type Transaction } from 'kysely';
 import { z } from 'zod';
 
-import { type DB, db } from '@oyster/db';
+import { type DB, db, point } from '@oyster/db';
 import { id } from '@oyster/utils';
 
+import { reportException } from '@/member-profile.server';
 import { runActor } from '@/modules/apify';
-
-const STATES_MAP: Record<string, string> = {
-  Alabama: 'AL',
-  Alaska: 'AK',
-  Arizona: 'AZ',
-  Arkansas: 'AR',
-  California: 'CA',
-  Colorado: 'CO',
-  Connecticut: 'CT',
-  Delaware: 'DE',
-  'District Of Columbia': 'DC',
-  Florida: 'FL',
-  Georgia: 'GA',
-  Hawaii: 'HI',
-  Idaho: 'ID',
-  Illinois: 'IL',
-  Indiana: 'IN',
-  Iowa: 'IA',
-  Kansas: 'KS',
-  Kentucky: 'KY',
-  Louisiana: 'LA',
-  Maine: 'ME',
-  Maryland: 'MD',
-  Massachusetts: 'MA',
-  Michigan: 'MI',
-  Minnesota: 'MN',
-  Mississippi: 'MS',
-  Missouri: 'MO',
-  Montana: 'MT',
-  Nebraska: 'NE',
-  Nevada: 'NV',
-  'New Hampshire': 'NH',
-  'New Jersey': 'NJ',
-  'New Mexico': 'NM',
-  'New York': 'NY',
-  'North Carolina': 'NC',
-  'North Dakota': 'ND',
-  Ohio: 'OH',
-  Oklahoma: 'OK',
-  Oregon: 'OR',
-  Pennsylvania: 'PA',
-  'Puerto Rico': 'PR',
-  'Rhode Island': 'RI',
-  'South Carolina': 'SC',
-  'South Dakota': 'SD',
-  Tennessee: 'TN',
-  Texas: 'TX',
-  Utah: 'UT',
-  Vermont: 'VT',
-  Virginia: 'VA',
-  Washington: 'WA',
-  'West Virginia': 'WV',
-  Wisconsin: 'WI',
-  Wyoming: 'WY',
-};
+import { getMostRelevantLocation } from '@/modules/location/location';
 
 /**
  * Saves a school in the database, if it does not already exist.
@@ -106,9 +53,9 @@ export async function saveSchoolIfNecessary(
         locations: z
           .array(
             z.object({
-              city: z.string(),
-              country: z.string(),
+              city: z.string().optional(),
               geographicArea: z.string(),
+              line1: z.string().optional(),
               postalCode: z.string(),
             })
           )
@@ -125,15 +72,42 @@ export async function saveSchoolIfNecessary(
 
   const companyId = id();
 
-  const location = schoolFromLinkedIn.locations[0];
+  const linkedInLocation = schoolFromLinkedIn.locations[0];
+
+  const location =
+    !!linkedInLocation.line1 && !!linkedInLocation.city
+      ? await getMostRelevantLocation(
+          `${linkedInLocation.line1}, ${linkedInLocation.city}, ${linkedInLocation.geographicArea}, ${linkedInLocation.postalCode}`
+        )
+      : await getMostRelevantLocation(
+          `${linkedInLocation.postalCode}, ${linkedInLocation.geographicArea}`,
+          'postal_code'
+        );
+
+  if (
+    !location ||
+    !location.city ||
+    !location.state ||
+    !location.country ||
+    !location.postalCode
+  ) {
+    reportException(
+      new Error(
+        `Failed to find location for school ${schoolFromLinkedIn.name}.`
+      )
+    );
+
+    return null;
+  }
 
   await trx
     .insertInto('schools')
     .values({
       addressCity: location.city,
-      addressState:
-        STATES_MAP[location.geographicArea] || location.geographicArea,
+      addressCountry: location.country,
+      addressState: location.state,
       addressZip: location.postalCode,
+      coordinates: point({ x: location.longitude, y: location.latitude }),
       logoUrl: schoolFromLinkedIn.logo,
       id: id(),
       linkedinId: schoolFromLinkedIn.id,

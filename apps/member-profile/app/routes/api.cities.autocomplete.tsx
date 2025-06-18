@@ -1,7 +1,7 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { z } from 'zod';
 
-import { getAutocompletedCities } from '@oyster/core/location';
+import { getAutocompletedPlaces } from '@oyster/core/location';
 
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -18,7 +18,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     Object.fromEntries(url.searchParams)
   );
 
-  const cities = await getAutocompletedCities(search);
+  const cities = await getAutocompletedPlaces(search, '(cities)');
 
   return json(cities);
 }
