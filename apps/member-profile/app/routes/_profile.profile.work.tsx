@@ -48,7 +48,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
   job('student.linkedin.sync', {
-    studentId: user(session),
+    memberIds: [user(session)],
   });
 
   toast(session, {

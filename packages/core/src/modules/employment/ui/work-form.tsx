@@ -186,8 +186,8 @@ WorkForm.LocationTypeField = function LocationTypeField({
   name,
 }: FieldProps<LocationType>) {
   return (
-    <Field error={error} label="Location Type" labelFor={name} required>
-      <Select defaultValue={defaultValue} id={name} name={name} required>
+    <Field error={error} label="Location Type" labelFor={name}>
+      <Select defaultValue={defaultValue} id={name} name={name}>
         {ORDERED_LOCATION_TYPES.map((locationType) => {
           return (
             <option key={locationType} value={locationType}>

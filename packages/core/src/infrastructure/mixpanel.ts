@@ -64,9 +64,10 @@ export type MixpanelEvent = {
   };
 
   'LinkedIn Synced': {
-    '# of Education Changes': number;
-    '# of Work Experience Changes': number;
-    'Location Changed': boolean;
+    '# of Education Creates': number;
+    '# of Education Updates': number;
+    '# of Work Experience Creates': number;
+    '# of Work Experience Updates': number;
   };
 
   'Logged In': {

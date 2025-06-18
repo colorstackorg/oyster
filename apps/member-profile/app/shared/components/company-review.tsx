@@ -49,7 +49,7 @@ type CompanyReviewProps = {
   id: string;
   locationCity: string | null;
   locationState: string | null;
-  locationType: LocationType;
+  locationType: LocationType | null;
   rating: number;
   recommend: boolean;
   reviewerFirstName: string;
@@ -158,7 +158,7 @@ export const CompanyReview = ({
             {date}
           </Text>
 
-          {locationType !== 'remote' && locationCity && locationState && (
+          {locationCity && locationState && (
             <Text color="gray-500" variant="sm">
               {locationCity}, {locationState}
             </Text>
@@ -171,11 +171,13 @@ export const CompanyReview = ({
               </Pill>
             </li>
 
-            <li>
-              <Pill color="lime-100">
-                {FORMATTED_LOCATION_TYPE[locationType]}
-              </Pill>
-            </li>
+            {locationType && (
+              <li>
+                <Pill color="lime-100">
+                  {FORMATTED_LOCATION_TYPE[locationType]}
+                </Pill>
+              </li>
+            )}
           </ul>
         </div>
       </div>

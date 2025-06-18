@@ -24,7 +24,7 @@ type WorkExperienceItemProps = {
     id: string;
     locationCity: string | null;
     locationState: string | null;
-    locationType: string;
+    locationType: string | null;
     title: string;
   };
 } & (
@@ -93,9 +93,10 @@ export function WorkExperienceItem({
           {experience.locationCity && experience.locationState && (
             <Text color="gray-500">
               {experience.locationCity}, {experience.locationState}
-              {experience.locationType !== 'in_person' && (
-                <span> &bull; {toTitleCase(experience.locationType)}</span>
-              )}
+              {experience.locationType &&
+                experience.locationType !== 'in_person' && (
+                  <span> &bull; {toTitleCase(experience.locationType)}</span>
+                )}
             </Text>
           )}
         </div>

@@ -80,7 +80,7 @@ export const WorkExperience = Entity.extend({
   endDate: ISO8601Date.nullish(),
   locationCity: NullishString,
   locationState: NullishString,
-  locationType: z.nativeEnum(LocationType),
+  locationType: nullableField(z.nativeEnum(LocationType).nullable()),
   startDate: ISO8601Date,
   studentId: Student.shape.id,
   title: z.string().trim().min(1),

@@ -23,8 +23,10 @@ const GoogleAutocompleteData = z.object({
   predictions: z.array(GooglePrediction),
 });
 
+type AutocompleteType = '(cities)' | '(regions)' | 'postal_code';
+
 /**
- * Returns a list of cities that match the search term.
+ * Returns a list of places that match the search term.
  *
  * Uses the Google Maps Places API under the hood, so it is required to have the
  * `GOOGLE_MAPS_API_KEY` environment variable set.
@@ -33,7 +35,10 @@ const GoogleAutocompleteData = z.object({
  *
  * @see https://developers.google.com/maps/documentation/places/web-service/autocomplete
  */
-export async function getAutocompletedCities(search: string) {
+export async function getAutocompletedPlaces(
+  search: string,
+  type?: AutocompleteType
+) {
   search = search.trim().toLowerCase();
 
   async function fn() {
@@ -52,7 +57,7 @@ export async function getAutocompletedCities(search: string) {
     const searchParams = new URLSearchParams({
       key: GOOGLE_MAPS_API_KEY,
       input: search,
-      types: ['locality', 'administrative_area_level_3'].join('|'),
+      ...(type && { types: type }),
     });
 
     uri.search = searchParams.toString();
@@ -91,7 +96,7 @@ export async function getAutocompletedCities(search: string) {
   }
 
   return withCache(
-    `google:places:autocomplete:v2:${search}`,
+    `google:places:autocomplete:v3:${search}:${type}`,
     60 * 60 * 24 * 30,
     fn
   );
@@ -118,8 +123,19 @@ const GooglePlaceDetailsResponse = z.object({
   }),
 });
 
+type PlaceDetails = {
+  city: string | null;
+  country: string | null;
+  formattedAddress: string;
+  id: string;
+  latitude: number;
+  longitude: number;
+  postalCode: string | null;
+  state: string | null;
+};
+
 /**
- * Returns important information about a city.
+ * Returns important information about a place.
  *
  * Uses the Google Maps Places API under the hood, so it is required to have the
  * `GOOGLE_MAPS_API_KEY` environment variable set.
@@ -128,7 +144,9 @@ const GooglePlaceDetailsResponse = z.object({
  *
  * @see https://developers.google.com/maps/documentation/places/web-service/details
  */
-export async function getCityDetails(id: string) {
+export async function getPlaceDetails(
+  id: string
+): Promise<PlaceDetails | null> {
   async function fn() {
     if (!GOOGLE_MAPS_API_KEY) {
       return null;
@@ -151,7 +169,7 @@ export async function getCityDetails(id: string) {
 
     if (!response.ok) {
       const _ = new ColorStackError()
-        .withMessage('Failed to get city details from Google.')
+        .withMessage('Failed to get place details from Google.')
         .withContext({ response: json, status: response.status })
         .report();
 
@@ -162,7 +180,7 @@ export async function getCityDetails(id: string) {
 
     if (!result.success) {
       const _ = new ColorStackError()
-        .withMessage('Failed to validate city details from Google.')
+        .withMessage('Failed to validate place details from Google.')
         .withContext({ error: result.error, response: json })
         .report();
 
@@ -179,21 +197,63 @@ export async function getCityDetails(id: string) {
       );
     });
 
+    const postalCodeComponent = address_components.find((component) => {
+      return component.types.includes('postal_code');
+    });
+
     const stateComponent = address_components.find((component) => {
       return component.types.includes('administrative_area_level_1');
     });
 
+    const countryComponent = address_components.find((component) => {
+      return component.types.includes('country');
+    });
+
     return {
-      city: cityComponent!.long_name,
+      city: cityComponent?.long_name || null,
+      country: countryComponent?.short_name || null,
       formattedAddress: formatted_address,
       id,
       latitude: geometry.location.lat,
       longitude: geometry.location.lng,
-      state: stateComponent!.short_name,
+      postalCode: postalCodeComponent?.short_name || null,
+      state: stateComponent?.short_name || null,
     };
   }
 
-  return withCache(`google:places:details:v2:${id}`, 60 * 60 * 24 * 90, fn);
+  return withCache(`google:places:details:v3:${id}`, 60 * 60 * 24 * 90, fn);
+}
+
+/**
+ * Finds the most relevant location using the Google Places API. This function
+ * uses the autocomplete endpoint to find a list of matched cities. We choose
+ * the top match and then use the details endpoint to get the address components
+ * and coordinates.
+ *
+ * @param location - Location name to search for.
+ * @returns Promise resolving to the most relevant matching location, if found.
+ */
+export async function getMostRelevantLocation(
+  location: string | null | undefined,
+  type?: AutocompleteType
+) {
+  if (!location) {
+    return null;
+  }
+
+  return withCache(
+    `${getMostRelevantLocation.name}:${location}:${type}`,
+    60 * 60 * 24 * 30,
+    async function fn() {
+      const places = await getAutocompletedPlaces(location, type);
+
+      if (!places || !places.length) {
+        return null;
+      }
+
+      return getPlaceDetails(places[0].id);
+    }
+  );
 }
 
 // DB Queries

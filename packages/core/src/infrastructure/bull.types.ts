@@ -658,7 +658,7 @@ export const StudentBullJob = z.discriminatedUnion('name', [
   z.object({
     name: z.literal('student.linkedin.sync'),
     data: z.object({
-      studentId: Student.shape.id,
+      memberIds: z.array(Student.shape.id).optional(),
     }),
   }),
   z.object({
