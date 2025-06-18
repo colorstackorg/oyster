@@ -714,6 +714,10 @@ function getFieldOfStudy(fieldOfStudy: string): Major | null {
     return 'information_science';
   }
 
+  if (value.includes('information technology')) {
+    return 'information_technology';
+  }
+
   if (value.includes('software engineering')) {
     return 'software_engineering';
   }
