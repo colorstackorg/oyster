@@ -1,10 +1,11 @@
-import { sql, type Transaction } from 'kysely';
+import { sql, type Transaction, type Updateable } from 'kysely';
 import { z } from 'zod';
 
 import { type DB, db, point } from '@oyster/db';
+import { type Major } from '@oyster/types';
 import { id, run, splitArray } from '@oyster/utils';
 
-import { cache, ONE_WEEK_IN_SECONDS } from '@/infrastructure/redis';
+import { cache, ONE_WEEK_IN_SECONDS, withCache } from '@/infrastructure/redis';
 import { runActor } from '@/modules/apify';
 import { saveSchoolIfNecessary } from '@/modules/education/use-cases/save-school-if-necessary';
 import {
@@ -13,7 +14,6 @@ import {
 } from '@/modules/employment/employment.types';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import {
-  type CityDetails,
   getAutocompletedCities,
   getCityDetails,
 } from '@/modules/location/location';
@@ -33,25 +33,10 @@ const MONTH_MAP: Record<string, string> = {
   Dec: '12',
 };
 
-const LOCATION_TYPE_MAP: Record<string, string> = {
-  Hybrid: LocationType.HYBRID,
-  'On-site': LocationType.IN_PERSON,
-  Remote: LocationType.REMOTE,
-};
-
-const EMPLOYMENT_TYPE_MAP: Record<string, string> = {
-  Apprenticeship: EmploymentType.APPRENTICESHIP,
-  Contract: EmploymentType.CONTRACT,
-  Freelance: EmploymentType.FREELANCE,
-  'Full-time': EmploymentType.FULL_TIME,
-  Internship: EmploymentType.INTERNSHIP,
-  'Part-time': EmploymentType.PART_TIME,
-};
-
 const LinkedInDate = z.object({
   month: z.string().nullish(),
   text: z.string(),
-  year: z.number().nullish(),
+  year: z.number(),
 });
 
 const LinkedInProfile = z.object({
@@ -106,25 +91,23 @@ const LinkedInProfile = z.object({
 });
 
 type LinkedInProfile = z.infer<typeof LinkedInProfile>;
+type LinkedInEducation = z.infer<typeof LinkedInProfile>['education'][number];
+type LinkedInExperience = z.infer<typeof LinkedInProfile>['experience'][number];
 
 export async function migrateLinkedin() {
-  const [members, educations, workExperiences] = await db
+  const [members, educations, experiences] = await db
     .transaction()
     .execute(async (trx) => {
       return Promise.all([
         getAllMembers(trx),
-        getAllEducationHistories(trx),
-        getAllWorkHistories(trx),
+        getAllEducations(trx),
+        getAllExperiences(trx),
       ]);
     });
 
-  type Member = (typeof members)[number];
-  type Education = (typeof educations)[number];
-  type WorkExperience = (typeof workExperiences)[number];
-
   const memberMap: Record<string, Member> = {};
   const educationMap: Record<string, Education[]> = {};
-  const workExperienceMap: Record<string, WorkExperience[]> = {};
+  const experienceMap: Record<string, Experience[]> = {};
 
   members.forEach((member) => {
     memberMap[member.linkedInUrl!] = member;
@@ -138,11 +121,11 @@ export async function migrateLinkedin() {
     }
   });
 
-  workExperiences.forEach((workExperience) => {
-    if (workExperienceMap[workExperience.studentId]) {
-      workExperienceMap[workExperience.studentId].push(workExperience);
+  experiences.forEach((experience) => {
+    if (experienceMap[experience.studentId]) {
+      experienceMap[experience.studentId].push(experience);
     } else {
-      workExperienceMap[workExperience.studentId] = [workExperience];
+      experienceMap[experience.studentId] = [experience];
     }
   });
 
@@ -190,7 +173,7 @@ export async function migrateLinkedin() {
 
         const member = memberMap[profile.originalQuery.query];
         const educations = educationMap[member.id];
-        const workExperiences = workExperienceMap[member.id];
+        const experiences = experienceMap[member.id];
 
         await db.transaction().execute(async (trx) => {
           await Promise.all([
@@ -204,10 +187,11 @@ export async function migrateLinkedin() {
                 trx,
               });
             }),
+
             ...profile.experience.map(async (experienceFromLinkedIn) => {
               return checkWorkExperience({
                 experienceFromLinkedIn,
-                experiences: workExperiences,
+                experiences,
                 memberId: member.id,
                 trx,
               });
@@ -219,8 +203,120 @@ export async function migrateLinkedin() {
   }
 }
 
+type Member = Awaited<ReturnType<typeof getAllMembers>>[number];
+
+async function getAllMembers(trx: Transaction<DB>) {
+  return trx
+    .selectFrom('students')
+    .leftJoin('workExperiences', 'workExperiences.studentId', 'students.id')
+    .select([
+      'students.currentLocation',
+      'students.headline',
+      'students.id',
+      'students.linkedInUrl',
+      'students.profilePicture',
+      ({ fn }) => fn.count('workExperiences.id').as('workExperienceCount'),
+    ])
+    .where('students.linkedInUrl', 'is not', null)
+    .where('students.linkedinSyncedAt', 'is', null)
+    .groupBy('students.id')
+    .orderBy('workExperienceCount', 'asc')
+    .orderBy('students.linkedinSyncedAt', sql`asc nulls first`)
+    .orderBy('acceptedAt', 'asc')
+    .execute();
+}
+
+type Education = Awaited<ReturnType<typeof getAllEducations>>[number];
+
+async function getAllEducations(trx: Transaction<DB>) {
+  return trx
+    .selectFrom('educations')
+    .leftJoin('schools', 'schools.id', 'educations.schoolId')
+    .select([
+      'educations.id',
+      'educations.degreeType',
+      'educations.major',
+      'educations.otherMajor',
+      'educations.studentId',
+      'schools.linkedinId',
+      ({ ref }) => {
+        return sql<string>`to_char(${ref('endDate')}, 'YYYY-MM-DD')`.as(
+          'endDate'
+        );
+      },
+      ({ ref }) => {
+        return sql<string>`to_char(${ref('startDate')}, 'YYYY-MM-DD')`.as(
+          'startDate'
+        );
+      },
+      ({ fn }) => {
+        return fn
+          .coalesce('schools.name', 'educations.otherSchool')
+          .$castTo<string>()
+          .as('school');
+      },
+    ])
+    .where('educations.deletedAt', 'is', null)
+    .orderBy('educations.startDate', 'desc')
+    .orderBy('educations.endDate', 'desc')
+    .execute();
+}
+
+type Experience = Awaited<ReturnType<typeof getAllExperiences>>[number];
+
+async function getAllExperiences(trx: Transaction<DB>) {
+  return trx
+    .selectFrom('workExperiences')
+    .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
+    .select([
+      'companies.linkedinId',
+      'workExperiences.description',
+      'workExperiences.employmentType',
+      'workExperiences.id',
+      'workExperiences.locationCity',
+      'workExperiences.locationState',
+      'workExperiences.locationType',
+      'workExperiences.studentId',
+      'workExperiences.title',
+      ({ ref }) => {
+        return sql<string>`to_char(${ref('endDate')}, 'MM')`.as('endMonth');
+      },
+      ({ ref }) => {
+        return sql<string>`to_char(${ref('endDate')}, 'YYYY')`.as('endYear');
+      },
+      ({ ref }) => {
+        return sql<string>`to_char(${ref('endDate')}, 'YYYY-MM-DD')`.as(
+          'endDate'
+        );
+      },
+      ({ ref }) => {
+        return sql<string>`to_char(${ref('startDate')}, 'MM')`.as('startMonth');
+      },
+      ({ ref }) => {
+        return sql<string>`to_char(${ref('startDate')}, 'YYYY')`.as(
+          'startYear'
+        );
+      },
+      ({ ref }) => {
+        return sql<string>`to_char(${ref('startDate')}, 'YYYY-MM-DD')`.as(
+          'startDate'
+        );
+      },
+      ({ fn }) => {
+        return fn
+          .coalesce('companies.name', 'workExperiences.companyName')
+          .$castTo<string>()
+          .as('company');
+      },
+    ])
+    .where('workExperiences.deletedAt', 'is', null)
+    .orderBy('workExperiences.endDate', 'desc')
+    .orderBy('workExperiences.startDate', 'desc')
+    .execute();
+}
+
 type CheckMemberInput = {
-  member: Awaited<ReturnType<typeof getAllMembers>>[number];
+  member: Member;
   profile: LinkedInProfile;
   trx: Transaction<DB>;
 };
@@ -261,8 +357,8 @@ async function checkMember({ member, profile, trx }: CheckMemberInput) {
 }
 
 type CheckEducationInput = {
-  educationFromLinkedIn: LinkedInProfile['education'][number];
-  educations: Awaited<ReturnType<typeof getAllEducationHistories>>;
+  educationFromLinkedIn: LinkedInEducation;
+  educations: Education[];
   memberId: string;
   trx: Transaction<DB>;
 };
@@ -273,36 +369,65 @@ async function checkEducation({
   memberId,
   trx,
 }: CheckEducationInput) {
-  if (!educationFromLinkedIn.degree || !educationFromLinkedIn.fieldOfStudy) {
-    return;
-  }
-
-  const url = new URL(educationFromLinkedIn.schoolLinkedinUrl);
-
-  const linkedinId = url.pathname.split('/').filter(Boolean)[1];
-
-  if (!linkedinId) {
+  // If there is no `degree` field, it likely means that the education was
+  // pre-college. If there is no `fieldOfStudy` field, it likely means that
+  // the education was part of a general education program. We also will require
+  // that the date fields are present.
+  if (
+    !educationFromLinkedIn.degree ||
+    !educationFromLinkedIn.fieldOfStudy ||
+    !educationFromLinkedIn.endDate ||
+    !educationFromLinkedIn.startDate
+  ) {
     return;
   }
 
   const degreeType = getDegreeType(educationFromLinkedIn.degree);
 
+  // If we don't have a matching degree type, we'll skip.
+  if (!degreeType) {
+    return;
+  }
+
+  const url = new URL(educationFromLinkedIn.schoolLinkedinUrl);
+
+  // Example: https://www.linkedin.com/company/123 -> 123
+  // Example: https://www.linkedin.com/school/123 -> 123
+  const linkedinId = url.pathname.split('/').filter(Boolean)[1];
+
+  // If there is no ID, it likely means that the school is not accredited so
+  // we will skip syncing it.
+  if (!linkedinId) {
+    return;
+  }
+
   const existingEducation = educations.find((education) => {
+    if (education.degreeType !== degreeType) {
+      return false;
+    }
+
+    // Usually we would just check for the exact ID match, but sometimes a
+    // member on LinkedIn will link to a different account (ie: Cornell
+    // University vs. Cornell University Engineering). So we'll check for
+    // a close match from the school name as well.
     return (
-      (education.linkedinId === linkedinId ||
-        education.school.includes(educationFromLinkedIn.schoolName) ||
-        educationFromLinkedIn.schoolName.includes(education.school)) &&
-      education.degreeType === degreeType
+      education.linkedinId === linkedinId ||
+      education.school.includes(educationFromLinkedIn.schoolName) ||
+      educationFromLinkedIn.schoolName.includes(education.school)
     );
   });
 
   const startDate = run(() => {
-    const startMonth = educationFromLinkedIn.startDate?.month;
-    const startYear = educationFromLinkedIn.startDate?.year;
+    const startMonth = educationFromLinkedIn.startDate!.month;
+    const startYear = educationFromLinkedIn.startDate!.year;
 
-    if (startMonth && startYear) {
+    if (startYear && startMonth) {
+      // The `startMonth` is formatted as an abbreviation of the month, so
+      // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
       return `${startYear}-${MONTH_MAP[startMonth]}-01`;
     } else if (startYear) {
+      // If there is no `startMonth`, we'll default to August since that's
+      // when most schools start their academic year.
       return `${startYear}-08-01`;
     }
 
@@ -310,12 +435,16 @@ async function checkEducation({
   });
 
   const endDate = run(() => {
-    const endMonth = educationFromLinkedIn.endDate?.month;
-    const endYear = educationFromLinkedIn.endDate?.year;
+    const endMonth = educationFromLinkedIn.endDate!.month;
+    const endYear = educationFromLinkedIn.endDate!.year;
 
     if (endMonth && endYear) {
+      // The `endMonth` is formatted as an abbreviation of the month, so
+      // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
       return `${endYear}-${MONTH_MAP[endMonth]}-01`;
     } else if (endYear) {
+      // If there is no `endMonth`, we'll default to May since that's
+      // when most schools end their academic year.
       return `${endYear}-05-01`;
     }
 
@@ -323,37 +452,37 @@ async function checkEducation({
   });
 
   if (existingEducation) {
-    let update = false;
+    const set: Updateable<DB['educations']> = {
+      updatedAt: new Date(),
+    };
 
-    if (
-      existingEducation.linkedinId !== linkedinId ||
-      (endDate !== existingEducation.endDate &&
-        educationFromLinkedIn.endDate?.month &&
-        educationFromLinkedIn.endDate?.year) ||
-      (startDate !== existingEducation.startDate &&
-        educationFromLinkedIn.startDate?.month &&
-        educationFromLinkedIn.startDate?.year)
-    ) {
-      update = true;
+    if (existingEducation.linkedinId !== linkedinId) {
+      const schoolId = await saveSchoolIfNecessary(trx, linkedinId);
+
+      if (schoolId) {
+        set.schoolId = schoolId;
+        set.otherSchool = null;
+      } else {
+        set.otherSchool = educationFromLinkedIn.schoolName;
+        set.schoolId = null;
+      }
     }
 
-    if (!update) {
+    if (existingEducation.endDate !== endDate) {
+      set.endDate = endDate;
+    }
+
+    if (existingEducation.startDate !== startDate) {
+      set.startDate = startDate;
+    }
+
+    if (!Object.keys(set).length) {
       return;
     }
 
-    const schoolId = await saveSchoolIfNecessary(trx, linkedinId);
-
     return trx
       .updateTable('educations')
-      .set({
-        ...(schoolId
-          ? { otherSchool: null, schoolId }
-          : { otherSchool: educationFromLinkedIn.schoolName, schoolId: null }),
-
-        endDate,
-        startDate,
-        updatedAt: new Date(),
-      })
+      .set(set)
       .where('id', '=', existingEducation.id)
       .execute();
   }
@@ -365,14 +494,6 @@ async function checkEducation({
   await trx
     .insertInto('educations')
     .values({
-      ...(schoolId
-        ? { otherSchool: null, schoolId }
-        : { otherSchool: educationFromLinkedIn.schoolName, schoolId: null }),
-
-      ...(major === 'other'
-        ? { major, otherMajor: educationFromLinkedIn.fieldOfStudy }
-        : { major, otherMajor: null }),
-
       createdAt: new Date(),
       degreeType,
       endDate,
@@ -380,377 +501,59 @@ async function checkEducation({
       startDate,
       studentId: memberId,
       updatedAt: new Date(),
+
+      ...(schoolId
+        ? { schoolId }
+        : { otherSchool: educationFromLinkedIn.schoolName }),
+
+      ...(major
+        ? { major }
+        : { major: 'other', otherMajor: educationFromLinkedIn.fieldOfStudy }),
     })
-    .execute();
-}
-
-type CheckWorkExperienceInput = {
-  experienceFromLinkedIn: LinkedInProfile['experience'][number];
-  experiences: Awaited<ReturnType<typeof getAllWorkHistories>>;
-  memberId: string;
-  trx: Transaction<DB>;
-};
-
-async function checkWorkExperience({
-  experienceFromLinkedIn,
-  experiences,
-  memberId,
-  trx,
-}: CheckWorkExperienceInput) {
-  // We're going to ignore any work experiences that don't have a company ID
-  // or start date for now...this errs on the side of caution.
-  if (
-    !experienceFromLinkedIn.companyId ||
-    !experienceFromLinkedIn.startDate ||
-    !experienceFromLinkedIn.startDate.year
-  ) {
-    return;
-  }
-
-  const existingExperience = experiences.find((experience) => {
-    return doesExperienceMatch(experienceFromLinkedIn, experience);
-  });
-
-  if (existingExperience) {
-    await updateWorkExperience({
-      experienceFromLinkedIn,
-      id: existingExperience.id,
-      trx,
-    });
-  } else {
-    await createWorkExperience({
-      experienceFromLinkedIn,
-      memberId,
-      trx,
-    });
-  }
-}
-
-function doesExperienceMatch(
-  experienceFromLinkedIn: LinkedInProfile['experience'][number],
-  experience: Awaited<ReturnType<typeof getAllWorkHistories>>[number]
-): boolean {
-  // todo: need to allow close matches, ie:
-  // cornell university vs. cornell university engineering dept.
-  if (
-    experience.linkedinId !== experienceFromLinkedIn.companyId &&
-    experience.company &&
-    !experience.company.includes(experienceFromLinkedIn.companyName) &&
-    !experienceFromLinkedIn.companyName.includes(experience.company)
-  ) {
-    return false;
-  }
-
-  let score = 0;
-
-  if (experienceFromLinkedIn.position === experience.title) {
-    score += 2;
-  }
-
-  if (
-    experience.startYear &&
-    experienceFromLinkedIn.startDate?.year &&
-    parseInt(experience.startYear) === experienceFromLinkedIn.startDate!.year
-  ) {
-    score++;
-  }
-
-  if (
-    experience.startMonth &&
-    experienceFromLinkedIn.startDate?.month &&
-    experience.startMonth === MONTH_MAP[experienceFromLinkedIn.startDate.month]
-  ) {
-    score++;
-  }
-
-  if (
-    experience.endYear &&
-    experienceFromLinkedIn.endDate?.year &&
-    parseInt(experience.endYear) === experienceFromLinkedIn.endDate!.year
-  ) {
-    score++;
-  }
-
-  if (
-    experience.endMonth &&
-    experienceFromLinkedIn.endDate?.month &&
-    experience.endMonth === MONTH_MAP[experienceFromLinkedIn.endDate.month]
-  ) {
-    score++;
-  }
-
-  // if there is a month present and it's not within +/- 1 month
-  // then return false...otherwise return true
-
-  // another option is we calculate like a "confidence" score
-  // or some amount of things have to be true...
-
-  // delta of +/- 1 month start date error?
-
-  return score >= 3;
-}
-
-type CreateWorkExperienceInput = {
-  experienceFromLinkedIn: LinkedInProfile['experience'][number];
-  memberId: string;
-  trx: Transaction<DB>;
-};
-
-async function createWorkExperience({
-  experienceFromLinkedIn,
-  memberId,
-  trx,
-}: CreateWorkExperienceInput) {
-  let startDate = '';
-  let endDate = null;
-
-  const { month: startMonth, year: startYear } =
-    experienceFromLinkedIn.startDate || {};
-
-  const { month: endMonth, year: endYear } =
-    experienceFromLinkedIn.endDate || {};
-
-  if (startMonth && startYear) {
-    startDate = `${startYear}-${MONTH_MAP[startMonth]}-01`;
-  } else if (startYear) {
-    startDate = `${startYear}-01-01`;
-  }
-
-  if (endMonth && endYear) {
-    endDate = `${endYear}-${MONTH_MAP[endMonth]}-01`;
-  } else if (endYear) {
-    endDate = `${endYear}-12-01`;
-  }
-
-  const [companyId, location] = await Promise.all([
-    saveCompanyIfNecessary(trx, experienceFromLinkedIn.companyId),
-    getMostRelevantLocation(experienceFromLinkedIn.location || ''),
-  ]);
-
-  await trx
-    .insertInto('workExperiences')
-    .values({
-      ...(location && {
-        locationCity: location.city,
-        locationState: location.state,
-      }),
-      ...(experienceFromLinkedIn.workplaceType && {
-        locationType: LOCATION_TYPE_MAP[experienceFromLinkedIn.workplaceType],
-      }),
-      companyId,
-      description: experienceFromLinkedIn.description,
-      employmentType:
-        EMPLOYMENT_TYPE_MAP[experienceFromLinkedIn.employmentType || ''] ||
-        EmploymentType.FULL_TIME, // make this nullable
-      endDate,
-      id: id(),
-      source: 'linkedin',
-      startDate,
-      studentId: memberId,
-      title: experienceFromLinkedIn.position,
-    })
-    .execute();
-}
-
-type UpdateWorkExperienceInput = {
-  experienceFromLinkedIn: LinkedInProfile['experience'][number];
-  id: string;
-  trx: Transaction<DB>;
-};
-
-async function updateWorkExperience({
-  experienceFromLinkedIn,
-  id,
-  trx,
-}: UpdateWorkExperienceInput) {
-  await trx
-    .updateTable('workExperiences')
-    .set({
-      // ...(experienceFromLinkedIn.location && {
-      //   locationCity: experienceFromLinkedIn.location,
-      // }),
-      // ...(experienceFromLinkedIn.workplaceType && {
-      //   locationType:
-      //     LOCATION_TYPE_MAP[experienceFromLinkedIn.workplaceType],
-      // }),
-      // companyId: experienceFromLinkedIn.companyId,
-      // description: experienceFromLinkedIn.description,
-      // employmentType:
-      //   EMPLOYMENT_TYPE_MAP[
-      //     experienceFromLinkedIn.employmentType || ''
-      //   ] || EmploymentType.FULL_TIME, // make this nullable
-      // endDate: experienceFromLinkedIn.endDate,
-      // startDate: experienceFromLinkedIn.startDate,
-      // title: experienceFromLinkedIn.position,
-    })
-    .where('id', '=', id)
-    .execute();
-}
-
-async function getAllMembers(trx: Transaction<DB>) {
-  return trx
-    .selectFrom('students')
-    .leftJoin('workExperiences', 'workExperiences.studentId', 'students.id')
-    .select([
-      'students.currentLocation',
-      'students.headline',
-      'students.id',
-      'students.linkedInUrl',
-      'students.profilePicture',
-      ({ fn }) => fn.count('workExperiences.id').as('workExperienceCount'),
-    ])
-    .where('students.linkedInUrl', 'is not', null)
-    .where('students.linkedinSyncedAt', 'is', null)
-    .groupBy('students.id')
-    .orderBy('workExperienceCount', 'asc')
-    .orderBy('students.linkedinSyncedAt', sql`asc nulls first`)
-    .orderBy('acceptedAt', 'asc')
-    .execute();
-}
-
-async function getAllEducationHistories(trx: Transaction<DB>) {
-  return trx
-    .selectFrom('educations')
-    .leftJoin('schools', 'schools.id', 'educations.schoolId')
-    .select([
-      'educations.id',
-      'educations.degreeType',
-      'educations.major',
-      'educations.otherMajor',
-      'educations.studentId',
-      'schools.linkedinId',
-      ({ ref }) => {
-        return sql<string>`to_char(${ref('endDate')}, 'MM')`.as('endMonth');
-      },
-      ({ ref }) => {
-        return sql<string>`to_char(${ref('endDate')}, 'YYYY')`.as('endYear');
-      },
-      ({ ref }) => {
-        return sql<string>`to_char(${ref('endDate')}, 'YYYY-MM-DD')`.as(
-          'endDate'
-        );
-      },
-      ({ ref }) => {
-        return sql<string>`to_char(${ref('startDate')}, 'MM')`.as('startMonth');
-      },
-      ({ ref }) => {
-        return sql<string>`to_char(${ref('startDate')}, 'YYYY')`.as(
-          'startYear'
-        );
-      },
-      ({ ref }) => {
-        return sql<string>`to_char(${ref('startDate')}, 'YYYY-MM-DD')`.as(
-          'startDate'
-        );
-      },
-      ({ fn }) => {
-        return fn
-          .coalesce('schools.name', 'educations.otherSchool')
-          .$castTo<string>()
-          .as('school');
-      },
-    ])
-    .where('educations.deletedAt', 'is', null)
-    .orderBy('educations.startDate', 'desc')
-    .orderBy('educations.endDate', 'desc')
-    .execute();
-}
-
-async function getAllWorkHistories(trx: Transaction<DB>) {
-  return trx
-    .selectFrom('workExperiences')
-    .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
-    .select([
-      'companies.linkedinId',
-      'workExperiences.employmentType',
-      'workExperiences.id',
-      'workExperiences.locationCity',
-      'workExperiences.locationState',
-      'workExperiences.locationType',
-      'workExperiences.studentId',
-      'workExperiences.title',
-      ({ ref }) => {
-        return sql<string>`to_char(${ref('endDate')}, 'MM')`.as('endMonth');
-      },
-      ({ ref }) => {
-        return sql<string>`to_char(${ref('endDate')}, 'YYYY')`.as('endYear');
-      },
-      ({ ref }) => {
-        return sql<string>`to_char(${ref('startDate')}, 'MM')`.as('startMonth');
-      },
-      ({ ref }) => {
-        return sql<string>`to_char(${ref('startDate')}, 'YYYY')`.as(
-          'startYear'
-        );
-      },
-      ({ fn }) => {
-        return fn
-          .coalesce('companies.name', 'workExperiences.companyName')
-          .as('company');
-      },
-    ])
-    .where('workExperiences.deletedAt', 'is', null)
-    .orderBy('workExperiences.endDate', 'desc')
-    .orderBy('workExperiences.startDate', 'desc')
     .execute();
 }
 
 /**
- * Finds the most relevant location using the Google Places API. This function
- * uses the autocomplete endpoint to find a list of matched cities. We choose
- * the top match and then use the details endpoint to get the city, state and
- * coordinates.
+ * Converts a LinkedIn degree type to an Oyster degree type. This is a best
+ * effort conversion and may not be 100% accurate.
  *
- * @param location - Location name to search for.
- * @returns Promise resolving to the most relevant matching location, if found.
+ * @param degree - LinkedIn degree type.
+ * @returns Oyster degree type or `certificate` if the degree is not recognized.
  */
-async function getMostRelevantLocation(location: string | null) {
-  if (!location) {
-    return null;
+function getDegreeType(degree: string) {
+  const value = degree.toLowerCase();
+
+  if (value.includes('bachelor')) {
+    return 'bachelors';
   }
 
-  const cachedLocation = await cache.get<CityDetails>(`location:${location}`);
-
-  if (cachedLocation) {
-    return cachedLocation;
+  if (value.includes('master')) {
+    return 'masters';
   }
 
-  const cities = await getAutocompletedCities(location);
+  if (value.includes('doctor')) {
+    return 'doctoral';
+  }
 
-  if (cities?.length) {
-    const details = await getCityDetails(cities[0].id);
+  if (value.includes('associate')) {
+    return 'associate';
+  }
 
-    if (details && details.city && details.state) {
-      await cache.set(`location:${location}`, details, ONE_WEEK_IN_SECONDS * 4);
-
-      return details;
-    }
+  if (value.includes('certificate')) {
+    return 'certificate';
   }
 
   return null;
 }
 
-function getDegreeType(degree: string) {
-  if (degree.includes('Bachelor')) {
-    return 'bachelors';
-  }
-
-  if (degree.includes('Master')) {
-    return 'masters';
-  }
-
-  if (degree.includes('Doctor')) {
-    return 'doctoral';
-  }
-
-  if (degree.includes('Associate')) {
-    return 'associate';
-  }
-
-  return 'certificate';
-}
-
-function getFieldOfStudy(fieldOfStudy: string) {
+/**
+ * Converts a LinkedIn field of study to an Oyster major. This is a best
+ * effort conversion and may not be 100% accurate.
+ *
+ * @param fieldOfStudy - LinkedIn field of study.
+ * @returns Oyster major or `null` if the field of study is not recognized.
+ */
+function getFieldOfStudy(fieldOfStudy: string): Major | null {
   if (fieldOfStudy.includes('Computer Science')) {
     return 'computer_science';
   }
@@ -781,9 +584,365 @@ function getFieldOfStudy(fieldOfStudy: string) {
     return 'cybersecurity';
   }
 
-  return 'other';
+  return null;
 }
 
-function getLinkedInIdFromUrl(url: string) {
-  return new URL(url).pathname.split('/').filter(Boolean)[1];
+// CHECKPOINT
+
+type CheckWorkExperienceInput = {
+  experienceFromLinkedIn: LinkedInExperience;
+  experiences: Experience[];
+  memberId: string;
+  trx: Transaction<DB>;
+};
+
+async function checkWorkExperience({
+  experienceFromLinkedIn,
+  experiences,
+  memberId,
+  trx,
+}: CheckWorkExperienceInput) {
+  // We're going to ignore any work experiences that don't have a company ID
+  // or start date for now...this errs on the side of caution.
+  if (
+    !experienceFromLinkedIn.companyId ||
+    !experienceFromLinkedIn.startDate ||
+    !experienceFromLinkedIn.startDate.year
+  ) {
+    return;
+  }
+
+  const existingExperience = experiences.find((experience) => {
+    return doesExperienceMatch(experienceFromLinkedIn, experience);
+  });
+
+  if (existingExperience) {
+    return updateWorkExperience({
+      existingExperience,
+      experienceFromLinkedIn,
+      trx,
+    });
+  }
+
+  return createWorkExperience({
+    experienceFromLinkedIn,
+    memberId,
+    trx,
+  });
+}
+
+function doesExperienceMatch(
+  experienceFromLinkedIn: LinkedInExperience,
+  experience: Experience
+): boolean {
+  // We allow for close matches to happen here simply to reduce the amount of
+  // false positives (would rather update something than create a duplicate).
+  if (
+    experience.linkedinId !== experienceFromLinkedIn.companyId &&
+    !experience.company.includes(experienceFromLinkedIn.companyName) &&
+    !experienceFromLinkedIn.companyName.includes(experience.company)
+  ) {
+    return false;
+  }
+
+  // Now, we'll implement a "confidence" score to determine if the new
+  // experience is the same as the existing experience.
+
+  let score = 0;
+
+  // The position name is the most important factor so if it's an exact match
+  // then we'll give it a score of 2.
+  if (experienceFromLinkedIn.position === experience.title) {
+    score += 2;
+  }
+
+  if (
+    experienceFromLinkedIn.startDate?.year &&
+    experienceFromLinkedIn.startDate?.year === parseInt(experience.startYear)
+  ) {
+    score++;
+  }
+
+  if (
+    experienceFromLinkedIn.startDate?.month &&
+    MONTH_MAP[experienceFromLinkedIn.startDate.month] === experience.startMonth
+  ) {
+    score++;
+  }
+
+  if (
+    experience.endYear &&
+    experienceFromLinkedIn.endDate?.year &&
+    experienceFromLinkedIn.endDate?.year === parseInt(experience.endYear)
+  ) {
+    score++;
+  }
+
+  if (
+    experience.endMonth &&
+    experienceFromLinkedIn.endDate?.month &&
+    MONTH_MAP[experienceFromLinkedIn.endDate.month] === experience.endMonth
+  ) {
+    score++;
+  }
+
+  if (
+    !experience.endYear &&
+    !experience.endMonth &&
+    !experienceFromLinkedIn.endDate
+  ) {
+    score++;
+  }
+
+  return score >= 3;
+}
+
+const EMPLOYMENT_TYPE_MAP: Record<string, string> = {
+  Apprenticeship: EmploymentType.APPRENTICESHIP,
+  Contract: EmploymentType.CONTRACT,
+  Freelance: EmploymentType.FREELANCE,
+  'Full-time': EmploymentType.FULL_TIME,
+  Internship: EmploymentType.INTERNSHIP,
+  'Part-time': EmploymentType.PART_TIME,
+};
+
+const LOCATION_TYPE_MAP: Record<string, string> = {
+  Hybrid: LocationType.HYBRID,
+  'On-site': LocationType.IN_PERSON,
+  Remote: LocationType.REMOTE,
+};
+
+type CreateWorkExperienceInput = {
+  experienceFromLinkedIn: LinkedInExperience;
+  memberId: string;
+  trx: Transaction<DB>;
+};
+
+async function createWorkExperience({
+  experienceFromLinkedIn,
+  memberId,
+  trx,
+}: CreateWorkExperienceInput) {
+  const startDate = run(() => {
+    const startMonth = experienceFromLinkedIn.startDate?.month;
+    const startYear = experienceFromLinkedIn.startDate?.year;
+
+    if (startYear && startMonth) {
+      // The `startMonth` is formatted as an abbreviation of the month, so
+      // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
+      return `${startYear}-${MONTH_MAP[startMonth]}-01`;
+    }
+
+    return `${startYear}-01-01`;
+  });
+
+  const endDate = run(() => {
+    const endMonth = experienceFromLinkedIn.endDate?.month;
+    const endYear = experienceFromLinkedIn.endDate?.year;
+
+    if (endMonth && endYear) {
+      // The `endMonth` is formatted as an abbreviation of the month, so
+      // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
+      return `${endYear}-${MONTH_MAP[endMonth]}-01`;
+    } else if (endYear) {
+      // If there is no `endMonth`, we'll default to December since that's
+      // when most companies end their fiscal year.
+      return `${endYear}-12-01`;
+    }
+
+    return undefined;
+  });
+
+  const [companyId, location] = await Promise.all([
+    saveCompanyIfNecessary(trx, experienceFromLinkedIn.companyId),
+    getMostRelevantLocation(experienceFromLinkedIn.location),
+  ]);
+
+  await trx
+    .insertInto('workExperiences')
+    .values({
+      description: experienceFromLinkedIn.description,
+      endDate,
+      id: id(),
+      linkedinSyncedAt: new Date(),
+      startDate,
+      studentId: memberId,
+      title: experienceFromLinkedIn.position,
+
+      ...(companyId
+        ? { companyId }
+        : { companyName: experienceFromLinkedIn.companyName }),
+
+      ...(location && {
+        locationCity: location.city,
+        locationState: location.state,
+      }),
+
+      ...(experienceFromLinkedIn.employmentType && {
+        employmentType:
+          EMPLOYMENT_TYPE_MAP[experienceFromLinkedIn.employmentType],
+      }),
+
+      ...(experienceFromLinkedIn.workplaceType && {
+        locationType: LOCATION_TYPE_MAP[experienceFromLinkedIn.workplaceType],
+      }),
+    })
+    .execute();
+}
+
+type UpdateWorkExperienceInput = {
+  existingExperience: Experience;
+  experienceFromLinkedIn: LinkedInExperience;
+  trx: Transaction<DB>;
+};
+
+async function updateWorkExperience({
+  existingExperience,
+  experienceFromLinkedIn,
+  trx,
+}: UpdateWorkExperienceInput) {
+  const set: Updateable<DB['workExperiences']> = {
+    linkedinSyncedAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  if (existingExperience.linkedinId !== experienceFromLinkedIn.companyId) {
+    const companyId = await saveCompanyIfNecessary(
+      trx,
+      experienceFromLinkedIn.companyId
+    );
+
+    if (companyId) {
+      set.companyId = companyId;
+      set.companyName = null;
+    } else {
+      set.companyId = null;
+      set.companyName = experienceFromLinkedIn.companyName;
+    }
+  }
+
+  if (existingExperience.title !== experienceFromLinkedIn.position) {
+    set.title = experienceFromLinkedIn.position;
+  }
+
+  if (existingExperience.description !== experienceFromLinkedIn.description) {
+    set.description = experienceFromLinkedIn.description;
+  }
+
+  const employmentType =
+    EMPLOYMENT_TYPE_MAP[experienceFromLinkedIn.employmentType || ''];
+
+  if (employmentType && existingExperience.employmentType !== employmentType) {
+    set.employmentType = employmentType;
+  }
+
+  if (experienceFromLinkedIn.location) {
+    const location = await getMostRelevantLocation(
+      experienceFromLinkedIn.location
+    );
+
+    if (location) {
+      if (
+        existingExperience.locationCity !== location.city ||
+        existingExperience.locationState !== location.state
+      ) {
+        set.locationCity = location.city;
+        set.locationState = location.state;
+      }
+    }
+  }
+
+  const locationType =
+    LOCATION_TYPE_MAP[experienceFromLinkedIn.workplaceType || ''];
+
+  if (locationType && existingExperience.locationType !== locationType) {
+    set.locationType = locationType;
+  }
+
+  const startDate = run(() => {
+    const startMonth = experienceFromLinkedIn.startDate?.month;
+    const startYear = experienceFromLinkedIn.startDate?.year;
+
+    if (startYear && startMonth) {
+      // The `startMonth` is formatted as an abbreviation of the month, so
+      // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
+      return `${startYear}-${MONTH_MAP[startMonth]}-01`;
+    } else if (startYear) {
+      // If there is no `startMonth`, we'll default to January since that's
+      // when most companies start their fiscal year.
+      return `${startYear}-01-01`;
+    }
+
+    return undefined;
+  });
+
+  if (startDate && existingExperience.startDate !== startDate) {
+    set.startDate = startDate;
+  }
+
+  const endDate = run(() => {
+    const endMonth = experienceFromLinkedIn.endDate?.month;
+    const endYear = experienceFromLinkedIn.endDate?.year;
+
+    if (endMonth && endYear) {
+      // The `endMonth` is formatted as an abbreviation of the month, so
+      // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
+      return `${endYear}-${MONTH_MAP[endMonth]}-01`;
+    } else if (endYear) {
+      // If there is no `endMonth`, we'll default to December since that's
+      // when most companies end their fiscal year.
+      return `${endYear}-12-01`;
+    }
+
+    return undefined;
+  });
+
+  if (endDate && existingExperience.endDate !== endDate) {
+    set.endDate = endDate;
+  }
+
+  if (!Object.keys(set).length) {
+    return;
+  }
+
+  await trx
+    .updateTable('workExperiences')
+    .set(set)
+    .where('id', '=', existingExperience.id)
+    .execute();
+}
+
+/**
+ * Finds the most relevant location using the Google Places API. This function
+ * uses the autocomplete endpoint to find a list of matched cities. We choose
+ * the top match and then use the details endpoint to get the city, state and
+ * coordinates.
+ *
+ * @param location - Location name to search for.
+ * @returns Promise resolving to the most relevant matching location, if found.
+ */
+async function getMostRelevantLocation(location: string | null | undefined) {
+  if (!location) {
+    return null;
+  }
+
+  return withCache(
+    `${getMostRelevantLocation.name}:${location}`,
+    ONE_WEEK_IN_SECONDS * 4,
+    async function fn() {
+      const cities = await getAutocompletedCities(location);
+
+      if (!cities || !cities.length) {
+        return null;
+      }
+
+      const details = await getCityDetails(cities[0].id);
+
+      if (details && details.city && details.state) {
+        return details;
+      }
+
+      return null;
+    }
+  );
 }
