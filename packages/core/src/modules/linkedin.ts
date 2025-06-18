@@ -35,35 +35,84 @@ const LinkedInProfile = z.object({
       })
     ),
     experience: z.array(
-      z.object({
-        companyId: z.string().nullish(),
-        companyName: z.string(),
-        companyLinkedinUrl: z.string().url(),
-        description: z.string().nullish(),
-        employmentType: z
-          .enum([
-            'Apprenticeship',
-            'Contract',
-            'Freelance',
-            'Full-time',
-            'Internship',
-            'Part-time',
-            'Seasonal',
-            'Self-employed',
-            'Volunteer',
-          ])
-          .nullish(),
-        endDate: LinkedInDate.nullish(),
-        location: z.string().nullish(),
-        position: z.string(),
-        startDate: LinkedInDate.nullish(),
-        workplaceType: z.enum(['Hybrid', 'On-site', 'Remote']).nullish(),
-      })
+      z
+        .object({
+          companyId: z.string().nullish(),
+          companyName: z.string(),
+          companyLinkedinUrl: z.string().url(),
+          description: z.string().nullish(),
+          employmentType: z
+            .enum([
+              'Apprenticeship',
+              'Contract',
+              'Freelance',
+              'Full-time',
+              'Internship',
+              'Part-time',
+              'Seasonal',
+              'Self-employed',
+              'Volunteer',
+            ])
+            .nullish(),
+          endDate: LinkedInDate.nullish(),
+          location: z
+            .string()
+            .nullish()
+            .transform((value) => {
+              return value
+                ? value
+                    .replace('Metropolitan Area', '')
+                    .replace('Metropolitan Region', '')
+                    .replace('Area', '')
+                    .replace('Greater', '')
+                    .trim()
+                : null;
+            }),
+          position: z.string(),
+          startDate: LinkedInDate.nullish(),
+          workplaceType: z.string().nullish(),
+        })
+        .transform((experience) => {
+          // These are some weird bugs in the Apify scraper that we can
+          // work around by manually setting the location and workplace type.
+
+          if (experience.location === 'Remote') {
+            experience.location = null;
+            experience.workplaceType = 'Remote';
+          }
+
+          if (
+            experience.workplaceType &&
+            experience.workplaceType !== 'Hybrid' &&
+            experience.workplaceType !== 'Remote' &&
+            experience.workplaceType !== 'On-site'
+          ) {
+            if (!experience.location) {
+              experience.location = experience.workplaceType;
+            }
+
+            experience.workplaceType = null;
+          }
+
+          return experience;
+        })
     ),
     headline: z.string().nullish(),
     location: z.object({
       parsed: z.object({
-        text: z.string(),
+        text: z
+          .string()
+          .nullish()
+          .transform((value) => {
+            return value
+              ? value
+                  .replace('Metropolitan Area', '')
+                  .replace('Metropolitan Region', '')
+                  .replace('Area', '')
+                  .replace('Greater', '')
+                  .trim()
+              : null;
+          }),
       }),
     }),
     photo: z.string().url().nullish(),
@@ -663,15 +712,15 @@ async function checkEducation({
 function getDegreeType(degree: string) {
   const value = degree.toLowerCase();
 
-  if (value.includes('bachelor')) {
+  if (value.includes('bachelor') || degree.includes('BS')) {
     return 'bachelors';
   }
 
-  if (value.includes('master')) {
+  if (value.includes('master') || degree.includes('MS')) {
     return 'masters';
   }
 
-  if (value.includes('doctor')) {
+  if (value.includes('doctor') || degree.includes('PhD')) {
     return 'doctoral';
   }
 
