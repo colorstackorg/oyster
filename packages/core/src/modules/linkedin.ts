@@ -86,6 +86,16 @@ type LinkedInExperience = z.infer<typeof LinkedInProfile>['experience'][number];
  * following steps:
  * 1. Fetches all members, educations and experiences from the database.
  * 2. We store the results in memory (maps) for faster access.
+ * 3. We filter through the batch and see if there are any that we already
+ *    have in the cache. If so, we'll add them to the results array and remove
+ *    them from the batch so we don't have to scrape them again.
+ * 4. We scrape the profiles that we don't have in the cache.
+ * 5. We combine the cached profiles with the new profiles so that we can use
+ *    profiles to update the database.
+ * 6. We check for differences between the scraped profiles and the database
+ *    records and update the database accordingly.
+ * 7. We check for the most recent education and update the database if
+ *    necessary.
  *
  * @param memberIds - Optional array of member IDs to sync. If not provided,
  *   all members with a LinkedIn URL will be synced.
