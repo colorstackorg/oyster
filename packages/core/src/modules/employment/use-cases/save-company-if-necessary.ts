@@ -45,7 +45,7 @@ export async function saveCompanyIfNecessary(
 
   const [companyFromLinkedIn] = await withCache(
     `harvestapi~linkedin-company:${companyNameOrLinkedInId}`,
-    60 * 60 * 24,
+    60 * 60 * 24 * 30,
     async () => {
       return runActor({
         actorId: 'harvestapi~linkedin-company',
