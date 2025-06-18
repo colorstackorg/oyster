@@ -31,6 +31,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       'companies.domain',
       'companies.id',
       'companies.imageUrl',
+      'companies.linkedinId',
       'companies.name',
       'companies.leetcodeSlug',
       'companies.levelsFyiSlug',
@@ -86,12 +87,21 @@ export default function CompanyPage() {
 function LogoLinkGroup() {
   const { company } = useLoaderData<typeof loader>();
 
-  if (!company.leetcodeSlug && !company.levelsFyiSlug) {
+  if (!company.leetcodeSlug && !company.levelsFyiSlug && !company.linkedinId) {
     return null;
   }
 
   return (
     <ul className="mt-1 flex items-center gap-1">
+      {company.linkedinId && (
+        <LogoLink
+          href={`https://www.linkedin.com/company/${company.linkedinId}`}
+          imageAlt="LinkedIn Logo"
+          imageSrc="/images/linkedin.png"
+          tooltip="View Company on LinkedIn"
+        />
+      )}
+
       {company.levelsFyiSlug && (
         <LogoLink
           href={`https://www.levels.fyi/companies/${company.levelsFyiSlug}/salaries`}
