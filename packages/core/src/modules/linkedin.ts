@@ -466,7 +466,7 @@ async function checkMember({ member, profile, trx }: CheckMemberInput) {
       ...(!member.profilePicture && {
         profilePicture: profile.element.photo,
       }),
-      ...(!!updatedLocation?.postalCode && {
+      ...(!!updatedLocation?.city && {
         currentLocation: updatedLocation.formattedAddress,
         currentLocationCoordinates: point({
           x: updatedLocation.longitude,
@@ -928,7 +928,7 @@ async function createWorkExperience({
         ? { companyId }
         : { companyName: experienceFromLinkedIn.companyName }),
 
-      ...(!!location?.postalCode && {
+      ...(!!location?.city && {
         locationCity: location.city,
         locationCountry: location.country,
         locationState: location.state,
@@ -995,7 +995,7 @@ async function updateWorkExperience({
       '(regions)'
     );
 
-    if (location?.postalCode) {
+    if (location?.city) {
       if (
         existingExperience.locationCity !== location.city ||
         existingExperience.locationState !== location.state ||

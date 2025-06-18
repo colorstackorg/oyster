@@ -59,9 +59,9 @@ export async function saveSchoolIfNecessary(
               .array(
                 z.object({
                   city: z.string().optional(),
-                  geographicArea: z.string(),
+                  geographicArea: z.string().optional(),
                   line1: z.string().optional(),
-                  postalCode: z.string(),
+                  postalCode: z.string().optional(),
                 })
               )
               .min(1),
