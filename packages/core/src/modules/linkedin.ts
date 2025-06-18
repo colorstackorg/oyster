@@ -13,8 +13,8 @@ import { runActor } from '@/modules/apify';
 import { checkMostRecentEducation } from '@/modules/education/use-cases/check-most-recent-education';
 import { saveSchoolIfNecessary } from '@/modules/education/use-cases/save-school-if-necessary';
 import {
-  EmploymentType,
-  LocationType,
+  type EmploymentType,
+  type LocationType,
 } from '@/modules/employment/employment.types';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { getMostRelevantLocation } from '@/modules/location/location';
@@ -543,10 +543,12 @@ async function checkEducation({
     );
   });
 
-  const startDate = run(() => {
-    const startMonth = educationFromLinkedIn.startDate!.month;
-    const startYear = educationFromLinkedIn.startDate!.year;
+  const startMonth = educationFromLinkedIn.startDate.month;
+  const startYear = educationFromLinkedIn.startDate.year;
+  const endMonth = educationFromLinkedIn.endDate.month;
+  const endYear = educationFromLinkedIn.endDate.year;
 
+  const startDate = run(() => {
     if (startYear && startMonth) {
       // The `startMonth` is formatted as an abbreviation of the month, so
       // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
@@ -561,9 +563,6 @@ async function checkEducation({
   });
 
   const endDate = run(() => {
-    const endMonth = educationFromLinkedIn.endDate!.month;
-    const endYear = educationFromLinkedIn.endDate!.year;
-
     if (endMonth && endYear) {
       // The `endMonth` is formatted as an abbreviation of the month, so
       // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
@@ -682,38 +681,39 @@ function getDegreeType(degree: string) {
  * @returns Oyster major or `null` if the field of study is not recognized.
  */
 function getFieldOfStudy(fieldOfStudy: string): Major | null {
-  if (fieldOfStudy.includes('Computer Science')) {
+  const value = fieldOfStudy.toLowerCase();
+
+  if (value.includes('computer science')) {
     return 'computer_science';
   }
 
   if (
-    fieldOfStudy.includes('Computer Engineering') ||
-    fieldOfStudy.includes('Electrical Engineering')
+    value.includes('computer engineering') ||
+    value.includes('electrical engineering')
   ) {
     return 'electrical_or_computer_engineering';
   }
 
-  if (
-    fieldOfStudy.includes('Data Science') ||
-    fieldOfStudy.includes('Data Analytics')
-  ) {
+  if (value.includes('data science') || value.includes('data analytics')) {
     return 'data_science';
   }
 
-  if (fieldOfStudy.includes('Information Science')) {
+  if (value.includes('information science')) {
     return 'information_science';
   }
 
-  if (fieldOfStudy.includes('Software Engineering')) {
+  if (value.includes('software engineering')) {
     return 'software_engineering';
   }
 
-  if (fieldOfStudy.includes('Cybersecurity')) {
+  if (value.includes('cybersecurity')) {
     return 'cybersecurity';
   }
 
   return null;
 }
+
+// Work Experience
 
 type CheckWorkExperienceInput = {
   experienceFromLinkedIn: LinkedInExperience;
@@ -833,19 +833,19 @@ function doesExperienceMatch(
   return score >= 3;
 }
 
-const EMPLOYMENT_TYPE_MAP: Record<string, string> = {
-  Apprenticeship: EmploymentType.APPRENTICESHIP,
-  Contract: EmploymentType.CONTRACT,
-  Freelance: EmploymentType.FREELANCE,
-  'Full-time': EmploymentType.FULL_TIME,
-  Internship: EmploymentType.INTERNSHIP,
-  'Part-time': EmploymentType.PART_TIME,
+const EMPLOYMENT_TYPE_MAP: Record<string, EmploymentType> = {
+  Apprenticeship: 'apprenticeship',
+  Contract: 'contract',
+  Freelance: 'freelance',
+  'Full-time': 'full_time',
+  Internship: 'internship',
+  'Part-time': 'part_time',
 };
 
-const LOCATION_TYPE_MAP: Record<string, string> = {
-  Hybrid: LocationType.HYBRID,
-  'On-site': LocationType.IN_PERSON,
-  Remote: LocationType.REMOTE,
+const LOCATION_TYPE_MAP: Record<string, LocationType> = {
+  Hybrid: 'hybrid',
+  'On-site': 'in_person',
+  Remote: 'remote',
 };
 
 type CreateWorkExperienceInput = {
@@ -897,6 +897,7 @@ async function createWorkExperience({
   return trx
     .insertInto('workExperiences')
     .values({
+      createdAt: new Date(),
       description: experienceFromLinkedIn.description,
       endDate,
       id: id(),
@@ -904,6 +905,7 @@ async function createWorkExperience({
       startDate,
       studentId: memberId,
       title: experienceFromLinkedIn.position,
+      updatedAt: new Date(),
 
       ...(companyId
         ? { companyId }
