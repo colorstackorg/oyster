@@ -25,7 +25,7 @@ export function EducationExperienceItem({
 }: EducationExperienceItemProps) {
   return (
     <Experience>
-      <div className="flex gap-4">
+      <div className="flex gap-3">
         {education.logoUrl ? (
           <img
             alt={education.school!}
@@ -39,23 +39,23 @@ export function EducationExperienceItem({
         )}
 
         <div>
-          <div className="flex gap-4">
-            <div>
-              <Text className="inline" variant="lg" weight="500">
-                {education.school}
-              </Text>
+          <Text weight="500">{education.school}</Text>
 
-              {education.location && (
-                <Text className="inline">, {education.location}</Text>
-              )}
-            </div>
-          </div>
-
-          <Text color="gray-500">
+          <Text variant="sm">
             {education.degreeType}, {education.major}
           </Text>
 
-          {!!education.date && <Text color="gray-500">{education.date}</Text>}
+          {!!education.date && (
+            <Text color="gray-500" variant="sm">
+              {education.date}
+            </Text>
+          )}
+
+          {education.location && (
+            <Text color="gray-500" variant="sm">
+              {education.location}
+            </Text>
+          )}
         </div>
 
         {!!editable && (

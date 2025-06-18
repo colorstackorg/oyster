@@ -15,9 +15,13 @@ export async function listWorkExperiences(
     .selectFrom('workExperiences')
     .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
     .select([
+      'workExperiences.companyId',
+      'workExperiences.description',
+      'workExperiences.employmentType',
       'workExperiences.endDate',
       'workExperiences.id',
       'workExperiences.locationCity',
+      'workExperiences.locationCountry',
       'workExperiences.locationState',
       'workExperiences.locationType',
       'workExperiences.startDate',
@@ -61,8 +65,69 @@ export async function listWorkExperiences(
     return {
       ...row,
       date: `${startMonth} - ${endMonth}`,
+      duration: getDuration(startDate, endDate),
     };
   });
 
   return experiences;
+}
+
+/**
+ * Formats a duration between two dates into a human readable string.
+ *
+ * The format follows these rules:
+ * - For durations < 1 year: Shows only months (e.g. "3 mos")
+ * - For durations = 1 year: Shows only year (e.g. "1 yr")
+ * - For durations > 1 year with months: Shows both (e.g. "2 yrs, 3 mos")
+ *
+ * Abbreviations used:
+ * - Single month/year: "mo"/"yr"
+ * - Multiple months/years: "mos"/"yrs"
+ *
+ * @param startDate - Date object
+ * @param endDate - Date object
+ * @returns Formatted duration string
+ *
+ * @example
+ * // Returns "1 mo"
+ * getDuration("2023-01-01", "2023-02-01")
+ *
+ * // Returns "3 mos"
+ * getDuration("2023-01-01", "2023-04-01")
+ *
+ * // Returns "1 yr"
+ * getDuration("2023-01-01", "2024-01-01")
+ *
+ * // Returns "2 yrs"
+ * getDuration("2023-01-01", "2025-01-01")
+ *
+ * // Returns "1 yr, 3 mos"
+ * getDuration("2023-01-01", "2024-04-01")
+ *
+ * // Returns "2 yrs, 1 mo"
+ * getDuration("2023-01-01", "2025-02-01")
+ */
+function getDuration(startDate: Date, endDate?: Date | null) {
+  endDate ||= new Date();
+
+  const diff = dayjs(endDate).diff(dayjs(startDate), 'month') + 1;
+
+  const years = Math.floor(diff / 12);
+  const months = diff % 12;
+
+  const monthLabel = months >= 2 ? 'mos' : 'mo';
+  const yearLabel = years >= 2 ? 'yrs' : 'yr';
+
+  const monthText = `${months} ${monthLabel}`;
+  const yearText = `${years} ${yearLabel}`;
+
+  if (years === 0) {
+    return monthText;
+  }
+
+  if (months === 0) {
+    return yearText;
+  }
+
+  return `${yearText}, ${monthText}`;
 }

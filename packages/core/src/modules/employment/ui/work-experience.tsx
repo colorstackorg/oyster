@@ -1,5 +1,6 @@
 import { Link } from '@remix-run/react';
 import { Check, Edit, MoreVertical, Plus } from 'react-feather';
+import { match } from 'ts-pattern';
 
 import { Dropdown, IconButton, Text } from '@oyster/ui';
 import {
@@ -18,11 +19,16 @@ type WorkExperienceMenuProps = {
 
 type WorkExperienceItemProps = {
   experience: {
+    companyId: string | null;
     companyImageUrl: string | null;
     companyName: string | null;
     date: string;
+    description: string | null;
+    duration: string;
+    employmentType: string | null;
     id: string;
     locationCity: string | null;
+    locationCountry: string | null;
     locationState: string | null;
     locationType: string | null;
     title: string;
@@ -36,9 +42,34 @@ export function WorkExperienceItem({
   experience,
   ...rest
 }: WorkExperienceItemProps) {
+  const employmentType = match(experience.employmentType)
+    .with('full_time', () => 'Full-time')
+    .with('part_time', () => 'Part-time')
+    .otherwise((value) => {
+      return value ? toTitleCase(value) : null;
+    });
+
+  const locationElements: string[] = [];
+
+  if (experience.locationCity && experience.locationState) {
+    locationElements.push(
+      experience.locationCountry && experience.locationCountry !== 'US'
+        ? `${experience.locationCity}, ${experience.locationState}, ${experience.locationCountry}`
+        : `${experience.locationCity}, ${experience.locationState}`
+    );
+  }
+
+  if (experience.locationType) {
+    locationElements.push(
+      match(experience.locationType)
+        .with('in_person', () => 'On-site')
+        .otherwise(() => toTitleCase(experience.locationType!))
+    );
+  }
+
   return (
     <li className="flex flex-col gap-1 border-b border-b-gray-200 py-4 last:border-none">
-      <div className="flex gap-4">
+      <div className="flex gap-3">
         {experience.companyImageUrl ? (
           <img
             alt={experience.companyName!}
@@ -51,9 +82,7 @@ export function WorkExperienceItem({
 
         <div>
           <div className="flex items-center gap-1">
-            <Text variant="lg" weight="500">
-              {experience.title}
-            </Text>
+            <Text weight="500">{experience.title}</Text>
 
             {!!rest.showOptions && (
               <Tooltip>
@@ -87,17 +116,41 @@ export function WorkExperienceItem({
             )}
           </div>
 
-          <Text>{experience.companyName}</Text>
-          <Text color="gray-500">{experience.date}</Text>
+          <Text variant="sm">
+            {experience.companyId ? (
+              <Link
+                className="hover:text-primary hover:underline"
+                target="_blank"
+                to={`/companies/${experience.companyId}`}
+              >
+                {experience.companyName}
+              </Link>
+            ) : (
+              experience.companyName
+            )}
+            {employmentType && ` • ${employmentType}`}
+          </Text>
 
-          {experience.locationCity && experience.locationState && (
-            <Text color="gray-500">
-              {experience.locationCity}, {experience.locationState}
-              {experience.locationType &&
-                experience.locationType !== 'in_person' && (
-                  <span> &bull; {toTitleCase(experience.locationType)}</span>
-                )}
+          <Text color="gray-500" variant="sm">
+            {experience.date} • {experience.duration}
+          </Text>
+
+          {!!locationElements.length && (
+            <Text color="gray-500" variant="sm">
+              {locationElements.join(' • ')}
             </Text>
+          )}
+
+          {experience.description && (
+            <div className="mt-4">
+              <Text
+                className="whitespace-pre-wrap"
+                color="gray-500"
+                variant="sm"
+              >
+                {experience.description}
+              </Text>
+            </div>
           )}
         </div>
 
