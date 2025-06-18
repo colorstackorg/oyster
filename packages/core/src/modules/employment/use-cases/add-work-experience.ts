@@ -40,6 +40,7 @@ export async function addWorkExperience({
         id: workExperienceId,
         locationCity,
         locationState,
+        ...(locationState && { locationCountry: 'US' }),
         locationType,
         startDate,
         studentId,

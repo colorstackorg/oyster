@@ -355,6 +355,7 @@ async function getAllExperiences(trx: Transaction<DB>, memberIds?: string[]) {
       'workExperiences.employmentType',
       'workExperiences.id',
       'workExperiences.locationCity',
+      'workExperiences.locationCountry',
       'workExperiences.locationState',
       'workExperiences.locationType',
       'workExperiences.studentId',
@@ -872,13 +873,11 @@ async function createWorkExperience({
         ? { companyId }
         : { companyName: experienceFromLinkedIn.companyName }),
 
-      ...(location &&
-        location.city &&
-        location.state && {
-          locationCity: location.city,
-          locationState: location.state,
-          // TODO: Add country?
-        }),
+      ...(!!location?.postalCode && {
+        locationCity: location.city,
+        locationCountry: location.country,
+        locationState: location.state,
+      }),
 
       ...(experienceFromLinkedIn.employmentType && {
         employmentType:
@@ -944,13 +943,15 @@ async function updateWorkExperience({
       '(regions)'
     );
 
-    if (location) {
+    if (location?.postalCode) {
       if (
         existingExperience.locationCity !== location.city ||
-        existingExperience.locationState !== location.state
+        existingExperience.locationState !== location.state ||
+        existingExperience.locationCountry !== location.country
       ) {
         set.locationCity = location.city;
         set.locationState = location.state;
+        set.locationCountry = location.country;
       }
     }
   }

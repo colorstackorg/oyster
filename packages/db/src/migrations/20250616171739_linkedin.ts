@@ -10,6 +10,7 @@ export async function up(db: Kysely<any>) {
     .alterTable('work_experiences')
     .addColumn('description', 'text')
     .addColumn('linkedin_synced_at', 'timestamptz')
+    .addColumn('location_country', 'text')
     .alterColumn('employment_type', (column) => {
       return column.dropNotNull();
     })
@@ -38,6 +39,7 @@ export async function down(db: Kysely<any>) {
     .alterTable('work_experiences')
     .dropColumn('description')
     .dropColumn('linkedin_synced_at')
+    .dropColumn('location_country')
     .alterColumn('employment_type', (column) => {
       return column.setNotNull();
     })
