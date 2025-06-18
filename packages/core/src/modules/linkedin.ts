@@ -22,22 +22,48 @@ import { IS_DEVELOPMENT } from '@/shared/env';
 
 const LinkedInDate = z.object({
   month: z.string().nullish(), // Formatted as a 3-letter abbreviation.
-  year: z.number(),
+  year: z.number().nullish(),
 });
 
 const LinkedInProfile = z.object({
-  education: z.array(
-    z.object({
-      degree: z.string().nullish(),
-      endDate: LinkedInDate.nullish(),
-      fieldOfStudy: z.string().nullish(),
-      schoolName: z.string(),
-      schoolLinkedinUrl: z.string().url(),
-      startDate: LinkedInDate.nullish(),
-    })
-  ),
   element: z.object({
-    headline: z.string(),
+    education: z.array(
+      z.object({
+        degree: z.string().nullish(),
+        endDate: LinkedInDate.nullish(),
+        fieldOfStudy: z.string().nullish(),
+        schoolName: z.string(),
+        schoolLinkedinUrl: z.string().url(),
+        startDate: LinkedInDate.nullish(),
+      })
+    ),
+    experience: z.array(
+      z.object({
+        companyId: z.string().nullish(),
+        companyName: z.string(),
+        companyLinkedinUrl: z.string().url(),
+        description: z.string().nullish(),
+        employmentType: z
+          .enum([
+            'Apprenticeship',
+            'Contract',
+            'Freelance',
+            'Full-time',
+            'Internship',
+            'Part-time',
+            'Seasonal',
+            'Self-employed',
+            'Volunteer',
+          ])
+          .nullish(),
+        endDate: LinkedInDate.nullish(),
+        location: z.string().nullish(),
+        position: z.string(),
+        startDate: LinkedInDate.nullish(),
+        workplaceType: z.enum(['Hybrid', 'On-site', 'Remote']).nullish(),
+      })
+    ),
+    headline: z.string().nullish(),
     location: z.object({
       parsed: z.object({
         text: z.string(),
@@ -45,40 +71,20 @@ const LinkedInProfile = z.object({
     }),
     photo: z.string().url().nullish(),
   }),
-  experience: z.array(
-    z.object({
-      companyId: z.string().nullish(),
-      companyName: z.string(),
-      companyLinkedinUrl: z.string().url(),
-      description: z.string().nullish(),
-      employmentType: z
-        .enum([
-          'Apprenticeship',
-          'Contract',
-          'Freelance',
-          'Full-time',
-          'Internship',
-          'Part-time',
-          'Seasonal',
-          'Self-employed',
-          'Volunteer',
-        ])
-        .nullish(),
-      endDate: LinkedInDate.nullish(),
-      location: z.string().nullish(),
-      position: z.string(),
-      startDate: LinkedInDate.nullish(),
-      workplaceType: z.enum(['Hybrid', 'On-site', 'Remote']).nullish(),
-    })
-  ),
   originalQuery: z.object({
-    query: z.string(),
+    url: z.string(),
   }),
 });
 
 type LinkedInProfile = z.infer<typeof LinkedInProfile>;
-type LinkedInEducation = z.infer<typeof LinkedInProfile>['education'][number];
-type LinkedInExperience = z.infer<typeof LinkedInProfile>['experience'][number];
+
+type LinkedInEducation = z.infer<
+  typeof LinkedInProfile
+>['element']['education'][number];
+
+type LinkedInExperience = z.infer<
+  typeof LinkedInProfile
+>['element']['experience'][number];
 
 /**
  * Syncs a members' LinkedIn profiles (work, education, etc.) with their
@@ -126,22 +132,16 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
 
   members.forEach((member) => {
     memberMap[member.id] = member;
+    educationMap[member.id] = [];
+    experienceMap[member.id] = [];
   });
 
   educations.forEach((education) => {
-    if (educationMap[education.studentId]) {
-      educationMap[education.studentId].push(education);
-    } else {
-      educationMap[education.studentId] = [education];
-    }
+    educationMap[education.studentId].push(education);
   });
 
   experiences.forEach((experience) => {
-    if (experienceMap[experience.studentId]) {
-      experienceMap[experience.studentId].push(experience);
-    } else {
-      experienceMap[experience.studentId] = [experience];
-    }
+    experienceMap[experience.studentId].push(experience);
   });
 
   const batches = splitArray(members, 100);
@@ -193,13 +193,13 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
 
     // We need to combine the cached profiles with the new profiles so that
     // we can use profiles to update the database.
-    scrapedProfiles.concat(newProfiles);
+    scrapedProfiles.push(...newProfiles);
 
     // We want to still keep track of the profiles that failed the scraping
     // process so that we can probe manually after.
     const failedProfiles = profilesToScrape.filter((url) => {
       return !newProfiles.some((newProfile) => {
-        return newProfile.originalQuery.query === url;
+        return newProfile.originalQuery.url === url;
       });
     });
 
@@ -231,7 +231,7 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
 
     await Promise.all(
       scrapedProfiles.map(async (profile) => {
-        const url = new URL(profile.originalQuery.query);
+        const url = new URL(profile.originalQuery.url);
 
         const memberId = url.searchParams.get('id') as string;
 
@@ -256,7 +256,7 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
           await Promise.all([
             checkMember({ member, profile, trx }),
 
-            ...profile.education.map(async (educationFromLinkedIn) => {
+            ...profile.element.education.map(async (educationFromLinkedIn) => {
               const result = await checkEducation({
                 educationFromLinkedIn,
                 educations,
@@ -273,22 +273,24 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
               }
             }),
 
-            ...profile.experience.map(async (experienceFromLinkedIn) => {
-              const result = await checkWorkExperience({
-                experienceFromLinkedIn,
-                experiences,
-                memberId: member.id,
-                trx,
-              });
+            ...profile.element.experience.map(
+              async (experienceFromLinkedIn) => {
+                const result = await checkWorkExperience({
+                  experienceFromLinkedIn,
+                  experiences,
+                  memberId: member.id,
+                  trx,
+                });
 
-              if (result) {
-                if ('numUpdatedRows' in result) {
-                  experienceUpdates += 1;
-                } else {
-                  experienceCreates += 1;
+                if (result) {
+                  if ('numUpdatedRows' in result) {
+                    experienceUpdates += 1;
+                  } else {
+                    experienceCreates += 1;
+                  }
                 }
               }
-            }),
+            ),
           ]);
         });
 

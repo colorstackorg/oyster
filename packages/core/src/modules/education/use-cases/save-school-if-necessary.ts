@@ -1,9 +1,10 @@
 import { type Transaction } from 'kysely';
 import { z } from 'zod';
 
-import { type DB, db, point } from '@oyster/db';
+import { type DB, point } from '@oyster/db';
 import { id } from '@oyster/utils';
 
+import { withCache } from '@/infrastructure/redis';
 import { reportException } from '@/member-profile.server';
 import { runActor } from '@/modules/apify';
 import { getMostRelevantLocation } from '@/modules/location/location';
@@ -29,13 +30,13 @@ export async function saveSchoolIfNecessary(
     return null;
   }
 
-  const existingSchool = await db
+  const existingSchool = await trx
     .selectFrom('schools')
     .select('id')
     .where((eb) => {
       return eb.or([
-        eb('name', 'ilike', schoolNameOrLinkedInId),
         eb('linkedinId', '=', schoolNameOrLinkedInId),
+        eb('name', 'ilike', schoolNameOrLinkedInId),
       ]);
     })
     .executeTakeFirst();
@@ -44,27 +45,33 @@ export async function saveSchoolIfNecessary(
     return existingSchool.id;
   }
 
-  const [schoolFromLinkedIn] = await runActor({
-    actorId: 'harvestapi~linkedin-company',
-    body: { companies: [schoolNameOrLinkedInId] },
-    schema: z.array(
-      z.object({
-        id: z.string(),
-        locations: z
-          .array(
-            z.object({
-              city: z.string().optional(),
-              geographicArea: z.string(),
-              line1: z.string().optional(),
-              postalCode: z.string(),
-            })
-          )
-          .min(1),
-        logo: z.string().url(),
-        name: z.string(),
-      })
-    ),
-  });
+  const [schoolFromLinkedIn] = await withCache(
+    `harvestapi~linkedin-company:${schoolNameOrLinkedInId}`,
+    60 * 60 * 24,
+    async () => {
+      return runActor({
+        actorId: 'harvestapi~linkedin-company',
+        body: { companies: [schoolNameOrLinkedInId] },
+        schema: z.array(
+          z.object({
+            id: z.string(),
+            locations: z
+              .array(
+                z.object({
+                  city: z.string().optional(),
+                  geographicArea: z.string(),
+                  line1: z.string().optional(),
+                  postalCode: z.string(),
+                })
+              )
+              .min(1),
+            logo: z.string().url(),
+            name: z.string(),
+          })
+        ),
+      });
+    }
+  );
 
   if (!schoolFromLinkedIn) {
     return null;
@@ -102,9 +109,7 @@ export async function saveSchoolIfNecessary(
     return null;
   }
 
-  const schoolId = id();
-
-  await trx
+  const { id: schoolId } = await trx
     .insertInto('schools')
     .values({
       addressCity: location.city,
@@ -113,11 +118,12 @@ export async function saveSchoolIfNecessary(
       addressZip: location.postalCode,
       coordinates: point({ x: location.longitude, y: location.latitude }),
       logoUrl: schoolFromLinkedIn.logo,
-      id: schoolId,
+      id: id(),
       linkedinId: schoolFromLinkedIn.id,
       name: schoolFromLinkedIn.name,
     })
-    .execute();
+    .returning('id')
+    .executeTakeFirstOrThrow();
 
   return schoolId;
 }

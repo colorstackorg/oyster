@@ -1,9 +1,10 @@
 import { type Transaction } from 'kysely';
 import { z } from 'zod';
 
-import { type DB, db } from '@oyster/db';
+import { type DB } from '@oyster/db';
 import { id } from '@oyster/utils';
 
+import { withCache } from '@/infrastructure/redis';
 import { runActor } from '@/modules/apify';
 
 /**
@@ -27,13 +28,13 @@ export async function saveCompanyIfNecessary(
     return null;
   }
 
-  const existingCompany = await db
+  const existingCompany = await trx
     .selectFrom('companies')
     .select('id')
     .where((eb) => {
       return eb.or([
-        eb('name', 'ilike', companyNameOrLinkedInId),
         eb('linkedinId', '=', companyNameOrLinkedInId),
+        eb('name', 'ilike', companyNameOrLinkedInId),
       ]);
     })
     .executeTakeFirst();
@@ -42,20 +43,26 @@ export async function saveCompanyIfNecessary(
     return existingCompany.id;
   }
 
-  const [companyFromLinkedIn] = await runActor({
-    actorId: 'harvestapi~linkedin-company',
-    body: { companies: [companyNameOrLinkedInId] },
-    schema: z.array(
-      z.object({
-        description: z.string(),
-        id: z.string(),
-        logo: z.string().url(),
-        name: z.string(),
-        universalName: z.string(),
-        website: z.string().url().nullish(),
-      })
-    ),
-  });
+  const [companyFromLinkedIn] = await withCache(
+    `harvestapi~linkedin-company:${companyNameOrLinkedInId}`,
+    60 * 60 * 24,
+    async () => {
+      return runActor({
+        actorId: 'harvestapi~linkedin-company',
+        body: { companies: [companyNameOrLinkedInId] },
+        schema: z.array(
+          z.object({
+            description: z.string(),
+            id: z.string(),
+            logo: z.string().url().optional(),
+            name: z.string(),
+            universalName: z.string(),
+            website: z.string().url().nullish(),
+          })
+        ),
+      });
+    }
+  );
 
   if (!companyFromLinkedIn) {
     return null;
@@ -69,14 +76,12 @@ export async function saveCompanyIfNecessary(
     domain = getDomainFromHostname(hostname);
   }
 
-  const companyId = id();
-
-  await trx
+  const { id: companyId } = await trx
     .insertInto('companies')
     .values({
       description: companyFromLinkedIn.description,
       domain,
-      id: companyId,
+      id: id(),
       imageUrl: companyFromLinkedIn.logo, // TODO: Should really copy into our bucket.
       linkedinId: companyFromLinkedIn.id,
       linkedinSlug: companyFromLinkedIn.universalName,
@@ -87,11 +92,13 @@ export async function saveCompanyIfNecessary(
         return {
           description: eb.ref('excluded.description'),
           domain: eb.ref('excluded.domain'),
+          imageUrl: eb.ref('excluded.imageUrl'),
           name: eb.ref('excluded.name'),
         };
       });
     })
-    .execute();
+    .returning('id')
+    .executeTakeFirstOrThrow();
 
   return companyId;
 }
