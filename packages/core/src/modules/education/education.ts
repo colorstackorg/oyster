@@ -184,6 +184,7 @@ export async function createSchool({
       .insertInto('schools')
       .values({
         addressCity,
+        addressCountry: 'US',
         addressState,
         addressZip,
         id: id(),

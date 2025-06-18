@@ -93,6 +93,7 @@ async function seed(trx: Transaction<DB>) {
       {
         addressCity: 'Pittsburgh',
         addressState: 'PA',
+        addressCountry: 'US',
         addressZip: '15213',
         id: schoolId1,
         name: 'Carnegie Mellon University',
@@ -100,6 +101,7 @@ async function seed(trx: Transaction<DB>) {
       {
         addressCity: 'Ithaca',
         addressState: 'NY',
+        addressCountry: 'US',
         addressZip: '14850',
         id: schoolId2,
         name: 'Cornell University',
@@ -107,6 +109,7 @@ async function seed(trx: Transaction<DB>) {
       {
         addressCity: 'Austin',
         addressState: 'TX',
+        addressCountry: 'US',
         addressZip: '78712',
         id: schoolId3,
         name: 'University of Texas at Austin',
@@ -114,6 +117,7 @@ async function seed(trx: Transaction<DB>) {
       {
         addressCity: 'Washington',
         addressState: 'D.C.',
+        addressCountry: 'US',
         addressZip: '20059',
         id: id(),
         name: 'Howard University',
@@ -121,6 +125,7 @@ async function seed(trx: Transaction<DB>) {
       {
         addressCity: 'Kennesaw',
         addressState: 'GA',
+        addressCountry: 'US',
         addressZip: '30144',
         id: id(),
         name: 'Kennesaw State University',
@@ -128,6 +133,7 @@ async function seed(trx: Transaction<DB>) {
       {
         addressCity: 'Berkeley',
         addressState: 'CA',
+        addressCountry: 'US',
         addressZip: '94720',
         id: id(),
         name: 'University of California, Berkeley',
