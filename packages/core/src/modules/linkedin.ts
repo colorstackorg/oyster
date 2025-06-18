@@ -1,6 +1,4 @@
-import fs from 'fs';
 import { sql, type Transaction, type Updateable } from 'kysely';
-import path from 'path';
 import { z } from 'zod';
 
 import { type DB, db, point } from '@oyster/db';
@@ -18,7 +16,6 @@ import {
 } from '@/modules/employment/employment.types';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { getMostRelevantLocation } from '@/modules/location/location';
-import { IS_DEVELOPMENT } from '@/shared/env';
 
 const LinkedInDate = z.object({
   month: z.string().nullish(), // Formatted as a 3-letter abbreviation.
@@ -117,9 +114,9 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
       ]);
     });
 
-  log(`Fetched ${members.length} members.`);
-  log(`Fetched ${educations.length} educations.`);
-  log(`Fetched ${experiences.length} experiences.`);
+  console.log(`Fetched ${members.length} members.`);
+  console.log(`Fetched ${educations.length} educations.`);
+  console.log(`Fetched ${experiences.length} experiences.`);
 
   // In order to fetch all the database records the most efficiently, we
   // need to group them by member ID in memory after the database query. The
@@ -146,10 +143,12 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
 
   const batches = splitArray(members, 100);
 
-  log(`Splitting ${members.length} members into ${batches.length} batches.`);
+  console.log(
+    `Splitting ${members.length} members into ${batches.length} batches.`
+  );
 
   for (let i = 0; i < batches.length; i++) {
-    log(`Processing batch ${i + 1} of ${batches.length}.`);
+    console.log(`Processing batch ${i + 1} of ${batches.length}.`);
 
     const profilesToScrape: string[] = [];
     const scrapedProfiles: LinkedInProfile[] = [];
@@ -178,8 +177,8 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
       })
     );
 
-    log(`Found ${scrapedProfiles.length} cached profiles.`);
-    log(`Scraping ${profilesToScrape.length} profiles.`);
+    console.log(`Found ${scrapedProfiles.length} cached profiles.`);
+    console.log(`Scraping ${profilesToScrape.length} profiles.`);
 
     // This is the most expensive part of the process and what actually is
     // doing the scraping.
@@ -189,7 +188,9 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
       schema: z.array(LinkedInProfile),
     });
 
-    log(`Scraped ${newProfiles.length}/${profilesToScrape.length} profiles.`);
+    console.log(
+      `Scraped ${newProfiles.length}/${profilesToScrape.length} profiles.`
+    );
 
     // We need to combine the cached profiles with the new profiles so that
     // we can use profiles to update the database.
@@ -203,12 +204,12 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
       });
     });
 
-    log(
+    console.log(
       `Failed to scrape ${failedProfiles.length}/${profilesToScrape.length} profiles.`
     );
 
     failedProfiles.forEach((url) => {
-      log(`Failed to scrape ${url}.`);
+      console.log(`Failed to scrape ${url}.`);
     });
 
     const failedMemberIds = failedProfiles.map((failedProfile) => {
@@ -224,7 +225,7 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
         .where('id', 'in', failedMemberIds)
         .execute();
 
-      log(
+      console.log(
         `Updated ${failedMemberIds.length} members to indicate that they have not been synced.`
       );
     }
@@ -309,8 +310,8 @@ export async function syncLinkedInProfiles(memberIds?: string[]) {
           user: member.id,
         });
 
-        log(
-          `Synced ${member.id} with ${educationCreates + educationUpdates + experienceCreates + experienceUpdates} updates.`
+        console.log(
+          `Synced member ${member.id} with ${educationCreates + educationUpdates + experienceCreates + experienceUpdates} updates.`
         );
       })
     );
@@ -589,10 +590,7 @@ async function checkEducation({
   });
 
   if (existingEducation) {
-    const set: Updateable<DB['educations']> = {
-      linkedinSyncedAt: new Date(),
-      updatedAt: new Date(),
-    };
+    const set: Updateable<DB['educations']> = {};
 
     if (existingEducation.linkedinId !== linkedinId) {
       const schoolId = await saveSchoolIfNecessary(trx, linkedinId);
@@ -617,6 +615,9 @@ async function checkEducation({
     if (!Object.keys(set).length) {
       return;
     }
+
+    set.linkedinSyncedAt = new Date();
+    set.updatedAt = new Date();
 
     return trx
       .updateTable('educations')
@@ -956,10 +957,7 @@ async function updateWorkExperience({
   experienceFromLinkedIn,
   trx,
 }: UpdateWorkExperienceInput) {
-  const set: Updateable<DB['workExperiences']> = {
-    linkedinSyncedAt: new Date(),
-    updatedAt: new Date(),
-  };
+  const set: Updateable<DB['workExperiences']> = {};
 
   if (existingExperience.linkedinId !== experienceFromLinkedIn.companyId) {
     const companyId = await saveCompanyIfNecessary(
@@ -1063,21 +1061,12 @@ async function updateWorkExperience({
     return;
   }
 
+  set.linkedinSyncedAt = new Date();
+  set.updatedAt = new Date();
+
   return trx
     .updateTable('workExperiences')
     .set(set)
     .where('id', '=', existingExperience.id)
     .execute();
-}
-
-function log(message: string) {
-  if (IS_DEVELOPMENT) {
-    const logFilePath = path.join(__dirname, 'linkedin.log');
-
-    const timestamp = new Date().toISOString();
-
-    fs.appendFileSync(logFilePath, `${timestamp} - ${message}\n`);
-  }
-
-  console.log(message);
 }
