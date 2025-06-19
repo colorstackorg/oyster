@@ -288,21 +288,23 @@ const LinkedInProfile = z.object({
     ),
     headline: z.string().nullish(),
     location: z.object({
-      parsed: z.object({
-        text: z
-          .string()
-          .nullish()
-          .transform((value) => {
-            return value
-              ? value
-                  .replace('Metropolitan Area', '')
-                  .replace('Metropolitan Region', '')
-                  .replace('Area', '')
-                  .replace('Greater', '')
-                  .trim()
-              : null;
-          }),
-      }),
+      parsed: z
+        .object({
+          text: z
+            .string()
+            .nullish()
+            .transform((value) => {
+              return value
+                ? value
+                    .replace('Metropolitan Area', '')
+                    .replace('Metropolitan Region', '')
+                    .replace('Area', '')
+                    .replace('Greater', '')
+                    .trim()
+                : null;
+            }),
+        })
+        .nullish(),
     }),
     openToWork: z.boolean().nullish(),
     photo: z.string().url().nullish(),
@@ -422,7 +424,11 @@ export async function syncLinkedInProfiles(
         );
 
         if (profile) {
-          cachedProfiles.push(profile);
+          const parsedProfile = z
+            .union([LinkedInProfile, LinkedInFailure])
+            .parse(profile);
+
+          cachedProfiles.push(parsedProfile);
         } else {
           const url = new URL(member.linkedInUrl!);
 
@@ -754,7 +760,7 @@ type CheckMemberInput = {
 
 async function checkMember({ member, profile, trx }: CheckMemberInput) {
   const updatedLocation = await run(async () => {
-    const locationFromLinkedIn = profile.element.location.parsed.text;
+    const locationFromLinkedIn = profile.element.location.parsed?.text;
 
     if (
       locationFromLinkedIn &&
