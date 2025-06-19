@@ -285,8 +285,12 @@ export async function syncLinkedInProfiles(
 
     await Promise.all(
       profilesToCache.map(async (profile) => {
+        const url = new URL(profile.originalQuery.url);
+
+        url.search = '';
+
         await cache.set(
-          `harvestapi~linkedin-profile-scraper:v2:${profile.originalQuery.url}`,
+          `harvestapi~linkedin-profile-scraper:v2:${url}`,
           profile,
           60 * 60 * 24 * 30
         );
@@ -1067,7 +1071,7 @@ async function createWorkExperience({
         ? { companyId }
         : { companyName: experienceFromLinkedIn.companyName }),
 
-      ...(!!location?.city && {
+      ...(!!location && {
         locationCity: location.city,
         locationCountry: location.country,
         locationState: location.state,
@@ -1134,7 +1138,7 @@ async function updateWorkExperience({
       'geocode'
     );
 
-    if (location?.city) {
+    if (location) {
       if (
         existingExperience.locationCity !== location.city ||
         existingExperience.locationState !== location.state ||

@@ -51,12 +51,14 @@ export function WorkExperienceItem({
 
   const locationElements: string[] = [];
 
-  if (experience.locationCity && experience.locationState) {
-    locationElements.push(
-      experience.locationCountry && experience.locationCountry !== 'US'
-        ? `${experience.locationCity}, ${experience.locationState}, ${experience.locationCountry}`
-        : `${experience.locationCity}, ${experience.locationState}`
-    );
+  if (experience.locationState) {
+    const elements = [experience.locationCity, experience.locationState];
+
+    if (experience.locationCountry && experience.locationCountry !== 'US') {
+      elements.push(experience.locationCountry);
+    }
+
+    locationElements.push(elements.join(', '));
   }
 
   if (experience.locationType) {
