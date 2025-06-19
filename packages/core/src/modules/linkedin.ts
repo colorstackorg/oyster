@@ -41,20 +41,7 @@ const LinkedInProfile = z.object({
           companyId: z.string().nullish(),
           companyName: z.string(),
           description: z.string().nullish(),
-          employmentType: z
-            .enum([
-              'Apprenticeship',
-              'Contract',
-              'Freelance',
-              'Full-time',
-              'Internship',
-              'Part-time',
-              'Seasonal',
-              'Self-employed',
-              'Temporary',
-              'Volunteer',
-            ])
-            .nullish(),
+          employmentType: z.string().nullish(),
           endDate: LinkedInDate.nullish(),
           location: z
             .string()
@@ -66,6 +53,7 @@ const LinkedInProfile = z.object({
                     .replace('Metropolitan Region', '')
                     .replace('Area', '')
                     .replace('Greater', '')
+                    .replace('San Francisco Bay', 'San Francisco')
                     .trim()
                 : null;
             }),
@@ -76,6 +64,10 @@ const LinkedInProfile = z.object({
         .transform((experience) => {
           // These are some weird bugs in the Apify scraper that we can
           // work around by manually setting the location and workplace type.
+
+          if (experience.location === 'Earth') {
+            experience.location = null;
+          }
 
           const location = experience.location as string;
           const workplaceType = experience.workplaceType as string;
@@ -351,73 +343,79 @@ export async function syncLinkedInProfiles(
         let experienceUpdates = 0;
         let memberUpdates = 0;
 
-        await db.transaction().execute(async (trx) => {
-          await Promise.all([
-            run(async () => {
-              const result = await checkMember({ member, profile, trx });
+        try {
+          await db.transaction().execute(async (trx) => {
+            await Promise.all([
+              run(async () => {
+                const result = await checkMember({ member, profile, trx });
 
-              if (result && !!result.numUpdatedRows) {
-                memberUpdates += 1;
-              }
-            }),
-
-            ...profile.element.education.map(async (educationFromLinkedIn) => {
-              const result = await checkEducation({
-                educationFromLinkedIn,
-                educations,
-                memberId: member.id,
-                trx,
-              });
-
-              if (result) {
-                if ('numUpdatedRows' in result) {
-                  educationUpdates += 1;
-                } else {
-                  educationCreates += 1;
+                if (result && !!result.numUpdatedRows) {
+                  memberUpdates += 1;
                 }
-              }
-            }),
+              }),
 
-            ...profile.element.experience.map(
-              async (experienceFromLinkedIn) => {
-                const result = await checkWorkExperience({
-                  experienceFromLinkedIn,
-                  experiences,
-                  memberId: member.id,
-                  trx,
-                });
+              ...profile.element.education.map(
+                async (educationFromLinkedIn) => {
+                  const result = await checkEducation({
+                    educationFromLinkedIn,
+                    educations,
+                    memberId: member.id,
+                    trx,
+                  });
 
-                if (result) {
-                  if ('numUpdatedRows' in result) {
-                    experienceUpdates += 1;
-                  } else {
-                    experienceCreates += 1;
+                  if (result) {
+                    if ('numUpdatedRows' in result) {
+                      educationUpdates += 1;
+                    } else {
+                      educationCreates += 1;
+                    }
                   }
                 }
-              }
-            ),
-          ]);
-        });
+              ),
 
-        if (!!educationCreates || !!educationUpdates) {
-          checkMostRecentEducation(member.id);
+              ...profile.element.experience.map(
+                async (experienceFromLinkedIn) => {
+                  const result = await checkWorkExperience({
+                    experienceFromLinkedIn,
+                    experiences,
+                    memberId: member.id,
+                    trx,
+                  });
+
+                  if (result) {
+                    if ('numUpdatedRows' in result) {
+                      experienceUpdates += 1;
+                    } else {
+                      experienceCreates += 1;
+                    }
+                  }
+                }
+              ),
+            ]);
+          });
+
+          if (!!educationCreates || !!educationUpdates) {
+            checkMostRecentEducation(member.id);
+          }
+
+          track({
+            event: 'LinkedIn Synced',
+            properties: {
+              '# of Education Creates': educationCreates,
+              '# of Education Updates': educationUpdates,
+              '# of Member Updates': memberUpdates,
+              '# of Work Experience Creates': experienceCreates,
+              '# of Work Experience Updates': experienceUpdates,
+            },
+            user: member.id,
+          });
+
+          console.log(
+            `Synced member ${member.id} with ${educationCreates + educationUpdates + experienceCreates + experienceUpdates + memberUpdates} updates.`
+          );
+        } catch (error) {
+          console.error(error);
         }
-
-        track({
-          event: 'LinkedIn Synced',
-          properties: {
-            '# of Education Creates': educationCreates,
-            '# of Education Updates': educationUpdates,
-            '# of Member Updates': memberUpdates,
-            '# of Work Experience Creates': experienceCreates,
-            '# of Work Experience Updates': experienceUpdates,
-          },
-          user: member.id,
-        });
-
-        console.log(
-          `Synced member ${member.id} with ${educationCreates + educationUpdates + experienceCreates + experienceUpdates + memberUpdates} updates.`
-        );
       })
     );
   }
@@ -630,7 +628,8 @@ async function checkEducation({
   // in one field, so we'll check both.
   const fieldOfStudy =
     getFieldOfStudy(educationFromLinkedIn.fieldOfStudy || '') ||
-    getFieldOfStudy(educationFromLinkedIn.degree || '');
+    getFieldOfStudy(educationFromLinkedIn.degree || '') ||
+    getFieldOfStudy(educationFromLinkedIn.description || '');
 
   // If there is no field of study, it likely means that the education was
   // part of a general education program.
@@ -638,7 +637,9 @@ async function checkEducation({
     return;
   }
 
-  const degreeType = getDegreeType(educationFromLinkedIn.degree);
+  const degreeType =
+    getDegreeType(educationFromLinkedIn.degree) ||
+    getDegreeType(educationFromLinkedIn.description || '');
 
   // If we don't have a matching degree type, we'll skip.
   if (!degreeType) {
