@@ -803,12 +803,19 @@ function getDegreeType(degree: string) {
   if (
     value.includes('bachelor') ||
     value.includes('undergraduate') ||
-    degree.includes('BS')
+    degree.includes('BA') ||
+    degree.includes('BS') ||
+    degree.includes('B.A') ||
+    degree.includes('B.S')
   ) {
     return 'bachelors';
   }
 
-  if (value.includes('master') || degree.includes('MS')) {
+  if (
+    value.includes('master') ||
+    degree.includes('MS') ||
+    degree.includes('M.S')
+  ) {
     return 'masters';
   }
 
