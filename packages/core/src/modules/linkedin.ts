@@ -25,15 +25,94 @@ const LinkedInDate = z.object({
 const LinkedInProfile = z.object({
   element: z.object({
     education: z.array(
-      z.object({
-        degree: z.string().nullish(),
-        description: z.string().nullish(),
-        endDate: LinkedInDate.nullish(),
-        fieldOfStudy: z.string().nullish(),
-        schoolName: z.string(),
-        schoolLinkedinUrl: z.string().url(),
-        startDate: LinkedInDate.nullish(),
-      })
+      z
+        .object({
+          degree: z.string().nullish(),
+          description: z.string().nullish(),
+          endDate: LinkedInDate.nullish(),
+          fieldOfStudy: z.string().nullish(),
+          schoolName: z.string(),
+          schoolLinkedinUrl: z.string().url(),
+          startDate: LinkedInDate.nullish(),
+        })
+        .transform((education) => {
+          const degreeType =
+            getDegreeType(education.degree || '') ||
+            getDegreeType(education.fieldOfStudy || '') ||
+            getDegreeType(education.description || '');
+
+          // If there is no `degree` field, it likely means that the education
+          // was pre-college.
+          if (!degreeType) {
+            return null;
+          }
+
+          const fieldOfStudy =
+            getFieldOfStudy(education.fieldOfStudy || '') ||
+            getFieldOfStudy(education.degree || '') ||
+            getFieldOfStudy(education.description || '');
+
+          // If we couldn't find the field of study anywhere and the actual
+          // field was empty too, we'll skip.
+          if (!education.fieldOfStudy && !fieldOfStudy) {
+            return null;
+          }
+
+          const url = new URL(education.schoolLinkedinUrl);
+
+          // Example: https://www.linkedin.com/company/123 -> 123
+          // Example: https://www.linkedin.com/school/123 -> 123
+          const linkedinId = url.pathname.split('/').filter(Boolean)[1];
+
+          // If there is no ID, it likely means that the school is not
+          // accredited so we will skip syncing it.
+          if (!linkedinId) {
+            return null;
+          }
+
+          const startMonth = education.startDate?.month;
+          const startYear = education.startDate?.year;
+          const endMonth = education.endDate?.month;
+          const endYear = education.endDate?.year;
+
+          const startDate = run(() => {
+            if (startYear && startMonth) {
+              // The `startMonth` is formatted as an abbreviation of the month, so
+              // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
+              return `${startYear}-${MONTH_MAP[startMonth]}-01`;
+            } else if (startYear) {
+              // If there is no `startMonth`, we'll default to August since that's
+              // when most schools start their academic year.
+              return `${startYear}-08-01`;
+            }
+
+            return undefined;
+          });
+
+          const endDate = run(() => {
+            if (endMonth && endYear) {
+              // The `endMonth` is formatted as an abbreviation of the month, so
+              // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
+              return `${endYear}-${MONTH_MAP[endMonth]}-01`;
+            } else if (endYear) {
+              // If there is no `endMonth`, we'll default to May since that's
+              // when most schools end their academic year.
+              return `${endYear}-05-01`;
+            }
+
+            return undefined;
+          });
+
+          return {
+            degreeType,
+            fieldOfStudy,
+            endDate,
+            linkedinId,
+            otherFieldOfStudy: education.fieldOfStudy,
+            schoolName: education.schoolName,
+            startDate,
+          };
+        })
     ),
     experience: z.array(
       z
@@ -62,12 +141,32 @@ const LinkedInProfile = z.object({
           workplaceType: z.string().nullish(),
         })
         .transform((experience) => {
-          // These are some weird bugs in the Apify scraper that we can
-          // work around by manually setting the location and workplace type.
+          // We're going to ignore any work experiences that don't have a company
+          // ID or start date for now...this errs on the side of caution.
+          if (
+            !experience.companyId ||
+            !experience.startDate ||
+            !experience.startDate.year
+          ) {
+            return null;
+          }
+
+          // This is a special case for the "ColorStack" company...a lot of members
+          // put "Fellow" on their work experience with ColorStack, but we don't want
+          // that to sync to our database since this is already in ColorStack.
+          if (
+            experience.companyId === '53416834' &&
+            experience.employmentType !== 'Full-time'
+          ) {
+            return null;
+          }
 
           if (experience.location === 'Earth') {
             experience.location = null;
           }
+
+          // These are some weird bugs in the Apify scraper that we can
+          // work around by manually setting the location and workplace type.
 
           const location = experience.location as string;
           const workplaceType = experience.workplaceType as string;
@@ -110,7 +209,46 @@ const LinkedInProfile = z.object({
             experience.employmentType = 'Internship';
           }
 
-          return experience;
+          const startMonth = experience.startDate?.month;
+          const startYear = experience.startDate?.year;
+          const endMonth = experience.endDate?.month;
+          const endYear = experience.endDate?.year;
+
+          const startDate = run(() => {
+            if (startYear && startMonth) {
+              // The `startMonth` is formatted as an abbreviation of the month, so
+              // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
+              return `${startYear}-${MONTH_MAP[startMonth]}-01`;
+            }
+
+            // If there is no `startMonth`, we'll default to January since that's
+            // when most companies start their fiscal year.
+            return `${startYear}-01-01`;
+          });
+
+          const endDate = run(() => {
+            if (endMonth && endYear) {
+              // The `endMonth` is formatted as an abbreviation of the month, so
+              // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
+              return `${endYear}-${MONTH_MAP[endMonth]}-01`;
+            } else if (endYear && startYear === endYear && !startMonth) {
+              return `${endYear}-12-01`;
+            } else if (endYear) {
+              return `${endYear}-01-01`;
+            }
+
+            return undefined;
+          });
+
+          return {
+            ...experience,
+            endDate,
+            endMonth,
+            endYear,
+            startDate,
+            startMonth,
+            startYear,
+          };
         })
     ),
     headline: z.string().nullish(),
@@ -148,13 +286,13 @@ type LinkedInProfile = z.infer<typeof LinkedInProfile>;
 
 type LinkedInFailure = z.infer<typeof LinkedInFailure>;
 
-type LinkedInEducation = z.infer<
-  typeof LinkedInProfile
->['element']['education'][number];
+type LinkedInEducation = NonNullable<
+  z.infer<typeof LinkedInProfile>['element']['education'][number]
+>;
 
-type LinkedInExperience = z.infer<
-  typeof LinkedInProfile
->['element']['experience'][number];
+type LinkedInExperience = NonNullable<
+  z.infer<typeof LinkedInProfile>['element']['experience'][number]
+>;
 
 type SyncLinkedInProfilesOptions = {
   limit?: number;
@@ -375,11 +513,12 @@ export async function syncLinkedInProfiles(
                 }
               }),
 
-              ...profile.element.education.map(
-                async (educationFromLinkedIn) => {
+              ...profile.element.education
+                .filter((education) => !!education)
+                .map(async (education) => {
                   const result = await checkEducation({
-                    educationFromLinkedIn,
                     educations,
+                    linkedInEducation: education,
                     memberId: member.id,
                     trx,
                   });
@@ -391,14 +530,14 @@ export async function syncLinkedInProfiles(
                       educationCreates += 1;
                     }
                   }
-                }
-              ),
+                }),
 
-              ...profile.element.experience.map(
-                async (experienceFromLinkedIn) => {
+              ...profile.element.experience
+                .filter((experience) => !!experience)
+                .map(async (experience) => {
                   const result = await checkWorkExperience({
-                    experienceFromLinkedIn,
                     experiences,
+                    linkedInExperience: experience,
                     memberId: member.id,
                     trx,
                   });
@@ -410,8 +549,7 @@ export async function syncLinkedInProfiles(
                       experienceCreates += 1;
                     }
                   }
-                }
-              ),
+                }),
             ]);
           });
 
@@ -627,60 +765,20 @@ const MONTH_MAP: Record<string, string> = {
 };
 
 type CheckEducationInput = {
-  educationFromLinkedIn: LinkedInEducation;
   educations: Education[];
+  linkedInEducation: LinkedInEducation;
   memberId: string;
   trx: Transaction<DB>;
 };
 
 async function checkEducation({
-  educationFromLinkedIn,
   educations,
+  linkedInEducation,
   memberId,
   trx,
 }: CheckEducationInput) {
-  // If there is no `degree` field, it likely means that the education was
-  // pre-college.
-  if (!educationFromLinkedIn.degree) {
-    return;
-  }
-
-  // Sometimes the scraper will return both the degree and the field of study
-  // in one field, so we'll check both.
-  const fieldOfStudy =
-    getFieldOfStudy(educationFromLinkedIn.fieldOfStudy || '') ||
-    getFieldOfStudy(educationFromLinkedIn.degree || '') ||
-    getFieldOfStudy(educationFromLinkedIn.description || '');
-
-  // If there is no field of study, it likely means that the education was
-  // part of a general education program.
-  if (!educationFromLinkedIn.fieldOfStudy && !fieldOfStudy) {
-    return;
-  }
-
-  const degreeType =
-    getDegreeType(educationFromLinkedIn.degree) ||
-    getDegreeType(educationFromLinkedIn.description || '');
-
-  // If we don't have a matching degree type, we'll skip.
-  if (!degreeType) {
-    return;
-  }
-
-  const url = new URL(educationFromLinkedIn.schoolLinkedinUrl);
-
-  // Example: https://www.linkedin.com/company/123 -> 123
-  // Example: https://www.linkedin.com/school/123 -> 123
-  const linkedinId = url.pathname.split('/').filter(Boolean)[1];
-
-  // If there is no ID, it likely means that the school is not accredited so
-  // we will skip syncing it.
-  if (!linkedinId) {
-    return;
-  }
-
   const existingEducation = educations.find((education) => {
-    if (education.degreeType !== degreeType) {
+    if (education.degreeType !== linkedInEducation.degreeType) {
       return false;
     }
 
@@ -689,66 +787,42 @@ async function checkEducation({
     // University vs. Cornell University Engineering). So we'll check for
     // a close match from the school name as well.
     return (
-      education.linkedinId === linkedinId ||
-      education.school.includes(educationFromLinkedIn.schoolName) ||
-      educationFromLinkedIn.schoolName.includes(education.school)
+      education.linkedinId === linkedInEducation.linkedinId ||
+      education.school.includes(linkedInEducation.schoolName) ||
+      linkedInEducation.schoolName.includes(education.school)
     );
-  });
-
-  const startMonth = educationFromLinkedIn.startDate?.month;
-  const startYear = educationFromLinkedIn.startDate?.year;
-  const endMonth = educationFromLinkedIn.endDate?.month;
-  const endYear = educationFromLinkedIn.endDate?.year;
-
-  const startDate = run(() => {
-    if (startYear && startMonth) {
-      // The `startMonth` is formatted as an abbreviation of the month, so
-      // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
-      return `${startYear}-${MONTH_MAP[startMonth]}-01`;
-    } else if (startYear) {
-      // If there is no `startMonth`, we'll default to August since that's
-      // when most schools start their academic year.
-      return `${startYear}-08-01`;
-    }
-
-    return undefined;
-  });
-
-  const endDate = run(() => {
-    if (endMonth && endYear) {
-      // The `endMonth` is formatted as an abbreviation of the month, so
-      // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
-      return `${endYear}-${MONTH_MAP[endMonth]}-01`;
-    } else if (endYear) {
-      // If there is no `endMonth`, we'll default to May since that's
-      // when most schools end their academic year.
-      return `${endYear}-05-01`;
-    }
-
-    return undefined;
   });
 
   if (existingEducation) {
     const set: Updateable<DB['educations']> = {};
 
-    if (existingEducation.linkedinId !== linkedinId) {
-      const schoolId = await saveSchoolIfNecessary(trx, linkedinId);
+    if (existingEducation.linkedinId !== linkedInEducation.linkedinId) {
+      const schoolId = await saveSchoolIfNecessary(
+        trx,
+        linkedInEducation.linkedinId
+      );
 
       if (schoolId) {
         set.schoolId = schoolId;
         set.otherSchool = null;
       } else {
-        set.otherSchool = educationFromLinkedIn.schoolName;
+        set.otherSchool = linkedInEducation.schoolName;
         set.schoolId = null;
       }
     }
 
-    if (endDate && existingEducation.endDate !== endDate) {
-      set.endDate = endDate;
+    if (
+      linkedInEducation.endDate &&
+      existingEducation.endDate !== linkedInEducation.endDate
+    ) {
+      set.endDate = linkedInEducation.endDate;
     }
 
-    if (startDate && existingEducation.startDate !== startDate) {
-      set.startDate = startDate;
+    if (
+      linkedInEducation.startDate &&
+      existingEducation.startDate !== linkedInEducation.startDate
+    ) {
+      set.startDate = linkedInEducation.startDate;
     }
 
     if (!Object.keys(set).length) {
@@ -765,27 +839,30 @@ async function checkEducation({
       .executeTakeFirst();
   }
 
-  const schoolId = await saveSchoolIfNecessary(trx, linkedinId);
+  const schoolId = await saveSchoolIfNecessary(
+    trx,
+    linkedInEducation.linkedinId
+  );
 
   return trx
     .insertInto('educations')
     .values({
       createdAt: new Date(),
-      degreeType,
-      endDate,
+      degreeType: linkedInEducation.degreeType,
+      endDate: linkedInEducation.endDate,
       id: id(),
       linkedinSyncedAt: new Date(),
-      startDate,
+      startDate: linkedInEducation.startDate,
       studentId: memberId,
       updatedAt: new Date(),
 
       ...(schoolId
         ? { schoolId }
-        : { otherSchool: educationFromLinkedIn.schoolName }),
+        : { otherSchool: linkedInEducation.schoolName }),
 
-      ...(fieldOfStudy
-        ? { major: fieldOfStudy }
-        : { major: 'other', otherMajor: educationFromLinkedIn.fieldOfStudy }),
+      ...(linkedInEducation.fieldOfStudy
+        ? { major: linkedInEducation.fieldOfStudy }
+        : { major: 'other', otherMajor: linkedInEducation.otherFieldOfStudy }),
     })
     .executeTakeFirst();
 }
@@ -881,67 +958,47 @@ function getFieldOfStudy(fieldOfStudy: string): Major | null {
 // Work Experience
 
 type CheckWorkExperienceInput = {
-  experienceFromLinkedIn: LinkedInExperience;
   experiences: Experience[];
+  linkedInExperience: LinkedInExperience;
   memberId: string;
   trx: Transaction<DB>;
 };
 
 async function checkWorkExperience({
-  experienceFromLinkedIn,
   experiences,
+  linkedInExperience,
   memberId,
   trx,
 }: CheckWorkExperienceInput) {
-  // We're going to ignore any work experiences that don't have a company ID
-  // or start date for now...this errs on the side of caution.
-  if (
-    !experienceFromLinkedIn.companyId ||
-    !experienceFromLinkedIn.startDate ||
-    !experienceFromLinkedIn.startDate.year
-  ) {
-    return;
-  }
-
-  // This is a special case for the "ColorStack" company...a lot of members
-  // put "Fellow" on their work experience with ColorStack, but we don't want
-  // that to sync to our database since this is already in ColorStack.
-  if (
-    experienceFromLinkedIn.companyId === '53416834' &&
-    experienceFromLinkedIn.employmentType !== 'Full-time'
-  ) {
-    return;
-  }
-
   const existingExperience = experiences.find((experience) => {
-    return doesExperienceMatch(experienceFromLinkedIn, experience);
+    return doesExperienceMatch(linkedInExperience, experience);
   });
 
   if (existingExperience) {
     return updateWorkExperience({
       existingExperience,
-      experienceFromLinkedIn,
+      linkedInExperience,
       trx,
     });
   }
 
   return createWorkExperience({
-    experienceFromLinkedIn,
+    linkedInExperience,
     memberId,
     trx,
   });
 }
 
 function doesExperienceMatch(
-  experienceFromLinkedIn: LinkedInExperience,
+  linkedInExperience: LinkedInExperience,
   experience: Experience
 ): boolean {
   // We allow for close matches to happen here simply to reduce the amount of
   // false positives (would rather update something than create a duplicate).
   if (
-    experience.linkedinId !== experienceFromLinkedIn.companyId &&
-    !experience.company.includes(experienceFromLinkedIn.companyName) &&
-    !experienceFromLinkedIn.companyName.includes(experience.company)
+    experience.linkedinId !== linkedInExperience.companyId &&
+    !experience.company.includes(linkedInExperience.companyName) &&
+    !linkedInExperience.companyName.includes(experience.company)
   ) {
     return false;
   }
@@ -953,36 +1010,36 @@ function doesExperienceMatch(
 
   // The position name is the most important factor so if it's an exact match
   // then we'll give it a score of 2.
-  if (experienceFromLinkedIn.position === experience.title) {
+  if (linkedInExperience.position === experience.title) {
     score += 2;
   }
 
   if (
-    experienceFromLinkedIn.startDate?.year &&
-    experienceFromLinkedIn.startDate?.year === parseInt(experience.startYear)
+    linkedInExperience.startYear &&
+    linkedInExperience.startYear === parseInt(experience.startYear)
   ) {
     score++;
   }
 
   if (
-    experienceFromLinkedIn.startDate?.month &&
-    MONTH_MAP[experienceFromLinkedIn.startDate.month] === experience.startMonth
+    linkedInExperience.startMonth &&
+    MONTH_MAP[linkedInExperience.startMonth] === experience.startMonth
   ) {
     score++;
   }
 
   if (
     experience.endYear &&
-    experienceFromLinkedIn.endDate?.year &&
-    experienceFromLinkedIn.endDate?.year === parseInt(experience.endYear)
+    linkedInExperience.endYear &&
+    linkedInExperience.endYear === parseInt(experience.endYear)
   ) {
     score++;
   }
 
   if (
     experience.endMonth &&
-    experienceFromLinkedIn.endDate?.month &&
-    MONTH_MAP[experienceFromLinkedIn.endDate.month] === experience.endMonth
+    linkedInExperience.endMonth &&
+    MONTH_MAP[linkedInExperience.endMonth] === experience.endMonth
   ) {
     score++;
   }
@@ -990,7 +1047,8 @@ function doesExperienceMatch(
   if (
     !experience.endYear &&
     !experience.endMonth &&
-    !experienceFromLinkedIn.endDate
+    !linkedInExperience.endYear &&
+    !linkedInExperience.endMonth
   ) {
     score++;
   }
@@ -1015,68 +1073,37 @@ const LOCATION_TYPE_MAP: Record<string, LocationType> = {
 };
 
 type CreateWorkExperienceInput = {
-  experienceFromLinkedIn: LinkedInExperience;
+  linkedInExperience: LinkedInExperience;
   memberId: string;
   trx: Transaction<DB>;
 };
 
 async function createWorkExperience({
-  experienceFromLinkedIn,
+  linkedInExperience,
   memberId,
   trx,
 }: CreateWorkExperienceInput) {
-  const startMonth = experienceFromLinkedIn.startDate?.month;
-  const startYear = experienceFromLinkedIn.startDate?.year;
-  const endMonth = experienceFromLinkedIn.endDate?.month;
-  const endYear = experienceFromLinkedIn.endDate?.year;
-
-  const startDate = run(() => {
-    if (startYear && startMonth) {
-      // The `startMonth` is formatted as an abbreviation of the month, so
-      // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
-      return `${startYear}-${MONTH_MAP[startMonth]}-01`;
-    }
-
-    return `${startYear}-01-01`;
-  });
-
-  const endDate = run(() => {
-    if (endMonth && endYear) {
-      // The `endMonth` is formatted as an abbreviation of the month, so
-      // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
-      return `${endYear}-${MONTH_MAP[endMonth]}-01`;
-    } else if (endYear && startYear === endYear && !startMonth) {
-      return `${endYear}-12-01`;
-    } else if (endYear) {
-      // If there is no `endMonth`, we'll default to December since that's
-      // when most companies end their fiscal year.
-      return `${endYear}-01-01`;
-    }
-
-    return undefined;
-  });
-
   const [companyId, location] = await Promise.all([
-    saveCompanyIfNecessary(trx, experienceFromLinkedIn.companyId),
-    getMostRelevantLocation(experienceFromLinkedIn.location, 'geocode'),
+    saveCompanyIfNecessary(trx, linkedInExperience.companyId),
+    getMostRelevantLocation(linkedInExperience.location, 'geocode'),
   ]);
 
   return trx
     .insertInto('workExperiences')
     .values({
       createdAt: new Date(),
-      description: experienceFromLinkedIn.description,
-      endDate,
+      description: linkedInExperience.description,
+      endDate: linkedInExperience.endDate,
       id: id(),
       linkedinSyncedAt: new Date(),
-      startDate,
+      startDate: linkedInExperience.startDate,
       studentId: memberId,
-      title: experienceFromLinkedIn.position,
+      title: linkedInExperience.position,
       updatedAt: new Date(),
 
       ...(companyId
         ? { companyId }
-        : { companyName: experienceFromLinkedIn.companyName }),
+        : { companyName: linkedInExperience.companyName }),
 
       ...(!!location && {
         locationCity: location.city,
@@ -1084,13 +1111,12 @@ async function createWorkExperience({
         locationState: location.state,
       }),
 
-      ...(experienceFromLinkedIn.employmentType && {
-        employmentType:
-          EMPLOYMENT_TYPE_MAP[experienceFromLinkedIn.employmentType],
+      ...(linkedInExperience.employmentType && {
+        employmentType: EMPLOYMENT_TYPE_MAP[linkedInExperience.employmentType],
       }),
 
-      ...(experienceFromLinkedIn.workplaceType && {
-        locationType: LOCATION_TYPE_MAP[experienceFromLinkedIn.workplaceType],
+      ...(linkedInExperience.workplaceType && {
+        locationType: LOCATION_TYPE_MAP[linkedInExperience.workplaceType],
       }),
     })
     .execute();
@@ -1098,21 +1124,21 @@ async function createWorkExperience({
 
 type UpdateWorkExperienceInput = {
   existingExperience: Experience;
-  experienceFromLinkedIn: LinkedInExperience;
+  linkedInExperience: LinkedInExperience;
   trx: Transaction<DB>;
 };
 
 async function updateWorkExperience({
   existingExperience,
-  experienceFromLinkedIn,
+  linkedInExperience,
   trx,
 }: UpdateWorkExperienceInput) {
   const set: Updateable<DB['workExperiences']> = {};
 
-  if (existingExperience.linkedinId !== experienceFromLinkedIn.companyId) {
+  if (existingExperience.linkedinId !== linkedInExperience.companyId) {
     const companyId = await saveCompanyIfNecessary(
       trx,
-      experienceFromLinkedIn.companyId
+      linkedInExperience.companyId
     );
 
     if (companyId) {
@@ -1120,28 +1146,28 @@ async function updateWorkExperience({
       set.companyName = null;
     } else {
       set.companyId = null;
-      set.companyName = experienceFromLinkedIn.companyName;
+      set.companyName = linkedInExperience.companyName;
     }
   }
 
-  if (existingExperience.title !== experienceFromLinkedIn.position) {
-    set.title = experienceFromLinkedIn.position;
+  if (existingExperience.title !== linkedInExperience.position) {
+    set.title = linkedInExperience.position;
   }
 
-  if (existingExperience.description !== experienceFromLinkedIn.description) {
-    set.description = experienceFromLinkedIn.description;
+  if (existingExperience.description !== linkedInExperience.description) {
+    set.description = linkedInExperience.description;
   }
 
   const employmentType =
-    EMPLOYMENT_TYPE_MAP[experienceFromLinkedIn.employmentType || ''];
+    EMPLOYMENT_TYPE_MAP[linkedInExperience.employmentType || ''];
 
   if (employmentType && existingExperience.employmentType !== employmentType) {
     set.employmentType = employmentType;
   }
 
-  if (experienceFromLinkedIn.location) {
+  if (linkedInExperience.location) {
     const location = await getMostRelevantLocation(
-      experienceFromLinkedIn.location,
+      linkedInExperience.location,
       'geocode'
     );
 
@@ -1159,51 +1185,24 @@ async function updateWorkExperience({
   }
 
   const locationType =
-    LOCATION_TYPE_MAP[experienceFromLinkedIn.workplaceType || ''];
+    LOCATION_TYPE_MAP[linkedInExperience.workplaceType || ''];
 
   if (locationType && existingExperience.locationType !== locationType) {
     set.locationType = locationType;
   }
 
-  const startMonth = experienceFromLinkedIn.startDate?.month;
-  const startYear = experienceFromLinkedIn.startDate?.year;
-  const endMonth = experienceFromLinkedIn.endDate?.month;
-  const endYear = experienceFromLinkedIn.endDate?.year;
-
-  const startDate = run(() => {
-    if (startYear && startMonth) {
-      // The `startMonth` is formatted as an abbreviation of the month, so
-      // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
-      return `${startYear}-${MONTH_MAP[startMonth]}-01`;
-    } else if (startYear) {
-      // If there is no `startMonth`, we'll default to January since that's
-      // when most companies start their fiscal year.
-      return `${startYear}-01-01`;
-    }
-
-    return undefined;
-  });
-
-  if (startDate && existingExperience.startDate !== startDate) {
-    set.startDate = startDate;
+  if (
+    linkedInExperience.startDate &&
+    linkedInExperience.startDate !== existingExperience.startDate
+  ) {
+    set.startDate = linkedInExperience.startDate;
   }
 
-  const endDate = run(() => {
-    if (endMonth && endYear) {
-      // The `endMonth` is formatted as an abbreviation of the month, so
-      // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
-      return `${endYear}-${MONTH_MAP[endMonth]}-01`;
-    } else if (endYear && startYear === endYear && !startMonth) {
-      return `${endYear}-12-01`;
-    } else if (endYear) {
-      return `${endYear}-01-01`;
-    }
-
-    return undefined;
-  });
-
-  if (endDate && existingExperience.endDate !== endDate) {
-    set.endDate = endDate;
+  if (
+    linkedInExperience.endDate &&
+    linkedInExperience.endDate !== existingExperience.endDate
+  ) {
+    set.endDate = linkedInExperience.endDate;
   }
 
   if (!Object.keys(set).length) {
