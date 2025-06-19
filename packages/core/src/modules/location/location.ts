@@ -23,7 +23,7 @@ const GoogleAutocompleteData = z.object({
   predictions: z.array(GooglePrediction),
 });
 
-type AutocompleteType = '(cities)' | '(regions)' | 'postal_code';
+type AutocompleteType = '(cities)' | 'establishment' | 'geocode';
 
 /**
  * Returns a list of places that match the search term.
@@ -245,22 +245,24 @@ export async function getMostRelevantLocation(
   location: string | null | undefined,
   type?: AutocompleteType
 ) {
-  if (!location) {
-    return null;
+  async function fn() {
+    if (!location) {
+      return null;
+    }
+
+    const places = await getAutocompletedPlaces(location, type);
+
+    if (!places || !places.length) {
+      return null;
+    }
+
+    return getPlaceDetails(places[0].id);
   }
 
   return withCache(
     `${getMostRelevantLocation.name}:v2:${location}:${type}`,
     60 * 60 * 24 * 30,
-    async function fn() {
-      const places = await getAutocompletedPlaces(location, type);
-
-      if (!places || !places.length) {
-        return null;
-      }
-
-      return getPlaceDetails(places[0].id);
-    }
+    fn
   );
 }
 

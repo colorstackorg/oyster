@@ -556,7 +556,7 @@ async function checkMember({ member, profile, trx }: CheckMemberInput) {
       locationFromLinkedIn &&
       locationFromLinkedIn !== member.currentLocation
     ) {
-      return getMostRelevantLocation(locationFromLinkedIn, '(regions)');
+      return getMostRelevantLocation(locationFromLinkedIn, 'geocode');
     }
   });
 
@@ -1021,7 +1021,7 @@ async function createWorkExperience({
 
   const [companyId, location] = await Promise.all([
     saveCompanyIfNecessary(trx, experienceFromLinkedIn.companyId),
-    getMostRelevantLocation(experienceFromLinkedIn.location, '(regions)'),
+    getMostRelevantLocation(experienceFromLinkedIn.location, 'geocode'),
   ]);
 
   return trx
@@ -1105,7 +1105,7 @@ async function updateWorkExperience({
   if (experienceFromLinkedIn.location) {
     const location = await getMostRelevantLocation(
       experienceFromLinkedIn.location,
-      '(regions)'
+      'geocode'
     );
 
     if (location?.city) {

@@ -67,7 +67,10 @@ export async function saveSchoolIfNecessary(
     return null;
   }
 
-  const location = await getMostRelevantLocation(schoolFromLinkedIn.name);
+  const location = await getMostRelevantLocation(
+    schoolFromLinkedIn.name,
+    'establishment'
+  );
 
   if (!location || !location.city || !location.state || !location.country) {
     reportException(
