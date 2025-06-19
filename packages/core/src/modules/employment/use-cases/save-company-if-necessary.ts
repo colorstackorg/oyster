@@ -6,6 +6,7 @@ import { id } from '@oyster/utils';
 
 import { withCache } from '@/infrastructure/redis';
 import { runActor } from '@/modules/apify';
+import { ColorStackError } from '@/shared/errors';
 
 /**
  * Saves a company in the database, if it does not already exist.
@@ -43,26 +44,38 @@ export async function saveCompanyIfNecessary(
     return existingCompany.id;
   }
 
-  const [companyFromLinkedIn] = await withCache(
-    `harvestapi~linkedin-company:${companyNameOrLinkedInId}`,
+  const apifyResult = await withCache(
+    `harvestapi~linkedin-company:v2:${companyNameOrLinkedInId}`,
     60 * 60 * 24 * 30,
     async () => {
       return runActor({
         actorId: 'harvestapi~linkedin-company',
         body: { companies: [companyNameOrLinkedInId] },
-        schema: z.array(
-          z.object({
-            description: z.string().nullish(),
-            id: z.string(),
-            logo: z.string().url().optional(),
-            name: z.string(),
-            universalName: z.string(),
-            website: z.string().url().nullish(),
-          })
-        ),
       });
     }
   );
+
+  const parseResult = z
+    .array(
+      z.object({
+        description: z.string().nullish(),
+        id: z.string(),
+        logo: z.string().url().optional(),
+        name: z.string(),
+        universalName: z.string(),
+        website: z.string().url().nullish(),
+      })
+    )
+    .safeParse(apifyResult);
+
+  if (!parseResult.success) {
+    throw new ColorStackError()
+      .withMessage('Failed to parse company from Apify.')
+      .withContext({ error: JSON.stringify(parseResult.error, null, 2) })
+      .report();
+  }
+
+  const [companyFromLinkedIn] = parseResult.data;
 
   if (!companyFromLinkedIn) {
     return null;

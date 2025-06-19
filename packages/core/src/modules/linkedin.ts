@@ -237,15 +237,15 @@ export async function syncLinkedInProfiles(
     console.log(`Processing batch ${i + 1} of ${batches.length}.`);
 
     const profilesToScrape: string[] = [];
-    const cachedProfiles: LinkedInProfile[] = [];
+    const cachedProfiles: (LinkedInProfile | LinkedInFailure)[] = [];
 
     // We need to filter through the batch and see if there are any that we
     // already have in the cache. If so, we'll add them to the results array
     // and remove them from the batch so we don't have to scrape them again.
     await Promise.all(
       batches[i].map(async (member) => {
-        const profile = await cache.get<LinkedInProfile>(
-          `harvestapi~linkedin-profile-scraper:${member.linkedInUrl}`
+        const profile = await cache.get<LinkedInProfile | LinkedInFailure>(
+          `harvestapi~linkedin-profile-scraper:v2:${member.linkedInUrl}`
         );
 
         if (profile) {
@@ -268,11 +268,36 @@ export async function syncLinkedInProfiles(
 
     // This is the most expensive part of the process and what actually is
     // doing the scraping.
-    const newProfiles = await runActor({
+    const apifyResult = await runActor({
       actorId: 'harvestapi~linkedin-profile-scraper',
       body: { urls: profilesToScrape },
-      schema: z.array(z.union([LinkedInProfile, LinkedInFailure])),
     });
+
+    // We just need the bare minimum in order to cache the profiles, we're not
+    // trying to parse the entire profile here. This ensures that we're not
+    // too restrictive and forcing ourselves to re-scrape profiles that we
+    // already have in the cache.
+    const profilesToCache = z
+      .object({ originalQuery: z.object({ url: z.string() }) })
+      .passthrough()
+      .array()
+      .parse(apifyResult);
+
+    await Promise.all(
+      profilesToCache.map(async (profile) => {
+        await cache.set(
+          `harvestapi~linkedin-profile-scraper:v2:${profile.originalQuery.url}`,
+          profile,
+          60 * 60 * 24 * 30
+        );
+      })
+    );
+
+    // Now that we've cached the profiles, we can parse the results and
+    // actually get the full profile.
+    const newProfiles = z
+      .array(z.union([LinkedInProfile, LinkedInFailure]))
+      .parse(apifyResult);
 
     const failedProfiles: LinkedInFailure[] = [];
     const scrapedProfiles: LinkedInProfile[] = [];
@@ -307,12 +332,6 @@ export async function syncLinkedInProfiles(
               .where('id', '=', memberId)
               .execute();
 
-            await cache.set(
-              `harvestapi~linkedin-profile-scraper:${url}`,
-              profile,
-              60 * 60 * 24 * 30
-            );
-
             console.log(`Failed to scrape ${url}.`);
           })
         );
@@ -321,17 +340,15 @@ export async function syncLinkedInProfiles(
 
     await Promise.all(
       [...cachedProfiles, ...scrapedProfiles].map(async (profile) => {
+        if (!profile.element) {
+          return;
+        }
+
         const url = new URL(profile.originalQuery.url);
 
         const memberId = url.searchParams.get('id') as string;
 
         url.search = '';
-
-        await cache.set(
-          `harvestapi~linkedin-profile-scraper:${url}`,
-          profile,
-          60 * 60 * 24 * 30
-        );
 
         const member = memberMap[memberId];
         const educations = educationMap[member.id];

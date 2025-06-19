@@ -8,6 +8,7 @@ import { withCache } from '@/infrastructure/redis';
 import { reportException } from '@/member-profile.server';
 import { runActor } from '@/modules/apify';
 import { getMostRelevantLocation } from '@/modules/location/location';
+import { ColorStackError } from '@/shared/errors';
 
 /**
  * Saves a school in the database, if it does not already exist.
@@ -45,23 +46,34 @@ export async function saveSchoolIfNecessary(
     return existingSchool.id;
   }
 
-  const [schoolFromLinkedIn] = await withCache(
-    `harvestapi~linkedin-company:${schoolNameOrLinkedInId}`,
+  const apifyResult = await withCache(
+    `harvestapi~linkedin-company:v2:${schoolNameOrLinkedInId}`,
     60 * 60 * 24 * 30,
     async () => {
       return runActor({
         actorId: 'harvestapi~linkedin-company',
         body: { companies: [schoolNameOrLinkedInId] },
-        schema: z.array(
-          z.object({
-            id: z.string(),
-            logo: z.string().url(),
-            name: z.string(),
-          })
-        ),
       });
     }
   );
+
+  const parseResult = z
+    .object({
+      id: z.string(),
+      logo: z.string().url(),
+      name: z.string(),
+    })
+    .array()
+    .safeParse(apifyResult);
+
+  if (!parseResult.success) {
+    throw new ColorStackError()
+      .withMessage('Failed to parse school from Apify.')
+      .withContext({ error: JSON.stringify(parseResult.error, null, 2) })
+      .report();
+  }
+
+  const [schoolFromLinkedIn] = parseResult.data;
 
   if (!schoolFromLinkedIn) {
     return null;

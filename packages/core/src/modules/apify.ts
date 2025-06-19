@@ -1,4 +1,4 @@
-import { z, type ZodType } from 'zod';
+import { z } from 'zod';
 
 import { ColorStackError } from '@/shared/errors';
 import { RateLimiter } from '@/shared/utils/rate-limiter';
@@ -20,10 +20,9 @@ const rateLimiter = new RateLimiter('apify:connections', {
 
 // Core
 
-type RunActorInput<Schema extends ZodType> = {
+type RunActorInput = {
   actorId: string;
   body: Record<string, unknown>;
-  schema: Schema;
 };
 
 /**
@@ -32,17 +31,12 @@ type RunActorInput<Schema extends ZodType> = {
  *
  * @param actorId - ID of the Apify actor to run.
  * @param body - Input parameters for the actor run.
- * @param schema - Zod schema to validate and parse the returned dataset.
- * @returns Promise resolving to the validated dataset matching the schema type.
+ * @returns Promise resolving to the dataset.
  */
-export async function runActor<Schema extends ZodType>({
-  actorId,
-  body,
-  schema,
-}: RunActorInput<Schema>): Promise<z.infer<Schema>> {
+export async function runActor({ actorId, body }: RunActorInput) {
   return rateLimiter.doWhenAvailable(async () => {
     const datasetId = await startRun({ actorId, body });
-    const dataset = await getDataset(datasetId, schema);
+    const dataset = await getDataset(datasetId);
 
     return dataset;
   });
@@ -112,13 +106,9 @@ async function startRun({ actorId, body }: StartRunInput): Promise<string> {
  * the start run to get the actual data.
  *
  * @param datasetId - Dataset ID to get the data for.
- * @param schema - Zod schema to validate and parse the returned dataset.
- * @returns Promise resolving to the validated dataset matching the schema type.
+ * @returns Promise resolving to the dataset.
  */
-async function getDataset<Schema extends ZodType>(
-  datasetId: string,
-  schema: Schema
-): Promise<z.infer<Schema>> {
+async function getDataset(datasetId: string) {
   const url = new URL(`https://api.apify.com/v2/datasets/${datasetId}/items`);
 
   url.searchParams.set('token', APIFY_API_TOKEN);
@@ -134,17 +124,5 @@ async function getDataset<Schema extends ZodType>(
       .report();
   }
 
-  const apifyResult = schema.safeParse(data);
-
-  if (!apifyResult.success) {
-    throw new ColorStackError()
-      .withMessage('Failed to parse dataset from Apify.')
-      .withContext({
-        datasetId,
-        error: JSON.stringify(apifyResult.error, null, 2),
-      })
-      .report();
-  }
-
-  return apifyResult.data;
+  return data;
 }
