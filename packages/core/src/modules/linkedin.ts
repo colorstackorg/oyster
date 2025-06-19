@@ -17,6 +17,37 @@ import {
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { getMostRelevantLocation } from '@/modules/location/location';
 
+const MONTH_MAP: Record<string, string> = {
+  Jan: '01',
+  Feb: '02',
+  Mar: '03',
+  Apr: '04',
+  May: '05',
+  Jun: '06',
+  Jul: '07',
+  Aug: '08',
+  Sep: '09',
+  Oct: '10',
+  Nov: '11',
+  Dec: '12',
+};
+
+const EMPLOYMENT_TYPE_MAP: Record<string, EmploymentType | null> = {
+  Apprenticeship: 'apprenticeship',
+  Contract: 'contract',
+  Freelance: 'freelance',
+  'Full-time': 'full_time',
+  Internship: 'internship',
+  'Part-time': 'part_time',
+  Temporary: 'part_time',
+};
+
+const LOCATION_TYPE_MAP: Record<string, LocationType | null> = {
+  Hybrid: 'hybrid',
+  'On-site': 'in_person',
+  Remote: 'remote',
+};
+
 const LinkedInDate = z.object({
   month: z.string().nullish(), // Formatted as a 3-letter abbreviation.
   year: z.number().nullish(),
@@ -70,19 +101,19 @@ const LinkedInProfile = z.object({
             return null;
           }
 
-          const startMonth = education.startDate?.month;
           const startYear = education.startDate?.year;
-          const endMonth = education.endDate?.month;
           const endYear = education.endDate?.year;
+
+          // The months are formatted as an abbreviation of the month, so we
+          // need to convert it to a 2-digit number (ie: `Jan` -> `01`).
+          const startMonth = MONTH_MAP[education.startDate?.month || ''];
+          const endMonth = MONTH_MAP[education.endDate?.month || ''];
 
           const startDate = run(() => {
             if (startYear && startMonth) {
-              // The `startMonth` is formatted as an abbreviation of the month, so
-              // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
-              return `${startYear}-${MONTH_MAP[startMonth]}-01`;
+              return `${startYear}-${startMonth}-01`;
             } else if (startYear) {
-              // If there is no `startMonth`, we'll default to August since that's
-              // when most schools start their academic year.
+              // Default to August since that's when most schools start.
               return `${startYear}-08-01`;
             }
 
@@ -91,12 +122,9 @@ const LinkedInProfile = z.object({
 
           const endDate = run(() => {
             if (endMonth && endYear) {
-              // The `endMonth` is formatted as an abbreviation of the month, so
-              // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
-              return `${endYear}-${MONTH_MAP[endMonth]}-01`;
+              return `${endYear}-${endMonth}-01`;
             } else if (endYear) {
-              // If there is no `endMonth`, we'll default to May since that's
-              // when most schools end their academic year.
+              // Default to May since that's when most schools end.
               return `${endYear}-05-01`;
             }
 
@@ -209,29 +237,29 @@ const LinkedInProfile = z.object({
             experience.employmentType = 'Internship';
           }
 
-          const startMonth = experience.startDate?.month;
           const startYear = experience.startDate?.year;
-          const endMonth = experience.endDate?.month;
           const endYear = experience.endDate?.year;
+
+          // The months are formatted as an abbreviation of the month, so we
+          // need to convert it to a 2-digit number (ie: `Jan` -> `01`).
+          const startMonth = MONTH_MAP[experience.startDate?.month || ''];
+          const endMonth = MONTH_MAP[experience.endDate?.month || ''];
 
           const startDate = run(() => {
             if (startYear && startMonth) {
-              // The `startMonth` is formatted as an abbreviation of the month, so
-              // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
-              return `${startYear}-${MONTH_MAP[startMonth]}-01`;
+              return `${startYear}-${startMonth}-01`;
             }
 
-            // If there is no `startMonth`, we'll default to January since that's
-            // when most companies start their fiscal year.
+            // Default to January since the fiscal year starts in January.
             return `${startYear}-01-01`;
           });
 
           const endDate = run(() => {
             if (endMonth && endYear) {
-              // The `endMonth` is formatted as an abbreviation of the month, so
-              // we need to convert it to a 2-digit number (ie: `Jan` -> `01`).
-              return `${endYear}-${MONTH_MAP[endMonth]}-01`;
+              return `${endYear}-${endMonth}-01`;
             } else if (endYear && startYear === endYear && !startMonth) {
+              // This is a special case when the dates read something like:
+              // "2024 - 2024"...we want that to be like "1 year".
               return `${endYear}-12-01`;
             } else if (endYear) {
               return `${endYear}-01-01`;
@@ -241,10 +269,17 @@ const LinkedInProfile = z.object({
           });
 
           return {
-            ...experience,
+            companyId: experience.companyId,
+            companyName: experience.companyName,
+            description: experience.description,
+            employmentType:
+              EMPLOYMENT_TYPE_MAP[experience.employmentType || ''],
             endDate,
             endMonth,
             endYear,
+            location: experience.location,
+            locationType: LOCATION_TYPE_MAP[experience.workplaceType || ''],
+            position: experience.position,
             startDate,
             startMonth,
             startYear,
@@ -749,21 +784,6 @@ async function checkMember({ member, profile, trx }: CheckMemberInput) {
     .executeTakeFirst();
 }
 
-const MONTH_MAP: Record<string, string> = {
-  Jan: '01',
-  Feb: '02',
-  Mar: '03',
-  Apr: '04',
-  May: '05',
-  Jun: '06',
-  Jul: '07',
-  Aug: '08',
-  Sep: '09',
-  Oct: '10',
-  Nov: '11',
-  Dec: '12',
-};
-
 type CheckEducationInput = {
   educations: Education[];
   linkedInEducation: LinkedInEducation;
@@ -1023,7 +1043,7 @@ function doesExperienceMatch(
 
   if (
     linkedInExperience.startMonth &&
-    MONTH_MAP[linkedInExperience.startMonth] === experience.startMonth
+    linkedInExperience.startMonth === experience.startMonth
   ) {
     score++;
   }
@@ -1039,7 +1059,7 @@ function doesExperienceMatch(
   if (
     experience.endMonth &&
     linkedInExperience.endMonth &&
-    MONTH_MAP[linkedInExperience.endMonth] === experience.endMonth
+    linkedInExperience.endMonth === experience.endMonth
   ) {
     score++;
   }
@@ -1055,22 +1075,6 @@ function doesExperienceMatch(
 
   return score >= 3;
 }
-
-const EMPLOYMENT_TYPE_MAP: Record<string, EmploymentType> = {
-  Apprenticeship: 'apprenticeship',
-  Contract: 'contract',
-  Freelance: 'freelance',
-  'Full-time': 'full_time',
-  Internship: 'internship',
-  'Part-time': 'part_time',
-  Temporary: 'part_time',
-};
-
-const LOCATION_TYPE_MAP: Record<string, LocationType> = {
-  Hybrid: 'hybrid',
-  'On-site': 'in_person',
-  Remote: 'remote',
-};
 
 type CreateWorkExperienceInput = {
   linkedInExperience: LinkedInExperience;
@@ -1093,9 +1097,11 @@ async function createWorkExperience({
     .values({
       createdAt: new Date(),
       description: linkedInExperience.description,
+      employmentType: linkedInExperience.employmentType,
       endDate: linkedInExperience.endDate,
       id: id(),
       linkedinSyncedAt: new Date(),
+      locationType: linkedInExperience.locationType,
       startDate: linkedInExperience.startDate,
       studentId: memberId,
       title: linkedInExperience.position,
@@ -1109,14 +1115,6 @@ async function createWorkExperience({
         locationCity: location.city,
         locationCountry: location.country,
         locationState: location.state,
-      }),
-
-      ...(linkedInExperience.employmentType && {
-        employmentType: EMPLOYMENT_TYPE_MAP[linkedInExperience.employmentType],
-      }),
-
-      ...(linkedInExperience.workplaceType && {
-        locationType: LOCATION_TYPE_MAP[linkedInExperience.workplaceType],
       }),
     })
     .execute();
@@ -1158,11 +1156,11 @@ async function updateWorkExperience({
     set.description = linkedInExperience.description;
   }
 
-  const employmentType =
-    EMPLOYMENT_TYPE_MAP[linkedInExperience.employmentType || ''];
-
-  if (employmentType && existingExperience.employmentType !== employmentType) {
-    set.employmentType = employmentType;
+  if (
+    linkedInExperience.employmentType &&
+    linkedInExperience.employmentType !== existingExperience.employmentType
+  ) {
+    set.employmentType = linkedInExperience.employmentType;
   }
 
   if (linkedInExperience.location) {
@@ -1184,11 +1182,11 @@ async function updateWorkExperience({
     }
   }
 
-  const locationType =
-    LOCATION_TYPE_MAP[linkedInExperience.workplaceType || ''];
-
-  if (locationType && existingExperience.locationType !== locationType) {
-    set.locationType = locationType;
+  if (
+    linkedInExperience.locationType &&
+    linkedInExperience.locationType !== existingExperience.locationType
+  ) {
+    set.locationType = linkedInExperience.locationType;
   }
 
   if (
