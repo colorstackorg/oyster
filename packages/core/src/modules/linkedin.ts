@@ -548,43 +548,47 @@ export async function syncLinkedInProfiles(
                 }
               }),
 
-              ...profile.element.education
-                .filter((education) => !!education)
-                .map(async (education) => {
-                  const result = await checkEducation({
-                    educations,
-                    linkedInEducation: education,
-                    memberId: member.id,
-                    trx,
-                  });
+              ...profile.element.education.map(async (education) => {
+                if (!education) {
+                  return;
+                }
 
-                  if (result) {
-                    if ('numUpdatedRows' in result) {
-                      educationUpdates += 1;
-                    } else {
-                      educationCreates += 1;
-                    }
+                const result = await checkEducation({
+                  educations,
+                  linkedInEducation: education,
+                  memberId: member.id,
+                  trx,
+                });
+
+                if (result) {
+                  if ('numUpdatedRows' in result) {
+                    educationUpdates += 1;
+                  } else {
+                    educationCreates += 1;
                   }
-                }),
+                }
+              }),
 
-              ...profile.element.experience
-                .filter((experience) => !!experience)
-                .map(async (experience) => {
-                  const result = await checkWorkExperience({
-                    experiences,
-                    linkedInExperience: experience,
-                    memberId: member.id,
-                    trx,
-                  });
+              ...profile.element.experience.map(async (experience) => {
+                if (!experience) {
+                  return;
+                }
 
-                  if (result) {
-                    if ('numUpdatedRows' in result) {
-                      experienceUpdates += 1;
-                    } else {
-                      experienceCreates += 1;
-                    }
+                const result = await checkWorkExperience({
+                  experiences,
+                  linkedInExperience: experience,
+                  memberId: member.id,
+                  trx,
+                });
+
+                if (result) {
+                  if ('numUpdatedRows' in result) {
+                    experienceUpdates += 1;
+                  } else {
+                    experienceCreates += 1;
                   }
-                }),
+                }
+              }),
             ]);
           });
 
