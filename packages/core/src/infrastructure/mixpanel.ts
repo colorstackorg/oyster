@@ -66,6 +66,7 @@ export type MixpanelEvent = {
   'LinkedIn Synced': {
     '# of Education Creates': number;
     '# of Education Updates': number;
+    '# of Member Updates': number;
     '# of Work Experience Creates': number;
     '# of Work Experience Updates': number;
   };

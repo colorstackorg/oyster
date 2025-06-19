@@ -349,10 +349,17 @@ export async function syncLinkedInProfiles(
         let educationUpdates = 0;
         let experienceCreates = 0;
         let experienceUpdates = 0;
+        let memberUpdates = 0;
 
         await db.transaction().execute(async (trx) => {
           await Promise.all([
-            checkMember({ member, profile, trx }),
+            run(async () => {
+              const result = await checkMember({ member, profile, trx });
+
+              if (result && !!result.numUpdatedRows) {
+                memberUpdates += 1;
+              }
+            }),
 
             ...profile.element.education.map(async (educationFromLinkedIn) => {
               const result = await checkEducation({
@@ -401,6 +408,7 @@ export async function syncLinkedInProfiles(
           properties: {
             '# of Education Creates': educationCreates,
             '# of Education Updates': educationUpdates,
+            '# of Member Updates': memberUpdates,
             '# of Work Experience Creates': experienceCreates,
             '# of Work Experience Updates': experienceUpdates,
           },
@@ -408,7 +416,7 @@ export async function syncLinkedInProfiles(
         });
 
         console.log(
-          `Synced member ${member.id} with ${educationCreates + educationUpdates + experienceCreates + experienceUpdates} updates.`
+          `Synced member ${member.id} with ${educationCreates + educationUpdates + experienceCreates + experienceUpdates + memberUpdates} updates.`
         );
       })
     );
