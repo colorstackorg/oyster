@@ -197,11 +197,13 @@ export async function getPlaceDetails(
       );
     });
 
-    if (!cityComponent) {
-      cityComponent = address_components.find((component) => {
-        return component.types.includes('postal_town');
-      });
-    }
+    cityComponent ||= address_components.find((component) => {
+      return component.types.includes('postal_town');
+    });
+
+    cityComponent ||= address_components.find((component) => {
+      return component.types.includes('sublocality');
+    });
 
     const postalCodeComponent = address_components.find((component) => {
       return component.types.includes('postal_code');
@@ -227,7 +229,7 @@ export async function getPlaceDetails(
     };
   }
 
-  return withCache(`google:places:details:v3:${id}`, 60 * 60 * 24 * 90, fn);
+  return withCache(`google:places:details:v4:${id}`, 60 * 60 * 24 * 90, fn);
 }
 
 /**
@@ -248,7 +250,7 @@ export async function getMostRelevantLocation(
   }
 
   return withCache(
-    `${getMostRelevantLocation.name}:${location}:${type}`,
+    `${getMostRelevantLocation.name}:v2:${location}:${type}`,
     60 * 60 * 24 * 30,
     async function fn() {
       const places = await getAutocompletedPlaces(location, type);

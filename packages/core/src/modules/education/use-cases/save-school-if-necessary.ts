@@ -69,13 +69,7 @@ export async function saveSchoolIfNecessary(
 
   const location = await getMostRelevantLocation(schoolFromLinkedIn.name);
 
-  if (
-    !location ||
-    !location.city ||
-    !location.state ||
-    !location.country ||
-    !location.postalCode
-  ) {
+  if (!location || !location.city || !location.state || !location.country) {
     reportException(
       new Error(
         `Failed to find location for school ${schoolFromLinkedIn.name}.`

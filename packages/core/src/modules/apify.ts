@@ -139,7 +139,10 @@ async function getDataset<Schema extends ZodType>(
   if (!apifyResult.success) {
     throw new ColorStackError()
       .withMessage('Failed to parse dataset from Apify.')
-      .withContext({ data, error: extractZodErrorMessage(apifyResult.error) })
+      .withContext({
+        datasetId,
+        error: JSON.stringify(apifyResult.error, null, 2),
+      })
       .report();
   }
 

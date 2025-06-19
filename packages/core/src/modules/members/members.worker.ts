@@ -59,7 +59,7 @@ export const memberWorker = registerWorker(
         return sendGraduationEmail(data);
       })
       .with({ name: 'student.linkedin.sync' }, ({ data }) => {
-        return syncLinkedInProfiles(data.memberIds);
+        return syncLinkedInProfiles(data);
       })
       .with({ name: 'student.points.recurring' }, ({ data: _ }) => {
         return updatePointTotals();

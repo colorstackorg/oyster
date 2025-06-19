@@ -52,7 +52,7 @@ export async function saveCompanyIfNecessary(
         body: { companies: [companyNameOrLinkedInId] },
         schema: z.array(
           z.object({
-            description: z.string(),
+            description: z.string().nullish(),
             id: z.string(),
             logo: z.string().url().optional(),
             name: z.string(),
