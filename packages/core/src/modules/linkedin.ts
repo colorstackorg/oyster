@@ -62,6 +62,7 @@ const LinkedInProfile = z.object({
           description: z.string().nullish(),
           endDate: LinkedInDate.nullish(),
           fieldOfStudy: z.string().nullish(),
+          period: z.string().nullish(),
           schoolName: z.string(),
           schoolLinkedinUrl: z.string().url(),
           startDate: LinkedInDate.nullish(),
@@ -101,13 +102,25 @@ const LinkedInProfile = z.object({
             return null;
           }
 
-          const startYear = education.startDate?.year;
+          let startYear = education.startDate?.year;
           const endYear = education.endDate?.year;
 
           // The months are formatted as an abbreviation of the month, so we
           // need to convert it to a 2-digit number (ie: `Jan` -> `01`).
-          const startMonth = MONTH_MAP[education.startDate?.month || ''];
+          let startMonth = MONTH_MAP[education.startDate?.month || ''];
           const endMonth = MONTH_MAP[education.endDate?.month || ''];
+
+          // Sometimes (especially for a higher education that takes many years)
+          // the person will just have the start date and not the end date. In
+          // that case, we look at the period file and attempt to parse it.
+          if (!education.startDate && !education.endDate && education.period) {
+            const [month, year] = education.period.split(' ');
+
+            if (!!parseInt(year) && MONTH_MAP[month]) {
+              startYear = parseInt(year);
+              startMonth = MONTH_MAP[month];
+            }
+          }
 
           const startDate = run(() => {
             if (startYear && startMonth) {
