@@ -60,7 +60,13 @@ export async function saveSchoolIfNecessary(
   const parseResult = z
     .object({
       id: z.string(),
-      logo: z.string().url(),
+      locations: z
+        .object({
+          parsed: z.object({ text: z.string().nullish() }).nullish(),
+        })
+        .array()
+        .nullish(),
+      logo: z.string().url().nullish(),
       name: z.string(),
     })
     .array()
@@ -79,10 +85,16 @@ export async function saveSchoolIfNecessary(
     return null;
   }
 
-  const location = await getMostRelevantLocation(
+  let location = await getMostRelevantLocation(
     schoolFromLinkedIn.name,
     'establishment'
   );
+
+  if (!location && schoolFromLinkedIn.locations?.[0]?.parsed?.text) {
+    location = await getMostRelevantLocation(
+      schoolFromLinkedIn.locations[0].parsed.text
+    );
+  }
 
   if (!location || !location.city || !location.state || !location.country) {
     reportException(

@@ -79,8 +79,12 @@ async function startRun({ actorId, body }: StartRunInput): Promise<string> {
 
   if (!response.ok) {
     throw new ColorStackError()
-      .withMessage('Failed to start run in Apify.')
-      .withContext({ data, status: response.status })
+      .withMessage(`Failed to start run in Apify.`)
+      .withContext({
+        data: JSON.stringify(data, null, 2),
+        status: response.status,
+        statusText: response.statusText,
+      })
       .report();
   }
 

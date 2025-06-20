@@ -82,22 +82,26 @@ export class RateLimiter {
     while (true) {
       const count = await redis.incr(this.key);
 
+      // If the count is less than or equal to the rate limit, then we can
+      // execute the function.
       if (count <= this.rateLimit) {
         try {
-          return fn();
+          const result = await fn();
+
+          return result;
         } finally {
           // If the try block is successful, we'll still decrement the count.
           // If the try block throws an error, we'll throw the error (because
           // we don't have a catch block), and we'll still decrement the count.
           await redis.decr(this.key);
         }
+      } else {
+        await redis.decr(this.key);
       }
 
-      await redis.decr(this.key);
-
-      // We don't have a rate limit window, so we'll choose 1 second as our wait
-      // time before trying again.
-      await sleep(1000);
+      // If the count is greater than the rate limit, then we'll wait for a
+      // random amount of time between 0 and 2 seconds.
+      await sleep(Math.random() * 2000);
     }
   }
 }

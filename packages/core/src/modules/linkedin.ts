@@ -92,6 +92,15 @@ const LinkedInProfile = z.object({
 
           const url = new URL(education.schoolLinkedinUrl);
 
+          // This means that the URL is not a valid LinkedIn URL for a company
+          // or school, it's likely a search result so we'll skip it.
+          if (
+            !url.pathname.startsWith('/company/') &&
+            !url.pathname.startsWith('/school/')
+          ) {
+            return null;
+          }
+
           // Example: https://www.linkedin.com/company/123 -> 123
           // Example: https://www.linkedin.com/school/123 -> 123
           const linkedinId = url.pathname.split('/').filter(Boolean)[1];
@@ -159,7 +168,7 @@ const LinkedInProfile = z.object({
       z
         .object({
           companyId: z.string().nullish(),
-          companyName: z.string(),
+          companyName: z.string().nullish(),
           description: z.string().nullish(),
           employmentType: z.string().nullish(),
           endDate: LinkedInDate.nullish(),
@@ -186,6 +195,7 @@ const LinkedInProfile = z.object({
           // ID or start date for now...this errs on the side of caution.
           if (
             !experience.companyId ||
+            !experience.companyName ||
             !experience.startDate ||
             !experience.startDate.year
           ) {
@@ -415,7 +425,7 @@ export async function syncLinkedInProfiles(
     experienceMap[experience.studentId].push(experience);
   });
 
-  const batches = splitArray(members, 100);
+  const batches = splitArray(members, 50);
 
   console.log(
     `Splitting ${members.length} members into ${batches.length} batches.`
@@ -540,13 +550,21 @@ export async function syncLinkedInProfiles(
           return;
         }
 
-        const url = new URL(profile.originalQuery.url);
+        const memberId = new URL(profile.originalQuery.url).searchParams.get(
+          'id'
+        );
 
-        const memberId = url.searchParams.get('id') as string;
-
-        url.search = '';
+        if (!memberId) {
+          return;
+        }
 
         const member = memberMap[memberId];
+
+        // Not exactly sure how this is possible, but ran into it a few times.
+        if (!member) {
+          return;
+        }
+
         const educations = educationMap[member.id];
         const experiences = experienceMap[member.id];
 
@@ -631,7 +649,16 @@ export async function syncLinkedInProfiles(
             `Synced member ${member.id} with ${educationCreates + educationUpdates + experienceCreates + experienceUpdates + memberUpdates} updates.`
           );
         } catch (error) {
+          await db.transaction().execute(async (trx) => {
+            await trx
+              .updateTable('students')
+              .set({ linkedinSyncedAt: new Date(), updatedAt: new Date() })
+              .where('id', '=', member.id)
+              .execute();
+          });
+
           console.error(error);
+          console.error(`Failed to sync member ${member.id}.`);
         }
       })
     );
