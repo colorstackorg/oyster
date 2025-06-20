@@ -20,10 +20,15 @@ const rateLimiter = new RateLimiter('apify:connections', {
 
 // Core
 
-type RunActorInput = {
-  actorId: string;
-  body: Record<string, unknown>;
-};
+type RunActorInput =
+  | {
+      actorId: 'harvestapi~linkedin-company';
+      body: { companies: string[] };
+    }
+  | {
+      actorId: 'harvestapi~linkedin-profile-scraper';
+      body: { urls: string[] };
+    };
 
 /**
  * Runs an Apify actor with the given configuration and returns the parsed
