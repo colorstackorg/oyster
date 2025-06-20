@@ -451,59 +451,87 @@ export async function syncLinkedInProfiles(
             .union([LinkedInProfile, LinkedInFailure])
             .parse(profile);
 
-          cachedProfiles.push(parsedProfile);
-        } else {
-          const url = new URL(member.linkedInUrl!);
+          const memberId = new URL(
+            parsedProfile.originalQuery.url
+          ).searchParams.get('id');
 
-          // We need a way to reference the member in the cache after we
-          // scrape the profile so we set this query parameter then we can
-          // use it to get the member from the cache.
-          url.searchParams.set('id', member.id);
+          if (memberId === member.id) {
+            cachedProfiles.push(parsedProfile);
 
-          profilesToScrape.push(url.toString());
+            return;
+          }
+
+          console.log(
+            `Member ID mismatch: ${memberId} !== ${member.id} for ${member.linkedInUrl}.`
+          );
+
+          await db
+            .updateTable('students')
+            .set({
+              linkedinSyncedAt: new Date(),
+              updatedAt: new Date(),
+            })
+            .where('id', '=', member.id)
+            .execute();
+
+          return;
         }
+
+        const url = new URL(member.linkedInUrl!);
+
+        // We need a way to reference the member in the cache after we
+        // scrape the profile so we set this query parameter then we can
+        // use it to get the member from the cache.
+        url.searchParams.set('id', member.id);
+
+        profilesToScrape.push(url.toString());
       })
     );
 
     console.log(`Found ${cachedProfiles.length} cached profiles.`);
-    console.log(`Attempting to scrape ${profilesToScrape.length} profiles.`);
 
-    // This is the most expensive part of the process and what actually is
-    // doing the scraping.
-    const apifyResult = await runActor({
-      actorId: 'harvestapi~linkedin-profile-scraper',
-      body: { urls: profilesToScrape },
-    });
+    let newProfiles: (LinkedInProfile | LinkedInFailure)[] = [];
 
-    // We just need the bare minimum in order to cache the profiles, we're not
-    // trying to parse the entire profile here. This ensures that we're not
-    // too restrictive and forcing ourselves to re-scrape profiles that we
-    // already have in the cache.
-    const profilesToCache = z
-      .object({ originalQuery: z.object({ url: z.string() }) })
-      .passthrough()
-      .array()
-      .parse(apifyResult);
+    if (profilesToScrape.length) {
+      console.log(`Attempting to scrape ${profilesToScrape.length} profiles.`);
 
-    await Promise.all(
-      profilesToCache.map(async (profile) => {
-        const url = new URL(profile.originalQuery.url);
+      // This is the most expensive part of the process and what actually is
+      // doing the scraping.
+      const apifyResult = await runActor({
+        actorId: 'harvestapi~linkedin-profile-scraper',
+        body: { urls: profilesToScrape },
+      });
 
-        url.search = '';
+      // We just need the bare minimum in order to cache the profiles, we're not
+      // trying to parse the entire profile here. This ensures that we're not
+      // too restrictive and forcing ourselves to re-scrape profiles that we
+      // already have in the cache.
+      const profilesToCache = z
+        .object({ originalQuery: z.object({ url: z.string() }) })
+        .passthrough()
+        .array()
+        .parse(apifyResult);
 
-        await cache.set(
-          `harvestapi~linkedin-profile-scraper:v2:${url}`,
-          profile,
-          60 * 60 * 24 * 30
-        );
-      })
-    );
+      await Promise.all(
+        profilesToCache.map(async (profile) => {
+          const url = new URL(profile.originalQuery.url);
 
-    // Now that we've cached the profiles, we can parse the results and
-    // actually get the full profile.
-    const newProfiles = z
-      .array(z.union([LinkedInProfile, LinkedInFailure]))
-      .parse(apifyResult);
+          url.search = '';
+
+          await cache.set(
+            `harvestapi~linkedin-profile-scraper:v2:${url}`,
+            profile,
+            60 * 60 * 24 * 30
+          );
+        })
+      );
+
+      // Now that we've cached the profiles, we can parse the results and
+      // actually get the full profile.
+      newProfiles = z
+        .array(z.union([LinkedInProfile, LinkedInFailure]))
+        .parse(apifyResult);
+    }
 
     const failedProfiles: LinkedInFailure[] = [];
     const scrapedProfiles: LinkedInProfile[] = [];
@@ -518,7 +546,9 @@ export async function syncLinkedInProfiles(
       }
     });
 
-    console.log(`Successfully scraped ${scrapedProfiles.length} profiles.`);
+    if (scrapedProfiles.length) {
+      console.log(`Successfully scraped ${scrapedProfiles.length} profiles.`);
+    }
 
     if (failedProfiles.length) {
       console.log(`Failed to scrape ${failedProfiles.length} profiles.`);
@@ -546,15 +576,21 @@ export async function syncLinkedInProfiles(
 
     await Promise.all(
       [...cachedProfiles, ...scrapedProfiles].map(async (profile) => {
-        if (!profile.element) {
-          return;
-        }
-
         const memberId = new URL(profile.originalQuery.url).searchParams.get(
           'id'
-        );
+        ) as string;
 
-        if (!memberId) {
+        if (!profile.element) {
+          await db.transaction().execute(async (trx) => {
+            await trx
+              .updateTable('students')
+              .set({ linkedinSyncedAt: new Date(), updatedAt: new Date() })
+              .where('id', '=', memberId)
+              .execute();
+          });
+
+          console.log(`Profile not found for ${memberId}, moving on.`);
+
           return;
         }
 
@@ -562,6 +598,16 @@ export async function syncLinkedInProfiles(
 
         // Not exactly sure how this is possible, but ran into it a few times.
         if (!member) {
+          await db.transaction().execute(async (trx) => {
+            await trx
+              .updateTable('students')
+              .set({ linkedinSyncedAt: new Date(), updatedAt: new Date() })
+              .where('id', '=', memberId)
+              .execute();
+          });
+
+          console.log(`Profile not found for ${memberId}, moving on.`);
+
           return;
         }
 
@@ -689,9 +735,9 @@ async function getAllMembers(
     })
     .where('students.linkedInUrl', 'is not', null)
     .groupBy('students.id')
+    .orderBy('students.linkedinSyncedAt', sql`asc nulls first`)
     .orderBy('workExperienceCount', 'asc')
     .orderBy('educationCount', 'asc')
-    .orderBy('students.linkedinSyncedAt', sql`asc nulls first`)
     .orderBy('acceptedAt', 'asc')
     .orderBy('students.id', 'asc')
     .$if(!!options?.limit, (qb) => {
@@ -847,7 +893,7 @@ async function checkEducation({
   memberId,
   trx,
 }: CheckEducationInput) {
-  const existingEducation = educations.find((education) => {
+  const existingEducations = educations.filter((education) => {
     if (education.degreeType !== linkedInEducation.degreeType) {
       return false;
     }
@@ -862,6 +908,14 @@ async function checkEducation({
       linkedInEducation.schoolName.includes(education.school)
     );
   });
+
+  // If there are multiple educations at the same school with the same degree
+  // type, we'll just skip the syncing.
+  if (existingEducations.length >= 2) {
+    return;
+  }
+
+  const [existingEducation] = existingEducations;
 
   if (existingEducation) {
     const set: Updateable<DB['educations']> = {};
@@ -878,6 +932,16 @@ async function checkEducation({
       } else {
         set.otherSchool = linkedInEducation.schoolName;
         set.schoolId = null;
+      }
+    }
+
+    if (existingEducation.major !== linkedInEducation.fieldOfStudy) {
+      if (linkedInEducation.fieldOfStudy) {
+        set.major = linkedInEducation.fieldOfStudy;
+        set.otherMajor = null;
+      } else {
+        set.major = 'other';
+        set.otherMajor = linkedInEducation.otherFieldOfStudy;
       }
     }
 
