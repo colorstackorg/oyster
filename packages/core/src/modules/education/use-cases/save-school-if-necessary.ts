@@ -117,13 +117,6 @@ export async function saveSchoolIfNecessary(
       linkedinId: schoolFromLinkedIn.id,
       name: schoolFromLinkedIn.name,
     })
-    .onConflict((eb) => {
-      return eb.column('name').doUpdateSet(({ ref }) => {
-        return {
-          logoUrl: ref('excluded.logoUrl'),
-        };
-      });
-    })
     .returning('id')
     .executeTakeFirstOrThrow();
 
