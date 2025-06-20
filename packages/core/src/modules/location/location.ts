@@ -211,11 +211,11 @@ export async function getPlaceDetails(
   });
 
   cityComponent ||= address_components.find((component) => {
-    return component.types.includes('postal_town');
+    return component.types.includes('sublocality');
   });
 
   cityComponent ||= address_components.find((component) => {
-    return component.types.includes('sublocality');
+    return component.types.includes('postal_town');
   });
 
   const postalCodeComponent = address_components.find((component) => {
