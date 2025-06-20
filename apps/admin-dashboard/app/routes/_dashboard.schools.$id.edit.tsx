@@ -105,7 +105,7 @@ export default function EditSchoolModal() {
           error={errors.addressState}
         />
         <SchoolZipField
-          defaultValue={school.addressZip}
+          defaultValue={school.addressZip ?? undefined}
           error={errors.addressZip}
         />
 
