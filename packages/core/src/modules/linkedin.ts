@@ -122,7 +122,9 @@ const LinkedInProfile = z.object({
           const startDate = run(() => {
             if (startYear && startMonth) {
               return `${startYear}-${startMonth}-01`;
-            } else if (startYear) {
+            }
+
+            if (startYear) {
               // Default to August since that's when most schools start.
               return `${startYear}-08-01`;
             }
@@ -133,7 +135,9 @@ const LinkedInProfile = z.object({
           const endDate = run(() => {
             if (endMonth && endYear) {
               return `${endYear}-${endMonth}-01`;
-            } else if (endYear) {
+            }
+
+            if (endYear) {
               // Default to May since that's when most schools end.
               return `${endYear}-05-01`;
             }
@@ -268,11 +272,15 @@ const LinkedInProfile = z.object({
           const endDate = run(() => {
             if (endMonth && endYear) {
               return `${endYear}-${endMonth}-01`;
-            } else if (endYear && startYear === endYear && !startMonth) {
+            }
+
+            if (endYear && startYear === endYear && !startMonth) {
               // This is a special case when the dates read something like:
               // "2024 - 2024"...we want that to be like "1 year".
               return `${endYear}-12-01`;
-            } else if (endYear) {
+            }
+
+            if (endYear) {
               return `${endYear}-01-01`;
             }
 
