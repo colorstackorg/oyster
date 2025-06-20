@@ -111,25 +111,13 @@ const LinkedInProfile = z.object({
             return null;
           }
 
-          let startYear = education.startDate?.year;
+          const startYear = education.startDate?.year;
           const endYear = education.endDate?.year;
 
           // The months are formatted as an abbreviation of the month, so we
           // need to convert it to a 2-digit number (ie: `Jan` -> `01`).
-          let startMonth = MONTH_MAP[education.startDate?.month || ''];
+          const startMonth = MONTH_MAP[education.startDate?.month || ''];
           const endMonth = MONTH_MAP[education.endDate?.month || ''];
-
-          // Sometimes (especially for a higher education that takes many years)
-          // the person will just have the start date and not the end date. In
-          // that case, we look at the period file and attempt to parse it.
-          if (!education.startDate && !education.endDate && education.period) {
-            const [month, year] = education.period.split(' ');
-
-            if (!!parseInt(year) && MONTH_MAP[month]) {
-              startYear = parseInt(year);
-              startMonth = MONTH_MAP[month];
-            }
-          }
 
           const startDate = run(() => {
             if (startYear && startMonth) {
@@ -692,7 +680,7 @@ export async function syncLinkedInProfiles(
           });
 
           console.log(
-            `Synced member ${member.id} with ${educationCreates + educationUpdates + experienceCreates + experienceUpdates + memberUpdates} updates.`
+            `Synced member ${member.id} with ${educationCreates} education creates, ${educationUpdates} education updates, ${experienceCreates} experience creates, ${experienceUpdates} experience updates, and ${memberUpdates} member updates.`
           );
         } catch (error) {
           await db.transaction().execute(async (trx) => {
@@ -946,17 +934,13 @@ async function checkEducation({
     }
 
     if (
-      linkedInEducation.endDate &&
-      existingEducation.endDate !== linkedInEducation.endDate
-    ) {
-      set.endDate = linkedInEducation.endDate;
-    }
-
-    if (
       linkedInEducation.startDate &&
-      existingEducation.startDate !== linkedInEducation.startDate
+      linkedInEducation.endDate &&
+      (linkedInEducation.startDate !== existingEducation.startDate ||
+        linkedInEducation.endDate !== existingEducation.endDate)
     ) {
       set.startDate = linkedInEducation.startDate;
+      set.endDate = linkedInEducation.endDate;
     }
 
     if (!Object.keys(set).length) {
