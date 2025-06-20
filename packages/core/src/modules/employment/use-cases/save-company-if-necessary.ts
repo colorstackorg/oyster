@@ -8,6 +8,15 @@ import { withCache } from '@/infrastructure/redis';
 import { runActor } from '@/modules/apify';
 import { ColorStackError } from '@/shared/errors';
 
+const Company = z.object({
+  description: z.string().nullish(),
+  id: z.string(),
+  logo: z.string().url().optional(),
+  name: z.string(),
+  universalName: z.string(),
+  website: z.string().url().nullish(),
+});
+
 /**
  * Saves a company in the database, if it does not already exist.
  *
@@ -55,18 +64,7 @@ export async function saveCompanyIfNecessary(
     }
   );
 
-  const parseResult = z
-    .array(
-      z.object({
-        description: z.string().nullish(),
-        id: z.string(),
-        logo: z.string().url().optional(),
-        name: z.string(),
-        universalName: z.string(),
-        website: z.string().url().nullish(),
-      })
-    )
-    .safeParse(apifyResult);
+  const parseResult = z.array(Company).safeParse(apifyResult);
 
   if (!parseResult.success) {
     throw new ColorStackError()

@@ -10,6 +10,17 @@ import { runActor } from '@/modules/apify';
 import { getMostRelevantLocation } from '@/modules/location/location';
 import { ColorStackError } from '@/shared/errors';
 
+const Location = z.object({
+  parsed: z.object({ text: z.string().nullish() }).nullish(),
+});
+
+const School = z.object({
+  id: z.string(),
+  locations: Location.array().nullish(),
+  logo: z.string().url().nullish(),
+  name: z.string(),
+});
+
 /**
  * Saves a school in the database, if it does not already exist.
  *
@@ -57,20 +68,7 @@ export async function saveSchoolIfNecessary(
     }
   );
 
-  const parseResult = z
-    .object({
-      id: z.string(),
-      locations: z
-        .object({
-          parsed: z.object({ text: z.string().nullish() }).nullish(),
-        })
-        .array()
-        .nullish(),
-      logo: z.string().url().nullish(),
-      name: z.string(),
-    })
-    .array()
-    .safeParse(apifyResult);
+  const parseResult = z.array(School).safeParse(apifyResult);
 
   if (!parseResult.success) {
     throw new ColorStackError()
