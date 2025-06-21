@@ -8,6 +8,18 @@ import { withCache } from '@/infrastructure/redis';
 import { reportException } from '@/member-profile.server';
 import { runActor } from '@/modules/apify';
 import { getMostRelevantLocation } from '@/modules/location/location';
+import { ColorStackError } from '@/shared/errors';
+
+const Location = z.object({
+  parsed: z.object({ text: z.string().nullish() }).nullish(),
+});
+
+const School = z.object({
+  id: z.string(),
+  locations: Location.array().nullish(),
+  logo: z.string().url().nullish(),
+  name: z.string(),
+});
 
 /**
  * Saves a school in the database, if it does not already exist.
@@ -45,61 +57,44 @@ export async function saveSchoolIfNecessary(
     return existingSchool.id;
   }
 
-  const [schoolFromLinkedIn] = await withCache(
-    `harvestapi~linkedin-company:${schoolNameOrLinkedInId}`,
+  const apifyResult = await withCache(
+    `harvestapi~linkedin-company:v2:${schoolNameOrLinkedInId}`,
     60 * 60 * 24 * 30,
     async () => {
       return runActor({
         actorId: 'harvestapi~linkedin-company',
         body: { companies: [schoolNameOrLinkedInId] },
-        schema: z.array(
-          z.object({
-            id: z.string(),
-            locations: z
-              .array(
-                z.object({
-                  city: z.string().optional(),
-                  geographicArea: z.string().optional(),
-                  line1: z.string().optional(),
-                  postalCode: z.string().optional(),
-                })
-              )
-              .min(1),
-            logo: z.string().url(),
-            name: z.string(),
-          })
-        ),
       });
     }
   );
+
+  const parseResult = z.array(School).safeParse(apifyResult);
+
+  if (!parseResult.success) {
+    throw new ColorStackError()
+      .withMessage('Failed to parse school from Apify.')
+      .withContext({ error: JSON.stringify(parseResult.error, null, 2) })
+      .report();
+  }
+
+  const [schoolFromLinkedIn] = parseResult.data;
 
   if (!schoolFromLinkedIn) {
     return null;
   }
 
-  const linkedInLocation = schoolFromLinkedIn.locations[0];
+  let location = await getMostRelevantLocation(
+    schoolFromLinkedIn.name,
+    'establishment'
+  );
 
-  const location =
-    !!linkedInLocation.line1 && !!linkedInLocation.city
-      ? // If all the address components are here, we'll pass in the formatted
-        // address without passing in the "type" parameter.
-        await getMostRelevantLocation(
-          `${linkedInLocation.line1}, ${linkedInLocation.city}, ${linkedInLocation.geographicArea}, ${linkedInLocation.postalCode}`
-        )
-      : // Otherwise, we'll pass in the postal code and geographic area and
-        // limit the search to only postal codes.
-        await getMostRelevantLocation(
-          `${linkedInLocation.postalCode}, ${linkedInLocation.geographicArea}`,
-          'postal_code'
-        );
+  if (!location && schoolFromLinkedIn.locations?.[0]?.parsed?.text) {
+    location = await getMostRelevantLocation(
+      schoolFromLinkedIn.locations[0].parsed.text
+    );
+  }
 
-  if (
-    !location ||
-    !location.city ||
-    !location.state ||
-    !location.country ||
-    !location.postalCode
-  ) {
+  if (!location || !location.city || !location.state || !location.country) {
     reportException(
       new Error(
         `Failed to find location for school ${schoolFromLinkedIn.name}.`

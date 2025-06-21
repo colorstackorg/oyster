@@ -23,7 +23,7 @@ const GoogleAutocompleteData = z.object({
   predictions: z.array(GooglePrediction),
 });
 
-type AutocompleteType = '(cities)' | '(regions)' | 'postal_code';
+type AutocompleteType = '(cities)' | 'establishment' | 'geocode';
 
 /**
  * Returns a list of places that match the search term.
@@ -147,11 +147,11 @@ type PlaceDetails = {
 export async function getPlaceDetails(
   id: string
 ): Promise<PlaceDetails | null> {
-  async function fn() {
-    if (!GOOGLE_MAPS_API_KEY) {
-      return null;
-    }
+  if (!GOOGLE_MAPS_API_KEY) {
+    return null;
+  }
 
+  async function fn() {
     const uri = new URL(
       'https://maps.googleapis.com/maps/api/place/details/json'
     );
@@ -176,52 +176,70 @@ export async function getPlaceDetails(
       return null;
     }
 
-    const result = GooglePlaceDetailsResponse.safeParse(json);
-
-    if (!result.success) {
-      const _ = new ColorStackError()
-        .withMessage('Failed to validate place details from Google.')
-        .withContext({ error: result.error, response: json })
-        .report();
-
-      return null;
-    }
-
-    const { address_components, formatted_address, geometry } =
-      result.data.result;
-
-    const cityComponent = address_components.find((component) => {
-      return (
-        component.types.includes('locality') ||
-        component.types.includes('administrative_area_level_3')
-      );
-    });
-
-    const postalCodeComponent = address_components.find((component) => {
-      return component.types.includes('postal_code');
-    });
-
-    const stateComponent = address_components.find((component) => {
-      return component.types.includes('administrative_area_level_1');
-    });
-
-    const countryComponent = address_components.find((component) => {
-      return component.types.includes('country');
-    });
-
-    return {
-      city: cityComponent?.long_name || null,
-      country: countryComponent?.short_name || null,
-      formattedAddress: formatted_address,
-      id,
-      latitude: geometry.location.lat,
-      longitude: geometry.location.lng,
-      postalCode: postalCodeComponent?.short_name || null,
-      state: stateComponent?.short_name || null,
-    };
+    return json;
   }
 
-  return withCache(`google:places:details:v3:${id}`, 60 * 60 * 24 * 90, fn);
+  // We are caching the exact response from Google before we parse it with
+  // any of our own logic. This is because the thing we actually care about
+  // is not sending more API calls to Google, it's okay if we parse it
+  // every time since that's inexpensive.
+  const json = await withCache(
+    `google:places:details:v5:${id}`,
+    60 * 60 * 24 * 90,
+    fn
+  );
+
+  const result = GooglePlaceDetailsResponse.safeParse(json);
+
+  if (!result.success) {
+    const _ = new ColorStackError()
+      .withMessage('Failed to validate place details from Google.')
+      .withContext({ error: result.error, response: json })
+      .report();
+
+    return null;
+  }
+
+  const { address_components, formatted_address, geometry } =
+    result.data.result;
+
+  let cityComponent = address_components.find((component) => {
+    return (
+      component.types.includes('locality') ||
+      component.types.includes('administrative_area_level_3')
+    );
+  });
+
+  cityComponent ||= address_components.find((component) => {
+    return component.types.includes('sublocality');
+  });
+
+  cityComponent ||= address_components.find((component) => {
+    return component.types.includes('postal_town');
+  });
+
+  const postalCodeComponent = address_components.find((component) => {
+    return component.types.includes('postal_code');
+  });
+
+  const stateComponent = address_components.find((component) => {
+    return component.types.includes('administrative_area_level_1');
+  });
+
+  const countryComponent = address_components.find((component) => {
+    return component.types.includes('country');
+  });
+
+  return {
+    city: cityComponent?.long_name || null,
+    country: countryComponent?.short_name || null,
+    formattedAddress: formatted_address,
+    id,
+    latitude: geometry.location.lat,
+    longitude: geometry.location.lng,
+    postalCode: postalCodeComponent?.short_name || null,
+    state: stateComponent?.short_name || null,
+  };
 }
 
 /**
@@ -241,19 +259,13 @@ export async function getMostRelevantLocation(
     return null;
   }
 
-  return withCache(
-    `${getMostRelevantLocation.name}:${location}:${type}`,
-    60 * 60 * 24 * 30,
-    async function fn() {
-      const places = await getAutocompletedPlaces(location, type);
+  const places = await getAutocompletedPlaces(location, type);
 
-      if (!places || !places.length) {
-        return null;
-      }
+  if (!places || !places.length) {
+    return null;
+  }
 
-      return getPlaceDetails(places[0].id);
-    }
-  );
+  return getPlaceDetails(places[0].id);
 }
 
 // DB Queries

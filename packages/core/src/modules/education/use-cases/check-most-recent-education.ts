@@ -79,8 +79,12 @@ export async function checkMostRecentEducation(studentId: string) {
     airtableRecordId: member.airtableId as string,
     airtableTableId: AIRTABLE_MEMBERS_TABLE_ID!,
     data: {
-      'Expected Graduation Month': graduationMonth?.toString(),
-      'Expected Graduation Year': graduationYear?.toString(),
+      ...(graduationMonth && {
+        'Expected Graduation Month': graduationMonth.toString(),
+      }),
+      ...(graduationYear && {
+        'Expected Graduation Year': graduationYear.toString(),
+      }),
       School: member.school as string,
     },
   });

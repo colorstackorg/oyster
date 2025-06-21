@@ -50,14 +50,10 @@ export async function getEducationExperiences(id: string) {
       location = `${experience.addressCity}, ${experience.addressState}`;
     }
 
-    let date = undefined;
-
-    if (experience.startDate && experience.endDate) {
-      const startMonth = dayjs.utc(experience.startDate).format('MMMM YYYY');
-      const endMonth = dayjs.utc(experience.endDate).format('MMMM YYYY');
-
-      date = `${startMonth} - ${endMonth}`;
-    }
+    const date = [experience.startDate, experience.endDate]
+      .filter(Boolean)
+      .map((value) => dayjs.utc(value).format('MMMM YYYY'))
+      .join(' - ');
 
     return {
       date,

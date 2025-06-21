@@ -124,18 +124,12 @@ export function SchoolZipField({
   error,
 }: Omit<FieldProps<string>, 'name'>) {
   return (
-    <Field
-      error={error}
-      label="Zip Code"
-      labelFor={schoolKeys.addressZip}
-      required
-    >
+    <Field error={error} label="Zip Code" labelFor={schoolKeys.addressZip}>
       <Input
         defaultValue={defaultValue}
         id={schoolKeys.addressZip}
         name={schoolKeys.addressZip}
         placeholder="90210"
-        required
       />
     </Field>
   );
