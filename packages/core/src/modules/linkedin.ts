@@ -17,6 +17,8 @@ import {
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { getMostRelevantLocation } from '@/modules/location/location';
 
+// Constants
+
 const MONTH_MAP: Record<string, string> = {
   Jan: '01',
   Feb: '02',
@@ -48,289 +50,287 @@ const LOCATION_TYPE_MAP: Record<string, LocationType | null> = {
   Remote: 'remote',
 };
 
+// Schemas
+
 const LinkedInDate = z.object({
   month: z.string().nullish(), // Formatted as a 3-letter abbreviation.
   year: z.number().nullish(),
 });
 
+const LinkedInEducation = z
+  .object({
+    degree: z.string().nullish(),
+    description: z.string().nullish(),
+    endDate: LinkedInDate.nullish(),
+    fieldOfStudy: z.string().nullish(),
+    period: z.string().nullish(),
+    schoolName: z.string(),
+    schoolLinkedinUrl: z.string().url(),
+    startDate: LinkedInDate.nullish(),
+  })
+  .transform((education) => {
+    const degreeType =
+      getDegreeType(education.degree || '') ||
+      getDegreeType(education.fieldOfStudy || '') ||
+      getDegreeType(education.description || '');
+
+    // If there is no `degree` field, it likely means that the education
+    // was pre-college.
+    if (!degreeType) {
+      return null;
+    }
+
+    const fieldOfStudy =
+      getFieldOfStudy(education.fieldOfStudy || '') ||
+      getFieldOfStudy(education.degree || '') ||
+      getFieldOfStudy(education.description || '');
+
+    // If we couldn't find the field of study anywhere and the actual
+    // field was empty too, we'll skip.
+    if (!education.fieldOfStudy && !fieldOfStudy) {
+      return null;
+    }
+
+    const url = new URL(education.schoolLinkedinUrl);
+
+    // This means that the URL is not a valid LinkedIn URL for a company
+    // or school, it's likely a search result so we'll skip it.
+    if (
+      !url.pathname.startsWith('/company/') &&
+      !url.pathname.startsWith('/school/')
+    ) {
+      return null;
+    }
+
+    // Example: https://www.linkedin.com/company/123 -> 123
+    // Example: https://www.linkedin.com/school/123 -> 123
+    const linkedinId = url.pathname.split('/').filter(Boolean)[1];
+
+    // If there is no ID, it likely means that the school is not
+    // accredited so we will skip syncing it.
+    if (!linkedinId) {
+      return null;
+    }
+
+    const startYear = education.startDate?.year;
+    const endYear = education.endDate?.year;
+
+    // The months are formatted as an abbreviation of the month, so we
+    // need to convert it to a 2-digit number (ie: `Jan` -> `01`).
+    const startMonth = MONTH_MAP[education.startDate?.month || ''];
+    const endMonth = MONTH_MAP[education.endDate?.month || ''];
+
+    const startDate = run(() => {
+      if (startYear && startMonth) {
+        return `${startYear}-${startMonth}-01`;
+      }
+
+      if (startYear) {
+        // Default to August since that's when most schools start.
+        return `${startYear}-08-01`;
+      }
+
+      return undefined;
+    });
+
+    const endDate = run(() => {
+      if (endMonth && endYear) {
+        return `${endYear}-${endMonth}-01`;
+      }
+
+      if (endYear) {
+        // Default to May since that's when most schools end.
+        return `${endYear}-05-01`;
+      }
+
+      return undefined;
+    });
+
+    return {
+      degreeType,
+      fieldOfStudy,
+      endDate,
+      linkedinId,
+      otherFieldOfStudy: education.fieldOfStudy,
+      schoolName: education.schoolName,
+      startDate,
+    };
+  });
+
+const LinkedInExperience = z
+  .object({
+    companyId: z.string().nullish(),
+    companyName: z.string().nullish(),
+    description: z.string().nullish(),
+    employmentType: z.string().nullish(),
+    endDate: LinkedInDate.nullish(),
+    location: z
+      .string()
+      .nullish()
+      .transform((value) => {
+        return value
+          ? value
+              .replace('Metropolitan Area', '')
+              .replace('Metropolitan Region', '')
+              .replace('Area', '')
+              .replace('Greater', '')
+              .replace('San Francisco Bay', 'San Francisco')
+              .trim()
+          : null;
+      }),
+    position: z.string(),
+    startDate: LinkedInDate.nullish(),
+    workplaceType: z.string().nullish(),
+  })
+  .transform((experience) => {
+    // We're going to ignore any work experiences that don't have a company
+    // ID or start date for now...this errs on the side of caution.
+    if (
+      !experience.companyId ||
+      !experience.companyName ||
+      !experience.startDate ||
+      !experience.startDate.year
+    ) {
+      return null;
+    }
+
+    // This is a special case for the "ColorStack" company...a lot of members
+    // put "Fellow" on their work experience with ColorStack, but we don't want
+    // that to sync to our database since this is already in ColorStack.
+    if (
+      experience.companyId === '53416834' &&
+      experience.employmentType !== 'Full-time'
+    ) {
+      return null;
+    }
+
+    if (experience.location === 'Earth') {
+      experience.location = null;
+    }
+
+    // These are some weird bugs in the Apify scraper that we can
+    // work around by manually setting the location and workplace type.
+
+    const location = experience.location as string;
+    const workplaceType = experience.workplaceType as string;
+
+    let locationIsWorkplaceType = false;
+    let workplaceTypeIsLocation = false;
+
+    if (
+      location === 'Remote' ||
+      location === 'Hybrid' ||
+      location === 'On-site'
+    ) {
+      locationIsWorkplaceType = true;
+    }
+
+    if (
+      experience.workplaceType &&
+      experience.workplaceType !== 'Hybrid' &&
+      experience.workplaceType !== 'Remote' &&
+      experience.workplaceType !== 'On-site'
+    ) {
+      workplaceTypeIsLocation = true;
+    }
+
+    if (locationIsWorkplaceType && workplaceTypeIsLocation) {
+      experience.location = workplaceType;
+      experience.workplaceType = location;
+    } else if (locationIsWorkplaceType) {
+      experience.workplaceType = location;
+      experience.location = null;
+    } else if (workplaceTypeIsLocation) {
+      experience.location = workplaceType;
+      experience.workplaceType = null;
+    }
+
+    if (!experience.employmentType && experience.position.includes('Intern')) {
+      experience.employmentType = 'Internship';
+    }
+
+    const startYear = experience.startDate?.year;
+    const endYear = experience.endDate?.year;
+
+    // The months are formatted as an abbreviation of the month, so we
+    // need to convert it to a 2-digit number (ie: `Jan` -> `01`).
+    const startMonth = MONTH_MAP[experience.startDate?.month || ''];
+    const endMonth = MONTH_MAP[experience.endDate?.month || ''];
+
+    const startDate = run(() => {
+      if (startYear && startMonth) {
+        return `${startYear}-${startMonth}-01`;
+      }
+
+      // Default to January since the fiscal year starts in January.
+      return `${startYear}-01-01`;
+    });
+
+    const endDate = run(() => {
+      if (endMonth && endYear) {
+        return `${endYear}-${endMonth}-01`;
+      }
+
+      if (endYear && startYear === endYear && !startMonth) {
+        // This is a special case when the dates read something like:
+        // "2024 - 2024"...we want that to be like "1 year".
+        return `${endYear}-12-01`;
+      }
+
+      if (endYear) {
+        return `${endYear}-01-01`;
+      }
+
+      return undefined;
+    });
+
+    return {
+      companyId: experience.companyId,
+      companyName: experience.companyName,
+      description: experience.description,
+      employmentType: EMPLOYMENT_TYPE_MAP[experience.employmentType || ''],
+      endDate,
+      endMonth,
+      endYear,
+      location: experience.location,
+      locationType: LOCATION_TYPE_MAP[experience.workplaceType || ''],
+      position: experience.position,
+      startDate,
+      startMonth,
+      startYear,
+    };
+  });
+
+const LinkedInLocation = z.object({
+  parsed: z
+    .object({
+      text: z
+        .string()
+        .nullish()
+        .transform((value) => {
+          return value
+            ? value
+                .replace('Metropolitan Area', '')
+                .replace('Metropolitan Region', '')
+                .replace('Area', '')
+                .replace('Greater', '')
+                .trim()
+            : null;
+        }),
+    })
+    .nullish(),
+});
+
 const LinkedInProfile = z.object({
   element: z.object({
-    education: z.array(
-      z
-        .object({
-          degree: z.string().nullish(),
-          description: z.string().nullish(),
-          endDate: LinkedInDate.nullish(),
-          fieldOfStudy: z.string().nullish(),
-          period: z.string().nullish(),
-          schoolName: z.string(),
-          schoolLinkedinUrl: z.string().url(),
-          startDate: LinkedInDate.nullish(),
-        })
-        .transform((education) => {
-          const degreeType =
-            getDegreeType(education.degree || '') ||
-            getDegreeType(education.fieldOfStudy || '') ||
-            getDegreeType(education.description || '');
-
-          // If there is no `degree` field, it likely means that the education
-          // was pre-college.
-          if (!degreeType) {
-            return null;
-          }
-
-          const fieldOfStudy =
-            getFieldOfStudy(education.fieldOfStudy || '') ||
-            getFieldOfStudy(education.degree || '') ||
-            getFieldOfStudy(education.description || '');
-
-          // If we couldn't find the field of study anywhere and the actual
-          // field was empty too, we'll skip.
-          if (!education.fieldOfStudy && !fieldOfStudy) {
-            return null;
-          }
-
-          const url = new URL(education.schoolLinkedinUrl);
-
-          // This means that the URL is not a valid LinkedIn URL for a company
-          // or school, it's likely a search result so we'll skip it.
-          if (
-            !url.pathname.startsWith('/company/') &&
-            !url.pathname.startsWith('/school/')
-          ) {
-            return null;
-          }
-
-          // Example: https://www.linkedin.com/company/123 -> 123
-          // Example: https://www.linkedin.com/school/123 -> 123
-          const linkedinId = url.pathname.split('/').filter(Boolean)[1];
-
-          // If there is no ID, it likely means that the school is not
-          // accredited so we will skip syncing it.
-          if (!linkedinId) {
-            return null;
-          }
-
-          const startYear = education.startDate?.year;
-          const endYear = education.endDate?.year;
-
-          // The months are formatted as an abbreviation of the month, so we
-          // need to convert it to a 2-digit number (ie: `Jan` -> `01`).
-          const startMonth = MONTH_MAP[education.startDate?.month || ''];
-          const endMonth = MONTH_MAP[education.endDate?.month || ''];
-
-          const startDate = run(() => {
-            if (startYear && startMonth) {
-              return `${startYear}-${startMonth}-01`;
-            }
-
-            if (startYear) {
-              // Default to August since that's when most schools start.
-              return `${startYear}-08-01`;
-            }
-
-            return undefined;
-          });
-
-          const endDate = run(() => {
-            if (endMonth && endYear) {
-              return `${endYear}-${endMonth}-01`;
-            }
-
-            if (endYear) {
-              // Default to May since that's when most schools end.
-              return `${endYear}-05-01`;
-            }
-
-            return undefined;
-          });
-
-          return {
-            degreeType,
-            fieldOfStudy,
-            endDate,
-            linkedinId,
-            otherFieldOfStudy: education.fieldOfStudy,
-            schoolName: education.schoolName,
-            startDate,
-          };
-        })
-    ),
-    experience: z.array(
-      z
-        .object({
-          companyId: z.string().nullish(),
-          companyName: z.string().nullish(),
-          description: z.string().nullish(),
-          employmentType: z.string().nullish(),
-          endDate: LinkedInDate.nullish(),
-          location: z
-            .string()
-            .nullish()
-            .transform((value) => {
-              return value
-                ? value
-                    .replace('Metropolitan Area', '')
-                    .replace('Metropolitan Region', '')
-                    .replace('Area', '')
-                    .replace('Greater', '')
-                    .replace('San Francisco Bay', 'San Francisco')
-                    .trim()
-                : null;
-            }),
-          position: z.string(),
-          startDate: LinkedInDate.nullish(),
-          workplaceType: z.string().nullish(),
-        })
-        .transform((experience) => {
-          // We're going to ignore any work experiences that don't have a company
-          // ID or start date for now...this errs on the side of caution.
-          if (
-            !experience.companyId ||
-            !experience.companyName ||
-            !experience.startDate ||
-            !experience.startDate.year
-          ) {
-            return null;
-          }
-
-          // This is a special case for the "ColorStack" company...a lot of members
-          // put "Fellow" on their work experience with ColorStack, but we don't want
-          // that to sync to our database since this is already in ColorStack.
-          if (
-            experience.companyId === '53416834' &&
-            experience.employmentType !== 'Full-time'
-          ) {
-            return null;
-          }
-
-          if (experience.location === 'Earth') {
-            experience.location = null;
-          }
-
-          // These are some weird bugs in the Apify scraper that we can
-          // work around by manually setting the location and workplace type.
-
-          const location = experience.location as string;
-          const workplaceType = experience.workplaceType as string;
-
-          let locationIsWorkplaceType = false;
-          let workplaceTypeIsLocation = false;
-
-          if (
-            location === 'Remote' ||
-            location === 'Hybrid' ||
-            location === 'On-site'
-          ) {
-            locationIsWorkplaceType = true;
-          }
-
-          if (
-            experience.workplaceType &&
-            experience.workplaceType !== 'Hybrid' &&
-            experience.workplaceType !== 'Remote' &&
-            experience.workplaceType !== 'On-site'
-          ) {
-            workplaceTypeIsLocation = true;
-          }
-
-          if (locationIsWorkplaceType && workplaceTypeIsLocation) {
-            experience.location = workplaceType;
-            experience.workplaceType = location;
-          } else if (locationIsWorkplaceType) {
-            experience.workplaceType = location;
-            experience.location = null;
-          } else if (workplaceTypeIsLocation) {
-            experience.location = workplaceType;
-            experience.workplaceType = null;
-          }
-
-          if (
-            !experience.employmentType &&
-            experience.position.includes('Intern')
-          ) {
-            experience.employmentType = 'Internship';
-          }
-
-          const startYear = experience.startDate?.year;
-          const endYear = experience.endDate?.year;
-
-          // The months are formatted as an abbreviation of the month, so we
-          // need to convert it to a 2-digit number (ie: `Jan` -> `01`).
-          const startMonth = MONTH_MAP[experience.startDate?.month || ''];
-          const endMonth = MONTH_MAP[experience.endDate?.month || ''];
-
-          const startDate = run(() => {
-            if (startYear && startMonth) {
-              return `${startYear}-${startMonth}-01`;
-            }
-
-            // Default to January since the fiscal year starts in January.
-            return `${startYear}-01-01`;
-          });
-
-          const endDate = run(() => {
-            if (endMonth && endYear) {
-              return `${endYear}-${endMonth}-01`;
-            }
-
-            if (endYear && startYear === endYear && !startMonth) {
-              // This is a special case when the dates read something like:
-              // "2024 - 2024"...we want that to be like "1 year".
-              return `${endYear}-12-01`;
-            }
-
-            if (endYear) {
-              return `${endYear}-01-01`;
-            }
-
-            return undefined;
-          });
-
-          return {
-            companyId: experience.companyId,
-            companyName: experience.companyName,
-            description: experience.description,
-            employmentType:
-              EMPLOYMENT_TYPE_MAP[experience.employmentType || ''],
-            endDate,
-            endMonth,
-            endYear,
-            location: experience.location,
-            locationType: LOCATION_TYPE_MAP[experience.workplaceType || ''],
-            position: experience.position,
-            startDate,
-            startMonth,
-            startYear,
-          };
-        })
-    ),
+    education: z.array(LinkedInEducation),
+    experience: z.array(LinkedInExperience),
     headline: z.string().nullish(),
-    location: z.object({
-      parsed: z
-        .object({
-          text: z
-            .string()
-            .nullish()
-            .transform((value) => {
-              return value
-                ? value
-                    .replace('Metropolitan Area', '')
-                    .replace('Metropolitan Region', '')
-                    .replace('Area', '')
-                    .replace('Greater', '')
-                    .trim()
-                : null;
-            }),
-        })
-        .nullish(),
-    }),
+    location: LinkedInLocation,
     openToWork: z.boolean().nullish(),
     photo: z.string().url().nullish(),
   }),
-  originalQuery: z.object({
-    url: z.string(),
-  }),
+  originalQuery: z.object({ url: z.string() }),
 });
 
 const LinkedInFailure = z.object({
@@ -338,9 +338,9 @@ const LinkedInFailure = z.object({
   originalQuery: z.object({ url: z.string() }),
 });
 
-type LinkedInProfile = z.infer<typeof LinkedInProfile>;
+const LinkedInResult = z.union([LinkedInProfile, LinkedInFailure]);
 
-type LinkedInFailure = z.infer<typeof LinkedInFailure>;
+// Types
 
 type LinkedInEducation = NonNullable<
   z.infer<typeof LinkedInProfile>['element']['education'][number]
@@ -350,26 +350,32 @@ type LinkedInExperience = NonNullable<
   z.infer<typeof LinkedInProfile>['element']['experience'][number]
 >;
 
-type SyncLinkedInProfilesOptions = {
-  limit?: number;
-  memberIds?: string[];
-};
+type LinkedInProfile = z.infer<typeof LinkedInProfile>;
+type LinkedInFailure = z.infer<typeof LinkedInFailure>;
+type LinkedInResult = z.infer<typeof LinkedInResult>;
+
+// Core
+
+type SyncLinkedInProfilesOptions = Partial<{
+  limit: number;
+  memberIds: string[];
+}>;
 
 /**
  * Syncs a members' LinkedIn profiles (work, education, etc.) with their
  * respective database records. This is a complex process which executes the
  * following steps:
- * 1. Fetches all members, educations and experiences from the database.
- * 2. We store the results in memory (maps) for faster access.
- * 3. We filter through the batch and see if there are any that we already
+ * 1. Fetches all members, educations and experiences from the database. We
+ *    store the results in memory (maps) for faster access.
+ * 2. We filter through the batch and see if there are any that we already
  *    have in the cache. If so, we'll add them to the results array and remove
  *    them from the batch so we don't have to scrape them again.
- * 4. We scrape the profiles that we don't have in the cache.
- * 5. We combine the cached profiles with the new profiles so that we can use
+ * 3. We scrape the profiles that we don't have in the cache.
+ * 4. We combine the cached profiles with the new profiles so that we can use
  *    profiles to update the database.
- * 6. We check for differences between the scraped profiles and the database
+ * 5. We check for differences between the scraped profiles and the database
  *    records and update the database accordingly.
- * 7. We check for the most recent education and update the database if
+ * 6. We check for the most recent education and update the database if
  *    necessary.
  *
  * @param options.memberIds - Optional array of member IDs to sync. If not
@@ -379,6 +385,52 @@ type SyncLinkedInProfilesOptions = {
 export async function syncLinkedInProfiles(
   options?: SyncLinkedInProfilesOptions
 ) {
+  const { members, memberMap, educationMap, experienceMap } =
+    await loadAllData(options);
+
+  const batches = splitArray(members, 50);
+
+  console.log(
+    `Splitting ${members.length} members into ${batches.length} batches.`
+  );
+
+  for (let i = 0; i < batches.length; i++) {
+    console.log(`Processing batch ${i + 1} of ${batches.length}.`);
+
+    const { cachedResults, profilesToScrape } = await splitBatch(batches[i]);
+    const successfulResults = await scrapeProfiles(profilesToScrape);
+
+    await Promise.all(
+      [...cachedResults, ...successfulResults].map(async (profile) => {
+        const { searchParams } = new URL(profile.originalQuery.url);
+        const memberId = searchParams.get('id') as string;
+
+        const member = memberMap[memberId];
+        const educations = educationMap[memberId];
+        const experiences = experienceMap[memberId];
+
+        // This is the case where there are multiple members with the same
+        // LinkedIn URL, something that should be fixed.
+        if (!profile.element || !member) {
+          await finishSync(memberId);
+
+          console.log(`Profile not found for ${memberId}, moving on.`);
+
+          return;
+        }
+
+        await processProfile({
+          educations,
+          experiences,
+          member,
+          profile,
+        });
+      })
+    );
+  }
+}
+
+async function loadAllData(options?: SyncLinkedInProfilesOptions) {
   const members = await db.transaction().execute(async (trx) => {
     return getAllMembers(trx, options);
   });
@@ -421,290 +473,12 @@ export async function syncLinkedInProfiles(
     experienceMap[experience.studentId].push(experience);
   });
 
-  const batches = splitArray(members, 50);
-
-  console.log(
-    `Splitting ${members.length} members into ${batches.length} batches.`
-  );
-
-  for (let i = 0; i < batches.length; i++) {
-    console.log(`Processing batch ${i + 1} of ${batches.length}.`);
-
-    const profilesToScrape: string[] = [];
-    const cachedProfiles: (LinkedInProfile | LinkedInFailure)[] = [];
-
-    // We need to filter through the batch and see if there are any that we
-    // already have in the cache. If so, we'll add them to the results array
-    // and remove them from the batch so we don't have to scrape them again.
-    await Promise.all(
-      batches[i].map(async (member) => {
-        const profile = await cache.get<LinkedInProfile | LinkedInFailure>(
-          `harvestapi~linkedin-profile-scraper:v2:${member.linkedInUrl}`
-        );
-
-        if (profile) {
-          const parsedProfile = z
-            .union([LinkedInProfile, LinkedInFailure])
-            .parse(profile);
-
-          const memberId = new URL(
-            parsedProfile.originalQuery.url
-          ).searchParams.get('id');
-
-          if (memberId === member.id) {
-            cachedProfiles.push(parsedProfile);
-
-            return;
-          }
-
-          console.log(
-            `Member ID mismatch: ${memberId} !== ${member.id} for ${member.linkedInUrl}.`
-          );
-
-          await db
-            .updateTable('students')
-            .set({
-              linkedinSyncedAt: new Date(),
-              updatedAt: new Date(),
-            })
-            .where('id', '=', member.id)
-            .execute();
-
-          return;
-        }
-
-        const url = new URL(member.linkedInUrl!);
-
-        // We need a way to reference the member in the cache after we
-        // scrape the profile so we set this query parameter then we can
-        // use it to get the member from the cache.
-        url.searchParams.set('id', member.id);
-
-        profilesToScrape.push(url.toString());
-      })
-    );
-
-    console.log(`Found ${cachedProfiles.length} cached profiles.`);
-
-    let newProfiles: (LinkedInProfile | LinkedInFailure)[] = [];
-
-    if (profilesToScrape.length) {
-      console.log(`Attempting to scrape ${profilesToScrape.length} profiles.`);
-
-      // This is the most expensive part of the process and what actually is
-      // doing the scraping.
-      const apifyResult = await runActor({
-        actorId: 'harvestapi~linkedin-profile-scraper',
-        body: { urls: profilesToScrape },
-      });
-
-      // We just need the bare minimum in order to cache the profiles, we're not
-      // trying to parse the entire profile here. This ensures that we're not
-      // too restrictive and forcing ourselves to re-scrape profiles that we
-      // already have in the cache.
-      const profilesToCache = z
-        .object({ originalQuery: z.object({ url: z.string() }) })
-        .passthrough()
-        .array()
-        .parse(apifyResult);
-
-      await Promise.all(
-        profilesToCache.map(async (profile) => {
-          const url = new URL(profile.originalQuery.url);
-
-          url.search = '';
-
-          await cache.set(
-            `harvestapi~linkedin-profile-scraper:v2:${url}`,
-            profile,
-            60 * 60 * 24 * 30
-          );
-        })
-      );
-
-      // Now that we've cached the profiles, we can parse the results and
-      // actually get the full profile.
-      newProfiles = z
-        .array(z.union([LinkedInProfile, LinkedInFailure]))
-        .parse(apifyResult);
-    }
-
-    const failedProfiles: LinkedInFailure[] = [];
-    const scrapedProfiles: LinkedInProfile[] = [];
-
-    newProfiles.forEach((profile) => {
-      if (!profile.element) {
-        // We want to still keep track of the profiles that failed the scraping
-        // process so that we can probe manually after.
-        failedProfiles.push(profile);
-      } else {
-        scrapedProfiles.push(profile);
-      }
-    });
-
-    if (scrapedProfiles.length) {
-      console.log(`Successfully scraped ${scrapedProfiles.length} profiles.`);
-    }
-
-    if (failedProfiles.length) {
-      console.log(`Failed to scrape ${failedProfiles.length} profiles.`);
-
-      await db.transaction().execute(async (trx) => {
-        await Promise.all(
-          failedProfiles.map(async (profile) => {
-            const url = new URL(profile.originalQuery.url);
-
-            const memberId = url.searchParams.get('id') as string;
-
-            url.search = '';
-
-            await trx
-              .updateTable('students')
-              .set({ linkedinSyncedAt: new Date(), updatedAt: new Date() })
-              .where('id', '=', memberId)
-              .execute();
-
-            console.log(`Failed to scrape ${url}.`);
-          })
-        );
-      });
-    }
-
-    await Promise.all(
-      [...cachedProfiles, ...scrapedProfiles].map(async (profile) => {
-        const memberId = new URL(profile.originalQuery.url).searchParams.get(
-          'id'
-        ) as string;
-
-        if (!profile.element) {
-          await db.transaction().execute(async (trx) => {
-            await trx
-              .updateTable('students')
-              .set({ linkedinSyncedAt: new Date(), updatedAt: new Date() })
-              .where('id', '=', memberId)
-              .execute();
-          });
-
-          console.log(`Profile not found for ${memberId}, moving on.`);
-
-          return;
-        }
-
-        const member = memberMap[memberId];
-
-        // Not exactly sure how this is possible, but ran into it a few times.
-        if (!member) {
-          await db.transaction().execute(async (trx) => {
-            await trx
-              .updateTable('students')
-              .set({ linkedinSyncedAt: new Date(), updatedAt: new Date() })
-              .where('id', '=', memberId)
-              .execute();
-          });
-
-          console.log(`Profile not found for ${memberId}, moving on.`);
-
-          return;
-        }
-
-        const educations = educationMap[member.id];
-        const experiences = experienceMap[member.id];
-
-        let educationCreates = 0;
-        let educationUpdates = 0;
-        let experienceCreates = 0;
-        let experienceUpdates = 0;
-        let memberUpdates = 0;
-
-        try {
-          await db.transaction().execute(async (trx) => {
-            await Promise.all([
-              run(async () => {
-                const result = await checkMember({ member, profile, trx });
-
-                if (result && !!result.numUpdatedRows) {
-                  memberUpdates += 1;
-                }
-              }),
-
-              ...profile.element.education.map(async (education) => {
-                if (!education) {
-                  return;
-                }
-
-                const result = await checkEducation({
-                  educations,
-                  linkedInEducation: education,
-                  memberId: member.id,
-                  trx,
-                });
-
-                if (result) {
-                  if ('numUpdatedRows' in result) {
-                    educationUpdates += 1;
-                  } else {
-                    educationCreates += 1;
-                  }
-                }
-              }),
-
-              ...profile.element.experience.map(async (experience) => {
-                if (!experience) {
-                  return;
-                }
-
-                const result = await checkWorkExperience({
-                  experiences,
-                  linkedInExperience: experience,
-                  memberId: member.id,
-                  trx,
-                });
-
-                if (result) {
-                  if ('numUpdatedRows' in result) {
-                    experienceUpdates += 1;
-                  } else {
-                    experienceCreates += 1;
-                  }
-                }
-              }),
-            ]);
-          });
-
-          if (!!educationCreates || !!educationUpdates) {
-            checkMostRecentEducation(member.id);
-          }
-
-          track({
-            event: 'LinkedIn Synced',
-            properties: {
-              '# of Education Creates': educationCreates,
-              '# of Education Updates': educationUpdates,
-              '# of Member Updates': memberUpdates,
-              '# of Work Experience Creates': experienceCreates,
-              '# of Work Experience Updates': experienceUpdates,
-            },
-            user: member.id,
-          });
-
-          console.log(
-            `Synced member ${member.id} with ${educationCreates} education creates, ${educationUpdates} education updates, ${experienceCreates} experience creates, ${experienceUpdates} experience updates, and ${memberUpdates} member updates.`
-          );
-        } catch (error) {
-          await db.transaction().execute(async (trx) => {
-            await trx
-              .updateTable('students')
-              .set({ linkedinSyncedAt: new Date(), updatedAt: new Date() })
-              .where('id', '=', member.id)
-              .execute();
-          });
-
-          console.error(error);
-          console.error(`Failed to sync member ${member.id}.`);
-        }
-      })
-    );
-  }
+  return {
+    educationMap,
+    experienceMap,
+    memberMap,
+    members,
+  };
 }
 
 type Member = Awaited<ReturnType<typeof getAllMembers>>[number];
@@ -772,7 +546,7 @@ async function getAllEducations(trx: Transaction<DB>, memberIds: string[]) {
           .as('school');
       },
     ])
-    .where('educations.studentId', 'in', memberIds!)
+    .where('educations.studentId', 'in', memberIds)
     .where('educations.deletedAt', 'is', null)
     .orderBy('educations.endDate', 'desc')
     .orderBy('educations.startDate', 'desc')
@@ -827,11 +601,259 @@ async function getAllExperiences(trx: Transaction<DB>, memberIds: string[]) {
           .as('company');
       },
     ])
-    .where('workExperiences.studentId', 'in', memberIds!)
+    .where('workExperiences.studentId', 'in', memberIds)
     .where('workExperiences.deletedAt', 'is', null)
     .orderBy('workExperiences.endDate', 'desc')
     .orderBy('workExperiences.startDate', 'desc')
     .execute();
+}
+
+type SplitBatchResult = {
+  cachedResults: LinkedInResult[];
+  profilesToScrape: string[];
+};
+
+async function splitBatch(members: Member[]): Promise<SplitBatchResult> {
+  const cachedResults: LinkedInResult[] = [];
+  const profilesToScrape: string[] = [];
+
+  // We need to filter through the batch and see if there are any that we
+  // already have in the cache. If so, we'll add them to the results array
+  // and remove them from the batch so we don't have to scrape them again.
+  await Promise.all(
+    members.map(async (member) => {
+      const value = await cache.get(
+        `harvestapi~linkedin-profile-scraper:v2:${member.linkedInUrl}`
+      );
+
+      if (value) {
+        const result = LinkedInResult.parse(value);
+        const url = new URL(result.originalQuery.url);
+        const memberId = url.searchParams.get('id');
+
+        // This is the expected case where the query URL matches the member
+        // ID.
+        if (memberId === member.id) {
+          return cachedResults.push(result);
+        }
+
+        // This is the case where the query URL does not match the member ID.
+        // This likely means that there are multiple members with the same
+        // LinkedIn URL, something that should be fixed.
+        console.log(
+          `Member ID mismatch: ${memberId} !== ${member.id} for ${member.linkedInUrl}.`
+        );
+
+        return finishSync(member.id);
+      }
+
+      const url = new URL(member.linkedInUrl!);
+
+      // We need a way to reference the member in the cache after we
+      // scrape the profile so we set this query parameter then we can
+      // use it to get the member from the cache.
+      url.searchParams.set('id', member.id);
+
+      profilesToScrape.push(url.toString());
+    })
+  );
+
+  console.log(`Found ${cachedResults.length} cached results.`);
+
+  return {
+    cachedResults,
+    profilesToScrape,
+  };
+}
+
+function finishSync(memberId: string, trx?: Transaction<DB>) {
+  return (trx || db)
+    .updateTable('students')
+    .set({ linkedinSyncedAt: new Date(), updatedAt: new Date() })
+    .where('id', '=', memberId)
+    .execute();
+}
+
+async function scrapeProfiles(profilesToScrape: string[]) {
+  const successfulResults: LinkedInProfile[] = [];
+
+  if (!profilesToScrape.length) {
+    return successfulResults;
+  }
+
+  console.log(`Attempting to scrape ${profilesToScrape.length} profiles.`);
+
+  // This is the most expensive part of the process and what actually is
+  // doing the scraping.
+  const apifyResult = await runActor({
+    actorId: 'harvestapi~linkedin-profile-scraper',
+    body: { urls: profilesToScrape },
+  });
+
+  // We just need the bare minimum in order to cache the profiles, we're not
+  // trying to parse the entire profile here. This ensures that we're not
+  // too restrictive and forcing ourselves to re-scrape profiles that we
+  // already have in the cache.
+  const resultsToCache = z
+    .array(LinkedInProfile.pick({ originalQuery: true }).passthrough())
+    .parse(apifyResult);
+
+  await Promise.all(
+    resultsToCache.map(async (result) => {
+      const url = new URL(result.originalQuery.url);
+
+      // We want to cache the result without the query parameters.
+      url.search = '';
+
+      await cache.set(
+        `harvestapi~linkedin-profile-scraper:v2:${url}`,
+        result,
+        60 * 60 * 24 * 30
+      );
+    })
+  );
+
+  // Now that we've cached the profiles, we can parse the results and
+  // actually get the full profile.
+  const newResults = z.array(LinkedInResult).parse(apifyResult);
+
+  let failedCount = 0;
+
+  await db.transaction().execute(async (trx) => {
+    await Promise.all(
+      newResults.map(async (result) => {
+        if (result.element) {
+          return successfulResults.push(result);
+        }
+
+        const url = new URL(result.originalQuery.url);
+        const memberId = url.searchParams.get('id') as string;
+
+        await finishSync(memberId, trx);
+
+        url.search = '';
+        console.log(`Failed to scrape ${url}.`);
+
+        failedCount += 1;
+      })
+    );
+  });
+
+  if (successfulResults.length) {
+    console.log(`Successfully scraped ${successfulResults.length} profiles.`);
+  }
+
+  if (failedCount) {
+    console.log(`Failed to scrape ${failedCount} profiles.`);
+  }
+
+  return successfulResults;
+}
+
+type ProcessProfileInput = {
+  educations: Education[];
+  experiences: Experience[];
+  member: Member;
+  profile: LinkedInProfile;
+};
+
+async function processProfile({
+  educations,
+  experiences,
+  member,
+  profile,
+}: ProcessProfileInput) {
+  let educationCreates = 0;
+  let educationUpdates = 0;
+  let experienceCreates = 0;
+  let experienceUpdates = 0;
+  let memberUpdates = 0;
+
+  try {
+    await db.transaction().execute(async (trx) => {
+      const checkMemberPromise = run(async () => {
+        const result = await checkMember({ member, profile, trx });
+
+        if (result && !!result.numUpdatedRows) {
+          memberUpdates += 1;
+        }
+      });
+
+      const checkEducationPromises = profile.element.education
+        .filter((education) => !!education)
+        .map(async (education) => {
+          const result = await checkEducation({
+            educations,
+            linkedInEducation: education,
+            memberId: member.id,
+            trx,
+          });
+
+          if (result) {
+            if ('numUpdatedRows' in result) {
+              educationUpdates += 1;
+            } else {
+              educationCreates += 1;
+            }
+          }
+        });
+
+      const checkExperiencesPromises = profile.element.experience
+        .filter((experience) => !!experience)
+        .map(async (experience) => {
+          const result = await checkWorkExperience({
+            experiences,
+            linkedInExperience: experience,
+            memberId: member.id,
+            trx,
+          });
+
+          if (result) {
+            if ('numUpdatedRows' in result) {
+              experienceUpdates += 1;
+            } else {
+              experienceCreates += 1;
+            }
+          }
+        });
+
+      await Promise.all([
+        checkMemberPromise,
+        ...checkEducationPromises,
+        ...checkExperiencesPromises,
+      ]);
+    });
+
+    if (!!educationCreates || !!educationUpdates) {
+      await checkMostRecentEducation(member.id);
+    }
+
+    track({
+      event: 'LinkedIn Synced',
+      properties: {
+        '# of Education Creates': educationCreates,
+        '# of Education Updates': educationUpdates,
+        '# of Member Updates': memberUpdates,
+        '# of Work Experience Creates': experienceCreates,
+        '# of Work Experience Updates': experienceUpdates,
+      },
+      user: member.id,
+    });
+
+    const totalUpdates =
+      educationCreates +
+      educationUpdates +
+      experienceCreates +
+      experienceUpdates +
+      memberUpdates;
+
+    console.log(`Synced member ${member.id} with ${totalUpdates} updates.`);
+  } catch (error) {
+    await finishSync(member.id);
+
+    console.error(error);
+    console.error(`Failed to sync member ${member.id}.`);
+  }
 }
 
 type CheckMemberInput = {
