@@ -779,9 +779,12 @@ async function processProfile({
         }
       });
 
-      const checkEducationPromises = profile.element.education
-        .filter((education) => !!education)
-        .map(async (education) => {
+      const checkEducationPromises = profile.element.education.map(
+        async (education) => {
+          if (!education) {
+            return;
+          }
+
           const result = await checkEducation({
             educations,
             linkedInEducation: education,
@@ -796,11 +799,15 @@ async function processProfile({
               educationCreates += 1;
             }
           }
-        });
+        }
+      );
 
-      const checkExperiencesPromises = profile.element.experience
-        .filter((experience) => !!experience)
-        .map(async (experience) => {
+      const checkExperiencesPromises = profile.element.experience.map(
+        async (experience) => {
+          if (!experience) {
+            return;
+          }
+
           const result = await checkWorkExperience({
             experiences,
             linkedInExperience: experience,
@@ -815,7 +822,8 @@ async function processProfile({
               experienceCreates += 1;
             }
           }
-        });
+        }
+      );
 
       await Promise.all([
         checkMemberPromise,
