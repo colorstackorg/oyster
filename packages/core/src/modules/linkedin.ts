@@ -874,12 +874,20 @@ async function checkMember({ member, profile, trx }: CheckMemberInput) {
   const updatedLocation = await run(async () => {
     const locationFromLinkedIn = profile.element.location.parsed?.text;
 
-    if (
-      locationFromLinkedIn &&
-      locationFromLinkedIn !== member.currentLocation
-    ) {
-      return getMostRelevantLocation(locationFromLinkedIn, 'geocode');
+    if (!locationFromLinkedIn) {
+      return null;
     }
+
+    // If the location from LinkedIn is already similar to the current location,
+    // then we'll skip the update.
+    if (
+      member.currentLocation &&
+      isSimilar(locationFromLinkedIn, member.currentLocation)
+    ) {
+      return null;
+    }
+
+    return getMostRelevantLocation(locationFromLinkedIn, 'geocode');
   });
 
   return trx
@@ -904,6 +912,13 @@ async function checkMember({ member, profile, trx }: CheckMemberInput) {
     })
     .where('id', '=', member.id)
     .executeTakeFirst();
+}
+
+function isSimilar(a: string, b: string) {
+  const aLower = a.toLowerCase();
+  const bLower = b.toLowerCase();
+
+  return aLower.includes(bLower) || bLower.includes(aLower);
 }
 
 type CheckEducationInput = {
