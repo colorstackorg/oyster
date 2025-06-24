@@ -8,6 +8,7 @@ import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
+import { job } from '@oyster/core/bull';
 import {
   getIcebreakerPrompts,
   getIcebreakerResponses,
@@ -108,6 +109,10 @@ export async function action({ request }: ActionFunctionArgs) {
     ]);
 
     await joinMemberDirectory(trx, memberId);
+  });
+
+  job('student.linkedin.sync', {
+    memberIds: [memberId],
   });
 
   return redirect(Route['/directory/join/finish']);
