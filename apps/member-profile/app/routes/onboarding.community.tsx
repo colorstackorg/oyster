@@ -219,7 +219,7 @@ export default function OnboardingCommunityForm() {
       <ErrorMessage>{error}</ErrorMessage>
 
       <OnboardingButtonGroup>
-        <OnboardingBackButton to="/onboarding/work" />
+        <OnboardingBackButton to="/onboarding/emails" />
         <OnboardingContinueButton />
       </OnboardingButtonGroup>
     </Form>

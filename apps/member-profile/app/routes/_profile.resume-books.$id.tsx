@@ -597,7 +597,7 @@ function ResumeBookForm() {
           )}
 
           <Select
-            defaultValue={submission?.educationId}
+            defaultValue={submission?.educationId || undefined}
             id={keys.educationId}
             name={keys.educationId}
             required

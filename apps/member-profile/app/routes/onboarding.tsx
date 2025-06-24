@@ -68,15 +68,11 @@ function ProgressBar() {
       <ProgressBarStep step="3" />
       <ProgressBarLine step="4" />
       <ProgressBarStep step="4" />
-      <ProgressBarLine step="5" />
-      <ProgressBarStep step="5" />
-      <ProgressBarLine step="6" />
-      <ProgressBarStep step="6" />
     </div>
   );
 }
 
-type ProgressStep = '1' | '2' | '3' | '4' | '5' | '6';
+type ProgressStep = '1' | '2' | '3' | '4';
 
 type ProgressBarStepProps = {
   step: ProgressStep;
@@ -111,19 +107,15 @@ function ProgressBarStepCircle({ step }: ProgressBarStepProps) {
 const STEP_TO_ROUTE_MAP: Record<ProgressStep, string> = {
   '1': Route['/onboarding/general'],
   '2': Route['/onboarding/emails'],
-  '3': Route['/onboarding/education'],
-  '4': Route['/onboarding/work'],
-  '5': Route['/onboarding/community'],
-  '6': Route['/onboarding/slack'],
+  '3': Route['/onboarding/community'],
+  '4': Route['/onboarding/slack'],
 };
 
 const STEP_LABEL_MAP: Record<ProgressStep, string> = {
   '1': 'General',
   '2': 'Email',
-  '3': 'Education',
-  '4': 'Work',
-  '5': 'Community',
-  '6': 'Slack',
+  '3': 'Community',
+  '4': 'Slack',
 };
 
 function ProgressBarStepLabel({ step }: ProgressBarStepProps) {
@@ -165,10 +157,8 @@ const ROUTE_TO_STEP_MAP: Record<string, ProgressStep> = {
   [Route['/onboarding/general']]: '1',
   [Route['/onboarding/emails']]: '2',
   [Route['/onboarding/emails/verify']]: '2',
-  [Route['/onboarding/education']]: '3',
-  [Route['/onboarding/work']]: '4',
-  [Route['/onboarding/community']]: '5',
-  [Route['/onboarding/slack']]: '6',
+  [Route['/onboarding/community']]: '3',
+  [Route['/onboarding/slack']]: '4',
 };
 
 type StepStatus = 'active' | 'completed' | 'inactive';
@@ -201,11 +191,9 @@ type BackButtonProps = {
   to:
     | (typeof Route)['/onboarding']
     | (typeof Route)['/onboarding/community']
-    | (typeof Route)['/onboarding/education']
     | (typeof Route)['/onboarding/emails']
     | (typeof Route)['/onboarding/emails/verify']
-    | (typeof Route)['/onboarding/general']
-    | (typeof Route)['/onboarding/work'];
+    | (typeof Route)['/onboarding/general'];
 };
 
 export function OnboardingBackButton({ to }: BackButtonProps) {
