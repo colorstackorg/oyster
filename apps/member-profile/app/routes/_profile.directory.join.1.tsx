@@ -11,14 +11,9 @@ import { updateMember } from '@oyster/core/member-profile/server';
 import { Student } from '@oyster/types';
 import {
   Button,
-  Checkbox,
   Divider,
-  Field,
   getErrors,
   InputField,
-  Link,
-  Text,
-  type TextProps,
   validateForm,
 } from '@oyster/ui';
 
@@ -96,43 +91,9 @@ export default function UpdateGeneralInformationForm() {
         longitudeName={keys.currentLocationLongitude}
       />
 
-      <Divider />
-
-      <Field
-        description={<HistoryFieldDescription />}
-        labelFor="history"
-        label="Work + Education History"
-        required
-      >
-        <Checkbox
-          defaultChecked
-          id="history"
-          label="I have updated my work and education history."
-          name="history"
-          required
-          value="1"
-        />
-      </Field>
-
       <Button.Group>
         <JoinDirectoryNextButton />
       </Button.Group>
     </Form>
-  );
-}
-
-function HistoryFieldDescription(props: TextProps) {
-  return (
-    <Text {...props}>
-      Please ensure that you have updated your{' '}
-      <Link href={Route['/profile/work']} target="_blank">
-        work history
-      </Link>{' '}
-      and{' '}
-      <Link href={Route['/profile/education']} target="_blank">
-        education history
-      </Link>
-      .
-    </Text>
   );
 }

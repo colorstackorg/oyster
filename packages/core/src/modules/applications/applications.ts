@@ -279,6 +279,10 @@ export async function acceptApplication(
     to: application.email,
   });
 
+  job('student.linkedin.sync', {
+    memberIds: [studentId],
+  });
+
   if (application.referralId) {
     const referral = await db
       .selectFrom('referrals')

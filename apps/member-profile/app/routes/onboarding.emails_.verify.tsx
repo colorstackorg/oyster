@@ -65,7 +65,7 @@ export async function action({ request }: ActionFunctionArgs) {
       studentId: user(session),
     });
 
-    return redirect(Route['/onboarding/education']);
+    return redirect(Route['/onboarding/community']);
   } catch (e) {
     return json({ error: (e as Error).message }, { status: 500 });
   }

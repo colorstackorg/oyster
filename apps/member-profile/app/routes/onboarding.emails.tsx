@@ -60,7 +60,7 @@ export async function action({ request }: ActionFunctionArgs) {
     .execute();
 
   if (emails.length >= 2) {
-    return redirect(Route['/onboarding/education']);
+    return redirect(Route['/onboarding/community']);
   }
 
   const { data, errors, ok } = await validateForm(request, SendEmailCodeInput);
