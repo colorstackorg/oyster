@@ -10,13 +10,7 @@ import { type z } from 'zod';
 import { updateMember } from '@oyster/core/member-profile/server';
 import { db } from '@oyster/db';
 import { Student } from '@oyster/types';
-import {
-  Field,
-  getErrors,
-  Input,
-  PhoneNumberInput,
-  validateForm,
-} from '@oyster/ui';
+import { Field, getErrors, Input, validateForm } from '@oyster/ui';
 
 import {
   OnboardingBackButton,
@@ -54,7 +48,6 @@ const OnboardingGeneralData = Student.pick({
   firstName: true,
   lastName: true,
   preferredName: true,
-  phoneNumber: true,
 }).extend({
   currentLocation: Student.shape.currentLocation.unwrap(),
   currentLocationLatitude: Student.shape.currentLocationLatitude.unwrap(),
@@ -134,19 +127,6 @@ export default function OnboardingGeneralForm() {
         longitudeName="currentLocationLongitude"
         name="currentLocation"
       />
-
-      <Field
-        description="Enter your 10-digit phone number. We'll use this to send you important ColorStack updates."
-        error={errors.phoneNumber}
-        label="Phone Number"
-        labelFor="phoneNumber"
-      >
-        <PhoneNumberInput
-          defaultValue={member.phoneNumber || undefined}
-          id="phoneNumber"
-          name="phoneNumber"
-        />
-      </Field>
 
       <OnboardingButtonGroup>
         <OnboardingBackButton to="/onboarding" />
