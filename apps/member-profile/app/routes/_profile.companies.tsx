@@ -217,7 +217,7 @@ function CompanyItem({ company }: { company: CompanyInView }) {
 
       <CompanyDescription description={company.description} />
 
-      <div className="flex items-center gap-4">
+      <div className="mt-auto flex items-center gap-4">
         <EmployeeCount employees={company.employees} />
         <OpportunitiesCount opportunities={company.opportunities} />
         <ReviewCount reviews={company.reviews} />
