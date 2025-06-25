@@ -1,8 +1,8 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet, useLoaderData, useNavigate } from '@remix-run/react';
-import { BookOpen, Plus } from 'react-feather';
+import { Link, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
+import { BookOpen, MoreVertical, Plus, RefreshCw } from 'react-feather';
 
-import { Button } from '@oyster/ui';
+import { Button, Dropdown, IconButton } from '@oyster/ui';
 
 import { EducationExperienceItem } from '@/shared/components/education-experience';
 import {
@@ -55,11 +55,30 @@ function EducationHistorySection() {
       <ProfileHeader>
         <ProfileTitle>Education History</ProfileTitle>
 
-        <Button.Group>
-          <Button color="primary" onClick={onAddExperience}>
-            <Plus size={20} /> Add Education
-          </Button>
-        </Button.Group>
+        <Dropdown.Root>
+          <Dropdown.Trigger>
+            <IconButton
+              backgroundColorOnHover="gray-100"
+              icon={<MoreVertical />}
+            />
+          </Dropdown.Trigger>
+
+          <Dropdown>
+            <Dropdown.List>
+              <Dropdown.Item>
+                <Link to={Route['/profile/education/sync']}>
+                  <RefreshCw /> Sync LinkedIn Profile
+                </Link>
+              </Dropdown.Item>
+
+              <Dropdown.Item>
+                <Link to={Route['/profile/education/add']}>
+                  <Plus /> Add Education
+                </Link>
+              </Dropdown.Item>
+            </Dropdown.List>
+          </Dropdown>
+        </Dropdown.Root>
       </ProfileHeader>
 
       {educationExperiences.length ? (
