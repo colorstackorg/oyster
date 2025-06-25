@@ -13,7 +13,8 @@ export async function deleteWorkExperience({
   studentId,
 }: DeleteWorkExperienceInput) {
   await db
-    .deleteFrom('workExperiences')
+    .updateTable('workExperiences')
+    .set({ deletedAt: new Date() })
     .where('id', '=', id)
     .where('studentId', '=', studentId)
     .execute();

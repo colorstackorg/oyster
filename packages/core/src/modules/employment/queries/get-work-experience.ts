@@ -31,6 +31,7 @@ export async function getWorkExperience<
     })
     .where('workExperiences.id', '=', id)
     .where('workExperiences.studentId', '=', studentId)
+    .where('workExperiences.deletedAt', 'is', null)
     .executeTakeFirst();
 
   return workExperience;

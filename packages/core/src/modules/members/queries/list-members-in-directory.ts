@@ -48,6 +48,7 @@ export async function listMembersInDirectory(options: GetMembersOptions) {
             .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
             .whereRef('workExperiences.studentId', '=', 'students.id')
             .where('companies.id', '=', company)
+            .where('workExperiences.deletedAt', 'is', null)
         );
       });
     })

@@ -58,6 +58,7 @@ export async function listCompanyReviews<
           .as('upvoted');
       },
     ])
+    .where('workExperiences.deletedAt', 'is', null)
     .$if(!!includeCompanies, (qb) => {
       return qb
         .leftJoin('companies', 'companies.id', 'workExperiences.companyId')

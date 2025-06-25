@@ -152,6 +152,7 @@ async function listAllCompanies() {
     ])
     .groupBy('companies.id')
     .where('students.joinedMemberDirectoryAt', 'is not', null)
+    .where('workExperiences.deletedAt', 'is', null)
     .orderBy('count', 'desc')
     .orderBy('companies.name', 'asc')
     .execute();

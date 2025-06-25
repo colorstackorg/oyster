@@ -33,6 +33,7 @@ export async function listCompanyEmployees({
     ])
     .distinctOn('studentId')
     .where('companyId', '=', where.companyId)
+    .where('workExperiences.deletedAt', 'is', null)
     .orderBy('studentId')
     .orderBy('endDate', 'desc')
     .orderBy('startDate', 'desc')

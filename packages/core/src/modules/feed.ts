@@ -91,6 +91,7 @@ async function getCompanyReviewsMessage(): Promise<string | null> {
     ])
     .where('companyReviews.createdAt', '>=', startOfYesterday)
     .where('companyReviews.createdAt', '<=', endOfYesterday)
+    .where('workExperiences.deletedAt', 'is', null)
     .execute();
 
   if (!companyReviews.length) {

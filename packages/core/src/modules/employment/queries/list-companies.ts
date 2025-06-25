@@ -32,6 +32,7 @@ export async function listCompanies<
       'companyReviews.workExperienceId',
       'workExperiences.id'
     )
+    .where('workExperiences.deletedAt', 'is', null)
     .where((eb) => {
       // We only want to return companies that have at least one employee (past
       // or present) or opportunity.

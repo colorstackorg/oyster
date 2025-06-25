@@ -28,6 +28,7 @@ export async function searchCompanies(search: string) {
       return qb
         .selectFrom('workExperiences')
         .select(['companyId', ({ fn }) => fn.countAll().as('count')])
+        .where('workExperiences.deletedAt', 'is', null)
         .groupBy('companyId');
     })
     .with('internshipOfferCounts', (qb) => {

@@ -31,6 +31,7 @@ export async function getCompany<
               .as('rating');
           })
           .whereRef('workExperiences.companyId', '=', 'companies.id')
+          .where('workExperiences.deletedAt', 'is', null)
           .as('averageRating');
       });
     })
@@ -45,6 +46,7 @@ export async function getCompany<
               .as('count');
           })
           .whereRef('workExperiences.companyId', '=', 'companies.id')
+          .where('workExperiences.deletedAt', 'is', null)
           .as('employees');
       });
     })
@@ -69,6 +71,7 @@ export async function getCompany<
           )
           .select(eb.fn.countAll<string>().as('count'))
           .whereRef('workExperiences.companyId', '=', 'companies.id')
+          .where('workExperiences.deletedAt', 'is', null)
           .as('reviews');
       });
     })
