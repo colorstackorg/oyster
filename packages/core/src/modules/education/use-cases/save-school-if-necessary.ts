@@ -117,6 +117,11 @@ export async function saveSchoolIfNecessary(
       linkedinId: schoolFromLinkedIn.id,
       name: schoolFromLinkedIn.name,
     })
+    .onConflict((oc) => {
+      return oc.column('name').doUpdateSet({
+        logoUrl: schoolFromLinkedIn.logo,
+      });
+    })
     .returning('id')
     .executeTakeFirstOrThrow();
 

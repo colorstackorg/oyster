@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
 } from '@remix-run/node';
 import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
-import { Briefcase, MoreVertical, Plus } from 'react-feather';
+import { Briefcase, MoreVertical, Plus, RefreshCw } from 'react-feather';
 
 import { job } from '@oyster/core/bull';
 import { listWorkExperiences } from '@oyster/core/member-profile/server';
@@ -93,6 +93,12 @@ function WorkHistorySection() {
 
           <Dropdown>
             <Dropdown.List>
+              <Dropdown.Item>
+                <Link to={Route['/profile/work/sync']}>
+                  <RefreshCw /> Sync LinkedIn Profile
+                </Link>
+              </Dropdown.Item>
+
               <Dropdown.Item>
                 <Link to={Route['/profile/work/add']}>
                   <Plus /> Add Experience
