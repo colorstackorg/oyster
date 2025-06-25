@@ -6,7 +6,6 @@ import {
   type ExtractValue,
   ISO8601Date,
   Major,
-  nullableField,
   NullishString,
   Student,
 } from '@oyster/types';
@@ -78,25 +77,6 @@ export const School = Entity.extend({
 
 // Use Cases
 
-export const AddEducationInput = Education.pick({
-  degreeType: true,
-  major: true,
-  otherMajor: true,
-  otherSchool: true,
-  schoolId: true,
-  studentId: true,
-}).extend({
-  endDate: Education.shape.endDate.refine((value) => {
-    return new Date(value).getFullYear() >= 1000;
-  }, 'Please fill out all 4 digits of the year.'),
-
-  id: nullableField(Education.shape.id.nullable()),
-
-  startDate: Education.shape.startDate.refine((value) => {
-    return new Date(value).getFullYear() >= 1000;
-  }, 'Please fill out all 4 digits of the year.'),
-});
-
 export const CreateSchoolInput = School.pick({
   addressCity: true,
   addressState: true,
@@ -115,7 +95,6 @@ export const UpdateSchoolInput = School.pick({
 
 // Types
 
-export type AddEducationInput = z.infer<typeof AddEducationInput>;
 export type CreateSchoolInput = z.infer<typeof CreateSchoolInput>;
 export type DegreeType = ExtractValue<typeof DegreeType>;
 export type Education = z.infer<typeof Education>;

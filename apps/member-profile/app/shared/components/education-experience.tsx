@@ -1,10 +1,6 @@
-import { generatePath, Link } from '@remix-run/react';
-import { Edit } from 'react-feather';
-
-import { IconButton, Text } from '@oyster/ui';
+import { Text } from '@oyster/ui';
 
 import { Experience } from '@/shared/components/profile';
-import { Route } from '@/shared/constants';
 
 type EducationExperienceItemProps = {
   education: {
@@ -16,11 +12,9 @@ type EducationExperienceItemProps = {
     major: string;
     school: string | null;
   };
-  editable?: boolean;
 };
 
 export function EducationExperienceItem({
-  editable,
   education,
 }: EducationExperienceItemProps) {
   return (
@@ -57,20 +51,6 @@ export function EducationExperienceItem({
             </Text>
           )}
         </div>
-
-        {!!editable && (
-          <div className="ml-auto">
-            <IconButton.Slot backgroundColorOnHover="gray-100">
-              <Link
-                to={generatePath(Route['/profile/education/:id/edit'], {
-                  id: education.id,
-                })}
-              >
-                <Edit />
-              </Link>
-            </IconButton.Slot>
-          </div>
-        )}
       </div>
     </Experience>
   );

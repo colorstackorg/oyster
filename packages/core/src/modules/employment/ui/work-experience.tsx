@@ -12,7 +12,6 @@ import {
 import { toTitleCase } from '@oyster/utils';
 
 type WorkExperienceMenuProps = {
-  editTo: string;
   hasReviewed: boolean;
   reviewTo: string;
 };
@@ -159,7 +158,6 @@ export function WorkExperienceItem({
         {!!rest.showOptions && (
           <div className="ml-auto">
             <WorkExperienceDropdown
-              editTo={rest.editTo}
               hasReviewed={rest.hasReviewed}
               reviewTo={rest.reviewTo}
             />
@@ -171,7 +169,6 @@ export function WorkExperienceItem({
 }
 
 function WorkExperienceDropdown({
-  editTo,
   hasReviewed,
   reviewTo,
 }: WorkExperienceMenuProps) {
@@ -183,11 +180,6 @@ function WorkExperienceDropdown({
 
       <Dropdown>
         <Dropdown.List>
-          <Dropdown.Item>
-            <Link to={editTo}>
-              <Edit /> Edit Experience
-            </Link>
-          </Dropdown.Item>
           <Dropdown.Item>
             <Link to={reviewTo}>
               {hasReviewed ? (

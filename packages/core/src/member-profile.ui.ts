@@ -6,16 +6,13 @@ export {
 } from './modules/authentication/authentication.types';
 export { OneTimeCodeForm } from './modules/authentication/ui/one-time-code-form';
 export {
-  AddEducationInput,
   DegreeType,
   Education,
   FORMATTED_DEGREEE_TYPE,
   School,
 } from './modules/education/education.types';
 export {
-  AddWorkExperienceInput,
   Company,
-  EditWorkExperienceInput,
   EmploymentType,
   FORMATTED_EMPLOYMENT_TYPE,
   FORMATTED_LOCATION_TYPE,
@@ -24,7 +21,6 @@ export {
 } from './modules/employment/employment.types';
 export { CompanyCombobox } from './modules/employment/ui/company-field';
 export { WorkExperienceItem } from './modules/employment/ui/work-experience';
-export { WorkForm } from './modules/employment/ui/work-form';
 export {
   IcebreakerPrompt,
   IcebreakerResponse,

@@ -180,14 +180,7 @@ function CompaniesList() {
   if (!companies.length) {
     return (
       <div className="mt-4">
-        <Text color="gray-500">
-          No companies found. If you worked at a company and you don't see it,
-          add it to your{' '}
-          <Link className="link" to={Route['/profile/work']}>
-            work history
-          </Link>{' '}
-          and it'll show up!
-        </Text>
+        <Text color="gray-500">No companies found.</Text>
       </div>
     );
   }

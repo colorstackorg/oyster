@@ -24,7 +24,6 @@ export async function sendSecuredTheBagReminder({
   }
 
   const offerDatabaseURL = new URL('/offers', STUDENT_PROFILE_URL);
-  const workHistoryURL = new URL('/profile/work', STUDENT_PROFILE_URL);
 
   const { permalink } = await slack.chat.getPermalink({
     channel: channelId,
@@ -34,7 +33,7 @@ export async function sendSecuredTheBagReminder({
   const message = dedent`
     Congratulations on <${permalink}|securing the bag>! 🎉
 
-    Don't forget to add your offer(s) to the <${offerDatabaseURL}|*offer database*> and update your <${workHistoryURL}|*work history*>! ✅
+    Don't forget to add your offer(s) to the <${offerDatabaseURL}|*offer database*>! ✅
 
     Keep up the great work! 🚀
   `;

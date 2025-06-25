@@ -3,21 +3,15 @@ import {
   json,
   type LoaderFunctionArgs,
 } from '@remix-run/node';
-import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
-import { Briefcase, MoreVertical, Plus } from 'react-feather';
+import { generatePath, Outlet, useLoaderData } from '@remix-run/react';
 
 import { job } from '@oyster/core/bull';
 import { listWorkExperiences } from '@oyster/core/member-profile/server';
 import { WorkExperienceItem } from '@oyster/core/member-profile/ui';
-import { Button, Dropdown, IconButton } from '@oyster/ui';
+import { Text } from '@oyster/ui';
 
 import {
-  EmptyState,
-  EmptyStateContainer,
-} from '@/shared/components/empty-state';
-import {
   ExperienceList,
-  ProfileDescription,
   ProfileHeader,
   ProfileSection,
   ProfileTitle,
@@ -82,25 +76,6 @@ function WorkHistorySection() {
     <ProfileSection>
       <ProfileHeader>
         <ProfileTitle>Work History</ProfileTitle>
-
-        <Dropdown.Root>
-          <Dropdown.Trigger>
-            <IconButton
-              backgroundColorOnHover="gray-100"
-              icon={<MoreVertical />}
-            />
-          </Dropdown.Trigger>
-
-          <Dropdown>
-            <Dropdown.List>
-              <Dropdown.Item>
-                <Link to={Route['/profile/work/add']}>
-                  <Plus /> Add Experience
-                </Link>
-              </Dropdown.Item>
-            </Dropdown.List>
-          </Dropdown>
-        </Dropdown.Root>
       </ProfileHeader>
 
       {workExperiences.length ? (
@@ -113,7 +88,6 @@ function WorkHistorySection() {
               return (
                 <WorkExperienceItem
                   key={experience.id}
-                  editTo={generatePath(Route['/profile/work/:id/edit'], { id })}
                   hasReviewed={hasReviewed}
                   experience={experience}
                   reviewTo={generatePath(
@@ -129,23 +103,9 @@ function WorkHistorySection() {
           </ExperienceList>
         </>
       ) : (
-        <>
-          <EmptyStateContainer>
-            <EmptyState icon={<Briefcase />} />
-
-            <ProfileDescription>
-              Please add your work history, including internships and full-time
-              jobs. This will help us track outcomes as well as connect you with
-              job opportunities via community connections in the future.
-            </ProfileDescription>
-
-            <Button.Slot color="primary" fill>
-              <Link to={Route['/profile/work/add']}>
-                <Plus /> Add Experience
-              </Link>
-            </Button.Slot>
-          </EmptyStateContainer>
-        </>
+        <Text color="gray-500" variant="sm">
+          No work experiences found.
+        </Text>
       )}
     </ProfileSection>
   );

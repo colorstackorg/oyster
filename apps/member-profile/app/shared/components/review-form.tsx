@@ -1,5 +1,5 @@
 import { Form } from '@remix-run/react';
-import { Link, useFetcher } from '@remix-run/react';
+import { useFetcher } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import { Star } from 'react-feather';
 
@@ -22,7 +22,6 @@ import {
 } from '@oyster/ui';
 
 import { type GetWorkExperiencesResult } from '@/routes/api.me.work-experiences';
-import { Route } from '@/shared/constants';
 
 const keys = AddCompanyReviewInput.keyof().enum;
 
@@ -141,11 +140,7 @@ function ExperienceField({ defaultValue, error, name }: FieldProps<string>) {
       description={
         <Text>
           If you can't find the work experience you're looking for, you'll need
-          to add it to your{' '}
-          <Link className="link" to={Route['/profile/work']}>
-            work history
-          </Link>{' '}
-          first.
+          to sync your LinkedIn profile first.
         </Text>
       }
       error={error}
