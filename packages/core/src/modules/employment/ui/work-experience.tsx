@@ -184,7 +184,7 @@ function WorkExperienceDropdown({
       <Dropdown>
         <Dropdown.List>
           <Dropdown.Item>
-            <Link to={reviewTo}>
+            <Link preventScrollReset to={reviewTo}>
               {hasReviewed ? (
                 <>
                   <Edit /> Edit Review
@@ -198,7 +198,7 @@ function WorkExperienceDropdown({
           </Dropdown.Item>
 
           <Dropdown.Item>
-            <Link to={deleteTo}>
+            <Link preventScrollReset to={deleteTo}>
               <Trash /> Delete Experience
             </Link>
           </Dropdown.Item>

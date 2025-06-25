@@ -62,6 +62,7 @@ export function EducationExperienceItem({
           <div className="ml-auto">
             <IconButton.Slot backgroundColorOnHover="gray-100">
               <Link
+                preventScrollReset
                 to={generatePath(Route['/profile/education/:id/delete'], {
                   id: education.id,
                 })}
