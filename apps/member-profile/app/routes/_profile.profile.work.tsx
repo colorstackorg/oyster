@@ -4,12 +4,12 @@ import {
   type LoaderFunctionArgs,
 } from '@remix-run/node';
 import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
-import { Briefcase, MoreVertical, RefreshCw } from 'react-feather';
+import { Briefcase, MoreVertical, Repeat } from 'react-feather';
 
 import { job } from '@oyster/core/bull';
 import { listWorkExperiences } from '@oyster/core/member-profile/server';
 import { WorkExperienceItem } from '@oyster/core/member-profile/ui';
-import { Dropdown, IconButton } from '@oyster/ui';
+import { Button, Dropdown, IconButton } from '@oyster/ui';
 
 import {
   EmptyState,
@@ -95,7 +95,7 @@ function WorkHistorySection() {
             <Dropdown.List>
               <Dropdown.Item>
                 <Link to={Route['/profile/work/sync']}>
-                  <RefreshCw /> Sync LinkedIn Profile
+                  <Repeat /> Sync LinkedIn Profile
                 </Link>
               </Dropdown.Item>
             </Dropdown.List>
@@ -140,6 +140,12 @@ function WorkHistorySection() {
               jobs. This will help us track outcomes as well as connect you with
               job opportunities via community connections in the future.
             </ProfileDescription>
+
+            <Button.Slot color="primary" fill>
+              <Link to={Route['/profile/work/sync']}>
+                <Repeat /> Sync LinkedIn Profile
+              </Link>
+            </Button.Slot>
           </EmptyStateContainer>
         </>
       )}

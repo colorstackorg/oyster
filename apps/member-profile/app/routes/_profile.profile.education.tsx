@@ -1,8 +1,8 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
-import { BookOpen, MoreVertical, RefreshCw } from 'react-feather';
+import { BookOpen, MoreVertical, Repeat } from 'react-feather';
 
-import { Dropdown, IconButton } from '@oyster/ui';
+import { Button, Dropdown, IconButton } from '@oyster/ui';
 
 import { EducationExperienceItem } from '@/shared/components/education-experience';
 import {
@@ -61,7 +61,7 @@ function EducationHistorySection() {
             <Dropdown.List>
               <Dropdown.Item>
                 <Link to={Route['/profile/education/sync']}>
-                  <RefreshCw /> Sync LinkedIn Profile
+                  <Repeat /> Sync LinkedIn Profile
                 </Link>
               </Dropdown.Item>
             </Dropdown.List>
@@ -92,6 +92,12 @@ function EducationHistorySection() {
             will help us track outcomes as well as connect you with alumni in
             the future.
           </ProfileDescription>
+
+          <Button.Slot color="primary" fill>
+            <Link to={Route['/profile/education/sync']}>
+              <Repeat /> Sync LinkedIn Profile
+            </Link>
+          </Button.Slot>
         </EmptyStateContainer>
       )}
     </ProfileSection>
