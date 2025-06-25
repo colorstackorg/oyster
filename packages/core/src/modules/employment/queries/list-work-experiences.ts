@@ -26,6 +26,7 @@ export async function listWorkExperiences(
       'workExperiences.locationType',
       'workExperiences.startDate',
       'workExperiences.title',
+      'workExperiences.visible',
       'companies.imageUrl as companyImageUrl',
       (eb) => {
         return eb.fn
