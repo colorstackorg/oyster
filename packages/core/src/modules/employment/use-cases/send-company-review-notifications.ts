@@ -49,6 +49,7 @@ export async function sendCompanyReviewNotifications({
     ])
     .where('companies.name', 'is not', null)
     .where('companyReviews.id', 'is', null)
+    .where('students.slackId', 'is not', null)
     .where('workExperiences.endDate', '>=', after)
     .where('workExperiences.endDate', '<', before)
     .where('workExperiences.endDate', 'is not', null)
