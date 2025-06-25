@@ -29,6 +29,7 @@ export async function checkMostRecentEducation(studentId: string) {
     ])
     .where('degreeType', '=', DegreeType.BACHELORS)
     .where('studentId', '=', studentId)
+    .where('educations.deletedAt', 'is', null)
     .orderBy('endDate', 'desc')
     .orderBy('startDate', 'desc')
     .executeTakeFirst();

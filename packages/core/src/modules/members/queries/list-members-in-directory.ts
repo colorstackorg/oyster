@@ -92,6 +92,7 @@ export async function listMembersInDirectory(options: GetMembersOptions) {
               .selectFrom('educations')
               .whereRef('educations.studentId', '=', 'students.id')
               .where('educations.schoolId', '=', school)
+              .where('educations.deletedAt', 'is', null)
           ),
         ]);
       });

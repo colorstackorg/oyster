@@ -7,7 +7,8 @@ type DeleteEducationInput = Pick<Education, 'id' | 'studentId'>;
 
 export async function deleteEducation({ id, studentId }: DeleteEducationInput) {
   await db
-    .deleteFrom('educations')
+    .updateTable('educations')
+    .set({ deletedAt: new Date() })
     .where('educations.id', '=', id)
     .where('educations.studentId', '=', studentId)
     .execute();

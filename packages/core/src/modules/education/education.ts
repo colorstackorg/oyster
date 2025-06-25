@@ -68,6 +68,7 @@ export async function searchSchools(search: string) {
       return qb
         .selectFrom('educations')
         .select(['schoolId', ({ fn }) => fn.countAll().as('count')])
+        .where('educations.deletedAt', 'is', null)
         .groupBy('schoolId');
     })
     .with('studentCounts', (qb) => {

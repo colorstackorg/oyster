@@ -322,6 +322,7 @@ async function listAllSchools() {
               .innerJoin('students', 'students.id', 'educations.studentId')
               .select(['educations.studentId', 'educations.schoolId'])
               .where('students.joinedMemberDirectoryAt', 'is not', null)
+              .where('educations.deletedAt', 'is', null)
           )
           .as('combined');
       },

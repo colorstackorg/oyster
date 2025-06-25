@@ -43,6 +43,7 @@ async function isEducationFound({
     .select(['id'])
     .where('id', '=', id)
     .where('studentId', '=', studentId)
+    .where('educations.deletedAt', 'is', null)
     .executeTakeFirst();
 
   return !!row;

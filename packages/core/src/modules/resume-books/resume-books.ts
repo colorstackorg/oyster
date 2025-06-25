@@ -530,6 +530,7 @@ export async function submitResume({
         'schools.addressZip',
       ])
       .where('educations.id', '=', educationId)
+      .where('educations.deletedAt', 'is', null)
       .executeTakeFirstOrThrow(),
 
     db
