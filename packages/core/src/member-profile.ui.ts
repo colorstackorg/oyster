@@ -6,16 +6,13 @@ export {
 } from './modules/authentication/authentication.types';
 export { OneTimeCodeForm } from './modules/authentication/ui/one-time-code-form';
 export {
-  AddEducationInput,
   DegreeType,
   Education,
   FORMATTED_DEGREEE_TYPE,
   School,
 } from './modules/education/education.types';
 export {
-  AddWorkExperienceInput,
   Company,
-  EditWorkExperienceInput,
   EmploymentType,
   FORMATTED_EMPLOYMENT_TYPE,
   FORMATTED_LOCATION_TYPE,

@@ -4,12 +4,12 @@ import {
   type LoaderFunctionArgs,
 } from '@remix-run/node';
 import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
-import { Briefcase, MoreVertical, Plus, RefreshCw } from 'react-feather';
+import { Briefcase, MoreVertical, RefreshCw } from 'react-feather';
 
 import { job } from '@oyster/core/bull';
 import { listWorkExperiences } from '@oyster/core/member-profile/server';
 import { WorkExperienceItem } from '@oyster/core/member-profile/ui';
-import { Button, Dropdown, IconButton } from '@oyster/ui';
+import { Dropdown, IconButton } from '@oyster/ui';
 
 import {
   EmptyState,
@@ -98,12 +98,6 @@ function WorkHistorySection() {
                   <RefreshCw /> Sync LinkedIn Profile
                 </Link>
               </Dropdown.Item>
-
-              <Dropdown.Item>
-                <Link to={Route['/profile/work/add']}>
-                  <Plus /> Add Experience
-                </Link>
-              </Dropdown.Item>
             </Dropdown.List>
           </Dropdown>
         </Dropdown.Root>
@@ -119,7 +113,9 @@ function WorkHistorySection() {
               return (
                 <WorkExperienceItem
                   key={experience.id}
-                  editTo={generatePath(Route['/profile/work/:id/edit'], { id })}
+                  deleteTo={generatePath(Route['/profile/work/:id/delete'], {
+                    id,
+                  })}
                   hasReviewed={hasReviewed}
                   experience={experience}
                   reviewTo={generatePath(
@@ -144,12 +140,6 @@ function WorkHistorySection() {
               jobs. This will help us track outcomes as well as connect you with
               job opportunities via community connections in the future.
             </ProfileDescription>
-
-            <Button.Slot color="primary" fill>
-              <Link to={Route['/profile/work/add']}>
-                <Plus /> Add Experience
-              </Link>
-            </Button.Slot>
           </EmptyStateContainer>
         </>
       )}

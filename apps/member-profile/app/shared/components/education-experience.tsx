@@ -1,5 +1,5 @@
 import { generatePath, Link } from '@remix-run/react';
-import { Edit } from 'react-feather';
+import { Trash } from 'react-feather';
 
 import { IconButton, Text } from '@oyster/ui';
 
@@ -62,11 +62,11 @@ export function EducationExperienceItem({
           <div className="ml-auto">
             <IconButton.Slot backgroundColorOnHover="gray-100">
               <Link
-                to={generatePath(Route['/profile/education/:id/edit'], {
+                to={generatePath(Route['/profile/education/:id/delete'], {
                   id: education.id,
                 })}
               >
-                <Edit />
+                <Trash />
               </Link>
             </IconButton.Slot>
           </div>

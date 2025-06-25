@@ -13,7 +13,7 @@ import {
 } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { emojify } from 'node-emoji';
-import { Award, Plus } from 'react-feather';
+import { Award } from 'react-feather';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
@@ -457,28 +457,11 @@ function ActivityHistory() {
           {match(timeframe)
             .with('all_time', () => {
               return (
-                <>
-                  <Text color="gray-500">
-                    This is where you'll see a history of all the points you've
-                    earned in the community. You'll also see some context on why
-                    you got those points. Update your education and work history
-                    so you can see what we're talking about!
-                  </Text>
-
-                  <Button.Group>
-                    <Button.Slot variant="secondary">
-                      <RemixLink to={Route['/profile/education/add']}>
-                        <Plus /> Add Education
-                      </RemixLink>
-                    </Button.Slot>
-
-                    <Button.Slot variant="secondary">
-                      <RemixLink to={Route['/profile/work/add']}>
-                        <Plus /> Add Work Experience
-                      </RemixLink>
-                    </Button.Slot>
-                  </Button.Group>
-                </>
+                <Text color="gray-500">
+                  This is where you'll see a history of all the points you've
+                  earned in the community. You'll also see some context on why
+                  you got those points.
+                </Text>
               );
             })
             .otherwise(() => {
