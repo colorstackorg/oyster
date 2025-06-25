@@ -1,7 +1,7 @@
 import { generatePath, Link } from '@remix-run/react';
-import { Trash } from 'react-feather';
+import { MoreVertical, Trash } from 'react-feather';
 
-import { IconButton, Text } from '@oyster/ui';
+import { Dropdown, IconButton, Text } from '@oyster/ui';
 
 import { Experience } from '@/shared/components/profile';
 import { Route } from '@/shared/constants';
@@ -60,16 +60,29 @@ export function EducationExperienceItem({
 
         {!!editable && (
           <div className="ml-auto">
-            <IconButton.Slot backgroundColorOnHover="gray-100">
-              <Link
-                preventScrollReset
-                to={generatePath(Route['/profile/education/:id/delete'], {
-                  id: education.id,
-                })}
-              >
-                <Trash />
-              </Link>
-            </IconButton.Slot>
+            <Dropdown.Root>
+              <Dropdown.Trigger>
+                <IconButton
+                  backgroundColorOnHover="gray-100"
+                  icon={<MoreVertical />}
+                />
+              </Dropdown.Trigger>
+
+              <Dropdown>
+                <Dropdown.List>
+                  <Dropdown.Item>
+                    <Link
+                      preventScrollReset
+                      to={generatePath(Route['/profile/education/:id/delete'], {
+                        id: education.id,
+                      })}
+                    >
+                      <Trash /> Delete Education
+                    </Link>
+                  </Dropdown.Item>
+                </Dropdown.List>
+              </Dropdown>
+            </Dropdown.Root>
           </div>
         )}
       </div>
