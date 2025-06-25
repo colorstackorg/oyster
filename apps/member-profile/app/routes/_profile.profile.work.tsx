@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
 } from '@remix-run/node';
 import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
-import { Briefcase, MoreVertical, Plus, RefreshCw } from 'react-feather';
+import { Briefcase, MoreVertical, Repeat } from 'react-feather';
 
 import { job } from '@oyster/core/bull';
 import { listWorkExperiences } from '@oyster/core/member-profile/server';
@@ -95,13 +95,7 @@ function WorkHistorySection() {
             <Dropdown.List>
               <Dropdown.Item>
                 <Link to={Route['/profile/work/sync']}>
-                  <RefreshCw /> Sync LinkedIn Profile
-                </Link>
-              </Dropdown.Item>
-
-              <Dropdown.Item>
-                <Link to={Route['/profile/work/add']}>
-                  <Plus /> Add Experience
+                  <Repeat /> Sync LinkedIn Profile
                 </Link>
               </Dropdown.Item>
             </Dropdown.List>
@@ -119,7 +113,9 @@ function WorkHistorySection() {
               return (
                 <WorkExperienceItem
                   key={experience.id}
-                  editTo={generatePath(Route['/profile/work/:id/edit'], { id })}
+                  deleteTo={generatePath(Route['/profile/work/:id/delete'], {
+                    id,
+                  })}
                   hasReviewed={hasReviewed}
                   experience={experience}
                   reviewTo={generatePath(
@@ -146,8 +142,8 @@ function WorkHistorySection() {
             </ProfileDescription>
 
             <Button.Slot color="primary" fill>
-              <Link to={Route['/profile/work/add']}>
-                <Plus /> Add Experience
+              <Link to={Route['/profile/work/sync']}>
+                <Repeat /> Sync LinkedIn Profile
               </Link>
             </Button.Slot>
           </EmptyStateContainer>

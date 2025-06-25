@@ -31,6 +31,7 @@ export async function getEducationExperiences(id: string) {
       },
     ])
     .where('studentId', '=', id)
+    .where('educations.deletedAt', 'is', null)
     .orderBy('endDate', 'desc')
     .orderBy('startDate', 'desc')
     .execute();

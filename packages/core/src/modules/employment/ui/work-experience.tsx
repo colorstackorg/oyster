@@ -1,5 +1,5 @@
 import { Link } from '@remix-run/react';
-import { Check, Edit, MoreVertical, Plus } from 'react-feather';
+import { Check, Edit, MoreVertical, Plus, Trash } from 'react-feather';
 import { match } from 'ts-pattern';
 
 import { Dropdown, IconButton, Text } from '@oyster/ui';
@@ -12,7 +12,7 @@ import {
 import { toTitleCase } from '@oyster/utils';
 
 type WorkExperienceMenuProps = {
-  editTo: string;
+  deleteTo: string;
   hasReviewed: boolean;
   reviewTo: string;
 };
@@ -159,7 +159,7 @@ export function WorkExperienceItem({
         {!!rest.showOptions && (
           <div className="ml-auto">
             <WorkExperienceDropdown
-              editTo={rest.editTo}
+              deleteTo={rest.deleteTo}
               hasReviewed={rest.hasReviewed}
               reviewTo={rest.reviewTo}
             />
@@ -171,7 +171,7 @@ export function WorkExperienceItem({
 }
 
 function WorkExperienceDropdown({
-  editTo,
+  deleteTo,
   hasReviewed,
   reviewTo,
 }: WorkExperienceMenuProps) {
@@ -184,12 +184,7 @@ function WorkExperienceDropdown({
       <Dropdown>
         <Dropdown.List>
           <Dropdown.Item>
-            <Link to={editTo}>
-              <Edit /> Edit Experience
-            </Link>
-          </Dropdown.Item>
-          <Dropdown.Item>
-            <Link to={reviewTo}>
+            <Link preventScrollReset to={reviewTo}>
               {hasReviewed ? (
                 <>
                   <Edit /> Edit Review
@@ -199,6 +194,12 @@ function WorkExperienceDropdown({
                   <Plus /> Add Review
                 </>
               )}
+            </Link>
+          </Dropdown.Item>
+
+          <Dropdown.Item>
+            <Link preventScrollReset to={deleteTo}>
+              <Trash /> Delete Experience
             </Link>
           </Dropdown.Item>
         </Dropdown.List>

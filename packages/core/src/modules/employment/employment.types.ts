@@ -124,27 +124,6 @@ export type ListCompanyReviewsWhere = z.infer<typeof ListCompanyReviewsWhere>;
 
 export const AddCompanyReviewInput = CompanyReview;
 
-export const AddWorkExperienceInput = WorkExperience.pick({
-  companyId: true,
-  companyName: true,
-  employmentType: true,
-  locationCity: true,
-  locationState: true,
-  locationType: true,
-  studentId: true,
-  title: true,
-}).extend({
-  endDate: WorkExperience.shape.endDate.refine((value) => {
-    return !value || new Date(value).getFullYear() >= 1000;
-  }, 'Please fill out all 4 digits of the year.'),
-
-  id: nullableField(WorkExperience.shape.id.nullable()),
-
-  startDate: WorkExperience.shape.startDate.refine((value) => {
-    return new Date(value).getFullYear() >= 1000;
-  }, 'Please fill out all 4 digits of the year.'),
-});
-
 export const DeleteWorkExperienceInput = WorkExperience.pick({
   id: true,
   studentId: true,
@@ -154,19 +133,13 @@ export const EditCompanyReviewInput = AddCompanyReviewInput.omit({
   studentId: true,
 });
 
-export const EditWorkExperienceInput = AddWorkExperienceInput.extend({
-  id: WorkExperience.shape.id,
-});
-
 export const UpvoteCompanyReviewInput = z.object({
   memberId: z.string().trim().min(1),
 });
 
 export type AddCompanyReviewInput = z.infer<typeof AddCompanyReviewInput>;
-export type AddWorkExperienceInput = z.infer<typeof AddWorkExperienceInput>;
 export type DeleteWorkExperienceInput = z.infer<
   typeof DeleteWorkExperienceInput
 >;
 export type EditCompanyReviewInput = z.infer<typeof EditCompanyReviewInput>;
-export type EditWorkExperienceInput = z.infer<typeof EditWorkExperienceInput>;
 export type UpvoteCompanyReviewInput = z.infer<typeof UpvoteCompanyReviewInput>;

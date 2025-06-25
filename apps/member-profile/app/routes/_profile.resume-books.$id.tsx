@@ -128,6 +128,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           'schools.name as schoolName',
         ])
         .where('studentId', '=', memberId)
+        .where('educations.deletedAt', 'is', null)
         .orderBy('endDate', 'desc')
         .orderBy('startDate', 'desc')
         .execute(),

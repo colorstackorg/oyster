@@ -152,6 +152,7 @@ async function listAllCompanies() {
     ])
     .groupBy('companies.id')
     .where('students.joinedMemberDirectoryAt', 'is not', null)
+    .where('workExperiences.deletedAt', 'is', null)
     .orderBy('count', 'desc')
     .orderBy('companies.name', 'asc')
     .execute();
@@ -321,6 +322,7 @@ async function listAllSchools() {
               .innerJoin('students', 'students.id', 'educations.studentId')
               .select(['educations.studentId', 'educations.schoolId'])
               .where('students.joinedMemberDirectoryAt', 'is not', null)
+              .where('educations.deletedAt', 'is', null)
           )
           .as('combined');
       },

@@ -49,6 +49,7 @@ export async function sendCompanyReviewNotifications({
     ])
     .where('companies.name', 'is not', null)
     .where('companyReviews.id', 'is', null)
+    .where('workExperiences.deletedAt', 'is', null)
     .where('workExperiences.endDate', '>=', after)
     .where('workExperiences.endDate', '<', before)
     .where('workExperiences.endDate', 'is not', null)
@@ -60,6 +61,10 @@ export async function sendCompanyReviewNotifications({
   }
 
   workExperiences.forEach(({ companyName, id, memberSlackId, title }) => {
+    if (!memberSlackId) {
+      return;
+    }
+
     const reviewURL = new URL(
       '/profile/work/' + id + '/review/add',
       STUDENT_PROFILE_URL

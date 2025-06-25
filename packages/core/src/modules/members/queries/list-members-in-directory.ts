@@ -48,6 +48,7 @@ export async function listMembersInDirectory(options: GetMembersOptions) {
             .leftJoin('companies', 'companies.id', 'workExperiences.companyId')
             .whereRef('workExperiences.studentId', '=', 'students.id')
             .where('companies.id', '=', company)
+            .where('workExperiences.deletedAt', 'is', null)
         );
       });
     })
@@ -91,6 +92,7 @@ export async function listMembersInDirectory(options: GetMembersOptions) {
               .selectFrom('educations')
               .whereRef('educations.studentId', '=', 'students.id')
               .where('educations.schoolId', '=', school)
+              .where('educations.deletedAt', 'is', null)
           ),
         ]);
       });

@@ -51,6 +51,7 @@ export async function listWorkExperiences(
         });
     })
     .where('workExperiences.studentId', '=', memberId)
+    .where('workExperiences.deletedAt', 'is', null)
     .orderBy('workExperiences.endDate', 'desc')
     .orderBy('workExperiences.startDate', 'desc')
     .execute();
