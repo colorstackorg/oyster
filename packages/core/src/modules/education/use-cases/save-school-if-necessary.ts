@@ -130,43 +130,38 @@ export async function saveSchoolIfNecessary(
     .returning(['id', 'logoKey'])
     .executeTakeFirstOrThrow();
 
-  const newLogoKey = await replaceLogo({
-    existingLogoKey,
-    newLogo: schoolFromLinkedIn.logo,
-  });
+  if (schoolFromLinkedIn.logo) {
+    const newLogoKey = await uploadLogo(schoolFromLinkedIn.logo);
 
-  if (newLogoKey) {
-    await trx
-      .updateTable('schools')
-      .set({
-        logoKey: newLogoKey,
-        logoUrl: `${R2_PUBLIC_BUCKET_URL}/${newLogoKey}`,
-      })
-      .where('id', '=', schoolId)
-      .execute();
+    if (newLogoKey) {
+      await trx
+        .updateTable('schools')
+        .set({
+          logoKey: newLogoKey,
+          logoUrl: `${R2_PUBLIC_BUCKET_URL}/${newLogoKey}`,
+        })
+        .where('id', '=', schoolId)
+        .execute();
+
+      if (existingLogoKey) {
+        await deleteObject({
+          bucket: R2_PUBLIC_BUCKET_NAME,
+          key: existingLogoKey,
+        });
+      }
+    }
   }
 
   return schoolId;
 }
 
-type ReplaceLogoInput = {
-  existingLogoKey: string | null;
-  newLogo: string | null | undefined;
-};
-
 /**
- * Replaces the logo for a company. Fetches the new logo, uploads it to S3, and
- * deletes the old logo.
+ * Fetches the logo from the given URL, uploads it to S3, and returns the key.
  *
- * @param existingLogoKey - The key of the existing logo.
- * @param newLogo - The new logo to replace the existing logo with.
+ * @param url - The URL of the logo to upload.
  */
-async function replaceLogo({ existingLogoKey, newLogo }: ReplaceLogoInput) {
-  if (!newLogo) {
-    return;
-  }
-
-  const response = await fetch(newLogo);
+async function uploadLogo(url: string) {
+  const response = await fetch(url);
 
   if (!response.ok) {
     return;
@@ -189,13 +184,6 @@ async function replaceLogo({ existingLogoKey, newLogo }: ReplaceLogoInput) {
     contentType: contentType || undefined,
     key,
   });
-
-  if (existingLogoKey) {
-    await deleteObject({
-      bucket: R2_PUBLIC_BUCKET_NAME,
-      key: existingLogoKey,
-    });
-  }
 
   return key;
 }

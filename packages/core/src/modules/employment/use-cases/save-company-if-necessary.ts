@@ -115,20 +115,26 @@ export async function saveCompanyIfNecessary(
     .returning(['id', 'logoKey'])
     .executeTakeFirstOrThrow();
 
-  const newLogoKey = await replaceLogo({
-    existingLogoKey,
-    newLogo: companyFromLinkedIn.logo,
-  });
+  if (companyFromLinkedIn.logo) {
+    const newLogoKey = await uploadLogo(companyFromLinkedIn.logo);
 
-  if (newLogoKey) {
-    await trx
-      .updateTable('companies')
-      .set({
-        imageUrl: `${R2_PUBLIC_BUCKET_URL}/${newLogoKey}`,
-        logoKey: newLogoKey,
-      })
-      .where('id', '=', companyId)
-      .execute();
+    if (newLogoKey) {
+      await trx
+        .updateTable('companies')
+        .set({
+          imageUrl: `${R2_PUBLIC_BUCKET_URL}/${newLogoKey}`,
+          logoKey: newLogoKey,
+        })
+        .where('id', '=', companyId)
+        .execute();
+
+      if (existingLogoKey) {
+        await deleteObject({
+          bucket: R2_PUBLIC_BUCKET_NAME,
+          key: existingLogoKey,
+        });
+      }
+    }
   }
 
   return companyId;
@@ -138,24 +144,13 @@ function getDomainFromHostname(hostname: string) {
   return hostname.split('.').slice(-2).join('.');
 }
 
-type ReplaceLogoInput = {
-  existingLogoKey: string | null;
-  newLogo: string | null | undefined;
-};
-
 /**
- * Replaces the logo for a company. Fetches the new logo, uploads it to S3, and
- * deletes the old logo.
+ * Fetches the logo from the given URL, uploads it to S3, and returns the key.
  *
- * @param existingLogoKey - The key of the existing logo.
- * @param newLogo - The new logo to replace the existing logo with.
+ * @param url - The URL of the logo to upload.
  */
-async function replaceLogo({ existingLogoKey, newLogo }: ReplaceLogoInput) {
-  if (!newLogo) {
-    return;
-  }
-
-  const response = await fetch(newLogo);
+async function uploadLogo(url: string) {
+  const response = await fetch(url);
 
   if (!response.ok) {
     return;
@@ -180,13 +175,6 @@ async function replaceLogo({ existingLogoKey, newLogo }: ReplaceLogoInput) {
     contentType: contentType || undefined,
     key,
   });
-
-  if (existingLogoKey) {
-    await deleteObject({
-      bucket: R2_PUBLIC_BUCKET_NAME,
-      key: existingLogoKey,
-    });
-  }
 
   return key;
 }
