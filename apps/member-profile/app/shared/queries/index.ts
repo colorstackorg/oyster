@@ -8,8 +8,6 @@ import {
 import { db } from '@oyster/db';
 import { toTitleCase } from '@oyster/utils';
 
-import { ENV } from '@/shared/constants.server';
-
 // "educations"
 
 export async function getEducationExperiences(id: string) {
@@ -25,7 +23,7 @@ export async function getEducationExperiences(id: string) {
       'startDate',
       'schools.addressCity',
       'schools.addressState',
-      'schools.logoKey',
+      'schools.logoUrl',
       (eb) => {
         return eb.fn
           .coalesce('schools.name', 'educations.otherSchool')
@@ -62,12 +60,10 @@ export async function getEducationExperiences(id: string) {
       date,
       degreeType: FORMATTED_DEGREEE_TYPE[experience.degreeType as DegreeType],
       id: experience.id,
+      logoUrl: experience.logoUrl,
       location,
       major,
       school: experience.school,
-      ...(experience.logoKey && {
-        logo: `${ENV.R2_PUBLIC_BUCKET_URL}/${experience.logoKey}`,
-      }),
     };
   });
 

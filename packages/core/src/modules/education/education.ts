@@ -4,7 +4,6 @@ import { db, type DB } from '@oyster/db';
 import { id, splitArray } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull';
-import { R2_PUBLIC_BUCKET_URL } from '@/infrastructure/s3';
 import {
   AIRTABLE_FAMILY_BASE_ID,
   AIRTABLE_MEMBERS_TABLE_ID,
@@ -64,7 +63,7 @@ export async function listSchools<
 }
 
 export async function searchSchools(search: string) {
-  const rows = await db
+  const schools = await db
     .with('educationCounts', (qb) => {
       return qb
         .selectFrom('educations')
@@ -97,7 +96,7 @@ export async function searchSchools(search: string) {
         .select([
           'schools.id',
           'schools.name',
-          'schools.logoKey',
+          'schools.logoUrl',
           ({ fn }) => {
             const educationCount = fn.coalesce(
               'educationCounts.count',
@@ -152,7 +151,7 @@ export async function searchSchools(search: string) {
     .with('adjusted', (qb) => {
       return qb.selectFrom('relevance').select([
         'id',
-        'logoKey',
+        'logoUrl',
         'name',
         'popularity',
         'score',
@@ -164,20 +163,11 @@ export async function searchSchools(search: string) {
       ]);
     })
     .selectFrom('adjusted')
-    .select(['id', 'logoKey', 'name', 'popularity', 'totalScore'])
+    .select(['id', 'logoUrl', 'name', 'popularity', 'totalScore'])
     .orderBy('totalScore', 'desc')
     .orderBy('name', 'asc')
     .limit(25)
     .execute();
-
-  const schools = rows.map(({ logoKey, ...row }) => {
-    return {
-      ...row,
-      ...(logoKey && {
-        logo: `${R2_PUBLIC_BUCKET_URL}/${logoKey}`,
-      }),
-    };
-  });
 
   return schools;
 }
