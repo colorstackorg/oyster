@@ -7,7 +7,7 @@ export type SearchBarProps = Pick<
   React.HTMLProps<HTMLInputElement>,
   'defaultValue' | 'name' | 'id' | 'placeholder' | 'onChange'
 > & {
-  width: 'full';
+  width?: 'full';
 };
 
 export function SearchBar({
