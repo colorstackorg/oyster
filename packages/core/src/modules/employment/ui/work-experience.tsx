@@ -146,7 +146,7 @@ export function WorkExperienceItem({
           {experience.description && (
             <div className="mt-4">
               <Text
-                className="whitespace-pre-wrap"
+                className="whitespace-pre-line"
                 color="gray-500"
                 variant="sm"
               >
