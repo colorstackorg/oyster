@@ -11,7 +11,11 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || '';
 const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID || '';
 const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || '';
+const R2_PUBLIC_BUCKET_NAME = process.env.R2_PUBLIC_BUCKET_NAME || '';
+const R2_PUBLIC_BUCKET_URL = process.env.R2_PUBLIC_BUCKET_URL || '';
 const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || '';
+
+export { R2_PUBLIC_BUCKET_NAME, R2_PUBLIC_BUCKET_URL };
 
 // Queries + Use Cases
 

@@ -5,6 +5,11 @@ import { type DB } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { withCache } from '@/infrastructure/redis';
+import {
+  deleteObject,
+  putObject,
+  R2_PUBLIC_BUCKET_NAME,
+} from '@/infrastructure/s3';
 import { runActor } from '@/modules/apify';
 import { ColorStackError } from '@/shared/errors';
 
@@ -87,13 +92,12 @@ export async function saveCompanyIfNecessary(
     domain = getDomainFromHostname(hostname);
   }
 
-  const { id: companyId } = await trx
+  const { id: companyId, logoKey: existingLogoKey } = await trx
     .insertInto('companies')
     .values({
       description: companyFromLinkedIn.description,
       domain,
       id: id(),
-      imageUrl: companyFromLinkedIn.logo, // TODO: Should really copy into our bucket.
       linkedinId: companyFromLinkedIn.id,
       linkedinSlug: companyFromLinkedIn.universalName,
       name: companyFromLinkedIn.name,
@@ -103,17 +107,68 @@ export async function saveCompanyIfNecessary(
         return {
           description: eb.ref('excluded.description'),
           domain: eb.ref('excluded.domain'),
-          imageUrl: eb.ref('excluded.imageUrl'),
           name: eb.ref('excluded.name'),
         };
       });
     })
-    .returning('id')
+    .returning(['id', 'logoKey'])
     .executeTakeFirstOrThrow();
+
+  const newLogoKey = await replaceLogo({
+    companyId,
+    existingLogoKey,
+    newLogo: companyFromLinkedIn.logo,
+  });
+
+  if (newLogoKey) {
+    await trx
+      .updateTable('companies')
+      .set({ logoKey: newLogoKey })
+      .where('id', '=', companyId)
+      .execute();
+  }
 
   return companyId;
 }
 
 function getDomainFromHostname(hostname: string) {
   return hostname.split('.').slice(-2).join('.');
+}
+
+type ReplaceLogoInput = {
+  companyId: string;
+  existingLogoKey: string | null;
+  newLogo: string | null | undefined;
+};
+
+async function replaceLogo({
+  companyId,
+  existingLogoKey,
+  newLogo,
+}: ReplaceLogoInput) {
+  if (!newLogo) {
+    return;
+  }
+
+  const response = await fetch(newLogo);
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  const contentType = response.headers.get('content-type') || 'image/png';
+  const extension = contentType.split('/')[1];
+
+  const key = `companies/${companyId}.${extension}`;
+
+  await putObject({
+    bucket: R2_PUBLIC_BUCKET_NAME,
+    content: buffer,
+    contentType,
+    key,
+  });
+
+  if (existingLogoKey) {
+    await deleteObject({ key: existingLogoKey });
+  }
+
+  return key;
 }

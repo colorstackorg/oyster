@@ -5,6 +5,11 @@ import { type DB, point } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { withCache } from '@/infrastructure/redis';
+import {
+  deleteObject,
+  putObject,
+  R2_PUBLIC_BUCKET_NAME,
+} from '@/infrastructure/s3';
 import { reportException } from '@/member-profile.server';
 import { runActor } from '@/modules/apify';
 import { getMostRelevantLocation } from '@/modules/location/location';
@@ -104,7 +109,7 @@ export async function saveSchoolIfNecessary(
     return null;
   }
 
-  const { id: schoolId } = await trx
+  const { id: schoolId, logoKey: existingLogoKey } = await trx
     .insertInto('schools')
     .values({
       addressCity: location.city,
@@ -122,8 +127,60 @@ export async function saveSchoolIfNecessary(
         logoUrl: schoolFromLinkedIn.logo,
       });
     })
-    .returning('id')
+    .returning(['id', 'logoKey'])
     .executeTakeFirstOrThrow();
 
+  const newLogoKey = await replaceLogo({
+    existingLogoKey,
+    newLogo: schoolFromLinkedIn.logo,
+    schoolId,
+  });
+
+  if (newLogoKey) {
+    await trx
+      .updateTable('schools')
+      .set({ logoKey: newLogoKey })
+      .where('id', '=', schoolId)
+      .execute();
+  }
+
   return schoolId;
+}
+
+type ReplaceLogoInput = {
+  existingLogoKey: string | null;
+  newLogo: string | null | undefined;
+  schoolId: string;
+};
+
+async function replaceLogo({
+  existingLogoKey,
+  newLogo,
+  schoolId,
+}: ReplaceLogoInput) {
+  if (!newLogo) {
+    return;
+  }
+
+  const response = await fetch(newLogo);
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  const contentType = response.headers.get('content-type') || 'image/png';
+  const extension = contentType.split('/')[1];
+
+  const key = `schools/${schoolId}.${extension}`;
+
+  await putObject({
+    bucket: R2_PUBLIC_BUCKET_NAME,
+    content: buffer,
+    contentType,
+    key,
+  });
+
+  if (existingLogoKey) {
+    await deleteObject({ key: existingLogoKey });
+  }
+
+  return key;
 }
