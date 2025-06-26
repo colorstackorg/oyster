@@ -125,7 +125,7 @@ export async function getPresignedURL(
 type PutObjectInput = {
   bucket?: string;
   content: Buffer;
-  contentType: string;
+  contentType?: string;
   key: string;
 };
 
