@@ -5,6 +5,12 @@ import { type DB, point } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { withCache } from '@/infrastructure/redis';
+import {
+  deleteObject,
+  putObject,
+  R2_PUBLIC_BUCKET_NAME,
+  R2_PUBLIC_BUCKET_URL,
+} from '@/infrastructure/s3';
 import { reportException } from '@/member-profile.server';
 import { runActor } from '@/modules/apify';
 import { getMostRelevantLocation } from '@/modules/location/location';
@@ -104,7 +110,7 @@ export async function saveSchoolIfNecessary(
     return null;
   }
 
-  const { id: schoolId } = await trx
+  const { id: schoolId, logoKey: existingLogoKey } = await trx
     .insertInto('schools')
     .values({
       addressCity: location.city,
@@ -112,18 +118,72 @@ export async function saveSchoolIfNecessary(
       addressState: location.state,
       addressZip: location.postalCode,
       coordinates: point({ x: location.longitude, y: location.latitude }),
-      logoUrl: schoolFromLinkedIn.logo,
       id: id(),
       linkedinId: schoolFromLinkedIn.id,
       name: schoolFromLinkedIn.name,
     })
     .onConflict((oc) => {
       return oc.column('name').doUpdateSet({
-        logoUrl: schoolFromLinkedIn.logo,
+        name: schoolFromLinkedIn.name,
       });
     })
-    .returning('id')
+    .returning(['id', 'logoKey'])
     .executeTakeFirstOrThrow();
 
+  if (schoolFromLinkedIn.logo) {
+    const newLogoKey = await uploadLogo(schoolFromLinkedIn.logo);
+
+    if (newLogoKey) {
+      await trx
+        .updateTable('schools')
+        .set({
+          logoKey: newLogoKey,
+          logoUrl: `${R2_PUBLIC_BUCKET_URL}/${newLogoKey}`,
+        })
+        .where('id', '=', schoolId)
+        .execute();
+
+      if (existingLogoKey) {
+        await deleteObject({
+          bucket: R2_PUBLIC_BUCKET_NAME,
+          key: existingLogoKey,
+        });
+      }
+    }
+  }
+
   return schoolId;
+}
+
+/**
+ * Fetches the logo from the given URL, uploads it to S3, and returns the key.
+ *
+ * @param url - The URL of the logo to upload.
+ */
+async function uploadLogo(url: string) {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    return;
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  const contentType = response.headers.get('content-type');
+
+  const extension = contentType?.includes('image/')
+    ? contentType.split('/')[1]
+    : null;
+
+  const key = extension ? `schools/${id()}.${extension}` : `schools/${id()}`;
+
+  await putObject({
+    bucket: R2_PUBLIC_BUCKET_NAME,
+    content: buffer,
+    contentType: contentType || undefined,
+    key,
+  });
+
+  return key;
 }

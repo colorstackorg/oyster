@@ -5,6 +5,12 @@ import { type DB } from '@oyster/db';
 import { id } from '@oyster/utils';
 
 import { withCache } from '@/infrastructure/redis';
+import {
+  deleteObject,
+  putObject,
+  R2_PUBLIC_BUCKET_NAME,
+  R2_PUBLIC_BUCKET_URL,
+} from '@/infrastructure/s3';
 import { runActor } from '@/modules/apify';
 import { ColorStackError } from '@/shared/errors';
 
@@ -87,13 +93,12 @@ export async function saveCompanyIfNecessary(
     domain = getDomainFromHostname(hostname);
   }
 
-  const { id: companyId } = await trx
+  const { id: companyId, logoKey: existingLogoKey } = await trx
     .insertInto('companies')
     .values({
       description: companyFromLinkedIn.description,
       domain,
       id: id(),
-      imageUrl: companyFromLinkedIn.logo, // TODO: Should really copy into our bucket.
       linkedinId: companyFromLinkedIn.id,
       linkedinSlug: companyFromLinkedIn.universalName,
       name: companyFromLinkedIn.name,
@@ -103,17 +108,73 @@ export async function saveCompanyIfNecessary(
         return {
           description: eb.ref('excluded.description'),
           domain: eb.ref('excluded.domain'),
-          imageUrl: eb.ref('excluded.imageUrl'),
           name: eb.ref('excluded.name'),
         };
       });
     })
-    .returning('id')
+    .returning(['id', 'logoKey'])
     .executeTakeFirstOrThrow();
+
+  if (companyFromLinkedIn.logo) {
+    const newLogoKey = await uploadLogo(companyFromLinkedIn.logo);
+
+    if (newLogoKey) {
+      await trx
+        .updateTable('companies')
+        .set({
+          imageUrl: `${R2_PUBLIC_BUCKET_URL}/${newLogoKey}`,
+          logoKey: newLogoKey,
+        })
+        .where('id', '=', companyId)
+        .execute();
+
+      if (existingLogoKey) {
+        await deleteObject({
+          bucket: R2_PUBLIC_BUCKET_NAME,
+          key: existingLogoKey,
+        });
+      }
+    }
+  }
 
   return companyId;
 }
 
 function getDomainFromHostname(hostname: string) {
   return hostname.split('.').slice(-2).join('.');
+}
+
+/**
+ * Fetches the logo from the given URL, uploads it to S3, and returns the key.
+ *
+ * @param url - The URL of the logo to upload.
+ */
+async function uploadLogo(url: string) {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    return;
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  const contentType = response.headers.get('content-type');
+
+  const extension = contentType?.includes('image/')
+    ? contentType.split('/')[1]
+    : null;
+
+  const key = extension
+    ? `companies/${id()}.${extension}`
+    : `companies/${id()}`;
+
+  await putObject({
+    bucket: R2_PUBLIC_BUCKET_NAME,
+    content: buffer,
+    contentType: contentType || undefined,
+    key,
+  });
+
+  return key;
 }
