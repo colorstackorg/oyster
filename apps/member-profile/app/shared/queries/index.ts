@@ -60,8 +60,8 @@ export async function getEducationExperiences(id: string) {
       date,
       degreeType: FORMATTED_DEGREEE_TYPE[experience.degreeType as DegreeType],
       id: experience.id,
-      logoUrl: experience.logoUrl,
       location,
+      logoUrl: experience.logoUrl,
       major,
       school: experience.school,
     };
