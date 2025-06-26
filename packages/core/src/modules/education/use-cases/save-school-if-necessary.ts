@@ -9,6 +9,7 @@ import {
   deleteObject,
   putObject,
   R2_PUBLIC_BUCKET_NAME,
+  R2_PUBLIC_BUCKET_URL,
 } from '@/infrastructure/s3';
 import { reportException } from '@/member-profile.server';
 import { runActor } from '@/modules/apify';
@@ -137,7 +138,10 @@ export async function saveSchoolIfNecessary(
   if (newLogoKey) {
     await trx
       .updateTable('schools')
-      .set({ logoKey: newLogoKey })
+      .set({
+        logoKey: newLogoKey,
+        logoUrl: `${R2_PUBLIC_BUCKET_URL}/${newLogoKey}`,
+      })
       .where('id', '=', schoolId)
       .execute();
   }

@@ -9,6 +9,7 @@ import {
   deleteObject,
   putObject,
   R2_PUBLIC_BUCKET_NAME,
+  R2_PUBLIC_BUCKET_URL,
 } from '@/infrastructure/s3';
 import { runActor } from '@/modules/apify';
 import { ColorStackError } from '@/shared/errors';
@@ -122,7 +123,10 @@ export async function saveCompanyIfNecessary(
   if (newLogoKey) {
     await trx
       .updateTable('companies')
-      .set({ logoKey: newLogoKey })
+      .set({
+        imageUrl: `${R2_PUBLIC_BUCKET_URL}/${newLogoKey}`,
+        logoKey: newLogoKey,
+      })
       .where('id', '=', companyId)
       .execute();
   }
