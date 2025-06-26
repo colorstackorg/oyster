@@ -143,29 +143,49 @@ type ReplaceLogoInput = {
   newLogo: string | null | undefined;
 };
 
+/**
+ * Replaces the logo for a company. Fetches the new logo, uploads it to S3, and
+ * deletes the old logo.
+ *
+ * @param existingLogoKey - The key of the existing logo.
+ * @param newLogo - The new logo to replace the existing logo with.
+ */
 async function replaceLogo({ existingLogoKey, newLogo }: ReplaceLogoInput) {
   if (!newLogo) {
     return;
   }
 
   const response = await fetch(newLogo);
+
+  if (!response.ok) {
+    return;
+  }
+
   const arrayBuffer = await response.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  const contentType = response.headers.get('content-type') || 'image/png';
-  const extension = contentType.split('/')[1];
+  const contentType = response.headers.get('content-type');
 
-  const key = `companies/${id()}.${extension}`;
+  const extension = contentType?.includes('image/')
+    ? contentType.split('/')[1]
+    : null;
+
+  const key = extension
+    ? `companies/${id()}.${extension}`
+    : `companies/${id()}`;
 
   await putObject({
     bucket: R2_PUBLIC_BUCKET_NAME,
     content: buffer,
-    contentType,
+    contentType: contentType || undefined,
     key,
   });
 
   if (existingLogoKey) {
-    await deleteObject({ key: existingLogoKey });
+    await deleteObject({
+      bucket: R2_PUBLIC_BUCKET_NAME,
+      key: existingLogoKey,
+    });
   }
 
   return key;
