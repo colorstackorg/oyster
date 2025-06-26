@@ -7,13 +7,14 @@ import { EmploymentType } from '@/modules/employment/employment.types';
 type ListCompanyEmployeesOptions = {
   where: {
     companyId: string;
+    search?: string;
   };
 };
 
 export async function listCompanyEmployees({
   where,
 }: ListCompanyEmployeesOptions) {
-  const employees = await db
+  const query = db
     .with('experiences', (qb) => {
       // This first past is just getting all the work experiences for the
       // company and calculating the duration (in days) of each experience.
@@ -56,7 +57,21 @@ export async function listCompanyEmployees({
           },
         ])
         .where('companyId', '=', where.companyId)
-        .where('workExperiences.deletedAt', 'is', null);
+        .where('workExperiences.deletedAt', 'is', null)
+        .$if(!!where.search, (qb) => {
+          return qb.where((eb) => {
+            const fullName = sql`${eb.ref('employees.firstName')} || ' ' || ${eb.ref('employees.lastName')}`;
+
+            const searchExpression = `%${where.search}%`;
+
+            return eb.or([
+              eb('employees.firstName', 'ilike', searchExpression),
+              eb('employees.lastName', 'ilike', searchExpression),
+              eb(fullName, 'ilike', searchExpression),
+              eb('workExperiences.title', 'ilike', searchExpression),
+            ]);
+          });
+        });
     })
     .with('latestExperiences', (qb) => {
       // This second part is getting the _latest_ experience for each employee.
@@ -94,13 +109,25 @@ export async function listCompanyEmployees({
       'totalDurations.employeeId as id',
       'latestExperiences.firstName',
       'latestExperiences.lastName',
-      'latestExperiences.locationCity',
-      'latestExperiences.locationState',
       'latestExperiences.locationType',
       'latestExperiences.profilePicture',
       'latestExperiences.status',
       'latestExperiences.title',
+      (eb) => {
+        return eb
+          .case()
+          .when('locationCity', 'is not', null)
+          .then(
+            sql`${eb.ref('locationCity')} || ', ' || ${eb.ref('locationState')}`
+          )
+          .else(null)
+          .end()
+          .as('location');
+      },
     ])
+    .orderBy((eb) => {
+      return eb.case().when('status', '=', 'current').then(1).else(2).end();
+    })
     .orderBy('totalDurations.totalDurationInDays', 'desc')
     .orderBy((eb) => {
       return eb
@@ -119,8 +146,9 @@ export async function listCompanyEmployees({
         .then(6)
         .else(7)
         .end();
-    })
-    .execute();
+    });
+
+  const employees = await query.execute();
 
   return employees;
 }
