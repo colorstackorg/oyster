@@ -23,6 +23,7 @@ import {
 } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
+import { Card } from '@/shared/components/card';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -38,47 +39,71 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     },
   });
 
-  let currentCount = 0;
-  let pastCount = 0;
+  const currentEmployees = employees.filter((employee) => {
+    return employee.status === 'current';
+  });
 
-  employees.forEach(({ status }) => {
-    if (status === 'current') {
-      currentCount++;
-    } else if (status === 'past') {
-      pastCount++;
-    }
+  const pastEmployees = employees.filter((employee) => {
+    return employee.status === 'past';
   });
 
   return json({
-    currentCount,
-    employees,
-    pastCount,
+    currentEmployees,
+    pastEmployees,
   });
 }
 
 export default function Employees() {
-  const { currentCount, employees, pastCount } = useLoaderData<typeof loader>();
-
   return (
     <>
       <SearchForm />
-
-      {employees.length ? (
-        <>
-          <ul className="max-h-80 overflow-auto">
-            {employees.map((employee) => {
-              return <EmployeeItem key={employee.id} employee={employee} />;
-            })}
-          </ul>
-
-          <Text variant="xs" color="gray-500" className="ml-auto">
-            Current: {currentCount} | Past: {pastCount}
-          </Text>
-        </>
-      ) : (
-        <Text color="gray-500">No employees found from ColorStack.</Text>
-      )}
+      <CurrentEmployees />
+      <PastEmployees />
     </>
+  );
+}
+
+function CurrentEmployees() {
+  const { currentEmployees } = useLoaderData<typeof loader>();
+
+  return (
+    <Card>
+      <Card.Title>Current Employees ({currentEmployees.length})</Card.Title>
+
+      {currentEmployees.length ? (
+        <ul>
+          {currentEmployees.map((employee) => {
+            return <EmployeeItem key={employee.id} employee={employee} />;
+          })}
+        </ul>
+      ) : (
+        <Text color="gray-500" variant="sm">
+          No current employees found from ColorStack.
+        </Text>
+      )}
+    </Card>
+  );
+}
+
+function PastEmployees() {
+  const { pastEmployees } = useLoaderData<typeof loader>();
+
+  return (
+    <Card>
+      <Card.Title>Past Employees ({pastEmployees.length})</Card.Title>
+
+      {pastEmployees.length ? (
+        <ul>
+          {pastEmployees.map((employee) => {
+            return <EmployeeItem key={employee.id} employee={employee} />;
+          })}
+        </ul>
+      ) : (
+        <Text color="gray-500" variant="sm">
+          No past employees found from ColorStack.
+        </Text>
+      )}
+    </Card>
   );
 }
 
@@ -118,7 +143,7 @@ function SearchForm() {
   );
 }
 
-type EmployeeInView = SerializeFrom<typeof loader>['employees'][number];
+type EmployeeInView = SerializeFrom<typeof loader>['currentEmployees'][number];
 
 function EmployeeItem({ employee }: { employee: EmployeeInView }) {
   const {
