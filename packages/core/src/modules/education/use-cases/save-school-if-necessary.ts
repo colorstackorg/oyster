@@ -133,7 +133,6 @@ export async function saveSchoolIfNecessary(
   const newLogoKey = await replaceLogo({
     existingLogoKey,
     newLogo: schoolFromLinkedIn.logo,
-    schoolId,
   });
 
   if (newLogoKey) {
@@ -150,14 +149,9 @@ export async function saveSchoolIfNecessary(
 type ReplaceLogoInput = {
   existingLogoKey: string | null;
   newLogo: string | null | undefined;
-  schoolId: string;
 };
 
-async function replaceLogo({
-  existingLogoKey,
-  newLogo,
-  schoolId,
-}: ReplaceLogoInput) {
+async function replaceLogo({ existingLogoKey, newLogo }: ReplaceLogoInput) {
   if (!newLogo) {
     return;
   }
@@ -169,7 +163,7 @@ async function replaceLogo({
   const contentType = response.headers.get('content-type') || 'image/png';
   const extension = contentType.split('/')[1];
 
-  const key = `schools/${schoolId}.${extension}`;
+  const key = `schools/${id()}.${extension}`;
 
   await putObject({
     bucket: R2_PUBLIC_BUCKET_NAME,

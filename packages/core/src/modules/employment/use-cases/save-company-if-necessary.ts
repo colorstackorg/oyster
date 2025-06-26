@@ -115,7 +115,6 @@ export async function saveCompanyIfNecessary(
     .executeTakeFirstOrThrow();
 
   const newLogoKey = await replaceLogo({
-    companyId,
     existingLogoKey,
     newLogo: companyFromLinkedIn.logo,
   });
@@ -136,16 +135,11 @@ function getDomainFromHostname(hostname: string) {
 }
 
 type ReplaceLogoInput = {
-  companyId: string;
   existingLogoKey: string | null;
   newLogo: string | null | undefined;
 };
 
-async function replaceLogo({
-  companyId,
-  existingLogoKey,
-  newLogo,
-}: ReplaceLogoInput) {
+async function replaceLogo({ existingLogoKey, newLogo }: ReplaceLogoInput) {
   if (!newLogo) {
     return;
   }
@@ -157,7 +151,7 @@ async function replaceLogo({
   const contentType = response.headers.get('content-type') || 'image/png';
   const extension = contentType.split('/')[1];
 
-  const key = `companies/${companyId}.${extension}`;
+  const key = `companies/${id()}.${extension}`;
 
   await putObject({
     bucket: R2_PUBLIC_BUCKET_NAME,
