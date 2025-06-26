@@ -71,7 +71,7 @@ function CurrentEmployees() {
       <Card.Title>Current Employees ({currentEmployees.length})</Card.Title>
 
       {currentEmployees.length ? (
-        <ul className="scrollbar max-h-96 overflow-auto">
+        <ul className="max-h-96 overflow-auto">
           {currentEmployees.map((employee) => {
             return <EmployeeItem key={employee.id} employee={employee} />;
           })}
@@ -93,7 +93,7 @@ function PastEmployees() {
       <Card.Title>Past Employees ({pastEmployees.length})</Card.Title>
 
       {pastEmployees.length ? (
-        <ul className="scrollbar max-h-96 overflow-auto">
+        <ul className="max-h-96 overflow-auto">
           {pastEmployees.map((employee) => {
             return <EmployeeItem key={employee.id} employee={employee} />;
           })}
