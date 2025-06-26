@@ -121,8 +121,16 @@ function SearchForm() {
 type EmployeeInView = SerializeFrom<typeof loader>['employees'][number];
 
 function EmployeeItem({ employee }: { employee: EmployeeInView }) {
-  const { firstName, id, lastName, location, profilePicture, status, title } =
-    employee;
+  const {
+    duration,
+    firstName,
+    id,
+    lastName,
+    location,
+    profilePicture,
+    status,
+    title,
+  } = employee;
 
   return (
     <li className="line-clamp-1 grid grid-cols-[3rem_1fr] items-start gap-2 rounded-2xl p-2 hover:bg-gray-100">
@@ -154,6 +162,10 @@ function EmployeeItem({ employee }: { employee: EmployeeInView }) {
           ) : (
             <>{title}</>
           )}
+        </Text>
+
+        <Text color="gray-500" variant="sm">
+          {duration}
         </Text>
       </div>
     </li>

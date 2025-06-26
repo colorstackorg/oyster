@@ -91,7 +91,9 @@ export async function listCompanyEmployees({
         .select([
           'employeeId',
           ({ fn, ref }) => {
-            return fn.sum(ref('durationInDays')).as('totalDurationInDays');
+            return fn
+              .sum<number>(ref('durationInDays'))
+              .as('totalDurationInDays');
           },
         ])
         .groupBy('employeeId');
@@ -107,6 +109,7 @@ export async function listCompanyEmployees({
     )
     .select([
       'totalDurations.employeeId as id',
+      'totalDurations.totalDurationInDays',
       'latestExperiences.firstName',
       'latestExperiences.lastName',
       'latestExperiences.locationType',
@@ -148,7 +151,37 @@ export async function listCompanyEmployees({
         .end();
     });
 
-  const employees = await query.execute();
+  const rows = await query.execute();
+
+  const employees = rows.map(({ totalDurationInDays, ...row }) => {
+    return {
+      ...row,
+      duration: formatDuration(totalDurationInDays),
+    };
+  });
 
   return employees;
+}
+
+function formatDuration(totalDurationInDays: number | string) {
+  const duration = Number(totalDurationInDays);
+
+  const years = Math.floor(duration / 365);
+  const months = Math.floor((duration % 365) / 30) + 1;
+
+  const monthLabel = months >= 2 ? 'mos' : 'mo';
+  const yearLabel = years >= 2 ? 'yrs' : 'yr';
+
+  const monthText = `${months} ${monthLabel}`;
+  const yearText = `${years} ${yearLabel}`;
+
+  if (years === 0) {
+    return monthText;
+  }
+
+  if (months === 0) {
+    return yearText;
+  }
+
+  return `${yearText}, ${monthText}`;
 }
