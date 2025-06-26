@@ -232,7 +232,7 @@ export function SchoolCombobox({
   const delayedSearch = useDelayedValue(search, 250);
 
   const fetcher = useFetcher<{
-    schools: Pick<School, 'id' | 'logoUrl' | 'name'>[];
+    schools: Pick<School, 'id' | 'logo' | 'name'>[];
   }>();
 
   useEffect(() => {
@@ -271,11 +271,11 @@ export function SchoolCombobox({
                 value={school.id}
               >
                 <span className="flex items-center gap-2">
-                  {school.logoUrl ? (
+                  {school.logo ? (
                     <img
                       alt={school.name}
                       className="h-6 w-6 rounded"
-                      src={school.logoUrl}
+                      src={school.logo}
                     />
                   ) : (
                     <div className="h-6 w-6 rounded bg-gray-100" />

@@ -11,7 +11,7 @@ type EducationExperienceItemProps = {
     date?: string;
     degreeType: string;
     id: string;
-    logoUrl?: string | null;
+    logo?: string | null;
     location: string | null;
     major: string;
     school: string | null;
@@ -26,11 +26,11 @@ export function EducationExperienceItem({
   return (
     <Experience>
       <div className="flex gap-3">
-        {education.logoUrl ? (
+        {education.logo ? (
           <img
             alt={education.school!}
             className="h-12 w-12 rounded-lg object-contain"
-            src={education.logoUrl}
+            src={education.logo}
           />
         ) : (
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">

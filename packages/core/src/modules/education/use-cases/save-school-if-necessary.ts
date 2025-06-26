@@ -117,14 +117,13 @@ export async function saveSchoolIfNecessary(
       addressState: location.state,
       addressZip: location.postalCode,
       coordinates: point({ x: location.longitude, y: location.latitude }),
-      logoUrl: schoolFromLinkedIn.logo,
       id: id(),
       linkedinId: schoolFromLinkedIn.id,
       name: schoolFromLinkedIn.name,
     })
     .onConflict((oc) => {
       return oc.column('name').doUpdateSet({
-        logoUrl: schoolFromLinkedIn.logo,
+        name: schoolFromLinkedIn.name,
       });
     })
     .returning(['id', 'logoKey'])
