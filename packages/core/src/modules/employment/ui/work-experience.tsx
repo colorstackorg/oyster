@@ -75,11 +75,11 @@ export function WorkExperienceItem({
         {experience.companyImageUrl ? (
           <img
             alt={experience.companyName!}
-            className="h-12 w-12 rounded-lg object-contain"
+            className="h-12 w-12 flex-shrink-0 rounded-lg object-contain"
             src={experience.companyImageUrl}
           />
         ) : (
-          <div className="h-12 w-12 rounded-lg bg-gray-100" />
+          <div className="h-12 w-12 flex-shrink-0 rounded-lg bg-gray-100" />
         )}
 
         <div>
@@ -146,7 +146,7 @@ export function WorkExperienceItem({
           {experience.description && (
             <div className="mt-4">
               <Text
-                className="whitespace-pre-wrap"
+                className="whitespace-pre-line"
                 color="gray-500"
                 variant="sm"
               >

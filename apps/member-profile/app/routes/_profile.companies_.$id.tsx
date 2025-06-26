@@ -4,6 +4,7 @@ import {
   type SerializeFrom,
 } from '@remix-run/node';
 import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
+import { useState } from 'react';
 import { ExternalLink } from 'react-feather';
 
 import { getCompany } from '@oyster/core/employment/server';
@@ -76,7 +77,7 @@ export default function CompanyPage() {
         <AverageRating averageRating={company.averageRating} />
       </header>
 
-      <Text color="gray-500">{company.description}</Text>
+      <CompanyDescription description={company.description} />
       <OpportunitiesAlert />
       <CompanyNavigation />
       <Outlet />
@@ -184,6 +185,37 @@ function AverageRating({
         <span className="text-2xl">{averageRating}</span>/10
       </Text>
     </div>
+  );
+}
+
+function CompanyDescription({
+  description,
+}: Pick<CompanyInView, 'description'>) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  if (!description) {
+    return null;
+  }
+
+  const isLongDescription = description.length > 400;
+  const displayText = isExpanded ? description : description.slice(0, 400);
+
+  return (
+    <Text className="whitespace-pre-wrap" color="gray-500" variant="sm">
+      {displayText}
+      {isLongDescription && !isExpanded && (
+        <>
+          ...{' '}
+          <button
+            className="text-primary underline"
+            onClick={() => setIsExpanded(true)}
+            type="button"
+          >
+            see more
+          </button>
+        </>
+      )}
+    </Text>
   );
 }
 
