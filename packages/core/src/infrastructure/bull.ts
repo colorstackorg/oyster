@@ -142,8 +142,8 @@ export function registerWorker<Schema extends ZodType>(
   options = {
     autorun: false,
     connection: redis,
-    removeOnComplete: { age: 60 * 60 * 24 * 1, count: 100 },
-    removeOnFail: { age: 60 * 60 * 24 * 7, count: 1000 },
+    removeOnComplete: { age: 60 * 60 * 24 * 1, count: 1000 },
+    removeOnFail: { age: 60 * 60 * 24 * 7, count: 10000 },
     ...options,
   };
 
