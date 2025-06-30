@@ -5,6 +5,7 @@ import { type DB, db, point } from '@oyster/db';
 import { type Major } from '@oyster/types';
 import { id, run, splitArray } from '@oyster/utils';
 
+import { job } from '@/infrastructure/bull';
 import { track } from '@/infrastructure/mixpanel';
 import { cache } from '@/infrastructure/redis';
 import { runActor } from '@/modules/apify';
@@ -388,11 +389,23 @@ export async function syncLinkedInProfiles(
   const { members, memberMap, educationMap, experienceMap } =
     await loadAllData(options);
 
-  const batches = splitArray(members, 50);
+  const batches = splitArray(members, 25);
 
   console.log(
     `Splitting ${members.length} members into ${batches.length} batches.`
   );
+
+  // If there are more than 10 batches to sync, then we'll split this task
+  // into a series of smaller jobs that can be processed in parallel.
+  if (batches.length > 10) {
+    batches.forEach((batch) => {
+      job('student.linkedin.sync', {
+        memberIds: batch.map((member) => member.id),
+      });
+    });
+
+    return;
+  }
 
   for (let i = 0; i < batches.length; i++) {
     console.log(`Processing batch ${i + 1} of ${batches.length}.`);
