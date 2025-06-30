@@ -395,9 +395,9 @@ export async function syncLinkedInProfiles(
     `Splitting ${members.length} members into ${batches.length} batches.`
   );
 
-  // If there are more than 100 members to sync, then we'll split this task
+  // If there are more than 10 batches to sync, then we'll split this task
   // into a series of smaller jobs that can be processed in parallel.
-  if (members.length > 100) {
+  if (batches.length > 10) {
     batches.forEach((batch) => {
       job('student.linkedin.sync', {
         memberIds: batch.map((member) => member.id),
