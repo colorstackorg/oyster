@@ -10,7 +10,6 @@ import {
   CornerUpLeft,
   Edit,
   ExternalLink,
-  Gift,
   Star,
   Trash,
   Zap,
@@ -253,15 +252,6 @@ function StudentDropdown({
               rel="noopener noreferrer"
             >
               <ExternalLink /> View Airtable Record
-            </Link>
-          </Dropdown.Item>
-
-          <Dropdown.Item>
-            <Link
-              preventScrollReset
-              to={generatePath(Route['/students/:id/gift'], { id })}
-            >
-              <Gift /> Send Goody Gift
             </Link>
           </Dropdown.Item>
 

@@ -43,7 +43,6 @@ const ROUTES = [
   '/students',
   '/students/:id/activate',
   '/students/:id/email',
-  '/students/:id/gift',
   '/students/:id/points/grant',
   '/students/:id/remove',
 ] as const;
