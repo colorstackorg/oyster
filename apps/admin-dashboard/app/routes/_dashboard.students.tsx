@@ -6,15 +6,7 @@ import {
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
-import {
-  CornerUpLeft,
-  Edit,
-  ExternalLink,
-  Gift,
-  Star,
-  Trash,
-  Zap,
-} from 'react-feather';
+import { CornerUpLeft, Edit, ExternalLink, Star, Trash } from 'react-feather';
 import { generatePath } from 'react-router';
 
 import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
@@ -74,7 +66,6 @@ async function listStudents({
     query
       .leftJoin('schools', 'schools.id', 'students.schoolId')
       .select([
-        'students.activatedAt',
         'students.airtableId',
         'students.applicationId',
         'students.email',
@@ -198,27 +189,11 @@ function StudentsPagination() {
   );
 }
 
-function StudentDropdown({
-  activatedAt,
-  airtableUri,
-  applicationUri,
-  id,
-}: StudentInView) {
+function StudentDropdown({ airtableUri, applicationUri, id }: StudentInView) {
   return (
     <Dropdown.Root>
       <Table.Dropdown>
         <Dropdown.List>
-          {!activatedAt && (
-            <Dropdown.Item>
-              <Link
-                preventScrollReset
-                to={generatePath(Route['/students/:id/activate'], { id })}
-              >
-                <Zap /> Activate Member
-              </Link>
-            </Dropdown.Item>
-          )}
-
           <Dropdown.Item>
             <Link
               preventScrollReset
@@ -253,15 +228,6 @@ function StudentDropdown({
               rel="noopener noreferrer"
             >
               <ExternalLink /> View Airtable Record
-            </Link>
-          </Dropdown.Item>
-
-          <Dropdown.Item>
-            <Link
-              preventScrollReset
-              to={generatePath(Route['/students/:id/gift'], { id })}
-            >
-              <Gift /> Send Goody Gift
             </Link>
           </Dropdown.Item>
 

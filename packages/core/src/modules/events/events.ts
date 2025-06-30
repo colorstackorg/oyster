@@ -444,11 +444,6 @@ async function onEventAttended({
   eventId,
   studentId,
 }: GetBullJobData<'event.attended'>) {
-  job('student.activation_requirement_completed', {
-    requirement: 'attend_event',
-    studentId,
-  });
-
   job('gamification.activity.completed', {
     eventId,
     studentId,

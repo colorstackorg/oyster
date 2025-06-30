@@ -18,8 +18,6 @@ import { syncLinkedInProfiles } from '@/modules/linkedin';
 import { sendAnniversaryEmail } from '@/modules/members/use-cases/send-anniversary-email';
 import { sendGraduationEmail } from '@/modules/members/use-cases/send-graduation-email';
 import { success } from '@/shared/utils/core';
-import { onActivationStepCompleted } from './events/activation-step-completed';
-import { onMemberActivated } from './events/member-activated';
 import { onMemberCreated } from './events/member-created';
 import { onMemberRemoved } from './events/member-removed';
 import { backfillEngagementRecords } from './use-cases/backfill-engagement-records';
@@ -31,15 +29,6 @@ export const memberWorker = registerWorker(
   StudentBullJob,
   async (job) => {
     const result = await match(job)
-      .with({ name: 'student.activated' }, ({ data }) => {
-        return onMemberActivated(data);
-      })
-      .with(
-        { name: 'student.activation_requirement_completed' },
-        async ({ data }) => {
-          return onActivationStepCompleted(data);
-        }
-      )
       .with({ name: 'student.anniversary.email' }, ({ data }) => {
         return sendAnniversaryEmail(data);
       })

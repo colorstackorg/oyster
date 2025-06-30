@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 import { EmailTemplate } from '@oyster/email-templates';
 import {
-  ActivationRequirement,
   Application,
   Email,
   Event,
@@ -617,19 +616,6 @@ export const SlackBullJob = z.discriminatedUnion('name', [
 ]);
 
 export const StudentBullJob = z.discriminatedUnion('name', [
-  z.object({
-    name: z.literal('student.activated'),
-    data: z.object({
-      studentId: Student.shape.id,
-    }),
-  }),
-  z.object({
-    name: z.literal('student.activation_requirement_completed'),
-    data: z.object({
-      requirement: z.nativeEnum(ActivationRequirement).optional(),
-      studentId: Student.shape.id,
-    }),
-  }),
   z.object({
     name: z.literal('student.anniversary.email'),
     data: z.object({}),

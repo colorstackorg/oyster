@@ -36,10 +36,7 @@ export function StudentAttendedOnboardingEmail({
           <Email.Link href="https://app.colorstack.io">
             Member Profile
           </Email.Link>{' '}
-          to track your activation progress and get access to ColorStack's
-          resources! Please update your work and education history so we have
-          all of your relevant info handy. If you need any assistance, send a
-          message in the #product-help Slack channel.
+          get access to ColorStack's resources!
         </Email.Text>
 
         {studentsInSession.length > 0 && (
