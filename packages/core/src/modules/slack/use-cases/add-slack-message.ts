@@ -40,10 +40,6 @@ export async function addSlackMessage(data: AddSlackMessageInput) {
     .execute();
 
   if (student?.id) {
-    job('student.activation_requirement_completed', {
-      studentId: student.id,
-    });
-
     if (data.threadId) {
       job('gamification.activity.completed', {
         channelId: data.channelId,

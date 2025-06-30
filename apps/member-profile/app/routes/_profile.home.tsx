@@ -20,19 +20,13 @@ import {
 } from '@oyster/core/member-profile/server';
 import { getIpAddress, setMixpanelProfile, track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
-import {
-  ACTIVATION_REQUIREMENTS,
-  type ActivationRequirement,
-  StudentActiveStatus,
-  Timezone,
-} from '@oyster/types';
-import { Button, cx, Divider, Text } from '@oyster/ui';
+import { StudentActiveStatus, Timezone } from '@oyster/types';
+import { Button, cx, Text } from '@oyster/ui';
 import { toTitleCase } from '@oyster/utils';
 
 import { Card, type CardProps } from '@/shared/components/card';
 import { Leaderboard } from '@/shared/components/leaderboard';
 import { MemberProfileTour } from '@/shared/components/member-profile-tour';
-import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
@@ -168,9 +162,6 @@ async function getStudent(id: string) {
     )
     .select([
       'students.acceptedAt',
-      'students.activatedAt',
-      'students.activationRequirementsCompleted',
-      'students.claimedSwagPackAt',
       'students.email',
       'students.firstName',
       'students.id',
@@ -185,18 +176,7 @@ async function getStudent(id: string) {
     .where('students.id', '=', id)
     .executeTakeFirstOrThrow();
 
-  const joinedAfterActivation =
-    row.acceptedAt.valueOf() >=
-    dayjs().year(2023).month(5).date(9).startOf('day').toDate().valueOf();
-
-  row.activationRequirementsCompleted =
-    row.activationRequirementsCompleted.filter((requirement) => {
-      return ACTIVATION_REQUIREMENTS.includes(
-        requirement as ActivationRequirement
-      );
-    });
-
-  return Object.assign(row, { joinedAfterActivation });
+  return row;
 }
 
 async function getThisWeekActiveStatus(id: string, timezone: string) {
@@ -245,28 +225,9 @@ async function getTotalStudentsCount() {
 export default function HomeLayout() {
   const { student } = useLoaderData<typeof loader>();
 
-  const showActivationCard =
-    !!student.joinedAfterActivation &&
-    !student.activatedAt &&
-    !student.claimedSwagPackAt;
-
-  const showOnboardingCard =
-    !!student.joinedAfterActivation && !student.attendedOnboardingSession;
-
   return (
     <>
       <Text variant="2xl">Hey, {student.firstName}! 👋</Text>
-
-      {(showActivationCard || showOnboardingCard) && (
-        <>
-          <div className="grid grid-cols-1 items-start gap-4 @[1000px]:grid-cols-2 @[1500px]:grid-cols-3">
-            {showActivationCard && <ActivationCard />}
-            {showOnboardingCard && <OnboardingSessionCard />}
-          </div>
-
-          <Divider />
-        </>
-      )}
 
       <div className="grid grid-cols-1 items-start gap-4 @[900px]:grid-cols-2 @[1500px]:grid-cols-3">
         <Home.Column>
@@ -359,53 +320,6 @@ function ActiveStatusCard() {
           </div>
         </div>
       </div>
-    </Card>
-  );
-}
-
-function OnboardingSessionCard() {
-  return (
-    <Card>
-      <Card.Title>Attend an Onboarding Session 📆</Card.Title>
-
-      <Card.Description>
-        Attend an onboarding session to learn more about ColorStack and meet
-        other members!
-      </Card.Description>
-
-      <Button.Group>
-        <Button.Slot variant="primary">
-          <Link
-            target="_blank"
-            to="https://calendly.com/colorstack-onboarding-ambassador/onboarding"
-          >
-            Book Onboarding Session <ExternalLink size={20} />
-          </Link>
-        </Button.Slot>
-      </Button.Group>
-    </Card>
-  );
-}
-
-function ActivationCard() {
-  const { student } = useLoaderData<typeof loader>();
-
-  return (
-    <Card>
-      <Card.Title>Activation ✅</Card.Title>
-
-      <Card.Description>
-        You've completed {student.activationRequirementsCompleted.length}/
-        {ACTIVATION_REQUIREMENTS.length} activation requirements. Once you hit
-        all {ACTIVATION_REQUIREMENTS.length}, you will get a gift card to claim
-        your FREE merch! 👀
-      </Card.Description>
-
-      <Button.Group>
-        <Button.Slot variant="primary">
-          <Link to={Route['/home/activation']}>See Progress</Link>
-        </Button.Slot>
-      </Button.Group>
     </Card>
   );
 }

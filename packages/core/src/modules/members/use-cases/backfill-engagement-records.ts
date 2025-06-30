@@ -104,12 +104,6 @@ export async function backfillEngagementRecords(
     });
   });
 
-  if (slackMessages.length) {
-    job('student.activation_requirement_completed', {
-      studentId: student.id,
-    });
-  }
-
   if (slackMessages.length || slackReactions.length) {
     job('student.statuses.backfill', {
       studentId: student.id,

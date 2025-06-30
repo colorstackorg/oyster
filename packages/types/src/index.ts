@@ -7,8 +7,6 @@ export {
 } from './domain/event';
 export { ProfileView } from './domain/profile-view';
 export {
-  ActivationRequirement,
-  ACTIVATION_REQUIREMENTS,
   MemberEthnicity,
   MemberType,
   Student,
