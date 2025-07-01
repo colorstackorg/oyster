@@ -4,7 +4,17 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig((env) => {
   return {
-    plugins: [remix(), tsconfigPaths()],
+    plugins: [
+      remix({
+        future: {
+          v3_fetcherPersist: true,
+          v3_lazyRouteDiscovery: true,
+          v3_relativeSplatPath: true,
+          v3_throwAbortReason: true,
+        },
+      }),
+      tsconfigPaths(),
+    ],
     server: { port: 3000 },
 
     // This is needed to support the top-level await for initializing feature
