@@ -17,6 +17,7 @@ import {
 } from '@/modules/employment/employment.types';
 import { saveCompanyIfNecessary } from '@/modules/employment/use-cases/save-company-if-necessary';
 import { getMostRelevantLocation } from '@/modules/location/location';
+import { uploadProfilePicture } from '@/modules/members/use-cases/upload-profile-picture';
 
 // Constants
 
@@ -903,16 +904,20 @@ async function checkMember({ member, profile, trx }: CheckMemberInput) {
     return getMostRelevantLocation(locationFromLinkedIn, 'geocode');
   });
 
+  if (!!profile.element.photo && !profile.element.openToWork) {
+    await uploadProfilePicture({
+      memberId: member.id,
+      pictureUrl: profile.element.photo,
+      trx,
+    });
+  }
+
   return trx
     .updateTable('students')
     .set({
       ...(!member.headline && {
         headline: profile.element.headline,
       }),
-      ...((!member.headline || !member.profilePicture) &&
-        !profile.element.openToWork && {
-          profilePicture: profile.element.photo,
-        }),
       ...(!!updatedLocation && {
         currentLocation: updatedLocation.formattedAddress,
         currentLocationCoordinates: point({

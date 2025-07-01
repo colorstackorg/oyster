@@ -2,34 +2,34 @@ import { db } from '@oyster/db';
 
 import { job } from '@/infrastructure/bull';
 import { type GetBullJobData } from '@/infrastructure/bull.types';
+import { uploadProfilePicture } from '@/modules/members/use-cases/upload-profile-picture';
 
 export async function onSlackProfilePictureChanged({
   profilePicture,
   slackId,
 }: GetBullJobData<'slack.profile_picture.changed'>) {
-  const student = await db
+  if (!profilePicture) {
+    return;
+  }
+
+  const member = await db
     .selectFrom('students')
     .select(['id', 'profilePicture'])
     .where('slackId', '=', slackId)
     .executeTakeFirst();
 
-  if (!student) {
+  if (!member) {
     return;
   }
 
-  if (profilePicture === student.profilePicture) {
-    return;
-  }
+  const updatedMember = await uploadProfilePicture({
+    memberId: member.id,
+    pictureUrl: profilePicture,
+  });
 
-  await db
-    .updateTable('students')
-    .set({ profilePicture })
-    .where('id', '=', student.id)
-    .execute();
-
-  if (!student.profilePicture && profilePicture) {
+  if (!member.profilePicture && updatedMember?.profilePicture) {
     job('gamification.activity.completed', {
-      studentId: student.id,
+      studentId: member.id,
       type: 'upload_profile_picture',
     });
   }
