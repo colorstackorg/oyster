@@ -94,7 +94,7 @@
     "@oyster/eslint-config": "*",
     "@oyster/tsconfig": "*",
     "@oyster/ui": "*",
-    "@remix-run/react": "^2.8.1",
+    "@remix-run/react": "^2.16.8",
     "@types/dedent": "^0.7.2",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/nodemailer": "^6.4.14",
