@@ -64,7 +64,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         airtableUri: `https://airtable.com/${airtableBaseId}/${airtableTableId}`,
         endDate: dayjs(endDate).tz(timezone).format(format),
         googleDriveUri: `https://drive.google.com/drive/folders/${googleDriveFolderId}`,
-        resumeBookUri: `${ENV.MEMBER_PROFILE_URL}/resume-books/${record.id}`,
+        resumeBookUri: `${ENV.STUDENT_PROFILE_URL}/resume-books/${record.id}`,
         startDate: dayjs(startDate).tz(timezone).format(format),
       };
     }

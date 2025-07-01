@@ -98,7 +98,7 @@ async function listStudents({
           applicationUri: `/applications/${applicationId}`,
         }),
         airtableUri: `https://airtable.com/${ENV.AIRTABLE_FAMILY_BASE_ID}/${ENV.AIRTABLE_MEMBERS_TABLE_ID}/${airtableId}`,
-        directoryUri: `${ENV.MEMBER_PROFILE_URL}/directory/${row.id}`,
+        directoryUri: `${ENV.STUDENT_PROFILE_URL}/directory/${row.id}`,
         joinedAt: dayjs(joinedAt).tz(timezone).format('MM/DD/YY @ h:mm A'),
       };
     }
