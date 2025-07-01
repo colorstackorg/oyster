@@ -908,7 +908,6 @@ async function checkMember({ member, profile, trx }: CheckMemberInput) {
     await uploadProfilePicture({
       memberId: member.id,
       pictureUrl: profile.element.photo,
-      trx,
     });
   }
 
