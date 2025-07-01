@@ -1,0 +1,39 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+---
+description: Database queries must use Kysely only.
+alwaysApply: true
+---
+
+# Database Queries - Use Kysely Only
+
+## Database Access
+- **ALWAYS** use `kysely` for database queries
+- **NEVER** use raw SQL, Prisma, or any other ORM
+- Import from `@oyster/db` package: `import { db, type DB } from '@oyster/db'`
+
+## Query Patterns
+- Use TypeScript generics with `SelectExpression<DB, 'tableName'>` for type safety
+- Follow the existing pattern: `db.selectFrom('table').select(columns).where(...).executeTakeFirst()`
+- Use `$if()` for conditional selects
+- Use `sql` template literal for complex expressions: `import { sql } from 'kysely'`
+
+## Examples
+```typescript
+// ✅ Correct pattern
+const result = await db
+  .selectFrom('companies')
+  .select(['id', 'name'])
+  .where('id', '=', companyId)
+  .executeTakeFirst();
+
+// ❌ Don't use raw SQL
+const result = await db.execute('SELECT * FROM companies WHERE id = ?', [companyId]);
+```
+
+## Documentation
+- Reference: https://kysely.dev
+- Check existing queries in `packages/core/src/modules/*/queries/` for patterns
