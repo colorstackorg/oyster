@@ -41,6 +41,8 @@
     "@oyster/tailwind": "*",
     "@oyster/tsconfig": "*",
     "@remix-run/dev": "^2.16.8",
+    "@remix-run/fs-routes": "^2.16.8",
+    "@remix-run/route-config": "^2.16.8",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/node": "^18.7.18",
     "@types/qrcode": "^1.5.5",
