@@ -1,10 +1,6 @@
 ---
-description:
-globs:
-alwaysApply: true
----
----
 description: Database queries must use Kysely only.
+globs:
 alwaysApply: true
 ---
 
