@@ -75,7 +75,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     application: {
       ...application,
       ...(application.referrerId && {
-        referrerUri: `${ENV.MEMBER_PROFILE_URL}/directory/${application.referrerId}`,
+        referrerUri: `${ENV.STUDENT_PROFILE_URL}/directory/${application.referrerId}`,
       }),
     },
   });

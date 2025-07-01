@@ -21,7 +21,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   const code = await QRCode.toDataURL(
-    `${ENV.MEMBER_PROFILE_URL}/events/${event.id}/check-in`,
+    `${ENV.STUDENT_PROFILE_URL}/events/${event.id}/check-in`,
     { width: 400 }
   );
 

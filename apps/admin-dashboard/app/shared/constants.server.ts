@@ -18,7 +18,6 @@ const BaseEnvironmentConfig = z.object({
   GOOGLE_CLIENT_SECRET: EnvironmentVariable,
   GOOGLE_DRIVE_RESUME_BOOKS_FOLDER_ID: EnvironmentVariable,
   JWT_SECRET: EnvironmentVariable,
-  MEMBER_PROFILE_URL: EnvironmentVariable,
   REDIS_URL: EnvironmentVariable,
   SENTRY_DSN: EnvironmentVariable,
   SESSION_SECRET: EnvironmentVariable,
@@ -35,7 +34,6 @@ const EnvironmentConfig = z.discriminatedUnion('ENVIRONMENT', [
     GOOGLE_CLIENT_ID: true,
     GOOGLE_CLIENT_SECRET: true,
     GOOGLE_DRIVE_RESUME_BOOKS_FOLDER_ID: true,
-    MEMBER_PROFILE_URL: true,
     SENTRY_DSN: true,
     STUDENT_PROFILE_URL: true,
   }).extend({
