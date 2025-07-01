@@ -263,7 +263,7 @@ function EditButton({ id }: Pick<HelpRequestInView, 'id'>) {
               pathname: generatePath(Route['/peer-help/:id/edit'], { id }),
               search: searchParams.toString(),
             }}
-            unstable_viewTransition
+            viewTransition
           >
             <Edit />
           </Link>
@@ -286,10 +286,7 @@ function OfferHelpToggle() {
   if (isOfferRoute) {
     return (
       <Button.Slot variant="secondary">
-        <Link
-          to={generatePath(Route['/peer-help/:id'], { id })}
-          unstable_viewTransition
-        >
+        <Link to={generatePath(Route['/peer-help/:id'], { id })} viewTransition>
           Collapse <ArrowUp size={20} />
         </Link>
       </Button.Slot>
@@ -300,7 +297,7 @@ function OfferHelpToggle() {
     <Button.Slot variant="primary">
       <Link
         to={generatePath(Route['/peer-help/:id/offer'], { id })}
-        unstable_viewTransition
+        viewTransition
       >
         Offer Help <ArrowDown size={20} />
       </Link>

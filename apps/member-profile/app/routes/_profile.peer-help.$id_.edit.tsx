@@ -130,7 +130,7 @@ export default function EditHelpRequestModal() {
           <Button.Slot color="error" variant="secondary">
             <Link
               to={generatePath(Route['/peer-help/:id/delete'], { id })}
-              unstable_viewTransition
+              viewTransition
             >
               Delete
             </Link>
