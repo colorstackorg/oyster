@@ -100,11 +100,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   if (!updateResult.ok) {
     return data(
-      {
-        errors: {
-          duplicateResourceId: updateResult.context!.duplicateResourceId,
-        },
-      },
+      { duplicateResourceId: updateResult.context!.duplicateResourceId },
       { status: updateResult.code }
     );
   }

@@ -80,9 +80,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (!addResult.ok) {
     return data(
-      {
-        errors: { duplicateResourceId: addResult.context!.duplicateResourceId },
-      },
+      { duplicateResourceId: addResult.context!.duplicateResourceId },
       { status: addResult.code }
     );
   }
