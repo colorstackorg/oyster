@@ -37,14 +37,9 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ errors: result.errors }, { status: 400 });
   }
 
-  const { email, firstName, lastName, role } = result.data;
-
   const addResult = await addAdmin({
+    ...result.data,
     actor: user(session),
-    email,
-    firstName,
-    lastName,
-    role,
   });
 
   if (!addResult.ok) {

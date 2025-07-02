@@ -65,10 +65,8 @@ export async function action({ params, request }: ActionFunctionArgs) {
     return json({ errors: result.errors }, { status: 400 });
   }
 
-  const { email } = result.data;
-
   const updateResult = updateEmailApplication({
-    email,
+    email: result.data.email,
     id: params.id as string,
   });
 
