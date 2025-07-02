@@ -1991,6 +1991,25 @@
     unist-util-visit "^4.0.0"
     vfile "^5.0.0"
 
+"@mjackson/form-data-parser@^0.9.1":
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/@mjackson/form-data-parser/-/form-data-parser-0.9.1.tgz#3d363b6cc28b0906dd1f88ff847fbd9faf7674c2"
+  integrity sha512-GQqet5qTAm8LfUOsMdfdInqnOBpuDO5GK/y7tBgpXs+DQhJY9Rf1fxMuFXiXczoNMRu8UIG5/RFSBDeaF1bbrw==
+  dependencies:
+    "@mjackson/multipart-parser" "^0.10.1"
+
+"@mjackson/headers@^0.11.1":
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/@mjackson/headers/-/headers-0.11.1.tgz#f365aaf775aa79e2354dfb2877fa81e4ba314b84"
+  integrity sha512-uXXhd4rtDdDwkqAuGef1nuafkCa1NlTmEc1Jzc0NL4YiA1yON1NFXuqJ3hOuKvNKQwkiDwdD+JJlKVyz4dunFA==
+
+"@mjackson/multipart-parser@^0.10.1":
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/@mjackson/multipart-parser/-/multipart-parser-0.10.1.tgz#178879fffcd1dffeb9cdb414325592e9b2d2e37d"
+  integrity sha512-cHMD6+ErH/DrEfC0N6Ru/+1eAdavxdV0C35PzSb5/SD7z3XoaDMc16xPJcb8CahWjSpqHY+Too9sAb6/UNuq7A==
+  dependencies:
+    "@mjackson/headers" "^0.11.1"
+
 "@mrmlnc/readdir-enhanced@^2.2.1":
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/@mrmlnc/readdir-enhanced/-/readdir-enhanced-2.2.1.tgz#524af240d1a360527b730475ecfa1344aa540dde"

@@ -1,11 +1,8 @@
+import { type FileUpload, parseFormData } from '@mjackson/form-data-parser';
 import {
   type ActionFunctionArgs,
-  unstable_composeUploadHandlers as composeUploadHandlers,
-  unstable_createFileUploadHandler as createFileUploadHandler,
-  unstable_createMemoryUploadHandler as createMemoryUploadHandler,
   data,
   type LoaderFunctionArgs,
-  unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
 } from '@remix-run/node';
 import {
@@ -75,12 +72,17 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const uploadHandler = composeUploadHandlers(
-    createFileUploadHandler({ maxPartSize: 1_000_000 * 20 }),
-    createMemoryUploadHandler()
-  );
+  async function uploadHandler(fileUpload: FileUpload) {
+    if (fileUpload.fieldName === 'attachments') {
+      return fileUpload;
+    }
+  }
 
-  const form = await parseMultipartFormData(request, uploadHandler);
+  const form = await parseFormData(
+    request,
+    { maxFileSize: 1_000_000 * 20 },
+    uploadHandler
+  );
 
   const result = await validateForm(
     {

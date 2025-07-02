@@ -14,6 +14,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@mjackson/form-data-parser": "^0.9.1",
     "@oyster/core": "*",
     "@oyster/db": "*",
     "@oyster/types": "*",

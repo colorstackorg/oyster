@@ -1,12 +1,9 @@
+import { type FileUpload, parseFormData } from '@mjackson/form-data-parser';
 import {
   type ActionFunctionArgs,
-  unstable_composeUploadHandlers as composeUploadHandlers,
-  unstable_createFileUploadHandler as createFileUploadHandler,
-  unstable_createMemoryUploadHandler as createMemoryUploadHandler,
   data,
   type LoaderFunctionArgs,
   type MetaFunction,
-  unstable_parseMultipartFormData as parseMultipartFormData,
 } from '@remix-run/node';
 import {
   Form,
@@ -67,12 +64,16 @@ const RESUME_MAX_FILE_SIZE = MB_IN_BYTES * 1;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const uploadHandler = composeUploadHandlers(
-    createFileUploadHandler({ maxPartSize: RESUME_MAX_FILE_SIZE }),
-    createMemoryUploadHandler()
-  );
+  async function uploadHandler(fileUpload: FileUpload) {
+    if (
+      fileUpload.fieldName === 'resume' &&
+      fileUpload.type === 'application/pdf'
+    ) {
+      return fileUpload;
+    }
+  }
 
-  const form = await parseMultipartFormData(request, uploadHandler);
+  const form = await parseFormData(request, uploadHandler);
 
   form.set('memberId', user(session));
 
