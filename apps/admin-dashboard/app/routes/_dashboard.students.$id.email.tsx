@@ -54,25 +54,19 @@ type UpdateStudentEmailInput = z.infer<typeof UpdateStudentEmailInput>;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    UpdateStudentEmailInput
-  );
+  const result = await validateForm(request, UpdateStudentEmailInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
-  const result = await updateMemberEmail({
-    email: data.email,
+  const updateResult = await updateMemberEmail({
+    email: result.data.email,
     id: params.id as string,
   });
 
-  if (result instanceof Error) {
-    return json({
-      error: result.message,
-      errors,
-    });
+  if (updateResult instanceof Error) {
+    return json({ error: updateResult.message }, { status: 500 });
   }
 
   toast(session, {

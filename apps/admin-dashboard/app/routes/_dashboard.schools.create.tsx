@@ -32,18 +32,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(request, CreateSchoolInput);
+  const result = await validateForm(request, CreateSchoolInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
-  await createSchool({
-    addressCity: data.addressCity,
-    addressState: data.addressState,
-    addressZip: data.addressZip,
-    name: data.name,
-  });
+  await createSchool(result.data);
 
   toast(session, {
     message: 'Created school.',

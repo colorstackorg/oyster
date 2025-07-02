@@ -68,21 +68,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    FinishHelpRequestInput
-  );
+  const result = await validateForm(request, FinishHelpRequestInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
   const id = params.id as string;
 
-  const result = await finishHelpRequest(id, data);
+  const finishResult = await finishHelpRequest(id, result.data);
 
-  if (!result.ok) {
-    return json({ error: result.error }, { status: result.code });
+  if (!finishResult.ok) {
+    return json({ error: finishResult.error }, { status: finishResult.code });
   }
 
   toast(session, {

@@ -40,21 +40,13 @@ export async function action({ request }: ActionFunctionArgs) {
     minimumRole: 'owner',
   });
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    CreateFeatureFlagInput
-  );
+  const result = await validateForm(request, CreateFeatureFlagInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
-  await createFeatureFlag({
-    description: data.description,
-    displayName: data.displayName,
-    enabled: data.enabled,
-    name: data.name,
-  });
+  await createFeatureFlag(result.data);
 
   toast(session, {
     message: 'Created feature flag.',

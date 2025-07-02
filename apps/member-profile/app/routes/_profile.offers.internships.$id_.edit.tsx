@@ -105,21 +105,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    EditInternshipOfferInput
-  );
+  const result = await validateForm(request, EditInternshipOfferInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
   const offerId = params.id as string;
 
-  const result = await editInternshipOffer(offerId, data);
+  const editResult = await editInternshipOffer(offerId, result.data);
 
-  if (!result.ok) {
-    return json({ error: result.error }, { status: result.code });
+  if (!editResult.ok) {
+    return json({ error: editResult.error }, { status: editResult.code });
   }
 
   toast(session, {

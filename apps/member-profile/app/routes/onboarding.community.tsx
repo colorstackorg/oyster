@@ -83,18 +83,18 @@ const CommunityData = z.object({
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(request, CommunityData);
+  const result = await validateForm(request, CommunityData);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
   const memberId = user(session);
 
   try {
     await updateMember(memberId, {
-      ...data,
-      ethnicities: data.ethnicities || [],
+      ...result.data,
+      ethnicities: result.data.ethnicities || [],
     });
 
     return redirect(Route['/onboarding/slack']);

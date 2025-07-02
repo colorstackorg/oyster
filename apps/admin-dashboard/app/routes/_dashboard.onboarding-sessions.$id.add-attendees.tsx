@@ -59,19 +59,19 @@ export async function action({ params, request }: ActionFunctionArgs) {
     minimumRole: 'ambassador',
   });
 
-  const { data, errors, ok } = await validateForm(
+  const result = await validateForm(
     request,
     AddOnboardingSessionAttendeesInput
   );
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
-  await addOnboardingSessionAttendees(params.id as string, data);
+  await addOnboardingSessionAttendees(params.id as string, result.data);
 
   toast(session, {
-    message: `Added ${data.attendees.length} attendees.`,
+    message: `Added ${result.data.attendees.length} attendees.`,
   });
 
   return redirect(Route['/onboarding-sessions'], {

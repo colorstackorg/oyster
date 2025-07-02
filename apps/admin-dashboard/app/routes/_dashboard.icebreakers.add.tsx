@@ -34,16 +34,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    AddIcebreakerPromptInput
-  );
+  const result = await validateForm(request, AddIcebreakerPromptInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
-  await addIcebreakerPrompt(data);
+  await addIcebreakerPrompt(result.data);
 
   toast(session, {
     message: 'Added icebreaker prompt.',

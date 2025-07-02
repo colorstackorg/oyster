@@ -46,7 +46,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const form = await request.formData();
 
-  const { data, errors, ok } = await validateForm(
+  const result = await validateForm(
     {
       ...Object.fromEntries(form),
       tags: form.getAll('tags').filter(Boolean),
@@ -54,17 +54,13 @@ export async function action({ params, request }: ActionFunctionArgs) {
     UpdateSchoolInput.omit({ id: true })
   );
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
   await updateSchool({
-    addressCity: data.addressCity,
-    addressState: data.addressState,
-    addressZip: data.addressZip,
+    ...result.data,
     id: params.id as string,
-    name: data.name,
-    tags: data.tags,
   });
 
   toast(session, {

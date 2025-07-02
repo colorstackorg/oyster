@@ -47,16 +47,16 @@ export async function action({ request }: ActionFunctionArgs) {
 
   form.set('postedBy', user(session));
 
-  const { data, errors, ok } = await validateForm(form, AddOpportunityInput);
-
-  if (!ok) {
-    return json({ errors }, { status: 400 });
-  }
-
-  const result = await addOpportunity(data);
+  const result = await validateForm(form, AddOpportunityInput);
 
   if (!result.ok) {
-    return json({ error: result.error }, { status: result.code });
+    return json({ errors: result.errors }, { status: 400 });
+  }
+
+  const addResult = await addOpportunity(result.data);
+
+  if (!addResult.ok) {
+    return json({ error: addResult.error }, { status: addResult.code });
   }
 
   toast(session, {
@@ -67,7 +67,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const url = new URL(request.url);
 
   url.pathname = generatePath(Route['/opportunities/:id/edit'], {
-    id: result.data.id,
+    id: addResult.data.id,
   });
 
   // When we redirect to the edit page, we want to show some additional

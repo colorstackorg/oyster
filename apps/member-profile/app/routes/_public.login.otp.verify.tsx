@@ -39,13 +39,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const { data, errors, ok } = await validateForm(
+  const result = await validateForm(
     request,
     VerifyOneTimeCodeInput.pick({ value: true })
   );
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
   const oneTimeCodeId = await oneTimeCodeIdCookie.parse(
@@ -53,16 +53,16 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!oneTimeCodeId) {
-    return json({
-      error: 'Your one-time code was not found. Please request a new code.',
-      errors,
-    });
+    return json(
+      { error: 'Your one-time code was not found. Please request a new code.' },
+      { status: 404 }
+    );
   }
 
   try {
     const { userId } = await verifyOneTimeCode({
       id: oneTimeCodeId,
-      value: data.value,
+      value: result.data.value,
     });
 
     const session = await getSession(request);

@@ -10,13 +10,13 @@ import { ensureUserAuthenticated, user } from '@/shared/session.server';
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, ok } = await validateForm(request, CreateTagInput);
+  const result = await validateForm(request, CreateTagInput);
 
-  if (!ok) {
-    return json({}, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
-  await createTag(data);
+  await createTag(result.data);
 
   track({
     event: 'Resource Tag Added',

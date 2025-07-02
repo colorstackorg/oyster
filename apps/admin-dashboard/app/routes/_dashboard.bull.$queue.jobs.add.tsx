@@ -60,15 +60,15 @@ export async function action({ params, request }: ActionFunctionArgs) {
     minimumRole: 'owner',
   });
 
-  const { data, errors, ok } = await validateForm(request, AddJobInput);
+  const result = await validateForm(request, AddJobInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
   const queue = await validateQueue(params.queue);
 
-  await queue.add(data.name, data.data);
+  await queue.add(result.data.name, result.data.data);
 
   toast(session, {
     message: 'Added job.',

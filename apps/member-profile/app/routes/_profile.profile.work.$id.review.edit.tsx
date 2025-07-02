@@ -44,19 +44,13 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   form.set('workExperienceId', params.id as string);
 
-  const { data, errors, ok } = await validateForm(form, EditCompanyReviewInput);
+  const result = await validateForm(form, EditCompanyReviewInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
-  await editCompanyReview({
-    anonymous: data.anonymous,
-    rating: data.rating,
-    recommend: data.recommend,
-    text: data.text,
-    workExperienceId: data.workExperienceId,
-  });
+  await editCompanyReview(result.data);
 
   toast(session, {
     message: 'Your review has been updated!',

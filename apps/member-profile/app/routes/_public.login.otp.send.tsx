@@ -12,18 +12,18 @@ import { Route } from '@/shared/constants';
 import { oneTimeCodeIdCookie } from '@/shared/cookies.server';
 
 export async function action({ request }: ActionFunctionArgs) {
-  const { data, errors, ok } = await validateForm(
+  const result = await validateForm(
     request,
     SendOneTimeCodeInput.omit({ purpose: true })
   );
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
   try {
     const { id } = await sendOneTimeCode({
-      email: data.email,
+      email: result.data.email,
       purpose: 'student_login',
     });
 

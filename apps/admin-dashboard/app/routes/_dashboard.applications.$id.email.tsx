@@ -59,25 +59,21 @@ export async function action({ params, request }: ActionFunctionArgs) {
     minimumRole: 'ambassador',
   });
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    UpdateApplicationEmailInput
-  );
+  const result = await validateForm(request, UpdateApplicationEmailInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
-  const result = updateEmailApplication({
-    email: data.email,
+  const { email } = result.data;
+
+  const updateResult = updateEmailApplication({
+    email,
     id: params.id as string,
   });
 
-  if (result instanceof Error) {
-    return json({
-      error: result.message,
-      errors,
-    });
+  if (updateResult instanceof Error) {
+    return json({ error: updateResult.message }, { status: 500 });
   }
 
   toast(session, {

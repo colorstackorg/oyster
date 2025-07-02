@@ -65,21 +65,21 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors, ok } = await validateForm(
-    form,
-    ImportEventAttendeesInput
-  );
+  const result = await validateForm(form, ImportEventAttendeesInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
   let count = 0;
 
   try {
-    const result = await importEventAttendees(params.id as string, data);
+    const importResult = await importEventAttendees(
+      params.id as string,
+      result.data
+    );
 
-    count = result.count;
+    count = importResult.count;
   } catch (e) {
     return json({ error: (e as Error).message }, { status: 500 });
   }

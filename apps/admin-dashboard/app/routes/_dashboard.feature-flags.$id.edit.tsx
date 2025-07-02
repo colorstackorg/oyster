@@ -54,20 +54,13 @@ export async function action({ params, request }: ActionFunctionArgs) {
     minimumRole: 'owner',
   });
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    EditFeatureFlagInput
-  );
+  const result = await validateForm(request, EditFeatureFlagInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
-  await editFeatureFlag(params.id as string, {
-    description: data.description,
-    displayName: data.displayName,
-    enabled: data.enabled,
-  });
+  await editFeatureFlag(params.id as string, result.data);
 
   toast(session, {
     message: 'Edited feature flag.',

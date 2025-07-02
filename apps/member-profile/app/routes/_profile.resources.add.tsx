@@ -59,7 +59,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   form.set('postedBy', user(session));
 
-  const { data, errors, ok } = await validateForm(
+  const result = await validateForm(
     {
       ...Object.fromEntries(form),
       attachments: form.getAll('attachments'),
@@ -67,24 +67,18 @@ export async function action({ request }: ActionFunctionArgs) {
     AddResourceInput
   );
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
-  const result = await addResource({
-    attachments: data.attachments,
-    description: data.description,
-    link: data.link,
-    postedBy: data.postedBy,
-    tags: data.tags,
-    title: data.title,
-    type: data.type,
-  });
+  const addResult = await addResource(result.data);
 
-  if (!result.ok) {
+  if (!addResult.ok) {
     return json(
-      { errors: { duplicateResourceId: result.context!.duplicateResourceId } },
-      { status: result.code }
+      {
+        errors: { duplicateResourceId: addResult.context!.duplicateResourceId },
+      },
+      { status: addResult.code }
     );
   }
 

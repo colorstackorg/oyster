@@ -27,13 +27,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(request, CreateActivityInput);
+  const result = await validateForm(request, CreateActivityInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
-  await addActivity(data);
+  await addActivity(result.data);
 
   toast(session, {
     message: 'Added a new activity.',

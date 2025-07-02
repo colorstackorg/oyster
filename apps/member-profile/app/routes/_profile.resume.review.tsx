@@ -76,28 +76,28 @@ export async function action({ request }: ActionFunctionArgs) {
 
   form.set('memberId', user(session));
 
-  const { data, errors, ok } = await validateForm(
+  const result = await validateForm(
     Object.fromEntries(form),
     ReviewResumeInput
   );
 
-  if (!ok) {
+  if (!result.ok) {
     return json(
       {
-        error: errors.resume,
+        error: result.errors.resume,
         ok: false,
       } as const,
       { status: 400 }
     );
   }
 
-  const result = await reviewResume(data);
+  const reviewResult = await reviewResume(result.data);
 
-  if (!result.ok) {
-    return json(result, { status: result.code });
+  if (!reviewResult.ok) {
+    return json(reviewResult, { status: reviewResult.code });
   }
 
-  return json(result);
+  return json(reviewResult);
 }
 
 export default function ReviewResume() {

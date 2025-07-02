@@ -38,20 +38,14 @@ const SyncAirmeetEventFormData = z.object({
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    SyncAirmeetEventFormData
-  );
+  const result = await validateForm(request, SyncAirmeetEventFormData);
 
-  if (!ok) {
-    return json({
-      error: '',
-      errors,
-    });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
   job('event.sync', {
-    eventId: data.eventId,
+    eventId: result.data.eventId,
   });
 
   toast(session, {

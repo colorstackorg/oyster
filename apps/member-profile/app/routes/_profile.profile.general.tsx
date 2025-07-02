@@ -84,26 +84,20 @@ type UpdateGeneralInformation = z.infer<typeof UpdateGeneralInformation>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    UpdateGeneralInformation
-  );
+  const result = await validateForm(request, UpdateGeneralInformation);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
-  await updateMember(user(session), data);
+  await updateMember(user(session), result.data);
 
   toast(session, {
     message: 'Updated!',
   });
 
   return json(
-    {
-      error: '',
-      errors,
-    },
+    { error: '' },
     {
       headers: {
         'Set-Cookie': await commitSession(session),

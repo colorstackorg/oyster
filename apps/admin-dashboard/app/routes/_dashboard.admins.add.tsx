@@ -28,25 +28,27 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
+  const result = await validateForm(
     request,
     AddAdminInput.omit({ actor: true })
   );
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
-  const result = await addAdmin({
+  const { email, firstName, lastName, role } = result.data;
+
+  const addResult = await addAdmin({
     actor: user(session),
-    email: data.email,
-    firstName: data.firstName,
-    lastName: data.lastName,
-    role: data.role,
+    email,
+    firstName,
+    lastName,
+    role,
   });
 
-  if (!result.ok) {
-    return json({ error: result.error }, { status: result.code });
+  if (!addResult.ok) {
+    return json({ error: addResult.error }, { status: addResult.code });
   }
 
   toast(session, {

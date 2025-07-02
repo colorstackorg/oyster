@@ -94,21 +94,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    EditOpportunityInput
-  );
+  const result = await validateForm(request, EditOpportunityInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
   const opportunityId = params.id as string;
 
-  const result = await editOpportunity(opportunityId, data);
+  const editResult = await editOpportunity(opportunityId, result.data);
 
-  if (!result.ok) {
-    return json({ error: result.error }, { status: result.code });
+  if (!editResult.ok) {
+    return json({ error: editResult.error }, { status: editResult.code });
   }
 
   const url = new URL(request.url);

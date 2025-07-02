@@ -123,11 +123,9 @@ export function getErrors<T>(input: GetErrorsInput<T>) {
 type ValidateResult<Data> =
   | {
       data: Data;
-      errors: undefined;
       ok: true;
     }
   | {
-      data: undefined;
       errors: Partial<Record<keyof Data, string>>;
       ok: false;
     };
@@ -163,12 +161,11 @@ export async function validateForm<T extends z.AnyZodObject>(
   if (result.success) {
     return {
       data: result.data,
-      errors: undefined,
       ok: true,
     };
   }
 
-  const errors: ValidateResult<T>['errors'] = {};
+  const errors: Extract<ValidateResult<T>, { ok: false }>['errors'] = {};
 
   const { fieldErrors } = result.error.formErrors;
 
@@ -177,7 +174,6 @@ export async function validateForm<T extends z.AnyZodObject>(
   });
 
   return {
-    data: undefined,
     errors,
     ok: false,
   };

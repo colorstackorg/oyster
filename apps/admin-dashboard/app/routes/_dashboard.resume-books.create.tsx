@@ -46,22 +46,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    CreateResumeBookInput
-  );
+  const result = await validateForm(request, CreateResumeBookInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
-  await createResumeBook({
-    endDate: data.endDate,
-    hidden: data.hidden,
-    name: data.name,
-    sponsors: data.sponsors,
-    startDate: data.startDate,
-  });
+  await createResumeBook(result.data);
 
   toast(session, {
     message: 'Created resume book.',

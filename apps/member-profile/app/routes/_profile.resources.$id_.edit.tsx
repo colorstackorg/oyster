@@ -82,7 +82,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   const form = await parseMultipartFormData(request, uploadHandler);
 
-  const { data, errors, ok } = await validateForm(
+  const result = await validateForm(
     {
       ...Object.fromEntries(form),
       attachments: form.getAll('attachments'),
@@ -90,22 +90,20 @@ export async function action({ params, request }: ActionFunctionArgs) {
     UpdateResourceInput
   );
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json({ errors: result.errors }, { status: 400 });
   }
 
-  const result = await updateResource(params.id as string, {
-    attachments: data.attachments,
-    description: data.description,
-    link: data.link,
-    tags: data.tags,
-    title: data.title,
-  });
+  const updateResult = await updateResource(params.id as string, result.data);
 
-  if (!result.ok) {
+  if (!updateResult.ok) {
     return json(
-      { errors: { duplicateResourceId: result.context!.duplicateResourceId } },
-      { status: result.code }
+      {
+        errors: {
+          duplicateResourceId: updateResult.context!.duplicateResourceId,
+        },
+      },
+      { status: updateResult.code }
     );
   }
 
