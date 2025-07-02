@@ -3,7 +3,6 @@
   "include": ["src"],
   "compilerOptions": {
     "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "types": ["vitest/globals"]
+    "moduleResolution": "Bundler"
   }
 }

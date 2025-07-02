@@ -1,4 +1,5 @@
 import { getCookie, run, sleep, toEscapedString, toTitleCase } from '.';
+import { describe, expect, test } from 'bun:test';
 
 describe(getCookie.name, () => {
   test('If the cookie string is empty...', () => {
