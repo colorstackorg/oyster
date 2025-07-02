@@ -1,14 +1,14 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
+import { FileText, Layers, Plus, Star, Users } from 'react-feather';
 import {
   Form,
   generatePath,
   Link,
+  type LoaderFunctionArgs,
   Outlet,
   useLoaderData,
   useSearchParams,
   useSubmit,
-} from '@remix-run/react';
-import { FileText, Layers, Plus, Star, Users } from 'react-feather';
+} from 'react-router';
 
 import {
   ListCompaniesOrderBy,

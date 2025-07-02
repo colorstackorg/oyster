@@ -1,7 +1,11 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { Edit, Menu, Plus, Trash } from 'react-feather';
-import { generatePath } from 'react-router';
+import {
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+} from 'react-router';
 
 import { listActivities } from '@oyster/core/gamification';
 import {

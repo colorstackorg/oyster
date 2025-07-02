@@ -1,11 +1,3 @@
-import {
-  Form,
-  Link,
-  type LinkProps,
-  NavLink,
-  useSearchParams,
-  useSubmit,
-} from '@remix-run/react';
 import React, {
   type PropsWithChildren,
   useContext,
@@ -13,6 +5,14 @@ import React, {
   useState,
 } from 'react';
 import { LogOut, Menu, X } from 'react-feather';
+import {
+  Form,
+  Link,
+  type LinkProps,
+  NavLink,
+  useSearchParams,
+  useSubmit,
+} from 'react-router';
 
 import { IconButton } from './icon-button';
 import { SearchBar, type SearchBarProps } from './search-bar';

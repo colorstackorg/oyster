@@ -1,6 +1,5 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
-import { Await, useLoaderData } from '@remix-run/react';
 import { Suspense } from 'react';
+import { Await, type LoaderFunctionArgs, useLoaderData } from 'react-router';
 
 import { getOysterContributorStats } from '@oyster/core/github';
 import { Modal, Spinner, Text } from '@oyster/ui';

@@ -1,6 +1,5 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
-import { Link } from '@remix-run/react';
 import { ArrowRight } from 'react-feather';
+import { Link, type LoaderFunctionArgs } from 'react-router';
 
 import { Button, Modal } from '@oyster/ui';
 

@@ -1,15 +1,13 @@
 import {
   type ActionFunctionArgs,
   data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import {
-  Form,
   useActionData,
   useNavigate,
   useNavigation,
-} from '@remix-run/react';
+} from 'react-router';
 
 import { archiveActivity } from '@oyster/core/gamification';
 import { Button, ErrorMessage, Modal } from '@oyster/ui';

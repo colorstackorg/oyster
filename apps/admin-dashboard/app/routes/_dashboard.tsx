@@ -1,5 +1,3 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet, useLoaderData } from '@remix-run/react';
 import {
   BookOpen,
   Calendar,
@@ -11,6 +9,7 @@ import {
   User,
   Video,
 } from 'react-feather';
+import { type LoaderFunctionArgs, Outlet, useLoaderData } from 'react-router';
 
 import { getAdmin } from '@oyster/core/admins';
 import { AdminRole } from '@oyster/core/admins/types';

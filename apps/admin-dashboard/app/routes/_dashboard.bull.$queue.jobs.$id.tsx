@@ -1,12 +1,12 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
+import dayjs from 'dayjs';
+import { type PropsWithChildren } from 'react';
 import {
   generatePath,
+  type LoaderFunctionArgs,
   type Params,
   useLoaderData,
   useParams,
-} from '@remix-run/react';
-import dayjs from 'dayjs';
-import { type PropsWithChildren } from 'react';
+} from 'react-router';
 
 import { Modal, Text } from '@oyster/ui';
 

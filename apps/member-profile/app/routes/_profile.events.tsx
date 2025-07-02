@@ -1,5 +1,3 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import {
   Calendar,
@@ -8,7 +6,13 @@ import {
   ExternalLink,
   Video,
 } from 'react-feather';
-import { generatePath } from 'react-router';
+import {
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+} from 'react-router';
 
 import { listPastEvents, listUpcomingEvents } from '@oyster/core/events';
 import {

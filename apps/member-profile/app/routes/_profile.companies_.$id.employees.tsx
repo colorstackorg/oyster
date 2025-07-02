@@ -1,11 +1,11 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
+import { useEffect, useState } from 'react';
 import {
   generatePath,
   Link,
+  type LoaderFunctionArgs,
   useLoaderData,
   useSearchParams,
-} from '@remix-run/react';
-import { useEffect, useState } from 'react';
+} from 'react-router';
 
 import { listCompanyEmployees } from '@oyster/core/employment/server';
 import {

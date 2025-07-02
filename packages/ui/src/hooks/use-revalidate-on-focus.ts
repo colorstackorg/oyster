@@ -1,5 +1,5 @@
-import { useRevalidator } from '@remix-run/react';
 import { useEffect } from 'react';
+import { useRevalidator } from 'react-router';
 
 /**
  * Revalidates the current Remix route when the window is focused or visibility

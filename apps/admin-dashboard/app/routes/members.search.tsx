@@ -1,5 +1,5 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
 import { sql } from 'kysely';
+import { type LoaderFunctionArgs } from 'react-router';
 
 import { db } from '@oyster/db';
 import { type SerializeFrom } from '@oyster/ui';

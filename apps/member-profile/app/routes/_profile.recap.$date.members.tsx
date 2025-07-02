@@ -1,5 +1,9 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
-import { generatePath, Link, useLoaderData } from '@remix-run/react';
+import {
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  useLoaderData,
+} from 'react-router';
 
 import { listMembersInDirectory } from '@oyster/core/member-profile/server';
 import { ProfilePicture, Text } from '@oyster/ui';

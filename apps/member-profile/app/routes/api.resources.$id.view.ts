@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs } from '@remix-run/node';
+import { type ActionFunctionArgs } from 'react-router';
 
 import { track } from '@oyster/core/mixpanel';
 import { viewResource } from '@oyster/core/resources/server';

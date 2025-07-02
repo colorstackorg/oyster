@@ -1,5 +1,4 @@
-import { data, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { data, type LoaderFunctionArgs, useLoaderData } from 'react-router';
 
 import { Text } from '@oyster/ui';
 

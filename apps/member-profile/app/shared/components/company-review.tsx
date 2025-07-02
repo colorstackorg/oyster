@@ -1,4 +1,3 @@
-import { generatePath, Link, useFetcher } from '@remix-run/react';
 import { type PropsWithChildren, useState } from 'react';
 import {
   Check,
@@ -9,6 +8,7 @@ import {
   Star,
   X,
 } from 'react-feather';
+import { generatePath, Link, useFetcher } from 'react-router';
 
 import {
   type EmploymentType,

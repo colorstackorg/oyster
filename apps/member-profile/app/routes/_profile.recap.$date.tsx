@@ -1,14 +1,14 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
+import dayjs from 'dayjs';
+import { type PropsWithChildren } from 'react';
 import {
   generatePath,
   isRouteErrorResponse,
+  type LoaderFunctionArgs,
   Outlet,
   useLoaderData,
   useParams,
   useRouteError,
-} from '@remix-run/react';
-import dayjs from 'dayjs';
-import { type PropsWithChildren } from 'react';
+} from 'react-router';
 
 import { listCompanyReviews } from '@oyster/core/employment/server';
 import { listMembersInDirectory } from '@oyster/core/member-profile/server';

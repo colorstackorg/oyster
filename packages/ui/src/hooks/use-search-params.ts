@@ -1,4 +1,4 @@
-import { useSearchParams as _useSearchParams } from '@remix-run/react';
+import { useSearchParams as _useSearchParams } from 'react-router';
 import { type z } from 'zod';
 
 export function useSearchParams<Schema extends z.AnyZodObject>(

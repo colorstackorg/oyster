@@ -19,6 +19,10 @@ node_modules
 
 .cache
 
+# React Router
+
+.react-router/
+
 # Vite
 
 vite.config.ts.timestamp*

@@ -1,11 +1,12 @@
+import { Calendar, Check, ExternalLink } from 'react-feather';
 import {
   type ActionFunctionArgs,
   data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useLoaderData } from '@remix-run/react';
-import { Calendar, Check, ExternalLink } from 'react-feather';
+  useLoaderData,
+} from 'react-router';
 
 import { formatEventDate, getEvent } from '@oyster/core/events';
 import { registerForEvent } from '@oyster/core/events/registrations';

@@ -1,9 +1,11 @@
+import { Check } from 'react-feather';
 import {
   type ActionFunctionArgs,
+  Form,
   type LoaderFunctionArgs,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
-import { Check } from 'react-feather';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 
 import { getEvent } from '@oyster/core/events';
 import { checkIntoEvent } from '@oyster/core/events/attendees';

@@ -1,6 +1,10 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { Info, Send } from 'react-feather';
+import {
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+} from 'react-router';
 import { match } from 'ts-pattern';
 
 import { ApplicationRejectionReason } from '@oyster/core/applications/types';

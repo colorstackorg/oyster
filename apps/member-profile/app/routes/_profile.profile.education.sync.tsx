@@ -1,9 +1,10 @@
 import {
   type ActionFunctionArgs,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData } from '@remix-run/react';
+  useActionData,
+} from 'react-router';
 
 import { syncLinkedInProfiles } from '@oyster/core/linkedin';
 import { Button, ErrorMessage, getErrors, Modal } from '@oyster/ui';

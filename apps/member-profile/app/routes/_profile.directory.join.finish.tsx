@@ -1,6 +1,10 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
-import { generatePath, Link, useLoaderData } from '@remix-run/react';
 import { ArrowRight, Eye } from 'react-feather';
+import {
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  useLoaderData,
+} from 'react-router';
 
 import { Button, Text } from '@oyster/ui';
 

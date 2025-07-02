@@ -1,5 +1,4 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet, useLocation } from '@remix-run/react';
+import { type LoaderFunctionArgs, Outlet, useLocation } from 'react-router';
 
 import { Modal } from '@oyster/ui';
 

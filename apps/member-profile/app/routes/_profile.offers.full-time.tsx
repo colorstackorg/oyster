@@ -1,12 +1,12 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
+import dayjs from 'dayjs';
+import { DollarSign, MapPin } from 'react-feather';
 import {
   generatePath,
+  type LoaderFunctionArgs,
   Outlet,
   useLoaderData,
   useSearchParams,
-} from '@remix-run/react';
-import dayjs from 'dayjs';
-import { DollarSign, MapPin } from 'react-feather';
+} from 'react-router';
 
 import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';

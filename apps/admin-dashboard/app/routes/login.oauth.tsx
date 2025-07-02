@@ -1,5 +1,5 @@
-import { type LoaderFunctionArgs, redirect } from '@remix-run/node';
 import jwt from 'jsonwebtoken';
+import { type LoaderFunctionArgs, redirect } from 'react-router';
 
 import { Route } from '@/shared/constants';
 import { ENV } from '@/shared/constants.server';

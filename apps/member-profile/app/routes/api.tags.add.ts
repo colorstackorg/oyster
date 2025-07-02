@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs, data } from '@remix-run/node';
+import { type ActionFunctionArgs, data } from 'react-router';
 
 import { track } from '@oyster/core/mixpanel';
 import { CreateTagInput } from '@oyster/core/resources';

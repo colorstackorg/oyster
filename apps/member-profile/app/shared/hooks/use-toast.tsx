@@ -1,4 +1,4 @@
-import { useFetcher } from '@remix-run/react';
+import { useFetcher } from 'react-router';
 
 import { type ToastProps } from '@oyster/ui';
 

@@ -1,5 +1,5 @@
-import { NavLink } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
+import { NavLink } from 'react-router';
 
 import { cx } from '@oyster/ui';
 

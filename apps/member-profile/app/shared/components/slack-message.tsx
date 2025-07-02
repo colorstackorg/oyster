@@ -1,5 +1,5 @@
-import { Link } from '@remix-run/react';
 import React from 'react';
+import { Link } from 'react-router';
 import parseSlackMessage, { type Node, NodeType } from 'slack-message-parser';
 import { match } from 'ts-pattern';
 

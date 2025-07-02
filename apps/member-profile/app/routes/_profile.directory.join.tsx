@@ -1,7 +1,11 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
-import { Link, Outlet, useLocation } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'react-feather';
+import {
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLocation,
+} from 'react-router';
 import { match } from 'ts-pattern';
 
 import { Button, cx, Modal, Text } from '@oyster/ui';

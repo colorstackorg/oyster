@@ -1,6 +1,6 @@
-import { Link, useLocation, useSearchParams } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import { Edit, Info, Plus } from 'react-feather';
+import { Link, useLocation, useSearchParams } from 'react-router';
 
 import { Button, getIconButtonCn, Text } from '@oyster/ui';
 import {

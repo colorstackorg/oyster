@@ -1,10 +1,10 @@
-import { Link, useFetcher, useSearchParams } from '@remix-run/react';
 import React, {
   type PropsWithChildren,
   useContext,
   useEffect,
   useState,
 } from 'react';
+import { Link, useFetcher, useSearchParams } from 'react-router';
 
 import { getRandomAccentColor } from '@oyster/core/member-profile/ui';
 import { ResourceType } from '@oyster/core/resources';

@@ -1,6 +1,6 @@
-import { Link, type LinkProps } from '@remix-run/react';
 import React, { type PropsWithChildren } from 'react';
 import { X } from 'react-feather';
+import { Link, type LinkProps } from 'react-router';
 import { match } from 'ts-pattern';
 
 import { getTextCn } from './text';

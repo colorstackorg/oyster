@@ -1,10 +1,12 @@
 import {
   type ActionFunctionArgs,
   data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 
 import { getAdmin, removeAdmin } from '@oyster/core/admins';
 import { Button, ErrorMessage, Modal } from '@oyster/ui';

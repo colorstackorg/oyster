@@ -1,8 +1,8 @@
 // This will export all the smaller components that don't particularly
 // need their own file.
 
-import { generatePath, Link } from '@remix-run/react';
 import { Briefcase } from 'react-feather';
+import { generatePath, Link } from 'react-router';
 
 import { Text } from '@oyster/ui';
 import {

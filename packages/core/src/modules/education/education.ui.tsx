@@ -1,5 +1,5 @@
-import { useFetcher } from '@remix-run/react';
 import { useEffect, useState } from 'react';
+import { useFetcher } from 'react-router';
 
 import { Major } from '@oyster/types';
 import {

@@ -2,10 +2,12 @@ import { type FileUpload, parseFormData } from '@mjackson/form-data-parser';
 import {
   type ActionFunctionArgs,
   data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 import { z } from 'zod';
 
 import { parseCsv } from '@oyster/core/admin-dashboard/server';

@@ -2,10 +2,12 @@ import { type FileUpload, parseFormData } from '@mjackson/form-data-parser';
 import {
   type ActionFunctionArgs,
   data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useSearchParams } from '@remix-run/react';
+  useActionData,
+  useSearchParams,
+} from 'react-router';
 
 import { track } from '@oyster/core/mixpanel';
 import { AddResourceInput } from '@oyster/core/resources';

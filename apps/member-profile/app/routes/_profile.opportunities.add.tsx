@@ -1,16 +1,14 @@
+import { ArrowRight } from 'react-feather';
 import {
   type ActionFunctionArgs,
   data,
-  type LoaderFunctionArgs,
-  redirect,
-} from '@remix-run/node';
-import {
   Form,
   generatePath,
+  type LoaderFunctionArgs,
+  redirect,
   useActionData,
   useSearchParams,
-} from '@remix-run/react';
-import { ArrowRight } from 'react-feather';
+} from 'react-router';
 
 import {
   addOpportunity,

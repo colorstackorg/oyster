@@ -1,10 +1,10 @@
+import { useEffect, useState } from 'react';
 import {
   type ActionFunctionArgs,
   data,
   type LoaderFunctionArgs,
-} from '@remix-run/node';
-import { useFetcher } from '@remix-run/react';
-import { useEffect, useState } from 'react';
+  useFetcher,
+} from 'react-router';
 
 import { getRandomAccentColor } from '@oyster/core/member-profile/ui';
 import {

@@ -1,18 +1,16 @@
 import { type FileUpload, parseFormData } from '@mjackson/form-data-parser';
+import { type PropsWithChildren } from 'react';
+import { FileText } from 'react-feather';
 import {
   type ActionFunctionArgs,
   data,
+  Form,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from '@remix-run/node';
-import {
-  Form,
   useActionData,
   useLoaderData,
   useNavigation,
-} from '@remix-run/react';
-import { type PropsWithChildren } from 'react';
-import { FileText } from 'react-feather';
+} from 'react-router';
 import { match } from 'ts-pattern';
 
 import { buildMeta } from '@oyster/core/remix';

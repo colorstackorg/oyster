@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from 'react-router';
 
 import { listWorkExperiences } from '@oyster/core/member-profile/server';
 import { type SerializeFrom } from '@oyster/ui';

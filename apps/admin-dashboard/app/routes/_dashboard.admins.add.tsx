@@ -3,8 +3,8 @@ import {
   data,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { useActionData } from '@remix-run/react';
+  useActionData,
+} from 'react-router';
 
 import { addAdmin } from '@oyster/core/admins';
 import { AddAdminInput } from '@oyster/core/admins/types';

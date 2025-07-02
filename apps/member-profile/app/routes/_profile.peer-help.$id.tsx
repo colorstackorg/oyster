@@ -1,15 +1,15 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
+import dayjs from 'dayjs';
+import { ArrowDown, ArrowUp, Edit, User } from 'react-feather';
 import {
   generatePath,
   Link,
+  type LoaderFunctionArgs,
   Outlet,
   useLoaderData,
   useLocation,
   useOutlet,
   useSearchParams,
-} from '@remix-run/react';
-import dayjs from 'dayjs';
-import { ArrowDown, ArrowUp, Edit, User } from 'react-feather';
+} from 'react-router';
 
 import { track } from '@oyster/core/mixpanel';
 import {

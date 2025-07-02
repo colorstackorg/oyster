@@ -2,7 +2,7 @@ import {
   createCookieSessionStorage,
   redirect,
   type Session,
-} from '@remix-run/node';
+} from 'react-router';
 
 import { doesAdminHavePermission, getAdmin } from '@oyster/core/admins';
 import { type AdminRole } from '@oyster/core/admins/types';

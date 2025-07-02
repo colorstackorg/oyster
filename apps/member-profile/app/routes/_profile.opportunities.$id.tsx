@@ -1,18 +1,16 @@
-import {
-  type ActionFunctionArgs,
-  data,
-  type LoaderFunctionArgs,
-} from '@remix-run/node';
-import {
-  generatePath,
-  Link,
-  useFetcher,
-  useLoaderData,
-  useSearchParams,
-} from '@remix-run/react';
 import dayjs from 'dayjs';
 import { emojify } from 'node-emoji';
 import { Edit, Flag } from 'react-feather';
+import {
+  type ActionFunctionArgs,
+  data,
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  useFetcher,
+  useLoaderData,
+  useSearchParams,
+} from 'react-router';
 
 import { job } from '@oyster/core/bull';
 import { track } from '@oyster/core/mixpanel';

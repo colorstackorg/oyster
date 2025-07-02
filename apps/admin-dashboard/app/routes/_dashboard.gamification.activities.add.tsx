@@ -3,8 +3,8 @@ import {
   data,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { useActionData } from '@remix-run/react';
+  useActionData,
+} from 'react-router';
 
 import { addActivity } from '@oyster/core/gamification';
 import { CreateActivityInput } from '@oyster/core/gamification/types';

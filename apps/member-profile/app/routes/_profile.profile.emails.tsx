@@ -1,18 +1,16 @@
+import { Edit, Plus } from 'react-feather';
 import {
   type ActionFunctionArgs,
   data,
+  Form,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from '@remix-run/node';
-import {
-  Form,
   Outlet,
   useActionData,
   useLoaderData,
   useNavigate,
   useSubmit,
-} from '@remix-run/react';
-import { Edit, Plus } from 'react-feather';
+} from 'react-router';
 import { z } from 'zod';
 
 import {

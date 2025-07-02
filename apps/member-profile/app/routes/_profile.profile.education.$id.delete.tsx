@@ -1,10 +1,12 @@
 import {
   type ActionFunctionArgs,
   data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useNavigate } from '@remix-run/react';
+  useActionData,
+  useNavigate,
+} from 'react-router';
 
 import { deleteEducation } from '@oyster/core/member-profile/server';
 import { type Education } from '@oyster/core/member-profile/ui';

@@ -3,8 +3,8 @@ import {
   data,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { useActionData } from '@remix-run/react';
+  useActionData,
+} from 'react-router';
 
 import { referFriend, ReferFriendInput } from '@oyster/core/referrals';
 import { ReferFriendForm } from '@oyster/core/referrals/ui';

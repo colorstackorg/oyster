@@ -2,8 +2,9 @@ import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form as RemixForm, useLoaderData } from '@remix-run/react';
+  Form as RemixForm,
+  useLoaderData,
+} from 'react-router';
 
 import { createChapter } from '@oyster/core/chapters';
 import { getSchool } from '@oyster/core/education';

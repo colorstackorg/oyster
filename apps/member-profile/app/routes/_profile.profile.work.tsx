@@ -1,10 +1,13 @@
+import { Briefcase, MoreVertical, Repeat } from 'react-feather';
 import {
   type ActionFunctionArgs,
   data,
+  generatePath,
+  Link,
   type LoaderFunctionArgs,
-} from '@remix-run/node';
-import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
-import { Briefcase, MoreVertical, Repeat } from 'react-feather';
+  Outlet,
+  useLoaderData,
+} from 'react-router';
 
 import { job } from '@oyster/core/bull';
 import { listWorkExperiences } from '@oyster/core/member-profile/server';

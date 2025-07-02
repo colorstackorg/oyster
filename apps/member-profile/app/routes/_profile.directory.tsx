@@ -1,14 +1,14 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
-import {
-  generatePath,
-  Link,
-  Outlet,
-  useLoaderData,
-  useSearchParams,
-} from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type ExpressionBuilder, sql } from 'kysely';
 import { BookOpen, Briefcase, Calendar, Globe, MapPin } from 'react-feather';
+import {
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+  useSearchParams,
+} from 'react-router';
 import { z } from 'zod';
 
 import { listMembersInDirectory } from '@oyster/core/member-profile/server';

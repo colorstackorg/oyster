@@ -2,7 +2,7 @@ import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
+} from 'react-router';
 
 import { Route } from '@/shared/constants';
 import {

@@ -1,10 +1,11 @@
 import {
   type ActionFunctionArgs,
   data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData } from '@remix-run/react';
+  useActionData,
+} from 'react-router';
 import { z } from 'zod';
 
 import { uploadOnboardingSession } from '@oyster/core/admin-dashboard/server';

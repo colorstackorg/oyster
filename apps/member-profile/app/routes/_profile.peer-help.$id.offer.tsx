@@ -1,18 +1,16 @@
+import { type PropsWithChildren } from 'react';
+import { Check } from 'react-feather';
 import {
   type ActionFunctionArgs,
   data,
-  type LoaderFunctionArgs,
-  redirect,
-} from '@remix-run/node';
-import {
   Form,
   generatePath,
   Link,
+  type LoaderFunctionArgs,
+  redirect,
   useActionData,
   useLoaderData,
-} from '@remix-run/react';
-import { type PropsWithChildren } from 'react';
-import { Check } from 'react-feather';
+} from 'react-router';
 
 import { offerHelp } from '@oyster/core/peer-help';
 import { getColorStackBotDeepLink } from '@oyster/core/slack/utils';

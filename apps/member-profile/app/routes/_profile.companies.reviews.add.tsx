@@ -3,8 +3,9 @@ import {
   data,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { useActionData, useSearchParams } from '@remix-run/react';
+  useActionData,
+  useSearchParams,
+} from 'react-router';
 
 import { AddCompanyReviewInput } from '@oyster/core/employment';
 import { addCompanyReview } from '@oyster/core/employment/server';

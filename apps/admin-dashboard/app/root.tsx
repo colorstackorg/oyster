@@ -1,18 +1,16 @@
+import { withSentry } from '@sentry/remix';
 import {
   data,
+  Links,
   type LinksFunction,
   type LoaderFunctionArgs,
-  type MetaFunction,
-} from '@remix-run/node';
-import {
-  Links,
   Meta,
+  type MetaFunction,
   Outlet,
   Scripts,
   ScrollRestoration,
   useLoaderData,
-} from '@remix-run/react';
-import { withSentry } from '@sentry/remix';
+} from 'react-router';
 
 import { buildMeta } from '@oyster/core/remix';
 import { Toast } from '@oyster/ui';

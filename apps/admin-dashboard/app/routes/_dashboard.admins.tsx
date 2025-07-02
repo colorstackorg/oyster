@@ -1,5 +1,4 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet, useLoaderData } from '@remix-run/react';
+import { type LoaderFunctionArgs, Outlet, useLoaderData } from 'react-router';
 
 import {
   doesAdminHavePermission,

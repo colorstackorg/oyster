@@ -1,11 +1,13 @@
 import {
   type ActionFunctionArgs,
   data,
+  Form,
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 
 import { apply } from '@oyster/core/applications';
 import { Application, ApplyInput } from '@oyster/core/applications/ui';

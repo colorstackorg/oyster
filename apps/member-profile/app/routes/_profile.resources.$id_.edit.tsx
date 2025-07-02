@@ -2,17 +2,15 @@ import { type FileUpload, parseFormData } from '@mjackson/form-data-parser';
 import {
   type ActionFunctionArgs,
   data,
-  type LoaderFunctionArgs,
-  redirect,
-} from '@remix-run/node';
-import {
   Form,
   generatePath,
   Link,
+  type LoaderFunctionArgs,
+  redirect,
   useActionData,
   useLoaderData,
   useSearchParams,
-} from '@remix-run/react';
+} from 'react-router';
 
 import { type ResourceType, UpdateResourceInput } from '@oyster/core/resources';
 import { getResource, updateResource } from '@oyster/core/resources/server';

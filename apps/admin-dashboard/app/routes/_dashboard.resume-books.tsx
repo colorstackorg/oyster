@@ -1,7 +1,12 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
-import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { Clipboard, Edit, ExternalLink, Menu, Plus } from 'react-feather';
+import {
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+} from 'react-router';
 
 import { listResumeBooks } from '@oyster/core/resume-books';
 import {

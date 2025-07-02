@@ -1,14 +1,14 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
+import { Edit } from 'react-feather';
 import {
   Form,
+  generatePath,
   Link,
+  type LoaderFunctionArgs,
   Outlet,
   useLoaderData,
   useLocation,
   useSubmit,
-} from '@remix-run/react';
-import { Edit } from 'react-feather';
-import { generatePath } from 'react-router';
+} from 'react-router';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 

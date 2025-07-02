@@ -1,6 +1,5 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
 import { ExternalLink } from 'react-feather';
+import { type LoaderFunctionArgs, useLoaderData } from 'react-router';
 
 import { Pill, Text } from '@oyster/ui';
 import { run } from '@oyster/utils';

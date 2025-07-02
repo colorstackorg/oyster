@@ -1,6 +1,5 @@
-import { type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
+import { type LoaderFunctionArgs, useLoaderData } from 'react-router';
 
 import { type ResourceType } from '@oyster/core/resources';
 import { listResources } from '@oyster/core/resources/server';

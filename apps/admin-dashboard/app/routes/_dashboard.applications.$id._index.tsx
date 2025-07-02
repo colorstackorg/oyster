@@ -1,13 +1,16 @@
-import {
-  type ActionFunctionArgs,
-  data,
-  type LoaderFunctionArgs,
-  redirect,
-} from '@remix-run/node';
-import { Form, Link, useLoaderData, useNavigation } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren, useState } from 'react';
 import { ChevronDown, Info } from 'react-feather';
+import {
+  type ActionFunctionArgs,
+  data,
+  Form,
+  Link,
+  type LoaderFunctionArgs,
+  redirect,
+  useLoaderData,
+  useNavigation,
+} from 'react-router';
 
 import { type EducationLevel } from '@oyster/core/admin-dashboard/ui';
 import {

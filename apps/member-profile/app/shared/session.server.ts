@@ -2,7 +2,7 @@ import {
   createCookieSessionStorage,
   redirect,
   type Session,
-} from '@remix-run/node';
+} from 'react-router';
 
 import { type ToastProps } from '@oyster/ui';
 import { id } from '@oyster/utils';

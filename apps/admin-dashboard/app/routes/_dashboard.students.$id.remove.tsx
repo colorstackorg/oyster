@@ -1,9 +1,10 @@
 import {
   type ActionFunctionArgs,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useLoaderData } from '@remix-run/react';
+  useLoaderData,
+} from 'react-router';
 
 import { job } from '@oyster/core/bull';
 import { db } from '@oyster/db';

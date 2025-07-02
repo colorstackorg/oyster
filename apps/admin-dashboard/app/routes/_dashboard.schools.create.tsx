@@ -1,10 +1,11 @@
 import {
   type ActionFunctionArgs,
   data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData } from '@remix-run/react';
+  useActionData,
+} from 'react-router';
 
 import { createSchool } from '@oyster/core/education';
 import { CreateSchoolInput } from '@oyster/core/education/types';

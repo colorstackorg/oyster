@@ -1,5 +1,10 @@
-import { type ActionFunctionArgs, data, redirect } from '@remix-run/node';
-import { Form, useActionData } from '@remix-run/react';
+import {
+  type ActionFunctionArgs,
+  data,
+  Form,
+  redirect,
+  useActionData,
+} from 'react-router';
 
 import { sendOneTimeCode } from '@oyster/core/member-profile/server';
 import {

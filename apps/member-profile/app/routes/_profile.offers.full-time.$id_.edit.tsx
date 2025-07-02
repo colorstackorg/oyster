@@ -1,17 +1,15 @@
 import {
   type ActionFunctionArgs,
   data,
-  type LoaderFunctionArgs,
-  redirect,
-} from '@remix-run/node';
-import {
   Form,
   generatePath,
   Link,
+  type LoaderFunctionArgs,
+  redirect,
   useActionData,
   useLoaderData,
   useSearchParams,
-} from '@remix-run/react';
+} from 'react-router';
 
 import { editFullTimeOffer, EditFullTimeOfferInput } from '@oyster/core/offers';
 import {

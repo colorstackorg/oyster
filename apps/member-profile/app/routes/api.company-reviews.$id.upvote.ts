@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs } from '@remix-run/node';
+import { type ActionFunctionArgs } from 'react-router';
 
 import { upvoteCompanyReview } from '@oyster/core/employment/server';
 

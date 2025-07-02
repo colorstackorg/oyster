@@ -1,11 +1,6 @@
-import {
-  generatePath,
-  Link,
-  useFetcher,
-  useSearchParams,
-} from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import { ArrowUp, BarChart2, Edit, Share } from 'react-feather';
+import { generatePath, Link, useFetcher, useSearchParams } from 'react-router';
 import { match } from 'ts-pattern';
 
 import { ResourceType } from '@oyster/core/resources';

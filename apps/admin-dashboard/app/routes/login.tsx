@@ -1,5 +1,4 @@
-import { type LoaderFunctionArgs, redirect } from '@remix-run/node';
-import { Outlet } from '@remix-run/react';
+import { type LoaderFunctionArgs, Outlet, redirect } from 'react-router';
 
 import { Login, Public } from '@oyster/ui';
 

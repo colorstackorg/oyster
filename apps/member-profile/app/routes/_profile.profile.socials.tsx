@@ -1,9 +1,12 @@
 import {
   type ActionFunctionArgs,
   data,
+  Form,
+  Link,
   type LoaderFunctionArgs,
-} from '@remix-run/node';
-import { Form, Link, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 import { z } from 'zod';
 
 import { updateMember } from '@oyster/core/member-profile/server';

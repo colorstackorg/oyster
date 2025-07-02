@@ -1,6 +1,6 @@
 import { Slot } from '@radix-ui/react-slot';
-import { useNavigation } from '@remix-run/react';
 import React, { type PropsWithChildren } from 'react';
+import { useNavigation } from 'react-router';
 import { match } from 'ts-pattern';
 
 import { Spinner } from './spinner';

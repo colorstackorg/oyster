@@ -1,8 +1,4 @@
-import {
-  createReadableStreamFromReadable,
-  type EntryContext,
-} from '@remix-run/node';
-import { RemixServer } from '@remix-run/react';
+import { createReadableStreamFromReadable } from '@react-router/node';
 import * as Sentry from '@sentry/remix';
 import dayjs from 'dayjs';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
@@ -10,6 +6,7 @@ import timezone from 'dayjs/plugin/timezone.js';
 import utc from 'dayjs/plugin/utc.js';
 import isbot from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
+import { type EntryContext, ServerRouter } from 'react-router';
 import { PassThrough } from 'stream';
 
 import { getCookie } from '@oyster/utils';
@@ -37,7 +34,7 @@ export default function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext
+  reactRouterContext: EntryContext
 ) {
   const bot: boolean = isbot(request.headers.get('user-agent'));
 
@@ -46,13 +43,13 @@ export default function handleRequest(
         request,
         responseStatusCode,
         responseHeaders,
-        remixContext
+        reactRouterContext
       )
     : handleBrowserRequest(
         request,
         responseStatusCode,
         responseHeaders,
-        remixContext
+        reactRouterContext
       );
 }
 
@@ -60,13 +57,13 @@ function handleBotRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext
+  reactRouterContext: EntryContext
 ) {
   return new Promise((resolve, reject) => {
     let didError = false;
 
     const { pipe, abort } = renderToPipeableStream(
-      <RemixServer context={remixContext} url={request.url} />,
+      <ServerRouter context={reactRouterContext} url={request.url} />,
       {
         onAllReady: () => {
           const body = new PassThrough();
@@ -103,13 +100,13 @@ function handleBrowserRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext
+  reactRouterContext: EntryContext
 ) {
   return new Promise((resolve, reject) => {
     let didError = false;
 
     const { pipe, abort } = renderToPipeableStream(
-      <RemixServer context={remixContext} url={request.url} />,
+      <ServerRouter context={reactRouterContext} url={request.url} />,
       {
         onShellReady: () => {
           const cookie = request.headers.get('Cookie');
