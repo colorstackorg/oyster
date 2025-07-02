@@ -71,7 +71,11 @@ export async function action({ request }: ActionFunctionArgs) {
     }
   }
 
-  const form = await parseFormData(request, uploadHandler);
+  const form = await parseFormData(
+    request,
+    { maxFileSize: RESUME_MAX_FILE_SIZE },
+    uploadHandler
+  );
 
   form.set('memberId', user(session));
 
