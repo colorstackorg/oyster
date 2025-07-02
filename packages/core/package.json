@@ -67,10 +67,10 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.576.0",
     "@aws-sdk/s3-request-presigner": "^3.577.0",
-    "@oyster/db": "*",
-    "@oyster/email-templates": "*",
-    "@oyster/types": "*",
-    "@oyster/utils": "*",
+    "@oyster/db": "workspace:*",
+    "@oyster/email-templates": "workspace:*",
+    "@oyster/types": "workspace:*",
+    "@oyster/utils": "workspace:*",
     "@pinecone-database/pinecone": "^3.0.2",
     "@react-email/render": "^0.0.6",
     "@slack/web-api": "^6.7.2",
@@ -92,9 +92,9 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
-    "@oyster/eslint-config": "*",
-    "@oyster/tsconfig": "*",
-    "@oyster/ui": "*",
+    "@oyster/eslint-config": "workspace:*",
+    "@oyster/tsconfig": "workspace:*",
+    "@oyster/ui": "workspace:*",
     "@types/dedent": "^0.7.2",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/nodemailer": "^6.4.14",

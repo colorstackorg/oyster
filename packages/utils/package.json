@@ -13,7 +13,7 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@oyster/eslint-config": "*",
+    "@oyster/eslint-config": "workspace:*",
     "nanoid": "^3.0.0",
     "vitest": "^1.3.1"
   }
