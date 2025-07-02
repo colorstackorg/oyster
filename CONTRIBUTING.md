@@ -125,7 +125,7 @@ Follow these steps in order to get started with contributing to Oyster!
 13. Build the project:
 
     ```sh
-    bun build
+    bun run build
     ```
 
 14. Start all of the applications in development:

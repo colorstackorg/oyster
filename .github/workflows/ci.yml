@@ -79,7 +79,7 @@ jobs:
         run: bun type-check --filter=[$BASE_SHA]
 
       - name: Build all packages and applications
-        run: bun build --filter=[$BASE_SHA]
+        run: bun run build --filter=[$BASE_SHA]
 
       - name: Run tests
-        run: bun test --filter=[$BASE_SHA]
+        run: bun run test --filter=[$BASE_SHA]
