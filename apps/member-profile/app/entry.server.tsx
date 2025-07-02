@@ -1,5 +1,7 @@
-import type { EntryContext } from '@remix-run/node';
-import { createReadableStreamFromReadable } from '@remix-run/node';
+import {
+  createReadableStreamFromReadable,
+  type EntryContext,
+} from '@remix-run/node';
 import { RemixServer } from '@remix-run/react';
 import * as Sentry from '@sentry/remix';
 import dayjs from 'dayjs';
@@ -14,12 +16,10 @@ import { PassThrough } from 'stream';
 
 import { getCookie, run } from '@oyster/utils';
 
-import { ENV } from '@/shared/constants.server';
-
 // Importing this file ensures that our application has all of the environment
 // variables necessary to run. If any are missing, this file will throw an error
 // and crash the application.
-import '@/shared/constants.server';
+import { ENV } from '@/shared/constants.server';
 
 run(() => {
   dayjs.extend(utc);

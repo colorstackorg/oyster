@@ -9,8 +9,7 @@ import { sql } from 'kysely';
 import { z } from 'zod';
 
 import { updateMember } from '@oyster/core/member-profile/server';
-import { ISO8601Date, nullableField } from '@oyster/types';
-import { Student } from '@oyster/types';
+import { ISO8601Date, nullableField, Student } from '@oyster/types';
 import {
   Divider,
   ErrorMessage,

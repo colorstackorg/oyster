@@ -26,8 +26,12 @@ import {
   HelpRequestTypeField,
 } from '@/shared/components/peer-help';
 import { Route } from '@/shared/constants';
-import { commitSession, toast, user } from '@/shared/session.server';
-import { ensureUserAuthenticated } from '@/shared/session.server';
+import {
+  commitSession,
+  ensureUserAuthenticated,
+  toast,
+  user,
+} from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

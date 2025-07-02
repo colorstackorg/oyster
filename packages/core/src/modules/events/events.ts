@@ -8,8 +8,7 @@ import { Event, type EventType } from '@oyster/types';
 import { id } from '@oyster/utils';
 
 import { job, registerWorker } from '@/infrastructure/bull';
-import { type GetBullJobData } from '@/infrastructure/bull.types';
-import { EventBullJob } from '@/infrastructure/bull.types';
+import { EventBullJob, type GetBullJobData } from '@/infrastructure/bull.types';
 import { listAirmeetEvents } from '@/modules/events/airmeet';
 import { ActivityType } from '@/modules/gamification/gamification.types';
 import { getMemberByEmail } from '@/modules/members/queries/get-member-by-email';
