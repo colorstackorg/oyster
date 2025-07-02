@@ -47,10 +47,10 @@ Follow these steps in order to get started with contributing to Oyster!
       nvm install && nvm use
       ```
 
-3. Install [Yarn](https://classic.yarnpkg.com/lang/en/docs/install) (v1).
+3. Install [Bun](https://bun.sh/docs/installation).
 
    ```
-   npm install --global yarn
+   curl -fsSL https://bun.sh/install | bash
    ```
 
 4. [Fork the repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
@@ -80,13 +80,13 @@ Follow these steps in order to get started with contributing to Oyster!
 8. Install all project dependencies:
 
    ```sh
-   yarn
+   bun install
    ```
 
 9. Set up your environment variables:
 
    ```
-    yarn env:setup
+    bun env:setup
    ```
 
    You'll now have `.env` files in all of your apps (and a couple packages)!
@@ -102,19 +102,19 @@ Follow these steps in order to get started with contributing to Oyster!
 10. Start your Postgres database and Redis store:
 
     ```
-    yarn dx:up
+    bun dx:up
     ```
 
 11. Run all the database migrations:
 
     ```sh
-    yarn db:migrate
+    bun db:migrate
     ```
 
 12. Seed your database with some "dummy" data:
 
     ```sh
-    yarn db:seed
+    bun db:seed
     ```
 
     Be sure to follow the prompt to add your email to the database.
@@ -125,13 +125,13 @@ Follow these steps in order to get started with contributing to Oyster!
 13. Build the project:
 
     ```sh
-    yarn build
+    bun build
     ```
 
 14. Start all of the applications in development:
 
     ```sh
-    yarn dev:apps
+    bun dev:apps
     ```
 
 15. Open up the applications in the browser.
@@ -152,8 +152,8 @@ Follow these steps in order to get started with contributing to Oyster!
     easier to interact with and manage your data in the browser:
 
     ```sh
-    yarn prisma:setup # Generates a Prisma schema file...
-    yarn prisma:studio # Starts Prisma Studio locally...
+    bun prisma:setup # Generates a Prisma schema file...
+    bun prisma:studio # Starts Prisma Studio locally...
     ```
 
     You can now open up Prisma Studio in your browser at http://localhost:5555.
@@ -162,7 +162,7 @@ Follow these steps in order to get started with contributing to Oyster!
     containers since they can eat up battery life.
 
     ```sh
-    yarn dx:down
+    bun dx:down
     ```
 
 That's it -- you've finished setting up Oyster locally! All your applications

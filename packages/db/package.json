@@ -12,11 +12,11 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "migrate": "tsx ./src/scripts/migrate.ts && yarn types",
-    "migrate:down": "tsx ./src/scripts/migrate.ts --down && yarn types",
+    "migrate": "tsx ./src/scripts/migrate.ts && bun types",
+    "migrate:down": "tsx ./src/scripts/migrate.ts --down && bun types",
     "migration:create": "tsx ./src/scripts/create-migration.ts",
     "prisma:studio": "prisma db pull && prisma studio",
-    "seed": "tsx ./src/scripts/seed.ts && yarn types",
+    "seed": "tsx ./src/scripts/seed.ts && bun types",
     "type-check": "tsc --noEmit",
     "types": "kysely-codegen --dialect=postgres --camel-case --out-file=./dist/db.d.ts"
   },

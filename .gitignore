@@ -38,6 +38,8 @@ tsconfig.tsbuildinfo
 
 yarn-debug.log*
 yarn-error.log*
+bun-debug.log*
+bun-error.log*
 
 
 # Miscelleanous

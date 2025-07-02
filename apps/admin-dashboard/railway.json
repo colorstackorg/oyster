@@ -12,7 +12,7 @@
     ]
   },
   "deploy": {
-    "startCommand": "yarn start --filter=admin-dashboard",
+    "startCommand": "bun start --filter=admin-dashboard",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
