@@ -10,8 +10,7 @@ import { type AdminRole } from '@oyster/core/admins/types';
 import { AdminTable } from '@oyster/core/admins/ui';
 import { Dashboard } from '@oyster/ui';
 
-import { ensureUserAuthenticated } from '@/shared/session.server';
-import { user } from '@/shared/session.server';
+import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);

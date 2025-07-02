@@ -1,5 +1,4 @@
-import { useRef, useState } from 'react';
-import { type ChangeEvent, type HTMLProps } from 'react';
+import { type ChangeEvent, type HTMLProps, useRef, useState } from 'react';
 import { File, UploadCloud, X } from 'react-feather';
 
 import { run } from '@oyster/utils';

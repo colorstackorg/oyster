@@ -31,8 +31,10 @@ import {
 import { toEscapedString } from '@oyster/utils';
 
 import { CompanyColumn, CompanyFilter } from '@/shared/components';
-import { OfferAggregation } from '@/shared/components/offer';
-import { OfferAggregationGroup } from '@/shared/components/offer';
+import {
+  OfferAggregation,
+  OfferAggregationGroup,
+} from '@/shared/components/offer';
 import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 

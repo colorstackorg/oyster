@@ -3,9 +3,9 @@ import {
   Link,
   type LinkProps,
   NavLink,
+  useSearchParams,
   useSubmit,
 } from '@remix-run/react';
-import { useSearchParams } from '@remix-run/react';
 import React, {
   type PropsWithChildren,
   useContext,

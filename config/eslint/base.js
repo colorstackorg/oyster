@@ -64,6 +64,7 @@ module.exports = {
         ],
       },
     ],
+    'import/no-duplicates': ['error', { 'prefer-inline': true }],
     'padding-line-between-statements': [
       'error',
       { blankLine: 'always', prev: '*', next: 'return' },

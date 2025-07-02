@@ -29,10 +29,14 @@ import {
   ProfilePicture,
   Text,
 } from '@oyster/ui';
-import { FilterList } from '@oyster/ui/filter';
-import { FilterPopover, FilterRoot, FilterTrigger } from '@oyster/ui/filter';
-import { type FilterValue } from '@oyster/ui/filter';
-import { FilterItem } from '@oyster/ui/filter';
+import {
+  FilterItem,
+  FilterList,
+  FilterPopover,
+  FilterRoot,
+  FilterTrigger,
+  type FilterValue,
+} from '@oyster/ui/filter';
 import {
   Tooltip,
   TooltipContent,

@@ -10,11 +10,11 @@ import {
   FilterItem,
   FilterList,
   FilterPopover,
+  FilterRoot,
   FilterSearch,
   FilterTrigger,
   useFilterContext,
 } from '@oyster/ui/filter';
-import { FilterRoot } from '@oyster/ui/filter';
 import { toEscapedString } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
