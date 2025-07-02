@@ -1,6 +1,6 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
@@ -86,7 +86,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(request, CommunityData);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const memberId = user(session);
@@ -99,7 +99,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return redirect(Route['/onboarding/slack']);
   } catch (e) {
-    return json({ error: (e as Error).message }, { status: 500 });
+    return data({ error: (e as Error).message }, { status: 500 });
   }
 }
 

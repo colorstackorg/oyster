@@ -3,7 +3,7 @@ import {
   unstable_composeUploadHandlers as composeUploadHandlers,
   unstable_createFileUploadHandler as createFileUploadHandler,
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
-  json,
+  data,
   type LoaderFunctionArgs,
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
@@ -68,13 +68,13 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const addResult = await addResource(result.data);
 
   if (!addResult.ok) {
-    return json(
+    return data(
       {
         errors: { duplicateResourceId: addResult.context!.duplicateResourceId },
       },
@@ -106,7 +106,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = AddResourceInput.keyof().enum;
 
 export default function AddResourceModal() {
-  const { error, errors } = getErrors(useActionData<typeof action>());
+  const { error, errors, ...rest } = getErrors(useActionData<typeof action>());
   const [searchParams] = useSearchParams();
 
   return (
@@ -138,7 +138,7 @@ export default function AddResourceModal() {
           />
           <ResourceLinkField
             duplicateResourceId={
-              'duplicateResourceId' in errors && errors.duplicateResourceId
+              'duplicateResourceId' in rest && rest.duplicateResourceId
             }
             error={errors.link}
             name={keys.link}

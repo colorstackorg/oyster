@@ -1,6 +1,6 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
@@ -57,7 +57,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = await validateForm(request, UpdateStudentEmailInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const updateResult = await updateMemberEmail({
@@ -66,7 +66,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 
   if (updateResult instanceof Error) {
-    return json({ error: updateResult.message }, { status: 500 });
+    return data({ error: updateResult.message }, { status: 500 });
   }
 
   toast(session, {

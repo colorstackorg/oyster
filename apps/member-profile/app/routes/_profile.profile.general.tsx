@@ -1,6 +1,6 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
 } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
@@ -87,7 +87,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(request, UpdateGeneralInformation);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   await updateMember(user(session), result.data);
@@ -96,7 +96,7 @@ export async function action({ request }: ActionFunctionArgs) {
     message: 'Updated!',
   });
 
-  return json(
+  return data(
     { error: '' },
     {
       headers: {

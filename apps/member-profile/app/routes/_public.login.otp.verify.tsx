@@ -1,6 +1,6 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
@@ -45,7 +45,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const oneTimeCodeId = await oneTimeCodeIdCookie.parse(
@@ -53,7 +53,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!oneTimeCodeId) {
-    return json(
+    return data(
       { error: 'Your one-time code was not found. Please request a new code.' },
       { status: 404 }
     );
@@ -83,7 +83,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({ error: (e as Error).message }, { status: 500 });
+    return data({ error: (e as Error).message }, { status: 500 });
   }
 }
 

@@ -1,6 +1,6 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
@@ -35,7 +35,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(form, AddCompanyReviewInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   await addCompanyReview(result.data);

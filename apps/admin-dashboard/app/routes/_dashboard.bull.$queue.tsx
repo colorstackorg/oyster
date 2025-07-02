@@ -1,6 +1,6 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
@@ -268,7 +268,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   return result.data.action === 'queue.obliterate'
     ? redirect(Route['/bull'], init)
-    : json({}, init);
+    : data({}, init);
 }
 
 export default function QueuePage() {

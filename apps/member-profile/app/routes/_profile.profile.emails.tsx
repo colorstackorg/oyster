@@ -1,6 +1,6 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from '@remix-run/node';
@@ -80,7 +80,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(request, UpdateAllowEmailShare);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   await updateAllowEmailShare(user(session), result.data.allowEmailShare);
@@ -89,7 +89,7 @@ export async function action({ request }: ActionFunctionArgs) {
     message: 'Updated!',
   });
 
-  return json(
+  return data(
     { error: '' },
     {
       headers: {

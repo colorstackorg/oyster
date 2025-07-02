@@ -1,6 +1,6 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
 } from '@remix-run/node';
 import {
@@ -123,14 +123,14 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 
   if (!result.ok) {
-    return json({ error: result.error }, { status: result.code });
+    return data({ error: result.error }, { status: result.code });
   }
 
   toast(session, {
     message: 'Opportunity reported!',
   });
 
-  return json(
+  return data(
     {},
     {
       headers: {

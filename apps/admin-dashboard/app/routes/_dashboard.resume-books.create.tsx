@@ -1,6 +1,6 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
@@ -49,7 +49,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(request, CreateResumeBookInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   await createResumeBook(result.data);

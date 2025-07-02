@@ -1,6 +1,6 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
@@ -46,13 +46,13 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const email = await getEmailFromCookie(request);
 
   if (!email) {
-    return json(
+    return data(
       { error: 'It looks like you timed out. Please exit and try again.' },
       { status: 400 }
     );
@@ -67,7 +67,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return redirect(Route['/onboarding/community']);
   } catch (e) {
-    return json({ error: (e as Error).message }, { status: 500 });
+    return data({ error: (e as Error).message }, { status: 500 });
   }
 }
 

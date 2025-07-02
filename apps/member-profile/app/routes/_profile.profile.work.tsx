@@ -1,6 +1,6 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
 } from '@remix-run/node';
 import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
@@ -56,7 +56,7 @@ export async function action({ request }: ActionFunctionArgs) {
       "We'll notify you on Slack when we've synced your LinkedIn profile.",
   });
 
-  return json(
+  return data(
     {},
     {
       headers: {

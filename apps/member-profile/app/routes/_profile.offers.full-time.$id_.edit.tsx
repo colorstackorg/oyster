@@ -1,6 +1,6 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
@@ -111,7 +111,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = await validateForm(request, EditFullTimeOfferInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const offerId = params.id as string;
@@ -119,7 +119,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const editResult = await editFullTimeOffer(offerId, result.data);
 
   if (!editResult.ok) {
-    return json({ error: editResult.error }, { status: editResult.code });
+    return data({ error: editResult.error }, { status: editResult.code });
   }
 
   toast(session, {

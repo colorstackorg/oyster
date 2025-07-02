@@ -1,6 +1,6 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
@@ -58,13 +58,13 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = await validateForm(request, RefineOpportunityInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const refineResult = await refineOpportunity(result.data);
 
   if (!refineResult.ok) {
-    return json({ error: refineResult.error }, { status: refineResult.code });
+    return data({ error: refineResult.error }, { status: refineResult.code });
   }
 
   const url = new URL(request.url);

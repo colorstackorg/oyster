@@ -3,7 +3,7 @@ import {
   unstable_composeUploadHandlers as composeUploadHandlers,
   unstable_createFileUploadHandler as createFileUploadHandler,
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
-  json,
+  data,
   type LoaderFunctionArgs,
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
@@ -217,7 +217,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(
+    return data(
       {
         error: 'Please fix the errors above.',
         errors: result.errors,

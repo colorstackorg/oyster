@@ -1,6 +1,6 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
@@ -72,7 +72,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const { companyId, companyName, description, expiresAt, id, tags, title } =
     opportunity;
 
-  return json(
+  return data(
     {
       companyId,
       companyName,
@@ -97,7 +97,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = await validateForm(request, EditOpportunityInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const opportunityId = params.id as string;
@@ -105,7 +105,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const editResult = await editOpportunity(opportunityId, result.data);
 
   if (!editResult.ok) {
-    return json({ error: editResult.error }, { status: editResult.code });
+    return data({ error: editResult.error }, { status: editResult.code });
   }
 
   const url = new URL(request.url);
