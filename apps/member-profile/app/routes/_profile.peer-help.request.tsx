@@ -47,7 +47,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(request, RequestHelpInput);
 
   if (!result.ok) {
-    return json({ errors: result.errors }, { status: 400 });
+    return json(result, { status: 400 });
   }
 
   const requestResult = await requestHelp(result.data);

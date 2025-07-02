@@ -35,7 +35,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(form, AddCompanyReviewInput);
 
   if (!result.ok) {
-    return json({ errors: result.errors }, { status: 400 });
+    return json(result, { status: 400 });
   }
 
   await addCompanyReview(result.data);

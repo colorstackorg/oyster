@@ -50,7 +50,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(request, UpdateGeneralInformation);
 
   if (!result.ok) {
-    return json({ errors: result.errors }, { status: 400 });
+    return json(result, { status: 400 });
   }
 
   await updateMember(user(session), result.data);

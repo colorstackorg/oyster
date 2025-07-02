@@ -63,7 +63,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = await validateForm(request, AddJobInput);
 
   if (!result.ok) {
-    return json({ errors: result.errors }, { status: 400 });
+    return json(result, { status: 400 });
   }
 
   const queue = await validateQueue(params.queue);

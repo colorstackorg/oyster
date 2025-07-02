@@ -57,7 +57,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = await validateForm(request, EditFeatureFlagInput);
 
   if (!result.ok) {
-    return json({ errors: result.errors }, { status: 400 });
+    return json(result, { status: 400 });
   }
 
   await editFeatureFlag(params.id as string, result.data);
