@@ -1,10 +1,10 @@
-import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import { ExternalLink } from 'react-feather';
 
 import { getCompany } from '@oyster/core/employment/server';
-import { Button, Text } from '@oyster/ui';
+import { Button, type SerializeFrom, Text } from '@oyster/ui';
 import {
   Tooltip,
   TooltipContent,

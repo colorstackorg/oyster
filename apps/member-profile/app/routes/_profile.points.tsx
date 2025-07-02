@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import {
   Form,
   generatePath,
@@ -27,6 +27,7 @@ import {
   Link,
   Pill,
   Select,
+  type SerializeFrom,
   Text,
   useSearchParams,
 } from '@oyster/ui';

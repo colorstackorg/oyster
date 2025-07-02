@@ -1,7 +1,8 @@
-import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { sql } from 'kysely';
 
 import { db } from '@oyster/db';
+import { type SerializeFrom } from '@oyster/ui';
 
 import { ensureUserAuthenticated } from '@/shared/session.server';
 

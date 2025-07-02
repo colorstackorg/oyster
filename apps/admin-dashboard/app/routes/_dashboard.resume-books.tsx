@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { Clipboard, Edit, ExternalLink, Menu, Plus } from 'react-feather';
@@ -9,6 +9,7 @@ import {
   Dropdown,
   IconButton,
   Pill,
+  type SerializeFrom,
   Table,
   type TableColumnProps,
 } from '@oyster/ui';

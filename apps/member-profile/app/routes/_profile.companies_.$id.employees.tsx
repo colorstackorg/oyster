@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import {
   generatePath,
   Link,
@@ -14,6 +14,7 @@ import {
   Pill,
   ProfilePicture,
   SearchBar,
+  type SerializeFrom,
   Text,
   useDelayedValue,
 } from '@oyster/ui';

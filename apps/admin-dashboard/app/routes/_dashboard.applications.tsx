@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import {
   Form,
   Link,
@@ -26,6 +26,7 @@ import {
   type PillProps,
   SearchBar,
   Select,
+  type SerializeFrom,
   Table,
   type TableColumnProps,
   useSearchParams,

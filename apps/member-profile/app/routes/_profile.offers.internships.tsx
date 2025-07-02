@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import {
   generatePath,
   Outlet,
@@ -11,7 +11,13 @@ import { DollarSign, MapPin } from 'react-feather';
 import { track } from '@oyster/core/mixpanel';
 import { hourlyToMonthlyRate } from '@oyster/core/offers';
 import { db } from '@oyster/db';
-import { Pagination, Table, type TableColumnProps, Text } from '@oyster/ui';
+import {
+  Pagination,
+  type SerializeFrom,
+  Table,
+  type TableColumnProps,
+  Text,
+} from '@oyster/ui';
 import {
   FilterEmptyMessage,
   FilterItem,

@@ -1,10 +1,11 @@
-import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { z } from 'zod';
 
 import {
   reportException,
   searchCompanies,
 } from '@oyster/core/member-profile/server';
+import { type SerializeFrom } from '@oyster/ui';
 
 import { ensureUserAuthenticated } from '@/shared/session.server';
 

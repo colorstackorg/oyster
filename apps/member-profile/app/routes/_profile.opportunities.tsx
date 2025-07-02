@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import {
   generatePath,
   Link,
@@ -20,6 +20,7 @@ import {
   Pagination,
   Pill,
   ProfilePicture,
+  type SerializeFrom,
   Table,
   type TableColumnProps,
   Text,

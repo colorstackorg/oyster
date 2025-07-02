@@ -67,4 +67,5 @@ export { useSearchParams } from './hooks/use-search-params';
 export { useWindowSize } from './hooks/use-window-size';
 export { ACCENT_COLORS } from './utils/constants';
 export type { AccentColor } from './utils/constants';
+export type { SerializeFrom } from './utils/remix';
 export { cx } from './utils/cx';

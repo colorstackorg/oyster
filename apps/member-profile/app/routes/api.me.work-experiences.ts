@@ -1,6 +1,7 @@
-import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 
 import { listWorkExperiences } from '@oyster/core/member-profile/server';
+import { type SerializeFrom } from '@oyster/ui';
 
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 

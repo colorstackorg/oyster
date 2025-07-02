@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { Edit, Plus, Trash } from 'react-feather';
 import { generatePath } from 'react-router';
@@ -9,6 +9,7 @@ import {
   Dashboard,
   Dropdown,
   Pill,
+  type SerializeFrom,
   Table,
   type TableColumnProps,
 } from '@oyster/ui';

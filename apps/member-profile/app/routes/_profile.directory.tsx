@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import {
   generatePath,
   Link,
@@ -18,7 +18,13 @@ import {
 } from '@oyster/core/member-profile/ui';
 import { type DB, db } from '@oyster/db';
 import { ISO8601Date } from '@oyster/types';
-import { Dashboard, Pagination, ProfilePicture, Text } from '@oyster/ui';
+import {
+  Dashboard,
+  Pagination,
+  ProfilePicture,
+  type SerializeFrom,
+  Text,
+} from '@oyster/ui';
 import {
   FilterEmptyMessage,
   FilterItem,

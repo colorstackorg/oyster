@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { Camera, Menu, Plus, RefreshCw, Trash2, Upload } from 'react-feather';
@@ -13,6 +13,7 @@ import {
   IconButton,
   Pagination,
   Pill,
+  type SerializeFrom,
   Table,
   type TableColumnProps,
   useSearchParams,
