@@ -19,5 +19,5 @@ export async function action({ params, request }: ActionFunctionArgs) {
     user: user(session),
   });
 
-  return json({});
+  return null;
 }

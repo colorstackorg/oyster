@@ -62,9 +62,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     user: id,
   });
 
-  return json({
+  return {
     student,
-  });
+  };
 }
 
 const UpdateGeneralInformation = Student.pick({

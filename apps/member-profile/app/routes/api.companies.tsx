@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 import { z } from 'zod';
 
 import {
@@ -30,15 +26,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const companies = await searchCompanies(search);
 
-    return json({
+    return {
       companies,
-    });
+    };
   } catch (e) {
     reportException(e);
 
-    return json({
+    return {
       companies: [],
-    });
+    };
   }
 }
 

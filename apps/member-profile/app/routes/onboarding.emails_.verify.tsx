@@ -34,7 +34,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect(Route['/onboarding/emails']);
   }
 
-  return json({ email });
+  return { email };
 }
 
 export async function action({ request }: ActionFunctionArgs) {

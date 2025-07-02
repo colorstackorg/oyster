@@ -11,5 +11,5 @@ export async function action({ params, request }: ActionFunctionArgs) {
     memberId: user(session),
   });
 
-  return json({});
+  return null;
 }

@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 
@@ -67,10 +67,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
   );
 
-  return json({
+  return {
     hasAccess,
     reviews,
-  });
+  };
 }
 
 export default function ReviewsList() {

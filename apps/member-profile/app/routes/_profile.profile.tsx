@@ -57,9 +57,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     name: formatName({ firstName, lastName, preferredName }),
   };
 
-  return json({
+  return {
     student,
-  });
+  };
 }
 
 export default function ProfileLayout() {

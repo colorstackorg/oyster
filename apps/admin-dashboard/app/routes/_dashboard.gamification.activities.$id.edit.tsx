@@ -27,9 +27,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const activity = await getActivity(params.id as string);
 
-  return json({
+  return {
     activity,
-  });
+  };
 }
 
 async function getActivity(id: string) {

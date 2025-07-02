@@ -53,10 +53,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ]),
   ]);
 
-  return json({
+  return {
     icebreakerPrompts,
     icebreakerResponses,
-  });
+  };
 }
 
 const UpsertIcebreakerResponsesInput = z.object({

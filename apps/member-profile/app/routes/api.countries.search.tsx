@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 import { z } from 'zod';
 
 import { listCountries } from '@oyster/core/location';
@@ -34,7 +30,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     where: { search },
   });
 
-  return json({
+  return {
     countries,
-  });
+  };
 }

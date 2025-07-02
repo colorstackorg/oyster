@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 
 import { listTags } from '@oyster/core/resources/server';
 
@@ -15,9 +11,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     where: { search },
   });
 
-  return json({
+  return {
     tags,
-  });
+  };
 }
 
 export type SearchTagsResult = SerializeFrom<typeof loader>;

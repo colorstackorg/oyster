@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 
 import { listWorkExperiences } from '@oyster/core/member-profile/server';
 
@@ -26,9 +22,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   );
 
-  return json({
+  return {
     experiences,
-  });
+  };
 }
 
 export type GetWorkExperiencesResult = SerializeFrom<typeof loader>;

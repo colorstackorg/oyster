@@ -180,13 +180,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     };
   });
 
-  return json({
+  return {
     educations,
     member,
     resumeBook,
     sponsors,
     submission,
-  });
+  };
 }
 
 const RESUME_MAX_FILE_SIZE = MB_IN_BYTES * 1;

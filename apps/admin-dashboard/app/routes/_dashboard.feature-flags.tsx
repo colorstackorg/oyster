@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { Edit, Plus, Trash } from 'react-feather';
 import { generatePath } from 'react-router';
@@ -27,9 +23,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const flags = await listFeatureFlags();
 
-  return json({
+  return {
     flags,
-  });
+  };
 }
 
 export default function FeatureFlagsPage() {

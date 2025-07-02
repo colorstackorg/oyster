@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 import {
   generatePath,
   Link,
@@ -116,14 +112,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   }
 
-  return json({
+  return {
     closedHelpRequests,
     closedTotalCount,
     limit,
     openHelpRequests,
     openTotalCount,
     page,
-  });
+  };
 }
 
 type ListHelpRequestsProps = {

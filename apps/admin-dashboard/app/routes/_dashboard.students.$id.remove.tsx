@@ -1,6 +1,5 @@
 import {
   type ActionFunctionArgs,
-  json,
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
@@ -31,9 +30,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return redirect(Route['/students']);
   }
 
-  return json({
+  return {
     student,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {

@@ -31,7 +31,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     minimumRole: 'owner',
   });
 
-  return json({});
+  return null;
 }
 
 const AddJobInput = z.object({

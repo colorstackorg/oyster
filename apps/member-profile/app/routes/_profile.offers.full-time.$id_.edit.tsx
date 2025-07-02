@@ -102,7 +102,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  return json(offer);
+  return offer;
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {

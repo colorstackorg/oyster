@@ -39,7 +39,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
-  return json({});
+  return null;
 }
 
 const AddOnboardingSessionAttendeesInput = z.object({

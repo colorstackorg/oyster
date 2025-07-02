@@ -32,9 +32,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
-  return json({
+  return {
     review,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {

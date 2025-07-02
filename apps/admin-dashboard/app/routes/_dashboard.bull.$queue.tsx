@@ -131,7 +131,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return result + count;
   }, 0);
 
-  return json({
+  return {
     counts: [
       { status: 'all', count: allJobsCount },
       { status: 'active', count: counts.active },
@@ -149,7 +149,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     queues,
     repeatables,
     status,
-  });
+  };
 }
 
 const QueueAction = {

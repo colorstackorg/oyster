@@ -1,6 +1,5 @@
 import {
   type ActionFunctionArgs,
-  json,
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
@@ -29,9 +28,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     .where('id', '=', user(session))
     .executeTakeFirstOrThrow();
 
-  return json({
+  return {
     email: member.email,
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {

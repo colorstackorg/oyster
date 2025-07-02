@@ -33,7 +33,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const tags = await listOpportunityTags();
 
-  return json(tags);
+  return tags;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -51,7 +51,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ error: createResult.error }, { status: createResult.code });
   }
 
-  return json({});
+  return null;
 }
 
 // Components

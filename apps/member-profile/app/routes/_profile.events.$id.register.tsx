@@ -55,9 +55,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     date,
   };
 
-  return json({
+  return {
     event,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {

@@ -3,7 +3,7 @@ import {
   unstable_composeUploadHandlers as composeUploadHandlers,
   unstable_createFileUploadHandler as createFileUploadHandler,
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
-  json,
+  data,
   type LoaderFunctionArgs,
   type MetaFunction,
   unstable_parseMultipartFormData as parseMultipartFormData,
@@ -56,10 +56,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const feedback = await getLastResumeFeedback(user(session));
 
-  return json({
+  return {
     experiences: feedback?.experiences,
     projects: feedback?.projects,
-  });
+  };
 }
 
 const RESUME_MAX_FILE_SIZE = MB_IN_BYTES * 1;
@@ -82,7 +82,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(
+    return data(
       {
         error: result.errors.resume,
         ok: false,
@@ -94,10 +94,10 @@ export async function action({ request }: ActionFunctionArgs) {
   const reviewResult = await reviewResume(result.data);
 
   if (!reviewResult.ok) {
-    return json(reviewResult, { status: reviewResult.code });
+    return data(reviewResult, { status: reviewResult.code });
   }
 
-  return json(reviewResult);
+  return reviewResult;
 }
 
 export default function ReviewResume() {

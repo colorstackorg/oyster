@@ -34,7 +34,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     minimumRole: 'ambassador',
   });
 
-  return json({});
+  return null;
 }
 
 const UploadOnboardingSessionInput = OnboardingSession.pick({

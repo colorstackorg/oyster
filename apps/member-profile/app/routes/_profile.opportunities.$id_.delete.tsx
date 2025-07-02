@@ -45,7 +45,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  return json({ opportunity });
+  return { opportunity };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {

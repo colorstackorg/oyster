@@ -40,7 +40,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  return json(helpRequest);
+  return helpRequest;
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {

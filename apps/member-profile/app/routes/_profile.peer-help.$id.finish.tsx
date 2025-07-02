@@ -59,10 +59,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     );
   }
 
-  return json({
+  return {
     ...helpRequest,
     memberId,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {

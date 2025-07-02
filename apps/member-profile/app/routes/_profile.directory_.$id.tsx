@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import React, { type PropsWithChildren } from 'react';
@@ -105,7 +105,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     viewerId: user(session),
   });
 
-  return json({
+  return {
     activeStreak,
     educationExperiences,
     ethnicities,
@@ -115,7 +115,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     messagesSentCount,
     points,
     workExperiences,
-  });
+  };
 }
 
 export default function MemberPage() {

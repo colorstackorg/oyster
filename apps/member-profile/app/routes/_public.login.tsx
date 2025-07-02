@@ -4,7 +4,7 @@ import { Outlet } from '@remix-run/react';
 import { Login, Public } from '@oyster/ui';
 
 export async function loader() {
-  return json({});
+  return null;
 }
 
 export default function LoginLayout() {

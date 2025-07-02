@@ -57,10 +57,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       .execute(),
   ]);
 
-  return json({
+  return {
     icebreakerPrompts,
     icebreakerResponses,
-  });
+  };
 }
 
 const UpsertIcebreakerResponsesInput = z.object({

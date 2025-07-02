@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
@@ -37,10 +33,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const { students, totalCount } = await listStudents(searchParams);
 
-  return json({
+  return {
     students,
     totalCount,
-  });
+  };
 }
 
 async function listStudents({

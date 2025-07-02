@@ -31,10 +31,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return url.toString();
   });
 
-  return json({
+  return {
     isGithubConnected: !!member.githubId,
     githubOauthUri,
-  });
+  };
 }
 
 export default function IntegrationsPage() {

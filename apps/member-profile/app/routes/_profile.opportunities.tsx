@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 import {
   generatePath,
   Link,
@@ -90,7 +86,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   }
 
-  return json({
+  return {
     allCompanies,
     allTags,
     appliedCompany,
@@ -99,7 +95,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     opportunities,
     page,
     totalOpportunities,
-  });
+  };
 }
 
 async function getAppliedCompany(searchParams: URLSearchParams) {

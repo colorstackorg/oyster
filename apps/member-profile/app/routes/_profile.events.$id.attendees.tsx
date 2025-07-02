@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, Link, useLoaderData } from '@remix-run/react';
 
 import {
@@ -18,10 +18,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
     countEventAttendees({ eventId }),
   ]);
 
-  return json({
+  return {
     attendees,
     attendeesCount,
-  });
+  };
 }
 
 export default function EventAttendeesPage() {

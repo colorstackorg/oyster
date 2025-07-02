@@ -1,5 +1,5 @@
 import {
-  json,
+  data,
   type LinksFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -46,7 +46,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     SENTRY_DSN: ENV.SENTRY_DSN,
   };
 
-  return json(
+  return data(
     {
       env,
       toast: toast || null,

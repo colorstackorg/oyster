@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { Camera, Menu, Plus, RefreshCw, Trash2, Upload } from 'react-feather';
@@ -77,10 +73,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   );
 
-  return json({
+  return {
     events,
     totalEvents,
-  });
+  };
 }
 
 export default function EventsPage() {

@@ -39,9 +39,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     include: ['hasReviewed'],
   });
 
-  return json({
+  return {
     workExperiences,
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {

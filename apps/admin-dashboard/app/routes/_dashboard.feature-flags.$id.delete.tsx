@@ -1,6 +1,5 @@
 import {
   type ActionFunctionArgs,
-  json,
   type LoaderFunctionArgs,
   redirect,
 } from '@remix-run/node';
@@ -33,9 +32,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
-  return json({
+  return {
     flag,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {

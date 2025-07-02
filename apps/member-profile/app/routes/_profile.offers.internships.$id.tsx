@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, useLoaderData, useSearchParams } from '@remix-run/react';
 import dayjs from 'dayjs';
 
@@ -42,7 +42,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     user: memberId,
   });
 
-  return json(offer);
+  return offer;
 }
 
 type GetInternshipOfferDetailsInput = {

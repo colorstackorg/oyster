@@ -35,7 +35,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect(Route['/profile/emails/add/start']);
   }
 
-  return json({ email });
+  return { email };
 }
 
 export async function action({ request }: ActionFunctionArgs) {

@@ -43,10 +43,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     .orderBy('createdAt', 'asc')
     .execute();
 
-  return json({
+  return {
     primaryEmail: primaryEmailRow?.email,
     secondaryEmail: secondaryEmailRow?.email,
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {

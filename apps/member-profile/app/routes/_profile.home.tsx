@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren } from 'react';
@@ -73,7 +73,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     user: id,
   });
 
-  return json({
+  return {
     eventsAttendedCount,
     leaderboard,
     messagesSentCount,
@@ -81,7 +81,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     student,
     thisWeekActiveStatus,
     totalStudentsCount,
-  });
+  };
 }
 
 async function getRecentActiveStatuses(id: string, timezone: string) {

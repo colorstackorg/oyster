@@ -38,9 +38,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ])
     .executeTakeFirstOrThrow();
 
-  return json({
+  return {
     student,
-  });
+  };
 }
 
 const UpdateSocialsInformation = z.object({

@@ -28,7 +28,7 @@ import {
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  return null;
 }
 
 const SyncAirmeetEventFormData = z.object({

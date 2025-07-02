@@ -32,7 +32,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     minimumRole: 'owner',
   });
 
-  return json({});
+  return null;
 }
 
 export async function action({ request }: ActionFunctionArgs) {

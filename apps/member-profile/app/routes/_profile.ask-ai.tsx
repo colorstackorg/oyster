@@ -1,6 +1,6 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
 } from '@remix-run/node';
 import {
@@ -43,7 +43,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     'chatbotAnswer:' + user(session)
   );
 
-  return json({ answer });
+  return { answer };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -54,7 +54,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const question = form.get('question') as string;
 
   if (!question || !question.trim()) {
-    return json(
+    return data(
       { error: 'Please provide a valid question.', ok: false as const },
       { status: 400 }
     );
@@ -66,13 +66,13 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   if (!result.ok) {
-    return json(
+    return data(
       { error: result.error, ok: false as const },
       { status: result.code }
     );
   }
 
-  return json(
+  return data(
     {
       answerSegments: result.data.answerSegments,
       ok: true as const,

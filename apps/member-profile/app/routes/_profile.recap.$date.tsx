@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import {
   generatePath,
   isRouteErrorResponse,
@@ -117,13 +117,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     user: user(session),
   });
 
-  return json({
+  return {
     dateRange,
     totalAnnouncements: announcements.length,
     totalMembers,
     totalResources,
     totalReviews: reviews.length,
-  });
+  };
 }
 
 export function getDateRange(date: unknown) {

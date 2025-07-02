@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
 import { ArrowRight } from 'react-feather';
 
@@ -17,7 +17,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     .where('id', '=', user(session))
     .executeTakeFirstOrThrow();
 
-  return json({ firstName });
+  return { firstName };
 }
 
 export default function OnboardingLandingPage() {

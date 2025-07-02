@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 import {
   Form,
   generatePath,
@@ -76,13 +72,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
     user: user(session),
   });
 
-  return json({
+  return {
     companies,
     limit: searchParams.limit,
     orderBy: searchParams.orderBy,
     page: searchParams.page,
     totalCount,
-  });
+  };
 }
 
 export default function CompaniesPage() {

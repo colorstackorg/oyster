@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs, json } from '@remix-run/node';
+import { type ActionFunctionArgs } from '@remix-run/node';
 
 import { track } from '@oyster/core/mixpanel';
 
@@ -16,5 +16,5 @@ export async function action({ request }: ActionFunctionArgs) {
     user: user(session),
   });
 
-  return json({});
+  return null;
 }

@@ -49,7 +49,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  return json({ link: opportunity.link });
+  return { link: opportunity.link };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {

@@ -51,10 +51,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  return json({
+  return {
     ...helpRequest,
     memberId: user(session),
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {

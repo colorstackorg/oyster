@@ -3,7 +3,7 @@ import {
   unstable_composeUploadHandlers as composeUploadHandlers,
   unstable_createFileUploadHandler as createFileUploadHandler,
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
-  json,
+  data,
   type LoaderFunctionArgs,
   unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
@@ -44,9 +44,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
-  return json({
+  return {
     event,
-  });
+  };
 }
 
 const ImportEventAttendeesInput = z.object({
@@ -68,7 +68,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = await validateForm(form, ImportEventAttendeesInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   let count = 0;
@@ -81,7 +81,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     count = importResult.count;
   } catch (e) {
-    return json({ error: (e as Error).message }, { status: 500 });
+    return data({ error: (e as Error).message }, { status: 500 });
   }
 
   toast(session, {

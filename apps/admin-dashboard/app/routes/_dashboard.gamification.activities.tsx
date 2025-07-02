@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { Edit, Menu, Plus, Trash } from 'react-feather';
 import { generatePath } from 'react-router';
@@ -26,9 +22,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const activities = await listActivities();
 
-  return json({
+  return {
     activities,
-  });
+  };
 }
 
 export default function GamificationPage() {

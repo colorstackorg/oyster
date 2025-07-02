@@ -33,9 +33,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ? 'In the development environment, you can any input any 6-digit code!'
       : undefined;
 
-  return json({
+  return {
     description,
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {

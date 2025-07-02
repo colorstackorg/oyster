@@ -48,11 +48,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       })
     : undefined;
 
-  return json({
+  return {
     email: referral?.email,
     firstName: referral?.firstName,
     lastName: referral?.lastName,
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {

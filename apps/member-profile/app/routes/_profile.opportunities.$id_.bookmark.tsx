@@ -16,7 +16,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     opportunityId: params.id as string,
   });
 
-  return json({});
+  return null;
 }
 
 // Components

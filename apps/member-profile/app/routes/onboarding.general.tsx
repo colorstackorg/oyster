@@ -41,7 +41,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     .where('id', '=', user(session))
     .executeTakeFirstOrThrow();
 
-  return json({ member });
+  return { member };
 }
 
 const OnboardingGeneralData = Student.pick({

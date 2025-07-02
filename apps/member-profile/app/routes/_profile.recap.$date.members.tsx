@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { generatePath, Link, useLoaderData } from '@remix-run/react';
 
 import { listMembersInDirectory } from '@oyster/core/member-profile/server';
@@ -34,9 +34,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     },
   });
 
-  return json({
+  return {
     members,
-  });
+  };
 }
 
 export default function RecapMembers() {

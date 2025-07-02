@@ -56,10 +56,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       .executeTakeFirstOrThrow(),
   ]);
 
-  return json({
+  return {
     ethnicities,
     student,
-  });
+  };
 }
 
 const UpdatePersonalInformation = Student.pick({

@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { BookOpen, MoreVertical, Repeat } from 'react-feather';
 
@@ -27,9 +27,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const educationExperiences = await getEducationExperiences(id);
 
-  return json({
+  return {
     educationExperiences,
-  });
+  };
 }
 
 export default function EducationHistoryPage() {

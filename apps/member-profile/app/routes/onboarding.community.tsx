@@ -57,7 +57,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       .executeTakeFirstOrThrow(),
   ]);
 
-  return json({ ethnicities, member });
+  return { ethnicities, member };
 }
 
 const CommunityData = z.object({

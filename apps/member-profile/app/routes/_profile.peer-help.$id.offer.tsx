@@ -31,7 +31,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const slackLink = await getColorStackBotDeepLink();
 
-  return json({ slackLink });
+  return { slackLink };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {

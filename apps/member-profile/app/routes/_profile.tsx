@@ -1,5 +1,4 @@
 import {
-  json,
   type LoaderFunctionArgs,
   redirect,
   type Session,
@@ -49,10 +48,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     isFeatureFlagEnabled('points_page'),
   ]);
 
-  return json({
+  return {
     isPointsPageEnabled,
     resumeBook,
-  });
+  };
 }
 
 // TODO: We should probably cache this somehow...don't necessarily want to hit

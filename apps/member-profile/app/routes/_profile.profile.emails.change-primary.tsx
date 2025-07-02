@@ -34,9 +34,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const emails = await listEmails(user(session));
 
-  return json({
+  return {
     emails,
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {

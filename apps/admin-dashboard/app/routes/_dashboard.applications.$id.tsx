@@ -11,7 +11,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     minimumRole: 'ambassador',
   });
 
-  return json({});
+  return null;
 }
 
 export default function ApplicationLayout() {

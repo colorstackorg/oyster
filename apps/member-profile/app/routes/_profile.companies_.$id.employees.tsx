@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 import {
   generatePath,
   Link,
@@ -47,10 +43,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return employee.status === 'past';
   });
 
-  return json({
+  return {
     currentEmployees,
     pastEmployees,
-  });
+  };
 }
 
 export default function Employees() {

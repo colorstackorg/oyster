@@ -54,9 +54,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     };
   });
 
-  return json({
+  return {
     admins,
-  });
+  };
 }
 
 export default function Admins() {

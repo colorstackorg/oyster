@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 import {
   Form,
   Link,
@@ -60,11 +56,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const { applications, totalCount } = await listApplications(searchParams);
 
-  return json({
+  return {
     applications,
     status: searchParams.status,
     totalCount,
-  });
+  };
 }
 
 export default function ApplicationsPage() {

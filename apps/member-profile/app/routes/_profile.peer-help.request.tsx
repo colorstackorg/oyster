@@ -36,9 +36,9 @@ import {
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  return json({
+  return {
     memberId: user(session),
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {

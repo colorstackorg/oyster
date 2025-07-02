@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs, json } from '@remix-run/node';
+import { type ActionFunctionArgs, data } from '@remix-run/node';
 
 import { track } from '@oyster/core/mixpanel';
 import { CreateTagInput } from '@oyster/core/resources';
@@ -13,7 +13,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(request, CreateTagInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   await createTag(result.data);
@@ -25,5 +25,5 @@ export async function action({ request }: ActionFunctionArgs) {
     user: user(session),
   });
 
-  return json({});
+  return null;
 }

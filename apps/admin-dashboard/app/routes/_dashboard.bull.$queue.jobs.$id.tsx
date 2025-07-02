@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import {
   generatePath,
   type Params,
@@ -46,7 +46,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const format = 'MM/DD/YY @ h:mm:ss A';
 
-  return json({
+  return {
     data,
     general: {
       id,
@@ -70,7 +70,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     },
     options: opts,
     result: returnvalue,
-  });
+  };
 }
 
 async function getJobFromParams(params: Params<string>) {

@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 import {
   generatePath,
   Link,
@@ -98,13 +94,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const createdAtObject = dayjs(helpRequest.createdAt);
 
-  return json({
+  return {
     ...helpRequest,
     createdAt: createdAtObject.fromNow(),
     createdAtExpanded: createdAtObject.format('MMM DD, YYYY • h:mm A'),
     status: helpRequest.status as HelpRequestStatus,
     type: helpRequest.type as HelpRequestType,
-  });
+  };
 }
 
 export default function HelpRequestModal() {

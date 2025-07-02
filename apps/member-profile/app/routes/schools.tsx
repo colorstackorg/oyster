@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { z } from 'zod';
 
 import { searchSchools } from '@oyster/core/education';
@@ -19,12 +19,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const schools = await searchSchools(search);
 
-    return json({
+    return {
       schools,
-    });
+    };
   } catch (e) {
-    return json({
+    return {
       schools: [],
-    });
+    };
   }
 }

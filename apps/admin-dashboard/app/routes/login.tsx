@@ -15,7 +15,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect(Route['/']);
   }
 
-  return json({});
+  return null;
 }
 
 export default function LoginLayout() {

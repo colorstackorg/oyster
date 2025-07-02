@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
@@ -54,10 +50,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     countOnboardingSessions(),
   ]);
 
-  return json({
+  return {
     sessions,
     totalCount,
-  });
+  };
 }
 
 async function listOnboardingSessions({

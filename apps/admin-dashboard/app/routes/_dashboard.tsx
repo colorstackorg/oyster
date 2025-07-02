@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
 import {
   BookOpen,
@@ -32,10 +32,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }),
   ]);
 
-  return json({
+  return {
     pendingApplications,
     role: admin?.role, // This is tied to the "useRole" hook!
-  });
+  };
 }
 
 export default function DashboardLayout() {

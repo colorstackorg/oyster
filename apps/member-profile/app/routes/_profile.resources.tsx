@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import {
   Form,
   Link,
@@ -183,7 +183,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     user: user(session),
   });
 
-  return json({
+  return {
     allTags,
     appliedTags,
     limit: searchParams.limit,
@@ -191,7 +191,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     page: searchParams.page,
     resources,
     totalCount,
-  });
+  };
 }
 
 async function listAllTags() {

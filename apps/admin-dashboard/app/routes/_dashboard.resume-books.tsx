@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { Clipboard, Edit, ExternalLink, Menu, Plus } from 'react-feather';
@@ -70,9 +66,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   );
 
-  return json({
+  return {
     resumeBooks,
-  });
+  };
 }
 
 export default function ResumeBooksPage() {

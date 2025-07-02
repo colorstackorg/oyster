@@ -67,9 +67,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     type: record.type as ResourceType,
   };
 
-  return json({
+  return {
     resource,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {

@@ -1,6 +1,5 @@
 import {
   type ActionFunctionArgs,
-  json,
   type LoaderFunctionArgs,
   type SerializeFrom,
 } from '@remix-run/node';
@@ -45,10 +44,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const { schools, totalSchools } = await listSchools(searchParams);
 
-  return json({
+  return {
     schools,
     totalSchools,
-  });
+  };
 }
 
 async function listSchools({ limit, page, search }: ListSearchParams) {
@@ -100,7 +99,7 @@ async function listSchools({ limit, page, search }: ListSearchParams) {
 export async function action({ request }: ActionFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  return null;
 }
 
 export default function SchoolsPage() {

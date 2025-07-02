@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import {
@@ -32,10 +28,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     listUpcomingEvents({ memberId, timezone }),
   ]);
 
-  return json({
+  return {
     pastEvents,
     upcomingEvents,
-  });
+  };
 }
 
 export default function EventsPage() {

@@ -1,4 +1,4 @@
-import { defer, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { Await, useLoaderData } from '@remix-run/react';
 import { Suspense } from 'react';
 
@@ -13,9 +13,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const statsPromise = getOysterContributorStats();
 
-  return defer({
+  return {
     statsPromise,
-  });
+  };
 }
 
 export default function OysterContributorsModal() {

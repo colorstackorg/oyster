@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs, type SerializeFrom } from '@remix-run/node';
 import {
   Form,
   generatePath,
@@ -122,14 +118,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return activity;
   });
 
-  return json({
+  return {
     activities,
     completedActivities,
     points,
     pointsLeaderboard,
     student: { id },
     totalActivitiesCompleted,
-  });
+  };
 }
 
 async function getActivityHistory(

@@ -62,10 +62,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     getMember(id).select('allowEmailShare').executeTakeFirstOrThrow(),
   ]);
 
-  return json({
+  return {
     emails,
     student,
-  });
+  };
 }
 
 const UpdateAllowEmailShare = z.object({

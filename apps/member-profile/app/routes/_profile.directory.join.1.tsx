@@ -30,9 +30,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     .select(['currentLocation', 'currentLocationCoordinates', 'headline'])
     .executeTakeFirstOrThrow();
 
-  return json({
+  return {
     student,
-  });
+  };
 }
 
 const UpdateGeneralInformation = z.object({
