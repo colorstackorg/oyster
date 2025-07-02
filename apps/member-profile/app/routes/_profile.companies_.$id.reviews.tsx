@@ -25,26 +25,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     listCompanyReviews({
       memberId,
-      select: [
-        'companyReviews.anonymous',
-        'companyReviews.createdAt',
-        'companyReviews.id',
-        'companyReviews.rating',
-        'companyReviews.recommend',
-        'companyReviews.text',
-        'students.id as reviewerId',
-        'students.firstName as reviewerFirstName',
-        'students.lastName as reviewerLastName',
-        'students.profilePicture as reviewerProfilePicture',
-        'workExperiences.employmentType',
-        'workExperiences.endDate',
-        'workExperiences.locationCity',
-        'workExperiences.locationState',
-        'workExperiences.locationType',
-        'workExperiences.startDate',
-        'workExperiences.title',
-        'workExperiences.id as workExperienceId',
-      ],
       where: { companyId: id },
     }),
   ]);

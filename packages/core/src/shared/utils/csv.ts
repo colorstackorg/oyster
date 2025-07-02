@@ -12,11 +12,15 @@ export type CsvRecord<Column extends string = string> = Record<Column, string>;
 export async function parseCsv<Column extends string>(
   file: string | Buffer
 ): Promise<CsvRecord<Column>[]> {
+  let string: string;
+
   if (file instanceof Buffer) {
-    file = file.toString();
+    string = file.toString();
+  } else {
+    string = file as string;
   }
 
-  const result: CsvRecord<Column>[] = await csv().fromString(file);
+  const result: CsvRecord<Column>[] = await csv().fromString(string);
 
   return result;
 }

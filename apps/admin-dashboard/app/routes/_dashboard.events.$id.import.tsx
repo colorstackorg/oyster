@@ -128,15 +128,16 @@ async function importEventAttendees(
         email: true,
         eventId: true,
         name: true,
-        id: true,
         studentId: true,
-      }).parse({
-        email,
-        eventId,
-        id: id(),
-        name,
-        studentId: row?.studentId,
-      });
+      })
+        .extend({ id: z.string().trim().min(1) })
+        .parse({
+          email,
+          eventId,
+          id: id(),
+          name,
+          studentId: row?.studentId,
+        });
     })
   );
 

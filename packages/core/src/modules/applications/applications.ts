@@ -73,7 +73,7 @@ export async function getApplication<
 type ApplicationsSearchParams = {
   limit: number;
   page: number;
-  search: string;
+  search?: string;
   status: ApplicationStatus | 'all';
   timezone: string;
 };
@@ -88,6 +88,10 @@ export async function listApplications({
   const query = db
     .selectFrom('applications')
     .$if(!!search, (qb) => {
+      if (!search) {
+        return qb;
+      }
+
       if (search.includes(',')) {
         const emails = search.split(',').map((email) => email.trim());
 

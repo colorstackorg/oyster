@@ -59,7 +59,7 @@ const Coordinates = z
   .min(1)
   .nullable()
   .transform((value) => value?.split(',')?.map(Number))
-  .catch(null);
+  .catch(undefined);
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
@@ -111,11 +111,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
             };
           })),
         hometown: null,
-        hometownLatitude: hometown?.[1],
-        hometownLongitude: hometown?.[0],
+        hometownLatitude: hometown?.[1] || null,
+        hometownLongitude: hometown?.[0] || null,
         location: null,
-        locationLatitude: location?.[1],
-        locationLongitude: location?.[0],
+        locationLatitude: location?.[1] || null,
+        locationLongitude: location?.[0] || null,
       },
     }),
   ]);
