@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import {
   generatePath,
   Link,

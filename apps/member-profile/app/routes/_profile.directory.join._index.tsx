@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { Link } from '@remix-run/react';
 import { ArrowRight } from 'react-feather';
 

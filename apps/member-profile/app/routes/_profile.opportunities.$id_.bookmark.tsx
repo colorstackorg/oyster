@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs, json } from '@remix-run/node';
+import { type ActionFunctionArgs } from '@remix-run/node';
 import { type Fetcher, generatePath, useFetcher } from '@remix-run/react';
 import { createContext, type PropsWithChildren, useContext } from 'react';
 import { Bookmark } from 'react-feather';

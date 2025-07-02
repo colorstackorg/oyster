@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs, json } from '@remix-run/node';
+import { type ActionFunctionArgs } from '@remix-run/node';
 
 import { upvoteCompanyReview } from '@oyster/core/employment/server';
 
