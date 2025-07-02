@@ -28,7 +28,7 @@ Follow these steps in order to get started with contributing to Oyster!
 1. Install [Docker Desktop](https://docs.docker.com/engine/install). After it's
    installed, start the application!
 
-2. Install [Node.js](https://nodejs.org/en/download/package-manager) (v20.x).
+2. Install [Node.js](https://nodejs.org/en/download/package-manager) (>=v20).
 
    1. [Optional] Our recommendation is to use [`nvm`](https://nvm.sh) to install
       Node. The main benefit of `nvm` is that it allows you to quickly install
