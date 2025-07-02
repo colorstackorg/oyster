@@ -59,16 +59,13 @@ type OnboardingGeneralData = z.infer<typeof OnboardingGeneralData>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    OnboardingGeneralData
-  );
+  const result = await validateForm(request, OnboardingGeneralData);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json(result, { status: 400 });
   }
 
-  await updateMember(user(session), data);
+  await updateMember(user(session), result.data);
 
   return redirect(Route['/onboarding/emails']);
 }

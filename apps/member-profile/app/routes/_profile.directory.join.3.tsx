@@ -52,16 +52,13 @@ type UpdateSocialsInformation = z.infer<typeof UpdateSocialsInformation>;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    UpdateSocialsInformation
-  );
+  const result = await validateForm(request, UpdateSocialsInformation);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json(result, { status: 400 });
   }
 
-  await updateMember(user(session), data);
+  await updateMember(user(session), result.data);
 
   return redirect(Route['/directory/join/4']);
 }

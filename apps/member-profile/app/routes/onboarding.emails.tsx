@@ -63,18 +63,18 @@ export async function action({ request }: ActionFunctionArgs) {
     return redirect(Route['/onboarding/community']);
   }
 
-  const { data, errors, ok } = await validateForm(request, SendEmailCodeInput);
+  const result = await validateForm(request, SendEmailCodeInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json(result, { status: 400 });
   }
 
   try {
-    await sendEmailCode(user(session), data);
+    await sendEmailCode(user(session), result.data);
 
     return redirect(Route['/onboarding/emails/verify'], {
       headers: [
-        ['Set-Cookie', await addEmailCookie.serialize(data.email)],
+        ['Set-Cookie', await addEmailCookie.serialize(result.data.email)],
         ['Set-Cookie', await commitSession(session)],
       ],
     });

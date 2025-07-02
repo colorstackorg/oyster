@@ -39,16 +39,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const { data, ok } = await validateForm(request, CreateOpportunityTagInput);
-
-  if (!ok) {
-    return json({}, { status: 400 });
-  }
-
-  const result = await createOpportunityTag(data);
+  const result = await validateForm(request, CreateOpportunityTagInput);
 
   if (!result.ok) {
-    return json({ error: result.error }, { status: result.code });
+    return json(result, { status: 400 });
+  }
+
+  const createResult = await createOpportunityTag(result.data);
+
+  if (!createResult.ok) {
+    return json({ error: createResult.error }, { status: createResult.code });
   }
 
   return json({});

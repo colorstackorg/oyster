@@ -40,27 +40,27 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
+  const result = await validateForm(
     request,
     AddEmailInput.pick({ code: true })
   );
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json(result, { status: 400 });
   }
 
   const email = await getEmailFromCookie(request);
 
   if (!email) {
-    return json({
-      error: 'It looks like you timed out. Please exit and try again.',
-      errors,
-    });
+    return json(
+      { error: 'It looks like you timed out. Please exit and try again.' },
+      { status: 400 }
+    );
   }
 
   try {
     await addEmail({
-      code: data.code,
+      code: result.data.code,
       email,
       studentId: user(session),
     });

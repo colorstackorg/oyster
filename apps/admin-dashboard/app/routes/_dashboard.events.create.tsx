@@ -53,11 +53,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const form = await request.formData();
 
-  const { data, errors, ok } = await validateForm(form, CreateEventFormData);
+  const result = await validateForm(form, CreateEventFormData);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json(result, { status: 400 });
   }
+
+  const { description, name, timezone, type } = result.data;
 
   const values = Object.fromEntries(form);
 
@@ -69,16 +71,16 @@ export async function action({ request }: ActionFunctionArgs) {
   const startTime = values.startTime as string;
 
   await createEvent({
-    description: data.description,
+    description,
     endTime,
-    name: data.name,
+    name,
     startTime,
-    timezone: data.timezone,
-    type: data.type,
+    timezone,
+    type,
   });
 
   toast(session, {
-    message: `Created ${data.name}.`,
+    message: `Created ${name}.`,
   });
 
   return redirect(Route['/events'], {

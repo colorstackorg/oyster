@@ -206,7 +206,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   form.set('memberId', user(session));
   form.set('resumeBookId', resumeBookId);
 
-  const { data, errors, ok } = await validateForm(
+  const result = await validateForm(
     {
       ...Object.fromEntries(form),
       codingLanguages: form.getAll('codingLanguages'),
@@ -216,36 +216,17 @@ export async function action({ params, request }: ActionFunctionArgs) {
     SubmitResumeInput
   );
 
-  if (!ok) {
+  if (!result.ok) {
     return json(
       {
         error: 'Please fix the errors above.',
-        errors,
+        errors: result.errors,
       },
       { status: 400 }
     );
   }
 
-  await submitResume({
-    codingLanguages: data.codingLanguages,
-    educationId: data.educationId,
-    employmentSearchStatus: data.employmentSearchStatus,
-    firstName: data.firstName,
-    lastName: data.lastName,
-    hometown: data.hometown,
-    hometownLatitude: data.hometownLatitude,
-    hometownLongitude: data.hometownLongitude,
-    linkedInUrl: data.linkedInUrl,
-    memberId: data.memberId,
-    preferredCompany1: data.preferredCompany1,
-    preferredCompany2: data.preferredCompany2,
-    preferredCompany3: data.preferredCompany3,
-    preferredRoles: data.preferredRoles,
-    race: data.race,
-    resume: data.resume,
-    resumeBookId: data.resumeBookId,
-    workAuthorizationStatus: data.workAuthorizationStatus,
-  });
+  await submitResume(result.data);
 
   toast(session, {
     message: 'Resume submitted!',

@@ -49,18 +49,15 @@ async function getActivity(id: string) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(request, EditActivityInput);
+  const result = await validateForm(request, EditActivityInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json(result, { status: 400 });
   }
 
   await editActivity({
-    description: data.description,
+    ...result.data,
     id: params.id as string,
-    name: data.name,
-    points: data.points,
-    type: data.type,
   });
 
   toast(session, {

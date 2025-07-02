@@ -27,24 +27,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
+  const result = await validateForm(
     request,
     ReferFriendInput.omit({ referrerId: true })
   );
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json(result, { status: 400 });
   }
 
-  const result = await referFriend({
-    email: data.email,
-    firstName: data.firstName,
-    lastName: data.lastName,
+  const referResult = await referFriend({
+    ...result.data,
     referrerId: user(session),
   });
 
-  if (!result.ok) {
-    return json({ error: result.error }, { status: 400 });
+  if (!referResult.ok) {
+    return json({ error: referResult.error }, { status: 500 });
   }
 
   toast(session, {

@@ -44,16 +44,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(request, RequestHelpInput);
-
-  if (!ok) {
-    return json({ errors }, { status: 400 });
-  }
-
-  const result = await requestHelp(data);
+  const result = await validateForm(request, RequestHelpInput);
 
   if (!result.ok) {
-    return json({ error: result.error }, { status: result.code });
+    return json(result, { status: 400 });
+  }
+
+  const requestResult = await requestHelp(result.data);
+
+  if (!requestResult.ok) {
+    return json({ error: requestResult.error }, { status: requestResult.code });
   }
 
   toast(session, {
@@ -63,7 +63,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const url = new URL(request.url);
 
   url.pathname = generatePath(Route['/peer-help/:id'], {
-    id: result.data.id,
+    id: requestResult.data.id,
   });
 
   return redirect(url.toString(), {

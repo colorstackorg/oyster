@@ -52,28 +52,25 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   return json({ link: opportunity.link });
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ params, request }: ActionFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    RefineOpportunityInput
-  );
-
-  if (!ok) {
-    return json({ errors }, { status: 400 });
-  }
-
-  const result = await refineOpportunity(data);
+  const result = await validateForm(request, RefineOpportunityInput);
 
   if (!result.ok) {
-    return json({ error: result.error }, { status: result.code });
+    return json(result, { status: 400 });
+  }
+
+  const refineResult = await refineOpportunity(result.data);
+
+  if (!refineResult.ok) {
+    return json({ error: refineResult.error }, { status: refineResult.code });
   }
 
   const url = new URL(request.url);
 
   url.pathname = generatePath(Route['/opportunities/:id'], {
-    id: data.opportunityId,
+    id: params.id as string,
   });
 
   return redirect(url.toString());

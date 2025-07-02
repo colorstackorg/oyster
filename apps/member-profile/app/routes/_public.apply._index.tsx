@@ -69,7 +69,7 @@ export async function action({ request }: ActionFunctionArgs) {
     form.set('referralId', referralId);
   }
 
-  const { data, errors, ok } = await validateForm(
+  const result = await validateForm(
     {
       ...Object.fromEntries(form),
       otherDemographics: form.getAll('otherDemographics'),
@@ -78,17 +78,17 @@ export async function action({ request }: ActionFunctionArgs) {
     ApplyInput
   );
 
-  if (!ok) {
+  if (!result.ok) {
     return json(
-      { error: 'Please fix the issues above.', errors },
+      { error: 'Please fix the issues above.', errors: result.errors } as const,
       { status: 400 }
     );
   }
 
   try {
-    await apply(data);
+    await apply(result.data);
 
-    session.flash('email', data.email);
+    session.flash('email', result.data.email);
 
     return redirect(Route['/apply/thank-you'], {
       headers: {
@@ -96,7 +96,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({ error: (e as Error).message, errors }, { status: 500 });
+    return json({ error: (e as Error).message }, { status: 500 });
   }
 }
 

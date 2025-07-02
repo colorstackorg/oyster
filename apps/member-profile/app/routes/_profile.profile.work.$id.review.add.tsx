@@ -33,20 +33,13 @@ export async function action({ params, request }: ActionFunctionArgs) {
   form.set('studentId', user(session));
   form.set('workExperienceId', params.id as string);
 
-  const { data, errors, ok } = await validateForm(form, AddCompanyReviewInput);
+  const result = await validateForm(form, AddCompanyReviewInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json(result, { status: 400 });
   }
 
-  await addCompanyReview({
-    anonymous: data.anonymous,
-    rating: data.rating,
-    recommend: data.recommend,
-    studentId: data.studentId,
-    text: data.text,
-    workExperienceId: data.workExperienceId,
-  });
+  await addCompanyReview(result.data);
 
   toast(session, {
     message: 'Your review has been added! 🎉',

@@ -79,36 +79,42 @@ type UpsertIcebreakerResponsesInput = z.infer<
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    UpsertIcebreakerResponsesInput
-  );
+  const result = await validateForm(request, UpsertIcebreakerResponsesInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json(result, { status: 400 });
   }
 
   const memberId = user(session);
+
+  const {
+    icebreakerPrompt1,
+    icebreakerPrompt2,
+    icebreakerPrompt3,
+    icebreakerResponse1,
+    icebreakerResponse2,
+    icebreakerResponse3,
+  } = result.data;
 
   await db.transaction().execute(async (trx) => {
     await upsertIcebreakerResponses(trx, memberId, [
       {
         id: id(),
-        promptId: data.icebreakerPrompt1,
+        promptId: icebreakerPrompt1,
         studentId: memberId,
-        text: data.icebreakerResponse1,
+        text: icebreakerResponse1,
       },
       {
         id: id(),
-        promptId: data.icebreakerPrompt2,
+        promptId: icebreakerPrompt2,
         studentId: memberId,
-        text: data.icebreakerResponse2,
+        text: icebreakerResponse2,
       },
       {
         id: id(),
-        promptId: data.icebreakerPrompt3,
+        promptId: icebreakerPrompt3,
         studentId: memberId,
-        text: data.icebreakerResponse3,
+        text: icebreakerResponse3,
       },
     ]);
   });
@@ -118,10 +124,7 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   return json(
-    {
-      error: '',
-      errors,
-    },
+    { error: '' },
     {
       headers: {
         'Set-Cookie': await commitSession(session),

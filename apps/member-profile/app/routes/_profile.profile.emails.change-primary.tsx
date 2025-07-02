@@ -42,17 +42,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    ChangePrimaryEmailInput
-  );
+  const result = await validateForm(request, ChangePrimaryEmailInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json(result, { status: 400 });
   }
 
   try {
-    await changePrimaryEmail(user(session), data);
+    await changePrimaryEmail(user(session), result.data);
 
     toast(session, {
       message: 'Your primary email address was updated.',

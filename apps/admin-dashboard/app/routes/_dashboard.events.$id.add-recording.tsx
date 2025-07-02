@@ -45,19 +45,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
-    request,
-    AddEventRecordingLinkInput
-  );
+  const result = await validateForm(request, AddEventRecordingLinkInput);
 
-  if (!ok) {
+  if (!result.ok) {
     return json({
       error: 'Something went wrong, please try again to upload event link.',
-      errors,
+      errors: result.errors,
     });
   }
 
-  await addEventRecordingLink(params.id as string, data);
+  await addEventRecordingLink(params.id as string, result.data);
 
   toast(session, {
     message: 'Link uploaded successfully.',

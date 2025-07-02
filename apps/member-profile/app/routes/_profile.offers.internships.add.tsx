@@ -52,22 +52,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
+  const result = await validateForm(
     request,
     AddInternshipOfferInput.omit({ postedBy: true })
   );
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json(result, { status: 400 });
   }
 
-  const result = await addInternshipOffer({
-    ...data,
+  const addResult = await addInternshipOffer({
+    ...result.data,
     postedBy: user(session),
   });
 
-  if (!result.ok) {
-    return json({ error: result.error }, { status: result.code });
+  if (!addResult.ok) {
+    return json({ error: addResult.error }, { status: addResult.code });
   }
 
   toast(session, {
@@ -77,7 +77,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const url = new URL(request.url);
 
   url.pathname = generatePath(Route['/offers/internships/:id'], {
-    id: result.data.id,
+    id: addResult.data.id,
   });
 
   return redirect(url.toString(), {

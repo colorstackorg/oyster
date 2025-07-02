@@ -61,17 +61,14 @@ export async function action({ request }: ActionFunctionArgs) {
 
   form.set('uploadedById', user(session));
 
-  const { data, errors, ok } = await validateForm(
-    form,
-    UploadOnboardingSessionInput
-  );
+  const result = await validateForm(form, UploadOnboardingSessionInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json(result, { status: 400 });
   }
 
   try {
-    await uploadOnboardingSession(data);
+    await uploadOnboardingSession(result.data);
 
     toast(session, {
       message: 'Uploaded onboarding session.',

@@ -45,17 +45,19 @@ export async function action({ params, request }: ActionFunctionArgs) {
     minimumRole: 'owner',
   });
 
-  const { data, errors, ok } = await validateForm(request, AddRepeatableInput);
+  const result = await validateForm(request, AddRepeatableInput);
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json(result, { status: 400 });
   }
 
   const queue = await validateQueue(params.queue);
 
-  await queue.add(data.name, undefined, {
+  const { name, pattern } = result.data;
+
+  await queue.add(name, undefined, {
     repeat: {
-      pattern: data.pattern,
+      pattern,
       tz: 'America/Los_Angeles',
     },
   });

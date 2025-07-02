@@ -55,21 +55,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
+  const result = await validateForm(
     request,
     UpdateResumeBookInput.omit({ id: true })
   );
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json(result, { status: 400 });
   }
 
   await updateResumeBook({
-    endDate: data.endDate,
-    hidden: data.hidden,
+    ...result.data,
     id: params.id as string,
-    name: data.name,
-    startDate: data.startDate,
   });
 
   toast(session, {

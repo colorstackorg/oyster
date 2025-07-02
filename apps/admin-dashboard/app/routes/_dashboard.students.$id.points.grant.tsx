@@ -48,19 +48,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const { data, errors, ok } = await validateForm(
+  const result = await validateForm(
     request,
     GrantPointsInput.omit({ memberId: true })
   );
 
-  if (!ok) {
-    return json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return json(result, { status: 400 });
   }
 
   await grantPoints({
-    description: data.description,
+    ...result.data,
     memberId: params.id as string,
-    points: data.points,
   });
 
   toast(session, {
