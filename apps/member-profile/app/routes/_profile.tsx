@@ -1,11 +1,4 @@
 import {
-  json,
-  type LoaderFunctionArgs,
-  redirect,
-  type Session,
-} from '@remix-run/node';
-import { generatePath, Outlet, useLoaderData } from '@remix-run/react';
-import {
   Award,
   Book,
   BookOpen,
@@ -19,6 +12,14 @@ import {
   User,
   Users,
 } from 'react-feather';
+import {
+  generatePath,
+  type LoaderFunctionArgs,
+  Outlet,
+  redirect,
+  type Session,
+  useLoaderData,
+} from 'react-router';
 
 import { isFeatureFlagEnabled } from '@oyster/core/member-profile/server';
 import { getResumeBook } from '@oyster/core/resume-books';
@@ -49,10 +50,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     isFeatureFlagEnabled('points_page'),
   ]);
 
-  return json({
+  return {
     isPointsPageEnabled,
     resumeBook,
-  });
+  };
 }
 
 // TODO: We should probably cache this somehow...don't necessarily want to hit

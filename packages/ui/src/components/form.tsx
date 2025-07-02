@@ -110,11 +110,13 @@ type GetErrorsInput<T> =
   | {
       error?: string | undefined;
       errors?: T | undefined;
+      [key: string]: unknown;
     }
   | undefined;
 
 export function getErrors<T>(input: GetErrorsInput<T>) {
   return {
+    ...input,
     error: input?.error || undefined,
     errors: input?.errors || ({} as T),
   };

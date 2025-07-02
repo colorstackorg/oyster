@@ -1,20 +1,22 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import dayjs from 'dayjs';
+import { DollarSign, MapPin } from 'react-feather';
 import {
   generatePath,
+  type LoaderFunctionArgs,
   Outlet,
   useLoaderData,
   useSearchParams,
-} from '@remix-run/react';
-import dayjs from 'dayjs';
-import { DollarSign, MapPin } from 'react-feather';
+} from 'react-router';
 
 import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
-import { Pagination, Table, type TableColumnProps, Text } from '@oyster/ui';
+import {
+  Pagination,
+  type SerializeFrom,
+  Table,
+  type TableColumnProps,
+  Text,
+} from '@oyster/ui';
 import {
   FilterEmptyMessage,
   FilterItem,
@@ -78,7 +80,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   }
 
-  return json({
+  return {
     allCompanies,
     allLocations,
     appliedCompany,
@@ -88,7 +90,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     offers,
     page,
     totalOffers,
-  });
+  };
 }
 
 async function getAppliedCompany(companyFromSearch: string | null) {

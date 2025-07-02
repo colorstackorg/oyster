@@ -1,10 +1,11 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData } from '@remix-run/react';
+  useActionData,
+} from 'react-router';
 import { z } from 'zod';
 
 import { uploadOnboardingSession } from '@oyster/core/admin-dashboard/server';
@@ -34,7 +35,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     minimumRole: 'ambassador',
   });
 
-  return json({});
+  return null;
 }
 
 const UploadOnboardingSessionInput = OnboardingSession.pick({
@@ -64,7 +65,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(form, UploadOnboardingSessionInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   try {
@@ -80,7 +81,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({ error: (e as Error).message }, { status: 500 });
+    return data({ error: (e as Error).message }, { status: 500 });
   }
 }
 

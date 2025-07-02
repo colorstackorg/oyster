@@ -1,10 +1,7 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs } from 'react-router';
 
 import { listTags } from '@oyster/core/resources/server';
+import { type SerializeFrom } from '@oyster/ui';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const search = new URL(request.url).searchParams.get('search') || '';
@@ -15,9 +12,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     where: { search },
   });
 
-  return json({
+  return {
     tags,
-  });
+  };
 }
 
 export type SearchTagsResult = SerializeFrom<typeof loader>;

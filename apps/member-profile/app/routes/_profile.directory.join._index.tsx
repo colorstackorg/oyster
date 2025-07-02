@@ -1,6 +1,5 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Link } from '@remix-run/react';
 import { ArrowRight } from 'react-feather';
+import { Link, type LoaderFunctionArgs } from 'react-router';
 
 import { Button, Modal } from '@oyster/ui';
 
@@ -10,7 +9,7 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  return null;
 }
 
 export default function JoinDirectoryIntroduction() {

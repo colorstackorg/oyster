@@ -1,18 +1,14 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { Edit } from 'react-feather';
 import {
   Form,
+  generatePath,
   Link,
+  type LoaderFunctionArgs,
   Outlet,
   useLoaderData,
   useLocation,
   useSubmit,
-} from '@remix-run/react';
-import { Edit } from 'react-feather';
-import { generatePath } from 'react-router';
+} from 'react-router';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
@@ -30,6 +26,7 @@ import {
   type PillProps,
   SearchBar,
   Select,
+  type SerializeFrom,
   Table,
   type TableColumnProps,
   useSearchParams,
@@ -60,11 +57,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const { applications, totalCount } = await listApplications(searchParams);
 
-  return json({
+  return {
     applications,
     status: searchParams.status,
     totalCount,
-  });
+  };
 }
 
 export default function ApplicationsPage() {

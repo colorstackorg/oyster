@@ -1,10 +1,12 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 
 import {
   addEventRecordingLink,
@@ -37,9 +39,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
-  return json({
+  return {
     event,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -48,7 +50,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = await validateForm(request, AddEventRecordingLinkInput);
 
   if (!result.ok) {
-    return json({
+    return data({
       error: 'Something went wrong, please try again to upload event link.',
       errors: result.errors,
     });

@@ -1,10 +1,10 @@
+import { useEffect, useState } from 'react';
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
-} from '@remix-run/node';
-import { useFetcher } from '@remix-run/react';
-import { useEffect, useState } from 'react';
+  useFetcher,
+} from 'react-router';
 
 import { getRandomAccentColor } from '@oyster/core/member-profile/ui';
 import {
@@ -33,7 +33,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const tags = await listOpportunityTags();
 
-  return json(tags);
+  return tags;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -42,16 +42,16 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(request, CreateOpportunityTagInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const createResult = await createOpportunityTag(result.data);
 
   if (!createResult.ok) {
-    return json({ error: createResult.error }, { status: createResult.code });
+    return data({ error: createResult.error }, { status: createResult.code });
   }
 
-  return json({});
+  return null;
 }
 
 // Components

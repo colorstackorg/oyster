@@ -1,10 +1,11 @@
+import { Check } from 'react-feather';
 import {
   type ActionFunctionArgs,
-  json,
+  Form,
   type LoaderFunctionArgs,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
-import { Check } from 'react-feather';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 
 import { getEvent } from '@oyster/core/events';
 import { checkIntoEvent } from '@oyster/core/events/attendees';
@@ -47,9 +48,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  return json({
+  return {
     event,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -60,9 +61,9 @@ export async function action({ params, request }: ActionFunctionArgs) {
     memberId: user(session),
   });
 
-  return json({
+  return {
     checkedIn: true,
-  });
+  };
 }
 
 export default function EventCheckIn() {

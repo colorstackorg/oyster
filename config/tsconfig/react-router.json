@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "Remix Run",
+  "display": "React Router",
   "extends": "./base.json",
   "compilerOptions": {
     "allowJs": true,
@@ -10,6 +10,6 @@
     "moduleResolution": "Bundler",
     "noEmit": true,
     "resolveJsonModule": true,
-    "target": "ESNext",
-  },
+    "target": "ESNext"
+  }
 }

@@ -1,16 +1,14 @@
+import { ArrowRight } from 'react-feather';
 import {
   type ActionFunctionArgs,
-  json,
-  type LoaderFunctionArgs,
-  redirect,
-} from '@remix-run/node';
-import {
+  data,
   Form,
   generatePath,
+  type LoaderFunctionArgs,
+  redirect,
   useActionData,
   useSearchParams,
-} from '@remix-run/react';
-import { ArrowRight } from 'react-feather';
+} from 'react-router';
 
 import {
   addOpportunity,
@@ -37,7 +35,7 @@ import {
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  return null;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -50,13 +48,13 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(form, AddOpportunityInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const addResult = await addOpportunity(result.data);
 
   if (!addResult.ok) {
-    return json({ error: addResult.error }, { status: addResult.code });
+    return data({ error: addResult.error }, { status: addResult.code });
   }
 
   toast(session, {

@@ -1,6 +1,6 @@
 import { Slot } from '@radix-ui/react-slot';
-import { useNavigation } from '@remix-run/react';
 import React, { type PropsWithChildren } from 'react';
+import { useNavigation } from 'react-router';
 import { match } from 'ts-pattern';
 
 import { Spinner } from './spinner';
@@ -73,10 +73,10 @@ Button.Submit = function SubmitButton(
 
   return (
     <Button
-      // There's a weird Remix thing (not sure if it's only in development)
-      // where the initial state on the server is "submitting" but everything
-      // else is undefined...so we just check the "formMethod" to ensure it's
-      // real.
+      // There's a weird React Router thing (not sure if it's only in
+      // development) where the initial state on the server is "submitting"
+      // but everything else is undefined...so we just check the "formMethod"
+      // to ensure it's real.
       submitting={state === 'submitting' && !!formMethod}
       type="submit"
       {...props}

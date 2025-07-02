@@ -1,5 +1,5 @@
-import { Link, useLocation } from '@remix-run/react';
 import { ChevronLeft, ChevronRight } from 'react-feather';
+import { Link, useLocation } from 'react-router';
 
 import { run } from '@oyster/utils';
 

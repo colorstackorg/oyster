@@ -1,10 +1,12 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 
 import {
   changePrimaryEmail,
@@ -34,9 +36,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const emails = await listEmails(user(session));
 
-  return json({
+  return {
     emails,
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -45,7 +47,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(request, ChangePrimaryEmailInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   try {
@@ -61,7 +63,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({ error: (e as Error).message }, { status: 500 });
+    return data({ error: (e as Error).message }, { status: 500 });
   }
 }
 

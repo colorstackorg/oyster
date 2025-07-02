@@ -1,11 +1,11 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { Edit, Plus, Trash } from 'react-feather';
-import { generatePath } from 'react-router';
+import {
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+} from 'react-router';
 
 import { listFeatureFlags } from '@oyster/core/admin-dashboard/server';
 import {
@@ -13,6 +13,7 @@ import {
   Dashboard,
   Dropdown,
   Pill,
+  type SerializeFrom,
   Table,
   type TableColumnProps,
 } from '@oyster/ui';
@@ -27,9 +28,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const flags = await listFeatureFlags();
 
-  return json({
+  return {
     flags,
-  });
+  };
 }
 
 export default function FeatureFlagsPage() {

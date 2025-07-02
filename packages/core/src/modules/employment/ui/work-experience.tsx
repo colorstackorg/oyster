@@ -1,5 +1,5 @@
-import { Link } from '@remix-run/react';
 import { Check, Edit, MoreVertical, Plus, Trash } from 'react-feather';
+import { Link } from 'react-router';
 import { match } from 'ts-pattern';
 
 import { Dropdown, IconButton, Text } from '@oyster/ui';

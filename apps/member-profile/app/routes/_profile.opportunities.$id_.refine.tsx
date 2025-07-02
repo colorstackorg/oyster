@@ -1,19 +1,17 @@
+import { Plus } from 'react-feather';
 import {
   type ActionFunctionArgs,
-  json,
-  type LoaderFunctionArgs,
-  redirect,
-} from '@remix-run/node';
-import {
+  data,
   Form,
   generatePath,
   Link,
+  type LoaderFunctionArgs,
+  redirect,
   useActionData,
   useLoaderData,
   useParams,
   useSearchParams,
-} from '@remix-run/react';
-import { Plus } from 'react-feather';
+} from 'react-router';
 
 import {
   refineOpportunity,
@@ -49,7 +47,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  return json({ link: opportunity.link });
+  return { link: opportunity.link };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -58,13 +56,13 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = await validateForm(request, RefineOpportunityInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const refineResult = await refineOpportunity(result.data);
 
   if (!refineResult.ok) {
-    return json({ error: refineResult.error }, { status: refineResult.code });
+    return data({ error: refineResult.error }, { status: refineResult.code });
   }
 
   const url = new URL(request.url);

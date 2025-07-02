@@ -1,5 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { data, type LoaderFunctionArgs, useLoaderData } from 'react-router';
 
 import {
   getGoogleAuthUri,
@@ -30,7 +29,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const message = session.get(SESSION.LOGIN_MESSAGE);
 
-  return json(
+  return data(
     {
       error,
       googleAuthUri,

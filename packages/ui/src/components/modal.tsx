@@ -1,7 +1,7 @@
-import { Link, type LinkProps } from '@remix-run/react';
 import React, { type PropsWithChildren, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'react-feather';
+import { Link, type LinkProps } from 'react-router';
 
 import { getIconButtonCn } from './icon-button';
 import { Text } from './text';

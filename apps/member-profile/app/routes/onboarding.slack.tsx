@@ -1,10 +1,11 @@
 import {
   type ActionFunctionArgs,
-  json,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 
 import { job } from '@oyster/core/bull';
 import { db } from '@oyster/db';
@@ -29,9 +30,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     .where('id', '=', user(session))
     .executeTakeFirstOrThrow();
 
-  return json({
+  return {
     email: member.email,
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {

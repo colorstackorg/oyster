@@ -1,6 +1,5 @@
-import { defer, type LoaderFunctionArgs } from '@remix-run/node';
-import { Await, useLoaderData } from '@remix-run/react';
 import { Suspense } from 'react';
+import { Await, type LoaderFunctionArgs, useLoaderData } from 'react-router';
 
 import { getOysterContributorStats } from '@oyster/core/github';
 import { Modal, Spinner, Text } from '@oyster/ui';
@@ -13,9 +12,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const statsPromise = getOysterContributorStats();
 
-  return defer({
+  return {
     statsPromise,
-  });
+  };
 }
 
 export default function OysterContributorsModal() {

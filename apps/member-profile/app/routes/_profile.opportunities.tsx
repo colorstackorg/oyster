@@ -1,19 +1,15 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
-import {
-  generatePath,
-  Link,
-  Outlet,
-  useLoaderData,
-  useSearchParams,
-} from '@remix-run/react';
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/postgres';
 import { Bookmark, Calendar, Plus, Tag, Zap } from 'react-feather';
+import {
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+  useSearchParams,
+} from 'react-router';
 
 import { track } from '@oyster/core/mixpanel';
 import { db } from '@oyster/db';
@@ -24,6 +20,7 @@ import {
   Pagination,
   Pill,
   ProfilePicture,
+  type SerializeFrom,
   Table,
   type TableColumnProps,
   Text,
@@ -90,7 +87,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   }
 
-  return json({
+  return {
     allCompanies,
     allTags,
     appliedCompany,
@@ -99,7 +96,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     opportunities,
     page,
     totalOpportunities,
-  });
+  };
 }
 
 async function getAppliedCompany(searchParams: URLSearchParams) {

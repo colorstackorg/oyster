@@ -1,5 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { data, type LoaderFunctionArgs, useLoaderData } from 'react-router';
 
 import { Text } from '@oyster/ui';
 
@@ -10,7 +9,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const email = session.get('email');
 
-  return json(
+  return data(
     { email },
     {
       headers: {

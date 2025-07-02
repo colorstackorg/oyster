@@ -1,10 +1,11 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData } from '@remix-run/react';
+  useActionData,
+} from 'react-router';
 import { z } from 'zod';
 
 import { createEvent } from '@oyster/core/events';
@@ -33,7 +34,7 @@ import {
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  return null;
 }
 
 const CreateEventInput = Event.pick({
@@ -56,7 +57,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(form, CreateEventFormData);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const { description, name, timezone, type } = result.data;

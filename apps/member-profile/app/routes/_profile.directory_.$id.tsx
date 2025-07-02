@@ -1,8 +1,7 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import React, { type PropsWithChildren } from 'react';
 import { BookOpen, Calendar, Globe, Home, Link, MapPin } from 'react-feather';
+import { type LoaderFunctionArgs, useLoaderData } from 'react-router';
 
 import { job } from '@oyster/core/bull';
 import { countEventAttendees } from '@oyster/core/events/attendees';
@@ -105,7 +104,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     viewerId: user(session),
   });
 
-  return json({
+  return {
     activeStreak,
     educationExperiences,
     ethnicities,
@@ -115,7 +114,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     messagesSentCount,
     points,
     workExperiences,
-  });
+  };
 }
 
 export default function MemberPage() {

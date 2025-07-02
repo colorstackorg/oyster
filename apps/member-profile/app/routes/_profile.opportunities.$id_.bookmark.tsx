@@ -1,7 +1,11 @@
-import { type ActionFunctionArgs, json } from '@remix-run/node';
-import { type Fetcher, generatePath, useFetcher } from '@remix-run/react';
 import { createContext, type PropsWithChildren, useContext } from 'react';
 import { Bookmark } from 'react-feather';
+import {
+  type ActionFunctionArgs,
+  type Fetcher,
+  generatePath,
+  useFetcher,
+} from 'react-router';
 
 import { bookmarkOpportunity } from '@oyster/core/opportunities';
 import { cx, IconButton } from '@oyster/ui';
@@ -16,7 +20,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     opportunityId: params.id as string,
   });
 
-  return json({});
+  return null;
 }
 
 // Components

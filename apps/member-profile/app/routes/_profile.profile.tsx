@@ -1,11 +1,3 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import {
-  generatePath,
-  Link,
-  NavLink,
-  Outlet,
-  useLoaderData,
-} from '@remix-run/react';
 import {
   BookOpen,
   Briefcase,
@@ -17,6 +9,14 @@ import {
   Smile,
   Zap,
 } from 'react-feather';
+import {
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  NavLink,
+  Outlet,
+  useLoaderData,
+} from 'react-router';
 
 import { cx, Divider, ProfilePicture, Text } from '@oyster/ui';
 
@@ -57,9 +57,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     name: formatName({ firstName, lastName, preferredName }),
   };
 
-  return json({
+  return {
     student,
-  });
+  };
 }
 
 export default function ProfileLayout() {

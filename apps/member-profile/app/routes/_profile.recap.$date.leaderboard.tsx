@@ -1,5 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { type LoaderFunctionArgs, useLoaderData } from 'react-router';
 
 import { getPointsLeaderboard } from '@oyster/core/gamification';
 
@@ -21,9 +20,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     },
   });
 
-  return json({
+  return {
     leaderboard,
-  });
+  };
 }
 
 export default function RecapLeaderboard() {

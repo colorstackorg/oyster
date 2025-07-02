@@ -1,10 +1,12 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 import { z } from 'zod';
 
 import { updateMember } from '@oyster/core/member-profile/server';
@@ -35,10 +37,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       .executeTakeFirstOrThrow(),
   ]);
 
-  return json({
+  return {
     ethnicities,
     student,
-  });
+  };
 }
 
 const UpdatePersonalInformation = z.object({
@@ -62,7 +64,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(request, UpdatePersonalInformation);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   await updateMember(user(session), {

@@ -1,15 +1,13 @@
 import {
   type ActionFunctionArgs,
-  json,
-  type LoaderFunctionArgs,
-  redirect,
-} from '@remix-run/node';
-import {
+  data,
   Form,
   generatePath,
+  type LoaderFunctionArgs,
+  redirect,
   useActionData,
   useLoaderData,
-} from '@remix-run/react';
+} from 'react-router';
 
 import {
   finishHelpRequest,
@@ -59,10 +57,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     );
   }
 
-  return json({
+  return {
     ...helpRequest,
     memberId,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -71,7 +69,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = await validateForm(request, FinishHelpRequestInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const id = params.id as string;
@@ -79,7 +77,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const finishResult = await finishHelpRequest(id, result.data);
 
   if (!finishResult.ok) {
-    return json({ error: finishResult.error }, { status: finishResult.code });
+    return data({ error: finishResult.error }, { status: finishResult.code });
   }
 
   toast(session, {

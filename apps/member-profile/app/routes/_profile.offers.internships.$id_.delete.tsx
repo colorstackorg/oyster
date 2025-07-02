@@ -1,15 +1,13 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import {
-  Form,
   useActionData,
   useLoaderData,
   useSearchParams,
-} from '@remix-run/react';
+} from 'react-router';
 
 import { deleteOffer, hasOfferWritePermission } from '@oyster/core/offers';
 import { db } from '@oyster/db';
@@ -52,7 +50,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  return json(offer);
+  return offer;
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -64,7 +62,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 
   if (!result.ok) {
-    return json({ error: result.error }, { status: result.code });
+    return data({ error: result.error }, { status: result.code });
   }
 
   toast(session, {

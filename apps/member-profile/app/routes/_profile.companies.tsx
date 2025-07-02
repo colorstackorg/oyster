@@ -1,18 +1,14 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { FileText, Layers, Plus, Star, Users } from 'react-feather';
 import {
   Form,
   generatePath,
   Link,
+  type LoaderFunctionArgs,
   Outlet,
   useLoaderData,
   useSearchParams,
   useSubmit,
-} from '@remix-run/react';
-import { FileText, Layers, Plus, Star, Users } from 'react-feather';
+} from 'react-router';
 
 import {
   ListCompaniesOrderBy,
@@ -28,6 +24,7 @@ import {
   getTextCn,
   Pagination,
   Select,
+  type SerializeFrom,
   Text,
 } from '@oyster/ui';
 import {
@@ -76,13 +73,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
     user: user(session),
   });
 
-  return json({
+  return {
     companies,
     limit: searchParams.limit,
     orderBy: searchParams.orderBy,
     page: searchParams.page,
     totalCount,
-  });
+  };
 }
 
 export default function CompaniesPage() {

@@ -1,7 +1,12 @@
-import { json, type LoaderFunctionArgs, redirect } from '@remix-run/node';
-import { Link, Outlet, useLocation } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'react-feather';
+import {
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  redirect,
+  useLocation,
+} from 'react-router';
 
 import { db } from '@oyster/db';
 import { Button, cx, Public, Text, type TextProps } from '@oyster/ui';
@@ -36,7 +41,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   }
 
-  return json({});
+  return null;
 }
 
 export default function OnboardingLayout() {

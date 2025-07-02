@@ -1,17 +1,13 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import dayjs from 'dayjs';
+import { ArrowRight, Check, Edit, Info, User } from 'react-feather';
 import {
   generatePath,
   Link,
+  type LoaderFunctionArgs,
   Outlet,
   useLoaderData,
   useSearchParams,
-} from '@remix-run/react';
-import dayjs from 'dayjs';
-import { ArrowRight, Check, Edit, Info, User } from 'react-feather';
+} from 'react-router';
 import { z } from 'zod';
 
 import { ListSearchParams } from '@oyster/core/member-profile/ui';
@@ -27,6 +23,7 @@ import {
   IconButton,
   Pagination,
   ProfilePicture,
+  type SerializeFrom,
   Text,
 } from '@oyster/ui';
 import {
@@ -116,14 +113,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   }
 
-  return json({
+  return {
     closedHelpRequests,
     closedTotalCount,
     limit,
     openHelpRequests,
     openTotalCount,
     page,
-  });
+  };
 }
 
 type ListHelpRequestsProps = {

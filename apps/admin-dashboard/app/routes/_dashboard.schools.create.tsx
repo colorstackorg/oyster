@@ -1,10 +1,11 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData } from '@remix-run/react';
+  useActionData,
+} from 'react-router';
 
 import { createSchool } from '@oyster/core/education';
 import { CreateSchoolInput } from '@oyster/core/education/types';
@@ -26,7 +27,7 @@ import {
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  return null;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -35,7 +36,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(request, CreateSchoolInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   await createSchool(result.data);

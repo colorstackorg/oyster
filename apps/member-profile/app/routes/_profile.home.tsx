@@ -1,5 +1,3 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren } from 'react';
 import {
@@ -11,6 +9,12 @@ import {
   Twitter,
   Youtube,
 } from 'react-feather';
+import {
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+} from 'react-router';
 import { match } from 'ts-pattern';
 
 import { countEventAttendees } from '@oyster/core/events/attendees';
@@ -73,7 +77,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     user: id,
   });
 
-  return json({
+  return {
     eventsAttendedCount,
     leaderboard,
     messagesSentCount,
@@ -81,7 +85,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     student,
     thisWeekActiveStatus,
     totalStudentsCount,
-  });
+  };
 }
 
 async function getRecentActiveStatuses(id: string, timezone: string) {

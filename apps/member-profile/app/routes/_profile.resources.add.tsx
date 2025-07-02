@@ -1,14 +1,13 @@
+import { type FileUpload, parseFormData } from '@mjackson/form-data-parser';
 import {
   type ActionFunctionArgs,
-  unstable_composeUploadHandlers as composeUploadHandlers,
-  unstable_createFileUploadHandler as createFileUploadHandler,
-  unstable_createMemoryUploadHandler as createMemoryUploadHandler,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
-  unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useSearchParams } from '@remix-run/react';
+  useActionData,
+  useSearchParams,
+} from 'react-router';
 
 import { track } from '@oyster/core/mixpanel';
 import { AddResourceInput } from '@oyster/core/resources';
@@ -44,18 +43,26 @@ import {
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  return null;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const uploadHandler = composeUploadHandlers(
-    createFileUploadHandler({ maxPartSize: MB_IN_BYTES * 20 }),
-    createMemoryUploadHandler()
-  );
+  async function uploadHandler(fileUpload: FileUpload) {
+    if (
+      fileUpload.fieldName === 'attachments' &&
+      ['application/pdf', 'image/jpeg', 'image/png'].includes(fileUpload.type)
+    ) {
+      return fileUpload;
+    }
+  }
 
-  const form = await parseMultipartFormData(request, uploadHandler);
+  const form = await parseFormData(
+    request,
+    { maxFileSize: MB_IN_BYTES * 20 },
+    uploadHandler
+  );
 
   form.set('postedBy', user(session));
 
@@ -68,16 +75,14 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const addResult = await addResource(result.data);
 
   if (!addResult.ok) {
-    return json(
-      {
-        errors: { duplicateResourceId: addResult.context!.duplicateResourceId },
-      },
+    return data(
+      { duplicateResourceId: addResult.context!.duplicateResourceId },
       { status: addResult.code }
     );
   }
@@ -106,7 +111,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = AddResourceInput.keyof().enum;
 
 export default function AddResourceModal() {
-  const { error, errors } = getErrors(useActionData<typeof action>());
+  const { error, errors, ...rest } = getErrors(useActionData<typeof action>());
   const [searchParams] = useSearchParams();
 
   return (
@@ -138,7 +143,7 @@ export default function AddResourceModal() {
           />
           <ResourceLinkField
             duplicateResourceId={
-              'duplicateResourceId' in errors && errors.duplicateResourceId
+              'duplicateResourceId' in rest && rest.duplicateResourceId
             }
             error={errors.link}
             name={keys.link}

@@ -1,16 +1,14 @@
 import {
   type ActionFunctionArgs,
-  json,
-  type LoaderFunctionArgs,
-  redirect,
-} from '@remix-run/node';
-import {
+  data,
   Form,
   generatePath,
+  type LoaderFunctionArgs,
+  redirect,
   useActionData,
   useLoaderData,
   useSearchParams,
-} from '@remix-run/react';
+} from 'react-router';
 
 import { requestHelp, RequestHelpInput } from '@oyster/core/peer-help';
 import {
@@ -36,9 +34,9 @@ import {
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  return json({
+  return {
     memberId: user(session),
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -47,13 +45,13 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(request, RequestHelpInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const requestResult = await requestHelp(result.data);
 
   if (!requestResult.ok) {
-    return json({ error: requestResult.error }, { status: requestResult.code });
+    return data({ error: requestResult.error }, { status: requestResult.code });
   }
 
   toast(session, {

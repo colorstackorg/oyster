@@ -1,10 +1,12 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 import { type z } from 'zod';
 
 import {
@@ -43,9 +45,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
-  return json({
+  return {
     application,
-  });
+  };
 }
 
 const UpdateApplicationEmailInput = Application.pick({
@@ -62,7 +64,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = await validateForm(request, UpdateApplicationEmailInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const updateResult = updateEmailApplication({
@@ -71,7 +73,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 
   if (updateResult instanceof Error) {
-    return json({ error: updateResult.message }, { status: 500 });
+    return data({ error: updateResult.message }, { status: 500 });
   }
 
   toast(session, {

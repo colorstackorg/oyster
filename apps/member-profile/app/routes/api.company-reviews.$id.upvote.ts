@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs, json } from '@remix-run/node';
+import { type ActionFunctionArgs } from 'react-router';
 
 import { upvoteCompanyReview } from '@oyster/core/employment/server';
 
@@ -11,5 +11,5 @@ export async function action({ params, request }: ActionFunctionArgs) {
     memberId: user(session),
   });
 
-  return json({});
+  return null;
 }

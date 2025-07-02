@@ -1,10 +1,12 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 import { type z } from 'zod';
 
 import { updateMemberEmail } from '@oyster/core/admin-dashboard/server';
@@ -40,9 +42,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
-  return json({
+  return {
     student,
-  });
+  };
 }
 
 const UpdateStudentEmailInput = Student.pick({
@@ -57,7 +59,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = await validateForm(request, UpdateStudentEmailInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const updateResult = await updateMemberEmail({
@@ -66,7 +68,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 
   if (updateResult instanceof Error) {
-    return json({ error: updateResult.message }, { status: 500 });
+    return data({ error: updateResult.message }, { status: 500 });
   }
 
   toast(session, {

@@ -1,5 +1,5 @@
-import { generatePath, Link } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
+import { generatePath, Link } from 'react-router';
 
 import { cx, ProfilePicture, Text } from '@oyster/ui';
 

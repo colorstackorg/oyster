@@ -1,19 +1,15 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
-import {
-  Form,
-  generatePath,
-  Link as RemixLink,
-  useLoaderData,
-  useLocation,
-  useSubmit,
-} from '@remix-run/react';
 import dayjs from 'dayjs';
 import { emojify } from 'node-emoji';
 import { Award } from 'react-feather';
+import {
+  Form,
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  useLoaderData,
+  useLocation,
+  useSubmit,
+} from 'react-router';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
@@ -28,9 +24,9 @@ import { db } from '@oyster/db';
 import {
   Button,
   cx,
-  Link,
   Pill,
   Select,
+  type SerializeFrom,
   Text,
   useSearchParams,
 } from '@oyster/ui';
@@ -122,14 +118,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return activity;
   });
 
-  return json({
+  return {
     activities,
     completedActivities,
     points,
     pointsLeaderboard,
     student: { id },
     totalActivitiesCompleted,
-  });
+  };
 }
 
 async function getActivityHistory(
@@ -444,9 +440,9 @@ function ActivityHistory() {
               className="mx-auto mt-8 w-[50%] min-w-[10rem]"
               variant="secondary"
             >
-              <RemixLink to={{ search: searchParams.toString() }}>
+              <Link to={{ search: searchParams.toString() }}>
                 Show {increaseLimitBy} More
-              </RemixLink>
+              </Link>
             </Button.Slot>
           )}
         </>
@@ -522,7 +518,7 @@ function ActivityHistoryItemDescription({
     .with('get_opportunity_bookmark', () => {
       return (
         <p>
-          <RemixLink
+          <Link
             className="link"
             to={generatePath(Route['/directory/:id'], {
               id: activity.opportunityBookmarkerId,
@@ -530,16 +526,16 @@ function ActivityHistoryItemDescription({
           >
             {activity.opportunityBookmarkerFirstName}{' '}
             {activity.opportunityBookmarkerLastName}
-          </RemixLink>{' '}
+          </Link>{' '}
           bookmarked an{' '}
-          <RemixLink
+          <Link
             className="link"
             to={generatePath(Route['/opportunities/:id'], {
               id: activity.opportunityId,
             })}
           >
             opportunity
-          </RemixLink>{' '}
+          </Link>{' '}
           you posted.
         </p>
       );
@@ -547,7 +543,7 @@ function ActivityHistoryItemDescription({
     .with('get_resource_upvote', () => {
       return (
         <p>
-          <RemixLink
+          <Link
             className="link"
             to={generatePath(Route['/directory/:id'], {
               id: activity.resourceUpvoterId,
@@ -555,9 +551,9 @@ function ActivityHistoryItemDescription({
           >
             {activity.resourceUpvoterFirstName}{' '}
             {activity.resourceUpvoterLastName}
-          </RemixLink>{' '}
+          </Link>{' '}
           upvoted a{' '}
-          <RemixLink
+          <Link
             className="link"
             to={{
               pathname: Route['/resources'],
@@ -565,7 +561,7 @@ function ActivityHistoryItemDescription({
             }}
           >
             resource
-          </RemixLink>{' '}
+          </Link>{' '}
           you posted.
         </p>
       );
@@ -574,14 +570,14 @@ function ActivityHistoryItemDescription({
       return (
         <p>
           You{' '}
-          <RemixLink
+          <Link
             className="link"
             to={generatePath(Route['/peer-help/:id'], {
               id: activity.helpRequestId,
             })}
           >
             helped a peer
-          </RemixLink>
+          </Link>
           .
         </p>
       );
@@ -605,7 +601,7 @@ function ActivityHistoryItemDescription({
       return (
         <p>
           You posted a{' '}
-          <RemixLink
+          <Link
             className="link"
             to={{
               pathname: Route['/resources'],
@@ -613,7 +609,7 @@ function ActivityHistoryItemDescription({
             }}
           >
             resource
-          </RemixLink>
+          </Link>
           .
         </p>
       );
@@ -625,9 +621,9 @@ function ActivityHistoryItemDescription({
         <div className="flex flex-col gap-2">
           <p>
             You reacted to a Slack{' '}
-            <Link href={href} target="_blank">
+            <a className="link" href={href} target="_blank">
               message
-            </Link>
+            </a>
             .
           </p>
 
@@ -651,9 +647,9 @@ function ActivityHistoryItemDescription({
         <div className="flex flex-col gap-2">
           <p>
             You replied to a{' '}
-            <Link href={href} target="_blank">
+            <a className="link" href={href} target="_blank">
               thread
-            </Link>
+            </a>
             .
           </p>
 

@@ -1,13 +1,16 @@
-import {
-  type ActionFunctionArgs,
-  json,
-  type LoaderFunctionArgs,
-  redirect,
-} from '@remix-run/node';
-import { Form, Link, useLoaderData, useNavigation } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type PropsWithChildren, useState } from 'react';
 import { ChevronDown, Info } from 'react-feather';
+import {
+  type ActionFunctionArgs,
+  data,
+  Form,
+  Link,
+  type LoaderFunctionArgs,
+  redirect,
+  useLoaderData,
+  useNavigation,
+} from 'react-router';
 
 import { type EducationLevel } from '@oyster/core/admin-dashboard/ui';
 import {
@@ -71,14 +74,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
-  return json({
+  return {
     application: {
       ...application,
       ...(application.referrerId && {
         referrerUri: `${ENV.STUDENT_PROFILE_URL}/directory/${application.referrerId}`,
       }),
     },
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -123,7 +126,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json(
+    return data(
       { error: 'Something went wrong, please try again.' },
       { status: 500 }
     );

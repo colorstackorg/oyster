@@ -1,10 +1,12 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 
 import { grantPoints } from '@oyster/core/gamification';
 import { GrantPointsInput } from '@oyster/core/gamification/types';
@@ -40,9 +42,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
-  return json({
+  return {
     student,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -54,7 +56,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   await grantPoints({

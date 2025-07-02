@@ -1,10 +1,10 @@
 import {
   type ActionFunctionArgs,
-  json,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form as RemixForm, useLoaderData } from '@remix-run/react';
+  useLoaderData,
+} from 'react-router';
 
 import { createChapter } from '@oyster/core/chapters';
 import { getSchool } from '@oyster/core/education';
@@ -32,9 +32,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  return json({
+  return {
     school,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -73,11 +73,11 @@ export default function CreateChapterModal() {
         Are you sure you want to create a chapter for {school.name}?
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <Button.Group>
           <Button.Submit>Create</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

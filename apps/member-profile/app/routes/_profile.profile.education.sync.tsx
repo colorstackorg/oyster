@@ -1,10 +1,10 @@
 import {
   type ActionFunctionArgs,
-  json,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData } from '@remix-run/react';
+  useActionData,
+} from 'react-router';
 
 import { syncLinkedInProfiles } from '@oyster/core/linkedin';
 import { Button, ErrorMessage, getErrors, Modal } from '@oyster/ui';
@@ -20,7 +20,7 @@ import {
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  return null;
 }
 
 export async function action({ request }: ActionFunctionArgs) {

@@ -1,18 +1,14 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
-import {
-  generatePath,
-  Link,
-  Outlet,
-  useLoaderData,
-  useSearchParams,
-} from '@remix-run/react';
 import dayjs from 'dayjs';
 import { type ExpressionBuilder, sql } from 'kysely';
 import { BookOpen, Briefcase, Calendar, Globe, MapPin } from 'react-feather';
+import {
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+  useSearchParams,
+} from 'react-router';
 import { z } from 'zod';
 
 import { listMembersInDirectory } from '@oyster/core/member-profile/server';
@@ -22,7 +18,13 @@ import {
 } from '@oyster/core/member-profile/ui';
 import { type DB, db } from '@oyster/db';
 import { ISO8601Date } from '@oyster/types';
-import { Dashboard, Pagination, ProfilePicture, Text } from '@oyster/ui';
+import {
+  Dashboard,
+  Pagination,
+  ProfilePicture,
+  type SerializeFrom,
+  Text,
+} from '@oyster/ui';
 import {
   FilterEmptyMessage,
   FilterItem,
@@ -118,7 +120,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }),
   ]);
 
-  return json({
+  return {
     allCompanies,
     allEthnicities,
     allGraduationYears,
@@ -129,7 +131,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     members,
     page: searchParams.page,
     totalCount,
-  });
+  };
 }
 
 type Company = {

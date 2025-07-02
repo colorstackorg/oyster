@@ -1,5 +1,10 @@
-import { type ActionFunctionArgs, json, redirect } from '@remix-run/node';
-import { Form, useActionData } from '@remix-run/react';
+import {
+  type ActionFunctionArgs,
+  data,
+  Form,
+  redirect,
+  useActionData,
+} from 'react-router';
 
 import { sendOneTimeCode } from '@oyster/core/admin-dashboard/server';
 import {
@@ -18,7 +23,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   try {
@@ -33,7 +38,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({ error: (e as Error).message }, { status: 500 });
+    return data({ error: (e as Error).message }, { status: 500 });
   }
 }
 

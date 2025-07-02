@@ -1,6 +1,6 @@
-import { type LinkProps, useNavigate } from '@remix-run/react';
 import React, { type PropsWithChildren, useContext } from 'react';
 import { MoreVertical } from 'react-feather';
+import { type LinkProps, useNavigate } from 'react-router';
 import { match } from 'ts-pattern';
 
 import { Dropdown, DropdownContext } from './dropdown';

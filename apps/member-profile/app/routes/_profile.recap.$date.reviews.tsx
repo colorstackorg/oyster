@@ -1,6 +1,5 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
+import { type LoaderFunctionArgs, useLoaderData } from 'react-router';
 
 import { listCompanyReviews } from '@oyster/core/employment/server';
 import {
@@ -61,9 +60,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
   );
 
-  return json({
+  return {
     reviews,
-  });
+  };
 }
 
 export default function RecapReviews() {

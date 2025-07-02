@@ -1,6 +1,5 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
 import QRCode from 'qrcode';
+import { type LoaderFunctionArgs, useLoaderData } from 'react-router';
 
 import { getEvent } from '@oyster/core/events';
 import { Modal } from '@oyster/ui';
@@ -25,9 +24,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     { width: 400 }
   );
 
-  return json({
+  return {
     code,
-  });
+  };
 }
 
 export default function EventCheckInQR() {

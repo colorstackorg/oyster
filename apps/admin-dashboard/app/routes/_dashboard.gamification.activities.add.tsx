@@ -1,10 +1,10 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { useActionData } from '@remix-run/react';
+  useActionData,
+} from 'react-router';
 
 import { addActivity } from '@oyster/core/gamification';
 import { CreateActivityInput } from '@oyster/core/gamification/types';
@@ -21,7 +21,7 @@ import {
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  return null;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -30,7 +30,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(request, CreateActivityInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   await addActivity(result.data);

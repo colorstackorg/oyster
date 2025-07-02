@@ -1,15 +1,11 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { useEffect, useState } from 'react';
 import {
   generatePath,
   Link,
+  type LoaderFunctionArgs,
   useLoaderData,
   useSearchParams,
-} from '@remix-run/react';
-import { useEffect, useState } from 'react';
+} from 'react-router';
 
 import { listCompanyEmployees } from '@oyster/core/employment/server';
 import {
@@ -18,6 +14,7 @@ import {
   Pill,
   ProfilePicture,
   SearchBar,
+  type SerializeFrom,
   Text,
   useDelayedValue,
 } from '@oyster/ui';
@@ -47,10 +44,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return employee.status === 'past';
   });
 
-  return json({
+  return {
     currentEmployees,
     pastEmployees,
-  });
+  };
 }
 
 export default function Employees() {

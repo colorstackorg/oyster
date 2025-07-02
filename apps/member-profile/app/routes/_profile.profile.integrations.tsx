@@ -1,6 +1,5 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
 import { ExternalLink } from 'react-feather';
+import { type LoaderFunctionArgs, useLoaderData } from 'react-router';
 
 import { Pill, Text } from '@oyster/ui';
 import { run } from '@oyster/utils';
@@ -31,10 +30,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return url.toString();
   });
 
-  return json({
+  return {
     isGithubConnected: !!member.githubId,
     githubOauthUri,
-  });
+  };
 }
 
 export default function IntegrationsPage() {

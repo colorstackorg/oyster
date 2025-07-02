@@ -1,12 +1,12 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import dayjs from 'dayjs';
 import { Camera, Menu, Plus, RefreshCw, Trash2, Upload } from 'react-feather';
-import { generatePath } from 'react-router';
+import {
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+} from 'react-router';
 
 import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
 import { listEvents } from '@oyster/core/events';
@@ -17,6 +17,7 @@ import {
   IconButton,
   Pagination,
   Pill,
+  type SerializeFrom,
   Table,
   type TableColumnProps,
   useSearchParams,
@@ -77,10 +78,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   );
 
-  return json({
+  return {
     events,
     totalEvents,
-  });
+  };
 }
 
 export default function EventsPage() {

@@ -1,15 +1,13 @@
 import {
   type ActionFunctionArgs,
-  json,
-  type LoaderFunctionArgs,
-  redirect,
-} from '@remix-run/node';
-import {
+  data,
   Form,
   generatePath,
+  type LoaderFunctionArgs,
+  redirect,
   useActionData,
   useSearchParams,
-} from '@remix-run/react';
+} from 'react-router';
 
 import { addFullTimeOffer, AddFullTimeOfferInput } from '@oyster/core/offers';
 import {
@@ -46,7 +44,7 @@ import {
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  return null;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -58,7 +56,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const addResult = await addFullTimeOffer({
@@ -67,7 +65,7 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   if (!addResult.ok) {
-    return json({ error: addResult.error }, { status: addResult.code });
+    return data({ error: addResult.error }, { status: addResult.code });
   }
 
   toast(session, {

@@ -1,10 +1,12 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
@@ -53,10 +55,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ]),
   ]);
 
-  return json({
+  return {
     icebreakerPrompts,
     icebreakerResponses,
-  });
+  };
 }
 
 const UpsertIcebreakerResponsesInput = z.object({
@@ -78,7 +80,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(request, UpsertIcebreakerResponsesInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const memberId = user(session);

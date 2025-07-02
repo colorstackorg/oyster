@@ -1,10 +1,13 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
+  generatePath,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, generatePath, useActionData, useParams } from '@remix-run/react';
+  useActionData,
+  useParams,
+} from 'react-router';
 import { z } from 'zod';
 
 import {
@@ -31,7 +34,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     minimumRole: 'owner',
   });
 
-  return json({});
+  return null;
 }
 
 const AddJobInput = z.object({
@@ -63,7 +66,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = await validateForm(request, AddJobInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const queue = await validateQueue(params.queue);

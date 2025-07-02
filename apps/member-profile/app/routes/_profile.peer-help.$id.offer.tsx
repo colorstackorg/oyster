@@ -1,18 +1,16 @@
+import { type PropsWithChildren } from 'react';
+import { Check } from 'react-feather';
 import {
   type ActionFunctionArgs,
-  json,
-  type LoaderFunctionArgs,
-  redirect,
-} from '@remix-run/node';
-import {
+  data,
   Form,
   generatePath,
   Link,
+  type LoaderFunctionArgs,
+  redirect,
   useActionData,
   useLoaderData,
-} from '@remix-run/react';
-import { type PropsWithChildren } from 'react';
-import { Check } from 'react-feather';
+} from 'react-router';
 
 import { offerHelp } from '@oyster/core/peer-help';
 import { getColorStackBotDeepLink } from '@oyster/core/slack/utils';
@@ -31,7 +29,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const slackLink = await getColorStackBotDeepLink();
 
-  return json({ slackLink });
+  return { slackLink };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -44,7 +42,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 
   if (!result.ok) {
-    return json({ error: result.error }, { status: result.code });
+    return data({ error: result.error }, { status: result.code });
   }
 
   toast(session, {

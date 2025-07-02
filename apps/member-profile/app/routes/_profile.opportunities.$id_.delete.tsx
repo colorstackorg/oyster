@@ -1,15 +1,13 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import {
-  Form,
   useActionData,
   useLoaderData,
   useSearchParams,
-} from '@remix-run/react';
+} from 'react-router';
 
 import {
   deleteOpportunity,
@@ -45,7 +43,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  return json({ opportunity });
+  return { opportunity };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -57,7 +55,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 
   if (!result.ok) {
-    return json({ error: result.error }, { status: result.code });
+    return data({ error: result.error }, { status: result.code });
   }
 
   const url = new URL(request.url);

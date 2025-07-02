@@ -1,11 +1,12 @@
+import { Calendar, Check, ExternalLink } from 'react-feather';
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useLoaderData } from '@remix-run/react';
-import { Calendar, Check, ExternalLink } from 'react-feather';
+  useLoaderData,
+} from 'react-router';
 
 import { formatEventDate, getEvent } from '@oyster/core/events';
 import { registerForEvent } from '@oyster/core/events/registrations';
@@ -55,9 +56,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     date,
   };
 
-  return json({
+  return {
     event,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -69,7 +70,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 
   if (!result.ok) {
-    return json({ error: result.error }, { status: result.code });
+    return data({ error: result.error }, { status: result.code });
   }
 
   toast(session, {

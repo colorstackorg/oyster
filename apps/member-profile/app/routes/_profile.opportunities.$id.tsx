@@ -1,18 +1,16 @@
-import {
-  type ActionFunctionArgs,
-  json,
-  type LoaderFunctionArgs,
-} from '@remix-run/node';
-import {
-  generatePath,
-  Link,
-  useFetcher,
-  useLoaderData,
-  useSearchParams,
-} from '@remix-run/react';
 import dayjs from 'dayjs';
 import { emojify } from 'node-emoji';
 import { Edit, Flag } from 'react-feather';
+import {
+  type ActionFunctionArgs,
+  data,
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  useFetcher,
+  useLoaderData,
+  useSearchParams,
+} from 'react-router';
 
 import { job } from '@oyster/core/bull';
 import { track } from '@oyster/core/mixpanel';
@@ -57,7 +55,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const memberId = user(session);
   const opportunityId = params.id as string;
 
-  const [opportunity, report] = await Promise.all([
+  const [_opportunity, report] = await Promise.all([
     getOpportunityDetails({
       memberId,
       opportunityId,
@@ -70,7 +68,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       .executeTakeFirst(),
   ]);
 
-  if (!opportunity) {
+  if (!_opportunity) {
     throw new Response(null, {
       status: 404,
       statusText: 'The opportunity you are looking for does not exist.',
@@ -81,23 +79,25 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     opportunityId,
   });
 
-  Object.assign(opportunity, {
-    createdAt: dayjs().to(opportunity.createdAt),
+  const opportunity = {
+    ..._opportunity,
+
+    createdAt: dayjs().to(_opportunity.createdAt),
 
     expiresAt: run(() => {
-      const expiresAt = dayjs(opportunity.expiresAt);
+      const expiresAt = dayjs(_opportunity.expiresAt);
 
       return expiresAt.isAfter(new Date())
         ? `Expires in ${expiresAt.toNow()}`
         : `Expired ${expiresAt.fromNow()} ago`;
     }),
 
-    slackMessageText: emojify(opportunity.slackMessageText || '', {
+    slackMessageText: emojify(_opportunity.slackMessageText || '', {
       fallback: '',
     }),
 
-    slackMessagePostedAt: dayjs().to(opportunity.slackMessagePostedAt),
-  });
+    slackMessagePostedAt: dayjs().to(_opportunity.slackMessagePostedAt),
+  };
 
   track({
     event: 'Opportunity Viewed',
@@ -106,7 +106,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     user: memberId,
   });
 
-  return json({ ...opportunity, reported: !!report });
+  return { ...opportunity, reported: !!report };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -121,14 +121,14 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 
   if (!result.ok) {
-    return json({ error: result.error }, { status: result.code });
+    return data({ error: result.error }, { status: result.code });
   }
 
   toast(session, {
     message: 'Opportunity reported!',
   });
 
-  return json(
+  return data(
     {},
     {
       headers: {

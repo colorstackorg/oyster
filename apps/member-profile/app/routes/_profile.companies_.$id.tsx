@@ -1,14 +1,15 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
-import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import { ExternalLink } from 'react-feather';
+import {
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+} from 'react-router';
 
 import { getCompany } from '@oyster/core/employment/server';
-import { Button, Text } from '@oyster/ui';
+import { Button, type SerializeFrom, Text } from '@oyster/ui';
 import {
   Tooltip,
   TooltipContent,
@@ -44,9 +45,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
-  return json({
+  return {
     company,
-  });
+  };
 }
 
 export default function CompanyPage() {

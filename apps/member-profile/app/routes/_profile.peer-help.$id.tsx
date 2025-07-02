@@ -1,19 +1,15 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import dayjs from 'dayjs';
+import { ArrowDown, ArrowUp, Edit, User } from 'react-feather';
 import {
   generatePath,
   Link,
+  type LoaderFunctionArgs,
   Outlet,
   useLoaderData,
   useLocation,
   useOutlet,
   useSearchParams,
-} from '@remix-run/react';
-import dayjs from 'dayjs';
-import { ArrowDown, ArrowUp, Edit, User } from 'react-feather';
+} from 'react-router';
 
 import { track } from '@oyster/core/mixpanel';
 import {
@@ -27,6 +23,7 @@ import {
   IconButton,
   Modal,
   ProfilePicture,
+  type SerializeFrom,
   Text,
 } from '@oyster/ui';
 import {
@@ -98,13 +95,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const createdAtObject = dayjs(helpRequest.createdAt);
 
-  return json({
+  return {
     ...helpRequest,
     createdAt: createdAtObject.fromNow(),
     createdAtExpanded: createdAtObject.format('MMM DD, YYYY • h:mm A'),
     status: helpRequest.status as HelpRequestStatus,
     type: helpRequest.type as HelpRequestType,
-  });
+  };
 }
 
 export default function HelpRequestModal() {
@@ -263,7 +260,7 @@ function EditButton({ id }: Pick<HelpRequestInView, 'id'>) {
               pathname: generatePath(Route['/peer-help/:id/edit'], { id }),
               search: searchParams.toString(),
             }}
-            unstable_viewTransition
+            viewTransition
           >
             <Edit />
           </Link>
@@ -286,10 +283,7 @@ function OfferHelpToggle() {
   if (isOfferRoute) {
     return (
       <Button.Slot variant="secondary">
-        <Link
-          to={generatePath(Route['/peer-help/:id'], { id })}
-          unstable_viewTransition
-        >
+        <Link to={generatePath(Route['/peer-help/:id'], { id })} viewTransition>
           Collapse <ArrowUp size={20} />
         </Link>
       </Button.Slot>
@@ -300,7 +294,7 @@ function OfferHelpToggle() {
     <Button.Slot variant="primary">
       <Link
         to={generatePath(Route['/peer-help/:id/offer'], { id })}
-        unstable_viewTransition
+        viewTransition
       >
         Offer Help <ArrowDown size={20} />
       </Link>

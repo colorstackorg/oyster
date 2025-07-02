@@ -1,5 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet, useLoaderData } from '@remix-run/react';
+import { type LoaderFunctionArgs, Outlet, useLoaderData } from 'react-router';
 
 import {
   doesAdminHavePermission,
@@ -54,9 +53,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     };
   });
 
-  return json({
+  return {
     admins,
-  });
+  };
 }
 
 export default function Admins() {

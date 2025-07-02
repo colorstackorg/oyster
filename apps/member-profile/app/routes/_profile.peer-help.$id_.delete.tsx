@@ -1,15 +1,13 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import {
-  Form,
   useActionData,
   useLoaderData,
   useSearchParams,
-} from '@remix-run/react';
+} from 'react-router';
 
 import { deleteHelpRequest } from '@oyster/core/peer-help';
 import { db } from '@oyster/db';
@@ -40,7 +38,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  return json(helpRequest);
+  return helpRequest;
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -49,7 +47,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = await deleteHelpRequest(params.id as string, user(session));
 
   if (!result.ok) {
-    return json({ error: result.error }, { status: result.code });
+    return data({ error: result.error }, { status: result.code });
   }
 
   toast(session, {

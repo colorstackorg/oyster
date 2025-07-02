@@ -1,4 +1,3 @@
-import { useSearchParams } from '@remix-run/react';
 import React, {
   createContext,
   type PropsWithChildren,
@@ -9,6 +8,7 @@ import React, {
   useState,
 } from 'react';
 import { Check, ChevronDown } from 'react-feather';
+import { useSearchParams } from 'react-router';
 
 import { Pill, type PillProps } from './pill';
 import { Text } from './text';

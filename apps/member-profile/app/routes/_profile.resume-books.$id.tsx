@@ -1,23 +1,18 @@
+import { type FileUpload, parseFormData } from '@mjackson/form-data-parser';
+import dayjs from 'dayjs';
+import { useState } from 'react';
 import {
   type ActionFunctionArgs,
-  unstable_composeUploadHandlers as composeUploadHandlers,
-  unstable_createFileUploadHandler as createFileUploadHandler,
-  unstable_createMemoryUploadHandler as createMemoryUploadHandler,
-  json,
-  type LoaderFunctionArgs,
-  unstable_parseMultipartFormData as parseMultipartFormData,
-  redirect,
-} from '@remix-run/node';
-import {
+  data,
   Form,
   generatePath,
   Link,
+  type LoaderFunctionArgs,
+  redirect,
   useActionData,
   useLoaderData,
   useSearchParams,
-} from '@remix-run/react';
-import dayjs from 'dayjs';
-import { useState } from 'react';
+} from 'react-router';
 import { match } from 'ts-pattern';
 
 import {
@@ -180,13 +175,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     };
   });
 
-  return json({
+  return {
     educations,
     member,
     resumeBook,
     sponsors,
     submission,
-  });
+  };
 }
 
 const RESUME_MAX_FILE_SIZE = MB_IN_BYTES * 1;
@@ -194,12 +189,20 @@ const RESUME_MAX_FILE_SIZE = MB_IN_BYTES * 1;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const uploadHandler = composeUploadHandlers(
-    createFileUploadHandler({ maxPartSize: RESUME_MAX_FILE_SIZE }),
-    createMemoryUploadHandler()
-  );
+  async function uploadHandler(fileUpload: FileUpload) {
+    if (
+      fileUpload.fieldName === 'resume' &&
+      fileUpload.type === 'application/pdf'
+    ) {
+      return fileUpload;
+    }
+  }
 
-  const form = await parseMultipartFormData(request, uploadHandler);
+  const form = await parseFormData(
+    request,
+    { maxFileSize: RESUME_MAX_FILE_SIZE },
+    uploadHandler
+  );
 
   const resumeBookId = params.id as string;
 
@@ -217,7 +220,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(
+    return data(
       {
         error: 'Please fix the errors above.',
         errors: result.errors,

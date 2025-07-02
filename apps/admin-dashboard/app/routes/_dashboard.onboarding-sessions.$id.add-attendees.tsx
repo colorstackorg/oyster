@@ -1,10 +1,11 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData } from '@remix-run/react';
+  useActionData,
+} from 'react-router';
 import { z } from 'zod';
 
 import { addOnboardingSessionAttendees } from '@oyster/core/admin-dashboard/server';
@@ -39,7 +40,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
-  return json({});
+  return null;
 }
 
 const AddOnboardingSessionAttendeesInput = z.object({
@@ -65,7 +66,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   await addOnboardingSessionAttendees(params.id as string, result.data);

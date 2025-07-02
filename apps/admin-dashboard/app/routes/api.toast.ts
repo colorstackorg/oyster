@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { data, type LoaderFunctionArgs } from 'react-router';
 
 import {
   commitSession,
@@ -16,7 +16,7 @@ export async function action({ request }: LoaderFunctionArgs) {
     type: 'success',
   });
 
-  return json(
+  return data(
     {},
     {
       headers: {

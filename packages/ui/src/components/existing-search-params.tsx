@@ -1,4 +1,4 @@
-import { useSearchParams } from '@remix-run/react';
+import { useSearchParams } from 'react-router';
 
 type ExistingSearchParamsProps = {
   exclude?: string[];

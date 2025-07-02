@@ -1,5 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { data, type LoaderFunctionArgs, useLoaderData } from 'react-router';
 
 import { getGoogleAuthUri } from '@oyster/core/admin-dashboard/server';
 import { ErrorMessage, Login } from '@oyster/ui';
@@ -20,7 +19,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // message if they aren't properly authenticated or authorized.
   const error = session.get('error');
 
-  return json(
+  return data(
     {
       error,
       googleAuthUri,

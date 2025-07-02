@@ -1,14 +1,13 @@
+import { type FileUpload, parseFormData } from '@mjackson/form-data-parser';
 import {
   type ActionFunctionArgs,
-  unstable_composeUploadHandlers as composeUploadHandlers,
-  unstable_createFileUploadHandler as createFileUploadHandler,
-  unstable_createMemoryUploadHandler as createMemoryUploadHandler,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
-  unstable_parseMultipartFormData as parseMultipartFormData,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 import { z } from 'zod';
 
 import { parseCsv } from '@oyster/core/admin-dashboard/server';
@@ -44,9 +43,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
-  return json({
+  return {
     event,
-  });
+  };
 }
 
 const ImportEventAttendeesInput = z.object({
@@ -58,17 +57,18 @@ type ImportEventAttendeesInput = z.infer<typeof ImportEventAttendeesInput>;
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const uploadHandler = composeUploadHandlers(
-    createFileUploadHandler(),
-    createMemoryUploadHandler()
-  );
+  async function uploadHandler(fileUpload: FileUpload) {
+    if (fileUpload.fieldName === 'file' && fileUpload.type === 'text/csv') {
+      return fileUpload;
+    }
+  }
 
-  const form = await parseMultipartFormData(request, uploadHandler);
+  const form = await parseFormData(request, uploadHandler);
 
   const result = await validateForm(form, ImportEventAttendeesInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   let count = 0;
@@ -81,7 +81,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     count = importResult.count;
   } catch (e) {
-    return json({ error: (e as Error).message }, { status: 500 });
+    return data({ error: (e as Error).message }, { status: 500 });
   }
 
   toast(session, {

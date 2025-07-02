@@ -1,5 +1,9 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { generatePath, Link, useLoaderData } from '@remix-run/react';
+import {
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  useLoaderData,
+} from 'react-router';
 
 import { listEventRegistrations } from '@oyster/core/events/registrations';
 import { type Student } from '@oyster/types';
@@ -10,9 +14,9 @@ import { Route } from '@/shared/constants';
 export async function loader({ params }: LoaderFunctionArgs) {
   const registrations = await listEventRegistrations(params.id as string);
 
-  return json({
+  return {
     registrations,
-  });
+  };
 }
 
 export default function EventRegistrationsPage() {

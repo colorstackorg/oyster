@@ -1,4 +1,4 @@
-import { type MetaDescriptor } from '@remix-run/node';
+import { type MetaDescriptor } from 'react-router';
 
 type BuildMetaInput = {
   description: string;

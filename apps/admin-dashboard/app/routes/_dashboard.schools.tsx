@@ -1,18 +1,14 @@
-import {
-  type ActionFunctionArgs,
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
-import {
-  useSearchParams as _useSearchParams,
-  Link,
-  Outlet,
-  useLoaderData,
-} from '@remix-run/react';
 import { sql } from 'kysely';
 import { BookOpen, Edit, Menu, Plus } from 'react-feather';
-import { generatePath } from 'react-router';
+import {
+  useSearchParams as _useSearchParams,
+  type ActionFunctionArgs,
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+} from 'react-router';
 import { match } from 'ts-pattern';
 
 import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
@@ -24,6 +20,7 @@ import {
   IconButton,
   Pagination,
   Pill,
+  type SerializeFrom,
   Table,
   type TableColumnProps,
   useSearchParams,
@@ -45,10 +42,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const { schools, totalSchools } = await listSchools(searchParams);
 
-  return json({
+  return {
     schools,
     totalSchools,
-  });
+  };
 }
 
 async function listSchools({ limit, page, search }: ListSearchParams) {
@@ -100,7 +97,7 @@ async function listSchools({ limit, page, search }: ListSearchParams) {
 export async function action({ request }: ActionFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  return null;
 }
 
 export default function SchoolsPage() {

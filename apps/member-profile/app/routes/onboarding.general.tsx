@@ -1,10 +1,12 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 import { type z } from 'zod';
 
 import { updateMember } from '@oyster/core/member-profile/server';
@@ -41,7 +43,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     .where('id', '=', user(session))
     .executeTakeFirstOrThrow();
 
-  return json({ member });
+  return { member };
 }
 
 const OnboardingGeneralData = Student.pick({
@@ -62,7 +64,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(request, OnboardingGeneralData);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   await updateMember(user(session), result.data);

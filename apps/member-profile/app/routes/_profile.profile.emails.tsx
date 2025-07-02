@@ -1,25 +1,23 @@
+import { Edit, Plus } from 'react-feather';
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from '@remix-run/node';
-import {
-  Form,
   Outlet,
   useActionData,
   useLoaderData,
   useNavigate,
   useSubmit,
-} from '@remix-run/react';
-import { Edit, Plus } from 'react-feather';
+} from 'react-router';
 import { z } from 'zod';
 
 import {
   listEmails,
   updateAllowEmailShare,
 } from '@oyster/core/member-profile/server';
-import { buildMeta } from '@oyster/core/remix';
+import { buildMeta } from '@oyster/core/react-router';
 import {
   Button,
   Checkbox,
@@ -62,10 +60,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     getMember(id).select('allowEmailShare').executeTakeFirstOrThrow(),
   ]);
 
-  return json({
+  return {
     emails,
     student,
-  });
+  };
 }
 
 const UpdateAllowEmailShare = z.object({
@@ -80,7 +78,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const result = await validateForm(request, UpdateAllowEmailShare);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   await updateAllowEmailShare(user(session), result.data.allowEmailShare);
@@ -89,7 +87,7 @@ export async function action({ request }: ActionFunctionArgs) {
     message: 'Updated!',
   });
 
-  return json(
+  return data(
     { error: '' },
     {
       headers: {

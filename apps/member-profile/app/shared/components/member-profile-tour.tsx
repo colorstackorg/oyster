@@ -1,4 +1,3 @@
-import { Link, useSearchParams } from '@remix-run/react';
 import { type ReactElement, useEffect, useState } from 'react';
 import Confetti from 'react-confetti';
 import {
@@ -12,6 +11,7 @@ import {
   User,
   Users,
 } from 'react-feather';
+import { Link, useSearchParams } from 'react-router';
 
 import { Modal, Text, useWindowSize } from '@oyster/ui';
 

@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { type LoaderFunctionArgs } from 'react-router';
 import { z } from 'zod';
 
 import { getAutocompletedPlaces } from '@oyster/core/location';
@@ -20,5 +20,5 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const cities = await getAutocompletedPlaces(search, '(cities)');
 
-  return json(cities);
+  return cities;
 }

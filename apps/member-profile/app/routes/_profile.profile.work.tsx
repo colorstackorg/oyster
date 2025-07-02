@@ -1,10 +1,13 @@
+import { Briefcase, MoreVertical, Repeat } from 'react-feather';
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  generatePath,
+  Link,
   type LoaderFunctionArgs,
-} from '@remix-run/node';
-import { generatePath, Link, Outlet, useLoaderData } from '@remix-run/react';
-import { Briefcase, MoreVertical, Repeat } from 'react-feather';
+  Outlet,
+  useLoaderData,
+} from 'react-router';
 
 import { job } from '@oyster/core/bull';
 import { listWorkExperiences } from '@oyster/core/member-profile/server';
@@ -39,9 +42,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     include: ['hasReviewed'],
   });
 
-  return json({
+  return {
     workExperiences,
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -56,7 +59,7 @@ export async function action({ request }: ActionFunctionArgs) {
       "We'll notify you on Slack when we've synced your LinkedIn profile.",
   });
 
-  return json(
+  return data(
     {},
     {
       headers: {

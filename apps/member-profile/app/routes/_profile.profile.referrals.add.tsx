@@ -1,10 +1,10 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { useActionData } from '@remix-run/react';
+  useActionData,
+} from 'react-router';
 
 import { referFriend, ReferFriendInput } from '@oyster/core/referrals';
 import { ReferFriendForm } from '@oyster/core/referrals/ui';
@@ -21,7 +21,7 @@ import {
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  return null;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -33,7 +33,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const referResult = await referFriend({
@@ -42,7 +42,7 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   if (!referResult.ok) {
-    return json({ error: referResult.error }, { status: 500 });
+    return data({ error: referResult.error }, { status: 500 });
   }
 
   toast(session, {

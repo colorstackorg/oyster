@@ -1,7 +1,11 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Link, Outlet, useLocation } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'react-feather';
+import {
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLocation,
+} from 'react-router';
 import { match } from 'ts-pattern';
 
 import { Button, cx, Modal, Text } from '@oyster/ui';
@@ -12,7 +16,7 @@ import { ensureUserAuthenticated } from '@/shared/session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  return null;
 }
 
 export default function JoinDirectoryLayout() {

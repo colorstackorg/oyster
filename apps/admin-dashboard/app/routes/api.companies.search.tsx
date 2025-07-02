@@ -1,10 +1,7 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs } from 'react-router';
 
 import { listCompanies } from '@oyster/core/employment/server';
+import { type SerializeFrom } from '@oyster/ui';
 
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -25,9 +22,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     where: { search },
   });
 
-  return json({
+  return {
     companies,
-  });
+  };
 }
 
 export type SearchCompaniesResult = SerializeFrom<typeof loader>;

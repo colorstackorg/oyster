@@ -1,10 +1,10 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { useActionData } from '@remix-run/react';
+  useActionData,
+} from 'react-router';
 
 import { addAdmin } from '@oyster/core/admins';
 import { AddAdminInput } from '@oyster/core/admins/types';
@@ -22,7 +22,7 @@ import {
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  return null;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -34,7 +34,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const addResult = await addAdmin({
@@ -43,7 +43,7 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   if (!addResult.ok) {
-    return json({ error: addResult.error }, { status: addResult.code });
+    return data({ error: addResult.error }, { status: addResult.code });
   }
 
   toast(session, {

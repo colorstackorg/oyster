@@ -1,12 +1,19 @@
 {
-  "extends": "@oyster/tsconfig/remix.json",
+  "extends": "@oyster/tsconfig/react-router.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
       "@/*": ["./app/*", "../../packages/core/src/*"]
     },
-    "types": ["@remix-run/node", "vite/client"]
+    "rootDirs": [".", "./.react-router/types"],
+    "types": ["@react-router/node", "vite/client"]
   },
-  "include": ["env.d.ts", "global.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": [
+    "env.d.ts",
+    "global.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".react-router/types/**/*"
+  ],
   "exclude": ["node_modules"]
 }

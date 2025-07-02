@@ -1,20 +1,18 @@
+import { withSentry } from '@sentry/remix';
 import {
-  json,
+  data,
+  Links,
   type LinksFunction,
   type LoaderFunctionArgs,
-  type MetaFunction,
-} from '@remix-run/node';
-import {
-  Links,
   Meta,
+  type MetaFunction,
   Outlet,
   Scripts,
   ScrollRestoration,
   useLoaderData,
-} from '@remix-run/react';
-import { withSentry } from '@sentry/remix';
+} from 'react-router';
 
-import { buildMeta } from '@oyster/core/remix';
+import { buildMeta } from '@oyster/core/react-router';
 import { Toast } from '@oyster/ui';
 import uiStylesheet from '@oyster/ui/index.css?url';
 
@@ -46,7 +44,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     SENTRY_DSN: ENV.SENTRY_DSN,
   };
 
-  return json(
+  return data(
     {
       env,
       toast: toast || null,

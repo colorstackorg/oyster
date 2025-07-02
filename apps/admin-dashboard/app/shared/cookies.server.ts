@@ -1,4 +1,4 @@
-import { createCookie } from '@remix-run/node';
+import { createCookie } from 'react-router';
 
 import { Timezone } from '@oyster/types';
 import { getCookie } from '@oyster/utils';

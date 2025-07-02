@@ -1,6 +1,10 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { generatePath, useLoaderData, useSearchParams } from '@remix-run/react';
 import dayjs from 'dayjs';
+import {
+  generatePath,
+  type LoaderFunctionArgs,
+  useLoaderData,
+  useSearchParams,
+} from 'react-router';
 
 import { track } from '@oyster/core/mixpanel';
 import { hourlyToMonthlyRate } from '@oyster/core/offers';
@@ -42,7 +46,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     user: memberId,
   });
 
-  return json(offer);
+  return offer;
 }
 
 type GetInternshipOfferDetailsInput = {

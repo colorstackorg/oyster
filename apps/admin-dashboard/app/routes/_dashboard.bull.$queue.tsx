@@ -1,18 +1,3 @@
-import {
-  type ActionFunctionArgs,
-  json,
-  type LoaderFunctionArgs,
-  redirect,
-  type SerializeFrom,
-} from '@remix-run/node';
-import {
-  Form,
-  Link,
-  Outlet,
-  useLoaderData,
-  useLocation,
-  useNavigate,
-} from '@remix-run/react';
 import dayjs from 'dayjs';
 import {
   ArrowUp,
@@ -23,7 +8,19 @@ import {
   Repeat,
   Trash2,
 } from 'react-feather';
-import { generatePath } from 'react-router';
+import {
+  type ActionFunctionArgs,
+  data,
+  Form,
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  redirect,
+  useLoaderData,
+  useLocation,
+  useNavigate,
+} from 'react-router';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 
@@ -36,6 +33,7 @@ import {
   Pagination,
   Pill,
   Select,
+  type SerializeFrom,
   Table,
   type TableColumnProps,
 } from '@oyster/ui';
@@ -131,7 +129,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return result + count;
   }, 0);
 
-  return json({
+  return {
     counts: [
       { status: 'all', count: allJobsCount },
       { status: 'active', count: counts.active },
@@ -149,7 +147,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     queues,
     repeatables,
     status,
-  });
+  };
 }
 
 const QueueAction = {
@@ -268,7 +266,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   return result.data.action === 'queue.obliterate'
     ? redirect(Route['/bull'], init)
-    : json({}, init);
+    : data({}, init);
 }
 
 export default function QueuePage() {

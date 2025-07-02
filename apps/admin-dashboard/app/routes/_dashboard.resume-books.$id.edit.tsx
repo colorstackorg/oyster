@@ -1,11 +1,13 @@
+import dayjs from 'dayjs';
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
-import dayjs from 'dayjs';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 
 import { getResumeBook, updateResumeBook } from '@oyster/core/resume-books';
 import {
@@ -44,12 +46,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const format = 'YYYY-MM-DD';
   const tz = RESUME_BOOK_TIMEZONE;
 
-  return json({
+  return {
     endDate: dayjs(resumeBook.endDate).tz(tz).format(format),
     hidden: resumeBook.hidden,
     name: resumeBook.name,
     startDate: dayjs(resumeBook.startDate).tz(tz).format(format),
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -61,7 +63,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   await updateResumeBook({

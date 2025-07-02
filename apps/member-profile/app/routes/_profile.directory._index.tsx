@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs, redirect } from '@remix-run/node';
+import { type LoaderFunctionArgs, redirect } from 'react-router';
 
 import { Route } from '@/shared/constants';
 import { getMember } from '@/shared/queries';
@@ -15,7 +15,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect(Route['/directory/join']);
   }
 
-  return json({});
+  return null;
 }
 
 export default function Component() {

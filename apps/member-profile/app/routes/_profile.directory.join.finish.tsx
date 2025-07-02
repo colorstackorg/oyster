@@ -1,6 +1,10 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { generatePath, Link, useLoaderData } from '@remix-run/react';
 import { ArrowRight, Eye } from 'react-feather';
+import {
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  useLoaderData,
+} from 'react-router';
 
 import { Button, Text } from '@oyster/ui';
 
@@ -12,9 +16,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const memberId = user(session);
 
-  return json({
+  return {
     memberId,
-  });
+  };
 }
 
 export default function DirectoryJoinedConfirmation() {

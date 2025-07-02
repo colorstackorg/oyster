@@ -1,5 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet, useLocation } from '@remix-run/react';
+import { type LoaderFunctionArgs, Outlet, useLocation } from 'react-router';
 
 import { Modal } from '@oyster/ui';
 
@@ -11,7 +10,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     minimumRole: 'ambassador',
   });
 
-  return json({});
+  return null;
 }
 
 export default function ApplicationLayout() {

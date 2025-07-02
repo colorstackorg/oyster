@@ -1,15 +1,13 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import {
-  Form,
   useActionData,
   useNavigate,
   useNavigation,
-} from '@remix-run/react';
+} from 'react-router';
 
 import { archiveActivity } from '@oyster/core/gamification';
 import { Button, ErrorMessage, Modal } from '@oyster/ui';
@@ -24,7 +22,7 @@ import {
 export async function loader({ request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  return json({});
+  return null;
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -43,7 +41,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({ error: (e as Error).message }, { status: 500 });
+    return data({ error: (e as Error).message }, { status: 500 });
   }
 }
 

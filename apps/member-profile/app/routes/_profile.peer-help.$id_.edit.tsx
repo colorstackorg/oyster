@@ -1,17 +1,15 @@
 import {
   type ActionFunctionArgs,
-  json,
-  type LoaderFunctionArgs,
-  redirect,
-} from '@remix-run/node';
-import {
+  data,
   Form,
   generatePath,
   Link,
+  type LoaderFunctionArgs,
+  redirect,
   useActionData,
   useLoaderData,
   useSearchParams,
-} from '@remix-run/react';
+} from 'react-router';
 
 import { editHelpRequest, EditHelpRequestInput } from '@oyster/core/peer-help';
 import { db } from '@oyster/db';
@@ -51,10 +49,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  return json({
+  return {
     ...helpRequest,
     memberId: user(session),
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -63,7 +61,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = await validateForm(request, EditHelpRequestInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const helpRequestId = params.id as string;
@@ -71,7 +69,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const editResult = await editHelpRequest(helpRequestId, result.data);
 
   if (!editResult.ok) {
-    return json({ error: editResult.error }, { status: editResult.code });
+    return data({ error: editResult.error }, { status: editResult.code });
   }
 
   toast(session, {
@@ -130,7 +128,7 @@ export default function EditHelpRequestModal() {
           <Button.Slot color="error" variant="secondary">
             <Link
               to={generatePath(Route['/peer-help/:id/delete'], { id })}
-              unstable_viewTransition
+              viewTransition
             >
               Delete
             </Link>

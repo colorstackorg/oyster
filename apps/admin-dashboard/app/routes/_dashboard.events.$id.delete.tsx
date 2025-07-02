@@ -1,10 +1,11 @@
 import {
   type ActionFunctionArgs,
-  json,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 
 import { deleteEvent, getEvent } from '@oyster/core/events';
 import { Button, ErrorMessage, getErrors, Modal } from '@oyster/ui';
@@ -25,9 +26,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
-  return json({
+  return {
     event,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {

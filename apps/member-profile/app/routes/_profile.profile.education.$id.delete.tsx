@@ -1,10 +1,12 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useNavigate } from '@remix-run/react';
+  useActionData,
+  useNavigate,
+} from 'react-router';
 
 import { deleteEducation } from '@oyster/core/member-profile/server';
 import { type Education } from '@oyster/core/member-profile/ui';
@@ -31,7 +33,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
-  return json({});
+  return null;
 }
 
 async function isEducationFound({
@@ -68,7 +70,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({ error: (e as Error).message }, { status: 500 });
+    return data({ error: (e as Error).message }, { status: 500 });
   }
 }
 

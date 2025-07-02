@@ -1,8 +1,4 @@
-import {
-  createReadableStreamFromReadable,
-  type EntryContext,
-} from '@remix-run/node';
-import { RemixServer } from '@remix-run/react';
+import { createReadableStreamFromReadable } from '@react-router/node';
 import * as Sentry from '@sentry/remix';
 import dayjs from 'dayjs';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
@@ -10,6 +6,7 @@ import timezone from 'dayjs/plugin/timezone.js';
 import utc from 'dayjs/plugin/utc.js';
 import isbot from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
+import { type EntryContext, ServerRouter } from 'react-router';
 import { PassThrough } from 'stream';
 
 import { getCookie } from '@oyster/utils';
@@ -30,13 +27,14 @@ Sentry.init({
   tracesSampleRate: 0.25,
 });
 
-const ABORT_DELAY = 5000;
+// Reject/cancel all pending promises after 5 seconds.
+export const streamTimeout = 5000;
 
 export default function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext
+  reactRouterContext: EntryContext
 ) {
   const bot: boolean = isbot(request.headers.get('user-agent'));
 
@@ -45,13 +43,13 @@ export default function handleRequest(
         request,
         responseStatusCode,
         responseHeaders,
-        remixContext
+        reactRouterContext
       )
     : handleBrowserRequest(
         request,
         responseStatusCode,
         responseHeaders,
-        remixContext
+        reactRouterContext
       );
 }
 
@@ -59,13 +57,13 @@ function handleBotRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext
+  reactRouterContext: EntryContext
 ) {
   return new Promise((resolve, reject) => {
     let didError = false;
 
     const { pipe, abort } = renderToPipeableStream(
-      <RemixServer context={remixContext} url={request.url} />,
+      <ServerRouter context={reactRouterContext} url={request.url} />,
       {
         onAllReady: () => {
           const body = new PassThrough();
@@ -92,7 +90,9 @@ function handleBotRequest(
       }
     );
 
-    setTimeout(abort, ABORT_DELAY);
+    // Automatically timeout the React renderer after 6 seconds, which ensures
+    // React has enough time to flush down the rejected boundary contents.
+    setTimeout(abort, streamTimeout + 1000);
   });
 }
 
@@ -100,13 +100,13 @@ function handleBrowserRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext
+  reactRouterContext: EntryContext
 ) {
   return new Promise((resolve, reject) => {
     let didError = false;
 
     const { pipe, abort } = renderToPipeableStream(
-      <RemixServer context={remixContext} url={request.url} />,
+      <ServerRouter context={reactRouterContext} url={request.url} />,
       {
         onShellReady: () => {
           const cookie = request.headers.get('Cookie');
@@ -167,6 +167,6 @@ function handleBrowserRequest(
       }
     );
 
-    setTimeout(abort, ABORT_DELAY);
+    setTimeout(abort, streamTimeout + 1000);
   });
 }

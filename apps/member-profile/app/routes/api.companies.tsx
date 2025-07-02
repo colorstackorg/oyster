@@ -1,14 +1,11 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
+import { type LoaderFunctionArgs } from 'react-router';
 import { z } from 'zod';
 
 import {
   reportException,
   searchCompanies,
 } from '@oyster/core/member-profile/server';
+import { type SerializeFrom } from '@oyster/ui';
 
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -30,15 +27,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const companies = await searchCompanies(search);
 
-    return json({
+    return {
       companies,
-    });
+    };
   } catch (e) {
     reportException(e);
 
-    return json({
+    return {
       companies: [],
-    });
+    };
   }
 }
 

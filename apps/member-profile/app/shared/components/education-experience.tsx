@@ -1,5 +1,5 @@
-import { generatePath, Link } from '@remix-run/react';
 import { MoreVertical, Trash } from 'react-feather';
+import { generatePath, Link } from 'react-router';
 
 import { Dropdown, IconButton, Text } from '@oyster/ui';
 

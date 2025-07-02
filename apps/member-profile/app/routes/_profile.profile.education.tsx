@@ -1,6 +1,10 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { BookOpen, MoreVertical, Repeat } from 'react-feather';
+import {
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+} from 'react-router';
 
 import { Button, Dropdown, IconButton } from '@oyster/ui';
 
@@ -27,9 +31,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const educationExperiences = await getEducationExperiences(id);
 
-  return json({
+  return {
     educationExperiences,
-  });
+  };
 }
 
 export default function EducationHistoryPage() {

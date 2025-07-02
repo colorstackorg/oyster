@@ -1,21 +1,16 @@
+import { type FileUpload, parseFormData } from '@mjackson/form-data-parser';
 import {
   type ActionFunctionArgs,
-  unstable_composeUploadHandlers as composeUploadHandlers,
-  unstable_createFileUploadHandler as createFileUploadHandler,
-  unstable_createMemoryUploadHandler as createMemoryUploadHandler,
-  json,
-  type LoaderFunctionArgs,
-  unstable_parseMultipartFormData as parseMultipartFormData,
-  redirect,
-} from '@remix-run/node';
-import {
+  data,
   Form,
   generatePath,
   Link,
+  type LoaderFunctionArgs,
+  redirect,
   useActionData,
   useLoaderData,
   useSearchParams,
-} from '@remix-run/react';
+} from 'react-router';
 
 import { type ResourceType, UpdateResourceInput } from '@oyster/core/resources';
 import { getResource, updateResource } from '@oyster/core/resources/server';
@@ -67,20 +62,25 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     type: record.type as ResourceType,
   };
 
-  return json({
+  return {
     resource,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const uploadHandler = composeUploadHandlers(
-    createFileUploadHandler({ maxPartSize: 1_000_000 * 20 }),
-    createMemoryUploadHandler()
-  );
+  async function uploadHandler(fileUpload: FileUpload) {
+    if (fileUpload.fieldName === 'attachments') {
+      return fileUpload;
+    }
+  }
 
-  const form = await parseMultipartFormData(request, uploadHandler);
+  const form = await parseFormData(
+    request,
+    { maxFileSize: 1_000_000 * 20 },
+    uploadHandler
+  );
 
   const result = await validateForm(
     {
@@ -91,18 +91,14 @@ export async function action({ params, request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const updateResult = await updateResource(params.id as string, result.data);
 
   if (!updateResult.ok) {
-    return json(
-      {
-        errors: {
-          duplicateResourceId: updateResult.context!.duplicateResourceId,
-        },
-      },
+    return data(
+      { duplicateResourceId: updateResult.context!.duplicateResourceId },
       { status: updateResult.code }
     );
   }
@@ -125,7 +121,7 @@ const keys = UpdateResourceInput.keyof().enum;
 
 export default function EditResourceModal() {
   const { resource } = useLoaderData<typeof loader>();
-  const { error, errors } = getErrors(useActionData<typeof action>());
+  const { error, errors, ...rest } = getErrors(useActionData<typeof action>());
   const [searchParams] = useSearchParams();
 
   return (
@@ -169,7 +165,7 @@ export default function EditResourceModal() {
           <ResourceLinkField
             defaultValue={resource.link || undefined}
             duplicateResourceId={
-              'duplicateResourceId' in errors && errors.duplicateResourceId
+              'duplicateResourceId' in rest && rest.duplicateResourceId
             }
             error={errors.link}
             name={keys.link}

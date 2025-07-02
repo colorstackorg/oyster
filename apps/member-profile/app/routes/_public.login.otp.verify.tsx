@@ -1,10 +1,12 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 
 import { verifyOneTimeCode } from '@oyster/core/member-profile/server';
 import {
@@ -33,9 +35,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ? 'In the development environment, you can any input any 6-digit code!'
       : undefined;
 
-  return json({
+  return {
     description,
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -45,7 +47,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const oneTimeCodeId = await oneTimeCodeIdCookie.parse(
@@ -53,7 +55,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!oneTimeCodeId) {
-    return json(
+    return data(
       { error: 'Your one-time code was not found. Please request a new code.' },
       { status: 404 }
     );
@@ -83,7 +85,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({ error: (e as Error).message }, { status: 500 });
+    return data({ error: (e as Error).message }, { status: 500 });
   }
 }
 

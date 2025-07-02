@@ -1,24 +1,19 @@
+import { type FileUpload, parseFormData } from '@mjackson/form-data-parser';
+import { type PropsWithChildren } from 'react';
+import { FileText } from 'react-feather';
 import {
   type ActionFunctionArgs,
-  unstable_composeUploadHandlers as composeUploadHandlers,
-  unstable_createFileUploadHandler as createFileUploadHandler,
-  unstable_createMemoryUploadHandler as createMemoryUploadHandler,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   type MetaFunction,
-  unstable_parseMultipartFormData as parseMultipartFormData,
-} from '@remix-run/node';
-import {
-  Form,
   useActionData,
   useLoaderData,
   useNavigation,
-} from '@remix-run/react';
-import { type PropsWithChildren } from 'react';
-import { FileText } from 'react-feather';
+} from 'react-router';
 import { match } from 'ts-pattern';
 
-import { buildMeta } from '@oyster/core/remix';
+import { buildMeta } from '@oyster/core/react-router';
 import {
   getLastResumeFeedback,
   type ResumeFeedback,
@@ -56,10 +51,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const feedback = await getLastResumeFeedback(user(session));
 
-  return json({
+  return {
     experiences: feedback?.experiences,
     projects: feedback?.projects,
-  });
+  };
 }
 
 const RESUME_MAX_FILE_SIZE = MB_IN_BYTES * 1;
@@ -67,12 +62,20 @@ const RESUME_MAX_FILE_SIZE = MB_IN_BYTES * 1;
 export async function action({ request }: ActionFunctionArgs) {
   const session = await ensureUserAuthenticated(request);
 
-  const uploadHandler = composeUploadHandlers(
-    createFileUploadHandler({ maxPartSize: RESUME_MAX_FILE_SIZE }),
-    createMemoryUploadHandler()
-  );
+  async function uploadHandler(fileUpload: FileUpload) {
+    if (
+      fileUpload.fieldName === 'resume' &&
+      fileUpload.type === 'application/pdf'
+    ) {
+      return fileUpload;
+    }
+  }
 
-  const form = await parseMultipartFormData(request, uploadHandler);
+  const form = await parseFormData(
+    request,
+    { maxFileSize: RESUME_MAX_FILE_SIZE },
+    uploadHandler
+  );
 
   form.set('memberId', user(session));
 
@@ -82,7 +85,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(
+    return data(
       {
         error: result.errors.resume,
         ok: false,
@@ -94,10 +97,10 @@ export async function action({ request }: ActionFunctionArgs) {
   const reviewResult = await reviewResume(result.data);
 
   if (!reviewResult.ok) {
-    return json(reviewResult, { status: reviewResult.code });
+    return data(reviewResult, { status: reviewResult.code });
   }
 
-  return json(reviewResult);
+  return reviewResult;
 }
 
 export default function ReviewResume() {

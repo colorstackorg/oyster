@@ -1,10 +1,10 @@
 import {
   type ActionFunctionArgs,
-  json,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useLoaderData } from '@remix-run/react';
+  useLoaderData,
+} from 'react-router';
 
 import {
   deleteFeatureFlag,
@@ -33,9 +33,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
-  return json({
+  return {
     flag,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {

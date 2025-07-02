@@ -1,9 +1,3 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { type PropsWithChildren } from 'react';
 import {
   Calendar,
@@ -12,10 +6,22 @@ import {
   ExternalLink,
   Video,
 } from 'react-feather';
-import { generatePath } from 'react-router';
+import {
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+} from 'react-router';
 
 import { listPastEvents, listUpcomingEvents } from '@oyster/core/events';
-import { Button, Dashboard, ProfilePicture, Text } from '@oyster/ui';
+import {
+  Button,
+  Dashboard,
+  ProfilePicture,
+  type SerializeFrom,
+  Text,
+} from '@oyster/ui';
 
 import { Route } from '@/shared/constants';
 import { getTimezone } from '@/shared/cookies.server';
@@ -32,10 +38,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     listUpcomingEvents({ memberId, timezone }),
   ]);
 
-  return json({
+  return {
     pastEvents,
     upcomingEvents,
-  });
+  };
 }
 
 export default function EventsPage() {

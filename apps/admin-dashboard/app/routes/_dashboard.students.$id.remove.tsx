@@ -1,10 +1,10 @@
 import {
   type ActionFunctionArgs,
-  json,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useLoaderData } from '@remix-run/react';
+  useLoaderData,
+} from 'react-router';
 
 import { job } from '@oyster/core/bull';
 import { db } from '@oyster/db';
@@ -31,9 +31,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return redirect(Route['/students']);
   }
 
-  return json({
+  return {
     student,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {

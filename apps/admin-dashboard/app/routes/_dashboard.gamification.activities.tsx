@@ -1,11 +1,11 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { Edit, Menu, Plus, Trash } from 'react-feather';
-import { generatePath } from 'react-router';
+import {
+  generatePath,
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+} from 'react-router';
 
 import { listActivities } from '@oyster/core/gamification';
 import {
@@ -13,6 +13,7 @@ import {
   Dropdown,
   IconButton,
   Pill,
+  type SerializeFrom,
   Table,
   type TableColumnProps,
 } from '@oyster/ui';
@@ -26,9 +27,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const activities = await listActivities();
 
-  return json({
+  return {
     activities,
-  });
+  };
 }
 
 export default function GamificationPage() {

@@ -1,10 +1,12 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 
 import { addEmail, AddEmailInput } from '@oyster/core/member-profile/server';
 import {
@@ -34,7 +36,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect(Route['/onboarding/emails']);
   }
 
-  return json({ email });
+  return { email };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -46,13 +48,13 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   const email = await getEmailFromCookie(request);
 
   if (!email) {
-    return json(
+    return data(
       { error: 'It looks like you timed out. Please exit and try again.' },
       { status: 400 }
     );
@@ -67,7 +69,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return redirect(Route['/onboarding/community']);
   } catch (e) {
-    return json({ error: (e as Error).message }, { status: 500 });
+    return data({ error: (e as Error).message }, { status: 500 });
   }
 }
 

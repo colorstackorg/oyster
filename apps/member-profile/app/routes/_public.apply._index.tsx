@@ -1,16 +1,18 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
+  Form,
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 
 import { apply } from '@oyster/core/applications';
 import { Application, ApplyInput } from '@oyster/core/applications/ui';
+import { buildMeta } from '@oyster/core/react-router';
 import { getReferral } from '@oyster/core/referrals';
-import { buildMeta } from '@oyster/core/remix';
 import {
   Button,
   Checkbox,
@@ -48,11 +50,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       })
     : undefined;
 
-  return json({
+  return {
     email: referral?.email,
     firstName: referral?.firstName,
     lastName: referral?.lastName,
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -79,7 +81,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   if (!result.ok) {
-    return json(
+    return data(
       { error: 'Please fix the issues above.', errors: result.errors } as const,
       { status: 400 }
     );
@@ -96,7 +98,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (e) {
-    return json({ error: (e as Error).message }, { status: 500 });
+    return data({ error: (e as Error).message }, { status: 500 });
   }
 }
 

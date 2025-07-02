@@ -1,11 +1,8 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from '@remix-run/node';
 import { sql } from 'kysely';
+import { type LoaderFunctionArgs } from 'react-router';
 
 import { db } from '@oyster/db';
+import { type SerializeFrom } from '@oyster/ui';
 
 import { ensureUserAuthenticated } from '@/shared/session.server';
 
@@ -20,9 +17,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const members = await searchMembers(search);
 
-  return json({
+  return {
     members,
-  });
+  };
 }
 
 async function searchMembers(search: string) {

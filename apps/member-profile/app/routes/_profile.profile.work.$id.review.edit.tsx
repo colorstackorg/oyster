@@ -1,10 +1,11 @@
 import {
   type ActionFunctionArgs,
-  json,
+  data,
   type LoaderFunctionArgs,
   redirect,
-} from '@remix-run/node';
-import { useActionData, useLoaderData } from '@remix-run/react';
+  useActionData,
+  useLoaderData,
+} from 'react-router';
 
 import { EditCompanyReviewInput } from '@oyster/core/employment';
 import {
@@ -32,9 +33,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response(null, { status: 404 });
   }
 
-  return json({
+  return {
     review,
-  });
+  };
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -47,7 +48,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const result = await validateForm(form, EditCompanyReviewInput);
 
   if (!result.ok) {
-    return json(result, { status: 400 });
+    return data(result, { status: 400 });
   }
 
   await editCompanyReview(result.data);

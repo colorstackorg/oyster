@@ -1,12 +1,12 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import dayjs from 'dayjs';
+import { type PropsWithChildren } from 'react';
 import {
   generatePath,
+  type LoaderFunctionArgs,
   type Params,
   useLoaderData,
   useParams,
-} from '@remix-run/react';
-import dayjs from 'dayjs';
-import { type PropsWithChildren } from 'react';
+} from 'react-router';
 
 import { Modal, Text } from '@oyster/ui';
 
@@ -46,7 +46,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const format = 'MM/DD/YY @ h:mm:ss A';
 
-  return json({
+  return {
     data,
     general: {
       id,
@@ -70,7 +70,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     },
     options: opts,
     result: returnvalue,
-  });
+  };
 }
 
 async function getJobFromParams(params: Params<string>) {
