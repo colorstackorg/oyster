@@ -1,8 +1,8 @@
 import {
   type ActionFunctionArgs,
+  Form,
   type LoaderFunctionArgs,
   redirect,
-  Form as RemixForm,
   useLoaderData,
 } from 'react-router';
 
@@ -73,11 +73,11 @@ export default function CreateChapterModal() {
         Are you sure you want to create a chapter for {school.name}?
       </Modal.Description>
 
-      <RemixForm className="form" method="post">
+      <Form className="form" method="post">
         <Button.Group>
           <Button.Submit>Create</Button.Submit>
         </Button.Group>
-      </RemixForm>
+      </Form>
     </Modal>
   );
 }

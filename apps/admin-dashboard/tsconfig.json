@@ -1,5 +1,5 @@
 {
-  "extends": "@oyster/tsconfig/remix.json",
+  "extends": "@oyster/tsconfig/react-router.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {

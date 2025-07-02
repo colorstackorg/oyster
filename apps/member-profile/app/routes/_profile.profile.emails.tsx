@@ -17,7 +17,7 @@ import {
   listEmails,
   updateAllowEmailShare,
 } from '@oyster/core/member-profile/server';
-import { buildMeta } from '@oyster/core/remix';
+import { buildMeta } from '@oyster/core/react-router';
 import {
   Button,
   Checkbox,

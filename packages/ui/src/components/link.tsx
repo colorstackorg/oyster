@@ -6,7 +6,8 @@ type LinkProps = Pick<
 >;
 
 /**
- * @deprecated b/c we should use the `Link` component from Remix instead.
+ * @deprecated b/c we should use the `Link` component from `react-router`
+ * instead.
  */
 export function Link({ children, ...rest }: LinkProps) {
   return (

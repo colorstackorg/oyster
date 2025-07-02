@@ -11,8 +11,8 @@ import {
 
 import { apply } from '@oyster/core/applications';
 import { Application, ApplyInput } from '@oyster/core/applications/ui';
+import { buildMeta } from '@oyster/core/react-router';
 import { getReferral } from '@oyster/core/referrals';
-import { buildMeta } from '@oyster/core/remix';
 import {
   Button,
   Checkbox,

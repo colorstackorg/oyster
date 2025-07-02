@@ -36,9 +36,9 @@ codebase:
 - [PostgreSQL](https://www.postgresql.org/docs/15/index.html) to store all of
   our data.
 - [Railway](https://railway.app) to host our applications and databases.
+- [React Router](https://reactrouter.com)/[React](https://react.dev) to build
+  fast, accessible and delightful UI experiences.
 - [Redis](https://redis.io) to store simple key/value based data.
-- [Remix](https://remix.run)/[React](https://react.dev) to build fast,
-  accessible and delightful UI experiences.
 - [Tailwind](https://tailwindcss.com) because scaling CSS is hard.
 - [Turborepo](https://turbo.build/repo) to manage the build system for our
   Typescript monorepo.

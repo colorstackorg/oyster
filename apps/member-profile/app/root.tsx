@@ -12,7 +12,7 @@ import {
   useLoaderData,
 } from 'react-router';
 
-import { buildMeta } from '@oyster/core/remix';
+import { buildMeta } from '@oyster/core/react-router';
 import { Toast } from '@oyster/ui';
 import uiStylesheet from '@oyster/ui/index.css?url';
 

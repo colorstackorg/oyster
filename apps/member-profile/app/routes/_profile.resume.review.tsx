@@ -13,7 +13,7 @@ import {
 } from 'react-router';
 import { match } from 'ts-pattern';
 
-import { buildMeta } from '@oyster/core/remix';
+import { buildMeta } from '@oyster/core/react-router';
 import {
   getLastResumeFeedback,
   type ResumeFeedback,
