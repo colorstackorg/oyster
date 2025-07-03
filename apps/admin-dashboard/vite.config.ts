@@ -10,8 +10,13 @@ export default defineConfig({
     sentryVitePlugin({
       org: 'colorstack',
       project: 'admin-dashboard',
-      release: { name: process.env.SENTRY_RELEASE },
       sourcemaps: { filesToDeleteAfterUpload: ['**/*.map'] },
+
+      ...(process.env.RAILWAY_GIT_COMMIT_SHA && {
+        release: {
+          name: `admin-dashboard@${process.env.RAILWAY_GIT_COMMIT_SHA}`,
+        },
+      }),
     }),
   ],
   build: { sourcemap: true },
