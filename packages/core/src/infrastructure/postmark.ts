@@ -4,7 +4,7 @@ import { reportException } from '@/infrastructure/sentry';
 
 // Environment Variables
 
-const POSTMARK_API_TOKEN = process.env.POSTMARK_API_TOKEN;
+const POSTMARK_API_TOKEN = process.env.POSTMARK_API_TOKEN as string;
 const POSTMARK_API_URL = 'https://api.postmarkapp.com';
 
 // Core
@@ -32,12 +32,6 @@ type SendEmailInput = {
  * @see https://postmarkapp.com/developer/api/email-api#send-a-single-email
  */
 export async function sendEmail(input: SendEmailInput) {
-  if (!POSTMARK_API_TOKEN) {
-    console.warn('POSTMARK_API_TOKEN is not set, skipping email send.');
-
-    return;
-  }
-
   const response = await fetch(`${POSTMARK_API_URL}/email`, {
     method: 'POST',
     body: JSON.stringify(input),
@@ -76,12 +70,6 @@ export async function sendEmail(input: SendEmailInput) {
  * @see https://postmarkapp.com/developer/api/bounce-api#bounces
  */
 export async function hasEmailBounced(email: string): Promise<boolean | null> {
-  if (!POSTMARK_API_TOKEN) {
-    console.warn('POSTMARK_API_TOKEN is not set, returning false as fallback.');
-
-    return null;
-  }
-
   const url = new URL(`${POSTMARK_API_URL}/bounces`);
 
   url.searchParams.set('count', '1');
