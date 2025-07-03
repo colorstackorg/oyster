@@ -34,7 +34,9 @@ Sentry.init({
 // Reject/cancel all pending promises after 5 seconds.
 export const streamTimeout = 5000;
 
-export default function handleRequest(
+export default Sentry.wrapSentryHandleRequest(handleRequest);
+
+function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
