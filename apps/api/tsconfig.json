@@ -4,7 +4,12 @@
   "include": ["src"],
   "compilerOptions": {
     "baseUrl": "./",
+    "jsx": "react-jsx",
     "module": "ESNext",
-    "moduleResolution": "Bundler"
+    "moduleResolution": "Bundler",
+    "paths": {
+      "@/*": ["../../packages/core/src/*"]
+    },
+    "target": "ESNext"
   }
 }

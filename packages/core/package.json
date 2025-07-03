@@ -4,13 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./api": {
-      "import": "./dist/api.js",
-      "require": "./dist/api.cjs",
-      "types": "./dist/api.d.ts"
-    },
     "./admin-dashboard/server": "./src/admin-dashboard.server.ts",
     "./admin-dashboard/ui": "./src/admin-dashboard.ui.ts",
+    "./api": "./src/api.ts",
     "./member-profile/server": "./src/member-profile.server.ts",
     "./member-profile/ui": "./src/member-profile.ui.ts",
     "./admins": "./src/modules/admins/admins.ts",
@@ -57,10 +53,9 @@
     "./slack/utils": "./src/modules/slack/slack.utils.ts"
   },
   "scripts": {
-    "build": "tsup",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "script": "tsx src/script.ts",
+    "script": "bun src/script.ts",
     "test": "bun test --preload=@oyster/db/test/setup",
     "type-check": "tsc --noEmit"
   },
@@ -103,8 +98,6 @@
     "nanoid": "^3.0.0",
     "puppeteer-core": "^23.7.0",
     "react": "^18.2.0",
-    "tsup": "^6.1.3",
-    "tsx": "^4.7.1",
     "vite": "^6.1.0",
     "vite-tsconfig-paths": "^4.3.1",
     "vitest": "^1.3.1"

@@ -5,15 +5,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "env:setup": "tsx ./src/setup-env.ts",
+    "env:setup": "bun ./src/setup-env.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prisma:setup": "tsx ./src/setup-prisma.ts"
+    "prisma:setup": "bun ./src/setup-prisma.ts"
   },
   "devDependencies": {
     "@oyster/eslint-config": "workspace:*",
     "@oyster/tsconfig": "workspace:*",
-    "chalk": "^5.3.0",
-    "tsx": "^4.7.1"
+    "chalk": "^5.3.0"
   }
 }

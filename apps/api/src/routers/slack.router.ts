@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import express from 'express';
 import { match } from 'ts-pattern';
 
-import { job } from '@oyster/core/api';
+import { job } from '@oyster/core/bull';
 
 import { type SlackRequestBody, SlackRequestHeaders } from './slack.types';
 import { ENV } from '../shared/env';

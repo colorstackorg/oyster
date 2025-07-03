@@ -5,9 +5,9 @@
   "sideEffects": false,
   "main": "./src/index.ts",
   "scripts": {
-    "dev": "email dev --port=3010",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "start": "email dev --port=3010",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

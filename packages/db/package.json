@@ -12,11 +12,11 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "migrate": "tsx ./src/scripts/migrate.ts && bun types",
-    "migrate:down": "tsx ./src/scripts/migrate.ts --down && bun types",
-    "migration:create": "tsx ./src/scripts/create-migration.ts",
+    "migrate": "bun ./src/scripts/migrate.ts && bun types",
+    "migrate:down": "bun ./src/scripts/migrate.ts --down && bun types",
+    "migration:create": "bun ./src/scripts/create-migration.ts",
     "prisma:studio": "prisma db pull && prisma studio",
-    "seed": "tsx ./src/scripts/seed.ts && bun types",
+    "seed": "bun ./src/scripts/seed.ts && bun types",
     "type-check": "tsc --noEmit",
     "types": "kysely-codegen --dialect=postgres --camel-case --out-file=./dist/db.d.ts"
   },
@@ -28,12 +28,10 @@
     "@oyster/eslint-config": "workspace:*",
     "@oyster/tsconfig": "workspace:*",
     "@types/pg": "^8.11.2",
-    "@types/prompt-sync": "^4.2.3",
     "commander": "^12.0.0",
     "dedent": "^0.7.0",
     "kysely-codegen": "^0.10.1",
     "pathe": "^2.0.3",
-    "prisma": "^5.16.2",
-    "prompt-sync": "^4.2.0"
+    "prisma": "^5.16.2"
   }
 }
