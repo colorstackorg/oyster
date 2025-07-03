@@ -12,7 +12,7 @@
     ]
   },
   "deploy": {
-    "startCommand": "bun start --filter=@oyster/admin-dashboard",
+    "startCommand": "bun --filter=@oyster/admin-dashboard start",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",

@@ -13,7 +13,7 @@
   },
   "deploy": {
     "numReplicas": 2,
-    "startCommand": "bun start --filter=@oyster/member-profile",
+    "startCommand": "bun --filter=@oyster/member-profile start",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
