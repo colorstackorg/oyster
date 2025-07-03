@@ -11,12 +11,6 @@ export default defineConfig({
       org: 'colorstack',
       project: 'admin-dashboard',
       sourcemaps: { filesToDeleteAfterUpload: ['**/*.map'] },
-
-      ...(process.env.RAILWAY_GIT_COMMIT_SHA && {
-        release: {
-          name: `admin-dashboard@${process.env.RAILWAY_GIT_COMMIT_SHA}`,
-        },
-      }),
     }),
   ],
   build: { sourcemap: true },

@@ -11,12 +11,6 @@ export default defineConfig({
       org: 'colorstack',
       project: 'member-profile',
       sourcemaps: { filesToDeleteAfterUpload: ['**/*.map'] },
-
-      ...(process.env.RAILWAY_GIT_COMMIT_SHA && {
-        release: {
-          name: `member-profile@${process.env.RAILWAY_GIT_COMMIT_SHA}`,
-        },
-      }),
     }),
   ],
   build: { sourcemap: true },
