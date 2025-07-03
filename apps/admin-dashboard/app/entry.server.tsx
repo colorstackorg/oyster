@@ -1,12 +1,16 @@
 import { createReadableStreamFromReadable } from '@react-router/node';
-import * as Sentry from '@sentry/remix';
+import * as Sentry from '@sentry/react-router';
 import dayjs from 'dayjs';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
 import timezone from 'dayjs/plugin/timezone.js';
 import utc from 'dayjs/plugin/utc.js';
 import isbot from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
-import { type EntryContext, ServerRouter } from 'react-router';
+import {
+  type EntryContext,
+  type HandleErrorFunction,
+  ServerRouter,
+} from 'react-router';
 import { PassThrough } from 'stream';
 
 import { getCookie } from '@oyster/utils';
@@ -30,7 +34,9 @@ Sentry.init({
 // Reject/cancel all pending promises after 5 seconds.
 export const streamTimeout = 5000;
 
-export default function handleRequest(
+export default Sentry.wrapSentryHandleRequest(handleRequest);
+
+function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
@@ -77,7 +83,7 @@ function handleBotRequest(
             })
           );
 
-          pipe(body);
+          pipe(Sentry.getMetaTagTransformer(body));
         },
         onShellError: (error: unknown) => {
           reject(error);
@@ -154,7 +160,7 @@ function handleBrowserRequest(
             })
           );
 
-          pipe(body);
+          pipe(Sentry.getMetaTagTransformer(body));
         },
         onShellError: (error: unknown) => {
           reject(error);
@@ -170,3 +176,11 @@ function handleBrowserRequest(
     setTimeout(abort, streamTimeout + 1000);
   });
 }
+
+export const handleError: HandleErrorFunction = (error, { request }) => {
+  // React Router may abort some interrupted requests, no need to log those.
+  if (!request.signal.aborted) {
+    Sentry.captureException(error);
+    console.error(error);
+  }
+};

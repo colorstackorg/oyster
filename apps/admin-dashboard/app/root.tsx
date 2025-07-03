@@ -1,6 +1,7 @@
-import { withSentry } from '@sentry/remix';
+import * as Sentry from '@sentry/react-router';
 import {
   data,
+  isRouteErrorResponse,
   Links,
   type LinksFunction,
   type LoaderFunctionArgs,
@@ -13,12 +14,14 @@ import {
 } from 'react-router';
 
 import { buildMeta } from '@oyster/core/react-router';
-import { Toast } from '@oyster/ui';
+import { Text, Toast } from '@oyster/ui';
 import uiStylesheet from '@oyster/ui/index.css?url';
 
 import { ENV } from '@/shared/constants.server';
 import { commitSession, getSession, SESSION } from '@/shared/session.server';
 import tailwindStylesheet from '@/tailwind.css?url';
+
+import { type Route } from '.react-router/types/app/+types/root';
 
 export const links: LinksFunction = () => {
   return [
@@ -57,7 +60,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
 }
 
-function App() {
+export default function App() {
   const { env, toast } = useLoaderData<typeof loader>();
 
   return (
@@ -90,4 +93,61 @@ function App() {
   );
 }
 
-export default withSentry(App);
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  let body: React.ReactNode | null = null;
+
+  if (isRouteErrorResponse(error)) {
+    body = (
+      <div className="flex items-center gap-4">
+        <Text variant="2xl">{error.status}</Text>
+
+        <div className="h-12 w-px bg-gray-300" />
+
+        <Text variant="sm">
+          {error.data || error.statusText || 'An unexpected error occurred.'}
+        </Text>
+      </div>
+    );
+  } else if (error && error instanceof Error) {
+    Sentry.captureException(error);
+
+    body = (
+      <div className="flex flex-col items-center gap-1 overflow-auto">
+        <Text variant="3xl" weight="500">
+          500
+        </Text>
+
+        <Text variant="sm">{error.message}</Text>
+
+        {error.stack && (
+          <pre className="mt-4 w-full overflow-auto rounded-md bg-gray-100 p-6 text-xs text-error">
+            {error.stack}
+          </pre>
+        )}
+      </div>
+    );
+  } else {
+    body = (
+      <Text variant="sm">
+        An unexpected error occurred. Please contact support.
+      </Text>
+    );
+  }
+
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+
+      <body>
+        <div className="flex h-screen w-screen items-center justify-center overflow-auto p-4">
+          {body}
+        </div>
+      </body>
+    </html>
+  );
+}

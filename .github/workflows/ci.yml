@@ -56,10 +56,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-
 
-      - name: Setup Node.js 22.17.0
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.17.0
+          node-version-file: .nvmrc
           cache: 'yarn'
 
       - name: Install dependencies
