@@ -5,7 +5,25 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 
-import { startBullWorkers } from '@oyster/core/api';
+import {
+  airtableWorker,
+  applicationWorker,
+  eventWorker,
+  feedWorker,
+  gamificationWorker,
+  mailchimpWorker,
+  memberEmailWorker,
+  memberWorker,
+  notificationWorker,
+  offerWorker,
+  onboardingSessionWorker,
+  oneTimeCodeWorker,
+  opportunityWorker,
+  peerHelpWorker,
+  profileWorker,
+  resumeReviewWorker,
+  slackWorker,
+} from '@oyster/core/api';
 
 import { healthRouter } from './routers/health.router';
 import { oauthRouter } from './routers/oauth.router';
@@ -75,4 +93,30 @@ function populateRawBody(
   if (RAW_BODY_WHITELIST.includes(req.path)) {
     req.rawBody = buffer;
   }
+}
+
+/**
+ * Starts all Bull workers for various modules in the application.
+ *
+ * Each worker is responsible for processing jobs in its respective queue,
+ * allowing for distributed and asynchronous task execution.
+ */
+function startBullWorkers(): void {
+  airtableWorker.run();
+  applicationWorker.run();
+  eventWorker.run();
+  feedWorker.run();
+  gamificationWorker.run();
+  mailchimpWorker.run();
+  memberWorker.run();
+  memberEmailWorker.run();
+  notificationWorker.run();
+  offerWorker.run();
+  onboardingSessionWorker.run();
+  oneTimeCodeWorker.run();
+  opportunityWorker.run();
+  peerHelpWorker.run();
+  profileWorker.run();
+  resumeReviewWorker.run();
+  slackWorker.run();
 }
