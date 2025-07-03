@@ -66,18 +66,20 @@ export async function sendEmail(input: SendEmailInput) {
 }
 
 /**
- * Returns `true` if the email has bounced at least once on Postmark.
+ * Returns `true` if the email has bounced at least once on Postmark. Returns
+ * `null` if we couldn't determine. Returns `false` if the email has never
+ * bounced.
  *
  * @param email - The email to check.
  * @returns Whether the email has bounced at least once on Postmark.
  *
  * @see https://postmarkapp.com/developer/api/bounce-api#bounces
  */
-export async function hasEmailBounced(email: string): Promise<boolean> {
+export async function hasEmailBounced(email: string): Promise<boolean | null> {
   if (!POSTMARK_API_TOKEN) {
     console.warn('POSTMARK_API_TOKEN is not set, returning false as fallback.');
 
-    return false;
+    return null;
   }
 
   const url = new URL(`${POSTMARK_API_URL}/bounces`);
@@ -87,7 +89,7 @@ export async function hasEmailBounced(email: string): Promise<boolean> {
   url.searchParams.set('inactive', 'true');
   url.searchParams.set('offset', '0');
 
-  const response = await fetch(url.toString(), {
+  const response = await fetch(url, {
     headers: {
       Accept: 'application/json',
       'X-Postmark-Server-Token': POSTMARK_API_TOKEN,
@@ -97,10 +99,11 @@ export async function hasEmailBounced(email: string): Promise<boolean> {
   const data = await response.json();
 
   if (!response.ok) {
-    reportException(
-      new Error(`Failed to get bounces for ${email}: ${response.statusText}`),
-      data
-    );
+    reportException(new Error(`Failed to get Postmark bounces for: ${email}`), {
+      data,
+      status: response.status,
+      statusText: response.statusText,
+    });
 
     return false;
   }
@@ -109,11 +112,11 @@ export async function hasEmailBounced(email: string): Promise<boolean> {
 
   if (!parseResult.success) {
     reportException(
-      new Error(`Failed to parse bounces for ${email}: ${response.statusText}`),
+      new Error(`Failed to parse Postmark bounces for: ${email}`),
       data
     );
 
-    return false;
+    return null;
   }
 
   return parseResult.data.TotalCount >= 1;
