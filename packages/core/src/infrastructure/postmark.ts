@@ -68,7 +68,6 @@ export async function sendEmail(input: SendEmailInput) {
 /**
  * Returns `true` if the email has bounced at least once on Postmark.
  *
- *
  * @param email - The email to check.
  * @returns Whether the email has bounced at least once on Postmark.
  *
