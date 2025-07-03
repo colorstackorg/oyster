@@ -14,7 +14,7 @@ import {
 } from 'react-router';
 
 import { buildMeta } from '@oyster/core/react-router';
-import { Toast } from '@oyster/ui';
+import { Text, Toast } from '@oyster/ui';
 import uiStylesheet from '@oyster/ui/index.css?url';
 
 import { ENV } from '@/shared/constants.server';
@@ -94,36 +94,60 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = 'Oops!';
-  let details = 'An unexpected error occurred.';
-  let stack: string | undefined;
+  let body: React.ReactNode | null = null;
 
   if (isRouteErrorResponse(error)) {
-    if (error.status === 404) {
-      message = '404';
-      details = 'The requested page could not be found.';
-    } else {
-      message = 'Error';
-      details = error.statusText || details;
-    }
+    body = (
+      <div className="flex items-center gap-4">
+        <Text variant="2xl">{error.status}</Text>
+
+        <div className="h-12 w-px bg-gray-300" />
+
+        <Text variant="sm">
+          {error.data || error.statusText || 'An unexpected error occurred.'}
+        </Text>
+      </div>
+    );
   } else if (error && error instanceof Error) {
     Sentry.captureException(error);
 
-    if (import.meta.env.DEV) {
-      details = error.message;
-      stack = error.stack;
-    }
+    body = (
+      <div className="flex flex-col items-center gap-1 overflow-auto">
+        <Text variant="3xl" weight="500">
+          500
+        </Text>
+
+        <Text variant="sm">{error.message}</Text>
+
+        {error.stack && (
+          <pre className="mt-4 w-full overflow-auto rounded-md bg-gray-100 p-6 text-xs text-error">
+            {error.stack}
+          </pre>
+        )}
+      </div>
+    );
+  } else {
+    body = (
+      <Text variant="sm">
+        An unexpected error occurred. Please contact support.
+      </Text>
+    );
   }
 
   return (
-    <main>
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre>
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+
+      <body>
+        <div className="flex h-screen w-screen items-center justify-center overflow-auto p-4">
+          {body}
+        </div>
+      </body>
+    </html>
   );
 }
