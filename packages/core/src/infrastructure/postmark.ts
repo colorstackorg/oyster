@@ -39,6 +39,7 @@ export async function sendEmail(input: SendEmailInput) {
   }
 
   const response = await fetch(`${POSTMARK_API_URL}/email`, {
+    method: 'POST',
     body: JSON.stringify(input),
     headers: {
       Accept: 'application/json',
