@@ -29,7 +29,6 @@ Follow these steps in order to get started with contributing to Oyster!
    installed, start the application!
 
 2. Install [Node.js](https://nodejs.org/en/download/package-manager) (>=v20).
-
    1. [Optional] Our recommendation is to use [`nvm`](https://nvm.sh) to install
       Node. The main benefit of `nvm` is that it allows you to quickly install
       and use different versions of Node on your machine.
@@ -131,17 +130,15 @@ Follow these steps in order to get started with contributing to Oyster!
 14. Start all of the applications in development:
 
     ```sh
-    bun dev:apps
+    bun dev
     ```
 
 15. Open up the applications in the browser.
-
     1. The Member Profile is running at http://localhost:3000.
     2. The Admin Dashboard is running at http://localhost:3001.
 
 16. Log into both applications. In the development environment, you can bypass
     the "real" authentication by doing the following:
-
     1. Click "Log In with OTP".
     2. Input the email that you seeded your database with.
     3. Input any 6-digit value (ie: 000000).

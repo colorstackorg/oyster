@@ -1,7 +1,6 @@
 import dedent from 'dedent';
 import { writeFileSync } from 'fs';
 import path from 'path';
-import prompt from 'prompt-sync';
 import { fileURLToPath } from 'url';
 
 import { run } from '@oyster/utils';
@@ -24,7 +23,13 @@ const timestamp = run(() => {
   );
 });
 
-const response = prompt()('Enter a migration name: ');
+const response = prompt('Enter a migration name: ');
+
+if (!response) {
+  console.log('No response from prompt. Aborting.');
+  process.exit(1);
+}
+
 const name = response.toLowerCase().trim();
 
 writeFileSync(

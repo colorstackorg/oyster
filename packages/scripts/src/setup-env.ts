@@ -1,7 +1,6 @@
 import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
-import prompt from 'prompt-sync';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -48,7 +47,7 @@ function getPermissionToOverwrite(): boolean {
     )
   );
 
-  const response = prompt()(`Please enter ${chalk.green('"y"')} to continue: `);
+  const response = prompt(`Please enter ${chalk.green('"y"')} to continue: `);
 
   const permission = response === 'y';
 

@@ -1,5 +1,4 @@
 import { sql, type Transaction } from 'kysely';
-import readline from 'readline';
 import { z } from 'zod';
 
 import { db } from '../shared/db';
@@ -12,9 +11,12 @@ if (IS_PRODUCTION) {
   throw new Error('Cannot seed database in non-development environment.');
 }
 
+main();
+
 async function main() {
   try {
-    await setEmailFromCommandLine();
+    setEmailFromCommandLine();
+
     console.log('(1/4) Email looks good. ✅');
 
     await migrate({ db });
@@ -37,8 +39,8 @@ async function main() {
 
 let email = '';
 
-async function setEmailFromCommandLine() {
-  const answer = await question(
+function setEmailFromCommandLine() {
+  const answer = prompt(
     'In order to log into the Member Profile and Admin Dashboard, you will need both a member record and an admin record. Please provide an email so we can create those for you.\n' +
       'Email: '
   );
@@ -58,20 +60,6 @@ async function setEmailFromCommandLine() {
   }
 
   email = result.data;
-}
-
-async function question(prompt: string) {
-  const cli = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  return new Promise<string>((resolve) => {
-    cli.question(prompt, (input) => {
-      resolve(input);
-      cli.close();
-    });
-  });
 }
 
 let counter = 0;
@@ -3092,5 +3080,3 @@ async function seed(trx: Transaction<DB>) {
     ])
     .execute();
 }
-
-main();
