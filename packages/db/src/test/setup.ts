@@ -13,9 +13,11 @@ import { createDatabaseConnection } from '../use-cases/create-database-connectio
 import { migrate } from '../use-cases/migrate';
 import { truncate } from '../use-cases/truncate';
 
-const db = createDatabaseConnection();
+let db: ReturnType<typeof createDatabaseConnection>;
 
 beforeAll(async () => {
+  console.log(process.env.DATABASE_URL);
+  db = createDatabaseConnection();
   await migrate({ db });
 });
 
