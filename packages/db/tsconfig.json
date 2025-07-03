@@ -4,7 +4,6 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "types": ["vitest/globals"]
+    "moduleResolution": "Bundler"
   }
 }

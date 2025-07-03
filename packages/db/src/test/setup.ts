@@ -1,3 +1,4 @@
+import { afterAll, afterEach, beforeAll, beforeEach, jest } from 'bun:test';
 import { type Transaction } from 'kysely';
 
 import {
@@ -7,15 +8,32 @@ import {
   student1,
   student1Emails,
 } from './constants';
-import { db } from '../shared/db';
 import { type DB } from '../shared/types';
+import { createDatabaseConnection } from '../use-cases/create-database-connection';
+import { migrate } from '../use-cases/migrate';
 import { truncate } from '../use-cases/truncate';
+
+let db: ReturnType<typeof createDatabaseConnection>;
+
+beforeAll(async () => {
+  db = createDatabaseConnection();
+  await migrate({ db });
+});
 
 beforeEach(async () => {
   await db.transaction().execute(async (trx) => {
     await truncate(trx);
     await seed(trx);
   });
+});
+
+afterEach(() => {
+  jest.clearAllMocks();
+  jest.restoreAllMocks();
+});
+
+afterAll(async () => {
+  await db.destroy();
 });
 
 // Helpers

@@ -60,22 +60,26 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: 'yarn'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Run database migrations and generate types
-        run: yarn db:migrate
+        run: bun db:migrate
 
       - name: Lint
-        run: yarn lint --filter=[$BASE_SHA]
+        run: bun lint --filter=[$BASE_SHA]
 
       - name: Check types
-        run: yarn type-check --filter=[$BASE_SHA]
+        run: bun type-check --filter=[$BASE_SHA]
 
       - name: Build all packages and applications
-        run: yarn build --filter=[$BASE_SHA]
+        run: bun run build --filter=[$BASE_SHA]
 
       - name: Run tests
-        run: yarn test --filter=[$BASE_SHA]
+        run: bun run test --filter=[$BASE_SHA]

@@ -1,6 +1,7 @@
 {
   "$schema": "https://turborepo.org/schema.json",
-  "pipeline": {
+  "globalEnv": ["DATABASE_URL", "REDIS_URL"],
+  "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["build/**", "dist/**"]
@@ -15,9 +16,6 @@
     },
     "lint:fix": {
       "dependsOn": ["^build"]
-    },
-    "start": {
-      "cache": false
     },
     "test": {},
     "type-check": {

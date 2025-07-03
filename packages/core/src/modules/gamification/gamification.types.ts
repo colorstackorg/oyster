@@ -72,7 +72,6 @@ export type CompletedActivity = z.infer<typeof CompletedActivity>;
 export const CreateActivityInput = Activity.pick({
   description: true,
   name: true,
-  period: true,
   points: true,
   type: true,
 });
@@ -80,7 +79,6 @@ export const CreateActivityInput = Activity.pick({
 export const EditActivityInput = Activity.pick({
   description: true,
   name: true,
-  period: true,
   points: true,
   type: true,
 });

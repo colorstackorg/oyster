@@ -1,34 +1,32 @@
 {
   "private": true,
-  "workspaces": {
-    "packages": [
-      "apps/*",
-      "config/*",
-      "packages/*"
-    ]
-  },
+  "workspaces": [
+    "apps/*",
+    "config/*",
+    "packages/*"
+  ],
   "scripts": {
     "build": "turbo run build --cache-dir=.turbo",
-    "db:migrate": "yarn workspace @oyster/db migrate",
-    "db:migrate:down": "yarn workspace @oyster/db migrate:down",
-    "db:migration:create": "yarn workspace @oyster/db migration:create",
-    "db:seed": "yarn workspace @oyster/db seed",
-    "db:types": "yarn workspace @oyster/db types",
     "dev": "turbo run dev --cache-dir=.turbo",
-    "dev:apps": "yarn dev --filter=./apps/*",
+    "lint": "turbo run lint --cache-dir=.turbo",
+    "lint:fix": "turbo run lint:fix --cache-dir=.turbo",
+    "test": "turbo run test --cache-dir=.turbo",
+    "type-check": "turbo run type-check --cache-dir=.turbo",
+    "db:migrate": "bun --filter @oyster/db migrate",
+    "db:migrate:down": "bun --filter @oyster/db migrate:down",
+    "db:migration:create": "bun --filter @oyster/db migration:create",
+    "db:seed": "bun --filter @oyster/db seed",
+    "db:types": "bun --filter @oyster/db types",
+    "dev:apps": "bun dev --filter=./apps/*",
     "dx:down": "docker compose down",
     "dx:nuke": "docker compose down --volumes --remove-orphans",
     "dx:up": "docker compose up -d",
-    "env:setup": "yarn workspace @oyster/scripts env:setup",
-    "lint": "turbo run lint --cache-dir=.turbo",
-    "lint:fix": "turbo run lint:fix --cache-dir=.turbo",
-    "prisma:setup": "yarn workspace @oyster/scripts prisma:setup",
-    "prisma:studio": "yarn workspace @oyster/db prisma:studio",
-    "start": "turbo run start --cache-dir=.turbo",
-    "test": "turbo run test --cache-dir=.turbo",
-    "type-check": "turbo run type-check --cache-dir=.turbo"
+    "env:setup": "bun --filter @oyster/scripts env:setup",
+    "prisma:setup": "bun --filter @oyster/scripts prisma:setup",
+    "prisma:studio": "bun --filter @oyster/db prisma:studio"
   },
   "devDependencies": {
+    "@types/bun": "^1.2.17",
     "prettier": "^3.2.5",
     "turbo": "latest",
     "typescript": "^5.4.2"
@@ -40,5 +38,5 @@
     "npm": ">=7.0.0",
     "node": ">=22 <22.12"
   },
-  "packageManager": "yarn@1.22.10"
+  "packageManager": "bun@1.0.0"
 }

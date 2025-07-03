@@ -1,27 +1,18 @@
-import { type SelectExpression } from 'kysely';
-
-import { db, type DB } from '@oyster/db';
+import { db } from '@oyster/db';
 
 import { type ListCompanyReviewsWhere } from '@/modules/employment/employment.types';
 
-type ListCompanyReviewsOptions<Selection> = {
+type ListCompanyReviewsOptions = {
   includeCompanies?: boolean;
   memberId: string;
-  select: Selection[];
   where: ListCompanyReviewsWhere;
 };
 
-export async function listCompanyReviews<
-  Selection extends SelectExpression<
-    DB,
-    'companyReviews' | 'students' | 'workExperiences'
-  >,
->({
+export async function listCompanyReviews({
   includeCompanies,
   memberId,
-  select,
   where,
-}: ListCompanyReviewsOptions<Selection>) {
+}: ListCompanyReviewsOptions) {
   const reviews = await db
     .selectFrom('companyReviews')
     .leftJoin(
@@ -31,7 +22,24 @@ export async function listCompanyReviews<
     )
     .leftJoin('students', 'students.id', 'workExperiences.studentId')
     .select([
-      ...select,
+      'companyReviews.anonymous',
+      'companyReviews.createdAt',
+      'companyReviews.id',
+      'companyReviews.rating',
+      'companyReviews.recommend',
+      'companyReviews.text',
+      'students.id as reviewerId',
+      'students.firstName as reviewerFirstName',
+      'students.lastName as reviewerLastName',
+      'students.profilePicture as reviewerProfilePicture',
+      'workExperiences.employmentType',
+      'workExperiences.endDate',
+      'workExperiences.locationCity',
+      'workExperiences.locationState',
+      'workExperiences.locationType',
+      'workExperiences.startDate',
+      'workExperiences.title',
+      'workExperiences.id as workExperienceId',
       (eb) => {
         return eb
           .selectFrom('companyReviewUpvotes')

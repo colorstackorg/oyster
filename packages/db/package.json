@@ -6,17 +6,17 @@
   "exports": {
     ".": "./src/index.ts",
     "./dist/db": "./dist/db.d.ts",
-    "./test/*": "./src/test/*",
-    "./test/constants": "./src/test/constants.ts"
+    "./test/constants": "./src/test/constants.ts",
+    "./test/setup": "./src/test/setup.ts"
   },
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "migrate": "tsx ./src/scripts/migrate.ts && yarn types",
-    "migrate:down": "tsx ./src/scripts/migrate.ts --down && yarn types",
+    "migrate": "tsx ./src/scripts/migrate.ts && bun types",
+    "migrate:down": "tsx ./src/scripts/migrate.ts --down && bun types",
     "migration:create": "tsx ./src/scripts/create-migration.ts",
     "prisma:studio": "prisma db pull && prisma studio",
-    "seed": "tsx ./src/scripts/seed.ts && yarn types",
+    "seed": "tsx ./src/scripts/seed.ts && bun types",
     "type-check": "tsc --noEmit",
     "types": "kysely-codegen --dialect=postgres --camel-case --out-file=./dist/db.d.ts"
   },
@@ -25,8 +25,8 @@
     "pg": "^8.8.0"
   },
   "devDependencies": {
-    "@oyster/eslint-config": "*",
-    "@oyster/tsconfig": "*",
+    "@oyster/eslint-config": "workspace:*",
+    "@oyster/tsconfig": "workspace:*",
     "@types/pg": "^8.11.2",
     "@types/prompt-sync": "^4.2.3",
     "commander": "^12.0.0",

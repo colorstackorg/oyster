@@ -1,3 +1,5 @@
+import { describe, expect, test } from 'bun:test';
+
 import { getCookie, run, sleep, toEscapedString, toTitleCase } from '.';
 
 describe(getCookie.name, () => {
