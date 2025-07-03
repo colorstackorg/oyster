@@ -33,9 +33,12 @@
     "turbo": "latest",
     "typescript": "^5.4.2"
   },
+  "resolutions": {
+    "vite": "^6.1.0"
+  },
   "engines": {
     "npm": ">=7.0.0",
-    "node": ">=22.17.0"
+    "node": ">=22 <22.12"
   },
   "packageManager": "yarn@1.22.10"
 }
