@@ -5,7 +5,8 @@ import { z } from 'zod';
 
 import { job } from '@oyster/core/bull';
 
-import { ENV } from '../env';
+import { BunResponse } from '../shared/bun-response';
+import { ENV } from '../shared/env';
 
 // Channel
 
@@ -189,7 +190,7 @@ export async function handleSlackEvent(req: BunRequest) {
   const headersResult = SlackRequestHeaders.safeParse(req.headers);
 
   if (!headersResult.success) {
-    return Response.json(
+    return BunResponse.json(
       { message: 'Failed to verify Slack request headers.' },
       { status: 400 }
     );
@@ -201,14 +202,14 @@ export async function handleSlackEvent(req: BunRequest) {
   const verified = verifyRequest(buffer, headersResult.data);
 
   if (!verified) {
-    return Response.json(
+    return BunResponse.json(
       { message: 'Failed to verify Slack request.' },
       { status: 400 }
     );
   }
 
   if (body.type === 'url_verification') {
-    return Response.json({
+    return BunResponse.json({
       challenge: body.challenge,
     });
   }
@@ -346,7 +347,7 @@ export async function handleSlackEvent(req: BunRequest) {
       console.error('Unknown event type!', body.event);
     });
 
-  return Response.json({});
+  return BunResponse.json({});
 }
 
 type SlackShortcutPayload = {
@@ -361,7 +362,7 @@ export async function handleSlackShortcut(req: BunRequest) {
   const headersResult = SlackRequestHeaders.safeParse(req.headers);
 
   if (!headersResult.success) {
-    return Response.json(
+    return BunResponse.json(
       { message: 'Failed to verify Slack request headers.' },
       { status: 400 }
     );
@@ -373,7 +374,7 @@ export async function handleSlackShortcut(req: BunRequest) {
   const verified = verifyRequest(buffer, headersResult.data);
 
   if (!verified) {
-    return Response.json(
+    return BunResponse.json(
       { message: 'Failed to verify Slack request.' },
       { status: 400 }
     );
@@ -400,9 +401,9 @@ export async function handleSlackShortcut(req: BunRequest) {
         console.error('Unknown interactivity type!', payload);
       });
 
-    return Response.json(null);
+    return BunResponse.json(null);
   } catch (e) {
-    return Response.json(
+    return BunResponse.json(
       { message: 'Failed to process Slack request.' },
       { status: 500 }
     );

@@ -8,6 +8,8 @@ import {
   saveGoogleDriveCredentials,
 } from '@oyster/core/api';
 
+import { BunResponse } from '../shared/bun-response';
+
 const AuthorizationCodeQuery = z.object({
   code: z.string().trim().min(1),
   state: z
@@ -25,7 +27,7 @@ export async function handleGoogleOauth(req: BunRequest) {
   const result = AuthorizationCodeQuery.safeParse(searchParams);
 
   if (!result.success) {
-    return new Response(null, { status: 400 });
+    return new BunResponse(null, { status: 400 });
   }
 
   const to = await handleLogin({
@@ -33,7 +35,7 @@ export async function handleGoogleOauth(req: BunRequest) {
     type: 'google',
   });
 
-  return Response.redirect(to);
+  return BunResponse.redirect(to);
 }
 
 // This route is used to save the credentials to access the Google Drive API
@@ -44,15 +46,15 @@ export async function handleGoogleDriveOauth(req: BunRequest) {
   const result = AuthorizationCodeQuery.safeParse(searchParams);
 
   if (!result.success) {
-    return new Response(null, { status: 400 });
+    return new BunResponse(null, { status: 400 });
   }
 
   try {
     await saveGoogleDriveCredentials(result.data.code);
 
-    return Response.json({ ok: true });
+    return BunResponse.json({ ok: true });
   } catch (e) {
-    return Response.json({ message: (e as Error).message }, { status: 500 });
+    return BunResponse.json({ message: (e as Error).message }, { status: 500 });
   }
 }
 
@@ -62,7 +64,7 @@ export async function handleSlackOauth(req: BunRequest) {
   const result = AuthorizationCodeQuery.safeParse(searchParams);
 
   if (!result.success) {
-    return new Response(null, { status: 400 });
+    return new BunResponse(null, { status: 400 });
   }
 
   try {
@@ -71,9 +73,9 @@ export async function handleSlackOauth(req: BunRequest) {
       type: 'slack',
     });
 
-    return Response.redirect(to);
+    return BunResponse.redirect(to);
   } catch (e) {
-    return Response.json({ message: (e as Error).message }, { status: 500 });
+    return BunResponse.json({ message: (e as Error).message }, { status: 500 });
   }
 }
 

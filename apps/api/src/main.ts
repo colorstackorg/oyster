@@ -1,10 +1,5 @@
 import './instrument';
 
-import bodyParser from 'body-parser';
-import cors from 'cors';
-import express from 'express';
-import helmet from 'helmet';
-
 import {
   airtableWorker,
   applicationWorker,
@@ -25,39 +20,36 @@ import {
   slackWorker,
 } from '@oyster/core/api';
 
-import { ENV } from './env';
 import {
   handleGoogleDriveOauth,
   handleGoogleOauth,
   handleSlackOauth,
 } from './handlers/oauth';
 import { handleSlackEvent, handleSlackShortcut } from './handlers/slack';
+import { BunResponse } from './shared/bun-response';
+import { ENV } from './shared/env';
 
 bootstrap();
 
 async function bootstrap() {
-  const app = express();
-
-  app.use(cors({ credentials: true, origin: true }));
-  app.use(helmet());
-  app.use(express.json());
-  app.use(bodyParser.urlencoded({ extended: true }));
-
   startBullWorkers();
 
   Bun.serve({
     port: ENV.PORT,
     routes: {
-      '/health': new Response('OK'),
+      '/health': new BunResponse('OK'),
       '/oauth/google': handleGoogleOauth,
       '/oauth/google/drive': handleGoogleDriveOauth,
       '/oauth/slack': handleSlackOauth,
       '/slack/events': { POST: handleSlackEvent },
       '/slack/shortcuts': { POST: handleSlackShortcut },
     },
+    fetch() {
+      return new BunResponse('Not Found', { status: 404 });
+    },
   });
 
-  console.log('API is up and running! 🚀');
+  console.log(`API is running on port ${ENV.PORT}! 🚀`);
 }
 
 /**
