@@ -1,4 +1,5 @@
 {
+  "name": "@oyster/root",
   "private": true,
   "workspaces": [
     "apps/*",
