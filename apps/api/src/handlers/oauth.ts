@@ -10,43 +10,56 @@ import {
 
 import { BunResponse } from '../shared/bun-response';
 
-const AuthorizationCodeQuery = z.object({
-  code: z.string().trim().min(1),
-  state: z
-    .string()
-    .optional()
-    .transform((value) => JSON.parse(value || '{}'))
-    .transform((value) => OAuthCodeState.parse(value)),
-});
+const OAuthSearchParams = z
+  .instanceof(URLSearchParams)
+  .transform(Object.fromEntries)
+  .pipe(
+    z.object({
+      code: z.string().trim().min(1),
+      state: z
+        .string()
+        .optional()
+        .transform((value) => JSON.parse(value || '{}'))
+        .transform((value) => OAuthCodeState.parse(value)),
+    })
+  );
 
-type AuthorizationCodeQuery = z.infer<typeof AuthorizationCodeQuery>;
+type OAuthSearchParams = z.infer<typeof OAuthSearchParams>;
 
 export async function handleGoogleOauth(req: BunRequest) {
-  const url = new URL(req.url);
-  const searchParams = Object.fromEntries(url.searchParams);
-  const result = AuthorizationCodeQuery.safeParse(searchParams);
+  const { searchParams } = new URL(req.url);
+  const result = OAuthSearchParams.safeParse(searchParams);
 
   if (!result.success) {
-    return new BunResponse(null, { status: 400 });
+    return BunResponse.json(
+      { message: 'Failed to validate request.' },
+      { status: 400 }
+    );
   }
 
-  const to = await handleLogin({
-    query: result.data,
-    type: 'google',
-  });
+  try {
+    const to = await handleLogin({
+      query: result.data,
+      type: 'google',
+    });
 
-  return BunResponse.redirect(to);
+    return BunResponse.redirect(to);
+  } catch (e) {
+    return BunResponse.json({ message: (e as Error).message }, { status: 500 });
+  }
 }
 
 // This route is used to save the credentials to access the Google Drive API
 // on behalf of the user.
 export async function handleGoogleDriveOauth(req: BunRequest) {
-  const url = new URL(req.url);
-  const searchParams = Object.fromEntries(url.searchParams);
-  const result = AuthorizationCodeQuery.safeParse(searchParams);
+  const { searchParams } = new URL(req.url);
+  const result = OAuthSearchParams.safeParse(searchParams);
 
   if (!result.success) {
-    return new BunResponse(null, { status: 400 });
+    return BunResponse.json(
+      { message: 'Failed to validate request.' },
+      { status: 400 }
+    );
   }
 
   try {
@@ -59,12 +72,14 @@ export async function handleGoogleDriveOauth(req: BunRequest) {
 }
 
 export async function handleSlackOauth(req: BunRequest) {
-  const url = new URL(req.url);
-  const searchParams = Object.fromEntries(url.searchParams);
-  const result = AuthorizationCodeQuery.safeParse(searchParams);
+  const { searchParams } = new URL(req.url);
+  const result = OAuthSearchParams.safeParse(searchParams);
 
   if (!result.success) {
-    return new BunResponse(null, { status: 400 });
+    return BunResponse.json(
+      { message: 'Failed to validate request.' },
+      { status: 400 }
+    );
   }
 
   try {
@@ -80,7 +95,7 @@ export async function handleSlackOauth(req: BunRequest) {
 }
 
 type HandleLoginInput = {
-  query: AuthorizationCodeQuery;
+  query: OAuthSearchParams;
   type: 'google' | 'slack';
 };
 
