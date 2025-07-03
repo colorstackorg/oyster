@@ -174,19 +174,21 @@ type SlackRequestBody =
 
 // Headers
 
-const SlackRequestHeaders = z.object({
-  'x-slack-request-timestamp': z.coerce.number().positive(),
-  'x-slack-signature': z.string().min(1),
-});
+const SlackRequestHeaders = z
+  .instanceof(Headers)
+  .transform(Object.fromEntries)
+  .pipe(
+    z.object({
+      'x-slack-request-timestamp': z.coerce.number().positive(),
+      'x-slack-signature': z.string().min(1),
+    })
+  );
 
 type SlackRequestHeaders = z.infer<typeof SlackRequestHeaders>;
 
 // Handlers
 
 export async function handleSlackEvent(req: BunRequest) {
-  const json = await req.json();
-  const body = json as SlackRequestBody;
-
   const headersResult = SlackRequestHeaders.safeParse(req.headers);
 
   if (!headersResult.success) {
@@ -196,8 +198,8 @@ export async function handleSlackEvent(req: BunRequest) {
     );
   }
 
-  const arrayBuffer = await req.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
+  const text = await req.text();
+  const buffer = Buffer.from(text);
 
   const verified = verifyRequest(buffer, headersResult.data);
 
@@ -207,6 +209,8 @@ export async function handleSlackEvent(req: BunRequest) {
       { status: 400 }
     );
   }
+
+  const body = JSON.parse(text) as SlackRequestBody;
 
   if (body.type === 'url_verification') {
     return BunResponse.json({
@@ -368,8 +372,8 @@ export async function handleSlackShortcut(req: BunRequest) {
     );
   }
 
-  const arrayBuffer = await req.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
+  const text = await req.text();
+  const buffer = Buffer.from(text);
 
   const verified = verifyRequest(buffer, headersResult.data);
 
@@ -380,10 +384,9 @@ export async function handleSlackShortcut(req: BunRequest) {
     );
   }
 
-  const body = await req.json();
-
   try {
-    const payload = JSON.parse(body.payload) as SlackShortcutPayload;
+    const body = JSON.parse(text);
+    const payload = body.payload as SlackShortcutPayload;
 
     match(payload)
       .with(
@@ -420,10 +423,7 @@ export async function handleSlackShortcut(req: BunRequest) {
  *
  * @param headers - Headers from the Slack event request.
  */
-function verifyRequest(
-  rawBody: Buffer | undefined,
-  headers: SlackRequestHeaders
-): boolean {
+function verifyRequest(buffer: Buffer, headers: SlackRequestHeaders): boolean {
   const {
     'x-slack-request-timestamp': requestTimestamp,
     'x-slack-signature': requestSignature,
@@ -446,7 +446,7 @@ function verifyRequest(
 
   const hashedSignature = crypto
     .createHmac('sha256', ENV.SLACK_SIGNING_SECRET)
-    .update(`v0:${requestTimestamp}:${rawBody}`, 'utf8')
+    .update(`v0:${requestTimestamp}:${buffer}`, 'utf8')
     .digest('hex');
 
   const expectedSignature = `v0=${hashedSignature}`;
