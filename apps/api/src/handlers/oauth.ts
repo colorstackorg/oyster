@@ -37,16 +37,12 @@ export async function handleGoogleOauth(req: BunRequest) {
     );
   }
 
-  try {
-    const to = await handleLogin({
-      query: result.data,
-      type: 'google',
-    });
+  const to = await handleLogin({
+    query: result.data,
+    type: 'google',
+  });
 
-    return BunResponse.redirect(to);
-  } catch (e) {
-    return BunResponse.json({ message: (e as Error).message }, { status: 500 });
-  }
+  return BunResponse.redirect(to);
 }
 
 // This route is used to save the credentials to access the Google Drive API
@@ -62,13 +58,9 @@ export async function handleGoogleDriveOauth(req: BunRequest) {
     );
   }
 
-  try {
-    await saveGoogleDriveCredentials(result.data.code);
+  await saveGoogleDriveCredentials(result.data.code);
 
-    return BunResponse.json({ ok: true });
-  } catch (e) {
-    return BunResponse.json({ message: (e as Error).message }, { status: 500 });
-  }
+  return BunResponse.json({ ok: true });
 }
 
 export async function handleSlackOauth(req: BunRequest) {
@@ -82,16 +74,12 @@ export async function handleSlackOauth(req: BunRequest) {
     );
   }
 
-  try {
-    const to = await handleLogin({
-      query: result.data,
-      type: 'slack',
-    });
+  const to = await handleLogin({
+    query: result.data,
+    type: 'slack',
+  });
 
-    return BunResponse.redirect(to);
-  } catch (e) {
-    return BunResponse.json({ message: (e as Error).message }, { status: 500 });
-  }
+  return BunResponse.redirect(to);
 }
 
 type HandleLoginInput = {

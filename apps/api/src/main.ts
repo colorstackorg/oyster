@@ -1,5 +1,7 @@
 import './instrument';
 
+import * as Sentry from '@sentry/bun';
+
 import {
   airtableWorker,
   applicationWorker,
@@ -34,7 +36,7 @@ bootstrap();
 async function bootstrap() {
   startBullWorkers();
 
-  Bun.serve({
+  const server = Bun.serve({
     port: ENV.PORT,
     routes: {
       '/health': new BunResponse('OK'),
@@ -47,9 +49,14 @@ async function bootstrap() {
     fetch() {
       return new BunResponse('Not Found', { status: 404 });
     },
+    error(e) {
+      Sentry.captureException(e);
+
+      return BunResponse.json({ message: e.message }, { status: 500 });
+    },
   });
 
-  console.log(`API is running on port ${ENV.PORT}! 🚀`);
+  console.log(`API is running on port ${server.port}! 🚀`);
 }
 
 /**

@@ -384,33 +384,26 @@ export async function handleSlackShortcut(req: BunRequest) {
     );
   }
 
-  try {
-    const body = JSON.parse(text);
-    const payload = body.payload as SlackShortcutPayload;
+  const body = JSON.parse(text);
+  const payload = body.payload as SlackShortcutPayload;
 
-    match(payload)
-      .with(
-        { type: 'message_action', callback_id: 'ask_colorstack_ai' },
-        (payload) => {
-          job('slack.message.answer', {
-            channelId: payload.channel.id,
-            text: payload.message.text,
-            threadId: payload.message.thread_ts || payload.message.ts,
-            userId: payload.user.id,
-          });
-        }
-      )
-      .otherwise(() => {
-        console.error('Unknown interactivity type!', payload);
-      });
+  match(payload)
+    .with(
+      { type: 'message_action', callback_id: 'ask_colorstack_ai' },
+      (payload) => {
+        job('slack.message.answer', {
+          channelId: payload.channel.id,
+          text: payload.message.text,
+          threadId: payload.message.thread_ts || payload.message.ts,
+          userId: payload.user.id,
+        });
+      }
+    )
+    .otherwise(() => {
+      console.error('Unknown interactivity type!', payload);
+    });
 
-    return BunResponse.json(null);
-  } catch (e) {
-    return BunResponse.json(
-      { message: 'Failed to process Slack request.' },
-      { status: 500 }
-    );
-  }
+  return BunResponse.json({});
 }
 
 // Helpers
