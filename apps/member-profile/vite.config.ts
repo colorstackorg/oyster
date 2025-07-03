@@ -10,8 +10,10 @@ export default defineConfig({
     sentryVitePlugin({
       org: 'colorstack',
       project: 'member-profile',
+      release: { name: process.env.SENTRY_RELEASE },
       sourcemaps: { filesToDeleteAfterUpload: ['**/*.map'] },
     }),
   ],
+  build: { sourcemap: true },
   server: { port: 3000 },
 });
