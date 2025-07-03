@@ -6,6 +6,7 @@ node_modules
 
 .env
 .env.test
+.env.sentry-build-plugin
 
 # Turborepo
 
