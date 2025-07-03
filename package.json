@@ -38,5 +38,5 @@
     "npm": ">=7.0.0",
     "node": ">=22 <22.12"
   },
-  "packageManager": "bun@1.0.0"
+  "packageManager": "bun@1.2.17"
 }
