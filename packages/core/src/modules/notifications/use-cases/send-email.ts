@@ -17,12 +17,10 @@ import {
   StudentRemovedEmail,
 } from '@oyster/email-templates';
 
+import { sendEmail as sendPostmarkEmail } from '@/infrastructure/postmark';
 import { getObject } from '@/infrastructure/s3';
 import { ENVIRONMENT } from '@/shared/env';
-import {
-  getNodemailerTransporter,
-  getPostmarkInstance,
-} from '../shared/email.utils';
+import { getNodemailerTransporter } from '../shared/email.utils';
 
 // Constants
 
@@ -63,8 +61,6 @@ export async function sendEmail(input: EmailTemplate) {
 }
 
 async function sendEmailWithPostmark(input: EmailTemplate) {
-  const postmark = getPostmarkInstance();
-
   const from = match(input.name)
     .with('application-accepted', () => FROM_JEHRON)
     .with('application-created', () => FROM_NOTIFICATIONS)
@@ -82,11 +78,10 @@ async function sendEmailWithPostmark(input: EmailTemplate) {
 
   const attachments = await getAttachments(input);
 
-  await postmark.sendEmail({
+  await sendPostmarkEmail({
     Attachments: attachments?.map((attachment) => {
       return {
         Content: attachment.content,
-        ContentID: null,
         ContentType: attachment.contentType,
         Name: attachment.name,
       };

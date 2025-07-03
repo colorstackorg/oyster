@@ -11,12 +11,12 @@ import {
   ApplicationBullJob,
   type GetBullJobData,
 } from '@/infrastructure/bull.types';
+import { hasEmailBounced } from '@/infrastructure/postmark';
 import {
   type ApplicationRejectionReason,
   ApplicationStatus,
   type ApplyInput,
 } from '@/modules/applications/applications.types';
-import { getPostmarkInstance } from '@/modules/notifications/shared/email.utils';
 import { ReferralStatus } from '@/modules/referrals/referrals.types';
 import { STUDENT_PROFILE_URL } from '@/shared/env';
 
@@ -638,15 +638,9 @@ async function shouldReject(
     return [true, 'email_already_used'];
   }
 
-  const postmark = getPostmarkInstance();
+  const bounced = await hasEmailBounced(application.email);
 
-  const bounces = await postmark.getBounces({
-    count: 1,
-    emailFilter: application.email,
-    inactive: true,
-  });
-
-  if (bounces.TotalCount >= 1) {
+  if (bounced) {
     return [true, 'email_bounced'];
   }
 
