@@ -16,7 +16,6 @@ import { truncate } from '../use-cases/truncate';
 let db: ReturnType<typeof createDatabaseConnection>;
 
 beforeAll(async () => {
-  console.log(process.env.DATABASE_URL);
   db = createDatabaseConnection();
   await migrate({ db });
 });
