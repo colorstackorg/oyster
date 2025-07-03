@@ -61,7 +61,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "script": "tsx src/script.ts",
-    "test": "bun test --env-file=./.env.test --preload=@oyster/db/test/setup",
+    "test": "bun test --preload=@oyster/db/test/setup",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
