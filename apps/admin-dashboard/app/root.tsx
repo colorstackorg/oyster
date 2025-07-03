@@ -1,6 +1,7 @@
-import { withSentry } from '@sentry/remix';
+import * as Sentry from '@sentry/react-router';
 import {
   data,
+  isRouteErrorResponse,
   Links,
   type LinksFunction,
   type LoaderFunctionArgs,
@@ -19,6 +20,8 @@ import uiStylesheet from '@oyster/ui/index.css?url';
 import { ENV } from '@/shared/constants.server';
 import { commitSession, getSession, SESSION } from '@/shared/session.server';
 import tailwindStylesheet from '@/tailwind.css?url';
+
+import { type Route } from '.react-router/types/app/+types/root';
 
 export const links: LinksFunction = () => {
   return [
@@ -57,7 +60,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
 }
 
-function App() {
+export default function App() {
   const { env, toast } = useLoaderData<typeof loader>();
 
   return (
@@ -90,4 +93,37 @@ function App() {
   );
 }
 
-export default withSentry(App);
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  let message = 'Oops!';
+  let details = 'An unexpected error occurred.';
+  let stack: string | undefined;
+
+  if (isRouteErrorResponse(error)) {
+    if (error.status === 404) {
+      message = '404';
+      details = 'The requested page could not be found.';
+    } else {
+      message = 'Error';
+      details = error.statusText || details;
+    }
+  } else if (error && error instanceof Error) {
+    Sentry.captureException(error);
+
+    if (import.meta.env.DEV) {
+      details = error.message;
+      stack = error.stack;
+    }
+  }
+
+  return (
+    <main>
+      <h1>{message}</h1>
+      <p>{details}</p>
+      {stack && (
+        <pre>
+          <code>{stack}</code>
+        </pre>
+      )}
+    </main>
+  );
+}

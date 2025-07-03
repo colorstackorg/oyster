@@ -24,7 +24,7 @@
     "@oyster/utils": "*",
     "@react-router/node": "^7.0.0",
     "@react-router/serve": "^7.0.0",
-    "@sentry/remix": "^7.37.1",
+    "@sentry/react-router": "^9.34.0",
     "dayjs": "^1.11.5",
     "ioredis": "^5.3.2",
     "is-ip": "^5.0.1",

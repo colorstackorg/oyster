@@ -1,7 +1,6 @@
-import * as Sentry from '@sentry/remix';
-import { startTransition, StrictMode, useEffect } from 'react';
+import * as Sentry from '@sentry/react-router';
+import { startTransition, StrictMode } from 'react';
 import { hydrateRoot } from 'react-dom/client';
-import { useLocation, useMatches } from 'react-router';
 import { HydratedRouter } from 'react-router/dom';
 
 Sentry.init({
@@ -9,15 +8,7 @@ Sentry.init({
   enabled: window.env.ENVIRONMENT !== 'development',
   environment: window.env.ENVIRONMENT,
   tracesSampleRate: 0.25,
-  integrations: [
-    new Sentry.BrowserTracing({
-      routingInstrumentation: Sentry.remixRouterInstrumentation(
-        useEffect,
-        useLocation,
-        useMatches
-      ),
-    }),
-  ],
+  integrations: [Sentry.reactRouterTracingIntegration()],
 });
 
 startTransition(() => {

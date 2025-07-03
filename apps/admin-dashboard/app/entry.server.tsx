@@ -1,5 +1,5 @@
 import { createReadableStreamFromReadable } from '@react-router/node';
-import * as Sentry from '@sentry/remix';
+import * as Sentry from '@sentry/react-router';
 import dayjs from 'dayjs';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
 import timezone from 'dayjs/plugin/timezone.js';
@@ -77,7 +77,7 @@ function handleBotRequest(
             })
           );
 
-          pipe(body);
+          pipe(Sentry.getMetaTagTransformer(body));
         },
         onShellError: (error: unknown) => {
           reject(error);
@@ -154,7 +154,7 @@ function handleBrowserRequest(
             })
           );
 
-          pipe(body);
+          pipe(Sentry.getMetaTagTransformer(body));
         },
         onShellError: (error: unknown) => {
           reject(error);
