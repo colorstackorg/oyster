@@ -384,8 +384,9 @@ export async function handleSlackShortcut(req: BunRequest) {
     );
   }
 
-  const body = JSON.parse(text);
-  const payload = body.payload as SlackShortcutPayload;
+  const searchParams = new URLSearchParams(text);
+  const body = Object.fromEntries(searchParams);
+  const payload = JSON.parse(body.payload) as SlackShortcutPayload;
 
   match(payload)
     .with(
