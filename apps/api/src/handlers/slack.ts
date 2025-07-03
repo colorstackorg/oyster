@@ -1,41 +1,219 @@
+import { type BunRequest } from 'bun';
 import crypto from 'crypto';
-import express from 'express';
 import { match } from 'ts-pattern';
+import { z } from 'zod';
 
 import { job } from '@oyster/core/bull';
 
-import { type SlackRequestBody, SlackRequestHeaders } from './slack.types';
+import { BunResponse } from '../shared/bun-response';
 import { ENV } from '../shared/env';
-import { type RawBodyRequest } from '../shared/types';
 
-// Routers
+// Channel
 
-export const slackEventRouter = express.Router();
-export const slackShortcutsRouter = express.Router();
+type SlackChannelArchivedEvent = {
+  channel: string;
+  type: 'channel_archive';
+};
+
+type SlackChannelCreatedEvent = {
+  channel: {
+    created: number;
+    id: string;
+    name: string;
+  };
+  type: 'channel_created';
+};
+
+type SlackChannelDeletedEvent = {
+  channel: string;
+  type: 'channel_deleted';
+};
+
+type SlackChannelRenamedEvent = {
+  channel: {
+    id: string;
+    name: string;
+  };
+  type: 'channel_rename';
+};
+
+type SlackChannelUnarchivedEvent = {
+  channel: string;
+  type: 'channel_unarchive';
+};
+
+// Emoji
+
+type SlackEmojiChangedEvent = {
+  type: 'emoji_changed';
+  event_ts: string;
+} & (
+  | { subtype: 'add'; name: string; value: string }
+  | { subtype: 'remove'; names: string[] }
+  | { subtype: 'rename'; old_name: string; new_name: string; value: string }
+);
+
+// Message
+
+type SlackMessageChangedEvent = {
+  channel: string;
+  message: {
+    hidden?: boolean;
+    text: string;
+    ts: string;
+  };
+  subtype: 'message_changed';
+  type: 'message';
+};
+
+type SlackMessageDeletedEvent = {
+  channel: string;
+  previous_message: {
+    ts: string;
+  };
+  subtype: 'message_deleted';
+  type: 'message';
+};
+
+/**
+ * @see https://api.slack.com/events/message
+ * @see https://api.slack.com/events/message/message_replied
+ */
+type SlackMessageSentEvent = {
+  app_id?: string;
+  bot_id?: string;
+  channel: string;
+  files?: unknown[];
+  message?: {
+    // Only present if the message is a reply.
+    reply_count?: number;
+  };
+  subtype: undefined;
+  text: string;
+  thread_ts: string | undefined;
+  ts: string;
+  type: 'message';
+  user: string;
+};
+
+// Reaction
+
+type SlackReactionAddedEvent = {
+  item: {
+    channel: string;
+    ts: string;
+    type: 'file' | 'message' | 'file_comment';
+  };
+  reaction: string;
+  type: 'reaction_added';
+  user: string;
+};
+
+type SlackReactionRemovedEvent = {
+  item: {
+    channel: string;
+    ts: string;
+    type: 'file' | 'message' | 'file_comment';
+  };
+  reaction: string;
+  type: 'reaction_removed';
+  user: string;
+};
+
+// Team
+
+type SlackTeamJoinEvent = {
+  type: 'team_join';
+  user: {
+    id: string;
+    profile: {
+      email: string;
+      real_name: string;
+    };
+  };
+};
+
+// User
+
+type SlackUserProfileChangedEvent = {
+  type: 'user_profile_changed';
+  user: {
+    id: string;
+    profile: {
+      is_custom_image: boolean;
+      image_512: string;
+    };
+  };
+};
+
+// Body
+
+type SlackRequestBody =
+  | {
+      challenge: string;
+      token: string;
+      type: 'url_verification';
+    }
+  | {
+      event:
+        | SlackChannelArchivedEvent
+        | SlackChannelCreatedEvent
+        | SlackChannelDeletedEvent
+        | SlackChannelRenamedEvent
+        | SlackChannelUnarchivedEvent
+        | SlackEmojiChangedEvent
+        | SlackMessageChangedEvent
+        | SlackMessageDeletedEvent
+        | SlackMessageSentEvent
+        | SlackReactionAddedEvent
+        | SlackReactionRemovedEvent
+        | SlackTeamJoinEvent
+        | SlackUserProfileChangedEvent;
+      type: 'event_callback';
+    };
+
+// Headers
+
+const SlackRequestHeaders = z
+  .instanceof(Headers)
+  .transform(Object.fromEntries)
+  .pipe(
+    z.object({
+      'x-slack-request-timestamp': z.coerce.number().positive(),
+      'x-slack-signature': z.string().min(1),
+    })
+  );
+
+type SlackRequestHeaders = z.infer<typeof SlackRequestHeaders>;
 
 // Handlers
 
-slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
-  const body = req.body as SlackRequestBody;
-
+export async function handleSlackEvent(req: BunRequest) {
   const headersResult = SlackRequestHeaders.safeParse(req.headers);
 
   if (!headersResult.success) {
-    return res.status(400).json({
-      message: 'Failed to verify Slack request headers.',
-    });
+    return BunResponse.json(
+      { message: 'Failed to verify Slack request headers.' },
+      { status: 400 }
+    );
   }
 
-  const verified = verifyRequest(req.rawBody, headersResult.data);
+  const text = await req.text();
+  const buffer = Buffer.from(text);
+
+  const verified = verifyRequest(buffer, headersResult.data);
 
   if (!verified) {
-    return res.status(400).json({
-      message: 'Failed to verify Slack request.',
-    });
+    return BunResponse.json(
+      { message: 'Failed to verify Slack request.' },
+      { status: 400 }
+    );
   }
 
+  const body = JSON.parse(text) as SlackRequestBody;
+
   if (body.type === 'url_verification') {
-    return res.status(200).json({
+    return BunResponse.json({
       challenge: body.challenge,
     });
   }
@@ -173,8 +351,8 @@ slackEventRouter.post('/slack/events', async (req: RawBodyRequest, res) => {
       console.error('Unknown event type!', body.event);
     });
 
-  return res.status(200).json({});
-});
+  return BunResponse.json({});
+}
 
 type SlackShortcutPayload = {
   callback_id: 'ask_colorstack_ai';
@@ -184,52 +362,50 @@ type SlackShortcutPayload = {
   user: { id: string };
 };
 
-slackShortcutsRouter.post(
-  '/slack/shortcuts',
-  async (req: RawBodyRequest, res) => {
-    const headersResult = SlackRequestHeaders.safeParse(req.headers);
+export async function handleSlackShortcut(req: BunRequest) {
+  const headersResult = SlackRequestHeaders.safeParse(req.headers);
 
-    if (!headersResult.success) {
-      return res.status(400).json({
-        message: 'Failed to verify Slack request headers.',
-      });
-    }
-
-    const verified = verifyRequest(req.rawBody, headersResult.data);
-
-    if (!verified) {
-      return res.status(400).json({
-        message: 'Failed to verify Slack request.',
-      });
-    }
-
-    try {
-      const payload = JSON.parse(req.body.payload) as SlackShortcutPayload;
-
-      match(payload)
-        .with(
-          { type: 'message_action', callback_id: 'ask_colorstack_ai' },
-          (payload) => {
-            job('slack.message.answer', {
-              channelId: payload.channel.id,
-              text: payload.message.text,
-              threadId: payload.message.thread_ts || payload.message.ts,
-              userId: payload.user.id,
-            });
-          }
-        )
-        .otherwise(() => {
-          console.error('Unknown interactivity type!', payload);
-        });
-
-      return res.status(200).json({});
-    } catch (e) {
-      return res.status(500).json({
-        message: 'Failed to process Slack request.',
-      });
-    }
+  if (!headersResult.success) {
+    return BunResponse.json(
+      { message: 'Failed to verify Slack request headers.' },
+      { status: 400 }
+    );
   }
-);
+
+  const text = await req.text();
+  const buffer = Buffer.from(text);
+
+  const verified = verifyRequest(buffer, headersResult.data);
+
+  if (!verified) {
+    return BunResponse.json(
+      { message: 'Failed to verify Slack request.' },
+      { status: 400 }
+    );
+  }
+
+  const searchParams = new URLSearchParams(text);
+  const body = Object.fromEntries(searchParams);
+  const payload = JSON.parse(body.payload) as SlackShortcutPayload;
+
+  match(payload)
+    .with(
+      { type: 'message_action', callback_id: 'ask_colorstack_ai' },
+      (payload) => {
+        job('slack.message.answer', {
+          channelId: payload.channel.id,
+          text: payload.message.text,
+          threadId: payload.message.thread_ts || payload.message.ts,
+          userId: payload.user.id,
+        });
+      }
+    )
+    .otherwise(() => {
+      console.error('Unknown interactivity type!', payload);
+    });
+
+  return BunResponse.json({});
+}
 
 // Helpers
 
@@ -241,10 +417,7 @@ slackShortcutsRouter.post(
  *
  * @param headers - Headers from the Slack event request.
  */
-function verifyRequest(
-  rawBody: Buffer | undefined,
-  headers: SlackRequestHeaders
-): boolean {
+function verifyRequest(buffer: Buffer, headers: SlackRequestHeaders): boolean {
   const {
     'x-slack-request-timestamp': requestTimestamp,
     'x-slack-signature': requestSignature,
@@ -267,7 +440,7 @@ function verifyRequest(
 
   const hashedSignature = crypto
     .createHmac('sha256', ENV.SLACK_SIGNING_SECRET)
-    .update(`v0:${requestTimestamp}:${rawBody}`, 'utf8')
+    .update(`v0:${requestTimestamp}:${buffer}`, 'utf8')
     .digest('hex');
 
   const expectedSignature = `v0=${hashedSignature}`;

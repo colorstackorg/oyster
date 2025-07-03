@@ -1,6 +1,5 @@
 {
   "$schema": "https://turborepo.org/schema.json",
-  "globalEnv": ["DATABASE_URL", "REDIS_URL"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -17,7 +16,9 @@
     "lint:fix": {
       "dependsOn": ["^build"]
     },
-    "test": {},
+    "test": {
+      "env": ["DATABASE_URL", "REDIS_URL"]
+    },
     "type-check": {
       "dependsOn": ["^build"]
     }

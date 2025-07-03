@@ -13,6 +13,7 @@
     "lint:fix": "turbo run lint:fix --cache-dir=.turbo",
     "test": "turbo run test --cache-dir=.turbo",
     "type-check": "turbo run type-check --cache-dir=.turbo",
+    "api:tunnel": "bun ./scripts/run-tunnel.ts",
     "db:migrate": "bun --filter @oyster/db migrate",
     "db:migrate:down": "bun --filter @oyster/db migrate:down",
     "db:migration:create": "cd packages/db && bun migration:create",
