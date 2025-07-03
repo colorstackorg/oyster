@@ -105,7 +105,7 @@ export async function hasEmailBounced(email: string): Promise<boolean | null> {
       statusText: response.statusText,
     });
 
-    return false;
+    return null;
   }
 
   const parseResult = z.object({ TotalCount: z.number() }).safeParse(data);
