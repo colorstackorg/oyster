@@ -80,7 +80,6 @@
     "nanoid": "^3.0.0",
     "nodemailer": "^6.9.13",
     "pdf-parse": "^1.1.1",
-    "postmark": "^3.0.15",
     "react-router": "^7.0.0",
     "ua-parser-js": "^1.0.36",
     "user-agents": "^1.1.478",
