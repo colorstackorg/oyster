@@ -8,8 +8,10 @@ export default defineConfig({
     reactRouter(),
     tsconfigPaths(),
     sentryVitePlugin({
-      org: 'colorstack',
-      project: 'admin-dashboard',
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      disable: !process.env.SENTRY_AUTH_TOKEN,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
       sourcemaps: { filesToDeleteAfterUpload: ['**/*.map'] },
     }),
   ],
