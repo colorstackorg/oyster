@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "build": "react-router build",
-    "dev": "NODE_OPTIONS='--import ./app/instrument.server.mjs' react-router dev",
+    "dev": "react-router dev",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "start": "NODE_OPTIONS='--import ./app/instrument.server.mjs' react-router-serve ./build/server/index.js",
