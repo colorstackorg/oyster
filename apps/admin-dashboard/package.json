@@ -10,7 +10,7 @@
     "dev": "react-router dev",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "start": "react-router-serve ./build/server/index.js",
+    "start": "NODE_OPTIONS='--import ./app/instrument.server.mjs' react-router-serve ./build/server/index.js",
     "type-check": "react-router typegen && tsc --noEmit"
   },
   "dependencies": {
@@ -43,7 +43,6 @@
     "@oyster/tsconfig": "workspace:*",
     "@react-router/dev": "^7.0.0",
     "@react-router/fs-routes": "^7.0.0",
-    "@sentry/vite-plugin": "^3.5.0",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/node": "^18.7.18",
     "@types/qrcode": "^1.5.5",

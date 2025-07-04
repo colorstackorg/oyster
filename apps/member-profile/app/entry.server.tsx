@@ -20,7 +20,7 @@ import { getCookie, run } from '@oyster/utils';
 // Importing this file ensures that our application has all of the environment
 // variables necessary to run. If any are missing, this file will throw an error
 // and crash the application.
-import { ENV } from '@/shared/constants.server';
+import '@/shared/constants.server';
 
 run(() => {
   dayjs.extend(utc);
@@ -48,13 +48,6 @@ run(() => {
       yy: '%dy',
     },
   });
-});
-
-Sentry.init({
-  dsn: ENV.SENTRY_DSN,
-  enabled: ENV.ENVIRONMENT !== 'development',
-  environment: ENV.ENVIRONMENT,
-  tracesSampleRate: 0.5,
 });
 
 // Reject/cancel all pending promises after 5 seconds.
