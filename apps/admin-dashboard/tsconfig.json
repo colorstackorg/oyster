@@ -13,7 +13,8 @@
     "global.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".react-router/types/**/*"
+    ".react-router/types/**/*",
+    "app/instrument.server.mjs"
   ],
   "exclude": ["node_modules"]
 }
