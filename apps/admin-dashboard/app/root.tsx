@@ -109,23 +109,45 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       </div>
     );
   } else if (error && error instanceof Error) {
-    Sentry.captureException(error);
+    // Check if this is a 404 error (route not found) - don't send to Sentry
+    const is404Error = error.message.includes('404') || 
+                      error.message.toLowerCase().includes('not found') ||
+                      error.message.toLowerCase().includes('no route');
+    
+    if (!is404Error) {
+      Sentry.captureException(error);
+    }
 
-    body = (
-      <div className="flex flex-col items-center gap-1 overflow-auto">
-        <Text variant="3xl" weight="500">
-          500
-        </Text>
+    // For 404 errors, show a 404 page instead of 500
+    if (is404Error) {
+      body = (
+        <div className="flex items-center gap-4">
+          <Text variant="2xl">404</Text>
 
-        <Text variant="sm">{error.message}</Text>
+          <div className="h-12 w-px bg-gray-300" />
 
-        {error.stack && (
-          <pre className="mt-4 w-full overflow-auto rounded-md bg-gray-100 p-6 text-xs text-error">
-            {error.stack}
-          </pre>
-        )}
-      </div>
-    );
+          <Text variant="sm">
+            The page you're looking for doesn't exist.
+          </Text>
+        </div>
+      );
+    } else {
+      body = (
+        <div className="flex flex-col items-center gap-1 overflow-auto">
+          <Text variant="3xl" weight="500">
+            500
+          </Text>
+
+          <Text variant="sm">{error.message}</Text>
+
+          {error.stack && (
+            <pre className="mt-4 w-full overflow-auto rounded-md bg-gray-100 p-6 text-xs text-error">
+              {error.stack}
+            </pre>
+          )}
+        </div>
+      );
+    }
   } else {
     body = (
       <Text variant="sm">
