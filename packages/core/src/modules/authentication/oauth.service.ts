@@ -29,12 +29,13 @@ export type ExchangeCodeForTokenInput = {
 
 export type OAuthTokens = {
   accessToken: string;
-  refreshToken: string;
 };
 
-export type OAuthProfile = {
-  email: string;
-};
+export const OAuthProfile = z.object({
+  email: z.string().email(),
+});
+
+export type OAuthProfile = z.infer<typeof OAuthProfile>;
 
 export interface OAuthService {
   exchangeCodeForToken(args: ExchangeCodeForTokenInput): Promise<OAuthTokens>;
