@@ -1,41 +1,100 @@
-import { type OAuth2Client } from 'google-auth-library';
-import { google } from 'googleapis';
-
+import { reportException } from '@/infrastructure/sentry';
 import { API_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '@/shared/env';
 import {
   type ExchangeCodeForTokenInput,
+  OAuthProfile,
   type OAuthService,
+  OAuthTokenResponse,
 } from '../oauth.service';
 
 export class GoogleOAuthService implements OAuthService {
-  private client: OAuth2Client;
-
-  constructor() {
-    this.client = new google.auth.OAuth2({
-      clientId: GOOGLE_CLIENT_ID,
-      clientSecret: GOOGLE_CLIENT_SECRET,
-      redirectUri: `${API_URL}/oauth/google`,
-    });
-  }
-
   async exchangeCodeForToken(input: ExchangeCodeForTokenInput) {
-    const { tokens } = await this.client.getToken(input.code);
+    const body = new URLSearchParams({
+      client_id: GOOGLE_CLIENT_ID,
+      client_secret: GOOGLE_CLIENT_SECRET,
+      code: input.code,
+      grant_type: 'authorization_code',
+      redirect_uri: `${API_URL}/oauth/google`,
+    });
+
+    const response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      body,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
+
+    const json = await response.json();
+
+    if (!response.ok) {
+      const error = new Error('Failed to exchange Google code for token.');
+
+      reportException(error, {
+        json,
+        status: response.status,
+        statusText: response.statusText,
+      });
+
+      throw error;
+    }
+
+    const result = OAuthTokenResponse.pick({ access_token: true }).safeParse(
+      json
+    );
+
+    if (!result.success) {
+      const error = new Error('Failed to parse Google token response.');
+
+      reportException(error, {
+        json,
+        status: response.status,
+        statusText: response.statusText,
+      });
+
+      throw error;
+    }
 
     return {
-      accessToken: tokens.access_token || '',
-      refreshToken: tokens.refresh_token || '',
+      accessToken: result.data.access_token,
     };
   }
 
   async getProfile(token: string) {
-    const { email = '' } = await this.client.getTokenInfo(token);
+    const url = new URL('https://oauth2.googleapis.com/tokeninfo');
 
-    if (!email) {
-      throw Error('Could not find Google profile from token.');
+    url.searchParams.set('access_token', token);
+
+    const response = await fetch(url);
+
+    const json = await response.json();
+
+    if (!response.ok) {
+      const error = new Error('Failed to get Google token info.');
+
+      reportException(error, {
+        json,
+        status: response.status,
+        statusText: response.statusText,
+      });
+
+      throw error;
+    }
+
+    const result = OAuthProfile.safeParse(json);
+
+    if (!result.success) {
+      const error = new Error('Failed to parse Google token info.');
+
+      reportException(error, {
+        json,
+        status: response.status,
+        statusText: response.statusText,
+      });
+
+      throw error;
     }
 
     return {
-      email,
+      email: result.data.email,
     };
   }
 }
