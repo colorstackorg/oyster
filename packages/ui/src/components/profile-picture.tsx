@@ -11,7 +11,7 @@ type ProfilePictureProps = {
 
 // TODO: Add resilience to the component if image is not found.
 export function ProfilePicture({
-  initials = 'XX',
+  initials,
   size = '48',
   src,
 }: ProfilePictureProps) {
@@ -32,6 +32,10 @@ export function ProfilePicture({
         <img alt="Profile Picture" className={className} src={src} />
       </div>
     );
+  }
+
+  if (!initials) {
+    initials = 'XX';
   }
 
   return (
