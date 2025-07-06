@@ -35,7 +35,7 @@ export function ProfilePicture({
   }
 
   if (!initials) {
-    initials = 'XX';
+    initials = 'AA';
   }
 
   return (
