@@ -98,12 +98,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         select: [
           'codingLanguages',
           'educationId',
+          'educationLevel',
           'employmentSearchStatus',
+          'graduationSeason',
+          'graduationYear',
           'memberId',
           'preferredCompany1',
           'preferredCompany2',
           'preferredCompany3',
           'preferredRoles',
+          'universityLocation',
         ],
         where: { memberId, resumeBookId: id },
       }),
@@ -737,7 +741,7 @@ function EducationFieldset() {
   const { errors } = getErrors(useActionData<typeof action>());
 
   const [showManualEducation, setShowManualEducation] = useState<boolean>(
-    !educations.length
+    !educations.length || (!!submission && !submission.educationId)
   );
 
   return (
@@ -751,7 +755,9 @@ function EducationFieldset() {
           required
         >
           <Select
-            defaultValue={submission?.educationId || undefined}
+            defaultValue={
+              submission ? submission.educationId || '_' : undefined
+            }
             id="educationId"
             name="educationId"
             onChange={(e) => {
@@ -784,11 +790,9 @@ function EducationFieldset() {
 
       {showManualEducation && (
         <div className="flex flex-col gap-4">
-          {!educations.length && (
-            <Text color="gray-500">
-              Tell us about your highest level of education.
-            </Text>
-          )}
+          <Text color="gray-500">
+            Tell us about your highest level of education.
+          </Text>
 
           <div className="grid grid-cols-2 gap-4">
             <Field
@@ -797,42 +801,15 @@ function EducationFieldset() {
               labelFor="educationLevel"
               required
             >
-              <Select id="educationLevel" name="educationLevel" required>
+              <Select
+                defaultValue={submission?.educationLevel || undefined}
+                id="educationLevel"
+                name="educationLevel"
+                required
+              >
                 <option value="Undergraduate">Undergraduate</option>
                 <option value="Masters">Masters</option>
                 <option value="PhD">PhD</option>
-              </Select>
-            </Field>
-
-            <Field
-              error={errors.graduationSeason}
-              label="Graduation Season"
-              labelFor="graduationSeason"
-              required
-            >
-              <Select id="graduationSeason" name="graduationSeason" required>
-                <option value="Spring">Spring</option>
-                <option value="Fall">Fall</option>
-              </Select>
-            </Field>
-
-            <Field
-              error={errors.graduationYear}
-              label="Graduation Year"
-              labelFor="graduationYear"
-              required
-            >
-              <Select id="graduationYear" name="graduationYear" required>
-                {Array.from(
-                  { length: new Date().getFullYear() - 2018 + 6 },
-                  (_, i) => {
-                    return (
-                      <option key={i} value={2018 + i}>
-                        {2018 + i}
-                      </option>
-                    );
-                  }
-                )}
               </Select>
             </Field>
 
@@ -843,6 +820,7 @@ function EducationFieldset() {
               required
             >
               <Select
+                defaultValue={submission?.universityLocation || undefined}
                 id="universityLocation"
                 name="universityLocation"
                 required
@@ -901,6 +879,48 @@ function EducationFieldset() {
                 <option value="WI">WI</option>
                 <option value="WV">WV</option>
                 <option value="WY">WY</option>
+              </Select>
+            </Field>
+
+            <Field
+              error={errors.graduationSeason}
+              label="Graduation Season"
+              labelFor="graduationSeason"
+              required
+            >
+              <Select
+                defaultValue={submission?.graduationSeason || undefined}
+                id="graduationSeason"
+                name="graduationSeason"
+                required
+              >
+                <option value="Spring">Spring</option>
+                <option value="Fall">Fall</option>
+              </Select>
+            </Field>
+
+            <Field
+              error={errors.graduationYear}
+              label="Graduation Year"
+              labelFor="graduationYear"
+              required
+            >
+              <Select
+                defaultValue={submission?.graduationYear || undefined}
+                id="graduationYear"
+                name="graduationYear"
+                required
+              >
+                {Array.from(
+                  { length: new Date().getFullYear() - 2018 + 6 },
+                  (_, i) => {
+                    return (
+                      <option key={i} value={2018 + i}>
+                        {2018 + i}
+                      </option>
+                    );
+                  }
+                )}
               </Select>
             </Field>
           </div>

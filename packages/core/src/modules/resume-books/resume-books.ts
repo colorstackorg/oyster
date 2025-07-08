@@ -585,52 +585,66 @@ export async function submitResume({
 
   // All education related fields are calculated here.
 
-  let educationLevel: string;
-  let graduationSeason: string;
-  let graduationYear: number;
-  let universityLocation: string;
-
-  if (input.educationType === 'selected') {
-    if (!education) {
-      throw new Error(
-        `The selected education was not found: ${input.educationId}`
-      );
-    }
-
-    educationLevel = run(() => {
-      const graduated = dayjs().isAfter(education.endDate);
-
-      if (graduated) {
-        return 'Early Career Professional';
+  const {
+    educationLevel,
+    graduationSeason,
+    graduationYear,
+    universityLocation,
+  } = run(() => {
+    if (input.educationType === 'selected') {
+      if (!education) {
+        throw new Error(`The selected education was not found.`);
       }
 
-      return match(education.degreeType as DegreeType)
-        .with('associate', 'bachelors', 'certificate', () => 'Undergraduate')
-        .with('doctoral', 'professional', () => 'PhD')
-        .with('masters', () => 'Masters')
-        .exhaustive();
-    });
+      const educationLevel = run(() => {
+        const graduated = dayjs().isAfter(education.endDate);
 
-    graduationSeason =
-      education.endDate && education.endDate.getMonth() >= 6
-        ? 'Fall'
-        : 'Spring';
+        if (graduated) {
+          return 'Early Career Professional';
+        }
 
-    // If the education end date is not present, we'll use the graduation
-    // year from the member record.
-    graduationYear =
-      education?.endDate?.getFullYear() || parseInt(member.graduationYear);
+        return match(education.degreeType as DegreeType)
+          .with('associate', 'bachelors', 'certificate', () => 'Undergraduate')
+          .with('doctoral', 'professional', () => 'PhD')
+          .with('masters', () => 'Masters')
+          .exhaustive();
+      });
 
-    universityLocation = education.addressState || 'N/A';
-  } else {
-    educationLevel = input.educationLevel;
-    graduationSeason = input.graduationSeason;
-    graduationYear = input.graduationYear;
-    universityLocation = input.universityLocation;
-  }
+      const graduationSeason =
+        education.endDate && education.endDate.getMonth() >= 6
+          ? 'Fall'
+          : 'Spring';
 
-  // const graduationYear =
-  //   education.endDate?.getFullYear() || member.graduationYear;
+      const graduationYear =
+        education?.endDate?.getFullYear() || parseInt(member.graduationYear);
+
+      return {
+        educationLevel,
+        graduationSeason,
+
+        // If the education end date is not present, we'll use the graduation
+        // year from the member record.
+        graduationYear,
+        universityLocation: education.addressState || 'N/A',
+      };
+    }
+
+    const graduationDate =
+      input.graduationSeason === 'Spring'
+        ? `${input.graduationYear}-05-31`
+        : `${input.graduationYear}-12-31`;
+
+    const graduated = dayjs().isAfter(graduationDate);
+
+    return {
+      educationLevel: graduated
+        ? 'Early Career Professional'
+        : input.educationLevel,
+      graduationSeason: input.graduationSeason,
+      graduationYear: input.graduationYear,
+      universityLocation: input.universityLocation,
+    };
+  });
 
   // In order to keep the resume file names consistent for the partners,
   // we'll use the same naming convention based on the submitter.
@@ -640,11 +654,9 @@ export async function submitResume({
   // over to Airtable.
   const airtableData = {
     'Education Level': educationLevel,
-
     Email: member.email,
     'Employment Search Status': employmentSearchStatus,
     'First Name': firstName,
-
     'Graduation Season': graduationSeason,
 
     // We need to convert to a string because Airtable expects strings for
