@@ -19,8 +19,10 @@ const OAuthSearchParams = z
       state: z
         .string()
         .optional()
-        .transform((value) => JSON.parse(value || '{}'))
-        .transform((value) => OAuthCodeState.parse(value)),
+        .transform((value) => {
+          return value ? JSON.parse(value) : undefined;
+        })
+        .pipe(OAuthCodeState.optional()),
     })
   );
 
@@ -88,7 +90,9 @@ type HandleLoginInput = {
 };
 
 async function handleLogin({ query, type }: HandleLoginInput) {
-  const { code, state } = query;
+  const { code } = query;
+
+  const state = query.state!;
 
   return match(state)
     .with(
