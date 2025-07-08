@@ -527,9 +527,7 @@ export async function submitResume({
             'educations.degreeType',
             'educations.id',
             'educations.endDate',
-            'schools.addressCity',
             'schools.addressState',
-            'schools.addressZip',
           ])
           .where('educations.id', '=', input.educationId)
           .where('educations.deletedAt', 'is', null)
