@@ -122,13 +122,20 @@ export function getErrors<T>(input: GetErrorsInput<T>) {
   };
 }
 
+type ExtractUnionKeys<T> =
+  T extends z.ZodDiscriminatedUnion<string, infer Variants>
+    ? Variants extends readonly z.AnyZodObject[]
+      ? keyof z.infer<Variants[number]>
+      : never
+    : keyof T;
+
 type ValidateResult<Data> =
   | {
       data: Data;
       ok: true;
     }
   | {
-      errors: Partial<Record<keyof Data, string>>;
+      errors: Partial<Record<ExtractUnionKeys<Data>, string>>;
       ok: false;
     };
 
@@ -146,10 +153,9 @@ type ValidateFormInput =
  *
  * The `ok` property in the result indicates whether the form is valid or not.
  */
-export async function validateForm<T extends z.AnyZodObject>(
-  input: ValidateFormInput,
-  schema: T
-): Promise<ValidateResult<z.infer<T>>> {
+export async function validateForm<
+  T extends z.AnyZodObject | z.ZodDiscriminatedUnion<string, z.AnyZodObject[]>,
+>(input: ValidateFormInput, schema: T): Promise<ValidateResult<z.infer<T>>> {
   if (input instanceof Request) {
     input = await input.formData();
   }
@@ -172,7 +178,7 @@ export async function validateForm<T extends z.AnyZodObject>(
   const { fieldErrors } = result.error.formErrors;
 
   Object.entries(fieldErrors).forEach(([key, fieldErrors]) => {
-    errors[key as keyof z.infer<T>] = fieldErrors?.[0];
+    errors[key as ExtractUnionKeys<T>] = fieldErrors?.[0];
   });
 
   return {

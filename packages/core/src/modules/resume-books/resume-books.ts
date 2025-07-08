@@ -470,7 +470,6 @@ export async function updateResumeBook({
  */
 export async function submitResume({
   codingLanguages,
-  educationId,
   employmentSearchStatus,
   firstName,
   hometown,
@@ -487,6 +486,7 @@ export async function submitResume({
   resume,
   resumeBookId,
   workAuthorizationStatus,
+  ...input
 }: SubmitResumeInput) {
   const [
     submission,
@@ -519,19 +519,20 @@ export async function submitResume({
       .where('id', '=', memberId)
       .executeTakeFirstOrThrow(),
 
-    db
-      .selectFrom('educations')
-      .leftJoin('schools', 'schools.id', 'educations.schoolId')
-      .select([
-        'educations.degreeType',
-        'educations.endDate',
-        'schools.addressCity',
-        'schools.addressState',
-        'schools.addressZip',
-      ])
-      .where('educations.id', '=', educationId)
-      .where('educations.deletedAt', 'is', null)
-      .executeTakeFirstOrThrow(),
+    input.educationType === 'selected'
+      ? db
+          .selectFrom('educations')
+          .leftJoin('schools', 'schools.id', 'educations.schoolId')
+          .select([
+            'educations.degreeType',
+            'educations.id',
+            'educations.endDate',
+            'schools.addressState',
+          ])
+          .where('educations.id', '=', input.educationId)
+          .where('educations.deletedAt', 'is', null)
+          .executeTakeFirstOrThrow()
+      : null,
 
     db
       .selectFrom('companies')
@@ -580,10 +581,75 @@ export async function submitResume({
       })
     : null;
 
-  // If the education end date is not present, we'll use the graduation
-  // year from the member record.
-  const graduationYear =
-    education.endDate?.getFullYear() || member.graduationYear;
+  // All education related fields are calculated here. We have to handle the
+  // case in which the education is selected and the case in which it is
+  // manually entered.
+  const {
+    educationLevel,
+    graduationSeason,
+    graduationYear,
+    universityLocation,
+  } = run(() => {
+    if (input.educationType === 'selected') {
+      // If the education is selected, we need to make sure that it exists.
+      // If it doesn't exist, we'll throw an error.
+      if (!education) {
+        throw new Error(`The selected education was not found.`);
+      }
+
+      const educationLevel = run(() => {
+        const graduated = dayjs().isAfter(education.endDate);
+
+        if (graduated) {
+          return 'Early Career Professional';
+        }
+
+        return match(education.degreeType as DegreeType)
+          .with('associate', 'bachelors', 'certificate', () => 'Undergraduate')
+          .with('doctoral', 'professional', () => 'PhD')
+          .with('masters', () => 'Masters')
+          .exhaustive();
+      });
+
+      const graduationSeason =
+        education.endDate && education.endDate.getMonth() >= 6
+          ? 'Fall'
+          : 'Spring';
+
+      const graduationYear =
+        education?.endDate?.getFullYear() || parseInt(member.graduationYear);
+
+      return {
+        educationLevel,
+        graduationSeason,
+
+        // If the education end date is not present, we'll use the graduation
+        // year from the member record.
+        graduationYear,
+        universityLocation: education.addressState || 'N/A',
+      };
+    }
+
+    // If manually entered, we'll use the input data to calculate the
+    // "approximate" graduation date, so we can determine if the student is
+    // still in school or not.
+    const graduationDate =
+      input.graduationSeason === 'Spring'
+        ? `${input.graduationYear}-05-31`
+        : `${input.graduationYear}-12-31`;
+
+    // If they've graduated, we'll override the education level.
+    const educationLevel = dayjs().isAfter(graduationDate)
+      ? 'Early Career Professional'
+      : input.educationLevel;
+
+    return {
+      educationLevel,
+      graduationSeason: input.graduationSeason,
+      graduationYear: input.graduationYear,
+      universityLocation: input.universityLocation,
+    };
+  });
 
   // In order to keep the resume file names consistent for the partners,
   // we'll use the same naming convention based on the submitter.
@@ -592,29 +658,11 @@ export async function submitResume({
   // We need to do a little massaging/formatting of the data before we sent it
   // over to Airtable.
   const airtableData = {
-    'Education Level': run(() => {
-      const graduated = dayjs().isAfter(education.endDate);
-
-      if (graduated) {
-        return 'Early Career Professional';
-      }
-
-      return match(education.degreeType as DegreeType)
-        .with('associate', 'bachelors', 'certificate', () => 'Undergraduate')
-        .with('doctoral', 'professional', () => 'PhD')
-        .with('masters', () => 'Masters')
-        .exhaustive();
-    }),
-
+    'Education Level': educationLevel,
     Email: member.email,
     'Employment Search Status': employmentSearchStatus,
     'First Name': firstName,
-
-    'Graduation Season': run(() => {
-      return education.endDate && education.endDate.getMonth() >= 6
-        ? 'Fall'
-        : 'Spring';
-    }),
+    'Graduation Season': graduationSeason,
 
     // We need to convert to a string because Airtable expects strings for
     // their "Single Select" fields, which we're using instead of a "Number"
@@ -656,7 +704,7 @@ export async function submitResume({
 
     'Last Name': lastName,
     LinkedIn: linkedInUrl,
-    'Location (University)': education.addressState || 'N/A',
+    'Location (University)': universityLocation,
     'Proficient Language(s)': codingLanguages,
 
     Race: race.map((value) => {
@@ -744,9 +792,12 @@ export async function submitResume({
       .values({
         airtableRecordId: airtableRecordId || '',
         codingLanguages,
-        educationId,
+        educationId: education?.id || null,
+        educationLevel,
         employmentSearchStatus,
         googleDriveFileId,
+        graduationSeason,
+        graduationYear,
         memberId,
         preferredCompany1,
         preferredCompany2,
@@ -754,6 +805,7 @@ export async function submitResume({
         preferredRoles,
         resumeBookId,
         submittedAt: new Date(),
+        universityLocation,
       })
       .onConflict((oc) => {
         return oc.columns(['memberId', 'resumeBookId']).doUpdateSet((eb) => {
@@ -764,16 +816,20 @@ export async function submitResume({
             ),
             codingLanguages: eb.ref('excluded.codingLanguages'),
             educationId: eb.ref('excluded.educationId'),
+            educationLevel: eb.ref('excluded.educationLevel'),
             employmentSearchStatus: eb.ref('excluded.employmentSearchStatus'),
             googleDriveFileId: eb.fn.coalesce(
               'resumeBookSubmissions.googleDriveFileId',
               'excluded.googleDriveFileId'
             ),
+            graduationSeason: eb.ref('excluded.graduationSeason'),
+            graduationYear: eb.ref('excluded.graduationYear'),
             preferredCompany1: eb.ref('excluded.preferredCompany1'),
             preferredCompany2: eb.ref('excluded.preferredCompany2'),
             preferredCompany3: eb.ref('excluded.preferredCompany3'),
             preferredRoles: eb.ref('excluded.preferredRoles'),
             submittedAt: eb.ref('excluded.submittedAt'),
+            universityLocation: eb.ref('excluded.universityLocation'),
           };
         });
       })
