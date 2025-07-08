@@ -246,8 +246,6 @@ export async function action({ params, request }: ActionFunctionArgs) {
   );
 }
 
-const keys = SubmitResumeInput.keyof().enum;
-
 export default function ResumeBook() {
   const { resumeBook, submission } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -369,7 +367,7 @@ function ResumeBookSponsors() {
 }
 
 function ResumeBookForm() {
-  const { educations, member, submission } = useLoaderData<typeof loader>();
+  const { member, submission } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
@@ -380,58 +378,15 @@ function ResumeBookForm() {
       encType="multipart/form-data"
     >
       <Field
-        description={run(() => {
-          const emailLink = (
-            <Link
-              className="link"
-              target="_blank"
-              to={Route['/profile/emails']}
-            >
-              primary email
-            </Link>
-          );
-
-          const educationLink = (
-            <Link
-              className="link"
-              target="_blank"
-              to={Route['/profile/education']}
-            >
-              education history
-            </Link>
-          );
-
-          return (
-            <Text color="gray-500">
-              Please ensure that your {emailLink} and {educationLink} are up to
-              date.
-            </Text>
-          );
-        })}
-        labelFor="isProfileUpdated"
-        label="Email + Education History"
-        required
-      >
-        <Checkbox
-          defaultChecked={!!submission}
-          id="isProfileUpdated"
-          label="My primary email and education history are up to date."
-          name="isProfileUpdated"
-          required
-          value="1"
-        />
-      </Field>
-
-      <Field
         error={errors.firstName}
         label="First Name"
-        labelFor={keys.firstName}
+        labelFor="firstName"
         required
       >
         <Input
           defaultValue={member.firstName}
-          id={keys.firstName}
-          name={keys.firstName}
+          id="firstName"
+          name="firstName"
           required
         />
       </Field>
@@ -439,13 +394,13 @@ function ResumeBookForm() {
       <Field
         error={errors.lastName}
         label="Last Name"
-        labelFor={keys.lastName}
+        labelFor="lastName"
         required
       >
         <Input
           defaultValue={member.lastName}
-          id={keys.lastName}
-          name={keys.lastName}
+          id="lastName"
+          name="lastName"
           required
         />
       </Field>
@@ -481,7 +436,7 @@ function ResumeBookForm() {
         description="How do you identify?"
         error={errors.race}
         label="Race & Ethnicity"
-        labelFor={keys.race}
+        labelFor="race"
         required
       >
         <Checkbox.Group>
@@ -498,9 +453,9 @@ function ResumeBookForm() {
               <Checkbox
                 key={value}
                 defaultChecked={member.race.includes(value)}
-                id={keys.race + value}
+                id={'race' + value}
                 label={FORMATTED_RACE[value]}
-                name={keys.race}
+                name="race"
                 value={value}
               />
             );
@@ -511,13 +466,13 @@ function ResumeBookForm() {
       <Field
         error={errors.linkedInUrl}
         label="LinkedIn Profile/URL"
-        labelFor={keys.linkedInUrl}
+        labelFor="linkedInUrl"
         required
       >
         <Input
           defaultValue={member.linkedInUrl || undefined}
-          id={keys.linkedInUrl}
-          name={keys.linkedInUrl}
+          id="linkedInUrl"
+          name="linkedInUrl"
           required
         />
       </Field>
@@ -526,13 +481,13 @@ function ResumeBookForm() {
         description="For reference, US and Canadian citizens are always authorized, while non-US citizens may be authorized if their immigration status allows them to work."
         error={errors.workAuthorizationStatus}
         label="Are you authorized to work in the US or Canada?"
-        labelFor={keys.workAuthorizationStatus}
+        labelFor="workAuthorizationStatus"
         required
       >
         <Select
           defaultValue={member.workAuthorizationStatus || undefined}
-          id={keys.workAuthorizationStatus}
-          name={keys.workAuthorizationStatus}
+          id="workAuthorizationStatus"
+          name="workAuthorizationStatus"
           required
         >
           <option value={WorkAuthorizationStatus.AUTHORIZED}>Yes</option>
@@ -550,62 +505,20 @@ function ResumeBookForm() {
         defaultValue={member.hometown || undefined}
         description="Where did you grow up/attend high school?"
         error={errors.hometown}
-        latitudeName={keys.hometownLatitude}
-        longitudeName={keys.hometownLongitude}
-        name={keys.hometown}
+        latitudeName="hometownLatitude"
+        longitudeName="hometownLongitude"
+        name="hometown"
         required
       />
 
-      <Field
-        description="Companies will use this to determine your graduation date, education level, and university location so be sure it's updated."
-        error={errors.educationId}
-        label="Select your highest level of education."
-        labelFor={keys.educationId}
-        required
-      >
-        <div className="flex flex-col gap-4">
-          {!educations.length && (
-            <div className="rounded-lg border border-dashed border-error bg-red-50 p-2">
-              <Text color="error">
-                Well, this is awkward...you checked the box that said your{' '}
-                <Link
-                  className="font-semibold underline"
-                  target="_blank"
-                  to={Route['/profile/education']}
-                >
-                  education history
-                </Link>{' '}
-                was up to date, but it's not...so you won't see any options
-                here. 😕
-              </Text>
-            </div>
-          )}
-
-          <Select
-            defaultValue={submission?.educationId || undefined}
-            id={keys.educationId}
-            name={keys.educationId}
-            required
-          >
-            {educations.map((education) => {
-              return (
-                <option key={education.id} value={education.id}>
-                  {education.schoolName},{' '}
-                  {FORMATTED_DEGREEE_TYPE[education.degreeType as DegreeType]},{' '}
-                  {education.date}
-                </option>
-              );
-            })}
-          </Select>
-        </div>
-      </Field>
-
+      <Divider />
+      <EducationFieldset />
       <Divider />
 
       <Field
         error={errors.codingLanguages}
         label="Which coding language(s) are you most proficient with?"
-        labelFor={keys.codingLanguages}
+        labelFor="codingLanguages"
         required
       >
         <Checkbox.Group>
@@ -614,9 +527,9 @@ function ResumeBookForm() {
               <Checkbox
                 key={value}
                 defaultChecked={submission?.codingLanguages.includes(value)}
-                id={keys.codingLanguages + value}
+                id={'codingLanguages' + value}
                 label={value}
-                name={keys.codingLanguages}
+                name="codingLanguages"
                 value={value}
               />
             );
@@ -627,7 +540,7 @@ function ResumeBookForm() {
       <Field
         error={errors.preferredRoles}
         label="Which kind of roles are you interested in?"
-        labelFor={keys.preferredRoles}
+        labelFor="preferredRoles"
         required
       >
         <Checkbox.Group>
@@ -636,9 +549,9 @@ function ResumeBookForm() {
               <Checkbox
                 key={value}
                 defaultChecked={submission?.preferredRoles.includes(value)}
-                id={keys.preferredRoles + value}
+                id={'preferredRoles' + value}
                 label={value}
-                name={keys.preferredRoles}
+                name="preferredRoles"
                 value={value}
               />
             );
@@ -649,7 +562,7 @@ function ResumeBookForm() {
       <Field
         error={errors.employmentSearchStatus}
         label="Which is the status of your employment search?"
-        labelFor={keys.employmentSearchStatus}
+        labelFor="employmentSearchStatus"
         required
       >
         <Radio.Group>
@@ -658,9 +571,9 @@ function ResumeBookForm() {
               <Radio
                 key={value}
                 defaultChecked={submission?.employmentSearchStatus === value}
-                id={keys.employmentSearchStatus + value}
+                id={'employmentSearchStatus' + value}
                 label={value}
-                name={keys.employmentSearchStatus}
+                name="employmentSearchStatus"
                 required
                 value={value}
               />
@@ -687,14 +600,14 @@ function ResumeBookForm() {
         }
         error={errors.resume}
         label="Resume"
-        labelFor={keys.resume}
+        labelFor="resume"
         required
       >
         <FileUploader
           accept={['application/pdf']}
-          id={keys.resume}
+          id="resume"
           maxFileSize={RESUME_MAX_FILE_SIZE}
-          name={keys.resume}
+          name="resume"
           required
           {...(submission && {
             initialFile: {
@@ -772,13 +685,13 @@ function PreferredSponsorsField() {
         errors.preferredCompany3
       }
       label="Of all the ColorStack sponsors, which are you most interested in working for?"
-      labelFor={keys.preferredCompany1}
+      labelFor="preferredCompany1"
       required
     >
       <div className="flex flex-col gap-2">
         <Select
-          id={keys.preferredCompany1}
-          name={keys.preferredCompany1}
+          id="preferredCompany1"
+          name="preferredCompany1"
           onChange={(e) => {
             chooseCompany(e, 1);
           }}
@@ -790,8 +703,8 @@ function PreferredSponsorsField() {
         </Select>
 
         <Select
-          id={keys.preferredCompany2}
-          name={keys.preferredCompany2}
+          id="preferredCompany2"
+          name="preferredCompany2"
           onChange={(e) => {
             chooseCompany(e, 2);
           }}
@@ -803,8 +716,8 @@ function PreferredSponsorsField() {
         </Select>
 
         <Select
-          id={keys.preferredCompany3}
-          name={keys.preferredCompany3}
+          id="preferredCompany3"
+          name="preferredCompany3"
           onChange={(e) => {
             chooseCompany(e, 3);
           }}
@@ -816,5 +729,183 @@ function PreferredSponsorsField() {
         </Select>
       </div>
     </Field>
+  );
+}
+
+function EducationFieldset() {
+  const { educations, submission } = useLoaderData<typeof loader>();
+  const { errors } = getErrors(useActionData<typeof action>());
+
+  const [showManualEducation, setShowManualEducation] = useState<boolean>(
+    !educations.length
+  );
+
+  return (
+    <>
+      {!!educations.length && (
+        <Field
+          description="Companies will use this to determine your graduation date, education level, and university location so be sure it's updated."
+          error={errors.educationId}
+          label="Select your highest level of education."
+          labelFor="educationId"
+          required
+        >
+          <Select
+            defaultValue={submission?.educationId || undefined}
+            id="educationId"
+            name="educationId"
+            onChange={(e) => {
+              setShowManualEducation(e.currentTarget.value === '_');
+            }}
+            required
+          >
+            {educations.map((education) => {
+              return (
+                <option key={education.id} value={education.id}>
+                  {education.schoolName},{' '}
+                  {FORMATTED_DEGREEE_TYPE[education.degreeType as DegreeType]},{' '}
+                  {education.date}
+                </option>
+              );
+            })}
+
+            <option value="_">
+              I don't see my highest level of education listed.
+            </option>
+          </Select>
+        </Field>
+      )}
+
+      {showManualEducation ? (
+        <input type="hidden" name="educationType" value="manual" />
+      ) : (
+        <input type="hidden" name="educationType" value="selected" />
+      )}
+
+      {showManualEducation && (
+        <div className="flex flex-col gap-4">
+          {!educations.length && (
+            <Text color="gray-500">
+              Tell us about your highest level of education.
+            </Text>
+          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field
+              error={errors.educationLevel}
+              label="Education Level"
+              labelFor="educationLevel"
+              required
+            >
+              <Select id="educationLevel" name="educationLevel" required>
+                <option value="Undergraduate">Undergraduate</option>
+                <option value="Masters">Masters</option>
+                <option value="PhD">PhD</option>
+              </Select>
+            </Field>
+
+            <Field
+              error={errors.graduationSeason}
+              label="Graduation Season"
+              labelFor="graduationSeason"
+              required
+            >
+              <Select id="graduationSeason" name="graduationSeason" required>
+                <option value="Spring">Spring</option>
+                <option value="Fall">Fall</option>
+              </Select>
+            </Field>
+
+            <Field
+              error={errors.graduationYear}
+              label="Graduation Year"
+              labelFor="graduationYear"
+              required
+            >
+              <Select id="graduationYear" name="graduationYear" required>
+                {Array.from(
+                  { length: new Date().getFullYear() - 2018 + 6 },
+                  (_, i) => {
+                    return (
+                      <option key={i} value={2018 + i}>
+                        {2018 + i}
+                      </option>
+                    );
+                  }
+                )}
+              </Select>
+            </Field>
+
+            <Field
+              error={errors.universityLocation}
+              label="University Location"
+              labelFor="universityLocation"
+              required
+            >
+              <Select
+                id="universityLocation"
+                name="universityLocation"
+                required
+              >
+                <option value="Canada">Canada</option>
+                <option value="International">International</option>
+                <option value="AL">AL</option>
+                <option value="AK">AK</option>
+                <option value="AR">AR</option>
+                <option value="AZ">AZ</option>
+                <option value="CA">CA</option>
+                <option value="CO">CO</option>
+                <option value="CT">CT</option>
+                <option value="DC">DC</option>
+                <option value="DE">DE</option>
+                <option value="FL">FL</option>
+                <option value="GA">GA</option>
+                <option value="HI">HI</option>
+                <option value="IA">IA</option>
+                <option value="ID">ID</option>
+                <option value="IL">IL</option>
+                <option value="IN">IN</option>
+                <option value="KS">KS</option>
+                <option value="KY">KY</option>
+                <option value="LA">LA</option>
+                <option value="MA">MA</option>
+                <option value="MD">MD</option>
+                <option value="ME">ME</option>
+                <option value="MI">MI</option>
+                <option value="MN">MN</option>
+                <option value="MO">MO</option>
+                <option value="MS">MS</option>
+                <option value="MT">MT</option>
+                <option value="NC">NC</option>
+                <option value="ND">ND</option>
+                <option value="NE">NE</option>
+                <option value="NH">NH</option>
+                <option value="NJ">NJ</option>
+                <option value="NM">NM</option>
+                <option value="NV">NV</option>
+                <option value="NY">NY</option>
+                <option value="OH">OH</option>
+                <option value="OK">OK</option>
+                <option value="OR">OR</option>
+                <option value="PA">PA</option>
+                <option value="PR">PR</option>
+                <option value="RI">RI</option>
+                <option value="SC">SC</option>
+                <option value="SD">SD</option>
+                <option value="TN">TN</option>
+                <option value="TX">TX</option>
+                <option value="UT">UT</option>
+                <option value="VA">VA</option>
+                <option value="VT">VT</option>
+                <option value="WA">WA</option>
+                <option value="WI">WI</option>
+                <option value="WV">WV</option>
+                <option value="WY">WY</option>
+              </Select>
+            </Field>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

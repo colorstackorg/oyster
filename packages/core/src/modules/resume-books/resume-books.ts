@@ -470,7 +470,6 @@ export async function updateResumeBook({
  */
 export async function submitResume({
   codingLanguages,
-  educationId,
   employmentSearchStatus,
   firstName,
   hometown,
@@ -487,6 +486,7 @@ export async function submitResume({
   resume,
   resumeBookId,
   workAuthorizationStatus,
+  ...input
 }: SubmitResumeInput) {
   const [
     submission,
@@ -519,19 +519,22 @@ export async function submitResume({
       .where('id', '=', memberId)
       .executeTakeFirstOrThrow(),
 
-    db
-      .selectFrom('educations')
-      .leftJoin('schools', 'schools.id', 'educations.schoolId')
-      .select([
-        'educations.degreeType',
-        'educations.endDate',
-        'schools.addressCity',
-        'schools.addressState',
-        'schools.addressZip',
-      ])
-      .where('educations.id', '=', educationId)
-      .where('educations.deletedAt', 'is', null)
-      .executeTakeFirstOrThrow(),
+    input.educationType === 'selected'
+      ? db
+          .selectFrom('educations')
+          .leftJoin('schools', 'schools.id', 'educations.schoolId')
+          .select([
+            'educations.degreeType',
+            'educations.id',
+            'educations.endDate',
+            'schools.addressCity',
+            'schools.addressState',
+            'schools.addressZip',
+          ])
+          .where('educations.id', '=', input.educationId)
+          .where('educations.deletedAt', 'is', null)
+          .executeTakeFirstOrThrow()
+      : null,
 
     db
       .selectFrom('companies')
@@ -580,19 +583,21 @@ export async function submitResume({
       })
     : null;
 
-  // If the education end date is not present, we'll use the graduation
-  // year from the member record.
-  const graduationYear =
-    education.endDate?.getFullYear() || member.graduationYear;
+  // All education related fields are calculated here.
 
-  // In order to keep the resume file names consistent for the partners,
-  // we'll use the same naming convention based on the submitter.
-  const fileName = `${lastName}_${firstName}_${graduationYear}.pdf`;
+  let educationLevel: string;
+  let graduationSeason: string;
+  let graduationYear: number;
+  let universityLocation: string;
 
-  // We need to do a little massaging/formatting of the data before we sent it
-  // over to Airtable.
-  const airtableData = {
-    'Education Level': run(() => {
+  if (input.educationType === 'selected') {
+    if (!education) {
+      throw new Error(
+        `The selected education was not found: ${input.educationId}`
+      );
+    }
+
+    educationLevel = run(() => {
       const graduated = dayjs().isAfter(education.endDate);
 
       if (graduated) {
@@ -604,17 +609,43 @@ export async function submitResume({
         .with('doctoral', 'professional', () => 'PhD')
         .with('masters', () => 'Masters')
         .exhaustive();
-    }),
+    });
+
+    graduationSeason =
+      education.endDate && education.endDate.getMonth() >= 6
+        ? 'Fall'
+        : 'Spring';
+
+    // If the education end date is not present, we'll use the graduation
+    // year from the member record.
+    graduationYear =
+      education?.endDate?.getFullYear() || parseInt(member.graduationYear);
+
+    universityLocation = education.addressState || 'N/A';
+  } else {
+    educationLevel = input.educationLevel;
+    graduationSeason = input.graduationSeason;
+    graduationYear = input.graduationYear;
+    universityLocation = input.universityLocation;
+  }
+
+  // const graduationYear =
+  //   education.endDate?.getFullYear() || member.graduationYear;
+
+  // In order to keep the resume file names consistent for the partners,
+  // we'll use the same naming convention based on the submitter.
+  const fileName = `${lastName}_${firstName}_${graduationYear}.pdf`;
+
+  // We need to do a little massaging/formatting of the data before we sent it
+  // over to Airtable.
+  const airtableData = {
+    'Education Level': educationLevel,
 
     Email: member.email,
     'Employment Search Status': employmentSearchStatus,
     'First Name': firstName,
 
-    'Graduation Season': run(() => {
-      return education.endDate && education.endDate.getMonth() >= 6
-        ? 'Fall'
-        : 'Spring';
-    }),
+    'Graduation Season': graduationSeason,
 
     // We need to convert to a string because Airtable expects strings for
     // their "Single Select" fields, which we're using instead of a "Number"
@@ -656,7 +687,7 @@ export async function submitResume({
 
     'Last Name': lastName,
     LinkedIn: linkedInUrl,
-    'Location (University)': education.addressState || 'N/A',
+    'Location (University)': universityLocation,
     'Proficient Language(s)': codingLanguages,
 
     Race: race.map((value) => {
@@ -744,9 +775,12 @@ export async function submitResume({
       .values({
         airtableRecordId: airtableRecordId || '',
         codingLanguages,
-        educationId,
+        educationId: education?.id || null,
+        educationLevel,
         employmentSearchStatus,
         googleDriveFileId,
+        graduationSeason,
+        graduationYear,
         memberId,
         preferredCompany1,
         preferredCompany2,
@@ -754,6 +788,7 @@ export async function submitResume({
         preferredRoles,
         resumeBookId,
         submittedAt: new Date(),
+        universityLocation,
       })
       .onConflict((oc) => {
         return oc.columns(['memberId', 'resumeBookId']).doUpdateSet((eb) => {
@@ -764,16 +799,20 @@ export async function submitResume({
             ),
             codingLanguages: eb.ref('excluded.codingLanguages'),
             educationId: eb.ref('excluded.educationId'),
+            educationLevel: eb.ref('excluded.educationLevel'),
             employmentSearchStatus: eb.ref('excluded.employmentSearchStatus'),
             googleDriveFileId: eb.fn.coalesce(
               'resumeBookSubmissions.googleDriveFileId',
               'excluded.googleDriveFileId'
             ),
+            graduationSeason: eb.ref('excluded.graduationSeason'),
+            graduationYear: eb.ref('excluded.graduationYear'),
             preferredCompany1: eb.ref('excluded.preferredCompany1'),
             preferredCompany2: eb.ref('excluded.preferredCompany2'),
             preferredCompany3: eb.ref('excluded.preferredCompany3'),
             preferredRoles: eb.ref('excluded.preferredRoles'),
             submittedAt: eb.ref('excluded.submittedAt'),
+            universityLocation: eb.ref('excluded.universityLocation'),
           };
         });
       })

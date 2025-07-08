@@ -80,7 +80,7 @@ export const CreateResumeBookInput = ResumeBook.pick({
     .transform((value) => value.split(',')),
 });
 
-export const SubmitResumeInput = Student.pick({
+const BaseSubmitResumeInput = Student.pick({
   firstName: true,
   lastName: true,
   linkedInUrl: true,
@@ -93,7 +93,6 @@ export const SubmitResumeInput = Student.pick({
   .required({ workAuthorizationStatus: true })
   .extend({
     codingLanguages: z.array(z.string().trim().min(1)).min(1),
-    educationId: z.string().trim().min(1),
     employmentSearchStatus: z.string().trim().min(1),
     hometown: Student.shape.hometown.unwrap(),
     hometownLatitude: Student.shape.hometownLatitude.unwrap(),
@@ -106,6 +105,20 @@ export const SubmitResumeInput = Student.pick({
     resume: z.union([z.string().trim().min(1), FileLike]),
     resumeBookId: z.string().trim().min(1),
   });
+
+export const SubmitResumeInput = z.discriminatedUnion('educationType', [
+  BaseSubmitResumeInput.extend({
+    educationType: z.literal('selected'),
+    educationId: z.string().trim().min(1),
+  }),
+  BaseSubmitResumeInput.extend({
+    educationType: z.literal('manual'),
+    educationLevel: z.enum(['Undergraduate', 'Masters', 'PhD']),
+    graduationSeason: z.enum(['Spring', 'Fall']),
+    graduationYear: z.coerce.number(),
+    universityLocation: z.string().trim().min(1),
+  }),
+]);
 
 export const UpdateResumeBookInput = ResumeBook.pick({
   endDate: true,
