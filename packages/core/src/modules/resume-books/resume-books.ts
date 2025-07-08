@@ -583,8 +583,9 @@ export async function submitResume({
       })
     : null;
 
-  // All education related fields are calculated here.
-
+  // All education related fields are calculated here. We have to handle the
+  // case in which the education is selected and the case in which it is
+  // manually entered.
   const {
     educationLevel,
     graduationSeason,
@@ -592,6 +593,8 @@ export async function submitResume({
     universityLocation,
   } = run(() => {
     if (input.educationType === 'selected') {
+      // If the education is selected, we need to make sure that it exists.
+      // If it doesn't exist, we'll throw an error.
       if (!education) {
         throw new Error(`The selected education was not found.`);
       }
@@ -629,17 +632,21 @@ export async function submitResume({
       };
     }
 
+    // If manually entered, we'll use the input data to calculate the
+    // "approximate" graduation date, so we can determine if the student is
+    // still in school or not.
     const graduationDate =
       input.graduationSeason === 'Spring'
         ? `${input.graduationYear}-05-31`
         : `${input.graduationYear}-12-31`;
 
-    const graduated = dayjs().isAfter(graduationDate);
+    // If they've graduated, we'll override the education level.
+    const educationLevel = dayjs().isAfter(graduationDate)
+      ? 'Early Career Professional'
+      : input.educationLevel;
 
     return {
-      educationLevel: graduated
-        ? 'Early Career Professional'
-        : input.educationLevel,
+      educationLevel,
       graduationSeason: input.graduationSeason,
       graduationYear: input.graduationYear,
       universityLocation: input.universityLocation,
