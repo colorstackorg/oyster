@@ -25,7 +25,9 @@ import {
   validateForm,
 } from '@oyster/ui';
 
+import { getLinkedinAuthUri } from '@/modules/authentication/shared/oauth.utils';
 import { Route } from '@/shared/constants';
+import { ENV } from '@/shared/constants.server';
 import { commitSession, getSession } from '@/shared/session.server';
 
 export const meta: MetaFunction = () => {
@@ -50,10 +52,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
       })
     : undefined;
 
+  const linkedinAuthUri = getLinkedinAuthUri({
+    clientRedirectUrl: `${ENV.STUDENT_PROFILE_URL}/apply`,
+    context: 'apply',
+  });
+
   return {
     email: referral?.email,
     firstName: referral?.firstName,
     lastName: referral?.lastName,
+    linkedinAuthUri,
   };
 }
 
@@ -142,10 +150,11 @@ export default function ApplicationPage() {
             error={errors.email}
             name={keys.email}
           />
-          <Application.LinkedInField
+          <LinkedInLogin />
+          {/* <Application.LinkedInField
             error={errors.linkedInUrl}
             name={keys.linkedInUrl}
-          />
+          /> */}
           <Application.SchoolField
             error={errors.schoolId}
             name={keys.schoolId}
@@ -206,6 +215,47 @@ export default function ApplicationPage() {
         <Button.Submit fill>Apply</Button.Submit>
       </Form>
     </>
+  );
+}
+
+function LinkedInLogin() {
+  const { linkedinAuthUri } = useLoaderData<typeof loader>();
+
+  return (
+    <Field
+      description={
+        <Text>
+          Please ensure that your LinkedIn is up to date as it is a determining
+          factor for acceptance. Bonus points if your LinkedIn account is{' '}
+          <Link
+            href="https://www.linkedin.com/help/linkedin/answer/a1637071"
+            target="_blank"
+          >
+            verified
+          </Link>
+          .
+        </Text>
+      }
+      // error={error}
+      label="LinkedIn Profile/URL"
+      labelFor="linkedInUrl"
+      required
+    >
+      <Button.Slot>
+        <a href={linkedinAuthUri!} target="_blank">
+          Login with LinkedIn
+        </a>
+      </Button.Slot>
+      {/*
+      <Input
+        defaultValue={defaultValue}
+        id={name}
+        name={name}
+        placeholder="ex: https://www.linkedin.com/in/jehron"
+        readOnly={readOnly}
+        required
+      /> */}
+    </Field>
   );
 }
 

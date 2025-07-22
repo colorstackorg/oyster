@@ -25,6 +25,7 @@ import {
 import {
   handleGoogleDriveOauth,
   handleGoogleOauth,
+  handleLinkedinOauth,
   handleSlackOauth,
 } from './handlers/oauth';
 import { handleSlackEvent, handleSlackShortcut } from './handlers/slack';
@@ -42,6 +43,7 @@ async function bootstrap() {
       '/health': new BunResponse('OK'),
       '/oauth/google': handleGoogleOauth,
       '/oauth/google/drive': handleGoogleDriveOauth,
+      '/oauth/linkedin': handleLinkedinOauth,
       '/oauth/slack': handleSlackOauth,
       '/slack/events': { POST: handleSlackEvent },
       '/slack/shortcuts': { POST: handleSlackShortcut },

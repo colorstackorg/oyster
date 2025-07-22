@@ -3,6 +3,8 @@ import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import {
+  exchangeLinkedinCodeForToken,
+  getLinkedinProfile,
   loginWithOAuth,
   OAuthCodeState,
   saveGoogleDriveCredentials,
@@ -33,6 +35,27 @@ export async function handleGoogleOauth(req: BunRequest) {
   const result = OAuthSearchParams.safeParse(searchParams);
 
   if (!result.success) {
+    return BunResponse.json(
+      { message: 'Failed to validate request.' },
+      { status: 400 }
+    );
+  }
+
+  const to = await handleLogin({
+    query: result.data,
+    type: 'google',
+  });
+
+  return BunResponse.redirect(to);
+}
+
+export async function handleLinkedinOauth(req: BunRequest) {
+  const { searchParams } = new URL(req.url);
+  const result = OAuthSearchParams.safeParse(searchParams);
+
+  if (!result.success) {
+    console.log(result.error);
+
     return BunResponse.json(
       { message: 'Failed to validate request.' },
       { status: 400 }
@@ -98,9 +121,9 @@ async function handleLogin({ query, type }: HandleLoginInput) {
     .with(
       { context: 'admin_login' },
       { context: 'student_login' },
-      async () => {
+      async ({ context }) => {
         const { authToken, email } = await loginWithOAuth({
-          context: state.context,
+          context,
           code,
           oauthRedirectUrl: state.oauthRedirectUrl,
           type,
@@ -121,5 +144,27 @@ async function handleLogin({ query, type }: HandleLoginInput) {
         return url.toString();
       }
     )
+    .with({ context: 'apply' }, async () => {
+      const { accessToken } = await exchangeLinkedinCodeForToken({
+        code,
+        redirectUrl: state.oauthRedirectUrl,
+      });
+
+      console.log(accessToken);
+
+      const { email } = await getLinkedinProfile(accessToken);
+
+      console.log(email);
+
+      const url = new URL(state.clientRedirectUrl!);
+
+      url.searchParams.set('email', email);
+      url.searchParams.set(
+        'linkedin_url',
+        'https://linkedin.com/in/rami-abdou'
+      );
+
+      return url.toString();
+    })
     .exhaustive();
 }

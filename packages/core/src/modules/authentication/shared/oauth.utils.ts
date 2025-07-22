@@ -35,6 +35,37 @@ export function getGoogleAuthUri({
   return url.toString();
 }
 
+export function getLinkedinAuthUri({
+  clientRedirectUrl,
+  context,
+}: GetAuthUriInput) {
+  if (!API_URL || !process.env.LINKEDIN_CLIENT_ID) {
+    console.warn(
+      '"LINKEDIN_CLIENT_ID" is not set, so login with LinkedIn is disabled.'
+    );
+
+    return null;
+  }
+
+  const state = {
+    clientRedirectUrl,
+    context,
+    oauthRedirectUrl: `${API_URL}/oauth/linkedin`,
+  };
+
+  console.log(state.oauthRedirectUrl);
+
+  const url = new URL('https://www.linkedin.com/oauth/v2/authorization');
+
+  url.searchParams.set('client_id', process.env.LINKEDIN_CLIENT_ID);
+  url.searchParams.set('redirect_uri', state.oauthRedirectUrl);
+  url.searchParams.set('response_type', 'code');
+  url.searchParams.set('scope', 'openid profile email');
+  url.searchParams.set('state', JSON.stringify(state));
+
+  return url.toString();
+}
+
 export function getSlackAuthUri({
   clientRedirectUrl,
   context,

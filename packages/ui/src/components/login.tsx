@@ -50,6 +50,14 @@ Login.GoogleButton = function GoogleButton({ href }: LoginButtonProps) {
   );
 };
 
+Login.LinkedinButton = function LinkedinButton({ href }: LoginButtonProps) {
+  return (
+    <Login._Button href={href} external>
+      Log In with LinkedIn
+    </Login._Button>
+  );
+};
+
 Login.OtpButton = function OtpButton({ href }: LoginButtonProps) {
   return (
     <Login._Button href={href}>

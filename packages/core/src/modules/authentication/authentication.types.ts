@@ -38,7 +38,7 @@ export const OAuthCodeState = z.object({
    * is authenticated. In our case, this will tell us whether we want to lookup
    * an admin record or a student record.
    */
-  context: z.enum(['admin_login', 'student_login']),
+  context: z.enum(['admin_login', 'apply', 'student_login']),
 
   oauthRedirectUrl: z.custom<`${string}/oauth/${string}`>((value) => {
     const { success } = z.string().url().safeParse(value);
