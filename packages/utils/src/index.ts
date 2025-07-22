@@ -66,6 +66,7 @@ type NormalizeOptions = Partial<{
   removeHash: boolean;
   removeSearch: boolean;
   removeTrailingSlash: boolean;
+  removeWww: boolean;
 }>;
 
 /**
@@ -90,6 +91,7 @@ export function normalizeUri<T extends string | null | undefined>(
     removeHash: true,
     removeSearch: true,
     removeTrailingSlash: true,
+    removeWww: false,
   };
 
   options = {
@@ -98,6 +100,10 @@ export function normalizeUri<T extends string | null | undefined>(
   };
 
   const uri = new URL(input);
+
+  if (options.removeWww) {
+    uri.hostname = uri.hostname.replace('www.', '');
+  }
 
   if (options.forceHttps) {
     uri.protocol = 'https:';
