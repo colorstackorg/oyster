@@ -60,7 +60,7 @@ const StudentSocialLinks = z.object({
     .startsWith('http', 'URL must start with "http://".')
     .url()
     .transform((value) => value.toLowerCase())
-    .transform((value) => normalizeUri(value))
+    .transform((value) => normalizeUri(value, { removeWww: true }))
     .refine((value) => value.includes('linkedin.com/in/'), {
       message: 'URL must be a valid LinkedIn URL.',
     })
