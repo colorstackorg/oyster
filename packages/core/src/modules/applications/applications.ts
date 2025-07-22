@@ -456,6 +456,10 @@ const ExpandedRejectionReason: Record<ApplicationRejectionReason, string> = {
 
   is_international: 'We only admit students enrolled in the US or Canada.',
 
+  linkedin_already_used:
+    'Due to the volume of applications we receive, we will not be able to ' +
+    'provide additional feedback on your application.',
+
   not_undergraduate: 'We only admit undergraduate students.',
 
   other:
@@ -625,6 +629,15 @@ async function shouldReject(
 
   if (memberWithSameEmail) {
     return [true, 'email_already_used'];
+  }
+
+  const memberWithSameLinkedIn = await db
+    .selectFrom('students')
+    .where('linkedInUrl', 'ilike', application.linkedInUrl)
+    .executeTakeFirst();
+
+  if (memberWithSameLinkedIn) {
+    return [true, 'linkedin_already_used'];
   }
 
   const applicationAcceptedWithSameEmail = await db

@@ -10,6 +10,7 @@ export const ApplicationRejectionReason = {
   EMAIL_BOUNCED: 'email_bounced',
   INELIGIBLE_MAJOR: 'ineligible_major',
   IS_INTERNATIONAL: 'is_international',
+  LINKEDIN_ALREADY_USED: 'linkedin_already_used',
   NOT_UNDERGRADUATE: 'not_undergraduate',
   OTHER: 'other',
 } as const;
