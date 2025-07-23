@@ -158,27 +158,6 @@ Application.EmailField = function EmailField({
   );
 };
 
-Application.FirstNameField = function FirstNameField({
-  defaultValue,
-  error,
-  name,
-}: FieldProps<string>) {
-  const { readOnly } = useContext(ApplicationContext);
-
-  return (
-    <Field error={error} label="First Name" labelFor={name} required>
-      <Input
-        autoFocus={!readOnly}
-        defaultValue={defaultValue}
-        id={name}
-        name={name}
-        readOnly={readOnly}
-        required
-      />
-    </Field>
-  );
-};
-
 const GENDERS_IN_ORDER: Gender[] = [
   'cisgender_man',
   'cisgender_woman',
@@ -330,26 +309,6 @@ Application.GraduationDateField = function GraduationDateField({
         </Select>
       </Field>
     </div>
-  );
-};
-
-Application.LastNameField = function LastNameField({
-  defaultValue,
-  error,
-  name,
-}: FieldProps<string>) {
-  const { readOnly } = useContext(ApplicationContext);
-
-  return (
-    <Field error={error} label="Last Name" labelFor={name} required>
-      <Input
-        defaultValue={defaultValue}
-        id={name}
-        name={name}
-        readOnly={readOnly}
-        required
-      />
-    </Field>
   );
 };
 
@@ -551,13 +510,7 @@ Application.RaceField = function RaceField({
   const { readOnly } = useContext(ApplicationContext);
 
   return (
-    <Field
-      description="Our community is designed to support racially underrepresented students in tech. "
-      error={error}
-      label="Race & Ethnicity"
-      labelFor={name}
-      required
-    >
+    <Field error={error} label="Race & Ethnicity" labelFor={name} required>
       <Checkbox.Group>
         {RACES_IN_ORDER.map((value: Race) => {
           return (

@@ -34,7 +34,7 @@ export function Select({
   return (
     <select
       className={cx(
-        getInputCn(),
+        getInputCn({ readOnly: false }),
 
         // If the width is set to 'fit', we'll add some padding to the right
         // to allow room for the arrow icon to fit in the "background-image".

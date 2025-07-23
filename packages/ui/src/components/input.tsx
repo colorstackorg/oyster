@@ -171,10 +171,16 @@ function formatPhoneNumber(input: string): string {
 
 // Helpers
 
-export function getInputCn() {
+type InputCnOptions = {
+  readOnly?: boolean;
+};
+
+export function getInputCn(options: InputCnOptions = { readOnly: true }) {
   return cx(
     'w-full rounded-lg border border-gray-300 p-2',
     'disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500',
+    options.readOnly &&
+      'read-only:cursor-not-allowed read-only:bg-gray-50 read-only:text-gray-500',
     'focus:border-primary'
   );
 }
