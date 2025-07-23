@@ -58,6 +58,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (!linkedInInfo) {
     const linkedInAuthUri = getLinkedInAuthUri({
+      // We want to redirect back to the same page that we're currently on
+      // so that we can proceed with the application process.
       clientRedirectUrl: request.url,
     });
 
@@ -97,9 +99,15 @@ function getAuthenticatedLinkedInInfo(request: Request) {
     return null;
   }
 
-  const result = AuthenticatedLinkedInToken.safeParse(
-    JSON.parse(decodeURIComponent(oauthInfo))
-  );
+  let json: JSON;
+
+  try {
+    json = JSON.parse(decodeURIComponent(oauthInfo));
+  } catch {
+    return null;
+  }
+
+  const result = AuthenticatedLinkedInToken.safeParse(json);
 
   if (!result.success) {
     return null;
