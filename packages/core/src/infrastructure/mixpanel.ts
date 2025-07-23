@@ -19,6 +19,12 @@ if (MIXPANEL_TOKEN) {
 // Core
 
 export type MixpanelEvent = {
+  'Application Started': {
+    Email: string;
+    'First Name': string | undefined;
+    'Last Name': string | undefined;
+  };
+
   'Chatbot Question Asked': {
     Question: string;
     Type?: 'DM' | 'Public';

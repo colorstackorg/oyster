@@ -9,6 +9,7 @@ import {
   OAuthCodeState,
   saveGoogleDriveCredentials,
 } from '@oyster/core/api';
+import { track } from '@oyster/core/mixpanel';
 
 import { BunResponse } from '../shared/bun-response';
 
@@ -101,7 +102,9 @@ export async function handleLinkedInOauth(req: BunRequest) {
   const { email, firstName, lastName } =
     await getLinkedInTokenInfo(accessToken);
 
-  const response = BunResponse.redirect(state!.clientRedirectUrl);
+  const redirectTo = new URL(state!.clientRedirectUrl);
+
+  const response = BunResponse.redirect(redirectTo);
 
   const info = encodeURIComponent(
     JSON.stringify({ email, firstName, lastName })
@@ -111,6 +114,18 @@ export async function handleLinkedInOauth(req: BunRequest) {
     'Set-Cookie',
     `oauth_info=${info}; Path=/; Max-Age=86400; Secure; SameSite=Lax; HttpOnly`
   );
+
+  if (redirectTo.pathname === '/apply') {
+    track({
+      application: 'API',
+      event: 'Application Started',
+      properties: {
+        Email: email,
+        'First Name': firstName,
+        'Last Name': lastName,
+      },
+    });
+  }
 
   return response;
 }
