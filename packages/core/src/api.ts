@@ -26,6 +26,10 @@ export { resumeReviewWorker } from './modules/resume-reviews';
 export { slackWorker } from './modules/slack/slack.worker';
 
 export { OAuthCodeState } from './modules/authentication/authentication.types';
+export {
+  exchangeLinkedInCodeForToken,
+  getLinkedInTokenInfo,
+} from './modules/authentication/services/linkedin-oauth.service';
 export { loginWithOAuth } from './modules/authentication/use-cases/login-with-oauth';
 export { saveGoogleDriveCredentials } from './modules/google-drive';
 export { Environment } from './shared/types';

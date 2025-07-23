@@ -2,6 +2,7 @@ export { reportException } from './infrastructure/sentry';
 export { getActiveStreak } from './modules/active-statuses/queries/get-active-streak';
 export { getActiveStreakLeaderboard } from './modules/active-statuses/queries/get-active-streak-leaderboard';
 export { getGithubProfile } from './modules/authentication/queries/get-github-profile';
+export { getLinkedInAuthUri } from './modules/authentication/services/linkedin-oauth.service';
 export {
   getGoogleAuthUri,
   getSlackAuthUri,

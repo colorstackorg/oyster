@@ -3,6 +3,8 @@ import { match } from 'ts-pattern';
 import { z } from 'zod';
 
 import {
+  exchangeLinkedInCodeForToken,
+  getLinkedInTokenInfo,
   loginWithOAuth,
   OAuthCodeState,
   saveGoogleDriveCredentials,
@@ -10,21 +12,27 @@ import {
 
 import { BunResponse } from '../shared/bun-response';
 
-const OAuthSearchParams = z
-  .instanceof(URLSearchParams)
-  .transform(Object.fromEntries)
-  .pipe(
-    z.object({
-      code: z.string().trim().min(1),
-      state: z
-        .string()
-        .optional()
-        .transform((value) => {
-          return value ? JSON.parse(value) : undefined;
-        })
-        .pipe(OAuthCodeState.optional()),
-    })
-  );
+function createOAuthSearchParamsSchema<T extends z.ZodSchema>(stateSchema: T) {
+  return z
+    .instanceof(URLSearchParams)
+    .transform(Object.fromEntries)
+    .pipe(
+      z.object({
+        code: z.string().trim().min(1),
+        state: z
+          .string()
+          .optional()
+          .transform((value) => {
+            return value ? JSON.parse(value) : undefined;
+          })
+          .pipe(stateSchema),
+      })
+    );
+}
+
+const OAuthSearchParams = createOAuthSearchParamsSchema(
+  OAuthCodeState.optional()
+);
 
 type OAuthSearchParams = z.infer<typeof OAuthSearchParams>;
 
@@ -65,6 +73,48 @@ export async function handleGoogleDriveOauth(req: BunRequest) {
   return BunResponse.json({ ok: true });
 }
 
+const LinkedInOAuthSearchParams = createOAuthSearchParamsSchema(
+  OAuthCodeState.pick({
+    clientRedirectUrl: true,
+    oauthRedirectUrl: true,
+  })
+);
+
+export async function handleLinkedInOauth(req: BunRequest) {
+  const { searchParams } = new URL(req.url);
+  const result = LinkedInOAuthSearchParams.safeParse(searchParams);
+
+  if (!result.success) {
+    return BunResponse.json(
+      { message: 'Failed to validate request.' },
+      { status: 400 }
+    );
+  }
+
+  const { code, state } = result.data;
+
+  const { accessToken } = await exchangeLinkedInCodeForToken({
+    code,
+    redirectUrl: state!.oauthRedirectUrl,
+  });
+
+  const { email, firstName, lastName } =
+    await getLinkedInTokenInfo(accessToken);
+
+  const response = BunResponse.redirect(state!.clientRedirectUrl);
+
+  const info = encodeURIComponent(
+    JSON.stringify({ email, firstName, lastName })
+  );
+
+  response.headers.set(
+    'Set-Cookie',
+    `oauth_info=${info}; Path=/; Max-Age=600; Secure; SameSite=Lax; HttpOnly`
+  );
+
+  return response;
+}
+
 export async function handleSlackOauth(req: BunRequest) {
   const { searchParams } = new URL(req.url);
   const result = OAuthSearchParams.safeParse(searchParams);
@@ -98,15 +148,15 @@ async function handleLogin({ query, type }: HandleLoginInput) {
     .with(
       { context: 'admin_login' },
       { context: 'student_login' },
-      async () => {
+      async ({ clientRedirectUrl, context, oauthRedirectUrl }) => {
         const { authToken, email } = await loginWithOAuth({
-          context: state.context,
+          context,
           code,
-          oauthRedirectUrl: state.oauthRedirectUrl,
+          oauthRedirectUrl,
           type,
         });
 
-        const url = new URL(state.clientRedirectUrl!);
+        const url = new URL(clientRedirectUrl);
 
         if (authToken) {
           url.searchParams.set('token', authToken);
