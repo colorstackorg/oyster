@@ -2,6 +2,7 @@ import z from 'zod';
 
 import { reportException } from '@/infrastructure/sentry';
 import { API_URL } from '@/shared/env';
+import { type OAuthCodeState } from '../authentication.types';
 import {
   type ExchangeCodeForTokenInput,
   OAuthProfile,
@@ -109,4 +110,37 @@ export async function getLinkedInTokenInfo(token: string) {
     firstName: result.data.given_name,
     lastName: result.data.family_name,
   };
+}
+
+/**
+ * Used in the UI to redirect the user to the LinkedIn OAuth flow.
+ *
+ * The `API_URL` and `LINKEDIN_CLIENT_ID` are required to be set in the
+ * environment variables.
+ */
+export function getLinkedInAuthUri({
+  clientRedirectUrl,
+}: Pick<OAuthCodeState, 'clientRedirectUrl'>) {
+  if (!API_URL || !LINKEDIN_CLIENT_ID) {
+    console.warn(
+      '"LINKEDIN_CLIENT_ID" is not set, so login with LinkedIn is disabled.'
+    );
+
+    return null;
+  }
+
+  const state = {
+    clientRedirectUrl,
+    oauthRedirectUrl: `${API_URL}/oauth/linkedin`,
+  };
+
+  const url = new URL('https://www.linkedin.com/oauth/v2/authorization');
+
+  url.searchParams.set('client_id', LINKEDIN_CLIENT_ID);
+  url.searchParams.set('redirect_uri', state.oauthRedirectUrl);
+  url.searchParams.set('response_type', 'code');
+  url.searchParams.set('scope', 'openid profile email');
+  url.searchParams.set('state', JSON.stringify(state));
+
+  return url.toString();
 }
