@@ -26,6 +26,22 @@ export function getCookie(cookie: string, name: string) {
   return match[2];
 }
 
+/**
+ * Returns the root domain from a hostname.
+ *
+ * @param hostname - The hostname to get the root domain from.
+ *
+ * @example
+ * ```ts
+ * getRootDomainFromHostname('api.colorstack.io'); // => 'colorstack.io'
+ * getRootDomainFromHostname('colorstack.io'); // => 'colorstack.io'
+ * getRootDomainFromHostname('localhost:3000'); // => 'localhost'
+ * ```
+ */
+export function getRootDomainFromHostname(hostname: string) {
+  return hostname.split('.').slice(-2).join('.');
+}
+
 const nanoid = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 12);
 
 /**
