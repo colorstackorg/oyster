@@ -18,11 +18,11 @@ import { getReferral } from '@oyster/core/referrals';
 import {
   Button,
   Checkbox,
-  cx,
   ErrorMessage,
   Field,
   getErrors,
   Link,
+  Login,
   Text,
   type TextProps,
   validateForm,
@@ -54,13 +54,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
       })
     : undefined;
 
-  const linkedInAuthUri = getLinkedInAuthUri({
-    clientRedirectUrl: request.url,
-  });
-
   const linkedInInfo = getAuthenticatedLinkedInInfo(request);
 
   if (!linkedInInfo) {
+    const linkedInAuthUri = getLinkedInAuthUri({
+      clientRedirectUrl: request.url,
+    });
+
     return {
       email: referral?.email,
       firstName: referral?.firstName,
@@ -71,11 +71,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   return {
-    email: linkedInInfo.email?.endsWith('.edu') ? linkedInInfo.email : '',
+    email: linkedInInfo.email.endsWith('.edu') ? linkedInInfo.email : '',
     firstName: linkedInInfo.firstName,
     lastName: linkedInInfo.lastName,
     isLinkedInAuthenticated: true,
-    linkedInAuthUri,
   };
 }
 
@@ -198,24 +197,7 @@ function LinkedInAuthentication() {
         To proceed, please log into your LinkedIn account.
       </Text>
 
-      <a
-        className={cx(
-          'flex w-fit items-center gap-3 rounded-lg border border-solid border-gray-300 p-2 no-underline',
-          'hover:cursor-pointer hover:bg-gray-100',
-          'active:bg-gray-200'
-        )}
-        href={linkedInAuthUri}
-        rel="noopener noreferrer"
-      >
-        <img
-          alt="LinkedIn Icon"
-          height={24}
-          src="/images/linkedin.png"
-          width={24}
-          className="rounded bg-white"
-        />
-        Log In with LinkedIn
-      </a>
+      <Login.LinkedInButton href={linkedInAuthUri} />
     </div>
   );
 }
@@ -227,16 +209,9 @@ function ApplicationForm() {
   return (
     <Form className="form" data-gap="2rem" method="post">
       <Application readOnly={false}>
-        <Application.FirstNameField
-          defaultValue={firstName}
-          error={errors.firstName}
-          name={keys.firstName}
-        />
-        <Application.LastNameField
-          defaultValue={lastName}
-          error={errors.lastName}
-          name={keys.lastName}
-        />
+        <input type="hidden" name={keys.firstName} value={firstName} />
+        <input type="hidden" name={keys.lastName} value={lastName} />
+
         <Application.EmailField
           defaultValue={email}
           error={errors.email}

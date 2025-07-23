@@ -17,24 +17,22 @@ Login._Button = function _Button({
   href,
 }: _LoginButtonProps) {
   return (
-    <li>
-      <a
-        className={cx(
-          'flex items-center gap-3 rounded-lg border border-solid border-gray-300 p-2 no-underline',
-          'hover:cursor-pointer hover:bg-gray-100',
-          'active:bg-gray-200'
-        )}
-        href={href}
-        rel={external ? 'noopener noreferrer' : undefined}
-      >
-        {children}
-      </a>
-    </li>
+    <a
+      className={cx(
+        'flex items-center gap-3 rounded-lg border border-solid border-gray-300 p-2 no-underline',
+        'hover:cursor-pointer hover:bg-gray-100',
+        'active:bg-gray-200'
+      )}
+      href={href}
+      rel={external ? 'noopener noreferrer' : undefined}
+    >
+      {children}
+    </a>
   );
 };
 
 Login.ButtonGroup = function ButtonGroup({ children }: PropsWithChildren) {
-  return <ul className="flex flex-col gap-2">{children}</ul>;
+  return <div className="flex flex-col gap-2">{children}</div>;
 };
 
 type LoginButtonProps = {
@@ -46,6 +44,15 @@ Login.GoogleButton = function GoogleButton({ href }: LoginButtonProps) {
     <Login._Button href={href} external>
       <GoogleLogo />
       Log In with Google
+    </Login._Button>
+  );
+};
+
+Login.LinkedInButton = function LinkedInButton({ href }: LoginButtonProps) {
+  return (
+    <Login._Button href={href} external>
+      <img alt="LinkedIn Icon" className="h-6 w-6" src="/images/linkedin.png" />
+      Log In with LinkedIn
     </Login._Button>
   );
 };

@@ -312,16 +312,6 @@ function ApplicationFieldGroup({
 
   return showAll ? (
     <Application readOnly>
-      <Application.FirstNameField
-        defaultValue={application.firstName}
-        name={keys.firstName}
-      />
-
-      <Application.LastNameField
-        defaultValue={application.lastName}
-        name={keys.lastName}
-      />
-
       <Application.EmailField
         defaultValue={application.email}
         name={keys.email}
