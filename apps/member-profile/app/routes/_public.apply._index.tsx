@@ -49,7 +49,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const referral = referralId
     ? await getReferral({
-        select: ['email', 'firstName', 'lastName'],
+        select: ['email'],
         where: { id: referralId },
       })
     : undefined;
@@ -65,17 +65,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return {
       email: referral?.email,
-      firstName: referral?.firstName,
-      lastName: referral?.lastName,
       isLinkedInAuthenticated: false,
       linkedInAuthUri,
     };
   }
 
   return {
-    email: linkedInInfo.email.endsWith('.edu') ? linkedInInfo.email : '',
-    firstName: linkedInInfo.firstName,
-    lastName: linkedInInfo.lastName,
+    email: linkedInInfo.email.endsWith('.edu') ? linkedInInfo.email : undefined,
     isLinkedInAuthenticated: true,
   };
 }
@@ -117,6 +113,15 @@ function getAuthenticatedLinkedInInfo(request: Request) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
+  const linkedInInfo = getAuthenticatedLinkedInInfo(request);
+
+  if (!linkedInInfo) {
+    return data(
+      { error: 'Please refresh the page and log in with LinkedIn again.' },
+      { status: 401 }
+    );
+  }
+
   const session = await getSession(request);
   const form = await request.formData();
 
@@ -129,6 +134,9 @@ export async function action({ request }: ActionFunctionArgs) {
   if (referralId) {
     form.set('referralId', referralId);
   }
+
+  form.set('firstName', linkedInInfo.firstName);
+  form.set('lastName', linkedInInfo.lastName);
 
   const result = await validateForm(
     {
@@ -211,15 +219,12 @@ function LinkedInAuthentication() {
 }
 
 function ApplicationForm() {
-  const { email, firstName, lastName } = useLoaderData<typeof loader>();
+  const { email } = useLoaderData<typeof loader>();
   const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Form className="form" data-gap="2rem" method="post">
       <Application readOnly={false}>
-        <input type="hidden" name={keys.firstName} value={firstName} />
-        <input type="hidden" name={keys.lastName} value={lastName} />
-
         <Application.EmailField
           defaultValue={email}
           error={errors.email}
