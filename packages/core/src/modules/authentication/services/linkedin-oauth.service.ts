@@ -89,8 +89,8 @@ export async function getLinkedInTokenInfo(token: string) {
   }
 
   const result = OAuthProfile.extend({
-    given_name: z.string().trim().min(1).optional(),
-    family_name: z.string().trim().min(1).optional(),
+    given_name: z.string().trim().min(1),
+    family_name: z.string().trim().min(1),
   }).safeParse(json);
 
   if (!result.success) {

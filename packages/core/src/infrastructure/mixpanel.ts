@@ -21,8 +21,8 @@ if (MIXPANEL_TOKEN) {
 export type MixpanelEvent = {
   'Application Started': {
     Email: string;
-    'First Name': string | undefined;
-    'Last Name': string | undefined;
+    'First Name': string;
+    'Last Name': string;
   };
 
   'Chatbot Question Asked': {
