@@ -109,7 +109,7 @@ export async function handleLinkedInOauth(req: BunRequest) {
 
   response.headers.set(
     'Set-Cookie',
-    `oauth_info=${info}; Path=/; Max-Age=600; Secure; SameSite=Lax; HttpOnly`
+    `oauth_info=${info}; Path=/; Max-Age=86400; Secure; SameSite=Lax; HttpOnly`
   );
 
   return response;
