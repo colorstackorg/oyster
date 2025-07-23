@@ -10,6 +10,7 @@ import {
   saveGoogleDriveCredentials,
 } from '@oyster/core/api';
 import { track } from '@oyster/core/mixpanel';
+import { getRootDomainFromHostname } from '@oyster/utils';
 
 import { BunResponse } from '../shared/bun-response';
 
@@ -82,7 +83,7 @@ const LinkedInOAuthSearchParams = createOAuthSearchParamsSchema(
 );
 
 export async function handleLinkedInOauth(req: BunRequest) {
-  const { searchParams } = new URL(req.url);
+  const { hostname, searchParams } = new URL(req.url);
   const result = LinkedInOAuthSearchParams.safeParse(searchParams);
 
   if (!result.success) {
@@ -110,9 +111,11 @@ export async function handleLinkedInOauth(req: BunRequest) {
     JSON.stringify({ email, firstName, lastName })
   );
 
+  const domain = getRootDomainFromHostname(hostname);
+
   response.headers.set(
     'Set-Cookie',
-    `oauth_info=${info}; Path=/; Max-Age=86400; Secure; SameSite=Lax; HttpOnly`
+    `oauth_info=${info}; Domain=${domain}; Path=/; Max-Age=86400; Secure; SameSite=Lax; HttpOnly`
   );
 
   if (redirectTo.pathname === '/apply') {
