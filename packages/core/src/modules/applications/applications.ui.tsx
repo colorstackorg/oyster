@@ -163,16 +163,13 @@ Application.FirstNameField = function FirstNameField({
   error,
   name,
 }: FieldProps<string>) {
-  const { readOnly } = useContext(ApplicationContext);
-
   return (
     <Field error={error} label="First Name" labelFor={name} required>
       <Input
-        autoFocus={!readOnly}
         defaultValue={defaultValue}
         id={name}
         name={name}
-        readOnly={readOnly}
+        readOnly={true}
         required
       />
     </Field>
@@ -338,15 +335,13 @@ Application.LastNameField = function LastNameField({
   error,
   name,
 }: FieldProps<string>) {
-  const { readOnly } = useContext(ApplicationContext);
-
   return (
     <Field error={error} label="Last Name" labelFor={name} required>
       <Input
         defaultValue={defaultValue}
         id={name}
         name={name}
-        readOnly={readOnly}
+        readOnly={true}
         required
       />
     </Field>

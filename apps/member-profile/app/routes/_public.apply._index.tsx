@@ -8,14 +8,17 @@ import {
   useActionData,
   useLoaderData,
 } from 'react-router';
+import { z } from 'zod';
 
 import { apply } from '@oyster/core/applications';
 import { Application, ApplyInput } from '@oyster/core/applications/ui';
+import { getLinkedInAuthUri } from '@oyster/core/member-profile/server';
 import { buildMeta } from '@oyster/core/react-router';
 import { getReferral } from '@oyster/core/referrals';
 import {
   Button,
   Checkbox,
+  cx,
   ErrorMessage,
   Field,
   getErrors,
@@ -24,6 +27,7 @@ import {
   type TextProps,
   validateForm,
 } from '@oyster/ui';
+import { getCookie } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
 import { commitSession, getSession } from '@/shared/session.server';
@@ -50,11 +54,59 @@ export async function loader({ request }: LoaderFunctionArgs) {
       })
     : undefined;
 
+  const linkedInAuthUri = getLinkedInAuthUri({
+    clientRedirectUrl: request.url,
+  });
+
+  const linkedInInfo = getAuthenticatedLinkedInInfo(request);
+
+  if (!linkedInInfo) {
+    return {
+      email: referral?.email,
+      firstName: referral?.firstName,
+      lastName: referral?.lastName,
+      isLinkedInAuthenticated: false,
+      linkedInAuthUri,
+    };
+  }
+
   return {
-    email: referral?.email,
-    firstName: referral?.firstName,
-    lastName: referral?.lastName,
+    email: linkedInInfo.email?.endsWith('.edu') ? linkedInInfo.email : '',
+    firstName: linkedInInfo.firstName,
+    lastName: linkedInInfo.lastName,
+    isLinkedInAuthenticated: true,
+    linkedInAuthUri,
   };
+}
+
+const AuthenticatedLinkedInToken = z.object({
+  email: z.string().email(),
+  firstName: z.string().trim().min(1),
+  lastName: z.string().trim().min(1),
+});
+
+function getAuthenticatedLinkedInInfo(request: Request) {
+  const cookie = request.headers.get('Cookie');
+
+  if (!cookie) {
+    return null;
+  }
+
+  const oauthInfo = getCookie(cookie, 'oauth_info');
+
+  if (!oauthInfo) {
+    return null;
+  }
+
+  const result = AuthenticatedLinkedInToken.safeParse(
+    JSON.parse(decodeURIComponent(oauthInfo))
+  );
+
+  if (!result.success) {
+    return null;
+  }
+
+  return result.data;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -105,8 +157,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const keys = ApplyInput.keyof().enum;
 
 export default function ApplicationPage() {
-  const { email, firstName, lastName } = useLoaderData<typeof loader>();
-  const { error, errors } = getErrors(useActionData<typeof action>());
+  const { isLinkedInAuthenticated } = useLoaderData<typeof loader>();
 
   return (
     <>
@@ -125,87 +176,132 @@ export default function ApplicationPage() {
         </Text>
       </div>
 
-      <Form className="form" data-gap="2rem" method="post">
-        <Application readOnly={false}>
-          <Application.FirstNameField
-            defaultValue={firstName}
-            error={errors.firstName}
-            name={keys.firstName}
-          />
-          <Application.LastNameField
-            defaultValue={lastName}
-            error={errors.lastName}
-            name={keys.lastName}
-          />
-          <Application.EmailField
-            defaultValue={email}
-            error={errors.email}
-            name={keys.email}
-          />
-          <Application.LinkedInField
-            error={errors.linkedInUrl}
-            name={keys.linkedInUrl}
-          />
-          <Application.SchoolField
-            error={errors.schoolId}
-            name={keys.schoolId}
-          />
-          <Application.OtherSchoolField
-            error={errors.otherSchool}
-            name={keys.otherSchool}
-          />
-          <Application.MajorField error={errors.major} name={keys.major} />
-          <Application.OtherMajorField
-            error={errors.otherMajor}
-            name={keys.otherMajor}
-          />
-          <Application.EducationLevelField
-            error={errors.educationLevel}
-            name={keys.educationLevel}
-          />
-          <Application.GraduationDateField
-            month={{
-              error: errors.graduationMonth,
-              name: keys.graduationMonth,
-            }}
-            year={{
-              error: errors.graduationYear,
-              name: keys.graduationYear,
-            }}
-          />
-          <Application.RaceField error={errors.race} name={keys.race} />
-          <Application.GenderField error={errors.gender} name={keys.gender} />
-          <Application.OtherDemographicsField
-            error={errors.otherDemographics}
-            name={keys.otherDemographics}
-          />
-          <Application.ContributionField
-            error={errors.contribution}
-            name={keys.contribution}
-          />
-          <Application.GoalsField error={errors.goals} name={keys.goals} />
-        </Application>
-
-        <Field
-          description={<CodeOfConductDescription />}
-          labelFor={keys.codeOfConduct}
-          label="Code of Conduct"
-          required
-        >
-          <Checkbox
-            id={keys.codeOfConduct}
-            label="I have read, understand and will comply with the ColorStack Code of Conduct."
-            name={keys.codeOfConduct}
-            required
-            value="1"
-          />
-        </Field>
-
-        <ErrorMessage>{error}</ErrorMessage>
-
-        <Button.Submit fill>Apply</Button.Submit>
-      </Form>
+      {isLinkedInAuthenticated ? (
+        <ApplicationForm />
+      ) : (
+        <LinkedInAuthentication />
+      )}
     </>
+  );
+}
+
+function LinkedInAuthentication() {
+  const { linkedInAuthUri } = useLoaderData<typeof loader>();
+
+  if (!linkedInAuthUri) {
+    return null;
+  }
+
+  return (
+    <div className="flex w-full flex-col items-center justify-center gap-4 rounded-xl border border-gray-100 p-8">
+      <Text color="gray-500">
+        To proceed, please log into your LinkedIn account.
+      </Text>
+
+      <a
+        className={cx(
+          'flex w-fit items-center gap-3 rounded-lg border border-solid border-gray-300 p-2 no-underline',
+          'hover:cursor-pointer hover:bg-gray-100',
+          'active:bg-gray-200'
+        )}
+        href={linkedInAuthUri}
+        rel="noopener noreferrer"
+      >
+        <img
+          alt="LinkedIn Icon"
+          height={24}
+          src="/images/linkedin.png"
+          width={24}
+          className="rounded bg-white"
+        />
+        Log In with LinkedIn
+      </a>
+    </div>
+  );
+}
+
+function ApplicationForm() {
+  const { email, firstName, lastName } = useLoaderData<typeof loader>();
+  const { error, errors } = getErrors(useActionData<typeof action>());
+
+  return (
+    <Form className="form" data-gap="2rem" method="post">
+      <Application readOnly={false}>
+        <Application.FirstNameField
+          defaultValue={firstName}
+          error={errors.firstName}
+          name={keys.firstName}
+        />
+        <Application.LastNameField
+          defaultValue={lastName}
+          error={errors.lastName}
+          name={keys.lastName}
+        />
+        <Application.EmailField
+          defaultValue={email}
+          error={errors.email}
+          name={keys.email}
+        />
+        <Application.LinkedInField
+          error={errors.linkedInUrl}
+          name={keys.linkedInUrl}
+        />
+        <Application.SchoolField error={errors.schoolId} name={keys.schoolId} />
+        <Application.OtherSchoolField
+          error={errors.otherSchool}
+          name={keys.otherSchool}
+        />
+        <Application.MajorField error={errors.major} name={keys.major} />
+        <Application.OtherMajorField
+          error={errors.otherMajor}
+          name={keys.otherMajor}
+        />
+        <Application.EducationLevelField
+          error={errors.educationLevel}
+          name={keys.educationLevel}
+        />
+        <Application.GraduationDateField
+          month={{
+            error: errors.graduationMonth,
+            name: keys.graduationMonth,
+          }}
+          year={{
+            error: errors.graduationYear,
+            name: keys.graduationYear,
+          }}
+        />
+        <Application.RaceField error={errors.race} name={keys.race} />
+        <Application.GenderField error={errors.gender} name={keys.gender} />
+        <Application.OtherDemographicsField
+          error={errors.otherDemographics}
+          name={keys.otherDemographics}
+        />
+        <Application.ContributionField
+          error={errors.contribution}
+          name={keys.contribution}
+        />
+        <Application.GoalsField error={errors.goals} name={keys.goals} />
+      </Application>
+
+      <Field
+        description={<CodeOfConductDescription />}
+        labelFor={keys.codeOfConduct}
+        label="Code of Conduct"
+        required
+      >
+        <Checkbox
+          id={keys.codeOfConduct}
+          label="I have read, understand and will comply with the ColorStack Code of Conduct."
+          name={keys.codeOfConduct}
+          required
+          value="1"
+        />
+      </Field>
+
+      <ErrorMessage>{error}</ErrorMessage>
+
+      <Button.Submit fill>Apply</Button.Submit>
+    </Form>
   );
 }
 
