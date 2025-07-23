@@ -631,12 +631,22 @@ async function shouldReject(
     return [true, 'email_already_used'];
   }
 
-  const memberWithSameLinkedIn = await db
-    .selectFrom('students')
-    .where('linkedInUrl', 'ilike', application.linkedInUrl)
-    .executeTakeFirst();
+  const [memberWithSameLinkedIn, applicationAcceptedWithSameLinkedIn] =
+    await Promise.all([
+      db
+        .selectFrom('students')
+        .where('linkedInUrl', 'ilike', application.linkedInUrl)
+        .executeTakeFirst(),
 
-  if (memberWithSameLinkedIn) {
+      db
+        .selectFrom('applications')
+        .where('id', '!=', application.id)
+        .where('linkedInUrl', 'ilike', application.linkedInUrl)
+        .where('status', '=', ApplicationStatus.ACCEPTED)
+        .executeTakeFirst(),
+    ]);
+
+  if (memberWithSameLinkedIn || applicationAcceptedWithSameLinkedIn) {
     return [true, 'linkedin_already_used'];
   }
 
