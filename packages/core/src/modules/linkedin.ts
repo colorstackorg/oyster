@@ -361,6 +361,7 @@ type LinkedInResult = z.infer<typeof LinkedInResult>;
 type SyncLinkedInProfilesOptions = Partial<{
   limit: number;
   memberIds: string[];
+  useCache?: boolean;
 }>;
 
 /**
@@ -411,7 +412,11 @@ export async function syncLinkedInProfiles(
   for (let i = 0; i < batches.length; i++) {
     console.log(`Processing batch ${i + 1} of ${batches.length}.`);
 
-    const { cachedResults, profilesToScrape } = await splitBatch(batches[i]);
+    const { cachedResults, profilesToScrape } = await splitBatch(
+      batches[i],
+      options?.useCache ?? true
+    );
+
     const successfulResults = await scrapeProfiles(profilesToScrape);
 
     await Promise.all(
@@ -627,7 +632,10 @@ type SplitBatchResult = {
   profilesToScrape: string[];
 };
 
-async function splitBatch(members: Member[]): Promise<SplitBatchResult> {
+async function splitBatch(
+  members: Member[],
+  useCache: boolean
+): Promise<SplitBatchResult> {
   const cachedResults: LinkedInResult[] = [];
   const profilesToScrape: string[] = [];
 
@@ -636,29 +644,31 @@ async function splitBatch(members: Member[]): Promise<SplitBatchResult> {
   // and remove them from the batch so we don't have to scrape them again.
   await Promise.all(
     members.map(async (member) => {
-      const value = await cache.get(
-        `harvestapi~linkedin-profile-scraper:v2:${member.linkedInUrl}`
-      );
-
-      if (value) {
-        const result = LinkedInResult.parse(value);
-        const url = new URL(result.originalQuery.url);
-        const memberId = url.searchParams.get('id');
-
-        // This is the expected case where the query URL matches the member
-        // ID.
-        if (memberId === member.id) {
-          return cachedResults.push(result);
-        }
-
-        // This is the case where the query URL does not match the member ID.
-        // This likely means that there are multiple members with the same
-        // LinkedIn URL, something that should be fixed.
-        console.log(
-          `Member ID mismatch: ${memberId} !== ${member.id} for ${member.linkedInUrl}.`
+      if (useCache) {
+        const value = await cache.get(
+          `harvestapi~linkedin-profile-scraper:v2:${member.linkedInUrl}`
         );
 
-        return finishSync(member.id);
+        if (value) {
+          const result = LinkedInResult.parse(value);
+          const url = new URL(result.originalQuery.url);
+          const memberId = url.searchParams.get('id');
+
+          // This is the expected case where the query URL matches the member
+          // ID.
+          if (memberId === member.id) {
+            return cachedResults.push(result);
+          }
+
+          // This is the case where the query URL does not match the member ID.
+          // This likely means that there are multiple members with the same
+          // LinkedIn URL, something that should be fixed.
+          console.log(
+            `Member ID mismatch: ${memberId} !== ${member.id} for ${member.linkedInUrl}.`
+          );
+
+          return finishSync(member.id);
+        }
       }
 
       const url = new URL(member.linkedInUrl!);

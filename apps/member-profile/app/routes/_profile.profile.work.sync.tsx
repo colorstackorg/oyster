@@ -28,6 +28,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   await syncLinkedInProfiles({
     memberIds: [user(session)],
+    useCache: false,
   });
 
   toast(session, {
