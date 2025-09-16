@@ -1,4 +1,10 @@
-import { type LoaderFunctionArgs, Outlet, useLoaderData } from 'react-router';
+import { Plus } from 'react-feather';
+import {
+  Link,
+  type LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+} from 'react-router';
 
 import {
   doesAdminHavePermission,
@@ -7,8 +13,9 @@ import {
 } from '@oyster/core/admins';
 import { type AdminRole } from '@oyster/core/admins/types';
 import { AdminTable } from '@oyster/core/admins/ui';
-import { Dashboard } from '@oyster/ui';
+import { Button, Dashboard } from '@oyster/ui';
 
+import { Route } from '@/shared/constants';
 import { ensureUserAuthenticated, user } from '@/shared/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -65,10 +72,21 @@ export default function Admins() {
     <>
       <Dashboard.Header>
         <Dashboard.Title>Admins</Dashboard.Title>
+        <AddAdminButton />
       </Dashboard.Header>
 
       <AdminTable admins={admins} />
       <Outlet />
     </>
+  );
+}
+
+function AddAdminButton() {
+  return (
+    <Button.Slot variant="primary">
+      <Link to={Route['/admins/add']}>
+        <Plus size={16} /> Add Admin
+      </Link>
+    </Button.Slot>
   );
 }
