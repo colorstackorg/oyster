@@ -55,7 +55,11 @@ export const ResumeBook = z.object({
   airtableTableId: z.string().trim().min(1),
   createdAt: Entity.shape.createdAt,
   endDate: z.string().transform((value) => {
-    return dayjs(value).tz(RESUME_BOOK_TIMEZONE, true).endOf('date').toDate();
+    return dayjs(value)
+      .tz(RESUME_BOOK_TIMEZONE, true)
+      .hour(20)
+      .startOf('hour')
+      .toDate();
   }),
   hidden: BooleanInput,
   id: Entity.shape.id,
