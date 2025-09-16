@@ -20,6 +20,7 @@ export const ReferFriendInput = z.object({
     return (
       value.endsWith('.edu') ||
       value.endsWith('.ca') ||
+      value.endsWith('indianatech.net') ||
       value.endsWith('mymdc.net') ||
       value.endsWith('@colorstack.org')
     );
