@@ -43,6 +43,7 @@ export const Application = Student.pick({
         return (
           value.endsWith('.edu') ||
           value.endsWith('.ca') ||
+          value.endsWith('indianatech.net') ||
           value.endsWith('mymdc.net') ||
           value.endsWith('@colorstack.org')
         );
