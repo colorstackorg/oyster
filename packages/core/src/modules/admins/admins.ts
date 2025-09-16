@@ -117,18 +117,6 @@ export async function addAdmin({
     });
   }
 
-  const existingAdmin = await getAdmin({
-    select: [],
-    where: { email },
-  });
-
-  if (existingAdmin) {
-    return fail({
-      code: 409,
-      error: 'An admin already exists with this email.',
-    });
-  }
-
   const adminId = id();
 
   await db.transaction().execute(async (trx) => {
@@ -152,6 +140,14 @@ export async function addAdmin({
           memberId,
           role,
         };
+      })
+      .onConflict((eb) => {
+        return eb.column('email').doUpdateSet({
+          deletedAt: null,
+          firstName,
+          lastName,
+          role,
+        });
       })
       .execute();
   });
