@@ -425,13 +425,6 @@ function ImportantResourcesCard() {
 
       <ul className="flex flex-col gap-3">
         <ResourceItem
-          description="The heartbeat of our community."
-          href="https://colorstack-family.slack.com/"
-        >
-          Slack
-        </ResourceItem>
-
-        <ResourceItem
           description="A collection of career, community, and academic related resources."
           href="https://wiki.colorstack.org/the-colorstack-family"
         >
@@ -443,13 +436,6 @@ function ImportantResourcesCard() {
           href="https://colorstack.notion.site/colorstack-chapters-list"
         >
           Chapters
-        </ResourceItem>
-
-        <ResourceItem
-          description="The codebase where our software, called Oyster, lives. Go read + contribute to the codebase!"
-          href="https://github.com/colorstackorg/oyster"
-        >
-          GitHub
         </ResourceItem>
 
         <ResourceItem
