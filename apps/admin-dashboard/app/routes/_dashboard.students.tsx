@@ -156,7 +156,7 @@ function StudentsMenuDropdown() {
         <Dropdown.List>
           <Dropdown.Item>
             <Link to={Route['/students/remove']}>
-              <Trash2 /> Remove Members
+              <Trash2 /> Bulk Remove Members
             </Link>
           </Dropdown.Item>
         </Dropdown.List>
