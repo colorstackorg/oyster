@@ -20,6 +20,7 @@ import {
   validateForm,
 } from '@oyster/ui';
 import { Callout } from '@oyster/ui/callout';
+import { splitArray } from '@oyster/utils';
 
 import { Route } from '@/shared/constants';
 import {
@@ -66,23 +67,31 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 async function removeMembers(ids: string[]): Promise<number> {
-  const students = await db
-    .deleteFrom('students')
-    .where('id', 'in', ids)
-    .returning(['airtableId', 'email', 'firstName', 'slackId'])
-    .execute();
+  const batches = splitArray(ids, 10);
 
-  for (const student of students) {
-    job('student.removed', {
-      airtableId: student.airtableId as string,
-      email: student.email,
-      firstName: student.firstName,
-      sendViolationEmail: false,
-      slackId: student.slackId,
-    });
+  let count = 0;
+
+  for (const batch of batches) {
+    const students = await db
+      .deleteFrom('students')
+      .where('id', 'in', batch)
+      .returning(['airtableId', 'email', 'firstName', 'slackId'])
+      .execute();
+
+    for (const student of students) {
+      job('student.removed', {
+        airtableId: student.airtableId as string,
+        email: student.email,
+        firstName: student.firstName,
+        sendViolationEmail: false,
+        slackId: student.slackId,
+      });
+    }
+
+    count += students.length;
   }
 
-  return students.length;
+  return count;
 }
 
 export default function RemoveMembersPage() {
@@ -126,9 +135,7 @@ export default function RemoveMembersPage() {
         </Field>
 
         <Button.Group>
-          <Button color="error" type="submit">
-            Remove
-          </Button>
+          <Button.Submit color="error">Remove</Button.Submit>
         </Button.Group>
       </Form>
     </Modal>
