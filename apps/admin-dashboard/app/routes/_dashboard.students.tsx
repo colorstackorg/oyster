@@ -1,6 +1,14 @@
 import dayjs from 'dayjs';
 import { sql } from 'kysely';
-import { CornerUpLeft, Edit, ExternalLink, Star, Trash } from 'react-feather';
+import {
+  CornerUpLeft,
+  Edit,
+  ExternalLink,
+  Menu,
+  Star,
+  Trash,
+  Trash2,
+} from 'react-feather';
 import {
   generatePath,
   Link,
@@ -14,6 +22,7 @@ import { db } from '@oyster/db';
 import {
   Dashboard,
   Dropdown,
+  IconButton,
   Pagination,
   type SerializeFrom,
   Table,
@@ -118,12 +127,41 @@ export default function StudentsPage() {
 
       <Dashboard.Subheader>
         <Dashboard.SearchForm placeholder="Search by name..." />
+
+        <div className="ml-auto flex items-center gap-2">
+          <StudentsMenuDropdown />
+        </div>
       </Dashboard.Subheader>
 
       <StudentsTable />
       <StudentsPagination />
       <Outlet />
     </>
+  );
+}
+
+function StudentsMenuDropdown() {
+  return (
+    <Dropdown.Root>
+      <Dropdown.Trigger>
+        <IconButton
+          backgroundColor="gray-100"
+          backgroundColorOnHover="gray-200"
+          icon={<Menu />}
+          shape="square"
+        />
+      </Dropdown.Trigger>
+
+      <Dropdown>
+        <Dropdown.List>
+          <Dropdown.Item>
+            <Link to={Route['/students/remove']}>
+              <Trash2 /> Bulk Remove Members
+            </Link>
+          </Dropdown.Item>
+        </Dropdown.List>
+      </Dropdown>
+    </Dropdown.Root>
   );
 }
 

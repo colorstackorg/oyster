@@ -14,6 +14,7 @@ import {
   AirtableBullJob,
   type GetBullJobData,
 } from '@/infrastructure/bull.types';
+import { reportException } from '@/infrastructure/sentry';
 import { IS_PRODUCTION } from '@/shared/env';
 import { ColorStackError, ErrorWithContext } from '@/shared/errors';
 import { RateLimiter } from '@/shared/utils/rate-limiter';
@@ -387,13 +388,27 @@ async function deleteAirtableRecord({
 
   await airtableRateLimiter.process();
 
-  await fetch(
+  const response = await fetch(
     `${AIRTABLE_API_URI}/${airtableBaseId}/${airtableTableId}/${airtableRecordId}`,
     {
       headers: getAirtableHeaders(),
       method: 'delete',
     }
   );
+
+  if (!response.ok) {
+    const error = new ErrorWithContext(
+      'Failed to delete Airtable record.'
+    ).withContext({
+      airtableBaseId,
+      airtableRecordId,
+      airtableTableId,
+    });
+
+    reportException(error);
+
+    throw error;
+  }
 
   console.log({
     code: 'airtable_record_deleted',

@@ -44,10 +44,10 @@ export function getQueue(name: string) {
     _queues[name] = new Queue(name, {
       connection,
       defaultJobOptions: {
-        attempts: 3,
+        attempts: 1,
         backoff: { delay: 5000, type: 'exponential' },
-        removeOnComplete: { age: 60 * 60 * 24 * 1, count: 100 },
-        removeOnFail: { age: 60 * 60 * 24 * 7, count: 1000 },
+        removeOnComplete: { age: 60 * 60 * 24 * 1, count: 1000 },
+        removeOnFail: { age: 60 * 60 * 24 * 30, count: 10000 },
       },
     });
   }
@@ -143,7 +143,7 @@ export function registerWorker<Schema extends ZodType>(
     autorun: false,
     connection: redis,
     removeOnComplete: { age: 60 * 60 * 24 * 1, count: 1000 },
-    removeOnFail: { age: 60 * 60 * 24 * 7, count: 10000 },
+    removeOnFail: { age: 60 * 60 * 24 * 30, count: 10000 },
     ...options,
   };
 
