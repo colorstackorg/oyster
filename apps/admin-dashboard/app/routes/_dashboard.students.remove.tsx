@@ -126,9 +126,7 @@ export default function RemoveMembersPage() {
         </Field>
 
         <Button.Group>
-          <Button color="error" type="submit">
-            Remove
-          </Button>
+          <Button.Submit color="error">Remove</Button.Submit>
         </Button.Group>
       </Form>
     </Modal>
