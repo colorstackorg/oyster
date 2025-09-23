@@ -28,7 +28,6 @@ const ROUTES = [
   '/onboarding/emails',
   '/onboarding/emails/verify',
   '/onboarding/general',
-  '/onboarding/slack',
   '/offers',
   '/offers/full-time',
   '/offers/full-time/add',

@@ -65,19 +65,17 @@ function ProgressBar() {
   }
 
   return (
-    <div className="mx-auto my-4 grid w-full grid-cols-11 items-center sm:px-4">
+    <div className="mx-auto my-4 grid w-full grid-cols-5 items-center sm:px-4">
       <ProgressBarStep step="1" />
       <ProgressBarLine step="2" />
       <ProgressBarStep step="2" />
       <ProgressBarLine step="3" />
       <ProgressBarStep step="3" />
-      <ProgressBarLine step="4" />
-      <ProgressBarStep step="4" />
     </div>
   );
 }
 
-type ProgressStep = '1' | '2' | '3' | '4';
+type ProgressStep = '1' | '2' | '3';
 
 type ProgressBarStepProps = {
   step: ProgressStep;
@@ -113,14 +111,12 @@ const STEP_TO_ROUTE_MAP: Record<ProgressStep, string> = {
   '1': Route['/onboarding/general'],
   '2': Route['/onboarding/emails'],
   '3': Route['/onboarding/community'],
-  '4': Route['/onboarding/slack'],
 };
 
 const STEP_LABEL_MAP: Record<ProgressStep, string> = {
   '1': 'General',
   '2': 'Email',
   '3': 'Community',
-  '4': 'Slack',
 };
 
 function ProgressBarStepLabel({ step }: ProgressBarStepProps) {
@@ -163,7 +159,6 @@ const ROUTE_TO_STEP_MAP: Record<string, ProgressStep> = {
   [Route['/onboarding/emails']]: '2',
   [Route['/onboarding/emails/verify']]: '2',
   [Route['/onboarding/community']]: '3',
-  [Route['/onboarding/slack']]: '4',
 };
 
 type StepStatus = 'active' | 'completed' | 'inactive';
