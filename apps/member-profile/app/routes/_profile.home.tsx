@@ -172,9 +172,9 @@ async function getStudent(id: string) {
       'students.lastName',
       'students.number',
       (eb) => {
-        return eb('onboardingSessionAttendees.id', 'is not', null).as(
-          'attendedOnboardingSession'
-        );
+        return eb('onboardingSessionAttendees.id', 'is', null)
+          .and('students.acceptedAt', '>=', new Date('2025-09-01'))
+          .as('showOnboardingSessionCard');
       },
     ])
     .where('students.id', '=', id)
@@ -235,6 +235,7 @@ export default function HomeLayout() {
 
       <div className="grid grid-cols-1 items-start gap-4 @[900px]:grid-cols-2 @[1500px]:grid-cols-3">
         <Home.Column>
+          {student.showOnboardingSessionCard && <OnboardingSessionCard />}
           <ActiveStatusCard />
 
           <div className="gap-[inherit] @container">
@@ -324,6 +325,30 @@ function ActiveStatusCard() {
           </div>
         </div>
       </div>
+    </Card>
+  );
+}
+
+function OnboardingSessionCard() {
+  return (
+    <Card>
+      <Card.Title>Attend an Onboarding Session</Card.Title>
+
+      <Card.Description>
+        Learn more about ColorStack, meet other members and gain access to our
+        Slack workspace!
+      </Card.Description>
+
+      <Button.Group>
+        <Button.Slot variant="primary">
+          <Link
+            target="_blank"
+            to="https://calendly.com/colorstack-onboarding-ambassador/onboarding"
+          >
+            Book Onboarding Session <ExternalLink size={16} />
+          </Link>
+        </Button.Slot>
+      </Button.Group>
     </Card>
   );
 }
@@ -425,13 +450,6 @@ function ImportantResourcesCard() {
 
       <ul className="flex flex-col gap-3">
         <ResourceItem
-          description="The heartbeat of our community."
-          href="https://colorstack-family.slack.com/"
-        >
-          Slack
-        </ResourceItem>
-
-        <ResourceItem
           description="A collection of career, community, and academic related resources."
           href="https://wiki.colorstack.org/the-colorstack-family"
         >
@@ -443,13 +461,6 @@ function ImportantResourcesCard() {
           href="https://colorstack.notion.site/colorstack-chapters-list"
         >
           Chapters
-        </ResourceItem>
-
-        <ResourceItem
-          description="The codebase where our software, called Oyster, lives. Go read + contribute to the codebase!"
-          href="https://github.com/colorstackorg/oyster"
-        >
-          GitHub
         </ResourceItem>
 
         <ResourceItem

@@ -11,6 +11,8 @@ if (IS_PRODUCTION) {
   throw new Error('Cannot seed database in non-development environment.');
 }
 
+let email = '';
+
 main();
 
 async function main() {
@@ -36,8 +38,6 @@ async function main() {
     await db.destroy();
   }
 }
-
-let email = '';
 
 function setEmailFromCommandLine() {
   const answer = prompt(

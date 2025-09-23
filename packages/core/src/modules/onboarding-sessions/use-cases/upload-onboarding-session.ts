@@ -16,7 +16,7 @@ export async function uploadOnboardingSession(
 ) {
   const onboardingSessionId = id();
 
-  await db.transaction().execute(async (trx) => {
+  const attendees = await db.transaction().execute(async (trx) => {
     await trx
       .insertInto('onboardingSessions')
       .values({
@@ -45,12 +45,22 @@ export async function uploadOnboardingSession(
           .execute();
       })
     );
+
+    return trx
+      .selectFrom('students')
+      .select(['email', 'id', 'slackId'])
+      .where('id', 'in', input.attendees)
+      .execute();
   });
 
-  input.attendees.forEach((studentId) => {
+  attendees.forEach((attendee) => {
     job('onboarding_session.attended', {
       onboardingSessionId,
-      studentId,
+      studentId: attendee.id,
     });
+
+    if (!attendee.slackId) {
+      job('slack.invite', { email: attendee.email });
+    }
   });
 }

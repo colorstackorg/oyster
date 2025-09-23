@@ -97,9 +97,15 @@ export async function action({ request }: ActionFunctionArgs) {
     await updateMember(memberId, {
       ...result.data,
       ethnicities: result.data.ethnicities || [],
+      onboardedAt: new Date(),
     });
 
-    return redirect(Route['/onboarding/slack']);
+    const url = new URL(request.url);
+
+    url.pathname = Route['/home'];
+    url.searchParams.set('new', '1');
+
+    return redirect(url.toString());
   } catch (e) {
     return data({ error: (e as Error).message }, { status: 500 });
   }
@@ -221,7 +227,7 @@ export default function OnboardingCommunityForm() {
 
       <OnboardingButtonGroup>
         <OnboardingBackButton to="/onboarding/emails" />
-        <OnboardingContinueButton />
+        <OnboardingContinueButton label="Finish" />
       </OnboardingButtonGroup>
     </Form>
   );
