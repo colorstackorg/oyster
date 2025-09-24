@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/react-router';
 import {
   type ActionFunctionArgs,
   data,
@@ -10,7 +9,6 @@ import {
 import z from 'zod';
 
 import { job } from '@oyster/core/bull';
-import { db } from '@oyster/db';
 import {
   Button,
   ErrorMessage,
@@ -54,10 +52,18 @@ export async function action({ request }: ActionFunctionArgs) {
     return data(result, { status: 400 });
   }
 
-  const count = await removeMembers(result.data.memberIds);
+  const ids = result.data.memberIds;
+
+  const batches = splitArray(ids, 10);
+
+  for (const batch of batches) {
+    job('student.batch_remove', {
+      memberIds: batch,
+    });
+  }
 
   toast(session, {
-    message: `Removed ${count} members.`,
+    message: `Removing ${ids.length} members asynchronously.`,
   });
 
   return redirect(Route['/students'], {
@@ -65,38 +71,6 @@ export async function action({ request }: ActionFunctionArgs) {
       'Set-Cookie': await commitSession(session),
     },
   });
-}
-
-async function removeMembers(ids: string[]): Promise<number> {
-  const batches = splitArray(ids, 10);
-
-  let count = 0;
-
-  for (const batch of batches) {
-    try {
-      const students = await db
-        .deleteFrom('students')
-        .where('id', 'in', batch)
-        .returning(['airtableId', 'email', 'firstName', 'slackId'])
-        .execute();
-
-      for (const student of students) {
-        job('student.removed', {
-          airtableId: student.airtableId as string,
-          email: student.email,
-          firstName: student.firstName,
-          sendViolationEmail: false,
-          slackId: student.slackId,
-        });
-      }
-
-      count += students.length;
-    } catch (e) {
-      Sentry.captureException(e);
-    }
-  }
-
-  return count;
 }
 
 export default function RemoveMembersPage() {
@@ -115,9 +89,9 @@ export default function RemoveMembersPage() {
       </Modal.Description>
 
       <Callout color="blue">
-        Note: These members will immediately be removed from our database, but
-        it may take some time for them to be removed from Slack, Mailchimp and
-        Airtable.
+        Note: This process will run asynchronously and if there are a lot of
+        members to remove, it may take several hours to fully remove them from
+        Slack, Mailchimp and Airtable.
       </Callout>
 
       <Form className="form" method="post">

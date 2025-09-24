@@ -15,6 +15,7 @@ import {
 } from '@/modules/airtable';
 import { sendCompanyReviewNotifications } from '@/modules/employment/use-cases/send-company-review-notifications';
 import { syncLinkedInProfiles } from '@/modules/linkedin';
+import { batchRemoveMembers } from '@/modules/members/use-cases/batch-remove-members';
 import { sendAnniversaryEmail } from '@/modules/members/use-cases/send-anniversary-email';
 import { sendGraduationEmail } from '@/modules/members/use-cases/send-graduation-email';
 import { success } from '@/shared/utils/core';
@@ -31,6 +32,9 @@ export const memberWorker = registerWorker(
     const result = await match(job)
       .with({ name: 'student.anniversary.email' }, ({ data }) => {
         return sendAnniversaryEmail(data);
+      })
+      .with({ name: 'student.batch_remove' }, ({ data }) => {
+        return batchRemoveMembers(data);
       })
       .with({ name: 'student.birthdate.daily' }, ({ data }) => {
         return sendBirthdayNotification(data);
