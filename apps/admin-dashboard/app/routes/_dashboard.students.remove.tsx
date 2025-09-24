@@ -54,28 +54,17 @@ export async function action({ request }: ActionFunctionArgs) {
     return data(result, { status: 400 });
   }
 
-  try {
-    const count = await removeMembers(result.data.memberIds);
+  const count = await removeMembers(result.data.memberIds);
 
-    toast(session, {
-      message: `Removed ${count} members.`,
-    });
+  toast(session, {
+    message: `Removed ${count} members.`,
+  });
 
-    return redirect(Route['/students'], {
-      headers: {
-        'Set-Cookie': await commitSession(session),
-      },
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    return data(
-      {
-        error: `An error occurred while removing members: ${(e as Error).message}`,
-      },
-      { status: 500 }
-    );
-  }
+  return redirect(Route['/students'], {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  });
 }
 
 async function removeMembers(ids: string[]): Promise<number> {
@@ -84,23 +73,27 @@ async function removeMembers(ids: string[]): Promise<number> {
   let count = 0;
 
   for (const batch of batches) {
-    const students = await db
-      .deleteFrom('students')
-      .where('id', 'in', batch)
-      .returning(['airtableId', 'email', 'firstName', 'slackId'])
-      .execute();
+    try {
+      const students = await db
+        .deleteFrom('students')
+        .where('id', 'in', batch)
+        .returning(['airtableId', 'email', 'firstName', 'slackId'])
+        .execute();
 
-    for (const student of students) {
-      job('student.removed', {
-        airtableId: student.airtableId as string,
-        email: student.email,
-        firstName: student.firstName,
-        sendViolationEmail: false,
-        slackId: student.slackId,
-      });
+      for (const student of students) {
+        job('student.removed', {
+          airtableId: student.airtableId as string,
+          email: student.email,
+          firstName: student.firstName,
+          sendViolationEmail: false,
+          slackId: student.slackId,
+        });
+      }
+
+      count += students.length;
+    } catch (e) {
+      Sentry.captureException(e);
     }
-
-    count += students.length;
   }
 
   return count;
