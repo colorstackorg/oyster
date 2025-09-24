@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react-router';
 import {
   type ActionFunctionArgs,
   data,
@@ -72,23 +73,27 @@ async function removeMembers(ids: string[]): Promise<number> {
   let count = 0;
 
   for (const batch of batches) {
-    const students = await db
-      .deleteFrom('students')
-      .where('id', 'in', batch)
-      .returning(['airtableId', 'email', 'firstName', 'slackId'])
-      .execute();
+    try {
+      const students = await db
+        .deleteFrom('students')
+        .where('id', 'in', batch)
+        .returning(['airtableId', 'email', 'firstName', 'slackId'])
+        .execute();
 
-    for (const student of students) {
-      job('student.removed', {
-        airtableId: student.airtableId as string,
-        email: student.email,
-        firstName: student.firstName,
-        sendViolationEmail: false,
-        slackId: student.slackId,
-      });
+      for (const student of students) {
+        job('student.removed', {
+          airtableId: student.airtableId as string,
+          email: student.email,
+          firstName: student.firstName,
+          sendViolationEmail: false,
+          slackId: student.slackId,
+        });
+      }
+
+      count += students.length;
+    } catch (e) {
+      Sentry.captureException(e);
     }
-
-    count += students.length;
   }
 
   return count;
@@ -140,8 +145,4 @@ export default function RemoveMembersPage() {
       </Form>
     </Modal>
   );
-}
-
-export function ErrorBoundary() {
-  return <></>;
 }
