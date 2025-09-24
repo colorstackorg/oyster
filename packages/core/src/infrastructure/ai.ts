@@ -151,9 +151,9 @@ type GetChatCompletionInput = {
   /**
    * The model to use for the completion.
    *
-   * @default 'claude-3-5-sonnet-20240620'
+   * @default 'claude-sonnet-4-20250514'
    */
-  model?: 'claude-3-5-sonnet-20240620' | 'claude-sonnet-4-20250514';
+  model?: 'claude-sonnet-4-20250514';
 
   /**
    * The system prompt to use for the completion. This can be used to provide
@@ -190,7 +190,7 @@ const AnthropicResponse = z.object({
 export async function getChatCompletion({
   maxTokens,
   messages,
-  model = 'claude-3-5-sonnet-20240620',
+  model = 'claude-sonnet-4-20250514',
   system: _system,
   temperature = 0.5,
 }: GetChatCompletionInput): Promise<Result<string>> {
@@ -217,7 +217,6 @@ export async function getChatCompletion({
       temperature,
     }),
     headers: {
-      'anthropic-beta': 'prompt-caching-2024-07-31',
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
       'x-api-key': ANTHROPIC_API_KEY,
