@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react-router';
 import {
   type ActionFunctionArgs,
   data,
@@ -53,17 +54,28 @@ export async function action({ request }: ActionFunctionArgs) {
     return data(result, { status: 400 });
   }
 
-  const count = await removeMembers(result.data.memberIds);
+  try {
+    const count = await removeMembers(result.data.memberIds);
 
-  toast(session, {
-    message: `Removed ${count} members.`,
-  });
+    toast(session, {
+      message: `Removed ${count} members.`,
+    });
 
-  return redirect(Route['/students'], {
-    headers: {
-      'Set-Cookie': await commitSession(session),
-    },
-  });
+    return redirect(Route['/students'], {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  } catch (e) {
+    Sentry.captureException(e);
+
+    return data(
+      {
+        error: `An error occurred while removing members: ${(e as Error).message}`,
+      },
+      { status: 500 }
+    );
+  }
 }
 
 async function removeMembers(ids: string[]): Promise<number> {
@@ -140,8 +152,4 @@ export default function RemoveMembersPage() {
       </Form>
     </Modal>
   );
-}
-
-export function ErrorBoundary() {
-  return <></>;
 }
