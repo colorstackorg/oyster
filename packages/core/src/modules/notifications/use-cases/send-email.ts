@@ -168,7 +168,7 @@ function getHtml(input: EmailTemplate): string {
 function getSubject(input: EmailTemplate): string {
   const subject = match(input)
     .with({ name: 'application-accepted' }, () => {
-      return 'ColorStack Onboarding + Slack Invitation';
+      return 'Welcome to ColorStack | Next Steps';
     })
     .with({ name: 'application-created' }, () => {
       return 'Thank You for Applying to ColorStack';

@@ -34,19 +34,16 @@ export function ApplicationAcceptedEmail({
         <ol>
           <li>
             <Email.Text>
-              <b>
-                <Email.Link href="https://app.colorstack.io/onboarding">
-                  Complete your ColorStack profile
-                </Email.Link>
-                .
-              </b>{' '}
-              This should only take about 5 minutes. Upon completion, you'll
-              have full access to your{' '}
-              <Email.Link href="https://app.colorstack.io">
-                <b>Member Profile</b>
+              <Email.Link
+                href="https://app.colorstack.io/onboarding"
+                fontWeight="bold"
+              >
+                Complete your ColorStack profile
               </Email.Link>
-              . This is the powerhouse of your ColorStack membership. 💪 Take a
-              few minutes to:
+              . This should only take about 5 minutes. Upon completion, you'll
+              have full access to your <b>Member Profile</b>. This is the
+              powerhouse of your ColorStack membership. 💪 Take a few minutes
+              to:
             </Email.Text>
 
             <ul>
@@ -54,7 +51,10 @@ export function ApplicationAcceptedEmail({
                 <Email.Text marginBottom="8px" marginTop="8px">
                   <b>
                     Bookmark your{' '}
-                    <Email.Link href="https://app.colorstack.io">
+                    <Email.Link
+                      href="https://app.colorstack.io"
+                      fontWeight="bold"
+                    >
                       Member Profile
                     </Email.Link>
                   </b>
@@ -72,21 +72,47 @@ export function ApplicationAcceptedEmail({
 
           <li>
             <Email.Text>
-              <b>
-                <Email.Link href="https://calendly.com/colorstack-onboarding-ambassador/onboarding">
-                  Book your family onboarding session
-                </Email.Link>
-              </b>{' '}
+              <Email.Link
+                href="https://calendly.com/colorstack-onboarding-ambassador/onboarding"
+                fontWeight="bold"
+              >
+                Book your family onboarding session
+              </Email.Link>{' '}
               to learn more about our programming & offerings, how to be an
               engaged family member, and meet other new members! 📅
             </Email.Text>
           </li>
 
           <li>
-            <Email.Text>
-              Lastly, <b>after you complete the above steps</b>, you will
-              receive an invite from Slack to join our Slack workspace.
+            <Email.Text fontWeight="700">
+              Get involved with your local ColorStack chapter.
             </Email.Text>
+
+            <ul>
+              <li>
+                <Email.Text marginBottom="8px" marginTop="8px">
+                  ColorStack has chapters at campuses across the US and Canada!
+                </Email.Text>
+              </li>
+              <li>
+                <Email.Text marginBottom="8px" marginTop="8px">
+                  Find out if there is a chapter on your campus{' '}
+                  <Email.Link
+                    href="https://colorstack.notion.site/colorstack-chapters-list"
+                    fontWeight="bold"
+                  >
+                    here
+                  </Email.Link>
+                  .
+                </Email.Text>
+              </li>
+              <li>
+                <Email.Text marginBottom="8px" marginTop="8px">
+                  If you are a leader interested in starting a chapter, learn
+                  how to get started in your onboarding session.
+                </Email.Text>
+              </li>
+            </ul>
           </li>
         </ol>
 
@@ -102,6 +128,13 @@ export function ApplicationAcceptedEmail({
         </Email.Text>
 
         <Email.Signature type="jehron" />
+
+        <Email.Text>
+          <i>
+            PS: New members will receive an invitation to join our Slack
+            community after completing their live onboarding session.
+          </i>
+        </Email.Text>
       </Email.Main>
     </Email.Template>
   );
