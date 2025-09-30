@@ -127,8 +127,8 @@ export async function reviewResume({
     The following is a resume that has been parsed to text from a PDF. Please
     review this resume.
 
-    IMPORTANT: Do not return ANYTHING except for JSON that respects the
-    following Zod schema:
+    IMPORTANT: Do not return ANYTHING except for raw JSON that respects the
+    following Zod schema. Do not start the response with \`\`\`json:
 
     const ResumeBullet = z.object({
       content: z.string(),
