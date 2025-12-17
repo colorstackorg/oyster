@@ -15,7 +15,9 @@ import {
 } from '@/modules/airtable';
 import { sendCompanyReviewNotifications } from '@/modules/employment/use-cases/send-company-review-notifications';
 import { syncLinkedInProfiles } from '@/modules/linkedin';
+import { onMemberStatusUpdated } from '@/modules/members/events/member-status-update';
 import { batchRemoveMembers } from '@/modules/members/use-cases/batch-remove-members';
+import { batchUpdateMemberStatus } from '@/modules/members/use-cases/batch-update-members-status';
 import { sendAnniversaryEmail } from '@/modules/members/use-cases/send-anniversary-email';
 import { sendGraduationEmail } from '@/modules/members/use-cases/send-graduation-email';
 import { success } from '@/shared/utils/core';
@@ -35,6 +37,9 @@ export const memberWorker = registerWorker(
       })
       .with({ name: 'student.batch_remove' }, ({ data }) => {
         return batchRemoveMembers(data);
+      })
+      .with({ name: 'student.batch_update_status' }, ({ data }) => {
+        return batchUpdateMemberStatus(data);
       })
       .with({ name: 'student.birthdate.daily' }, ({ data }) => {
         return sendBirthdayNotification(data);
@@ -62,6 +67,9 @@ export const memberWorker = registerWorker(
       })
       .with({ name: 'student.removed' }, ({ data }) => {
         return onMemberRemoved(data);
+      })
+      .with({ name: 'student.status_updated' }, ({ data }) => {
+        return onMemberStatusUpdated(data);
       })
       .with({ name: 'student.statuses.backfill' }, ({ data }) => {
         return backfillActiveStatuses(data);

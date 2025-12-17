@@ -16,14 +16,17 @@ import {
   Outlet,
   useLoaderData,
 } from 'react-router';
+import { match } from 'ts-pattern';
 
 import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
 import { db } from '@oyster/db';
+import { MemberStatus } from '@oyster/types';
 import {
   Dashboard,
   Dropdown,
   IconButton,
   Pagination,
+  Pill,
   type SerializeFrom,
   Table,
   type TableColumnProps,
@@ -81,6 +84,7 @@ async function listStudents({
         'students.email',
         'students.firstName',
         'students.id',
+        'students.status',
         'students.lastName',
         'students.otherSchool',
         'schools.name as schoolName',
@@ -180,16 +184,35 @@ function StudentsTable() {
           </Link>
         );
       },
-      size: '240',
+      size: '200',
     },
     {
       displayName: 'Email',
-      size: '320',
+      size: '240',
       render: (student) => student.email,
     },
     {
+      displayName: 'Status',
+      size: '160',
+      render: (student) => {
+        if (student.status === MemberStatus.BULK_REMOVED) {
+          return <Pill color="red-100">Bulk Removed</Pill>;
+        }
+
+        if (student.status === MemberStatus.BANNED) {
+          return <Pill color="red-100">Banned</Pill>;
+        }
+
+        if (student.status === MemberStatus.INACTIVE) {
+          return <Pill color="amber-100">Inactive</Pill>;
+        }
+
+        return <Pill color="lime-100">Active</Pill>;
+      },
+    },
+    {
       displayName: 'School',
-      size: '360',
+      size: '280',
       render: (student) => student.schoolName || student.otherSchool || '-',
     },
     {

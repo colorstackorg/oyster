@@ -6,6 +6,7 @@ import {
   Email,
   Event,
   type ExtractValue,
+  MemberStatus,
   ProfileView,
   Student,
   StudentEmail,
@@ -627,6 +628,13 @@ export const StudentBullJob = z.discriminatedUnion('name', [
     }),
   }),
   z.object({
+    name: z.literal('student.batch_update_status'),
+    data: z.object({
+      memberIds: z.array(Student.shape.id),
+      status: z.nativeEnum(MemberStatus),
+    }),
+  }),
+  z.object({
     name: z.literal('student.birthdate.daily'),
     data: z.object({}),
   }),
@@ -673,6 +681,17 @@ export const StudentBullJob = z.discriminatedUnion('name', [
       firstName: z.string().trim().min(1),
       sendViolationEmail: z.boolean(),
       slackId: Student.shape.slackId.nullable(),
+    }),
+  }),
+  z.object({
+    name: z.literal('student.status_updated'),
+    data: z.object({
+      airtableId: z.string().trim().min(1),
+      email: Student.shape.email,
+      firstName: z.string().trim().min(1),
+      sendViolationEmail: z.boolean(),
+      slackId: Student.shape.slackId.nullable(),
+      status: z.nativeEnum(MemberStatus),
     }),
   }),
   z.object({

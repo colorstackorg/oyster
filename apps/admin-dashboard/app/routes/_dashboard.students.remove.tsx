@@ -9,6 +9,7 @@ import {
 import z from 'zod';
 
 import { job } from '@oyster/core/bull';
+import { MemberStatus } from '@oyster/types';
 import {
   Button,
   ErrorMessage,
@@ -57,13 +58,14 @@ export async function action({ request }: ActionFunctionArgs) {
   const batches = splitArray(ids, 10);
 
   for (const batch of batches) {
-    job('student.batch_remove', {
+    job('student.batch_update_status', {
+      status: MemberStatus.BULK_REMOVED,
       memberIds: batch,
     });
   }
 
   toast(session, {
-    message: `Removing ${ids.length} members asynchronously.`,
+    message: `Updating status of ${ids.length} members to ${MemberStatus.BULK_REMOVED} asynchronously.`,
   });
 
   return redirect(Route['/students'], {
@@ -84,13 +86,14 @@ export default function RemoveMembersPage() {
       </Modal.Header>
 
       <Modal.Description>
-        This action is not reversible. All of their engagement records will be
-        deleted and they will be removed from Slack, Mailchimp and Airtable.
+        User records will remain intact in our database and Airtable, while
+        access user account will be deactivated from Slack and Mailchimp will be
+        removed.
       </Modal.Description>
 
       <Callout color="blue">
         Note: This process will run asynchronously and if there are a lot of
-        members to remove, it may take several hours to fully remove them from
+        members to update, it may take several hours to fully update them in
         Slack, Mailchimp and Airtable.
       </Callout>
 
