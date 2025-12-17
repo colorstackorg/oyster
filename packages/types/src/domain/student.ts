@@ -93,6 +93,13 @@ const StudentLocation = z.object({
   hometownLongitude: z.coerce.number().nullable(),
 });
 
+export const MemberStatus = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+  BULK_REMOVED: 'bulk_removed',
+  BANNED: 'banned',
+} as const;
+
 export const WorkAuthorizationStatus = {
   AUTHORIZED: 'authorized',
   NEEDS_SPONSORSHIP: 'needs_sponsorship',
@@ -192,6 +199,17 @@ export const Student = Entity.merge(StudentSocialLinks)
       }),
 
     slackId: z.string().optional(),
+
+    /**
+     * The overall membership status of the member in ColorStack.
+     *
+     * - `active`: Current active member
+     * - `inactive`: Member who left or became inactive
+     * - `bulk_removed`: Member removed via bulk removal tool
+     * - `banned`: Member permanently blocked from platform
+     */
+    status: z.nativeEnum(MemberStatus),
+
     type: z.nativeEnum(MemberType),
 
     /**
@@ -211,7 +229,7 @@ export const StudentEmail = Entity.omit({
 
 export const StudentActiveStatus = z.object({
   date: z.string().trim().min(1),
-  status: z.enum(['active', 'inactive']),
+  status: z.nativeEnum(MemberStatus),
   studentId: Student.shape.id,
 });
 

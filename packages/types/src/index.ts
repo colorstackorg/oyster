@@ -8,6 +8,7 @@ export {
 export { ProfileView } from './domain/profile-view';
 export {
   MemberEthnicity,
+  MemberStatus,
   MemberType,
   Student,
   StudentActiveStatus,
