@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 
 import { db } from '@oyster/db';
+import { MemberStatus } from '@oyster/types';
 import { id } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull';
@@ -53,14 +54,31 @@ export async function uploadOnboardingSession(
       .execute();
   });
 
-  attendees.forEach((attendee) => {
-    job('onboarding_session.attended', {
-      onboardingSessionId,
-      studentId: attendee.id,
-    });
+  await Promise.all(
+    attendees.map(async (attendee) => {
+      const currentStudent = await db
+        .selectFrom('students')
+        .select(['airtableId', 'email', 'firstName', 'slackId', 'status'])
+        .where('id', '=', attendee.id)
+        .executeTakeFirstOrThrow();
 
-    if (!attendee.slackId) {
-      job('slack.invite', { email: attendee.email });
-    }
-  });
+      const isBulkRemoved = currentStudent.status === MemberStatus.BULK_REMOVED;
+
+      if (isBulkRemoved) {
+        job('student.batch_update_status', {
+          memberIds: [attendee.id],
+          status: MemberStatus.ACTIVE,
+        });
+      } else {
+        if (!attendee.slackId) {
+          job('slack.invite', { email: attendee.email });
+        }
+      }
+
+      job('onboarding_session.attended', {
+        onboardingSessionId,
+        studentId: attendee.id,
+      });
+    })
+  );
 }

@@ -10,6 +10,7 @@ import {
   answerPublicQuestionInPrivate,
   syncThreadToPinecone,
 } from '@/modules/slack/slack';
+import { activateSlackUser } from '@/modules/slack/use-cases/activate-slack-user';
 import { updateBirthdatesFromSlack } from '@/modules/slack/use-cases/update-birthdates-from-slack';
 import { onSlackProfilePictureChanged } from './events/slack-profile-picture-changed';
 import { onSlackReactionAdded } from './events/slack-reaction-added';
@@ -56,6 +57,9 @@ export const slackWorker = registerWorker(
       })
       .with({ name: 'slack.deactivate' }, async ({ data }) => {
         return deactivateSlackUser(data);
+      })
+      .with({ name: 'slack.activate' }, async ({ data }) => {
+        return activateSlackUser(data);
       })
       .with({ name: 'slack.emoji.changed' }, async ({ data }) => {
         if (data.subtype === 'add') {

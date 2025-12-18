@@ -111,7 +111,7 @@ async function onBulkRemoveStatusUpdate({
   }
 }
 
-async function onActiveStatusUpdate({ studentId }: StatusUpdateProps) {
+async function onActiveStatusUpdate({ studentId, slackId }: StatusUpdateProps) {
   const student = await db
     .selectFrom('students')
     .select(['email', 'firstName', 'id', 'lastName'])
@@ -129,7 +129,11 @@ async function onActiveStatusUpdate({ studentId }: StatusUpdateProps) {
     lastName: student.lastName,
   });
 
-  // TODO: reactivate slack user
+  if (slackId) {
+    job('slack.activate', {
+      slackId,
+    });
+  }
 }
 
 // async function onInactiveStatusUpdate({

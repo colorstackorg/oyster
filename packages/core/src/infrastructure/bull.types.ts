@@ -474,6 +474,12 @@ export const SlackBullJob = z.discriminatedUnion('name', [
     }),
   }),
   z.object({
+    name: z.literal('slack.activate'),
+    data: z.object({
+      slackId: Student.shape.slackId.unwrap(),
+    }),
+  }),
+  z.object({
     name: z.literal('slack.emoji.changed'),
     data: z.discriminatedUnion('subtype', [
       z.object({

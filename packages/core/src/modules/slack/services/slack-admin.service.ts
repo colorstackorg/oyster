@@ -14,6 +14,14 @@ const SlackResponse = z.object({
 class DeactivateSlackUserError extends ErrorWithContext {
   message = 'Failed to deactivate Slack user.';
 }
+class ActivateSlackUserError extends ErrorWithContext {
+  message = 'Failed to activate Slack user.';
+}
+
+const activateRateLimiter = new RateLimiter('slack:connections:activate', {
+  rateLimit: 20,
+  rateLimitWindow: 60,
+});
 
 const deactivateRateLimiter = new RateLimiter('slack:connections:deactivate', {
   rateLimit: 20,
@@ -126,6 +134,42 @@ async function fetchFromSlack(
   });
 
   return response;
+}
+
+export async function activateSlackUser(id: string) {
+  await activateRateLimiter.process();
+
+  const response = await fetchFromSlack(
+    'https://slack.com/api/users.admin.setRegular',
+    {
+      body: new URLSearchParams({ user: id }),
+    }
+  );
+
+  const data = await response.json();
+
+  const result = SlackResponse.safeParse(data);
+
+  let error: Error | null = null;
+
+  if (!result.success) {
+    error = new ZodParseError(result.error);
+  } else if (!result.data.ok) {
+    error = new ActivateSlackUserError().withContext({
+      code: result.data.error,
+    });
+  }
+
+  if (error) {
+    reportException(error);
+    throw error;
+  }
+
+  console.log({
+    code: 'slack_user_activated',
+    message: 'Slack user was activated.',
+    data: { slackId: id },
+  });
 }
 
 //
