@@ -11,7 +11,7 @@ export async function batchUpdateMemberStatus({
     .updateTable('students')
     .set({ status })
     .where('id', 'in', memberIds)
-    .returning(['airtableId', 'email', 'firstName', 'slackId'])
+    .returning(['airtableId', 'email', 'firstName', 'id', 'slackId'])
     .execute();
 
   for (const student of students) {
@@ -22,6 +22,7 @@ export async function batchUpdateMemberStatus({
       sendViolationEmail: false,
       slackId: student.slackId,
       status,
+      studentId: student.id,
     });
   }
 }

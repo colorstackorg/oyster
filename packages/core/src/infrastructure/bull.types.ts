@@ -692,6 +692,7 @@ export const StudentBullJob = z.discriminatedUnion('name', [
       sendViolationEmail: z.boolean(),
       slackId: Student.shape.slackId.nullable(),
       status: z.nativeEnum(MemberStatus),
+      studentId: Student.shape.id,
     }),
   }),
   z.object({

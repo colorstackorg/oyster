@@ -3,7 +3,11 @@ import { type SelectExpression, sql } from 'kysely';
 import { match } from 'ts-pattern';
 
 import { type DB, db } from '@oyster/db';
-import { type Application, OtherDemographic } from '@oyster/types';
+import {
+  type Application,
+  MemberStatus,
+  OtherDemographic,
+} from '@oyster/types';
 import { id, run } from '@oyster/utils';
 
 import { job, registerWorker } from '@/infrastructure/bull';
@@ -195,6 +199,7 @@ export async function acceptApplication(
     .executeTakeFirstOrThrow();
 
   let studentId = '';
+  let existingStudent = false;
 
   await db.transaction().execute(async (trx) => {
     await trx
@@ -227,11 +232,6 @@ export async function acceptApplication(
       .where('status', '=', ApplicationStatus.PENDING)
       .execute();
 
-    await trx
-      .insertInto('studentEmails')
-      .values({ email: application.email })
-      .execute();
-
     const allOtherDemographics = Object.values(OtherDemographic) as string[];
 
     const otherDemographics = application.otherDemographics.filter(
@@ -240,42 +240,111 @@ export async function acceptApplication(
       }
     );
 
-    studentId = id();
+    // Check if there's an existing bulk_removed student to reactivate
+    const existingStudentId = await findBulkRemovedStudent(application.email);
 
-    await trx
-      .insertInto('students')
-      .values({
-        acceptedAt: new Date(),
-        applicationId: application.id,
-        appliedAt: application.createdAt,
-        educationLevel: application.educationLevel,
-        email: application.email,
-        firstName: application.firstName,
-        gender: application.gender,
-        graduationMonth: application.graduationMonth,
-        graduationYear: application.graduationYear.toString(),
-        id: studentId,
-        lastName: application.lastName,
-        linkedInUrl: application.linkedInUrl,
-        major: application.major,
-        otherDemographics,
-        otherMajor: application.otherMajor,
-        otherSchool: application.otherSchool,
-        race: application.race,
-        schoolId: application.schoolId,
-      })
-      .execute();
+    if (existingStudentId) {
+      existingStudent = true;
+      // Reactivate existing student with updated profile data
+      await trx
+        .updateTable('students')
+        .set({
+          acceptedAt: new Date(),
+          applicationId: application.id,
+          appliedAt: application.createdAt,
+          educationLevel: application.educationLevel,
+          email: application.email,
+          firstName: application.firstName,
+          gender: application.gender,
+          graduationMonth: application.graduationMonth,
+          graduationYear: application.graduationYear.toString(),
+          lastName: application.lastName,
+          linkedInUrl: application.linkedInUrl,
+          major: application.major,
+          otherDemographics,
+          otherMajor: application.otherMajor,
+          otherSchool: application.otherSchool,
+          race: application.race,
+          schoolId: application.schoolId,
+        })
+        .where('id', '=', existingStudentId)
+        .execute();
 
-    await trx
-      .updateTable('studentEmails')
-      .set({ studentId })
-      .where('email', '=', application.email)
-      .execute();
+      studentId = existingStudentId;
+
+      // Add new email if it doesn't already exist
+      const existingEmail = await trx
+        .selectFrom('studentEmails')
+        .where('email', 'ilike', application.email)
+        .executeTakeFirst();
+
+      if (!existingEmail) {
+        await trx
+          .insertInto('studentEmails')
+          .values({ email: application.email, studentId })
+          .execute();
+      }
+    } else {
+      // Create new student
+      await trx
+        .insertInto('studentEmails')
+        .values({ email: application.email })
+        .execute();
+
+      studentId = id();
+
+      await trx
+        .insertInto('students')
+        .values({
+          acceptedAt: new Date(),
+          applicationId: application.id,
+          appliedAt: application.createdAt,
+          educationLevel: application.educationLevel,
+          email: application.email,
+          firstName: application.firstName,
+          gender: application.gender,
+          graduationMonth: application.graduationMonth,
+          graduationYear: application.graduationYear.toString(),
+          id: studentId,
+          lastName: application.lastName,
+          linkedInUrl: application.linkedInUrl,
+          major: application.major,
+          otherDemographics,
+          otherMajor: application.otherMajor,
+          otherSchool: application.otherSchool,
+          race: application.race,
+          schoolId: application.schoolId,
+        })
+        .execute();
+
+      await trx
+        .updateTable('studentEmails')
+        .set({ studentId })
+        .where('email', '=', application.email)
+        .execute();
+    }
   });
 
-  job('student.created', {
-    studentId,
-  });
+  if (!existingStudent) {
+    job('student.created', {
+      studentId,
+    });
+    // const currentStudent = await db
+    //   .selectFrom('students')
+    //   .select(['airtableId', 'email', 'firstName', 'slackId'])
+    //   .where('id', '=', studentId)
+    //   .executeTakeFirstOrThrow();
+
+    // job('student.status_updated', {
+    //   airtableId: currentStudent.airtableId as string,
+    //   email: currentStudent.email,
+    //   firstName: currentStudent.firstName,
+    //   sendViolationEmail: false,
+    //   slackId: currentStudent.slackId,
+    //   status: MemberStatus.ACTIVE,
+    //   studentId,
+    // });
+  }
 
   job('notification.email.send', {
     data: { firstName: application.firstName },
@@ -287,7 +356,7 @@ export async function acceptApplication(
     memberIds: [studentId],
   });
 
-  if (application.referralId) {
+  if (application.referralId && !existingStudent) {
     const referral = await db
       .selectFrom('referrals')
       .leftJoin('students as referrers', 'referrers.id', 'referrals.referrerId')
@@ -502,6 +571,26 @@ function queueRejectionEmail({
   );
 }
 
+/**
+ * Finds an existing student with `bulk_removed` status that matches the given
+ * email or LinkedIn URL. This is used to reactivate students who were
+ * previously removed instead of creating new student records.
+ *
+ * @returns The student ID if found, otherwise null.
+ */
+async function findBulkRemovedStudent(email: string): Promise<string | null> {
+  // Check by email first (more reliable identifier)
+
+  const currentStudent = await db
+    .selectFrom('students')
+    .select(['id'])
+    .where('email', 'ilike', email)
+    .where('status', '=', MemberStatus.BULK_REMOVED)
+    .executeTakeFirstOrThrow();
+
+  return currentStudent?.id ?? null;
+}
+
 // Worker
 
 export const applicationWorker = registerWorker(
@@ -550,6 +639,11 @@ async function reviewApplication({
   if (!reject) {
     return;
   }
+
+  console.log('this is being called', {
+    reject,
+    reason,
+  });
 
   await db.transaction().execute(async (trx) => {
     await trx
@@ -622,13 +716,32 @@ async function shouldReject(
     return [true, 'not_undergraduate'];
   }
 
+  // Email check - join with students to get status
   const memberWithSameEmail = await db
     .selectFrom('studentEmails')
-    .where('email', 'ilike', application.email)
+    .leftJoin('students', 'students.id', 'studentEmails.studentId')
+    .select(['studentEmails.email', 'students.status'])
+    .where('studentEmails.email', 'ilike', application.email)
     .executeTakeFirst();
 
-  if (memberWithSameEmail) {
+  if (
+    memberWithSameEmail &&
+    memberWithSameEmail.status !== MemberStatus.BULK_REMOVED
+  ) {
     return [true, 'email_already_used'];
+  }
+
+  const bounced = await hasEmailBounced(application.email);
+
+  if (bounced) {
+    return [true, 'email_bounced'];
+  }
+
+  if (
+    memberWithSameEmail &&
+    memberWithSameEmail.status === MemberStatus.BULK_REMOVED
+  ) {
+    return [false];
   }
 
   const [memberWithSameLinkedIn, applicationAcceptedWithSameLinkedIn] =
@@ -659,12 +772,6 @@ async function shouldReject(
 
   if (applicationAcceptedWithSameEmail) {
     return [true, 'email_already_used'];
-  }
-
-  const bounced = await hasEmailBounced(application.email);
-
-  if (bounced) {
-    return [true, 'email_bounced'];
   }
 
   return [false];

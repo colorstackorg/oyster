@@ -185,6 +185,7 @@ function ApplicationsTable() {
           .with('email_bounced', () => 'Email bounced')
           .with('ineligible_major', () => 'Not the right major')
           .with('is_international', () => 'Not enrolled in US or Canada')
+          .with('linkedin_already_used', () => 'LinkedIn already used')
           .with('not_undergraduate', () => 'Not an undergrad student')
           .with('other', () => 'Other')
           .otherwise(() => '-');

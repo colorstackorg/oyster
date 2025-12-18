@@ -1,3 +1,4 @@
+import { db } from '@oyster/db';
 import { MemberStatus } from '@oyster/types';
 
 import { job } from '@/infrastructure/bull';
@@ -13,6 +14,7 @@ export async function onMemberStatusUpdated({
   firstName,
   sendViolationEmail,
   slackId,
+  studentId,
   status,
 }: GetBullJobData<'student.status_updated'>) {
   if (status === MemberStatus.BULK_REMOVED) {
@@ -22,20 +24,22 @@ export async function onMemberStatusUpdated({
       firstName,
       sendViolationEmail,
       slackId,
+      studentId,
+    });
+  }
+
+  if (status === MemberStatus.ACTIVE) {
+    await onActiveStatusUpdate({
+      airtableId,
+      email,
+      firstName,
+      sendViolationEmail,
+      slackId,
+      studentId,
     });
   }
 
   // TODO: Add other status updates here.
-  //   if (status === MemberStatus.ACTIVE) {
-  //     await onActiveStatusUpdate({
-  //       airtableId,
-  //       email,
-  //       firstName,
-  //       sendViolationEmail,
-  //       slackId,
-  //     });
-  //   }
-
   //   if (status === MemberStatus.INACTIVE) {
   //     await onInactiveStatusUpdate({
   //       airtableId,
@@ -63,6 +67,7 @@ type StatusUpdateProps = {
   firstName: string;
   sendViolationEmail: boolean;
   slackId?: string | null;
+  studentId: string;
 };
 
 async function onBulkRemoveStatusUpdate({
@@ -71,6 +76,7 @@ async function onBulkRemoveStatusUpdate({
   firstName,
   sendViolationEmail,
   slackId,
+  studentId,
 }: StatusUpdateProps) {
   job('airtable.record.update', {
     airtableBaseId: AIRTABLE_FAMILY_BASE_ID!,
@@ -105,15 +111,26 @@ async function onBulkRemoveStatusUpdate({
   }
 }
 
-// async function onActiveStatusUpdate({
-//   airtableId,
-//   email,
-//   firstName,
-//   sendViolationEmail,
-//   slackId,
-// }: StatusUpdateProps) {
-//   return;
-// }
+async function onActiveStatusUpdate({ studentId }: StatusUpdateProps) {
+  const student = await db
+    .selectFrom('students')
+    .select(['email', 'firstName', 'id', 'lastName'])
+    .where('id', '=', studentId)
+    .executeTakeFirstOrThrow();
+
+  job('student.engagement.backfill', {
+    email: student.email,
+    studentId: student.id,
+  });
+
+  job('mailchimp.add', {
+    email: student.email,
+    firstName: student.firstName,
+    lastName: student.lastName,
+  });
+
+  // TODO: reactivate slack user
+}
 
 // async function onInactiveStatusUpdate({
 //   airtableId,
