@@ -31,7 +31,6 @@ export async function sendOneTimeCode({
         .select(['students.id', 'students.firstName', 'students.status'])
         .where('studentEmails.email', 'ilike', email)
         .executeTakeFirst();
-      // .where('students.status', '=', MemberStatus.ACTIVE)
     })
     .exhaustive();
 
