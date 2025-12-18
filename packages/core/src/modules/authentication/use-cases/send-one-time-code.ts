@@ -1,6 +1,7 @@
 import { match } from 'ts-pattern';
 
 import { db } from '@oyster/db';
+import { MemberStatus } from '@oyster/types';
 import { id } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull';
@@ -27,11 +28,20 @@ export async function sendOneTimeCode({
       return db
         .selectFrom('studentEmails')
         .leftJoin('students', 'students.id', 'studentEmails.studentId')
-        .select(['students.id', 'students.firstName'])
+        .select(['students.id', 'students.firstName', 'students.status'])
         .where('studentEmails.email', 'ilike', email)
         .executeTakeFirst();
+      // .where('students.status', '=', MemberStatus.ACTIVE)
     })
     .exhaustive();
+
+  const hasStudentStatus = entity && 'status' in entity;
+
+  if (hasStudentStatus && entity.status === MemberStatus.BULK_REMOVED) {
+    throw new Error(
+      `This member has been deactivated from ColorStack. Please contact support.`
+    );
+  }
 
   if (!entity) {
     throw new Error(

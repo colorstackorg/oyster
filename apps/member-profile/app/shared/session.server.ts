@@ -4,6 +4,8 @@ import {
   type Session,
 } from 'react-router';
 
+import { getMemberById } from '@oyster/core/member-profile/server';
+import { MemberStatus } from '@oyster/types';
 import { type ToastProps } from '@oyster/ui';
 import { id } from '@oyster/utils';
 
@@ -60,6 +62,18 @@ export async function ensureUserAuthenticated(
     throw redirect(redirectTo, {
       headers: {
         'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+
+  // Check if the member's status is still active
+  const memberId = session.get(SESSION.USER_ID);
+  const member = await getMemberById(memberId);
+
+  if (!member || member.status !== MemberStatus.ACTIVE) {
+    throw redirect(redirectTo, {
+      headers: {
+        'Set-Cookie': await destroySession(session),
       },
     });
   }

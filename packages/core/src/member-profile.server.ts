@@ -19,6 +19,7 @@ export { isFeatureFlagEnabled } from './modules/feature-flags/queries/is-feature
 export { getIcebreakerPrompts } from './modules/icebreakers/queries/get-icebreaker-prompts';
 export { getIcebreakerResponses } from './modules/icebreakers/queries/get-icebreaker-responses';
 export { upsertIcebreakerResponses } from './modules/icebreakers/use-cases/upsert-icebreaker-responses';
+export { getMemberById } from './modules/members/queries/get-member-by-id';
 export { listEmails } from './modules/members/queries/list-emails';
 export { listMembersInDirectory } from './modules/members/queries/list-members-in-directory';
 export { addEmail, AddEmailInput } from './modules/members/use-cases/add-email';
