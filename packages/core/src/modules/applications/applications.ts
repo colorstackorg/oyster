@@ -174,220 +174,214 @@ export async function acceptApplication(
   applicationId: string,
   adminId: string
 ) {
-  const application = await db
-    .selectFrom('applications')
-    .select([
-      'applications.createdAt',
-      'applications.educationLevel',
-      'applications.email',
-      'applications.firstName',
-      'applications.gender',
-      'applications.graduationMonth',
-      'applications.graduationYear',
-      'applications.id',
-      'applications.lastName',
-      'applications.linkedInUrl',
-      'applications.major',
-      'applications.otherDemographics',
-      'applications.otherMajor',
-      'applications.otherSchool',
-      'applications.race',
-      'applications.referralId',
-      'applications.schoolId',
-    ])
-    .where('id', '=', applicationId)
-    .executeTakeFirstOrThrow();
-
-  let studentId = '';
-  let existingStudent = false;
-
-  await db.transaction().execute(async (trx) => {
-    await trx
-      .updateTable('applications')
-      .set({
-        acceptedAt: new Date(),
-        reviewedById: adminId,
-        status: ApplicationStatus.ACCEPTED,
-      })
+  try {
+    const application = await db
+      .selectFrom('applications')
+      .select([
+        'applications.createdAt',
+        'applications.educationLevel',
+        'applications.email',
+        'applications.firstName',
+        'applications.gender',
+        'applications.graduationMonth',
+        'applications.graduationYear',
+        'applications.id',
+        'applications.lastName',
+        'applications.linkedInUrl',
+        'applications.major',
+        'applications.otherDemographics',
+        'applications.otherMajor',
+        'applications.otherSchool',
+        'applications.race',
+        'applications.referralId',
+        'applications.schoolId',
+      ])
       .where('id', '=', applicationId)
-      .execute();
+      .executeTakeFirstOrThrow();
 
-    if (application.referralId) {
+    let studentId = '';
+    let existingStudent = false;
+
+    await db.transaction().execute(async (trx) => {
       await trx
-        .updateTable('referrals')
-        .set({ status: ReferralStatus.ACCEPTED })
-        .where('id', '=', application.referralId)
-        .execute();
-    }
-
-    // Some applicants apply multiple times to ColorStack (typically it's an
-    // accident) and historically we would _try_ to accept all of their
-    // applications, but we can't have multiple members with the same email
-    // so it would cause issues. We'll scrap any other pending applications
-    // from the same email address.
-    await trx
-      .deleteFrom('applications')
-      .where('email', '=', application.email)
-      .where('id', '!=', application.id)
-      .where('status', '=', ApplicationStatus.PENDING)
-      .execute();
-
-    const allOtherDemographics = Object.values(OtherDemographic) as string[];
-
-    const otherDemographics = application.otherDemographics.filter(
-      (demographic) => {
-        return !allOtherDemographics.includes(demographic);
-      }
-    );
-
-    // Check if there's an existing bulk_removed student to reactivate
-    const existingStudentId = await findBulkRemovedStudent(application.email);
-
-    if (existingStudentId) {
-      existingStudent = true;
-      // Reactivate existing student with updated profile data
-      await trx
-        .updateTable('students')
+        .updateTable('applications')
         .set({
           acceptedAt: new Date(),
-          applicationId: application.id,
-          appliedAt: application.createdAt,
-          educationLevel: application.educationLevel,
-          email: application.email,
-          firstName: application.firstName,
-          gender: application.gender,
-          graduationMonth: application.graduationMonth,
-          graduationYear: application.graduationYear.toString(),
-          lastName: application.lastName,
-          linkedInUrl: application.linkedInUrl,
-          major: application.major,
-          otherDemographics,
-          otherMajor: application.otherMajor,
-          otherSchool: application.otherSchool,
-          race: application.race,
-          schoolId: application.schoolId,
+          reviewedById: adminId,
+          status: ApplicationStatus.ACCEPTED,
         })
-        .where('id', '=', existingStudentId)
+        .where('id', '=', applicationId)
         .execute();
 
-      studentId = existingStudentId;
-
-      // Add new email if it doesn't already exist
-      const existingEmail = await trx
-        .selectFrom('studentEmails')
-        .where('email', 'ilike', application.email)
-        .executeTakeFirst();
-
-      if (!existingEmail) {
+      if (application.referralId) {
         await trx
-          .insertInto('studentEmails')
-          .values({ email: application.email, studentId })
+          .updateTable('referrals')
+          .set({ status: ReferralStatus.ACCEPTED })
+          .where('id', '=', application.referralId)
           .execute();
       }
-    } else {
-      // Create new student
-      await trx
-        .insertInto('studentEmails')
-        .values({ email: application.email })
-        .execute();
 
-      studentId = id();
-
+      // Some applicants apply multiple times to ColorStack (typically it's an
+      // accident) and historically we would _try_ to accept all of their
+      // applications, but we can't have multiple members with the same email
+      // so it would cause issues. We'll scrap any other pending applications
+      // from the same email address.
       await trx
-        .insertInto('students')
-        .values({
-          acceptedAt: new Date(),
-          applicationId: application.id,
-          appliedAt: application.createdAt,
-          educationLevel: application.educationLevel,
-          email: application.email,
-          firstName: application.firstName,
-          gender: application.gender,
-          graduationMonth: application.graduationMonth,
-          graduationYear: application.graduationYear.toString(),
-          id: studentId,
-          lastName: application.lastName,
-          linkedInUrl: application.linkedInUrl,
-          major: application.major,
-          otherDemographics,
-          otherMajor: application.otherMajor,
-          otherSchool: application.otherSchool,
-          race: application.race,
-          schoolId: application.schoolId,
-        })
-        .execute();
-
-      await trx
-        .updateTable('studentEmails')
-        .set({ studentId })
+        .deleteFrom('applications')
         .where('email', '=', application.email)
+        .where('id', '!=', application.id)
+        .where('status', '=', ApplicationStatus.PENDING)
         .execute();
-    }
-  });
 
-  if (!existingStudent) {
-    job('student.created', {
-      studentId,
+      const allOtherDemographics = Object.values(OtherDemographic) as string[];
+
+      const otherDemographics = application.otherDemographics.filter(
+        (demographic) => {
+          return !allOtherDemographics.includes(demographic);
+        }
+      );
+
+      // Check if there's an existing bulk_removed student to reactivate
+      const existingStudentId = await findBulkRemovedStudent(application.email);
+
+      if (existingStudentId) {
+        existingStudent = true;
+        // Reactivate existing student with updated profile data
+        await trx
+          .updateTable('students')
+          .set({
+            acceptedAt: new Date(),
+            applicationId: application.id,
+            appliedAt: application.createdAt,
+            educationLevel: application.educationLevel,
+            email: application.email,
+            firstName: application.firstName,
+            gender: application.gender,
+            graduationMonth: application.graduationMonth,
+            graduationYear: application.graduationYear.toString(),
+            lastName: application.lastName,
+            linkedInUrl: application.linkedInUrl,
+            major: application.major,
+            otherDemographics,
+            otherMajor: application.otherMajor,
+            otherSchool: application.otherSchool,
+            race: application.race,
+            schoolId: application.schoolId,
+          })
+          .where('id', '=', existingStudentId)
+          .execute();
+
+        studentId = existingStudentId;
+
+        // Add new email if it doesn't already exist
+        const existingEmail = await trx
+          .selectFrom('studentEmails')
+          .where('email', 'ilike', application.email)
+          .executeTakeFirst();
+
+        if (!existingEmail) {
+          await trx
+            .insertInto('studentEmails')
+            .values({ email: application.email, studentId })
+            .execute();
+        }
+      } else {
+        // Create new student
+        await trx
+          .insertInto('studentEmails')
+          .values({ email: application.email })
+          .execute();
+
+        studentId = id();
+
+        await trx
+          .insertInto('students')
+          .values({
+            acceptedAt: new Date(),
+            applicationId: application.id,
+            appliedAt: application.createdAt,
+            educationLevel: application.educationLevel,
+            email: application.email,
+            firstName: application.firstName,
+            gender: application.gender,
+            graduationMonth: application.graduationMonth,
+            graduationYear: application.graduationYear.toString(),
+            id: studentId,
+            lastName: application.lastName,
+            linkedInUrl: application.linkedInUrl,
+            major: application.major,
+            otherDemographics,
+            otherMajor: application.otherMajor,
+            otherSchool: application.otherSchool,
+            race: application.race,
+            schoolId: application.schoolId,
+          })
+          .execute();
+
+        await trx
+          .updateTable('studentEmails')
+          .set({ studentId })
+          .where('email', '=', application.email)
+          .execute();
+      }
     });
-    // const currentStudent = await db
-    //   .selectFrom('students')
-    //   .select(['airtableId', 'email', 'firstName', 'slackId'])
-    //   .where('id', '=', studentId)
-    //   .executeTakeFirstOrThrow();
 
-    // job('student.status_updated', {
-    //   airtableId: currentStudent.airtableId as string,
-    //   email: currentStudent.email,
-    //   firstName: currentStudent.firstName,
-    //   sendViolationEmail: false,
-    //   slackId: currentStudent.slackId,
-    //   status: MemberStatus.ACTIVE,
-    //   studentId,
-    // });
-  }
-
-  job('notification.email.send', {
-    data: { firstName: application.firstName },
-    name: 'application-accepted',
-    to: application.email,
-  });
-
-  job('student.linkedin.sync', {
-    memberIds: [studentId],
-  });
-
-  if (application.referralId && !existingStudent) {
-    const referral = await db
-      .selectFrom('referrals')
-      .leftJoin('students as referrers', 'referrers.id', 'referrals.referrerId')
-      .select([
-        'referrals.firstName as referredFirstName',
-        'referrals.lastName as referredLastName',
-        'referrers.email as referrerEmail',
-        'referrers.id as referrerId',
-        'referrers.firstName as referrerFirstName',
-      ])
-      .where('referrals.id', '=', application.referralId)
-      .executeTakeFirst();
-
-    if (referral) {
-      job('notification.email.send', {
-        data: {
-          firstName: referral.referrerFirstName as string,
-          referralsUri: `${STUDENT_PROFILE_URL}/profile/referrals`,
-          referredFirstName: referral.referredFirstName,
-          referredLastName: referral.referredLastName,
-        },
-        name: 'referral-accepted',
-        to: referral.referrerEmail as string,
-      });
-
-      job('gamification.activity.completed', {
-        referralId: application.referralId,
-        studentId: referral.referrerId as string,
-        type: 'refer_friend',
+    if (!existingStudent) {
+      job('student.created', {
+        studentId,
       });
     }
+
+    job('notification.email.send', {
+      data: { firstName: application.firstName },
+      name: 'application-accepted',
+      to: application.email,
+    });
+
+    job('student.linkedin.sync', {
+      memberIds: [studentId],
+    });
+
+    if (application.referralId && !existingStudent) {
+      const referral = await db
+        .selectFrom('referrals')
+        .leftJoin(
+          'students as referrers',
+          'referrers.id',
+          'referrals.referrerId'
+        )
+        .select([
+          'referrals.firstName as referredFirstName',
+          'referrals.lastName as referredLastName',
+          'referrers.email as referrerEmail',
+          'referrers.id as referrerId',
+          'referrers.firstName as referrerFirstName',
+        ])
+        .where('referrals.id', '=', application.referralId)
+        .executeTakeFirst();
+
+      if (referral) {
+        job('notification.email.send', {
+          data: {
+            firstName: referral.referrerFirstName as string,
+            referralsUri: `${STUDENT_PROFILE_URL}/profile/referrals`,
+            referredFirstName: referral.referredFirstName,
+            referredLastName: referral.referredLastName,
+          },
+          name: 'referral-accepted',
+          to: referral.referrerEmail as string,
+        });
+
+        job('gamification.activity.completed', {
+          referralId: application.referralId,
+          studentId: referral.referrerId as string,
+          type: 'refer_friend',
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Failed to accept application', error);
+    throw new Error('Failed to accept application');
   }
 }
 
@@ -586,7 +580,7 @@ async function findBulkRemovedStudent(email: string): Promise<string | null> {
     .select(['id'])
     .where('email', 'ilike', email)
     .where('status', '=', MemberStatus.BULK_REMOVED)
-    .executeTakeFirstOrThrow();
+    .executeTakeFirst();
 
   return currentStudent?.id ?? null;
 }
@@ -639,11 +633,6 @@ async function reviewApplication({
   if (!reject) {
     return;
   }
-
-  console.log('this is being called', {
-    reject,
-    reason,
-  });
 
   await db.transaction().execute(async (trx) => {
     await trx
@@ -771,6 +760,16 @@ async function shouldReject(
     .executeTakeFirst();
 
   if (applicationAcceptedWithSameEmail) {
+    const student = await db
+      .selectFrom('students')
+      .select(['status'])
+      .where('email', 'ilike', application.email)
+      .executeTakeFirst();
+
+    if (student?.status === MemberStatus.ACTIVE || !student) {
+      return [false];
+    }
+
     return [true, 'email_already_used'];
   }
 
