@@ -36,7 +36,7 @@ export async function sendOneTimeCode({
 
   const hasStudentStatus = entity && 'status' in entity;
 
-  if (hasStudentStatus && entity.status === MemberStatus.BULK_REMOVED) {
+  if (hasStudentStatus && entity.status !== MemberStatus.ACTIVE) {
     throw new Error(
       `This member has been deactivated from ColorStack. Please contact support.`
     );

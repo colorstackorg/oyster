@@ -39,17 +39,18 @@ export async function onMemberStatusUpdated({
     });
   }
 
-  // TODO: Add other status updates here.
-  //   if (status === MemberStatus.INACTIVE) {
-  //     await onInactiveStatusUpdate({
-  //       airtableId,
-  //       email,
-  //       firstName,
-  //       sendViolationEmail,
-  //       slackId,
-  //     });
-  //   }
+  if (status === MemberStatus.INACTIVE) {
+    await onInactiveStatusUpdate({
+      airtableId,
+      email,
+      firstName,
+      sendViolationEmail,
+      slackId,
+      studentId,
+    });
+  }
 
+  // TODO: Add other status updates here.
   //   if (status === MemberStatus.BANNED) {
   //     await onBannedStatusUpdate({
   //       airtableId,
@@ -76,7 +77,6 @@ async function onBulkRemoveStatusUpdate({
   firstName,
   sendViolationEmail,
   slackId,
-  studentId,
 }: StatusUpdateProps) {
   job('airtable.record.update', {
     airtableBaseId: AIRTABLE_FAMILY_BASE_ID!,
@@ -136,15 +136,45 @@ async function onActiveStatusUpdate({ studentId, slackId }: StatusUpdateProps) {
   }
 }
 
-// async function onInactiveStatusUpdate({
-//   airtableId,
-//   email,
-//   firstName,
-//   sendViolationEmail,
-//   slackId,
-// }: StatusUpdateProps) {
-//   return;
-// }
+async function onInactiveStatusUpdate({
+  airtableId,
+  email,
+  firstName,
+  sendViolationEmail,
+  slackId,
+}: StatusUpdateProps) {
+  job('airtable.record.update', {
+    airtableBaseId: AIRTABLE_FAMILY_BASE_ID!,
+    airtableRecordId: airtableId,
+    airtableTableId: AIRTABLE_MEMBERS_TABLE_ID!,
+    data: {
+      status: MemberStatus.INACTIVE,
+    },
+  });
+
+  job('mailchimp.remove', {
+    email,
+  });
+
+  job('notification.slack.send', {
+    message: `Member with the email "${email}" has been removed from ColorStack.`,
+    workspace: 'internal',
+  });
+
+  if (slackId) {
+    job('slack.deactivate', {
+      slackId,
+    });
+  }
+
+  if (sendViolationEmail) {
+    job('notification.email.send', {
+      to: email,
+      name: 'student-removed',
+      data: { firstName },
+    });
+  }
+}
 
 // async function onBannedStatusUpdate({
 //   airtableId,

@@ -638,6 +638,7 @@ export const StudentBullJob = z.discriminatedUnion('name', [
     data: z.object({
       memberIds: z.array(Student.shape.id),
       status: z.nativeEnum(MemberStatus),
+      sendViolationEmail: z.boolean().optional(),
     }),
   }),
   z.object({

@@ -5,8 +5,8 @@ import {
   Edit,
   ExternalLink,
   Menu,
+  RefreshCw,
   Star,
-  Trash,
   Trash2,
 } from 'react-feather';
 import {
@@ -296,9 +296,9 @@ function StudentDropdown({ airtableUri, applicationUri, id }: StudentInView) {
           <Dropdown.Item>
             <Link
               preventScrollReset
-              to={generatePath(Route['/students/:id/remove'], { id })}
+              to={generatePath(Route['/students/:id/status-update'], { id })}
             >
-              <Trash /> Remove Member
+              <RefreshCw /> Update Status
             </Link>
           </Dropdown.Item>
         </Dropdown.List>

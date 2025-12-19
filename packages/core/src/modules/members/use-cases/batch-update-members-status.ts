@@ -6,6 +6,7 @@ import { type GetBullJobData } from '@/infrastructure/bull.types';
 export async function batchUpdateMemberStatus({
   memberIds,
   status,
+  sendViolationEmail,
 }: GetBullJobData<'student.batch_update_status'>) {
   const students = await db
     .updateTable('students')
@@ -19,7 +20,7 @@ export async function batchUpdateMemberStatus({
       airtableId: student.airtableId as string,
       email: student.email,
       firstName: student.firstName,
-      sendViolationEmail: false,
+      sendViolationEmail: sendViolationEmail ?? false,
       slackId: student.slackId,
       status,
       studentId: student.id,

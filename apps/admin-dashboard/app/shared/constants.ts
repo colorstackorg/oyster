@@ -44,7 +44,7 @@ const ROUTES = [
   '/students/remove',
   '/students/:id/email',
   '/students/:id/points/grant',
-  '/students/:id/remove',
+  '/students/:id/status-update',
 ] as const;
 
 export type Route = (typeof ROUTES)[number];
