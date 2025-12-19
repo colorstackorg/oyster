@@ -112,8 +112,12 @@ export default function UpdateStatusPage() {
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.currentTarget.value)}
           >
-            <option value={MemberStatus.ACTIVE}>Active</option>
-            <option value={MemberStatus.INACTIVE}>Inactive</option>
+            {student.status !== MemberStatus.ACTIVE && (
+              <option value={MemberStatus.ACTIVE}>Active</option>
+            )}
+            {student.status !== MemberStatus.INACTIVE && (
+              <option value={MemberStatus.INACTIVE}>Inactive</option>
+            )}
           </Select>
         </Field>
 

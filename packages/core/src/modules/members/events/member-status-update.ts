@@ -92,7 +92,7 @@ async function onBulkRemoveStatusUpdate({
   });
 
   job('notification.slack.send', {
-    message: `Member with the email "${email}" has been removed from ColorStack.`,
+    message: `Member with the email "${email}" has been marked as bulk removed from ColorStack.`,
     workspace: 'internal',
   });
 
@@ -111,12 +111,25 @@ async function onBulkRemoveStatusUpdate({
   }
 }
 
-async function onActiveStatusUpdate({ studentId, slackId }: StatusUpdateProps) {
+async function onActiveStatusUpdate({
+  studentId,
+  slackId,
+  airtableId,
+}: StatusUpdateProps) {
   const student = await db
     .selectFrom('students')
     .select(['email', 'firstName', 'id', 'lastName'])
     .where('id', '=', studentId)
     .executeTakeFirstOrThrow();
+
+  job('airtable.record.update', {
+    airtableBaseId: AIRTABLE_FAMILY_BASE_ID!,
+    airtableRecordId: airtableId,
+    airtableTableId: AIRTABLE_MEMBERS_TABLE_ID!,
+    data: {
+      status: MemberStatus.ACTIVE,
+    },
+  });
 
   job('student.engagement.backfill', {
     email: student.email,
@@ -157,7 +170,7 @@ async function onInactiveStatusUpdate({
   });
 
   job('notification.slack.send', {
-    message: `Member with the email "${email}" has been removed from ColorStack.`,
+    message: `Member with the email "${email}" has been marked as inactive from ColorStack.`,
     workspace: 'internal',
   });
 
