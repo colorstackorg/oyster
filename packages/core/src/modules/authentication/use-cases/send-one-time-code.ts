@@ -38,7 +38,7 @@ export async function sendOneTimeCode({
 
   if (hasStudentStatus && entity.status !== MemberStatus.ACTIVE) {
     throw new Error(
-      `This member has been deactivated from ColorStack. Please contact support.`
+      `This member has been deactivated from ColorStack. Please contact membership@colorstack.org for support.`
     );
   }
 
