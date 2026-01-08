@@ -393,7 +393,7 @@ export async function apply(input: ApplyInput) {
   const applicationId = id();
 
   await db.transaction().execute(async (trx) => {
-    let referralId: string | undefined = undefined;
+    let referralId: string | undefined;
 
     if (input.referralId) {
       const referral = await db
@@ -724,6 +724,20 @@ async function shouldReject(
 
   if (bounced) {
     return [true, 'email_bounced'];
+  }
+
+  // Check for duplicate pending applications with the same email.
+  // If there's a newer pending application, reject this older one.
+  const newerPendingApplication = await db
+    .selectFrom('applications')
+    .where('email', 'ilike', application.email)
+    .where('id', '!=', application.id)
+    .where('status', '=', ApplicationStatus.PENDING)
+    .where('createdAt', '>', application.createdAt)
+    .executeTakeFirst();
+
+  if (newerPendingApplication) {
+    return [true, 'email_already_used'];
   }
 
   if (
