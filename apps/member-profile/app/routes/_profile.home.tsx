@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { type PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 import {
   ExternalLink,
   GitHub,
@@ -312,6 +312,8 @@ function ActiveStatusCard() {
               const className = match(status.status)
                 .with('active', () => 'bg-success')
                 .with('inactive', () => 'bg-error')
+                .with('bulk_removed', () => 'bg-error')
+                .with('banned', () => 'bg-error')
                 .with(undefined, () => 'bg-gray-200')
                 .exhaustive();
 
@@ -582,7 +584,7 @@ function MerchStoreCard() {
 
       <Button.Group>
         <Button.Slot variant="primary">
-          <a href="https://colorstackmerch.org" target="_blank">
+          <a href="https://colorstackmerch.org" target="_blank" rel="noopener">
             Shop Now <ExternalLink size={20} />
           </a>
         </Button.Slot>
