@@ -1264,7 +1264,6 @@ async function createWorkExperience({
   memberId,
   trx,
 }: CreateWorkExperienceInput) {
-  // console.log(linkedInExperience);
   const [companyId, location] = await Promise.all([
     saveCompanyIfNecessary(trx, linkedInExperience.companyId),
     getMostRelevantLocation(linkedInExperience.location, 'geocode'),
@@ -1309,7 +1308,6 @@ async function updateWorkExperience({
   linkedInExperience,
   trx,
 }: UpdateWorkExperienceInput) {
-  // console.log(existingExperience, linkedInExperience);
   const set: Updateable<DB['workExperiences']> = {};
 
   if (existingExperience.linkedinId !== linkedInExperience.companyId) {
