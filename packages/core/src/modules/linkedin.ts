@@ -713,8 +713,6 @@ async function scrapeProfiles(profilesToScrape: string[]) {
     body: { urls: profilesToScrape },
   });
 
-  // console.log(apifyResult);
-
   // We just need the bare minimum in order to cache the profiles, we're not
   // trying to parse the entire profile here. This ensures that we're not
   // too restrictive and forcing ourselves to re-scrape profiles that we
