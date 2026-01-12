@@ -65,7 +65,11 @@ export async function saveCompanyIfNecessary(
     async () => {
       return runActor({
         actorId: 'harvestapi~linkedin-company',
-        body: { companies: [companyNameOrLinkedInId] },
+        body: {
+          companies: [
+            `https://www.linkedin.com/company/${companyNameOrLinkedInId}`,
+          ],
+        },
       });
     }
   );
