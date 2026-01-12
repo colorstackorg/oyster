@@ -324,19 +324,18 @@ const LinkedInLocation = z.object({
 });
 
 const LinkedInProfile = z.object({
-  element: z.object({
-    education: z.array(LinkedInEducation),
-    experience: z.array(LinkedInExperience),
-    headline: z.string().nullish(),
-    location: LinkedInLocation,
-    openToWork: z.boolean().nullish(),
-    photo: z.string().url().nullish(),
-  }),
+  education: z.array(LinkedInEducation),
+  error: z.undefined(),
+  experience: z.array(LinkedInExperience),
+  headline: z.string().nullish(),
+  location: LinkedInLocation,
+  openToWork: z.boolean().nullish(),
+  photo: z.string().url().nullish(),
   originalQuery: z.object({ url: z.string() }),
 });
 
 const LinkedInFailure = z.object({
-  element: z.null(),
+  error: z.array(z.any()),
   originalQuery: z.object({ url: z.string() }),
 });
 
@@ -345,11 +344,11 @@ const LinkedInResult = z.union([LinkedInProfile, LinkedInFailure]);
 // Types
 
 type LinkedInEducation = NonNullable<
-  z.infer<typeof LinkedInProfile>['element']['education'][number]
+  z.infer<typeof LinkedInProfile>['education'][number]
 >;
 
 type LinkedInExperience = NonNullable<
-  z.infer<typeof LinkedInProfile>['element']['experience'][number]
+  z.infer<typeof LinkedInProfile>['experience'][number]
 >;
 
 type LinkedInProfile = z.infer<typeof LinkedInProfile>;
@@ -430,7 +429,7 @@ export async function syncLinkedInProfiles(
 
         // This is the case where there are multiple members with the same
         // LinkedIn URL, something that should be fixed.
-        if (!profile.element || !member) {
+        if (profile.error || !member) {
           await finishSync(memberId);
 
           console.log(`Profile not found for ${memberId}, moving on.`);
@@ -714,6 +713,8 @@ async function scrapeProfiles(profilesToScrape: string[]) {
     body: { urls: profilesToScrape },
   });
 
+  // console.log(apifyResult);
+
   // We just need the bare minimum in order to cache the profiles, we're not
   // trying to parse the entire profile here. This ensures that we're not
   // too restrictive and forcing ourselves to re-scrape profiles that we
@@ -746,7 +747,7 @@ async function scrapeProfiles(profilesToScrape: string[]) {
   await db.transaction().execute(async (trx) => {
     await Promise.all(
       newResults.map(async (result) => {
-        if (result.element) {
+        if (!result.error) {
           return successfulResults.push(result);
         }
 
@@ -803,7 +804,7 @@ async function processProfile({
         }
       });
 
-      const checkEducationPromises = profile.element.education.map(
+      const checkEducationPromises = profile.education.map(
         async (education) => {
           if (!education) {
             return;
@@ -826,7 +827,7 @@ async function processProfile({
         }
       );
 
-      const checkExperiencesPromises = profile.element.experience.map(
+      const checkExperiencesPromises = profile.experience.map(
         async (experience) => {
           if (!experience) {
             return;
@@ -896,7 +897,7 @@ type CheckMemberInput = {
 
 async function checkMember({ member, profile, trx }: CheckMemberInput) {
   const updatedLocation = await run(async () => {
-    const locationFromLinkedIn = profile.element.location.parsed?.text;
+    const locationFromLinkedIn = profile.location.parsed?.text;
 
     if (!locationFromLinkedIn) {
       return null;
@@ -914,10 +915,10 @@ async function checkMember({ member, profile, trx }: CheckMemberInput) {
     return getMostRelevantLocation(locationFromLinkedIn, 'geocode');
   });
 
-  if (!!profile.element.photo && !profile.element.openToWork) {
+  if (!!profile.photo && !profile.openToWork) {
     await uploadProfilePicture({
       memberId: member.id,
-      pictureUrl: profile.element.photo,
+      pictureUrl: profile.photo,
     });
   }
 
@@ -925,7 +926,7 @@ async function checkMember({ member, profile, trx }: CheckMemberInput) {
     .updateTable('students')
     .set({
       ...(!member.headline && {
-        headline: profile.element.headline,
+        headline: profile.headline,
       }),
       ...(!!updatedLocation && {
         currentLocation: updatedLocation.formattedAddress,
@@ -1265,6 +1266,7 @@ async function createWorkExperience({
   memberId,
   trx,
 }: CreateWorkExperienceInput) {
+  // console.log(linkedInExperience);
   const [companyId, location] = await Promise.all([
     saveCompanyIfNecessary(trx, linkedInExperience.companyId),
     getMostRelevantLocation(linkedInExperience.location, 'geocode'),
@@ -1309,6 +1311,7 @@ async function updateWorkExperience({
   linkedInExperience,
   trx,
 }: UpdateWorkExperienceInput) {
+  // console.log(existingExperience, linkedInExperience);
   const set: Updateable<DB['workExperiences']> = {};
 
   if (existingExperience.linkedinId !== linkedInExperience.companyId) {

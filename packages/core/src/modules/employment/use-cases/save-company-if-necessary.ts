@@ -70,6 +70,8 @@ export async function saveCompanyIfNecessary(
     }
   );
 
+  console.log(companyNameOrLinkedInId, apifyResult);
+
   const parseResult = z.array(Company).safeParse(apifyResult);
 
   if (!parseResult.success) {
