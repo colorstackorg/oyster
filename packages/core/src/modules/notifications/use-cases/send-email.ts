@@ -233,23 +233,13 @@ async function getAttachments(
       { name: 'referral-sent' },
       { name: 'resume-submitted' },
       { name: 'student-anniversary' },
+      { name: 'student-attended-onboarding' },
       { name: 'student-graduation' },
       { name: 'student-removed' },
       () => {
         return undefined;
       }
     )
-    .with({ name: 'student-attended-onboarding' }, async () => {
-      const file = await getObject({ key: 'onboarding-deck.pdf' });
-
-      return [
-        {
-          content: file.base64,
-          contentType: 'application/pdf',
-          name: 'ColorStack Onboarding Deck.pdf',
-        } as EmailAttachment,
-      ];
-    })
     .exhaustive();
 
   return attachments;
