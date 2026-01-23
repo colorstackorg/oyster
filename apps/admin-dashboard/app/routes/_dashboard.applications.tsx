@@ -14,7 +14,10 @@ import { z } from 'zod';
 
 import { ListSearchParams } from '@oyster/core/admin-dashboard/ui';
 import { listApplications } from '@oyster/core/applications';
-import { type ApplicationRejectionReason } from '@oyster/core/applications/types';
+import type {
+  ApplicationRejectionReason,
+  AutoReviewJobStatus,
+} from '@oyster/core/applications/types';
 import { ApplicationStatus } from '@oyster/core/applications/ui';
 import { Application } from '@oyster/types';
 import {
@@ -212,6 +215,33 @@ function ApplicationsTable() {
 
         return `${reviewedByFirstName} ${reviewedByLastName}`;
       },
+    },
+    {
+      displayName: 'Auto Review Job Status',
+      render: (application) => {
+        const jobStatus = application.autoReviewJobStatus as
+          | AutoReviewJobStatus
+          | undefined;
+
+        if (!jobStatus) {
+          return '-';
+        }
+
+        const JobStatusColor: Record<AutoReviewJobStatus, AccentColor> = {
+          DONE: 'lime-100',
+          FAILED: 'red-100',
+          QUEUED: 'amber-100',
+        };
+
+        const color = JobStatusColor[jobStatus];
+
+        return (
+          <Pill color={color as PillProps['color']}>
+            {toTitleCase(jobStatus)}
+          </Pill>
+        );
+      },
+      size: '200',
     },
     {
       show: () => ['pending', 'rejected'].includes(status),
