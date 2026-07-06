@@ -10,6 +10,7 @@ import {
 import { type PaginationSearchParams } from '@/shared/types';
 
 type ListCompaniesOptions<Selection> = {
+  includeCompaniesWithoutEmployeesOrOpportunities?: boolean;
   orderBy: ListCompaniesOrderBy;
   pagination: PaginationSearchParams;
   select: Selection[];
@@ -18,7 +19,13 @@ type ListCompaniesOptions<Selection> = {
 
 export async function listCompanies<
   Selection extends SelectExpression<DB, 'companies'>,
->({ orderBy, pagination, select, where }: ListCompaniesOptions<Selection>) {
+>({
+  includeCompaniesWithoutEmployeesOrOpportunities = false,
+  orderBy,
+  pagination,
+  select,
+  where,
+}: ListCompaniesOptions<Selection>) {
   const query = db
     .selectFrom('companies')
     .leftJoin('opportunities', (join) => {
@@ -33,13 +40,15 @@ export async function listCompanies<
       'workExperiences.id'
     )
     .where('workExperiences.deletedAt', 'is', null)
-    .where((eb) => {
-      // We only want to return companies that have at least one employee (past
-      // or present) or opportunity.
-      return eb.or([
-        eb('opportunities.companyId', 'is not', null),
-        eb('workExperiences.companyId', 'is not', null),
-      ]);
+    .$if(!includeCompaniesWithoutEmployeesOrOpportunities, (qb) => {
+      // We only want to return companies that have at least one employee
+      // (past or present) or opportunity.
+      return qb.where((eb) => {
+        return eb.or([
+          eb('opportunities.companyId', 'is not', null),
+          eb('workExperiences.companyId', 'is not', null),
+        ]);
+      });
     })
     .$if(!!where.search, (qb) => {
       const { search } = where;

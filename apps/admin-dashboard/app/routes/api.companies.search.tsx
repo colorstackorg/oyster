@@ -13,9 +13,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const search = url.searchParams.get('search') || '';
 
   const { companies } = await listCompanies({
+    includeCompaniesWithoutEmployeesOrOpportunities: true,
     orderBy: 'most_employees',
     pagination: {
-      limit: 100,
+      limit: 50,
       page: 1,
     },
     select: ['companies.id', 'companies.name'],
