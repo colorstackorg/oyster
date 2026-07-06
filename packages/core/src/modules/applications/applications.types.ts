@@ -21,11 +21,19 @@ export const ApplicationStatus = {
   REJECTED: 'rejected',
 } as const;
 
+export const AutoReviewJobStatus = {
+  DONE: 'DONE',
+  FAILED: 'FAILED',
+  QUEUED: 'QUEUED',
+} as const;
+
 export type ApplicationRejectionReason = ExtractValue<
   typeof ApplicationRejectionReason
 >;
 
 export type ApplicationStatus = ExtractValue<typeof ApplicationStatus>;
+
+export type AutoReviewJobStatus = ExtractValue<typeof AutoReviewJobStatus>;
 
 // Use Cases
 
