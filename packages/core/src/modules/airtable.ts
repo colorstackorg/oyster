@@ -319,11 +319,49 @@ type CreateAirtableTableInput = {
   name: string;
 };
 
+/**
+ * @see https://airtable.com/developers/web/api/list-tables
+ */
+async function getAirtableTableByName({
+  baseId,
+  name,
+}: {
+  baseId: string;
+  name: string;
+}) {
+  await airtableRateLimiter.process();
+
+  const response = await fetch(
+    `${AIRTABLE_API_URI}/meta/bases/${baseId}/tables`,
+    {
+      headers: getAirtableHeaders(),
+    }
+  );
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    throw new ColorStackError()
+      .withMessage('Failed to list Airtable tables.')
+      .withContext({ baseId, response: json });
+  }
+
+  const tables = json.tables as { id: string; name: string }[];
+
+  return tables.find((table) => table.name === name);
+}
+
 export async function createAirtableTable({
   baseId,
   fields,
   name,
 }: CreateAirtableTableInput) {
+  const existingTable = await getAirtableTableByName({ baseId, name });
+
+  if (existingTable) {
+    return existingTable.id;
+  }
+
   await airtableRateLimiter.process();
 
   // The Airtable API doesn't automatically assign colors to select fields, that

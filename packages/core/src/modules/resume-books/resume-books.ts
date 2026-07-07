@@ -28,7 +28,7 @@ import {
   type UpdateResumeBookInput,
 } from '@/modules/resume-books/resume-books.types';
 import { ColorStackError } from '@/shared/errors';
-import { success } from '@/shared/utils/core';
+import { fail, success } from '@/shared/utils/core';
 
 // Environment Variables
 
@@ -45,6 +45,7 @@ type GetResumeBookOptions<Selection> = {
   where: Partial<{
     hidden: false;
     id: string;
+    name: string;
     status: 'active';
   }>;
 };
@@ -60,6 +61,9 @@ export async function getResumeBook<
     })
     .$if(!!where.id, (eb) => {
       return eb.where('id', '=', where.id!);
+    })
+    .$if(!!where.name, (eb) => {
+      return eb.where('name', 'ilike', where.name!);
     })
     .$if(where.status === 'active', (eb) => {
       return eb
@@ -147,6 +151,19 @@ export async function createResumeBook({
   sponsors,
   startDate,
 }: CreateResumeBookInput) {
+  const existingResumeBook = await getResumeBook({
+    select: ['id'],
+    where: { name },
+  });
+
+  if (existingResumeBook) {
+    return fail({
+      code: 409,
+      context: { name },
+      error: 'A resume book with this name already exists.',
+    });
+  }
+
   const [airtableTableId, googleDriveFolderId] = await Promise.all([
     createAirtableTable({
       baseId: AIRTABLE_RESUME_BOOKS_BASE_ID,
