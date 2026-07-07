@@ -20,6 +20,7 @@ import {
   type ApplicationRejectionReason,
   ApplicationStatus,
   type ApplyInput,
+  AutoReviewJobStatus,
 } from '@/modules/applications/applications.types';
 import { ReferralStatus } from '@/modules/referrals/referrals.types';
 import { STUDENT_PROFILE_URL } from '@/shared/env';
@@ -31,6 +32,29 @@ export async function countPendingApplications() {
     .selectFrom('applications')
     .select((eb) => eb.fn.countAll<string>().as('count'))
     .where('status', '=', ApplicationStatus.PENDING)
+    .where((eb) =>
+      eb.or([
+        eb('applications.autoReviewJobStatus', '=', AutoReviewJobStatus.DONE),
+        eb('applications.autoReviewJobStatus', '=', AutoReviewJobStatus.FAILED),
+      ])
+    )
+    .executeTakeFirstOrThrow();
+
+  const count = Number(result.count);
+
+  return count;
+}
+
+export async function countReviewedApplications() {
+  const result = await db
+    .selectFrom('applications')
+    .select((eb) => eb.fn.countAll<string>().as('count'))
+    .where((eb) =>
+      eb.or([
+        eb('applications.autoReviewJobStatus', '=', AutoReviewJobStatus.DONE),
+        eb('applications.autoReviewJobStatus', '=', AutoReviewJobStatus.FAILED),
+      ])
+    )
     .executeTakeFirstOrThrow();
 
   const count = Number(result.count);
@@ -121,7 +145,14 @@ export async function listApplications({
     })
     .$if(status !== 'all', (qb) => {
       return qb.where('applications.status', '=', status);
-    });
+    })
+    // Only show applications that have been reviewed (DONE or FAILED)
+    .where((eb) =>
+      eb.or([
+        eb('applications.autoReviewJobStatus', '=', AutoReviewJobStatus.DONE),
+        eb('applications.autoReviewJobStatus', '=', AutoReviewJobStatus.FAILED),
+      ])
+    );
 
   const orderDirection = status === 'pending' ? 'asc' : 'desc';
 
@@ -130,6 +161,7 @@ export async function listApplications({
       .leftJoin('schools', 'schools.id', 'applications.schoolId')
       .leftJoin('admins', 'admins.id', 'applications.reviewedById')
       .select([
+        'applications.autoReviewJobStatus',
         'applications.createdAt',
         'applications.email',
         'applications.firstName',
@@ -410,6 +442,7 @@ export async function apply(input: ApplyInput) {
     await trx
       .insertInto('applications')
       .values({
+        autoReviewJobStatus: AutoReviewJobStatus.QUEUED,
         contribution: input.contribution,
         educationLevel: input.educationLevel,
         email: input.email,
@@ -592,8 +625,24 @@ export const applicationWorker = registerWorker(
   ApplicationBullJob,
   async (job) => {
     return match(job)
-      .with({ name: 'application.review' }, ({ data }) => {
-        return reviewApplication(data);
+      .with({ name: 'application.review' }, async ({ data }) => {
+        try {
+          await reviewApplication(data);
+          // Job completed successfully - mark as DONE
+          await db
+            .updateTable('applications')
+            .set({ autoReviewJobStatus: AutoReviewJobStatus.DONE })
+            .where('id', '=', data.applicationId)
+            .execute();
+        } catch (error) {
+          // Job failed - mark as FAILED
+          await db
+            .updateTable('applications')
+            .set({ autoReviewJobStatus: AutoReviewJobStatus.FAILED })
+            .where('id', '=', data.applicationId)
+            .execute();
+          throw error;
+        }
       })
       .exhaustive();
   }
@@ -747,22 +796,12 @@ async function shouldReject(
     return [false];
   }
 
-  const [memberWithSameLinkedIn, applicationAcceptedWithSameLinkedIn] =
-    await Promise.all([
-      db
-        .selectFrom('students')
-        .where('linkedInUrl', 'ilike', application.linkedInUrl)
-        .executeTakeFirst(),
+  const memberWithSameLinkedIn = await db
+    .selectFrom('students')
+    .where('linkedInUrl', 'ilike', application.linkedInUrl)
+    .executeTakeFirst();
 
-      db
-        .selectFrom('applications')
-        .where('id', '!=', application.id)
-        .where('linkedInUrl', 'ilike', application.linkedInUrl)
-        .where('status', '=', ApplicationStatus.ACCEPTED)
-        .executeTakeFirst(),
-    ]);
-
-  if (memberWithSameLinkedIn || applicationAcceptedWithSameLinkedIn) {
+  if (memberWithSameLinkedIn) {
     return [true, 'linkedin_already_used'];
   }
 
