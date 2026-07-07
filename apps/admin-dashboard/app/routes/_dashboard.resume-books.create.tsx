@@ -54,7 +54,14 @@ export async function action({ request }: ActionFunctionArgs) {
     return data(result, { status: 400 });
   }
 
-  await createResumeBook(result.data);
+  const createResult = await createResumeBook(result.data);
+
+  if (!createResult.ok) {
+    return data(
+      { errors: { name: createResult.error } },
+      { status: createResult.code }
+    );
+  }
 
   toast(session, {
     message: 'Created resume book.',
