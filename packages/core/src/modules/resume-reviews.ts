@@ -184,7 +184,12 @@ export async function reviewResume({
   });
 
   try {
-    const object = JSON.parse(completionResult.data);
+    const json = completionResult.data
+      .trim()
+      .replace(/^```(?:json)?\s*/, '')
+      .replace(/\s*```$/, '');
+
+    const object = JSON.parse(json);
     const feedback = ResumeFeedback.parse(object);
 
     await db
