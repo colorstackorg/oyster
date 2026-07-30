@@ -99,7 +99,6 @@ function startBullWorkers(): void {
       console.error(`The "${worker.name}" worker died! Exiting...`, e);
 
       Sentry.captureException(e, { tags: { queue: worker.name } });
-      Sentry.flush(2000).finally(() => process.exit(1));
     });
   }
 
