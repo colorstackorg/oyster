@@ -96,7 +96,7 @@ function startBullWorkers(): void {
 
   for (const worker of workers) {
     worker.run().catch((e) => {
-      console.error(`The "${worker.name}" worker died! Exiting...`, e);
+      console.error(`The "${worker.name}" worker died!`, e);
 
       Sentry.captureException(e, { tags: { queue: worker.name } });
     });
