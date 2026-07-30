@@ -66,23 +66,41 @@ async function bootstrap() {
  *
  * Each worker is responsible for processing jobs in its respective queue,
  * allowing for distributed and asynchronous task execution.
+ *
+ * `run()` returns a promise that rejects if the worker's run loop dies. We
+ * deliberately crash the process instead of swallowing that, because a worker
+ * that quietly stops consuming looks completely healthy from the outside -- the
+ * HTTP server keeps serving and keeps enqueueing, while its queue grows without
+ * bound. Better to fail loudly and let the platform restart us.
  */
 function startBullWorkers(): void {
-  airtableWorker.run();
-  applicationWorker.run();
-  eventWorker.run();
-  feedWorker.run();
-  gamificationWorker.run();
-  mailchimpWorker.run();
-  memberWorker.run();
-  memberEmailWorker.run();
-  notificationWorker.run();
-  offerWorker.run();
-  onboardingSessionWorker.run();
-  oneTimeCodeWorker.run();
-  opportunityWorker.run();
-  peerHelpWorker.run();
-  profileWorker.run();
-  resumeReviewWorker.run();
-  slackWorker.run();
+  const workers = [
+    airtableWorker,
+    applicationWorker,
+    eventWorker,
+    feedWorker,
+    gamificationWorker,
+    mailchimpWorker,
+    memberWorker,
+    memberEmailWorker,
+    notificationWorker,
+    offerWorker,
+    onboardingSessionWorker,
+    oneTimeCodeWorker,
+    opportunityWorker,
+    peerHelpWorker,
+    profileWorker,
+    resumeReviewWorker,
+    slackWorker,
+  ];
+
+  for (const worker of workers) {
+    worker.run().catch((e) => {
+      console.error(`The "${worker.name}" worker died!`, e);
+
+      Sentry.captureException(e, { tags: { queue: worker.name } });
+    });
+  }
+
+  console.log(`Started ${workers.length} Bull workers! 🐂`);
 }

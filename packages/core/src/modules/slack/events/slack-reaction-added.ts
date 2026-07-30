@@ -3,8 +3,8 @@ import { db } from '@oyster/db';
 import { job } from '@/infrastructure/bull';
 import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { ErrorWithContext } from '@/shared/errors';
-import { retryWithBackoff } from '@/shared/utils/core';
 import { getSlackMessage } from '../services/slack-message.service';
+import { addSlackMessage } from '../use-cases/add-slack-message';
 
 export async function onSlackReactionAdded(
   data: GetBullJobData<'slack.reaction.added'>
@@ -43,55 +43,36 @@ export async function onSlackReactionAdded(
 async function ensureMessageExists(
   data: GetBullJobData<'slack.reaction.added'>
 ) {
-  let waiting = false;
+  const existingMessage = await db
+    .selectFrom('slackMessages')
+    .select(['id'])
+    .where('channelId', '=', data.channelId)
+    .where('id', '=', data.messageId)
+    .executeTakeFirst();
 
-  await retryWithBackoff(
-    async () => {
-      const existingMessage = await db
-        .selectFrom('slackMessages')
-        .select(['id'])
-        .where('channelId', '=', data.channelId)
-        .where('id', '=', data.messageId)
-        .executeTakeFirst();
+  if (existingMessage) {
+    return;
+  }
 
-      if (existingMessage) {
-        return existingMessage;
-      }
+  console.warn('No message found, querying the Slack API...');
 
-      if (waiting) {
-        return false;
-      }
+  const message = await getSlackMessage({
+    channelId: data.channelId,
+    messageId: data.messageId,
+  });
 
-      console.warn('No message found, querying the Slack API...');
+  if (!message) {
+    throw new ErrorWithContext('No message found via Slack API.').withContext({
+      channelId: data.channelId,
+      messageId: data.messageId,
+    });
+  }
 
-      const message = await getSlackMessage({
-        channelId: data.channelId,
-        messageId: data.messageId,
-      });
-
-      if (!message) {
-        throw new ErrorWithContext(
-          'No message found via Slack API.'
-        ).withContext({
-          channelId: data.channelId,
-          messageId: data.messageId,
-        });
-      }
-
-      job('slack.message.add', {
-        channelId: message.channelId,
-        createdAt: message.createdAt,
-        id: message.id,
-        studentId: message.studentId,
-        text: message.text,
-        threadId: message.threadId,
-        userId: message.userId,
-      });
-
-      waiting = true;
-
-      return false;
-    },
-    { maxRetries: 10, retryInterval: 5000 }
-  );
+  // Add the message inline rather than enqueueing `slack.message.add` and
+  // polling for it. That job would land at the back of the very queue this job
+  // is occupying, so it can't run until we return -- we'd burn the full retry
+  // window and fail, every time. Worse, the deeper the backlog the longer the
+  // wait, so falling behind made every reaction job slower and guaranteed the
+  // queue could never catch back up.
+  await addSlackMessage(message);
 }

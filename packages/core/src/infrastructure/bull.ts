@@ -22,6 +22,13 @@ const REDIS_URL = process.env.REDIS_URL as string;
 // will be created lazily.
 const _queues: Record<string, Queue> = {};
 
+/**
+ * The maximum amount of time (in ms) a single job may run before we consider it
+ * hung and fail it.
+ *
+ */
+const DEFAULT_JOB_TIMEOUT = 1000 * 60 * 10;
+
 // Core
 
 /**
@@ -125,23 +132,31 @@ export async function listQueueNames() {
  * @param name - The name of the queue to process.
  * @param schema - Zod schema for validating the job data.
  * @param processor - The function to process each job.
- * @param options - Optional configuration for the worker.
+ * @param options - Optional configuration for the worker. Supports an extra
+ *   `jobTimeout` (in ms) on top of the standard Bull worker options.
  * @returns A `Worker` instance.
  */
 export function registerWorker<Schema extends ZodType>(
   name: BullQueue,
   schema: Schema,
   processor: (job: z.infer<Schema>) => Promise<unknown>,
-  options: WorkerOptions = {}
+  { jobTimeout = DEFAULT_JOB_TIMEOUT, ...options }: RegisterWorkerOptions = {}
 ) {
   const redis = new Redis(REDIS_URL, {
     family: 0,
     maxRetriesPerRequest: null,
   });
 
-  options = {
+  const workerOptions: WorkerOptions = {
     autorun: false,
     connection: redis,
+
+    // Some jobs in these queues wait on LLM completions, which can easily run
+    // past Bull's 30s default and get reclaimed mid-flight by the stalled
+    // checker. Give them room to renew their lock before that happens.
+    lockDuration: 60 * 1000,
+    maxStalledCount: 2,
+
     removeOnComplete: { age: 60 * 60 * 24 * 1, count: 1000 },
     removeOnFail: { age: 60 * 60 * 24 * 30, count: 10000 },
     ...options,
@@ -161,9 +176,13 @@ export function registerWorker<Schema extends ZodType>(
 
       const job = result.data;
 
-      return processor(job);
+      return withTimeout(
+        processor(job),
+        jobTimeout,
+        `${input.name} (${input.id})`
+      );
     },
-    options
+    workerOptions
   );
 
   worker.on('failed', (job, error) => {
@@ -175,5 +194,53 @@ export function registerWorker<Schema extends ZodType>(
     });
   });
 
+  // A worker whose run loop dies takes its whole queue down with it, silently.
+  // Surface it instead of letting the process carry on half-alive.
+  worker.on('error', (error) => {
+    reportException(error, { queueName: name });
+  });
+
   return worker;
+}
+
+// Types
+
+type RegisterWorkerOptions = WorkerOptions & {
+  /**
+   * How long (in ms) a single job may run before it's failed as hung.
+   *
+   * @default DEFAULT_JOB_TIMEOUT
+   */
+  jobTimeout?: number;
+};
+
+// Utils
+
+/**
+ * Rejects if the given promise hasn't settled within `ms`.
+ *
+ * This can't cancel the underlying work -- a hung promise keeps running in the
+ * background. What it does do is release the worker's concurrency slot, so one
+ * stuck job can't take the entire queue down with it.
+ *
+ * @param promise - The promise to race against the timer.
+ * @param ms - How long to wait before rejecting.
+ * @param label - Human-readable job label, used in the error message.
+ */
+function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  label: string
+): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+
+  const timer = new Promise<never>((_, reject) => {
+    timeout = setTimeout(() => {
+      reject(new Error(`Job "${label}" timed out after ${ms}ms.`));
+    }, ms);
+  });
+
+  return Promise.race([promise, timer]).finally(() => {
+    clearTimeout(timeout);
+  }) as Promise<T>;
 }
