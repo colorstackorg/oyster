@@ -137,5 +137,6 @@ export const slackWorker = registerWorker(
         return result.data;
       })
       .exhaustive();
-  }
+  },
+  { concurrency: 5 }
 );
