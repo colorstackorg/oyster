@@ -3,9 +3,9 @@ import { db } from '@oyster/db';
 import { job } from '@/infrastructure/bull';
 import { type GetBullJobData } from '@/infrastructure/bull.types';
 import { redis } from '@/infrastructure/redis';
+import { reportException } from '@/infrastructure/sentry';
 import { slack } from '@/modules/slack/instances';
 import { ErrorWithContext } from '@/shared/errors';
-import { retryWithBackoff } from '@/shared/utils/core';
 import { getSlackMessage } from '../services/slack-message.service';
 
 // Environment Variables
@@ -55,11 +55,13 @@ export async function addSlackMessage(data: AddSlackMessageInput) {
     threadId: data.threadId || data.id,
   });
 
-  // We don't need to await this since it's not a critical path.
+  // We don't need to await this since it's not a critical path -- but it does
+  // hit the DB and the Slack API, so it has to catch its own rejections.
+  // Otherwise it escapes as an unhandled rejection, which is now fatal.
   notifyBusySlackThreadIfNecessary({
     channelId: data.channelId,
     threadId: data.threadId,
-  });
+  }).catch((e) => reportException(e));
 
   // We'll do some additional checks for top-level threads...
   if (!data.threadId) {
@@ -123,60 +125,36 @@ async function ensureThreadExistsIfNecessary(data: AddSlackMessageInput) {
     return;
   }
 
-  let waiting = false;
+  const existingThread = await db
+    .selectFrom('slackMessages')
+    .where('id', '=', data.threadId)
+    .where('channelId', '=', data.channelId)
+    .executeTakeFirst();
 
-  await retryWithBackoff(
-    async () => {
-      const existingThread = await db
-        .selectFrom('slackMessages')
-        .where('id', '=', data.threadId!)
-        .where('channelId', '=', data.channelId)
-        .executeTakeFirst();
+  if (existingThread) {
+    return;
+  }
 
-      if (existingThread) {
-        return existingThread;
-      }
+  console.warn('No thread found, querying the Slack API...');
 
-      if (waiting) {
-        return false;
-      }
+  const slackThread = await getSlackMessage({
+    channelId: data.channelId,
+    messageId: data.threadId,
+  });
 
-      console.warn('No thread found, querying the Slack API...');
+  if (!slackThread) {
+    throw new ErrorWithContext('No thread found via Slack API.').withContext({
+      channelId: data.channelId,
+      messageId: data.id,
+      threadId: data.threadId,
+    });
+  }
 
-      const slackThread = await getSlackMessage({
-        channelId: data.channelId,
-        messageId: data.threadId!,
-      });
-
-      if (!slackThread) {
-        throw new ErrorWithContext(
-          'No thread found via Slack API.'
-        ).withContext({
-          channelId: data.channelId,
-          messageId: data.id,
-          threadId: data.threadId,
-        });
-      }
-
-      job('slack.message.add', {
-        channelId: slackThread.channelId,
-        createdAt: slackThread.createdAt,
-        id: slackThread.id,
-        studentId: slackThread.studentId,
-        text: slackThread.text,
-        threadId: slackThread.threadId,
-        userId: slackThread.userId,
-      });
-
-      waiting = true;
-
-      return false;
-    },
-    {
-      maxRetries: 10,
-      retryInterval: 5000,
-    }
-  );
+  // Add the parent inline rather than enqueueing `slack.message.add` and
+  // polling for it -- that job would land behind us in the same queue and
+  // couldn't run until we return. This terminates because Slack's `thread_ts`
+  // always points at the thread root, and a root has no `threadId` of its own.
+  await addSlackMessage(slackThread);
 }
 
 /**
