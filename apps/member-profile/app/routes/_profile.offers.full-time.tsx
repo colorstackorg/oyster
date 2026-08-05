@@ -328,8 +328,17 @@ export default function FullTimeOffersPage() {
 type FullTimeOfferInView = SerializeFrom<typeof loader>['offers'][number];
 
 function FullTimeOffersTable() {
-  const { offers } = useLoaderData<typeof loader>();
+  const { appliedCompany, offers } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
+
+  const hasOtherFilters =
+    !!searchParams.getAll('totalCompensation').length ||
+    !!searchParams.getAll('location').length;
+
+  const emptyMessage =
+    appliedCompany && !hasOtherFilters
+      ? `No record exists for full-time offers at ${appliedCompany.name} yet.`
+      : 'No full-time offers found matching the criteria.';
 
   const columns: TableColumnProps<FullTimeOfferInView>[] = [
     {
@@ -394,7 +403,7 @@ function FullTimeOffersTable() {
     <Table
       columns={columns}
       data={offers}
-      emptyMessage="No full-time offers found matching the criteria."
+      emptyMessage={emptyMessage}
       rowTo={({ id }) => {
         return {
           pathname: generatePath(Route['/offers/full-time/:id'], { id }),
