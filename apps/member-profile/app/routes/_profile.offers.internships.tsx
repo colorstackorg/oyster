@@ -317,7 +317,6 @@ function InternshipOffersTable() {
   const { appliedCompany, offers } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
 
-
   const hasOtherFilters =
     !!searchParams.getAll('hourlyRate').length ||
     !!searchParams.getAll('location').length;

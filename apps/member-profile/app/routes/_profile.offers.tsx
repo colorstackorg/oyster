@@ -29,7 +29,6 @@ type OffersNavigationProps = {
 function OffersNavigation({ className }: OffersNavigationProps) {
   const [searchParams] = useSearchParams();
 
-
   const company = searchParams.get('company');
 
   const search = company

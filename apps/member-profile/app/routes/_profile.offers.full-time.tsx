@@ -331,7 +331,6 @@ function FullTimeOffersTable() {
   const { appliedCompany, offers } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
 
-
   const hasOtherFilters =
     !!searchParams.getAll('totalCompensation').length ||
     !!searchParams.getAll('location').length;
