@@ -314,8 +314,18 @@ export default function InternshipOffersPage() {
 type InternshipOfferInView = SerializeFrom<typeof loader>['offers'][number];
 
 function InternshipOffersTable() {
-  const { offers } = useLoaderData<typeof loader>();
+  const { appliedCompany, offers } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
+
+
+  const hasOtherFilters =
+    !!searchParams.getAll('hourlyRate').length ||
+    !!searchParams.getAll('location').length;
+
+  const emptyMessage =
+    appliedCompany && !hasOtherFilters
+      ? `No record exists for internship offers at ${appliedCompany.name} yet.`
+      : 'No internship offers found matching the criteria.';
 
   const columns: TableColumnProps<InternshipOfferInView>[] = [
     {
@@ -370,7 +380,7 @@ function InternshipOffersTable() {
     <Table
       columns={columns}
       data={offers}
-      emptyMessage="No internship offers found matching the criteria."
+      emptyMessage={emptyMessage}
       rowTo={({ id }) => {
         return {
           pathname: generatePath(Route['/offers/internships/:id'], { id }),

@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router';
+import { Outlet, useSearchParams } from 'react-router';
 
 import { cx, Dashboard } from '@oyster/ui';
 
@@ -27,14 +27,23 @@ type OffersNavigationProps = {
 };
 
 function OffersNavigation({ className }: OffersNavigationProps) {
+  const [searchParams] = useSearchParams();
+
+
+  const company = searchParams.get('company');
+
+  const search = company
+    ? '?' + new URLSearchParams({ company }).toString()
+    : '';
+
   return (
     <nav className={cx('mr-auto', className)}>
       <ul className="flex items-center gap-4">
-        <NavigationItem to={Route['/offers/internships']}>
+        <NavigationItem to={Route['/offers/internships'] + search}>
           Internships
         </NavigationItem>
 
-        <NavigationItem to={Route['/offers/full-time']}>
+        <NavigationItem to={Route['/offers/full-time'] + search}>
           Full-Time
         </NavigationItem>
       </ul>
