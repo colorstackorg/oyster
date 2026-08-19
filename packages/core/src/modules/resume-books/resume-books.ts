@@ -8,10 +8,12 @@ import { id, run } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull';
 import { getPresignedURL, putObject } from '@/infrastructure/s3';
+import { reportException } from '@/infrastructure/sentry';
 import {
   type AirtableField,
   createAirtableRecord,
   createAirtableTable,
+  syncAirtableSelectFieldChoices,
   updateAirtableRecord,
 } from '@/modules/airtable';
 import { type DegreeType } from '@/modules/education/education.types';
@@ -263,6 +265,71 @@ export async function removeResumeBookSponsor({
 }
 
 /**
+ * The Airtable fields (in a resume book's table) whose choices are the sponsors
+ * of that resume book.
+ */
+const RESUME_BOOK_SPONSOR_AIRTABLE_FIELDS = [
+  'Sponsor Interest #1',
+  'Sponsor Interest #2',
+  'Sponsor Interest #3',
+];
+
+/**
+ * Syncs the sponsors of a resume book to the "Sponsor Interest" fields in its
+ * Airtable table, so that newly added sponsors are selectable in Airtable.
+ *
+ * The Airtable API doesn't support deleting the choices of a select field, so
+ * a sponsor that was removed will still be listed as a choice in Airtable --
+ * we log those so they can be cleaned up in the Airtable UI. Removing a sponsor
+ * isn't allowed once a member has selected it, so a leftover choice is always
+ * an unused one.
+ *
+ * Airtable is a mirror of what we store, so a failure here is reported but not
+ * thrown -- the sponsors have already been updated in our database, and some
+ * older resume books point to Airtable tables that no longer exist.
+ */
+async function syncResumeBookSponsorsToAirtable(resumeBookId: string) {
+  const resumeBook = await getResumeBook({
+    select: ['airtableBaseId', 'airtableTableId'],
+    where: { id: resumeBookId },
+  });
+
+  if (!resumeBook?.airtableBaseId || !resumeBook.airtableTableId) {
+    return;
+  }
+
+  const sponsors = await listResumeBookSponsors({ where: { resumeBookId } });
+
+  try {
+    const { stale } = await syncAirtableSelectFieldChoices({
+      baseId: resumeBook.airtableBaseId,
+      choices: sponsors.map((sponsor) => sponsor.name),
+      fieldNames: RESUME_BOOK_SPONSOR_AIRTABLE_FIELDS,
+      tableId: resumeBook.airtableTableId,
+    });
+
+    if (stale.length) {
+      console.warn({
+        code: 'airtable_stale_sponsor_choices',
+        message:
+          'Sponsors were removed from a resume book, but the Airtable API does ' +
+          'not support deleting the choices of a select field. These need to ' +
+          'be deleted in the Airtable UI.',
+        data: { resumeBookId, sponsors: stale },
+      });
+    }
+  } catch (e) {
+    reportException(e, { resumeBookId });
+
+    console.error({
+      code: 'airtable_sponsor_sync_failed',
+      message: 'Failed to sync the resume book sponsors to Airtable.',
+      data: { error: e, resumeBookId },
+    });
+  }
+}
+
+/**
  * Syncs which resume books a company sponsors by diffing the desired list
  * against the current list.
  */
@@ -312,6 +379,10 @@ export async function updateCompanyResumeBookSponsorships({
     if (!result.ok) {
       return result;
     }
+  }
+
+  for (const resumeBookId of resumeBookIds) {
+    await syncResumeBookSponsorsToAirtable(resumeBookId);
   }
 
   return success({});
@@ -368,6 +439,8 @@ export async function updateResumeBookSponsors({
       return result;
     }
   }
+
+  await syncResumeBookSponsorsToAirtable(resumeBookId);
 
   return success({});
 }
