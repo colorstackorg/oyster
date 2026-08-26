@@ -160,7 +160,7 @@ export default function EditCompanyPage() {
         )}
         <CompanyResumeBooksField
           defaultValue={resumeBookIds}
-          error={errors.resumeBookIds || error}
+          error={errors.resumeBookIds}
           resumeBooks={resumeBooks}
         />
 
