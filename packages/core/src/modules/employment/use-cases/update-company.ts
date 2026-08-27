@@ -57,6 +57,19 @@ export async function updateCompany({
     }
   }
 
+  const conflictingCompany = await findCompanyWithSameLinkedIn({
+    id,
+    linkedinId,
+    linkedinSlug: resolvedLinkedInSlug ?? linkedinSlug,
+  });
+
+  if (conflictingCompany) {
+    return fail({
+      code: 409,
+      error: `${conflictingCompany.name} is already linked to that LinkedIn company.`,
+    });
+  }
+
   await db
     .updateTable('companies')
     .set({
@@ -72,6 +85,37 @@ export async function updateCompany({
     .execute();
 
   return success({});
+}
+
+/**
+ * Finds another company that already holds the LinkedIn ID or slug we're about
+ * to save. Both columns are unique, so writing them without this check fails
+ * with a constraint violation instead of an error we can show to the admin.
+ */
+async function findCompanyWithSameLinkedIn({
+  id,
+  linkedinId,
+  linkedinSlug,
+}: {
+  id: string;
+  linkedinId?: string | null;
+  linkedinSlug?: string | null;
+}) {
+  if (!linkedinId && !linkedinSlug) {
+    return undefined;
+  }
+
+  return db
+    .selectFrom('companies')
+    .select(['id', 'name'])
+    .where('id', '!=', id)
+    .where((eb) => {
+      return eb.or([
+        ...(linkedinId ? [eb('linkedinId', '=', linkedinId)] : []),
+        ...(linkedinSlug ? [eb('linkedinSlug', '=', linkedinSlug)] : []),
+      ]);
+    })
+    .executeTakeFirst();
 }
 
 export async function syncCompanyFromLinkedIn(id: string) {
@@ -103,6 +147,19 @@ export async function syncCompanyFromLinkedIn(id: string) {
     return fail({
       code: 404,
       error: 'Company not found on LinkedIn.',
+    });
+  }
+
+  const conflictingCompany = await findCompanyWithSameLinkedIn({
+    id,
+    linkedinId: companyFromLinkedIn.id,
+    linkedinSlug: companyFromLinkedIn.universalName,
+  });
+
+  if (conflictingCompany) {
+    return fail({
+      code: 409,
+      error: `${conflictingCompany.name} is already linked to that LinkedIn company.`,
     });
   }
 
