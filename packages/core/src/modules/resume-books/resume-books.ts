@@ -8,10 +8,12 @@ import { id, run } from '@oyster/utils';
 
 import { job } from '@/infrastructure/bull';
 import { getPresignedURL, putObject } from '@/infrastructure/s3';
+import { reportException } from '@/infrastructure/sentry';
 import {
   type AirtableField,
   createAirtableRecord,
   createAirtableTable,
+  syncAirtableSelectFieldChoices,
   updateAirtableRecord,
 } from '@/modules/airtable';
 import { type DegreeType } from '@/modules/education/education.types';
@@ -20,7 +22,9 @@ import {
   uploadFileToGoogleDrive,
 } from '@/modules/google-drive';
 import {
+  type AddResumeBookSponsorInput,
   type CreateResumeBookInput,
+  type RemoveResumeBookSponsorInput,
   RESUME_BOOK_CODING_LANGUAGES,
   RESUME_BOOK_JOB_SEARCH_STATUSES,
   RESUME_BOOK_ROLES,
@@ -123,7 +127,7 @@ export async function listResumeBookSponsors({
 }: ListResumeBookSponsorsOptions) {
   const sponsors = await db
     .selectFrom('resumeBookSponsors')
-    .leftJoin('companies', 'companies.id', 'resumeBookSponsors.companyId')
+    .innerJoin('companies', 'companies.id', 'resumeBookSponsors.companyId')
     .select([
       'companies.domain',
       'companies.id',
@@ -135,6 +139,310 @@ export async function listResumeBookSponsors({
     .execute();
 
   return sponsors;
+}
+
+/**
+ * Adds a company as a sponsor of an existing resume book.
+ */
+export async function addResumeBookSponsor({
+  companyId,
+  resumeBookId,
+}: AddResumeBookSponsorInput) {
+  const [resumeBook, company, existingSponsor] = await Promise.all([
+    getResumeBook({
+      select: ['id'],
+      where: { id: resumeBookId },
+    }),
+    db
+      .selectFrom('companies')
+      .select(['id'])
+      .where('id', '=', companyId)
+      .executeTakeFirst(),
+    db
+      .selectFrom('resumeBookSponsors')
+      .select(['companyId'])
+      .where('companyId', '=', companyId)
+      .where('resumeBookId', '=', resumeBookId)
+      .executeTakeFirst(),
+  ]);
+
+  if (!resumeBook) {
+    return fail({
+      code: 404,
+      error: 'Resume book not found.',
+    });
+  }
+
+  if (!company) {
+    return fail({
+      code: 404,
+      error: 'Company not found.',
+    });
+  }
+
+  if (existingSponsor) {
+    return fail({
+      code: 409,
+      error: 'This company is already a sponsor of this resume book.',
+    });
+  }
+
+  await db
+    .insertInto('resumeBookSponsors')
+    .values({
+      companyId,
+      resumeBookId,
+    })
+    .execute();
+
+  return success({});
+}
+
+/**
+ * Removes a company as a sponsor from a resume book. This will fail if any
+ * members have already selected the company as a preferred sponsor.
+ */
+export async function removeResumeBookSponsor({
+  companyId,
+  resumeBookId,
+}: RemoveResumeBookSponsorInput) {
+  const [resumeBook, sponsor, submissions] = await Promise.all([
+    getResumeBook({
+      select: ['id'],
+      where: { id: resumeBookId },
+    }),
+    db
+      .selectFrom('resumeBookSponsors')
+      .select(['companyId'])
+      .where('companyId', '=', companyId)
+      .where('resumeBookId', '=', resumeBookId)
+      .executeTakeFirst(),
+    db
+      .selectFrom('resumeBookSubmissions')
+      .select((eb) => {
+        return eb.fn.countAll<string>().as('count');
+      })
+      .where('resumeBookId', '=', resumeBookId)
+      .where((eb) => {
+        return eb.or([
+          eb('preferredCompany1', '=', companyId),
+          eb('preferredCompany2', '=', companyId),
+          eb('preferredCompany3', '=', companyId),
+        ]);
+      })
+      .executeTakeFirst(),
+  ]);
+
+  if (!resumeBook) {
+    return fail({
+      code: 404,
+      error: 'Resume book not found.',
+    });
+  }
+
+  if (!sponsor) {
+    return fail({
+      code: 404,
+      error: 'This company is not a sponsor of this resume book.',
+    });
+  }
+
+  if (Number(submissions?.count) > 0) {
+    return fail({
+      code: 409,
+      error:
+        'Cannot remove a sponsor that members have selected as a preferred company.',
+    });
+  }
+
+  await db
+    .deleteFrom('resumeBookSponsors')
+    .where('companyId', '=', companyId)
+    .where('resumeBookId', '=', resumeBookId)
+    .execute();
+
+  return success({});
+}
+
+/**
+ * The Airtable fields (in a resume book's table) whose choices are the sponsors
+ * of that resume book.
+ */
+const RESUME_BOOK_SPONSOR_AIRTABLE_FIELDS = [
+  'Sponsor Interest #1',
+  'Sponsor Interest #2',
+  'Sponsor Interest #3',
+];
+
+/**
+ * Syncs the sponsors of a resume book to the "Sponsor Interest" fields in its
+ * Airtable table, so that newly added sponsors are selectable in Airtable.
+ *
+ * The Airtable API doesn't support deleting the choices of a select field, so
+ * a sponsor that was removed will still be listed as a choice in Airtable --
+ * we log those so they can be cleaned up in the Airtable UI. Removing a sponsor
+ * isn't allowed once a member has selected it, so a leftover choice is always
+ * an unused one.
+ *
+ * Airtable is a mirror of what we store, so a failure here is reported but not
+ * thrown -- the sponsors have already been updated in our database, and some
+ * older resume books point to Airtable tables that no longer exist.
+ */
+async function syncResumeBookSponsorsToAirtable(resumeBookId: string) {
+  const resumeBook = await getResumeBook({
+    select: ['airtableBaseId', 'airtableTableId'],
+    where: { id: resumeBookId },
+  });
+
+  if (!resumeBook?.airtableBaseId || !resumeBook.airtableTableId) {
+    return;
+  }
+
+  const sponsors = await listResumeBookSponsors({ where: { resumeBookId } });
+
+  try {
+    const { stale } = await syncAirtableSelectFieldChoices({
+      baseId: resumeBook.airtableBaseId,
+      choices: sponsors.map((sponsor) => sponsor.name),
+      fieldNames: RESUME_BOOK_SPONSOR_AIRTABLE_FIELDS,
+      tableId: resumeBook.airtableTableId,
+    });
+
+    if (stale.length) {
+      console.warn({
+        code: 'airtable_stale_sponsor_choices',
+        message:
+          'Sponsors were removed from a resume book, but the Airtable API does ' +
+          'not support deleting the choices of a select field. These need to ' +
+          'be deleted in the Airtable UI.',
+        data: { resumeBookId, sponsors: stale },
+      });
+    }
+  } catch (e) {
+    reportException(e, { resumeBookId });
+
+    console.error({
+      code: 'airtable_sponsor_sync_failed',
+      message: 'Failed to sync the resume book sponsors to Airtable.',
+      data: { error: e, resumeBookId },
+    });
+  }
+}
+
+/**
+ * Syncs which resume books a company sponsors by diffing the desired list
+ * against the current list.
+ */
+export async function updateCompanyResumeBookSponsorships({
+  companyId,
+  resumeBookIds,
+}: {
+  companyId: string;
+  resumeBookIds: string[];
+}) {
+  const currentSponsorships = await db
+    .selectFrom('resumeBookSponsors')
+    .select(['resumeBookId'])
+    .where('companyId', '=', companyId)
+    .execute();
+
+  const currentIds = new Set(
+    currentSponsorships.map((sponsorship) => sponsorship.resumeBookId)
+  );
+  const desiredIds = new Set(resumeBookIds);
+
+  const toAdd = resumeBookIds.filter((resumeBookId) => {
+    return !currentIds.has(resumeBookId);
+  });
+
+  const toRemove = Array.from(currentIds).filter((resumeBookId) => {
+    return !desiredIds.has(resumeBookId);
+  });
+
+  for (const resumeBookId of toRemove) {
+    const result = await removeResumeBookSponsor({
+      companyId,
+      resumeBookId,
+    });
+
+    if (!result.ok) {
+      return result;
+    }
+  }
+
+  for (const resumeBookId of toAdd) {
+    const result = await addResumeBookSponsor({
+      companyId,
+      resumeBookId,
+    });
+
+    if (!result.ok) {
+      return result;
+    }
+  }
+
+  for (const resumeBookId of resumeBookIds) {
+    await syncResumeBookSponsorsToAirtable(resumeBookId);
+  }
+
+  return success({});
+}
+
+/**
+ * Syncs which companies sponsor a resume book by diffing the desired list
+ * against the current list.
+ */
+export async function updateResumeBookSponsors({
+  resumeBookId,
+  sponsors,
+}: {
+  resumeBookId: string;
+  sponsors: string[];
+}) {
+  const currentSponsorships = await db
+    .selectFrom('resumeBookSponsors')
+    .select(['companyId'])
+    .where('resumeBookId', '=', resumeBookId)
+    .execute();
+
+  const currentIds = new Set(
+    currentSponsorships.map((sponsorship) => sponsorship.companyId)
+  );
+  const desiredIds = new Set(sponsors);
+
+  const toAdd = sponsors.filter((companyId) => {
+    return !currentIds.has(companyId);
+  });
+
+  const toRemove = Array.from(currentIds).filter((companyId) => {
+    return !desiredIds.has(companyId);
+  });
+
+  for (const companyId of toRemove) {
+    const result = await removeResumeBookSponsor({
+      companyId,
+      resumeBookId,
+    });
+
+    if (!result.ok) {
+      return result;
+    }
+  }
+
+  for (const companyId of toAdd) {
+    const result = await addResumeBookSponsor({
+      companyId,
+      resumeBookId,
+    });
+
+    if (!result.ok) {
+      return result;
+    }
+  }
+
+  await syncResumeBookSponsorsToAirtable(resumeBookId);
+
+  return success({});
 }
 
 // Use Cases
@@ -435,21 +743,80 @@ async function getResumeBookAirtableFields({
 }
 
 /**
- * Updates the resume book information.
- *
- * This will mainly be used to update the start/end date of the resume book,
- * as well as the name and whether the resume book is hidden or not.
- *
- * @todo Implement the ability to update the sponsors of the resume book.
- * @todo Implement the "edit table" functionality to Airtable.
+ * Deletes a resume book and its sponsors. Only allowed when the resume book
+ * has zero submissions.
+ */
+export async function deleteResumeBook(id: string) {
+  const resumeBook = await db
+    .selectFrom('resumeBooks')
+    .select([
+      'id',
+      (eb) => {
+        return eb
+          .selectFrom('resumeBookSubmissions')
+          .select((eb) => eb.fn.countAll<string>().as('count'))
+          .whereRef('resumeBookSubmissions.resumeBookId', '=', 'resumeBooks.id')
+          .as('submissions');
+      },
+    ])
+    .where('id', '=', id)
+    .executeTakeFirst();
+
+  if (!resumeBook) {
+    return fail({
+      code: 404,
+      error: 'Resume book not found.',
+    });
+  }
+
+  if (Number(resumeBook.submissions) > 0) {
+    return fail({
+      code: 409,
+      context: { id, submissions: resumeBook.submissions },
+      error: 'Cannot delete a resume book that has submissions.',
+    });
+  }
+
+  await db.transaction().execute(async (trx) => {
+    await trx
+      .deleteFrom('completedActivities')
+      .where('resumeBookId', '=', id)
+      .execute();
+
+    await trx
+      .deleteFrom('resumeBookSponsors')
+      .where('resumeBookId', '=', id)
+      .execute();
+
+    await trx.deleteFrom('resumeBooks').where('id', '=', id).execute();
+  });
+
+  return success({});
+}
+
+/**
+ * Updates the resume book information, including its sponsors.
  */
 export async function updateResumeBook({
   endDate,
   hidden,
   id,
   name,
+  sponsors,
   startDate,
 }: UpdateResumeBookInput) {
+  const resumeBook = await getResumeBook({
+    select: ['id'],
+    where: { id },
+  });
+
+  if (!resumeBook) {
+    return fail({
+      code: 404,
+      error: 'Resume book not found.',
+    });
+  }
+
   await db.transaction().execute(async (trx) => {
     await trx
       .updateTable('resumeBooks')
@@ -462,6 +829,15 @@ export async function updateResumeBook({
       .where('id', '=', id)
       .execute();
   });
+
+  const sponsorshipResult = await updateResumeBookSponsors({
+    resumeBookId: id,
+    sponsors,
+  });
+
+  if (!sponsorshipResult.ok) {
+    return sponsorshipResult;
+  }
 
   return success({});
 }

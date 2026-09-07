@@ -8,6 +8,7 @@ import {
   FORMATTED_RACE,
   Student,
 } from '@oyster/types';
+import { id } from '@oyster/utils';
 
 import { registerWorker } from '@/infrastructure/bull';
 import {
@@ -29,6 +30,11 @@ export const AIRTABLE_MEMBERS_TABLE_ID = process.env.AIRTABLE_MEMBERS_TABLE_ID;
 // Constants
 
 const AIRTABLE_API_URI = 'https://api.airtable.com/v0';
+
+/**
+ * @see https://airtable.com/developers/web/api/create-records
+ */
+const MAX_AIRTABLE_RECORDS_PER_REQUEST = 10;
 
 // Rate Limiter
 
@@ -320,15 +326,28 @@ type CreateAirtableTableInput = {
 };
 
 /**
+ * The schema of an existing Airtable table. Note that the choices of a select
+ * field include an `id`, which is required in order to keep that choice around
+ * when we update the field.
+ */
+type AirtableTableSchema = {
+  fields: {
+    id: string;
+    name: string;
+    options?: {
+      choices?: { color?: AirtableColor; id: string; name: string }[];
+    };
+    type: string;
+  }[];
+  id: string;
+  name: string;
+  primaryFieldId: string;
+};
+
+/**
  * @see https://airtable.com/developers/web/api/list-tables
  */
-async function getAirtableTableByName({
-  baseId,
-  name,
-}: {
-  baseId: string;
-  name: string;
-}) {
+async function listAirtableTables({ baseId }: { baseId: string }) {
   await airtableRateLimiter.process();
 
   const response = await fetch(
@@ -346,9 +365,31 @@ async function getAirtableTableByName({
       .withContext({ baseId, response: json });
   }
 
-  const tables = json.tables as { id: string; name: string }[];
+  return json.tables as AirtableTableSchema[];
+}
+
+async function getAirtableTableByName({
+  baseId,
+  name,
+}: {
+  baseId: string;
+  name: string;
+}) {
+  const tables = await listAirtableTables({ baseId });
 
   return tables.find((table) => table.name === name);
+}
+
+async function getAirtableTableById({
+  baseId,
+  tableId,
+}: {
+  baseId: string;
+  tableId: string;
+}) {
+  const tables = await listAirtableTables({ baseId });
+
+  return tables.find((table) => table.id === tableId);
 }
 
 export async function createAirtableTable({
@@ -410,6 +451,217 @@ export async function createAirtableTable({
   }
 
   return json.id as string;
+}
+
+/**
+ * Creates records in a table, with `typecast` enabled, and returns the IDs of
+ * the records that were created. Up to 10 records can be created at a time.
+ *
+ * @see https://airtable.com/developers/web/api/create-records
+ */
+async function createAirtableRecords({
+  baseId,
+  records,
+  tableId,
+}: {
+  baseId: string;
+  records: Record<string, unknown>[];
+  tableId: string;
+}) {
+  await airtableRateLimiter.process();
+
+  const response = await fetch(`${AIRTABLE_API_URI}/${baseId}/${tableId}`, {
+    body: JSON.stringify({
+      records: records.map((fields) => {
+        return { fields };
+      }),
+
+      typecast: true,
+    }),
+    headers: getAirtableHeaders({ includeContentType: true }),
+    method: 'post',
+  });
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    throw new ColorStackError()
+      .withMessage('Failed to create Airtable records.')
+      .withContext({ baseId, records, response: json, tableId });
+  }
+
+  return (json.records as { id: string }[]).map((record) => record.id);
+}
+
+/**
+ * Deletes up to 10 records from a table at a time.
+ *
+ * @see https://airtable.com/developers/web/api/delete-multiple-records
+ */
+async function deleteAirtableRecords({
+  baseId,
+  recordIds,
+  tableId,
+}: {
+  baseId: string;
+  recordIds: string[];
+  tableId: string;
+}) {
+  await airtableRateLimiter.process();
+
+  const searchParams = new URLSearchParams(
+    recordIds.map((recordId) => {
+      return ['records[]', recordId];
+    })
+  );
+
+  const response = await fetch(
+    `${AIRTABLE_API_URI}/${baseId}/${tableId}?${searchParams}`,
+    {
+      headers: getAirtableHeaders(),
+      method: 'delete',
+    }
+  );
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    throw new ColorStackError()
+      .withMessage('Failed to delete Airtable records.')
+      .withContext({ baseId, recordIds, response: json, tableId });
+  }
+}
+
+type SyncAirtableSelectFieldChoicesInput = {
+  baseId: string;
+
+  /**
+   * The choices that the fields should have. Any choice that isn't on a field
+   * yet will be added to it.
+   */
+  choices: string[];
+
+  /**
+   * The names of the select fields to sync. All of them will end up with the
+   * same set of choices.
+   */
+  fieldNames: string[];
+
+  tableId: string;
+};
+
+/**
+ * Ensures that each of the given select fields has a choice for every choice
+ * name provided, adding any that are missing.
+ *
+ * There is no API for editing the choices of a select field -- the "update
+ * field" endpoint rejects any `options` we send with "Changing a field's type or
+ * number precision is not currently supported." The only way to add a choice is
+ * the `typecast` flag on a record write, which tells Airtable to create any
+ * value it doesn't recognize. So, to add choices, we write a throwaway record
+ * per missing choice and then delete it -- the choices it created stay behind on
+ * the field.
+ *
+ * Since a record can only hold one value per single select field, we need one
+ * record per missing choice (each one filling in every field that is missing
+ * that choice).
+ *
+ * Choices that are on a field but are no longer wanted are returned as `stale`.
+ * Those can't be deleted programmatically at all, so they have to be removed in
+ * the Airtable UI.
+ *
+ * @see https://airtable.com/developers/web/api/create-records
+ */
+export async function syncAirtableSelectFieldChoices({
+  baseId,
+  choices,
+  fieldNames,
+  tableId,
+}: SyncAirtableSelectFieldChoicesInput) {
+  const table = await getAirtableTableById({ baseId, tableId });
+
+  if (!table) {
+    throw new ColorStackError()
+      .withMessage('Could not find the Airtable table.')
+      .withContext({ baseId, tableId });
+  }
+
+  const desiredNames = new Set(choices);
+
+  // The fields that are missing a given choice, keyed by the choice's name.
+  const missing = new Map<string, string[]>();
+
+  const stale = new Set<string>();
+
+  for (const fieldName of fieldNames) {
+    const field = table.fields.find((field) => field.name === fieldName);
+
+    if (!field) {
+      throw new ColorStackError()
+        .withMessage('Could not find the Airtable field.')
+        .withContext({ baseId, fieldName, tableId });
+    }
+
+    if (field.type !== 'singleSelect' && field.type !== 'multipleSelects') {
+      throw new ColorStackError()
+        .withMessage('Cannot sync choices of a non-select Airtable field.')
+        .withContext({ baseId, fieldName, tableId, type: field.type });
+    }
+
+    const existingChoices = field.options?.choices || [];
+    const existingNames = new Set<string>();
+
+    for (const choice of existingChoices) {
+      existingNames.add(choice.name);
+
+      if (!desiredNames.has(choice.name)) {
+        stale.add(choice.name);
+      }
+    }
+
+    for (const choice of choices) {
+      if (!existingNames.has(choice)) {
+        missing.set(choice, [...(missing.get(choice) || []), fieldName]);
+      }
+    }
+  }
+
+  // One throwaway record per missing choice, which sets that choice on every
+  // field that doesn't have it yet.
+  const primaryField = table.fields.find((field) => {
+    return field.id === table.primaryFieldId;
+  });
+
+  const records = Array.from(missing.entries()).map(([choice, fields]) => {
+    const record = Object.fromEntries(
+      fields.map((fieldName) => {
+        return [fieldName, choice];
+      })
+    );
+
+    if (primaryField && record[primaryField.name] === undefined) {
+      record[primaryField.name] = `sponsor-sync-${id()}@colorstack.org`;
+    }
+
+    return record;
+  });
+
+  for (let i = 0; i < records.length; i += MAX_AIRTABLE_RECORDS_PER_REQUEST) {
+    const batch = records.slice(i, i + MAX_AIRTABLE_RECORDS_PER_REQUEST);
+
+    const recordIds = await createAirtableRecords({
+      baseId,
+      records: batch,
+      tableId,
+    });
+
+    await deleteAirtableRecords({ baseId, recordIds, tableId });
+  }
+
+  return {
+    added: Array.from(missing.keys()),
+    stale: Array.from(stale),
+  };
 }
 
 /**

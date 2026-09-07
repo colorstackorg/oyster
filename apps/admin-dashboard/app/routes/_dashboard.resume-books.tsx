@@ -1,5 +1,12 @@
 import dayjs from 'dayjs';
-import { Clipboard, Edit, ExternalLink, Menu, Plus } from 'react-feather';
+import {
+  Clipboard,
+  Edit,
+  ExternalLink,
+  Menu,
+  Plus,
+  Trash,
+} from 'react-feather';
 import {
   generatePath,
   Link,
@@ -175,6 +182,7 @@ function ResumeBookDropdown({
   googleDriveUri,
   id,
   resumeBookUri,
+  submissions,
 }: ResumeBookInView) {
   const toast = useToast();
 
@@ -214,6 +222,17 @@ function ResumeBookDropdown({
               <ExternalLink /> Go to Google Drive
             </Link>
           </Dropdown.Item>
+
+          {Number(submissions) === 0 && (
+            <Dropdown.Item>
+              <Link
+                preventScrollReset
+                to={generatePath(Route['/resume-books/:id/delete'], { id })}
+              >
+                <Trash /> Delete Resume Book
+              </Link>
+            </Dropdown.Item>
+          )}
         </Dropdown.List>
       </Table.Dropdown>
 

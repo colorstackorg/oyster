@@ -1,4 +1,19 @@
-import { DatePicker, Field, type FieldProps, Input, Radio } from '@oyster/ui';
+import { useEffect } from 'react';
+import { useFetcher } from 'react-router';
+
+import {
+  ComboboxPopover,
+  DatePicker,
+  Field,
+  type FieldProps,
+  Input,
+  MultiCombobox,
+  MultiComboboxDisplay,
+  MultiComboboxItem,
+  MultiComboboxSearch,
+  MultiComboboxValues,
+  Radio,
+} from '@oyster/ui';
 
 import { ResumeBook } from '@/modules/resume-books/resume-books.types';
 
@@ -104,6 +119,78 @@ export function ResumeBookStartDateField({
         type="date"
         required
       />
+    </Field>
+  );
+}
+
+type ResumeBookSponsor = {
+  id: string;
+  name: string;
+};
+
+type ResumeBookSponsorsFieldProps = Omit<FieldProps<string>, 'name'> & {
+  defaultSponsors?: ResumeBookSponsor[];
+};
+
+export function ResumeBookSponsorsField({
+  defaultSponsors = [],
+  error,
+}: ResumeBookSponsorsFieldProps) {
+  const fetcher = useFetcher<{ companies: ResumeBookSponsor[] }>();
+
+  useEffect(() => {
+    fetcher.load('/api/companies/search');
+  }, []);
+
+  const companies = fetcher.data?.companies || [];
+  const defaultValues = defaultSponsors.map((sponsor) => {
+    return {
+      label: sponsor.name,
+      value: sponsor.id,
+    };
+  });
+
+  return (
+    <Field
+      description="Choose all of the companies that are sponsoring this resume book."
+      error={error}
+      label="Sponsors"
+      labelFor="sponsors"
+      required
+    >
+      <MultiCombobox defaultValues={defaultValues}>
+        <MultiComboboxDisplay>
+          <MultiComboboxValues name="sponsors" />
+          <MultiComboboxSearch
+            id="sponsors"
+            onChange={(e) => {
+              fetcher.submit(
+                { search: e.currentTarget.value },
+                {
+                  action: '/api/companies/search',
+                  method: 'get',
+                }
+              );
+            }}
+          />
+        </MultiComboboxDisplay>
+
+        <ComboboxPopover>
+          <ul>
+            {companies.map((company) => {
+              return (
+                <MultiComboboxItem
+                  key={company.id}
+                  label={company.name}
+                  value={company.id}
+                >
+                  {company.name}
+                </MultiComboboxItem>
+              );
+            })}
+          </ul>
+        </ComboboxPopover>
+      </MultiCombobox>
     </Field>
   );
 }

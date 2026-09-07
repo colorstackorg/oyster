@@ -22,6 +22,8 @@
     "./education/ui": "./src/modules/education/education.ui.tsx",
     "./employment": "./src/modules/employment/index.ts",
     "./employment/server": "./src/modules/employment/index.server.ts",
+    "./employment/types": "./src/modules/employment/employment.types.ts",
+    "./employment/ui": "./src/modules/employment/ui/companies.ui.tsx",
     "./events": "./src/modules/events/events.ts",
     "./events/attendees": "./src/modules/events/event-attendees.ts",
     "./events/registrations": "./src/modules/events/event-registrations.ts",

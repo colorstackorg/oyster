@@ -1,0 +1,84 @@
+import {
+  type ActionFunctionArgs,
+  data,
+  Form,
+  type LoaderFunctionArgs,
+  redirect,
+  useActionData,
+  useLoaderData,
+} from 'react-router';
+
+import { deleteResumeBook, getResumeBook } from '@oyster/core/resume-books';
+import { Button, ErrorMessage, getErrors, Modal } from '@oyster/ui';
+
+import { Route } from '@/shared/constants';
+import {
+  commitSession,
+  ensureUserAuthenticated,
+  toast,
+} from '@/shared/session.server';
+
+export async function loader({ params, request }: LoaderFunctionArgs) {
+  await ensureUserAuthenticated(request);
+
+  const resumeBook = await getResumeBook({
+    select: ['name'],
+    where: { id: params.id as string },
+  });
+
+  if (!resumeBook) {
+    throw new Response(null, { status: 404 });
+  }
+
+  return {
+    resumeBook,
+  };
+}
+
+export async function action({ params, request }: ActionFunctionArgs) {
+  const session = await ensureUserAuthenticated(request);
+
+  const result = await deleteResumeBook(params.id as string);
+
+  if (!result.ok) {
+    return data({ error: result.error }, { status: result.code });
+  }
+
+  toast(session, {
+    message: 'Deleted resume book.',
+    type: 'success',
+  });
+
+  return redirect(Route['/resume-books'], {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  });
+}
+
+export default function DeleteResumeBookModal() {
+  const { resumeBook } = useLoaderData<typeof loader>();
+  const { error } = getErrors(useActionData<typeof action>());
+
+  return (
+    <Modal onCloseTo={Route['/resume-books']}>
+      <Modal.Header>
+        <Modal.Title>Delete Resume Book: {resumeBook.name}</Modal.Title>
+        <Modal.CloseButton />
+      </Modal.Header>
+
+      <Modal.Description>
+        Are you sure you want to delete this resume book? This action cannot be
+        undone. Resume books with submissions cannot be deleted.
+      </Modal.Description>
+
+      <Form className="form" method="post">
+        <ErrorMessage>{error}</ErrorMessage>
+
+        <Button.Group>
+          <Button.Submit color="error">Delete</Button.Submit>
+        </Button.Group>
+      </Form>
+    </Modal>
+  );
+}

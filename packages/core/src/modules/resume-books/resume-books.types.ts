@@ -130,8 +130,27 @@ export const UpdateResumeBookInput = ResumeBook.pick({
   id: true,
   name: true,
   startDate: true,
+}).extend({
+  sponsors: z
+    .string()
+    .trim()
+    .min(1)
+    .transform((value) => value.split(',').filter(Boolean)),
 });
+
+export const AddResumeBookSponsorInput = z.object({
+  companyId: z.string().trim().min(1),
+  resumeBookId: z.string().trim().min(1),
+});
+
+export const RemoveResumeBookSponsorInput = AddResumeBookSponsorInput;
 
 export type CreateResumeBookInput = z.infer<typeof CreateResumeBookInput>;
 export type SubmitResumeInput = z.infer<typeof SubmitResumeInput>;
 export type UpdateResumeBookInput = z.infer<typeof UpdateResumeBookInput>;
+export type AddResumeBookSponsorInput = z.infer<
+  typeof AddResumeBookSponsorInput
+>;
+export type RemoveResumeBookSponsorInput = z.infer<
+  typeof RemoveResumeBookSponsorInput
+>;

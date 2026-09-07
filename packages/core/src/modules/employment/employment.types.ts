@@ -10,6 +10,7 @@ import {
   Student,
 } from '@oyster/types';
 
+import { parseLinkedInCompanySlug } from '@/modules/employment/employment.utils';
 import { ListSearchParams } from '@/shared/types';
 
 // Enums
@@ -143,3 +144,74 @@ export type DeleteWorkExperienceInput = z.infer<
 >;
 export type EditCompanyReviewInput = z.infer<typeof EditCompanyReviewInput>;
 export type UpvoteCompanyReviewInput = z.infer<typeof UpvoteCompanyReviewInput>;
+
+export const CreateCompanyInput = z.object({
+  linkedinSlug: z.string().trim().min(1).transform(parseLinkedInCompanySlug),
+});
+
+export const UpdateCompanyInput = z.object({
+  domain: z.string().trim().min(1),
+  id: Company.shape.id,
+  linkedinSlug: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => {
+      return value ? parseLinkedInCompanySlug(value) : undefined;
+    }),
+  name: z.string().trim().min(1),
+});
+
+export const AdminCreateCompanyInput = z.object({
+  domain: z.string().trim().optional(),
+  imageUrl: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => value || undefined),
+  linkedinSlug: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => {
+      return value ? parseLinkedInCompanySlug(value) : undefined;
+    }),
+  name: z.string().trim().optional(),
+  resumeBookIds: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => {
+      return value ? value.split(',').filter(Boolean) : [];
+    }),
+});
+
+export const AdminUpdateCompanyInput = UpdateCompanyInput.omit({
+  id: true,
+}).extend({
+  imageUrl: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => {
+      if (!value) {
+        return undefined;
+      }
+
+      const result = z.string().url().safeParse(value);
+
+      return result.success ? result.data : value;
+    }),
+  resumeBookIds: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => {
+      return value ? value.split(',').filter(Boolean) : [];
+    }),
+});
+
+export type CreateCompanyInput = z.infer<typeof CreateCompanyInput>;
+export type AdminCreateCompanyInput = z.infer<typeof AdminCreateCompanyInput>;
+export type AdminUpdateCompanyInput = z.infer<typeof AdminUpdateCompanyInput>;
+export type UpdateCompanyInput = z.infer<typeof UpdateCompanyInput>;

@@ -1,27 +1,20 @@
 import { type Transaction } from 'kysely';
-import { z } from 'zod';
 
 import { type DB } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { withCache } from '@/infrastructure/redis';
 import {
   deleteObject,
   putObject,
   R2_PUBLIC_BUCKET_NAME,
   R2_PUBLIC_BUCKET_URL,
 } from '@/infrastructure/s3';
-import { runActor } from '@/modules/apify';
-import { ColorStackError } from '@/shared/errors';
+import {
+  fetchCompanyFromLinkedIn,
+  getDomainFromCompanyWebsite,
+} from '@/modules/employment/use-cases/fetch-company-from-linkedin';
 
-const Company = z.object({
-  description: z.string().nullish(),
-  id: z.string(),
-  logo: z.string().url().optional(),
-  name: z.string(),
-  universalName: z.string(),
-  website: z.string().url().nullish(),
-});
+const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || '';
 
 /**
  * Saves a company in the database, if it does not already exist.
@@ -59,49 +52,21 @@ export async function saveCompanyIfNecessary(
     return existingCompany.id;
   }
 
-  const apifyResult = await withCache(
-    `harvestapi~linkedin-company:v2:${companyNameOrLinkedInId}`,
-    60 * 60 * 24 * 30,
-    async () => {
-      return runActor({
-        actorId: 'harvestapi~linkedin-company',
-        body: {
-          companies: [
-            `https://www.linkedin.com/company/${companyNameOrLinkedInId}`,
-          ],
-        },
-      });
-    }
+  const companyFromLinkedIn = await fetchCompanyFromLinkedIn(
+    companyNameOrLinkedInId
   );
-
-  const parseResult = z.array(Company).safeParse(apifyResult);
-
-  if (!parseResult.success) {
-    throw new ColorStackError()
-      .withMessage('Failed to parse company from Apify.')
-      .withContext({ error: JSON.stringify(parseResult.error, null, 2) })
-      .report();
-  }
-
-  const [companyFromLinkedIn] = parseResult.data;
 
   if (!companyFromLinkedIn) {
     return null;
-  }
-
-  let domain = undefined;
-
-  if (companyFromLinkedIn.website) {
-    const hostname = new URL(companyFromLinkedIn.website).hostname;
-
-    domain = getDomainFromHostname(hostname);
   }
 
   const { id: companyId, logoKey: existingLogoKey } = await trx
     .insertInto('companies')
     .values({
       description: companyFromLinkedIn.description,
-      domain,
+      domain: companyFromLinkedIn.website
+        ? getDomainFromCompanyWebsite(companyFromLinkedIn.website)
+        : undefined,
       id: id(),
       linkedinId: companyFromLinkedIn.id,
       linkedinSlug: companyFromLinkedIn.universalName,
@@ -120,32 +85,66 @@ export async function saveCompanyIfNecessary(
     .executeTakeFirstOrThrow();
 
   if (companyFromLinkedIn.logo) {
-    const newLogoKey = await uploadLogo(companyFromLinkedIn.logo);
-
-    if (newLogoKey) {
-      await trx
-        .updateTable('companies')
-        .set({
-          imageUrl: `${R2_PUBLIC_BUCKET_URL}/${newLogoKey}`,
-          logoKey: newLogoKey,
-        })
-        .where('id', '=', companyId)
-        .execute();
-
-      if (existingLogoKey) {
-        await deleteObject({
-          bucket: R2_PUBLIC_BUCKET_NAME,
-          key: existingLogoKey,
-        });
-      }
-    }
+    await setCompanyLogo({
+      companyId,
+      existingLogoKey,
+      logoUrl: companyFromLinkedIn.logo,
+      trx,
+    });
   }
 
   return companyId;
 }
 
-function getDomainFromHostname(hostname: string) {
-  return hostname.split('.').slice(-2).join('.');
+type SetCompanyLogoInput = {
+  companyId: string;
+  existingLogoKey?: string | null;
+  logoUrl: string;
+  trx: Transaction<DB>;
+};
+
+async function setCompanyLogo({
+  companyId,
+  existingLogoKey,
+  logoUrl,
+  trx,
+}: SetCompanyLogoInput) {
+  const hasR2Credentials =
+    !!R2_ACCESS_KEY_ID && !!R2_PUBLIC_BUCKET_NAME && !!R2_PUBLIC_BUCKET_URL;
+
+  if (hasR2Credentials) {
+    const newLogoKey = await uploadLogo(logoUrl);
+
+    if (!newLogoKey) {
+      return;
+    }
+
+    await trx
+      .updateTable('companies')
+      .set({
+        imageUrl: `${R2_PUBLIC_BUCKET_URL}/${newLogoKey}`,
+        logoKey: newLogoKey,
+      })
+      .where('id', '=', companyId)
+      .execute();
+
+    if (existingLogoKey) {
+      await deleteObject({
+        bucket: R2_PUBLIC_BUCKET_NAME,
+        key: existingLogoKey,
+      });
+    }
+
+    return;
+  }
+
+  await trx
+    .updateTable('companies')
+    .set({
+      imageUrl: logoUrl,
+    })
+    .where('id', '=', companyId)
+    .execute();
 }
 
 /**

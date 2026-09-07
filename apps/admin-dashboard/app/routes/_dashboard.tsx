@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  Briefcase,
   Calendar,
   Gift,
   Layers,
@@ -84,6 +85,11 @@ export default function DashboardLayout() {
                   icon={<BookOpen />}
                   label="Resume Books"
                   pathname={Route['/resume-books']}
+                />
+                <Dashboard.NavigationLink
+                  icon={<Briefcase />}
+                  label="Companies"
+                  pathname={Route['/companies']}
                 />
                 <Dashboard.NavigationLink
                   icon={<Video />}
