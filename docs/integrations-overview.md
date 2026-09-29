@@ -162,10 +162,27 @@ called from most modules in `packages/core`.
 
 **Powers:** the community home for ColorStack members (channels, DMs),
 Slack-based login, and the engine behind the "Ask AI" chatbot (ingesting
-messages, triggering embeddings, and answering member questions).
+messages, triggering embeddings, and answering member questions). Also
+posts staff-facing ops notifications to a **separate internal workspace**.
 
 **Code:** `packages/core/src/modules/slack/` (`slack.ts`, `slack.worker.ts`,
-`slack-profile.ts`, `slack.utils.ts`, `slack.types.ts`).
+`slack-profile.ts`, `slack.utils.ts`, `slack.types.ts`), webhook handlers in
+`apps/api/src/handlers/slack.ts`, Sign in with Slack in
+`packages/core/src/modules/authentication/services/slack-oauth.service.ts`.
+
+Setup is easy to get wrong because several different credential types are
+required — they are **not** interchangeable. In particular:
+
+- `SLACK_BOT_TOKEN` must be a **Bot User OAuth Token** (`xoxb-`)
+- `SLACK_ADMIN_TOKEN` must be a **User OAuth Token** (`xoxp-`) from a
+  workspace admin (used only for `users.profile.set`)
+- `SLACK_SIGNING_SECRET` is the app's signing secret, not a token
+- Invite / activate / deactivate members use an undocumented Slack admin API
+  with an `xoxc-` browser session token stored in Redis
+  (`slack:legacy_token` + `slack:legacy_cookie`), not `.env`
+
+Full key-type table, scopes, event URLs, and Redis notes:
+[`how-to-enable-integrations.md`](./how-to-enable-integrations.md#slack).
 
 ### SMTP
 

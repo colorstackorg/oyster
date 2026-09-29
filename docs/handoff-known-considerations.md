@@ -34,7 +34,7 @@ the planned student-contribution feature).
 | Google OAuth | Authentication | Documented, active |
 | Mailchimp | Email marketing | Documented, active |
 | Pinecone | Vector database | Documented, active |
-| Slack | Community home + auth | Documented, active |
+| Slack | Community home + auth + internal notifications | Documented, active — setup is credential-type-sensitive (see below) |
 | Sentry | Error monitoring | Documented, optional |
 | Anthropic / OpenAI / Cohere | AI features (e.g. resume review) | Env vars present, not in the integrations doc — confirm which are live in prod |
 | Apify, Google Maps, LinkedIn, Mixpanel, Postmark, SMTP, Twilio | Various | Env vars present in `apps/api/.env.example` but undocumented — likely partial/legacy; **confirm which are actually load-bearing in production before assuming any are safe to ignore** |
@@ -45,6 +45,20 @@ current production status needs to be confirmed directly with the outgoing
 team rather than assumed from the code alone.
 
 ## Known Technical Considerations
+
+- **Slack credentials are not one key.** Production needs a bot token
+  (`xoxb-` → `SLACK_BOT_TOKEN`), a workspace-admin *user* token (`xoxp-` →
+  `SLACK_ADMIN_TOKEN`), a signing secret, and OpenID client id/secret. Putting
+  the bot token in `SLACK_ADMIN_TOKEN` (or using an `xapp-` Socket Mode token)
+  is the usual failure mode. See
+  [`how-to-enable-integrations.md`](./how-to-enable-integrations.md#slack).
+- **Slack invite / deactivate depends on a browser session, not the Slack
+  app.** `users.admin.invite` / `setInactive` / `setRegular` read
+  `slack:legacy_token` (`xoxc-`) and `slack:legacy_cookie` from Redis. Nothing
+  in the codebase writes those keys, and they die when the admin's Slack web
+  session expires — invites can stop working with no env-var change. Confirm
+  with the outgoing team how those Redis keys are currently populated and
+  rotated.
 
 ## Known Issues / Candidate Follow-Up Work
 as of September 29, 2026
@@ -68,6 +82,4 @@ want to prioritize early, since they affect day-to-day usability:
 
 - **Worker health monitoring** — currently absent; needs design input before
   scaling job volume.
-- **Undocumented integrations** (AI providers, Apify, Twilio, etc.) — need
-  their production status confirmed; don't assume unused just because
-  undocumented.
+

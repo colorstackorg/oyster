@@ -3,8 +3,9 @@
 This document covers what each app does, how local development differs from
 production, and the day-to-day maintenance workflows (migrations, queue
 inspection). For integration details, see
-[`integrations-overview.md`](./integrations-overview.md). For known risks,
-see [`handoff-known-considerations.md`](./handoff-known-considerations.md).
+[`integrations-overview.md`](./integrations-overview.md). For feature flags,
+see [`feature-flags.md`](./feature-flags.md). For known risks, see
+[`handoff-known-considerations.md`](./handoff-known-considerations.md).
 
 ## Core services
 
@@ -83,11 +84,13 @@ run whichever app happens to build/deploy first after being merged.
   access.
 - **Inspecting the database directly:** `bun prisma:studio` opens Prisma
   Studio against your local database for browsing/editing rows.
-- **Feature flags:** managed through the admin dashboard's feature-flags
-  route, not via a config file or third-party service.
-
+- **Feature flags:** stored in Postgres, toggled at `/feature-flags` (owner
+  role). See [`feature-flags.md`](./feature-flags.md) for what each name
+  actually gates.
 ## Cross-references
 
 - Local dev setup (already documented): [`CONTRIBUTING.md`](../CONTRIBUTING.md)
 - Integration details: [`integrations-overview.md`](./integrations-overview.md)
+- Feature flags: [`feature-flags.md`](./feature-flags.md)
+- Slack setup (tokens, events, Redis session): [`how-to-enable-integrations.md`](./how-to-enable-integrations.md#slack)
 - Known risks/escalation areas: [`handoff-known-considerations.md`](./handoff-known-considerations.md)
