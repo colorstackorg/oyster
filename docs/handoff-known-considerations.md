@@ -62,13 +62,17 @@ team rather than assumed from the code alone.
 
 ## Known Issues / Candidate Follow-Up Work
 as of September 29, 2026
-These are lower-severity than the items above (no outage risk), but worth
-surfacing during the KT session as known rough edges the incoming team may
-want to prioritize early, since they affect day-to-day usability:
+These are not outage-level, but they make day-to-day use annoying. Flag them
+during handoff so the new team can decide what to fix first.
 
 - **Admin dashboard error handling** — some failures surface as an
-  unhandled 500 / crash rather than a friendly error state. Worth an audit of
-  error boundaries across `apps/admin-dashboard` routes.
+  unhandled 500 / crash rather than a friendly error state. A common case
+  is missing env vars: in development those keys are optional so the app
+  still boots, but hitting a screen that needs them (resume books →
+  Airtable / Google Drive, GitHub contributors → `GITHUB_TOKEN`, student
+  Airtable links, etc.) throws instead of saying the integration isn't
+  configured. Worth an audit of error boundaries across
+  `apps/admin-dashboard` routes.
 - **Stale UI state after mutations** — some admin actions don't reflect
   their result until the page is manually reloaded, suggesting a loader/data
   revalidation isn't being triggered after certain form submissions or
