@@ -10,6 +10,7 @@ import {
   createEmbedding,
   getChatCompletion,
   rerankDocuments,
+  stripCodeFence,
 } from '@/infrastructure/ai';
 import { job } from '@/infrastructure/bull';
 import { track } from '@/infrastructure/mixpanel';
@@ -18,6 +19,7 @@ import { cache, ONE_HOUR_IN_SECONDS } from '@/infrastructure/redis';
 import { sendSlackNotification } from '@/modules/notifications/use-cases/send-slack-notification';
 import { slack } from '@/modules/slack/instances';
 import { IS_PRODUCTION } from '@/shared/env';
+import { ColorStackError } from '@/shared/errors';
 import { fail, type Result, success } from '@/shared/utils/core';
 
 // Constants
@@ -464,7 +466,7 @@ const MEMBER_PROFILE_SYSTEM_PROMPT = dedent`
 
   <output_format>
     Your response must follow this exact format:
-    1. First, output a JSON object with this EXACT structure:
+    1. First, output a JSON object (not in a code block) with this EXACT structure:
       {
         "threads": [
           { "channelId": "...", "threadId": "...", "number": 1 },
@@ -692,47 +694,75 @@ const MetadataSection = z.object({
  * @param output - Raw output from the LLM.
  * @returns The parsed answer with thread references.
  */
-async function parseAnswerForMemberProfile(
+export async function parseAnswerForMemberProfile(
   output: string
 ): Promise<Result<ParsedChatbotAnswer>> {
   // PART I: Split the output into the metadata section and the answer section,
   // parse the metadata section into JSON and validate it with Zod.
 
-  const [metadataSection, ...answerParts] = output.split('---');
+  // We report the raw output whenever we can't parse it, since the output
+  // isn't stored anywhere else and is needed to debug the failure.
+  function failToParse(error: string): Result<ParsedChatbotAnswer> {
+    new ColorStackError().withMessage(error).withContext({ output }).report();
 
-  if (!metadataSection || answerParts.length === 0) {
-    return fail({
-      code: 400,
-      error: 'Missing metadata section or answer section from response.',
-    });
+    return fail({ code: 400, error });
   }
 
-  let metadataJSON: any = {};
+  // The metadata section is everything before the first "---" delimiter. Note
+  // that the answer itself can contain a "---" (ie: a Markdown divider).
+  const delimiterIndex = output.indexOf('---');
+  const hasDelimiter = delimiterIndex !== -1;
 
-  try {
-    metadataJSON = JSON.parse(metadataSection.trim());
-  } catch (error) {
-    return fail({
-      code: 400,
-      error: 'Failed to parse thread metadata into JSON.',
-    });
+  const metadataSection = hasDelimiter
+    ? output.slice(0, delimiterIndex)
+    : output;
+
+  const answerSection = hasDelimiter ? output.slice(delimiterIndex + 3) : '';
+
+  let answer: string;
+  let threadsMetadata: z.infer<typeof MetadataSection>['threads'] = [];
+
+  if (!metadataSection.includes('{')) {
+    // There is no JSON at all, which means that the LLM answered without
+    // referencing any threads (ie: it couldn't find the answer in our Slack
+    // history). Instead of failing, we show it as an answer with no sources.
+    // If it references a thread anyway, the validation in PART III fails.
+    answer = metadataSection.trim() ? output : answerSection;
+  } else {
+    if (!hasDelimiter) {
+      return failToParse(
+        'Missing metadata section or answer section from response.'
+      );
+    }
+
+    let metadataJSON: unknown;
+
+    // The LLM sometimes wraps the JSON in a code fence (ie: ```json) even
+    // though we ask it not to, which would otherwise break `JSON.parse`.
+    try {
+      metadataJSON = JSON.parse(stripCodeFence(metadataSection));
+    } catch (error) {
+      return failToParse('Failed to parse thread metadata into JSON.');
+    }
+
+    const metadataResult = MetadataSection.safeParse(metadataJSON);
+
+    if (!metadataResult.success) {
+      return failToParse('The metadata section is not formatted correctly.');
+    }
+
+    threadsMetadata = metadataResult.data.threads;
+    answer = answerSection;
   }
 
-  const metadataResult = MetadataSection.safeParse(metadataJSON);
-
-  if (!metadataResult.success) {
-    return fail({
-      code: 400,
-      error: 'The metadata section is not formatted correctly.',
-    });
-  }
+  answer = answer.trim();
 
   // PART II: Fetch the Slack permalink for each thread and return the threads
   // with their respective URLs. This will allow us to actually have the user
   // click on the thread and see the actual context of the thread.
 
   const threads = await Promise.all(
-    metadataResult.data.threads.map(async (thread) => {
+    threadsMetadata.map(async (thread) => {
       const [{ permalink }, slackMessage] = await Promise.all([
         slack.chat.getPermalink({
           channel: thread.channelId,
@@ -784,9 +814,6 @@ async function parseAnswerForMemberProfile(
 
   // PART III: Validate that all the references in the answer are valid. Ensures
   // that the LLM didn't hallucinate and that the references actually exist.
-
-  // Combine all parts after the "---" delimiter.
-  const answer = answerParts.join('---').trim();
 
   // Next, we need to validate that all the references in the answer are valid.
   // We do this by finding all the references in the answer and then checking
