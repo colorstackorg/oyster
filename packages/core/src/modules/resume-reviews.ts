@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { db, relativeTime } from '@oyster/db';
 import { id } from '@oyster/utils';
 
-import { getChatCompletion } from '@/infrastructure/ai';
+import { getChatCompletion, stripCodeFence } from '@/infrastructure/ai';
 import { job, registerWorker } from '@/infrastructure/bull';
 import {
   type GetBullJobData,
@@ -184,12 +184,7 @@ export async function reviewResume({
   });
 
   try {
-    const json = completionResult.data
-      .trim()
-      .replace(/^```(?:json)?\s*/, '')
-      .replace(/\s*```$/, '');
-
-    const object = JSON.parse(json);
+    const object = JSON.parse(stripCodeFence(completionResult.data));
     const feedback = ResumeFeedback.parse(object);
 
     await db
