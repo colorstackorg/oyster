@@ -1,4 +1,8 @@
-import puppeteer, { type Browser, type Page } from 'puppeteer-core';
+import puppeteer, {
+  type Browser,
+  type Page,
+  TimeoutError,
+} from 'puppeteer-core';
 import UserAgent from 'user-agents';
 
 // Environment Variable(s)
@@ -30,13 +34,14 @@ export async function getPageContent(url: string): Promise<string> {
       waitUntil: 'domcontentloaded',
     });
 
-    await page.waitForNetworkIdle();
+    const idleTimedOut = await waitForIdleOrContinue(page);
 
     const content = await page.evaluate(() => {
       return document.body.innerText;
     });
 
     console.log('Page content found.', {
+      idleTimedOut,
       length: content.length,
       status: response?.status(),
       url: url.slice(0, 50) + '...',
@@ -47,6 +52,28 @@ export async function getPageContent(url: string): Promise<string> {
 }
 
 // Helpers
+
+/**
+ * Waits up to 5 seconds for the network to go idle. Some sites never go idle
+ * (e.g. analytics, polling), so if we time out we keep going and read whatever
+ * has rendered. Any other error is rethrown.
+ *
+ * @param page - Page to wait on.
+ * @returns Whether the wait timed out.
+ */
+async function waitForIdleOrContinue(page: Page): Promise<boolean> {
+  try {
+    await page.waitForNetworkIdle({ timeout: 5_000 });
+
+    return false;
+  } catch (e) {
+    if (!(e instanceof TimeoutError)) {
+      throw e;
+    }
+
+    return true;
+  }
+}
 
 /**
  * Runs the given function with a new Puppeteer browser instance and page
