@@ -9,7 +9,7 @@ import { db } from '@oyster/db';
 import { ISO8601Date, nullableField } from '@oyster/types';
 import { id } from '@oyster/utils';
 
-import { getChatCompletion } from '@/infrastructure/ai';
+import { getChatCompletion, stripCodeFence } from '@/infrastructure/ai';
 import { job, registerWorker } from '@/infrastructure/bull';
 import {
   type GetBullJobData,
@@ -781,7 +781,7 @@ export async function refineOpportunity(
   let json: JSON;
 
   try {
-    json = JSON.parse(completionResult.data);
+    json = JSON.parse(stripCodeFence(completionResult.data));
   } catch (e) {
     console.debug(
       'Failed to parse JSON from AI response.',
