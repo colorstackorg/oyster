@@ -264,6 +264,21 @@ export async function getChatCompletion({
   return success(message);
 }
 
+/**
+ * Removes a Markdown code fence (ie: ```json ... ```) from an AI response.
+ * Some models add one even when asked for only JSON, which breaks
+ * `JSON.parse`. Text without a fence is returned trimmed.
+ *
+ * @param text - The raw text from the AI response.
+ * @returns The text without the surrounding code fence.
+ */
+export function stripCodeFence(text: string): string {
+  return text
+    .trim()
+    .replace(/^```(?:json)?\s*/, '')
+    .replace(/\s*```$/, '');
+}
+
 // "Rerank Documents"
 
 type RerankDocumentsOptions = Partial<{

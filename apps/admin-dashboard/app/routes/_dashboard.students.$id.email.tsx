@@ -68,7 +68,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   });
 
   if (updateResult instanceof Error) {
-    return data({ error: updateResult.message }, { status: 500 });
+    return data({ error: updateResult.message }, { status: 400 });
   }
 
   toast(session, {
