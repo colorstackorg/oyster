@@ -8,6 +8,10 @@ import { extractZodErrorMessage } from '@/shared/utils/zod';
 
 const APIFY_API_TOKEN = process.env.APIFY_API_TOKEN as string;
 
+export function isApifyConfigured() {
+  return !!APIFY_API_TOKEN;
+}
+
 // Rate Limiter
 
 /**
@@ -69,6 +73,14 @@ type StartRunInput = {
  * @returns Promise resolving to the dataset ID.
  */
 async function startRun({ actorId, body }: StartRunInput): Promise<string> {
+  if (!APIFY_API_TOKEN) {
+    throw new ColorStackError()
+      .withMessage(
+        'Apify is not configured. Set APIFY_API_TOKEN in your environment.'
+      )
+      .report();
+  }
+
   const url = new URL(`https://api.apify.com/v2/acts/${actorId}/runs`);
 
   url.searchParams.set('token', APIFY_API_TOKEN);

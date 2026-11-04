@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import {
   type ActionFunctionArgs,
   data,
@@ -6,7 +5,6 @@ import {
   type LoaderFunctionArgs,
   redirect,
   useActionData,
-  useFetcher,
 } from 'react-router';
 
 import { createResumeBook } from '@oyster/core/resume-books';
@@ -15,23 +13,11 @@ import {
   ResumeBookEndDateField,
   ResumeBookHiddenField,
   ResumeBookNameField,
+  ResumeBookSponsorsField,
   ResumeBookStartDateField,
 } from '@oyster/core/resume-books/ui';
-import {
-  Button,
-  ComboboxPopover,
-  Field,
-  getErrors,
-  Modal,
-  MultiCombobox,
-  MultiComboboxDisplay,
-  MultiComboboxItem,
-  MultiComboboxSearch,
-  MultiComboboxValues,
-  validateForm,
-} from '@oyster/ui';
+import { Button, getErrors, Modal, validateForm } from '@oyster/ui';
 
-import { type SearchCompaniesResult } from '@/routes/api.companies.search';
 import { Route } from '@/shared/constants';
 import {
   commitSession,
@@ -75,8 +61,6 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 }
 
-const keys = CreateResumeBookInput.keyof().enum;
-
 export default function CreateResumeBookModal() {
   const { errors } = getErrors(useActionData<typeof action>());
 
@@ -91,67 +75,12 @@ export default function CreateResumeBookModal() {
         <ResumeBookNameField error={errors.name} />
         <ResumeBookStartDateField error={errors.startDate} />
         <ResumeBookEndDateField error={errors.endDate} />
-        <SponsorsField />
+        <ResumeBookSponsorsField error={errors.sponsors} />
         <ResumeBookHiddenField error={errors.hidden} />
         <Button.Group>
           <Button.Submit>Create</Button.Submit>
         </Button.Group>
       </Form>
     </Modal>
-  );
-}
-
-function SponsorsField() {
-  const fetcher = useFetcher<SearchCompaniesResult>();
-  const { errors } = getErrors(useActionData<typeof action>());
-
-  useEffect(() => {
-    fetcher.load('/api/companies/search');
-  }, []);
-
-  const companies = fetcher.data?.companies || [];
-
-  return (
-    <Field
-      description="Please choose all of the companies that are sponsoring this resume book."
-      error={errors.sponsors}
-      label="Sponsors"
-      labelFor={keys.sponsors}
-      required
-    >
-      <MultiCombobox>
-        <MultiComboboxDisplay>
-          <MultiComboboxValues name={keys.sponsors} />
-          <MultiComboboxSearch
-            id="search"
-            onChange={(e) => {
-              fetcher.submit(
-                { search: e.currentTarget.value },
-                {
-                  action: '/api/companies/search',
-                  method: 'get',
-                }
-              );
-            }}
-          />
-        </MultiComboboxDisplay>
-
-        <ComboboxPopover>
-          <ul>
-            {companies.map((company) => {
-              return (
-                <MultiComboboxItem
-                  key={company.id}
-                  label={company.name}
-                  value={company.id}
-                >
-                  {company.name}
-                </MultiComboboxItem>
-              );
-            })}
-          </ul>
-        </ComboboxPopover>
-      </MultiCombobox>
-    </Field>
   );
 }

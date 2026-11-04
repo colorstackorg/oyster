@@ -9,7 +9,11 @@ import {
   useLoaderData,
 } from 'react-router';
 
-import { getResumeBook, updateResumeBook } from '@oyster/core/resume-books';
+import {
+  getResumeBook,
+  listResumeBookSponsors,
+  updateResumeBook,
+} from '@oyster/core/resume-books';
 import {
   RESUME_BOOK_TIMEZONE,
   UpdateResumeBookInput,
@@ -18,6 +22,7 @@ import {
   ResumeBookEndDateField,
   ResumeBookHiddenField,
   ResumeBookNameField,
+  ResumeBookSponsorsField,
   ResumeBookStartDateField,
 } from '@oyster/core/resume-books/ui';
 import { Button, getErrors, Modal, validateForm } from '@oyster/ui';
@@ -32,17 +37,23 @@ import {
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await ensureUserAuthenticated(request);
 
-  const resumeBook = await getResumeBook({
-    select: ['endDate', 'hidden', 'name', 'startDate'],
-    where: { id: params.id as string },
-  });
+  const resumeBookId = params.id as string;
+
+  const [resumeBook, sponsors] = await Promise.all([
+    getResumeBook({
+      select: ['endDate', 'hidden', 'name', 'startDate'],
+      where: { id: resumeBookId },
+    }),
+
+    listResumeBookSponsors({
+      where: { resumeBookId },
+    }),
+  ]);
 
   if (!resumeBook) {
     throw new Response(null, { status: 404 });
   }
 
-  // We need to format the dates so that they respect the <input type="date" />
-  // format.
   const format = 'YYYY-MM-DD';
   const tz = RESUME_BOOK_TIMEZONE;
 
@@ -50,6 +61,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     endDate: dayjs(resumeBook.endDate).tz(tz).format(format),
     hidden: resumeBook.hidden,
     name: resumeBook.name,
+    sponsors: sponsors.map((sponsor) => {
+      return {
+        id: sponsor.id,
+        name: sponsor.name,
+      };
+    }),
     startDate: dayjs(resumeBook.startDate).tz(tz).format(format),
   };
 }
@@ -66,10 +83,14 @@ export async function action({ params, request }: ActionFunctionArgs) {
     return data(result, { status: 400 });
   }
 
-  await updateResumeBook({
+  const updateResult = await updateResumeBook({
     ...result.data,
     id: params.id as string,
   });
+
+  if (!updateResult.ok) {
+    return data({ error: updateResult.error }, { status: updateResult.code });
+  }
 
   toast(session, {
     message: 'Updated resume book.',
@@ -84,8 +105,9 @@ export async function action({ params, request }: ActionFunctionArgs) {
 }
 
 export default function EditResumeBookModal() {
-  const { endDate, hidden, name, startDate } = useLoaderData<typeof loader>();
-  const { errors } = getErrors(useActionData<typeof action>());
+  const { endDate, hidden, name, sponsors, startDate } =
+    useLoaderData<typeof loader>();
+  const { error, errors } = getErrors(useActionData<typeof action>());
 
   return (
     <Modal onCloseTo={Route['/resume-books']}>
@@ -101,6 +123,10 @@ export default function EditResumeBookModal() {
           error={errors.startDate}
         />
         <ResumeBookEndDateField defaultValue={endDate} error={errors.endDate} />
+        <ResumeBookSponsorsField
+          defaultSponsors={sponsors}
+          error={errors.sponsors || error}
+        />
         <ResumeBookHiddenField defaultValue={hidden} error={errors.hidden} />
         <Button.Group>
           <Button.Submit>Edit</Button.Submit>
