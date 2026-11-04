@@ -3,6 +3,7 @@
   "include": ["src"],
   "compilerOptions": {
     "module": "ESNext",
-    "moduleResolution": "Bundler"
+    "moduleResolution": "Bundler",
+    "target": "ESNext"
   }
 }

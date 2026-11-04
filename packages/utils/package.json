@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./ai-formatting": "./src/ai-formatting/index.ts"
   },
   "scripts": {
     "lint": "eslint .",
