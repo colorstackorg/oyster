@@ -328,7 +328,8 @@ export default function FullTimeOffersPage() {
 type FullTimeOfferInView = SerializeFrom<typeof loader>['offers'][number];
 
 function FullTimeOffersTable() {
-  const { appliedCompany, offers } = useLoaderData<typeof loader>();
+  const { appliedCompany, offers, totalOffers } =
+    useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
 
   const hasOtherFilters =
@@ -336,7 +337,7 @@ function FullTimeOffersTable() {
     !!searchParams.getAll('location').length;
 
   const emptyMessage =
-    appliedCompany && !hasOtherFilters
+    appliedCompany && !hasOtherFilters && totalOffers === 0
       ? `No record exists for full-time offers at ${appliedCompany.name} yet.`
       : 'No full-time offers found matching the criteria.';
 

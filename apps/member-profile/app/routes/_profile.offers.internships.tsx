@@ -314,7 +314,8 @@ export default function InternshipOffersPage() {
 type InternshipOfferInView = SerializeFrom<typeof loader>['offers'][number];
 
 function InternshipOffersTable() {
-  const { appliedCompany, offers } = useLoaderData<typeof loader>();
+  const { appliedCompany, offers, totalOffers } =
+    useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
 
   const hasOtherFilters =
@@ -322,7 +323,7 @@ function InternshipOffersTable() {
     !!searchParams.getAll('location').length;
 
   const emptyMessage =
-    appliedCompany && !hasOtherFilters
+    appliedCompany && !hasOtherFilters && totalOffers === 0
       ? `No record exists for internship offers at ${appliedCompany.name} yet.`
       : 'No internship offers found matching the criteria.';
 
