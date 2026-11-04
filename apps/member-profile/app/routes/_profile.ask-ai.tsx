@@ -26,6 +26,7 @@ import {
 import { IconButton, ProfilePicture, Text } from '@oyster/ui';
 
 import { cache } from '@/infrastructure/redis';
+import { AiMarkdown } from '@/shared/components/ai-markdown';
 import { EmptyState } from '@/shared/components/empty-state';
 import { SlackMessage } from '@/shared/components/slack-message';
 import {
@@ -292,33 +293,28 @@ function ChatbotResponse() {
       </ResponseSection>
 
       <ResponseSection icon={<AlignLeft />} title="Answer">
-        <Text className="whitespace-break-spaces">
-          {answerSegments.map((segment, i) => {
-            return match(segment)
-              .with({ type: 'text' }, ({ content }) => {
-                return content;
-              })
-              .with({ type: 'reference' }, ({ number }) => {
-                const thread = threads.find((thread) => {
-                  return thread.number === number;
-                });
+        <AiMarkdown
+          renderRef={(number) => {
+            const thread = threads.find((thread) => {
+              return thread.number === number;
+            });
 
-                // This should never happen, but keeping this check just to be safe.
-                if (!thread) {
-                  return null;
-                }
+            // This should never happen, but keeping this check just to be safe.
+            if (!thread) {
+              return null;
+            }
 
-                return (
-                  <ReferenceLink
-                    key={i}
-                    number={thread.number}
-                    url={thread.url}
-                  />
-                );
-              })
-              .exhaustive();
-          })}
-        </Text>
+            return <ReferenceLink number={thread.number} url={thread.url} />;
+          }}
+          text={answerSegments
+            .map((segment) => {
+              return match(segment)
+                .with({ type: 'text' }, ({ content }) => content)
+                .with({ type: 'reference' }, ({ number }) => `[ref:${number}]`)
+                .exhaustive();
+            })
+            .join('')}
+        />
       </ResponseSection>
     </div>
   );
