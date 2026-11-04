@@ -5,13 +5,17 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./ai-formatting": "./src/ai-formatting/index.ts"
+    "./ai-formatting": "./src/ai-formatting/index.ts",
+    "./katex": "./src/ai-formatting/katex.ts"
   },
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "bun test",
     "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "katex": "^0.19.1"
   },
   "devDependencies": {
     "@oyster/eslint-config": "workspace:*",
