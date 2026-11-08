@@ -833,7 +833,7 @@ export async function refineOpportunity(
       .set({
         ...(data.description && { description: data.description }),
         ...(data.title && { title: data.title }),
-        companyId,
+        ...(companyId && { companyId }),
         expiresAt,
       })
       .where('id', '=', input.opportunityId)

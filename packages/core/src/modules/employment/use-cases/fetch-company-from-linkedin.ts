@@ -44,23 +44,58 @@ function getBestLogoUrl(logos: z.infer<typeof LinkedInLogo>[] | undefined) {
   }).url;
 }
 
+/**
+ * Fetches a company from LinkedIn by its slug, numeric ID or company URL.
+ *
+ * @param companyNameOrLinkedInSlug - LinkedIn slug, numeric ID or company URL.
+ */
 export async function fetchCompanyFromLinkedIn(
   companyNameOrLinkedInSlug: string
 ): Promise<LinkedInCompany | null> {
   const linkedInSlug = parseLinkedInCompanySlug(companyNameOrLinkedInSlug);
 
-  const apifyResult = await withCache(
+  return runLinkedInCompanyActor(
     `harvestapi~linkedin-company:v2:${linkedInSlug}`,
-    60 * 60 * 24 * 30,
-    async () => {
-      return runActor({
-        actorId: 'harvestapi~linkedin-company',
-        body: {
-          companies: [`https://www.linkedin.com/company/${linkedInSlug}`],
-        },
-      });
-    }
+    { companies: [`https://www.linkedin.com/company/${linkedInSlug}`] }
   );
+}
+
+/**
+ * Searches LinkedIn for a company by its name (ie: "Capital One") and returns
+ * the top result. Use this when we don't know the company's LinkedIn slug,
+ * such as when the name was extracted from a job posting.
+ *
+ * @param companyName - Name of the company to search for.
+ */
+export async function searchCompanyOnLinkedIn(
+  companyName: string
+): Promise<LinkedInCompany | null> {
+  const name = companyName.trim();
+
+  return runLinkedInCompanyActor(
+    `harvestapi~linkedin-company:search:v1:${name.toLowerCase()}`,
+    { searches: [name] }
+  );
+}
+
+async function runLinkedInCompanyActor(
+  cacheKey: string,
+  body: { companies: string[] } | { searches: string[] }
+): Promise<LinkedInCompany | null> {
+  const apifyResult = await withCache(cacheKey, 60 * 60 * 24 * 30, async () => {
+    const result = await runActor({
+      actorId: 'harvestapi~linkedin-company',
+      body,
+    });
+
+    // We don't want to cache an empty result, otherwise a company that
+    // wasn't found once would never be looked up again for 30 days.
+    return Array.isArray(result) && !result.length ? null : result;
+  });
+
+  if (!apifyResult) {
+    return null;
+  }
 
   const parseResult = z.array(LinkedInCompany).safeParse(apifyResult);
 

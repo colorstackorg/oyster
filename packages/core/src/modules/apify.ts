@@ -27,7 +27,7 @@ const rateLimiter = new RateLimiter('apify:connections', {
 type RunActorInput =
   | {
       actorId: 'harvestapi~linkedin-company';
-      body: { companies: string[] };
+      body: { companies: string[] } | { searches: string[] };
     }
   | {
       actorId: 'harvestapi~linkedin-profile-scraper';
