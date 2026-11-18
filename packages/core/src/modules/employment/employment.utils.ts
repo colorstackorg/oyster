@@ -23,3 +23,18 @@ export function parseLinkedInCompanySlug(input: string) {
 
   return trimmed.replace(/^@/, '');
 }
+
+/**
+ * Returns `true` if the input points to a specific LinkedIn company (ie: a
+ * numeric LinkedIn ID or a LinkedIn company URL), and `false` if it is a
+ * free-text company name that we need to search for.
+ *
+ * @example isLinkedInCompanyReference('1441') // true
+ * @example isLinkedInCompanyReference('https://www.linkedin.com/company/google') // true
+ * @example isLinkedInCompanyReference('Capital One') // false
+ */
+export function isLinkedInCompanyReference(input: string) {
+  const trimmed = input.trim();
+
+  return /^\d+$/.test(trimmed) || /linkedin\.com\/company\//i.test(trimmed);
+}

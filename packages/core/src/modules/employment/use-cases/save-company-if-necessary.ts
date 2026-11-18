@@ -9,9 +9,11 @@ import {
   R2_PUBLIC_BUCKET_NAME,
   R2_PUBLIC_BUCKET_URL,
 } from '@/infrastructure/s3';
+import { isLinkedInCompanyReference } from '@/modules/employment/employment.utils';
 import {
   fetchCompanyFromLinkedIn,
   getDomainFromCompanyWebsite,
+  searchCompanyOnLinkedIn,
 } from '@/modules/employment/use-cases/fetch-company-from-linkedin';
 
 const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || '';
@@ -23,11 +25,12 @@ const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || '';
  * - If the company is found in our database, it will return the ID of the
  *   existing company.
  * - If the company is not found in our database, we will scrape the company
- *   from LinkedIn and save the company in our database. Will throw an error if
- *   the company is not found in LinkedIn.
+ *   from LinkedIn and save the company in our database. A LinkedIn ID or URL
+ *   is looked up directly, while a company name is searched for. Returns
+ *   `null` if the company is not found on LinkedIn.
  *
  * @param trx - Database transaction to use for the operation.
- * @param companyName - Name of the company.
+ * @param companyNameOrLinkedInId - Name, LinkedIn ID or LinkedIn URL.
  */
 export async function saveCompanyIfNecessary(
   trx: Transaction<DB>,
@@ -52,9 +55,11 @@ export async function saveCompanyIfNecessary(
     return existingCompany.id;
   }
 
-  const companyFromLinkedIn = await fetchCompanyFromLinkedIn(
+  const companyFromLinkedIn = isLinkedInCompanyReference(
     companyNameOrLinkedInId
-  );
+  )
+    ? await fetchCompanyFromLinkedIn(companyNameOrLinkedInId)
+    : await searchCompanyOnLinkedIn(companyNameOrLinkedInId);
 
   if (!companyFromLinkedIn) {
     return null;
