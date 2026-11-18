@@ -7,6 +7,7 @@ import {
   Send,
   X,
 } from 'react-feather';
+import Markdown from 'react-markdown';
 import {
   type ActionFunctionArgs,
   data,
@@ -16,6 +17,8 @@ import {
   useLoaderData,
   useNavigation,
 } from 'react-router';
+import remarkBreaks from 'remark-breaks';
+import remarkGfm from 'remark-gfm';
 import { match } from 'ts-pattern';
 
 import {
@@ -23,7 +26,7 @@ import {
   type ParsedChatbotAnswer,
   type ThreadReference,
 } from '@oyster/core/slack';
-import { IconButton, ProfilePicture, Text } from '@oyster/ui';
+import { getTextCn, IconButton, ProfilePicture, Text } from '@oyster/ui';
 
 import { cache } from '@/infrastructure/redis';
 import { EmptyState } from '@/shared/components/empty-state';
@@ -281,6 +284,20 @@ function ChatbotResponse() {
 
   const { answerSegments, threads } = (actionData || answer)!;
 
+  // We turn each reference into a markdown link (ie: "[1](#ref-1)") so that it
+  // can live inside of lists, bold text, etc., and then render those links as
+  // a `ReferenceLink` below.
+  const markdown = answerSegments
+    .map((segment) => {
+      return match(segment)
+        .with({ type: 'text' }, ({ content }) => content)
+        .with({ type: 'reference' }, ({ number }) => {
+          return `[${number}](#ref-${number})`;
+        })
+        .exhaustive();
+    })
+    .join('');
+
   return (
     <div className="flex flex-col gap-8">
       <ResponseSection icon={<ExternalLink />} title="Sources">
@@ -292,15 +309,27 @@ function ChatbotResponse() {
       </ResponseSection>
 
       <ResponseSection icon={<AlignLeft />} title="Answer">
-        <Text className="whitespace-break-spaces">
-          {answerSegments.map((segment, i) => {
-            return match(segment)
-              .with({ type: 'text' }, ({ content }) => {
-                return content;
-              })
-              .with({ type: 'reference' }, ({ number }) => {
+        <div className={getTextCn({ className: 'flex flex-col gap-3' })}>
+          <Markdown
+            components={{
+              a: ({ children, href }) => {
+                const reference = href?.match(/^#ref-(\d+)$/);
+
+                if (!reference) {
+                  return (
+                    <a
+                      className="text-primary underline"
+                      href={href}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      {children}
+                    </a>
+                  );
+                }
+
                 const thread = threads.find((thread) => {
-                  return thread.number === number;
+                  return thread.number === Number(reference[1]);
                 });
 
                 // This should never happen, but keeping this check just to be safe.
@@ -309,16 +338,54 @@ function ChatbotResponse() {
                 }
 
                 return (
-                  <ReferenceLink
-                    key={i}
-                    number={thread.number}
-                    url={thread.url}
-                  />
+                  <ReferenceLink number={thread.number} url={thread.url} />
                 );
-              })
-              .exhaustive();
-          })}
-        </Text>
+              },
+              blockquote: ({ children }) => (
+                <blockquote className="border-l-4 border-gray-200 pl-3 text-gray-500">
+                  {children}
+                </blockquote>
+              ),
+              code: ({ children }) => (
+                <code className="rounded bg-gray-100 px-1 font-mono text-sm">
+                  {children}
+                </code>
+              ),
+              h1: ({ children }) => <Heading>{children}</Heading>,
+              h2: ({ children }) => <Heading>{children}</Heading>,
+              h3: ({ children }) => <Heading>{children}</Heading>,
+              ol: ({ children, start }) => (
+                <ol
+                  className="flex list-decimal flex-col gap-1 pl-6"
+                  start={start}
+                >
+                  {children}
+                </ol>
+              ),
+              pre: ({ children }) => (
+                <pre className="overflow-x-auto rounded-lg bg-gray-50 p-3 text-sm [&>code]:bg-transparent [&>code]:p-0">
+                  {children}
+                </pre>
+              ),
+              table: ({ children }) => (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-left text-sm [&_td]:border [&_td]:border-gray-200 [&_td]:px-2 [&_td]:py-1 [&_th]:border [&_th]:border-gray-200 [&_th]:bg-gray-50 [&_th]:px-2 [&_th]:py-1">
+                    {children}
+                  </table>
+                </div>
+              ),
+              ul: ({ children }) => (
+                <ul className="flex list-disc flex-col gap-1 pl-6">
+                  {children}
+                </ul>
+              ),
+            }}
+            disallowedElements={['img']}
+            remarkPlugins={[remarkGfm, remarkBreaks]}
+          >
+            {markdown}
+          </Markdown>
+        </div>
       </ResponseSection>
     </div>
   );
@@ -403,6 +470,14 @@ function ReferenceLink({ number, url }: ReferenceLinkProps) {
 }
 
 // Helpers
+
+function Heading({ children }: { children?: React.ReactNode }) {
+  return (
+    <Text variant="lg" weight="600">
+      {children}
+    </Text>
+  );
+}
 
 type ResponseSectionProps = {
   children: React.ReactNode;
