@@ -259,7 +259,7 @@ describe(parseAnswerForMemberProfile.name, () => {
 
     expect(console.error).toHaveBeenCalledWith(
       expect.objectContaining({
-        context: { output },
+        context: { metadataSection: '{ "threads": [], "ok": true, }' },
         message: 'Failed to parse thread metadata into JSON.',
       })
     );
@@ -277,7 +277,9 @@ describe(parseAnswerForMemberProfile.name, () => {
     });
 
     expect(console.error).toHaveBeenCalledWith(
-      expect.objectContaining({ context: { output } })
+      expect.objectContaining({
+        context: { metadataSection: `Here is my response:\n\n${METADATA}` },
+      })
     );
   });
 
@@ -313,5 +315,35 @@ describe(parseAnswerForMemberProfile.name, () => {
       code: 400,
       error: 'Missing metadata section or answer section from response.',
     });
+
+    expect(console.error).toHaveBeenCalledWith(
+      expect.objectContaining({ context: {} })
+    );
+  });
+
+  // The answer is built from members' Slack messages, so it should never end
+  // up in an error report.
+  test('Should never report the answer when it fails.', async () => {
+    const answer = 'Jordan Smith (jordan@example.com) got the offer.';
+
+    const outputs = [
+      `{ "threads": [], "ok": true, }\n---\n${answer}`,
+      `Here is my response:\n\n${METADATA}\n---\n${answer}`,
+      `{ "ok": false }\n---\n${answer}`,
+      `${METADATA}\n${answer}`,
+      `${METADATA}\n\n${answer}\n\n| Company | Offer |\n|---|---|`,
+    ];
+
+    for (const output of outputs) {
+      const result = await parseAnswerForMemberProfile(output);
+
+      expect(result.ok).toBe(false);
+    }
+
+    expect(console.error).toHaveBeenCalledTimes(outputs.length);
+
+    for (const [error] of (console.error as any).mock.calls) {
+      expect(JSON.stringify(error.context)).not.toContain('Jordan');
+    }
   });
 });

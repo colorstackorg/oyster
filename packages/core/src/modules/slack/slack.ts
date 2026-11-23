@@ -700,14 +700,6 @@ export async function parseAnswerForMemberProfile(
   // PART I: Split the output into the metadata section and the answer section,
   // parse the metadata section into JSON and validate it with Zod.
 
-  // We report the raw output whenever we can't parse it, since the output
-  // isn't stored anywhere else and is needed to debug the failure.
-  function failToParse(error: string): Result<ParsedChatbotAnswer> {
-    new ColorStackError().withMessage(error).withContext({ output }).report();
-
-    return fail({ code: 400, error });
-  }
-
   // The metadata section is everything before the first "---" delimiter. Note
   // that the answer itself can contain a "---" (ie: a Markdown divider).
   const delimiterIndex = output.indexOf('---');
@@ -718,6 +710,27 @@ export async function parseAnswerForMemberProfile(
     : output;
 
   const answerSection = hasDelimiter ? output.slice(delimiterIndex + 3) : '';
+
+  // We report the metadata section whenever we can't parse it, since it isn't
+  // stored anywhere else and is needed to debug the failure. We never report
+  // the answer, since it's built from members' Slack messages and can include
+  // personal details. Without a delimiter, the "metadata section" is the whole
+  // output, so we don't report it at all. We also cut it off at the JSON's
+  // closing brace, in case the LLM left out the delimiter and the "---" we
+  // split on is actually part of the answer (ie: a Markdown table).
+  function failToParse(error: string): Result<ParsedChatbotAnswer> {
+    const reportedSection = metadataSection.slice(
+      0,
+      metadataSection.lastIndexOf('}') + 1
+    );
+
+    new ColorStackError()
+      .withMessage(error)
+      .withContext(hasDelimiter ? { metadataSection: reportedSection } : {})
+      .report();
+
+    return fail({ code: 400, error });
+  }
 
   let answer: string;
   let threadsMetadata: z.infer<typeof MetadataSection>['threads'] = [];
